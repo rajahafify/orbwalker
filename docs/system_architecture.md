@@ -251,6 +251,11 @@ Recommended effect hooks:
 - `on_booster_opened`
 - `on_boss_reward`
 
+Milestone boundary note:
+
+- Milestone 5 hook coverage is intentionally scoped to player-state actions (equipment, mastery, consumables, relics).
+- Full cross-system timing coverage continues in later milestones.
+
 Timing rules:
 
 - Enemy block applies against player damage during the current turn only.

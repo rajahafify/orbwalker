@@ -84,21 +84,27 @@ Verification notes (2026-04-26):
 - Godot MCP script checks confirmed enemy block reduction math, lethal-skip intent behavior, armor block-before-HP with post-action expiration, and healing clamp behavior.
 - Victory flow now requires manual `Next` button confirmation before transition to post-battle scene.
 
-## Milestone 5: Content And Effects
+## Milestone 5: Player State Management
 
-- [ ] Content loads through a registry.
-- [ ] Duplicate content IDs are reported.
-- [ ] Missing descriptions are reported.
-- [ ] Missing icons or placeholder icons are reported.
-- [ ] Invalid rarity values are reported.
-- [ ] Invalid effect references are reported.
-- [ ] Equipment effects apply only while equipped.
-- [ ] Duplicate equipment is prevented.
-- [ ] Mastery cards increase the correct mastery.
-- [ ] Mastery levels respect the cap.
-- [ ] Consumables occupy slots and are consumed on use.
-- [ ] Relics persist for the full run.
-- [ ] Effect timing matches the documented hook order.
+Phase A: Player state contracts
+- [x] Player progression state contains 5 equipment slots, 3 consumable slots, relic list, and 6 mastery tracks.
+- [x] Player progression state defaults are deterministic and persist through run transitions.
+
+Phase B: State transitions
+- [x] Equipment lifecycle works end to end (`equip_item`, `unequip_item`, `sell_equipment`) and updates state consistently.
+- [x] Duplicate equipment and slot-limit violations are rejected with explicit error reasons.
+- [x] Mastery gain updates the correct track and respects cap behavior.
+- [x] Consumables can be added and used only in valid windows, then consumed and removed from slots.
+- [x] Relics are added once and persist across fights for the full run.
+
+Phase C: Effect scope for player-state actions
+- [x] Equipment and relic effects apply only while active and are removed cleanly when no longer active.
+- [x] Player-state actions do not require combat-specific hardcoded effect branches.
+
+Phase D: Validation and debug visibility
+- [x] Duplicate IDs, missing display data, and invalid effect references are surfaced before run entry.
+- [x] Validation output reports an actionable error list with `item_id` and `reason`.
+- [x] Runtime player-state snapshot is visible in debug/playtest tooling.
 
 ## Milestone 6: Shop And Boosters
 

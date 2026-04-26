@@ -251,45 +251,33 @@ Verification notes (2026-04-26):
 - Enemy death now waits for manual confirmation through a `Next` button before transitioning to post-battle reward.
 - Godot MCP script validation passed for enemy block reduction, lethal-before-intent skip, armor blocking and expiration, and healing clamp to max HP.
 
-## Milestone 5: Data-Driven Content And Effect Framework
+## Milestone 5: Player State Management
 
-Goal: Support equipment, mastery cards, consumables, relics, and boosters without hardcoding every rule into combat.
+Status: In progress.
 
-Primary deliverable: A reusable effect framework and content registry that can express the initial GDD item set.
+Goal: Implement a clear player-state runtime for progression systems with explicit acceptance gates.
+
+Primary deliverable: A canonical `PlayerProgressionState` (or equivalent) plus validated state transitions for equipment, mastery, consumables, and relics.
 
 Tasks:
 
-- [ ] Define item resource classes.
-  - Deliverable: Data resources for equipment, mastery cards, consumables, relics, and booster packs.
-  - Acceptance: Each item has ID, display name, type, rarity where relevant, cost data, description, icon path, and effect references.
+- [x] Phase A: Define player-state contracts.
+  - Deliverable: Canonical runtime and data structures for 5 equipment slots, 3 consumable slots, persistent relic list, and 6 mastery tracks with cap 5.
+  - Acceptance: All fields have documented ownership, defaults, and run persistence behavior through `RunState`.
 
-- [ ] Implement content registry.
-  - Deliverable: Registry that loads all prototype content and exposes pools by type, rarity, category, and unlock state.
-  - Acceptance: Shop and boosters can request valid random content without knowing file paths.
+- [x] Phase B: Implement player-state transitions.
+  - Deliverable: Action interfaces or services for `equip_item`, `unequip_item`, `sell_equipment`, `grant_mastery`, `add_consumable`, `use_consumable`, and `add_relic`.
+  - Acceptance: Each action defines deterministic preconditions and postconditions, and rejects invalid operations with explicit reasons.
 
-- [ ] Implement effect timing hooks.
-  - Deliverable: Hooks such as fight start, before score calculation, after match result, before damage, after damage, before shop, on buy, on sell, and turn cleanup.
-  - Acceptance: Existing GDD effects can be mapped to hooks without fragile special cases.
+- [x] Phase C: Scope effects to player-state actions.
+  - Deliverable: Milestone 5 effect coverage limited to hooks needed by equipment, consumable, and relic state actions.
+  - Acceptance: Equipment and relic effects apply only while active, and player-state actions do not require combat-specific hardcoded special cases.
 
-- [ ] Implement equipment inventory.
-  - Deliverable: 5 starting equipment slots, duplicate prevention, equip, unequip, and sell support.
-  - Acceptance: Equipment passives affect the run only while equipped.
-
-- [ ] Implement mastery levels.
-  - Deliverable: Six mastery tracks with current level and cap of 5 for the working prototype.
-  - Acceptance: Orb base values use `1 + mastery level`, plus temporary equipment bonuses where applicable.
-
-- [ ] Implement consumable inventory.
-  - Deliverable: 3 consumable slots, use action, discard or consume after use, and board targeting rules.
-  - Acceptance: Consumables can be held between fights and used during valid gameplay windows.
-
-- [ ] Implement relic inventory.
-  - Deliverable: Persistent run relic list and relic effect activation.
-  - Acceptance: Relics last for the whole run and can modify broad rules such as armor duration, slots, spawn weights, boosters, or combo scaling.
-
-- [ ] Implement content validation.
-  - Deliverable: Startup or debug validation for duplicate IDs, missing descriptions, missing icons, invalid rarity, invalid pools, and invalid effect references.
-  - Acceptance: Bad content data is reported before a run starts.
+- [x] Phase D: Validate data and expose debug state.
+  - Deliverable: Content checks for duplicate IDs, missing display data, and invalid effect references used by player-state content.
+  - Deliverable: Standard validation result format as an error list with `item_id` and `reason`.
+  - Deliverable: Debug visibility for current player-state snapshot during playtest.
+  - Acceptance: Invalid content is reported before run entry and active player progression state can be inspected at runtime.
 
 ## Milestone 6: Shop, Economy, And Boosters
 

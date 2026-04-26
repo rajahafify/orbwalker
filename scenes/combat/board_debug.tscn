@@ -39,7 +39,7 @@ text = "Back"
 [node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=726365973]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Milestone 4: Core Combat Debug"
+text = "Milestone 5: Progression Debug"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -74,6 +74,14 @@ text = "Print Board State"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run Resolver Tests"
+
+[node name="AddTestEquipmentButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+layout_mode = 2
+text = "Add Test Equipment"
+
+[node name="AddTestConsumableButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+layout_mode = 2
+text = "Add Test Consumable"
 
 [node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=211771417]
 unique_name_in_owner = true
@@ -139,4 +147,6 @@ script = ExtResource("2_jk72d")
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RegenerateButton" to="." method="_on_regenerate_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/PrintBoardButton" to="." method="_on_print_board_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RunResolverTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/AddTestEquipmentButton" to="." method="_on_add_test_equipment_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/AddTestConsumableButton" to="." method="_on_add_test_consumable_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/NextButton" to="." method="_on_next_button_pressed"]

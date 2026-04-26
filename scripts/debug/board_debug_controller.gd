@@ -22,6 +22,11 @@ const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_re
 const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/debug/board_resolver_test_runner.gd")
 const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
 const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
+const TEST_EQUIPMENT_IDS: Array[String] = [
+	"debug_shortsword",
+	"debug_buckler",
+]
+const TEST_CONSUMABLE_ID := "debug_fire_scroll"
 
 const VICTORY_SCENE_PATH := "res://scenes/flow/shop_placeholder.tscn"
 const DEFEAT_SCENE_PATH := "res://scenes/flow/run_summary_placeholder.tscn"
@@ -42,6 +47,7 @@ var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
 var _combat: Variant
 var _player_state: PlayerState
 var _enemy_state: EnemyState
+var _progression_state: PlayerProgressionState
 
 var _input_phase: InputPhase = InputPhase.PLAYER_INPUT
 var _active_drag := false
@@ -74,10 +80,12 @@ func _ready() -> void:
 
 func _initialize_combat_state() -> void:
 	_player_state = RunState.ensure_player_state()
+	_progression_state = RunState.ensure_player_progression_state()
 	_enemy_state = ENEMY_STATE_SCRIPT.new()
 	_enemy_state.reset_for_fight()
 	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
 	_combat.start_fight(_player_state, _enemy_state)
+	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
 	_outcome_transition_queued = false
 	_pending_next_scene_path = ""
 	_next_button.visible = false
@@ -86,6 +94,12 @@ func _initialize_combat_state() -> void:
 	_combat_log_lines.clear()
 	_append_combat_log("Fight started: %s HP %d." % [_enemy_state.display_name, _enemy_state.max_hp])
 	_append_combat_log("Player start: HP %d/%d, Gold %d." % [_player_state.current_hp, _player_state.max_hp, _player_state.gold])
+	if content_errors.is_empty():
+		_append_combat_log("Milestone 5 content validation: OK.")
+	else:
+		_append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
+		for error in content_errors:
+			_append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
 
 
 func _begin_turn_preview() -> void:
@@ -141,6 +155,44 @@ func _on_run_tests_button_pressed() -> void:
 
 	_status_label.text = "Resolver tests failed (%d/%d). See output." % [report.failed, report.total]
 	push_warning("Board resolver tests failed:\n%s" % "\n".join(report.failures))
+
+
+func _on_add_test_equipment_button_pressed() -> void:
+	var progression_state := RunState.ensure_player_progression_state()
+	var progression_service := RunState.ensure_player_progression_service()
+	var content := RunState.ensure_content_registry()
+	var candidate_item_id := ""
+	for item_id in TEST_EQUIPMENT_IDS:
+		if not progression_state.equipped_item_ids.has(item_id):
+			candidate_item_id = item_id
+			break
+	if candidate_item_id == "":
+		candidate_item_id = TEST_EQUIPMENT_IDS[0]
+
+	var result: Dictionary = progression_service.equip_item(progression_state, candidate_item_id, content)
+	if bool(result.get("ok", false)):
+		_status_label.text = "Added test equipment: %s" % candidate_item_id
+		_append_combat_log("Debug add equipment OK: %s" % candidate_item_id)
+	else:
+		var reason := String(result.get("reason", "unknown_error"))
+		_status_label.text = "Add test equipment failed: %s" % reason
+		_append_combat_log("Debug add equipment failed: %s" % reason)
+	_update_hud()
+
+
+func _on_add_test_consumable_button_pressed() -> void:
+	var progression_state := RunState.ensure_player_progression_state()
+	var progression_service := RunState.ensure_player_progression_service()
+	var content := RunState.ensure_content_registry()
+	var result: Dictionary = progression_service.add_consumable(progression_state, TEST_CONSUMABLE_ID, content)
+	if bool(result.get("ok", false)):
+		_status_label.text = "Added test consumable: %s" % TEST_CONSUMABLE_ID
+		_append_combat_log("Debug add consumable OK: %s" % TEST_CONSUMABLE_ID)
+	else:
+		var reason := String(result.get("reason", "unknown_error"))
+		_status_label.text = "Add test consumable failed: %s" % reason
+		_append_combat_log("Debug add consumable failed: %s" % reason)
+	_update_hud()
 
 
 func _process(delta: float) -> void:
@@ -457,11 +509,23 @@ func _update_hud() -> void:
 	if _player_state == null or _enemy_state == null or _combat == null:
 		return
 
-	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d" % [
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
+	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
+	var validation_errors: Array[Dictionary] = RunState.player_state_content_errors()
+
+	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d\nEq: %s\nCons: %s\nRelics: %s\nMastery: %s\nContent Validation: %s" % [
 		_player_state.current_hp,
 		_player_state.max_hp,
 		_player_state.armor,
 		_player_state.gold,
+		_format_slot_line(equipment_slots),
+		_format_slot_line(consumable_slots),
+		_format_id_line(relic_ids),
+		_format_mastery_line(mastery_levels),
+		"OK" if validation_errors.is_empty() else ("%d issue(s)" % validation_errors.size()),
 	]
 
 	_enemy_label.text = "%s  HP %d/%d  Turn Block %d" % [
@@ -579,6 +643,30 @@ func _append_combat_log(message: String) -> void:
 	if _combat_log_text != null:
 		_combat_log_text.text = "\n".join(_combat_log_lines)
 		_combat_log_text.scroll_to_line(maxi(0, _combat_log_lines.size() - 1))
+
+
+func _format_slot_line(slot_values: Array) -> String:
+	var parts: Array[String] = []
+	for value in slot_values:
+		var text := String(value)
+		parts.append(text if text != "" else "-")
+	return "[" + ", ".join(parts) + "]"
+
+
+func _format_id_line(values: Array) -> String:
+	if values.is_empty():
+		return "-"
+	var rendered: Array[String] = []
+	for value in values:
+		rendered.append(String(value))
+	return "[" + ", ".join(rendered) + "]"
+
+
+func _format_mastery_line(levels: Dictionary) -> String:
+	var parts: Array[String] = []
+	for orb_id in OrbType.ALL_TYPES:
+		parts.append("%s:%d" % [OrbType.debug_symbol(orb_id), int(levels.get(orb_id, 0))])
+	return "[" + ", ".join(parts) + "]"
 
 
 func _on_resolver_match_found(groups: Array) -> void:

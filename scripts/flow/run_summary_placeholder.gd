@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready() -> void:
-	_summary_label.text = "Run ended. This placeholder represents the Milestone 4 run summary transition."
+	_summary_label.text = "Run ended. This placeholder represents the Milestone 5 run summary transition."
 
 
 func _on_main_menu_button_pressed() -> void:
