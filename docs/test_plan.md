@@ -7,22 +7,22 @@ This checklist is intentionally written before implementation. Items become exec
 
 ## Milestone 0: Baseline And Scope
 
-- [ ] Confirm the current target is a 3-level first playable prototype, not the full 10-level run.
-- [ ] Confirm one hero and one dungeon are in scope.
-- [ ] Confirm all first playable systems from the GDD are represented in the roadmap.
-- [ ] Confirm coding/setup tasks are separate from project-management tasks.
-- [ ] Confirm architecture decisions are documented before gameplay scripts are written.
+- [x] Confirm the current target is a 3-level first playable prototype, not the full 10-level run.
+- [x] Confirm one hero and one dungeon are in scope.
+- [x] Confirm all first playable systems from the GDD are represented in the roadmap.
+- [x] Confirm coding/setup tasks are separate from project-management tasks.
+- [x] Confirm architecture decisions are documented before gameplay scripts are written.
 
 ## Milestone 1: Board Foundation
 
-- [ ] New boards are always 5 columns x 6 rows.
-- [ ] All six orb types can appear: Fire, Ice, Earth, Heart, Armor, Gold.
-- [ ] Gold appears less often than standard orb types.
-- [ ] New starting boards do not contain automatic matches.
-- [ ] Board generation can be reproduced with a fixed seed.
-- [ ] Board rendering matches the underlying board state.
-- [ ] Board cells do not overlap or stretch incorrectly on desktop.
-- [ ] Board cells remain readable on mobile aspect ratios.
+- [x] New boards are always 5 columns x 6 rows.
+- [x] All six orb types can appear: Fire, Ice, Earth, Heart, Armor, Gold.
+- [x] Gold appears less often than standard orb types.
+- [x] New starting boards do not contain automatic matches.
+- [x] Board generation can be reproduced with a fixed seed.
+- [x] Board rendering matches the underlying board state.
+- [x] Board cells do not overlap or stretch incorrectly on desktop.
+- [x] Board cells remain readable on mobile aspect ratios.
 
 ## Milestone 2: Free Orb Movement And Timer
 
