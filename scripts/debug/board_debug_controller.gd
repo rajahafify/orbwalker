@@ -30,6 +30,7 @@ const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
 const MAX_COMBAT_LOG_LINES := 120
+const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -57,6 +58,7 @@ var _last_resolve_result: Dictionary = {}
 var _outcome_transition_queued := false
 var _pending_next_scene_path := ""
 var _combat_log_lines: Array[String] = []
+var _combat_log_command_flags: Array[bool] = []
 var _consumable_rng := RandomNumberGenerator.new()
 
 
@@ -100,6 +102,7 @@ func _initialize_combat_state() -> void:
 	_next_button.disabled = true
 	_update_hud()
 	_combat_log_lines.clear()
+	_combat_log_command_flags.clear()
 	_append_combat_log("Run flow: %s" % RunState.level_sequence_label())
 	if String(encounter.get("step_key", "")) == "enemy_1":
 		_append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
@@ -335,13 +338,9 @@ func _on_board_view_gui_input(event: InputEvent) -> void:
 
 
 func _create_new_board() -> void:
-	_reset_drag_visuals()
-	_board_view.clear_animations()
 	var board_seed := _resolve_seed()
-	_board_state.initialize(board_seed, _settings)
-	_board_view.board_state = _board_state
+	_set_board_seed(board_seed)
 	if _combat != null and not _combat.is_fight_over():
-		_set_input_phase(InputPhase.PLAYER_INPUT)
 		_status_label.text = "Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index]
 	else:
 		_status_label.text = "Seed: %d | Fight complete." % board_seed
@@ -355,7 +354,24 @@ func _print_board_state() -> void:
 	var debug_text := _board_state.to_debug_string()
 	print("\n[Board Debug] Seed=", _board_state.rng_seed)
 	print(debug_text)
+	_print_board_state_to_console()
 	_status_label.text = "Printed board for seed %d to output." % _board_state.rng_seed
+
+
+func _set_board_seed(board_seed: int) -> void:
+	_reset_drag_visuals()
+	_board_view.clear_animations()
+	_board_state.initialize(board_seed, _settings)
+	_board_view.board_state = _board_state
+	if _combat != null and not _combat.is_fight_over():
+		_set_input_phase(InputPhase.PLAYER_INPUT)
+
+
+func _print_board_state_to_console() -> void:
+	_append_combat_log("Board seed: %d" % _board_state.rng_seed)
+	var lines: PackedStringArray = _board_state.to_debug_string().split("\n", false)
+	for line in lines:
+		_append_combat_log("  %s" % line)
 
 
 func _on_console_input_text_submitted(text: String) -> void:
@@ -365,6 +381,291 @@ func _on_console_input_text_submitted(text: String) -> void:
 		return
 	_append_combat_log("> " + trimmed)
 	_console_input.clear()
+	if not trimmed.begins_with("/"):
+		return
+	_handle_console_command(trimmed)
+
+
+func _handle_console_command(raw_text: String) -> void:
+	var body := raw_text.substr(1).strip_edges()
+	if body == "":
+		_command_error("missing command")
+		return
+	var parts: PackedStringArray = body.split(" ", false)
+	if parts.is_empty():
+		_command_error("missing command")
+		return
+
+	var command := String(parts[0]).to_lower()
+	match command:
+		"commands", "help":
+			_print_command_list()
+		"state":
+			_print_state_snapshot()
+		"clear":
+			_combat_log_lines.clear()
+			_combat_log_command_flags.clear()
+			_refresh_combat_log_display()
+			_status_label.text = "Console cleared."
+		"board":
+			if parts.size() < 2:
+				_command_error("usage: /board print|reroll|seed <number>")
+				return
+			var board_sub := String(parts[1]).to_lower()
+			match board_sub:
+				"print":
+					_print_board_state_to_console()
+				"reroll":
+					_create_new_board()
+					_append_combat_log("Board rerolled (seed %d)." % _board_state.rng_seed)
+				"seed":
+					if parts.size() < 3:
+						_command_error("usage: /board seed <number>")
+						return
+					var seed_token := String(parts[2])
+					if not seed_token.is_valid_int():
+						_command_error("seed must be an integer")
+						return
+					var seed_value := seed_token.to_int()
+					_set_board_seed(seed_value)
+					_append_combat_log("Board set to seed %d." % _board_state.rng_seed)
+				_:
+					_command_error("unknown /board subcommand: %s" % board_sub)
+		"gold":
+			if parts.size() < 3:
+				_command_error("usage: /gold add <amount> | /gold set <amount>")
+				return
+			var gold_sub := String(parts[1]).to_lower()
+			var amount_token := String(parts[2])
+			if not amount_token.is_valid_int():
+				_command_error("amount must be an integer")
+				return
+			var amount := amount_token.to_int()
+			match gold_sub:
+				"add":
+					if amount <= 0:
+						_command_error("gold add requires a positive amount")
+						return
+					var added := RunState.add_gold(amount)
+					_update_hud()
+					_append_combat_log("Gold added: +%d (now %d)." % [added, RunState.run_gold])
+				"set":
+					RunState.set_gold(amount)
+					_update_hud()
+					_append_combat_log("Gold set to %d." % RunState.run_gold)
+				_:
+					_command_error("unknown /gold subcommand: %s" % gold_sub)
+		"mastery":
+			if parts.size() < 2:
+				_command_error("usage: /mastery add <orb> <amount> | /mastery list")
+				return
+			var mastery_sub := String(parts[1]).to_lower()
+			match mastery_sub:
+				"add":
+					if parts.size() < 4:
+						_command_error("usage: /mastery add <orb> <amount>")
+						return
+					var orb_token := String(parts[2]).to_lower()
+					var orb_id := _orb_id_from_token(orb_token)
+					if orb_id < 0:
+						_command_error("invalid orb '%s'" % orb_token)
+						return
+					var mastery_amount_token := String(parts[3])
+					if not mastery_amount_token.is_valid_int():
+						_command_error("mastery amount must be an integer")
+						return
+					var mastery_amount := mastery_amount_token.to_int()
+					if mastery_amount <= 0:
+						_command_error("mastery amount must be positive")
+						return
+					var progression_state: Variant = RunState.ensure_player_progression_state()
+					var progression_service: Variant = RunState.ensure_player_progression_service()
+					var mastery_result: Dictionary = progression_service.grant_mastery(progression_state, orb_id, mastery_amount)
+					if not bool(mastery_result.get("ok", false)):
+						_command_error("mastery add failed: %s" % String(mastery_result.get("reason", "unknown_error")))
+						return
+					var mastery_payload: Dictionary = mastery_result.get("result", {})
+					_update_hud()
+					_append_combat_log(
+						"Mastery added: %s +%d (new level %d)." % [
+							OrbType.display_name(orb_id),
+							int(mastery_payload.get("granted", 0)),
+							int(mastery_payload.get("new_level", 0)),
+						]
+					)
+				"list":
+					var content: Variant = RunState.ensure_content_registry()
+					_print_content_id_list("Mastery IDs", content.list_mastery_cards())
+				_:
+					_command_error("unknown /mastery subcommand: %s" % mastery_sub)
+		"consumable":
+			if parts.size() < 2:
+				_command_error("usage: /consumable add <id> | /consumable list")
+				return
+			var consumable_sub := String(parts[1]).to_lower()
+			match consumable_sub:
+				"add":
+					if parts.size() < 3:
+						_command_error("usage: /consumable add <id>")
+						return
+					var consumable_id := String(parts[2])
+					var progression_state: Variant = RunState.ensure_player_progression_state()
+					var progression_service: Variant = RunState.ensure_player_progression_service()
+					var content: Variant = RunState.ensure_content_registry()
+					var consumable_result: Dictionary = progression_service.add_consumable(progression_state, consumable_id, content)
+					if not bool(consumable_result.get("ok", false)):
+						_command_error("consumable add failed: %s" % String(consumable_result.get("reason", "unknown_error")))
+						return
+					_update_hud()
+					_append_combat_log("Consumable added: %s." % consumable_id)
+				"list":
+					var content: Variant = RunState.ensure_content_registry()
+					_print_content_id_list("Consumable IDs", content.list_consumables())
+				_:
+					_command_error("unknown /consumable subcommand: %s" % consumable_sub)
+		"equipment":
+			if parts.size() < 2:
+				_command_error("usage: /equipment list")
+				return
+			var equipment_sub := String(parts[1]).to_lower()
+			match equipment_sub:
+				"list":
+					var content: Variant = RunState.ensure_content_registry()
+					_print_content_id_list("Equipment IDs", content.list_equipment())
+				_:
+					_command_error("unknown /equipment subcommand: %s" % equipment_sub)
+		"fight":
+			if parts.size() < 2:
+				_command_error("usage: /fight win|lose")
+				return
+			var fight_sub := String(parts[1]).to_lower()
+			match fight_sub:
+				"win":
+					var win_transition: Dictionary = RunState.mark_fight_victory()
+					if not bool(win_transition.get("ok", false)):
+						_command_error("fight win failed: %s" % String(win_transition.get("reason", "unknown_error")))
+						return
+					_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+					_pending_next_scene_path = String(win_transition.get("next_scene", "res://scenes/main.tscn"))
+					_next_button.visible = true
+					_next_button.disabled = false
+					_update_hud()
+					_status_label.text = "Debug victory queued. Press Next."
+					_append_combat_log("Fight win queued. Press Next to continue.")
+				"lose":
+					var lose_transition: Dictionary = RunState.mark_player_defeated("Debug command.")
+					_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+					_pending_next_scene_path = ""
+					_next_button.visible = false
+					_next_button.disabled = true
+					_update_hud()
+					_status_label.text = "Debug defeat queued. Transitioning..."
+					_append_combat_log("Fight lose queued. Transitioning to run summary.")
+					_queue_outcome_transition(String(lose_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
+				_:
+					_command_error("unknown /fight subcommand: %s" % fight_sub)
+		_:
+			_command_error("unknown command '%s'" % command)
+
+
+func _print_command_list() -> void:
+	_append_combat_log("Available commands:", true)
+	_append_combat_log("/commands (/help) - Show command list", true)
+	_append_combat_log("/state - Show current run/combat snapshot", true)
+	_append_combat_log("/clear - Clear console log", true)
+	_append_combat_log("/board print - Print current board", true)
+	_append_combat_log("/board reroll - Regenerate board with random seed", true)
+	_append_combat_log("/board seed <number> - Regenerate board with fixed seed", true)
+	_append_combat_log("/gold add <amount> - Add run gold", true)
+	_append_combat_log("/gold set <amount> - Set run gold", true)
+	_append_combat_log("/mastery add <orb> <amount> - Grant mastery", true)
+	_append_combat_log("/mastery list - List mastery IDs", true)
+	_append_combat_log("/consumable add <id> - Add consumable by content id", true)
+	_append_combat_log("/consumable list - List consumable IDs", true)
+	_append_combat_log("/equipment list - List equipment IDs", true)
+	_append_combat_log("/fight win - Queue victory flow", true)
+	_append_combat_log("/fight lose - Queue defeat flow", true)
+
+
+func _command_error(msg: String) -> void:
+	_append_combat_log("Command error: %s. Type /commands." % msg)
+
+
+func _orb_id_from_token(token: String) -> int:
+	match token:
+		"fire", "f":
+			return OrbType.Id.FIRE
+		"ice", "i":
+			return OrbType.Id.ICE
+		"earth", "e":
+			return OrbType.Id.EARTH
+		"heart", "h":
+			return OrbType.Id.HEART
+		"armor", "a":
+			return OrbType.Id.ARMOR
+		"gold", "g":
+			return OrbType.Id.GOLD
+		_:
+			return -1
+
+
+func _print_state_snapshot() -> void:
+	var progression: Dictionary = RunState.progression_snapshot()
+	var encounter: Dictionary = RunState.current_encounter_snapshot()
+	var intent_text := "-"
+	if _enemy_state != null:
+		intent_text = _format_intent(_enemy_state.get_current_intent())
+
+	_append_combat_log("State snapshot:")
+	_append_combat_log(
+		"Run: active=%s, level=%d, step=%s, label=%s" % [
+			str(RunState.run_active),
+			int(RunState.dungeon_level),
+			String(RunState.current_step_key),
+			RunState.level_sequence_label(),
+		]
+	)
+	_append_combat_log(
+		"Combat: turn=%d, phase=%s, input_phase=%s" % [
+			int(_combat.turn_index if _combat != null else 0),
+			(_combat.phase_name() if _combat != null else "N/A"),
+			_input_phase,
+		]
+	)
+	_append_combat_log(
+		"Player: HP %d/%d, Armor %d, Gold %d" % [
+			int(_player_state.current_hp if _player_state != null else 0),
+			int(_player_state.max_hp if _player_state != null else 0),
+			int(_player_state.armor if _player_state != null else 0),
+			int(RunState.run_gold),
+		]
+	)
+	_append_combat_log(
+		"Enemy: %s HP %d/%d, TurnBlock %d, Intent %s" % [
+			String(encounter.get("display_name", _enemy_state.display_name if _enemy_state != null else "Unknown")),
+			int(_enemy_state.current_hp if _enemy_state != null else 0),
+			int(_enemy_state.max_hp if _enemy_state != null else 0),
+			int(_enemy_state.current_turn_block if _enemy_state != null else 0),
+			intent_text,
+		]
+	)
+	_append_combat_log("Eq: %s" % _format_slot_line(progression.get("equipment_slots", [])))
+	_append_combat_log("Cons: %s" % _format_slot_line(progression.get("consumable_slots", [])))
+	_append_combat_log("Relics: %s" % _format_id_line(progression.get("relic_ids", [])))
+	_append_combat_log("Mastery: %s" % _format_mastery_line(progression.get("mastery_levels", {})))
+
+
+func _print_content_id_list(label: String, entries: Array) -> void:
+	var ids: Array[String] = []
+	for raw_entry in entries:
+		var entry: Dictionary = raw_entry
+		var entry_id := String(entry.get("id", "")).strip_edges()
+		if entry_id != "":
+			ids.append(entry_id)
+	if ids.is_empty():
+		_append_combat_log("%s: (none)." % label)
+		return
+	_append_combat_log("%s (%d): %s" % [label, ids.size(), ", ".join(ids)])
 
 
 func _start_drag(board_local_position: Vector2) -> bool:
@@ -660,9 +961,21 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 	var resolved_turn := int(turn_log.get("resolved_turn_index", 0))
 	var combo_count := int(turn_log.get("combo_count", 0))
 	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
+	var fire_orbs := int(matched_counts.get(OrbType.Id.FIRE, 0))
+	var ice_orbs := int(matched_counts.get(OrbType.Id.ICE, 0))
+	var earth_orbs := int(matched_counts.get(OrbType.Id.EARTH, 0))
 	var heart_orbs := int(matched_counts.get(OrbType.Id.HEART, 0))
 	var armor_orbs := int(matched_counts.get(OrbType.Id.ARMOR, 0))
 	var gold_orbs := int(matched_counts.get(OrbType.Id.GOLD, 0))
+	var fire_mastery_level := _player_state.orb_value(OrbType.Id.FIRE) - 1
+	var ice_mastery_level := _player_state.orb_value(OrbType.Id.ICE) - 1
+	var earth_mastery_level := _player_state.orb_value(OrbType.Id.EARTH) - 1
+	var heart_mastery_level := _player_state.orb_value(OrbType.Id.HEART) - 1
+	var armor_mastery_level := _player_state.orb_value(OrbType.Id.ARMOR) - 1
+	var gold_mastery_level := _player_state.orb_value(OrbType.Id.GOLD) - 1
+	var fire_base := int(turn_log.get("fire_base", 0))
+	var ice_base := int(turn_log.get("ice_base", 0))
+	var earth_base := int(turn_log.get("earth_base", 0))
 	var damage_combo_multiplier := float(turn_log.get("damage_combo_multiplier", 0.0))
 	var increase_combo_modifier := int(turn_log.get("increase_combo_modifier", 0))
 	var more_combo_modifier := float(turn_log.get("more_combo_modifier", 1.0))
@@ -678,30 +991,53 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		]
 	)
 	_append_combat_log(
-		"Heart heal: base %d from %d * (%d+1) = +%d HP (no combo scaling)" % [
+		"Heart = %d x (%d + 1) = %d # {orb_count: %d, heart_mastery_level: %d}" % [
+			heart_orbs,
+			heart_mastery_level,
 			int(turn_log.get("heart_base", 0)),
 			heart_orbs,
-			_player_state.orb_value(OrbType.Id.HEART) - 1,
-			int(turn_log.healed),
+			heart_mastery_level,
 		]
 	)
 	_append_combat_log(
 		"Armor gain: base %d (%d * (%d+1)) * %.2f = +%d Armor" % [
 			int(turn_log.get("armor_base", 0)),
 			armor_orbs,
-			_player_state.orb_value(OrbType.Id.ARMOR) - 1,
+			armor_mastery_level,
 			damage_combo_multiplier,
 			int(turn_log.armor_gained),
 		]
 	)
+	_append_combat_log("Elemental calculation:")
 	_append_combat_log(
-		"Elemental: F base %d -> %d, I base %d -> %d, E base %d -> %d => total %d" % [
-			int(turn_log.get("fire_base", 0)), int(turn_log.fire_damage),
-			int(turn_log.get("ice_base", 0)), int(turn_log.ice_damage),
-			int(turn_log.get("earth_base", 0)), int(turn_log.earth_damage),
-			int(turn_log.total_elemental_damage),
+		"Fire = %d x (%d + 1) = %d # {orb_count: %d, fire_mastery_level: %d}" % [
+			fire_orbs,
+			fire_mastery_level,
+			fire_base,
+			fire_orbs,
+			fire_mastery_level,
 		]
 	)
+	_append_combat_log(
+		"Ice = %d x (%d + 1) = %d # {orb_count: %d, ice_mastery_level: %d}" % [
+			ice_orbs,
+			ice_mastery_level,
+			ice_base,
+			ice_orbs,
+			ice_mastery_level,
+		]
+	)
+	_append_combat_log(
+		"Earth = %d x (%d + 1) = %d # {orb_count: %d, earth_mastery_level: %d}" % [
+			earth_orbs,
+			earth_mastery_level,
+			earth_base,
+			earth_orbs,
+			earth_mastery_level,
+		]
+	)
+	_append_combat_log("Damage combo multiplier applied to elemental base: %.2f" % damage_combo_multiplier)
+	_append_combat_log("Total Elemental Damage = %d" % int(turn_log.total_elemental_damage))
 	_append_combat_log(
 		"Enemy block reduced damage by %d. Enemy took %d." % [
 			int(turn_log.enemy_blocked),
@@ -709,11 +1045,12 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		]
 	)
 	_append_combat_log(
-		"Gold gain: base %d from %d * (%d+1) = +%d Gold (no combo scaling)" % [
+		"Gold = %d x (%d + 1) = %d # {orb_count: %d, gold_mastery_level: %d}" % [
+			gold_orbs,
+			gold_mastery_level,
 			int(turn_log.get("gold_base", 0)),
 			gold_orbs,
-			_player_state.orb_value(OrbType.Id.GOLD) - 1,
-			int(turn_log.gold_gained),
+			gold_mastery_level,
 		]
 	)
 
@@ -754,14 +1091,35 @@ func _format_matched_counts(matched_counts: Dictionary) -> String:
 	return ", ".join(parts)
 
 
-func _append_combat_log(message: String) -> void:
+func _append_combat_log(message: String, is_command_output: bool = false) -> void:
 	var timestamp := Time.get_time_string_from_system()
 	_combat_log_lines.append("[%s] %s" % [timestamp, message])
+	_combat_log_command_flags.append(is_command_output)
 	if _combat_log_lines.size() > MAX_COMBAT_LOG_LINES:
 		_combat_log_lines = _combat_log_lines.slice(_combat_log_lines.size() - MAX_COMBAT_LOG_LINES, _combat_log_lines.size())
-	if _combat_log_text != null:
-		_combat_log_text.text = "\n".join(_combat_log_lines)
-		_combat_log_text.scroll_to_line(maxi(0, _combat_log_lines.size() - 1))
+		_combat_log_command_flags = _combat_log_command_flags.slice(
+			_combat_log_command_flags.size() - MAX_COMBAT_LOG_LINES,
+			_combat_log_command_flags.size()
+		)
+	_refresh_combat_log_display()
+
+
+func _refresh_combat_log_display() -> void:
+	if _combat_log_text == null:
+		return
+	_combat_log_text.clear()
+	var line_count := _combat_log_lines.size()
+	for index in range(line_count):
+		var line_text := _combat_log_lines[index]
+		if index < line_count - 1:
+			line_text += "\n"
+		if index < _combat_log_command_flags.size() and _combat_log_command_flags[index]:
+			_combat_log_text.push_color(COMMAND_OUTPUT_LOG_COLOR)
+			_combat_log_text.add_text(line_text)
+			_combat_log_text.pop()
+		else:
+			_combat_log_text.add_text(line_text)
+	_combat_log_text.scroll_to_line(maxi(0, line_count - 1))
 
 
 func debug_console_log(message: String) -> void:
