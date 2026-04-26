@@ -4,6 +4,7 @@ class_name BoardState
 const COLUMN_COUNT := 5
 const ROW_COUNT := 6
 const CELL_COUNT := COLUMN_COUNT * ROW_COUNT
+const EMPTY_ORB_ID := -1
 
 var rng_seed: int = 0
 var generation_settings: BoardGenerationSettings
@@ -64,6 +65,19 @@ func set_cell(column: int, row: int, orb_id: int) -> void:
 	_cells[_index(column, row)] = orb_id
 
 
+func clear_cell(column: int, row: int) -> void:
+	if not in_bounds(column, row):
+		push_error("BoardState.clear_cell out of bounds: (%d, %d)" % [column, row])
+		return
+	_cells[_index(column, row)] = EMPTY_ORB_ID
+
+
+func is_cell_empty(column: int, row: int) -> bool:
+	if not in_bounds(column, row):
+		return false
+	return _cells[_index(column, row)] == EMPTY_ORB_ID
+
+
 func swap_cells(column_a: int, row_a: int, column_b: int, row_b: int) -> bool:
 	if not in_bounds(column_a, row_a) or not in_bounds(column_b, row_b):
 		push_error("BoardState.swap_cells out of bounds: (%d, %d) <-> (%d, %d)" % [
@@ -96,7 +110,11 @@ func to_debug_string() -> String:
 	for row in ROW_COUNT:
 		var row_symbols: Array[String] = []
 		for column in COLUMN_COUNT:
-			row_symbols.append(OrbType.debug_symbol(get_cell(column, row)))
+			var orb_id := get_cell(column, row)
+			if orb_id == EMPTY_ORB_ID:
+				row_symbols.append(".")
+			else:
+				row_symbols.append(OrbType.debug_symbol(orb_id))
 		lines.append(" ".join(row_symbols))
 	return "\n".join(lines)
 
@@ -105,28 +123,36 @@ func has_any_match() -> bool:
 	# If any line of 3+ exists, the board already contains an automatic match.
 	for row in ROW_COUNT:
 		var run_orb := get_cell(0, row)
+		if not OrbType.is_valid_id(run_orb):
+			run_orb = EMPTY_ORB_ID
 		var run_length := 1
 		for column in range(1, COLUMN_COUNT):
 			var next_orb := get_cell(column, row)
-			if next_orb == run_orb:
+			if next_orb == run_orb and OrbType.is_valid_id(run_orb):
 				run_length += 1
 				if run_length >= 3:
 					return true
 			else:
 				run_orb = next_orb
+				if not OrbType.is_valid_id(run_orb):
+					run_orb = EMPTY_ORB_ID
 				run_length = 1
 
 	for column in COLUMN_COUNT:
 		var run_orb := get_cell(column, 0)
+		if not OrbType.is_valid_id(run_orb):
+			run_orb = EMPTY_ORB_ID
 		var run_length := 1
 		for row in range(1, ROW_COUNT):
 			var next_orb := get_cell(column, row)
-			if next_orb == run_orb:
+			if next_orb == run_orb and OrbType.is_valid_id(run_orb):
 				run_length += 1
 				if run_length >= 3:
 					return true
 			else:
 				run_orb = next_orb
+				if not OrbType.is_valid_id(run_orb):
+					run_orb = EMPTY_ORB_ID
 				run_length = 1
 
 	return false
@@ -175,6 +201,10 @@ func _roll_weighted_orb(excluded_orbs: Dictionary) -> int:
 			return orb_id
 
 	return OrbType.Id.FIRE
+
+
+func roll_random_orb(excluded_orbs: Dictionary = {}) -> int:
+	return _roll_weighted_orb(excluded_orbs)
 
 
 func _index(column: int, row: int) -> int:
