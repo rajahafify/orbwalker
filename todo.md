@@ -197,51 +197,59 @@ Tasks:
 
 ## Milestone 4: Core Combat Loop
 
+Status: Complete.
+
 Goal: Convert match results into healing, armor, damage, gold, and enemy intent resolution.
 
 Primary deliverable: A complete single-fight loop with persistent player HP, enemy intent preview, armor behavior, enemy block, enemy death, and next-turn flow.
 
 Tasks:
 
-- [ ] Implement player state.
+- [x] Implement player state.
   - Deliverable: `PlayerState` with max HP, current HP, armor, gold, base orb values, equipment slots, consumable slots, and move timer.
   - Acceptance: HP persists across fights and armor is temporary by default.
 
-- [ ] Implement enemy state and intents.
+- [x] Implement enemy state and intents.
   - Deliverable: Enemy data with HP, move cycle, current intent, attack value, and block value.
   - Acceptance: Enemy intent is visible before the player moves.
 
-- [ ] Implement combat state machine.
+- [x] Implement combat state machine.
   - Deliverable: Phases for intent preview, player input, match resolution, player effects, enemy response, cleanup, victory, and defeat.
   - Acceptance: The game always advances through the GDD turn order.
 
-- [ ] Apply heart healing.
+- [x] Apply heart healing.
   - Deliverable: Heart matches heal by matched heart orbs times current heart base value.
   - Acceptance: Healing does not exceed max HP unless a future effect explicitly allows it.
 
-- [ ] Apply armor gain.
+- [x] Apply armor gain.
   - Deliverable: Armor matches add temporary armor by matched armor orbs times current armor base value.
   - Acceptance: Armor blocks incoming damage before HP and expires after enemy action by default.
 
-- [ ] Apply elemental damage.
+- [x] Apply elemental damage.
   - Deliverable: Fire, Ice, and Earth damage uses `matched_element_orbs * element_base_value * total_combo_count`.
   - Acceptance: Heart, Armor, and Gold do not use combo scaling by default.
 
-- [ ] Apply gold gain.
+- [x] Apply gold gain.
   - Deliverable: Gold matches increase run gold by matched gold orbs times current gold base value.
   - Acceptance: Gold persists for the run and normal enemies do not need automatic gold drops.
 
-- [ ] Apply enemy block.
+- [x] Apply enemy block.
   - Deliverable: Enemy block intent reduces incoming player damage for the current turn only.
   - Acceptance: Enemy block does not persist unless a future rule says it should.
 
-- [ ] Resolve enemy death before enemy intent.
+- [x] Resolve enemy death before enemy intent.
   - Deliverable: Enemy attack is skipped if damage kills the enemy.
   - Acceptance: A lethal player turn prevents all remaining enemy intent from resolving.
 
-- [ ] Implement defeat and victory outcomes.
+- [x] Implement defeat and victory outcomes.
   - Deliverable: Fight ends cleanly on player death or enemy death.
   - Acceptance: Victory transitions to shop or boss reward, defeat transitions to run summary.
+
+Verification notes (2026-04-26):
+- Added `PlayerState`, `EnemyState`, and `CombatStateMachine` runtime models, plus `RunState` autoload persistence for cross-fight HP and gold.
+- Combat debug scene now shows enemy intent, phase, player/enemy stats, and a detailed combat log for turn-by-turn formula verification.
+- Enemy death now waits for manual confirmation through a `Next` button before transitioning to post-battle reward.
+- Godot MCP script validation passed for enemy block reduction, lethal-before-intent skip, armor blocking and expiration, and healing clamp to max HP.
 
 ## Milestone 5: Data-Driven Content And Effect Framework
 

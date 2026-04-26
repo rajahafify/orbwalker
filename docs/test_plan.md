@@ -62,22 +62,27 @@ Verification notes (2026-04-26):
 
 ## Milestone 4: Core Combat
 
-- [ ] Enemy intent is visible before player movement.
-- [ ] Heart matches heal the player.
-- [ ] Healing does not exceed max HP by default.
-- [ ] Armor matches add temporary armor.
-- [ ] Armor blocks enemy damage before HP.
-- [ ] Temporary armor expires after enemy action by default.
-- [ ] Fire damage uses combo scaling.
-- [ ] Ice damage uses combo scaling.
-- [ ] Earth damage uses combo scaling.
-- [ ] Heart, Armor, and Gold do not use combo scaling by default.
-- [ ] Gold matches add persistent run gold.
-- [ ] Enemy block reduces player damage for the current turn.
-- [ ] Enemy block does not persist by default.
-- [ ] Killing an enemy skips its remaining intent.
-- [ ] Player death ends the run cleanly.
-- [ ] Enemy death transitions to the correct post-fight step.
+- [x] Enemy intent is visible before player movement.
+- [x] Heart matches heal the player.
+- [x] Healing does not exceed max HP by default.
+- [x] Armor matches add temporary armor.
+- [x] Armor blocks enemy damage before HP.
+- [x] Temporary armor expires after enemy action by default.
+- [x] Fire damage uses combo scaling.
+- [x] Ice damage uses combo scaling.
+- [x] Earth damage uses combo scaling.
+- [x] Heart, Armor, and Gold do not use combo scaling by default.
+- [x] Gold matches add persistent run gold.
+- [x] Enemy block reduces player damage for the current turn.
+- [x] Enemy block does not persist by default.
+- [x] Killing an enemy skips its remaining intent.
+- [x] Player death ends the run cleanly.
+- [x] Enemy death transitions to the correct post-fight step.
+
+Verification notes (2026-04-26):
+- Validated through `res://scenes/combat/board_debug.tscn` with Milestone 4 HUD and combat log enabled.
+- Godot MCP script checks confirmed enemy block reduction math, lethal-skip intent behavior, armor block-before-HP with post-action expiration, and healing clamp behavior.
+- Victory flow now requires manual `Next` button confirmation before transition to post-battle scene.
 
 ## Milestone 5: Content And Effects
 
