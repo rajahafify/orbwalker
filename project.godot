@@ -20,6 +20,13 @@ config/icon="res://icon.svg"
 GDAIMCPRuntime="*uid://dcne7ryelpxmn"
 RunState="*res://scripts/core/run_state.gd"
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")
@@ -27,13 +34,6 @@ enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")
 [physics]
 
 3d/physics_engine="Jolt Physics"
-
-[display]
-
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [rendering]
 
