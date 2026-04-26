@@ -45,85 +45,18 @@ vertical_alignment = 1
 
 [node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=1470047042]
 layout_mode = 2
-text = "Drag to act, R regenerate, P print"
-
-[node name="ControlsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=392818275]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="UseSeedCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=1035302641]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Use Fixed Seed"
-
-[node name="SeedInput" type="LineEdit" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=1075268451]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 0)
-layout_mode = 2
-placeholder_text = "Seed"
-
-[node name="RegenerateButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=930323805]
-layout_mode = 2
-text = "Regenerate Board"
-
-[node name="PrintBoardButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=53325371]
-layout_mode = 2
-text = "Print Board State"
-
-[node name="RunResolverTestsButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=978625324]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Run Resolver Tests"
-
-[node name="AddTestEquipmentButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
-layout_mode = 2
-text = "Add Test Equipment"
-
-[node name="AddTestConsumableButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
-layout_mode = 2
-text = "Add Test Consumable"
-
-[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=211771417]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Seed: -"
-
-[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=2043010952]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Timer: 0.00 s"
-
-[node name="CombatPhaseLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Combat Phase: -"
-
-[node name="EnemyIntentLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Enemy Intent: -"
-
-[node name="PlayerStateLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Player  HP -/-  Armor -  Gold -"
-
-[node name="EnemyStateLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Enemy  HP -/-  Turn Block -"
-
-[node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Next"
+text = "Drag to act"
 
 [node name="CombatLogFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 120)
+size_flags_vertical = 2
+custom_minimum_size = Vector2(0, 260)
 
-[node name="CombatLogText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/CombatLogFrame"]
+[node name="CombatLogVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CombatLogFrame"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CombatLogText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/CombatLogFrame/CombatLogVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -131,11 +64,22 @@ size_flags_vertical = 3
 scroll_following = true
 text = "Combat log will appear here."
 
-[node name="BoardFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=868162295]
+[node name="ConsoleInput" type="LineEdit" parent="MarginContainer/VBoxContainer/CombatLogFrame/CombatLogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Console input (IO only)"
+
+[node name="BoardAndStateRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 12
 
-[node name="BoardView" type="Control" parent="MarginContainer/VBoxContainer/BoardFrame" unique_id=912909472]
+[node name="BoardFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow" unique_id=868162295]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardView" type="Control" parent="MarginContainer/VBoxContainer/BoardAndStateRow/BoardFrame" unique_id=912909472]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 300)
 layout_mode = 2
@@ -143,10 +87,50 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_jk72d")
 
+[node name="StateFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(420, 0)
+size_flags_vertical = 3
+
+[node name="StateVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox" unique_id=211771417]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Seed: -"
+
+[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox" unique_id=2043010952]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Timer: 0.00 s"
+
+[node name="CombatPhaseLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Combat Phase: -"
+
+[node name="EnemyIntentLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy Intent: -"
+
+[node name="PlayerStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player  HP -/-  Armor -  Gold -"
+
+[node name="EnemyStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy  HP -/-  Turn Block -"
+
+[node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Next"
+
 [connection signal="pressed" from="MarginContainer/VBoxContainer/HeaderRow/BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RegenerateButton" to="." method="_on_regenerate_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/PrintBoardButton" to="." method="_on_print_board_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RunResolverTestsButton" to="." method="_on_run_tests_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/AddTestEquipmentButton" to="." method="_on_add_test_equipment_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/AddTestConsumableButton" to="." method="_on_add_test_consumable_button_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/NextButton" to="." method="_on_next_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/NextButton" to="." method="_on_next_button_pressed"]

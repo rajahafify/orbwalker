@@ -2,15 +2,13 @@ extends Control
 
 @onready var _board_view: BoardView = %BoardView
 @onready var _status_label: Label = %StatusLabel
-@onready var _seed_input: LineEdit = %SeedInput
-@onready var _use_seed_check: CheckBox = %UseSeedCheckBox
 @onready var _timer_label: Label = %TimerLabel
-@onready var _run_tests_button: Button = %RunResolverTestsButton
 @onready var _player_label: Label = %PlayerStateLabel
 @onready var _enemy_label: Label = %EnemyStateLabel
 @onready var _intent_label: Label = %EnemyIntentLabel
 @onready var _phase_label: Label = %CombatPhaseLabel
 @onready var _combat_log_text: RichTextLabel = %CombatLogText
+@onready var _console_input: LineEdit = %ConsoleInput
 @onready var _next_button: Button = %NextButton
 
 const SWAP_ANIMATION_SECONDS := 0.08
@@ -64,7 +62,6 @@ var _consumable_rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	_consumable_rng.randomize()
-	_seed_input.text = str(1337)
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
 	_resolver.gravity_applied.connect(_on_resolver_gravity_applied)
@@ -74,8 +71,10 @@ func _ready() -> void:
 	_initialize_combat_state()
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
+	_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	set_process(true)
 	_begin_turn_preview()
+	_console_input.grab_focus()
 
 
 func _initialize_combat_state() -> void:
@@ -125,7 +124,7 @@ func _begin_turn_preview() -> void:
 	_pending_next_scene_path = ""
 	_next_button.visible = false
 	_next_button.disabled = true
-	_status_label.text = "%s | Turn %d. Enemy intent shown. Drag to make your move." % [
+	_status_label.text = "%s | Turn %d." % [
 		RunState.level_sequence_label(),
 		_combat.turn_index,
 	]
@@ -349,9 +348,6 @@ func _create_new_board() -> void:
 
 
 func _resolve_seed() -> int:
-	if _use_seed_check.button_pressed:
-		var parsed := _seed_input.text.to_int()
-		return parsed
 	return int(Time.get_ticks_usec())
 
 
@@ -360,6 +356,15 @@ func _print_board_state() -> void:
 	print("\n[Board Debug] Seed=", _board_state.rng_seed)
 	print(debug_text)
 	_status_label.text = "Printed board for seed %d to output." % _board_state.rng_seed
+
+
+func _on_console_input_text_submitted(text: String) -> void:
+	var trimmed := text.strip_edges()
+	if trimmed == "":
+		_console_input.clear()
+		return
+	_append_combat_log("> " + trimmed)
+	_console_input.clear()
 
 
 func _start_drag(board_local_position: Vector2) -> bool:
@@ -501,13 +506,10 @@ func _set_input_phase(phase: InputPhase) -> void:
 	match _input_phase:
 		InputPhase.PLAYER_INPUT:
 			_board_view.mouse_filter = Control.MOUSE_FILTER_STOP
-			_run_tests_button.disabled = false
 		InputPhase.RESOLVING:
 			_board_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			_run_tests_button.disabled = true
 		InputPhase.LOCKED_EXTERNAL:
 			_board_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			_run_tests_button.disabled = true
 			if _external_lock_reason != "":
 				_status_label.text = "Input locked: %s" % _external_lock_reason
 
@@ -760,6 +762,10 @@ func _append_combat_log(message: String) -> void:
 	if _combat_log_text != null:
 		_combat_log_text.text = "\n".join(_combat_log_lines)
 		_combat_log_text.scroll_to_line(maxi(0, _combat_log_lines.size() - 1))
+
+
+func debug_console_log(message: String) -> void:
+	_append_combat_log(message)
 
 
 func _format_slot_line(slot_values: Array) -> String:
