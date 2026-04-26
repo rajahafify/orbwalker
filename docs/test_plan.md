@@ -44,17 +44,21 @@ Verification notes (2026-04-26):
 
 ## Milestone 3: Matching And Cascades
 
-- [ ] Horizontal matches of 3 or more are detected.
-- [ ] Vertical matches of 3 or more are detected.
-- [ ] L-shaped matches are detected.
-- [ ] T-shaped matches are detected.
-- [ ] Diagonal-only connections do not count.
-- [ ] Separate connected match groups count as separate combos.
-- [ ] Matched orbs clear once and only once.
-- [ ] Gravity pulls remaining orbs downward.
-- [ ] Refill creates new orbs from the top.
-- [ ] Cascades continue until no matches remain.
-- [ ] Cascade combos are counted in the final combo total.
+- [x] Horizontal matches of 3 or more are detected.
+- [x] Vertical matches of 3 or more are detected.
+- [x] L-shaped matches are detected.
+- [x] T-shaped matches are detected.
+- [x] Diagonal-only connections do not count.
+- [x] Separate connected match groups count as separate combos.
+- [x] Matched orbs clear once and only once.
+- [x] Gravity pulls remaining orbs downward.
+- [x] Refill creates new orbs from the top.
+- [x] Cascades continue until no matches remain.
+- [x] Cascade combos are counted in the final combo total.
+
+Verification notes (2026-04-26):
+- User-tested in `res://scenes/combat/board_debug.tscn` and confirmed Milestone 3 behavior is working as intended.
+- Includes match detection (line/L/T), glow preview during drag timer window, swap/fall/refill visuals, and cascade resolution to stable board state.
 
 ## Milestone 4: Core Combat
 

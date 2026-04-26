@@ -155,41 +155,43 @@ Tasks:
 
 ## Milestone 3: Match Detection, Clear, Gravity, And Cascades
 
+Status: In progress.
+
 Goal: Resolve all valid matches and cascades exactly according to the GDD.
 
 Primary deliverable: A deterministic match resolver that handles horizontal, vertical, L, and T matches, clears matched orbs, applies gravity, refills from the top, and repeats until stable.
 
 Tasks:
 
-- [ ] Implement horizontal and vertical run detection.
+- [x] Implement horizontal and vertical run detection.
   - Deliverable: Match scanner for same-type straight lines of 3 or more.
   - Acceptance: Lines of 3, 4, 5, and 6 are detected correctly in every row and column.
 
-- [ ] Implement L and T shape support.
+- [x] Implement L and T shape support.
   - Deliverable: Connected same-type horizontal and vertical runs are merged into one match component.
   - Acceptance: L and T matches count as valid matches and diagonal-only connections do not count.
 
-- [ ] Define combo counting.
+- [x] Define combo counting.
   - Deliverable: Resolver output that returns total combo count and matched orb counts by orb type.
   - Acceptance: Separate connected match groups count as separate combos, including cascade combos.
 
-- [ ] Clear matched orbs.
+- [x] Clear matched orbs.
   - Deliverable: Matched cells are removed after each resolver pass.
   - Acceptance: All cells belonging to valid match components are cleared exactly once.
 
-- [ ] Apply gravity.
+- [x] Apply gravity.
   - Deliverable: Existing orbs fall down into empty cells after clears.
   - Acceptance: Gravity is down only and preserves the order of falling orbs in each column.
 
-- [ ] Refill from the top.
+- [x] Refill from the top.
   - Deliverable: New orbs enter empty cells from above using configured spawn weights.
   - Acceptance: Refill can immediately create cascades and those cascades are resolved.
 
-- [ ] Add resolver animation hooks.
+- [x] Add resolver animation hooks.
   - Deliverable: Events for match found, clear, fall, refill, and cascade complete.
   - Acceptance: Logic can run instantly for tests and with animations for gameplay.
 
-- [ ] Add board resolver tests.
+- [x] Add board resolver tests.
   - Deliverable: Test scenes or scripts for line, L, T, no diagonal, cascade, gravity, and refill cases.
   - Acceptance: Known board layouts produce expected combo counts and orb totals.
 
