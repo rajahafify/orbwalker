@@ -1,0 +1,88 @@
+extends RefCounted
+class_name PlayerState
+
+const DEFAULT_MAX_HP := 100
+const DEFAULT_EQUIPMENT_SLOTS := 3
+const DEFAULT_CONSUMABLE_SLOTS := 2
+const DEFAULT_MOVE_TIMER_SECONDS := 5.0
+
+var max_hp: int = DEFAULT_MAX_HP
+var current_hp: int = DEFAULT_MAX_HP
+var armor: int = 0
+var gold: int = 0
+
+var base_orb_values := {
+	OrbType.Id.FIRE: 1,
+	OrbType.Id.ICE: 1,
+	OrbType.Id.EARTH: 1,
+	OrbType.Id.HEART: 2,
+	OrbType.Id.ARMOR: 2,
+	OrbType.Id.GOLD: 3,
+}
+
+var equipment_slots: int = DEFAULT_EQUIPMENT_SLOTS
+var consumable_slots: int = DEFAULT_CONSUMABLE_SLOTS
+var move_timer_seconds: float = DEFAULT_MOVE_TIMER_SECONDS
+
+var equipped_item_ids: Array[String] = []
+var held_consumable_ids: Array[String] = []
+
+
+func reset_for_new_run() -> void:
+	max_hp = DEFAULT_MAX_HP
+	current_hp = max_hp
+	armor = 0
+	gold = 0
+	equipment_slots = DEFAULT_EQUIPMENT_SLOTS
+	consumable_slots = DEFAULT_CONSUMABLE_SLOTS
+	move_timer_seconds = DEFAULT_MOVE_TIMER_SECONDS
+	equipped_item_ids.clear()
+	held_consumable_ids.clear()
+
+
+func heal(amount: int, allow_overheal: bool = false) -> int:
+	if amount <= 0:
+		return 0
+	var previous_hp := current_hp
+	if allow_overheal:
+		current_hp += amount
+	else:
+		current_hp = mini(max_hp, current_hp + amount)
+	return current_hp - previous_hp
+
+
+func add_temporary_armor(amount: int) -> int:
+	if amount <= 0:
+		return 0
+	armor += amount
+	return amount
+
+
+func apply_damage(damage: int) -> Dictionary:
+	var incoming := maxi(0, damage)
+	var armor_blocked := mini(armor, incoming)
+	armor -= armor_blocked
+	var hp_damage := incoming - armor_blocked
+	current_hp = maxi(0, current_hp - hp_damage)
+
+	return {
+		"incoming": incoming,
+		"blocked_by_armor": armor_blocked,
+		"hp_damage": hp_damage,
+		"remaining_hp": current_hp,
+		"remaining_armor": armor,
+	}
+
+
+func expire_temporary_armor() -> int:
+	var expired := armor
+	armor = 0
+	return expired
+
+
+func is_dead() -> bool:
+	return current_hp <= 0
+
+
+func orb_value(orb_id: int) -> int:
+	return int(base_orb_values.get(orb_id, 0))

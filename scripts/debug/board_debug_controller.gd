@@ -6,8 +6,13 @@ extends Control
 @onready var _use_seed_check: CheckBox = %UseSeedCheckBox
 @onready var _timer_label: Label = %TimerLabel
 @onready var _run_tests_button: Button = %RunResolverTestsButton
+@onready var _player_label: Label = %PlayerStateLabel
+@onready var _enemy_label: Label = %EnemyStateLabel
+@onready var _intent_label: Label = %EnemyIntentLabel
+@onready var _phase_label: Label = %CombatPhaseLabel
+@onready var _combat_log_text: RichTextLabel = %CombatLogText
+@onready var _next_button: Button = %NextButton
 
-const MOVE_TIMER_SECONDS := 5.0
 const SWAP_ANIMATION_SECONDS := 0.08
 const MATCH_FLASH_SECONDS := 0.12
 const CLEAR_ANIMATION_SECONDS := 0.12
@@ -15,6 +20,15 @@ const GRAVITY_ANIMATION_SECONDS := 0.14
 const REFILL_ANIMATION_SECONDS := 0.14
 const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_v3.gd")
 const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/debug/board_resolver_test_runner.gd")
+const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
+const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
+
+const VICTORY_SCENE_PATH := "res://scenes/flow/shop_placeholder.tscn"
+const DEFEAT_SCENE_PATH := "res://scenes/flow/run_summary_placeholder.tscn"
+const COMBAT_PHASE_INTENT_PREVIEW := 0
+const COMBAT_PHASE_VICTORY := 6
+const COMBAT_PHASE_DEFEAT := 7
+const MAX_COMBAT_LOG_LINES := 120
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -25,6 +39,10 @@ enum InputPhase {
 var _settings := BoardGenerationSettings.new()
 var _board_state := BoardState.new()
 var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
+var _combat: Variant
+var _player_state: PlayerState
+var _enemy_state: EnemyState
+
 var _input_phase: InputPhase = InputPhase.PLAYER_INPUT
 var _active_drag := false
 var _drag_touch_index: int = -1
@@ -34,6 +52,9 @@ var _drag_path: Array[Vector2i] = []
 var _move_time_left: float = 0.0
 var _external_lock_reason := ""
 var _last_resolve_result: Dictionary = {}
+var _outcome_transition_queued := false
+var _pending_next_scene_path := ""
+var _combat_log_lines: Array[String] = []
 
 
 func _ready() -> void:
@@ -44,9 +65,48 @@ func _ready() -> void:
 	_resolver.refill_applied.connect(_on_resolver_refill_applied)
 	_resolver.cascade_step_complete.connect(_on_resolver_cascade_step_complete)
 	_resolver.resolve_complete.connect(_on_resolver_complete)
+	_initialize_combat_state()
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
 	set_process(true)
+	_begin_turn_preview()
+
+
+func _initialize_combat_state() -> void:
+	_player_state = RunState.ensure_player_state()
+	_enemy_state = ENEMY_STATE_SCRIPT.new()
+	_enemy_state.reset_for_fight()
+	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
+	_combat.start_fight(_player_state, _enemy_state)
+	_outcome_transition_queued = false
+	_pending_next_scene_path = ""
+	_next_button.visible = false
+	_next_button.disabled = true
+	_update_hud()
+	_combat_log_lines.clear()
+	_append_combat_log("Fight started: %s HP %d." % [_enemy_state.display_name, _enemy_state.max_hp])
+	_append_combat_log("Player start: HP %d/%d, Gold %d." % [_player_state.current_hp, _player_state.max_hp, _player_state.gold])
+
+
+func _begin_turn_preview() -> void:
+	if _combat == null:
+		return
+	if _combat.is_fight_over():
+		return
+	_combat.phase = COMBAT_PHASE_INTENT_PREVIEW
+	_combat.begin_player_input()
+	_set_input_phase(InputPhase.PLAYER_INPUT)
+	_pending_next_scene_path = ""
+	_next_button.visible = false
+	_next_button.disabled = true
+	_status_label.text = "Turn %d. Enemy intent shown. Drag to make your move." % _combat.turn_index
+	_update_hud()
+	_append_combat_log(
+		"Turn %d intent: %s." % [
+			_combat.turn_index,
+			_format_intent(_enemy_state.get_current_intent()),
+		]
+	)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -143,8 +203,11 @@ func _create_new_board() -> void:
 	var board_seed := _resolve_seed()
 	_board_state.initialize(board_seed, _settings)
 	_board_view.board_state = _board_state
-	_set_input_phase(InputPhase.PLAYER_INPUT)
-	_status_label.text = "Seed: %d | Ready for drag movement." % board_seed
+	if _combat != null and not _combat.is_fight_over():
+		_set_input_phase(InputPhase.PLAYER_INPUT)
+		_status_label.text = "Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index]
+	else:
+		_status_label.text = "Seed: %d | Fight complete." % board_seed
 
 
 func _resolve_seed() -> int:
@@ -170,7 +233,7 @@ func _start_drag(board_local_position: Vector2) -> bool:
 		return false
 
 	_active_drag = true
-	_move_time_left = MOVE_TIMER_SECONDS
+	_move_time_left = _player_state.move_timer_seconds
 	_drag_current_cell = start_cell
 	_drag_selected_orb_id = _board_state.get_cell(start_cell.x, start_cell.y)
 	_drag_path.clear()
@@ -227,8 +290,58 @@ func _end_drag(timed_out: bool) -> void:
 	_board_view.board_state = _board_state
 	await _play_resolve_animations(_last_resolve_result)
 	if _input_phase == InputPhase.RESOLVING:
-		_set_input_phase(InputPhase.PLAYER_INPUT)
-		_status_label.text = _build_resolve_status_text(_last_resolve_result)
+		_resolve_combat_turn_from_board(_last_resolve_result)
+
+
+func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
+	if _combat == null:
+		return
+	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
+	_update_hud()
+
+	if _combat.phase == COMBAT_PHASE_VICTORY:
+		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+		_status_label.text = _build_victory_status(turn_log) + " Press Next."
+		_append_turn_log(turn_log)
+		_append_combat_log("Outcome: Victory. Waiting for Next button.")
+		_pending_next_scene_path = VICTORY_SCENE_PATH
+		_next_button.visible = true
+		_next_button.disabled = false
+		return
+
+	if _combat.phase == COMBAT_PHASE_DEFEAT:
+		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+		_status_label.text = _build_defeat_status(turn_log)
+		_append_turn_log(turn_log)
+		_append_combat_log("Outcome: Defeat. Transitioning to run summary.")
+		_pending_next_scene_path = ""
+		_next_button.visible = false
+		_next_button.disabled = true
+		_queue_outcome_transition(DEFEAT_SCENE_PATH)
+		return
+
+	_status_label.text = _build_turn_summary_status(turn_log)
+	_append_turn_log(turn_log)
+	_begin_turn_preview()
+
+
+func _on_next_button_pressed() -> void:
+	if _pending_next_scene_path == "":
+		return
+	var target_scene := _pending_next_scene_path
+	_pending_next_scene_path = ""
+	_next_button.visible = false
+	_next_button.disabled = true
+	get_tree().change_scene_to_file(target_scene)
+
+
+func _queue_outcome_transition(scene_path: String) -> void:
+	if _outcome_transition_queued:
+		return
+	_outcome_transition_queued = true
+	await get_tree().create_timer(1.0).timeout
+	if is_inside_tree():
+		get_tree().change_scene_to_file(scene_path)
 
 
 func set_external_input_locked(locked: bool, reason: String = "") -> void:
@@ -315,19 +428,135 @@ func _play_resolve_animations(result: Dictionary) -> void:
 		_board_view.animate_refill_spawns(pass_result.refill_spawns, REFILL_ANIMATION_SECONDS)
 		await get_tree().create_timer(REFILL_ANIMATION_SECONDS).timeout
 
-	# Let any remaining overlay finish before restoring input.
 	while _board_view.has_active_animations():
 		await get_tree().create_timer(0.02).timeout
 
 
-func _build_resolve_status_text(result: Dictionary) -> String:
-	if result.total_combos <= 0:
-		return "No matches. Ready for next move."
-	return "Resolved %d combo(s) over %d pass(es): %s" % [
-		result.total_combos,
-		result.passes.size(),
-		_format_matched_counts(result.matched_counts),
+func _build_turn_summary_status(turn_log: Dictionary) -> String:
+	return "Turn resolved: +%d HP, +%d Armor, +%d Gold, dealt %d (%d blocked)." % [
+		int(turn_log.healed),
+		int(turn_log.armor_gained),
+		int(turn_log.gold_gained),
+		int(turn_log.enemy_damage_taken),
+		int(turn_log.enemy_blocked),
 	]
+
+
+func _build_victory_status(turn_log: Dictionary) -> String:
+	return "Victory. Enemy defeated before intent (%s). Transitioning to shop reward." % (
+		"skipped" if bool(turn_log.enemy_intent_skipped) else "resolved"
+	)
+
+
+func _build_defeat_status(turn_log: Dictionary) -> String:
+	var hp_damage := int(turn_log.enemy_attack_resolution.get("hp_damage", 0))
+	return "Defeat. Enemy intent dealt %d HP damage. Transitioning to run summary." % hp_damage
+
+
+func _update_hud() -> void:
+	if _player_state == null or _enemy_state == null or _combat == null:
+		return
+
+	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d" % [
+		_player_state.current_hp,
+		_player_state.max_hp,
+		_player_state.armor,
+		_player_state.gold,
+	]
+
+	_enemy_label.text = "%s  HP %d/%d  Turn Block %d" % [
+		_enemy_state.display_name,
+		_enemy_state.current_hp,
+		_enemy_state.max_hp,
+		_enemy_state.current_turn_block,
+	]
+
+	var intent := _enemy_state.get_current_intent()
+	_intent_label.text = "Enemy Intent: %s" % _format_intent(intent)
+	_phase_label.text = "Combat Phase: %s" % _combat.phase_name()
+
+
+func _format_intent(intent: Dictionary) -> String:
+	var label := String(intent.get("label", "Unknown"))
+	var attack := int(intent.get("attack", 0))
+	var block := int(intent.get("block", 0))
+	return "%s (Atk %d / Block %d)" % [label, attack, block]
+
+
+func _append_turn_log(turn_log: Dictionary) -> void:
+	var resolved_turn := int(turn_log.get("resolved_turn_index", 0))
+	var combo_count := int(turn_log.get("combo_count", 0))
+	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
+	var fire_orbs := int(matched_counts.get(OrbType.Id.FIRE, 0))
+	var ice_orbs := int(matched_counts.get(OrbType.Id.ICE, 0))
+	var earth_orbs := int(matched_counts.get(OrbType.Id.EARTH, 0))
+	var heart_orbs := int(matched_counts.get(OrbType.Id.HEART, 0))
+	var armor_orbs := int(matched_counts.get(OrbType.Id.ARMOR, 0))
+	var gold_orbs := int(matched_counts.get(OrbType.Id.GOLD, 0))
+	var combo_scale := maxi(1, combo_count)
+
+	_append_combat_log("---- Turn %d ----" % resolved_turn)
+	_append_combat_log("Matches: combos=%d | %s" % [combo_count, _format_matched_counts(matched_counts)])
+	_append_combat_log(
+		"Heart heal: %d * %d = +%d HP" % [
+			heart_orbs,
+			_player_state.orb_value(OrbType.Id.HEART),
+			int(turn_log.healed),
+		]
+	)
+	_append_combat_log(
+		"Armor gain: %d * %d = +%d Armor" % [
+			armor_orbs,
+			_player_state.orb_value(OrbType.Id.ARMOR),
+			int(turn_log.armor_gained),
+		]
+	)
+	_append_combat_log(
+		"Elemental (%dx combo): F %d*%d*%d=%d, I %d*%d*%d=%d, E %d*%d*%d=%d => total %d" % [
+			combo_scale,
+			fire_orbs, _player_state.orb_value(OrbType.Id.FIRE), combo_scale, int(turn_log.fire_damage),
+			ice_orbs, _player_state.orb_value(OrbType.Id.ICE), combo_scale, int(turn_log.ice_damage),
+			earth_orbs, _player_state.orb_value(OrbType.Id.EARTH), combo_scale, int(turn_log.earth_damage),
+			int(turn_log.total_elemental_damage),
+		]
+	)
+	_append_combat_log(
+		"Enemy block reduced damage by %d. Enemy took %d." % [
+			int(turn_log.enemy_blocked),
+			int(turn_log.enemy_damage_taken),
+		]
+	)
+	_append_combat_log(
+		"Gold gain: %d * %d = +%d Gold" % [
+			gold_orbs,
+			_player_state.orb_value(OrbType.Id.GOLD),
+			int(turn_log.gold_gained),
+		]
+	)
+
+	if bool(turn_log.enemy_intent_skipped):
+		_append_combat_log("Enemy intent skipped because enemy was defeated first.")
+	else:
+		var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
+		_append_combat_log(
+			"Enemy attack: incoming %d, blocked by armor %d, HP damage %d." % [
+				int(enemy_attack.get("incoming", 0)),
+				int(enemy_attack.get("blocked_by_armor", 0)),
+				int(enemy_attack.get("hp_damage", 0)),
+			]
+		)
+
+	_append_combat_log("Armor expired after enemy action: %d." % int(turn_log.expired_armor))
+	_append_combat_log(
+		"End state: Player HP %d/%d Armor %d Gold %d | Enemy HP %d/%d" % [
+			_player_state.current_hp,
+			_player_state.max_hp,
+			_player_state.armor,
+			_player_state.gold,
+			_enemy_state.current_hp,
+			_enemy_state.max_hp,
+		]
+	)
 
 
 func _format_matched_counts(matched_counts: Dictionary) -> String:
@@ -342,31 +571,35 @@ func _format_matched_counts(matched_counts: Dictionary) -> String:
 	return ", ".join(parts)
 
 
+func _append_combat_log(message: String) -> void:
+	var timestamp := Time.get_time_string_from_system()
+	_combat_log_lines.append("[%s] %s" % [timestamp, message])
+	if _combat_log_lines.size() > MAX_COMBAT_LOG_LINES:
+		_combat_log_lines = _combat_log_lines.slice(_combat_log_lines.size() - MAX_COMBAT_LOG_LINES, _combat_log_lines.size())
+	if _combat_log_text != null:
+		_combat_log_text.text = "\n".join(_combat_log_lines)
+		_combat_log_text.scroll_to_line(maxi(0, _combat_log_lines.size() - 1))
+
+
 func _on_resolver_match_found(groups: Array) -> void:
-	# Hook point for future match animations.
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 
 
 func _on_resolver_cells_cleared(_cells: Array) -> void:
-	# Hook point for future clear animations.
 	pass
 
 
 func _on_resolver_gravity_applied(_fall_moves: Array) -> void:
-	# Hook point for future gravity animations.
 	pass
 
 
 func _on_resolver_refill_applied(_refill_spawns: Array) -> void:
-	# Hook point for future refill animations.
 	pass
 
 
 func _on_resolver_cascade_step_complete(_step_index: int, _total_combos: int) -> void:
-	# Hook point for future cascade step transitions.
 	pass
 
 
 func _on_resolver_complete(_result: Dictionary) -> void:
-	# Hook point for future "resolve finished" animation sequencing.
 	pass
