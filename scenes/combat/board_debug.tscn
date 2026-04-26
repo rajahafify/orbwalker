@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b1me77kk022da"]
 
-[ext_resource type="Script" path="res://scripts/debug/board_debug_controller.gd" id="1_jrh0n"]
-[ext_resource type="Script" path="res://scripts/board/board_view.gd" id="2_jk72d"]
+[ext_resource type="Script" uid="uid://bewuoer7qk6eg" path="res://scripts/debug/board_debug_controller.gd" id="1_jrh0n"]
+[ext_resource type="Script" uid="uid://cohm3r6nkuq2i" path="res://scripts/board/board_view.gd" id="2_jk72d"]
 
-[node name="BoardDebug" type="Control"]
+[node name="BoardDebug" type="Control" unique_id=920954858]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_jrh0n")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1321892863]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,80 +24,119 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1439229701]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HeaderRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="HeaderRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1111232904]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderRow"]
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=1914982417]
 layout_mode = 2
 text = "Back"
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow"]
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=726365973]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Milestone 3: Match Resolver Debug"
+text = "Milestone 4: Core Combat Debug"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow"]
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=1470047042]
 layout_mode = 2
-text = "Drag to resolve, R regenerate, P print"
+text = "Drag to act, R regenerate, P print"
 
-[node name="ControlsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ControlsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=392818275]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="UseSeedCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/ControlsRow"]
+[node name="UseSeedCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=1035302641]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Use Fixed Seed"
 
-[node name="SeedInput" type="LineEdit" parent="MarginContainer/VBoxContainer/ControlsRow"]
+[node name="SeedInput" type="LineEdit" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=1075268451]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
 placeholder_text = "Seed"
 
-[node name="RegenerateButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+[node name="RegenerateButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=930323805]
 layout_mode = 2
 text = "Regenerate Board"
 
-[node name="PrintBoardButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+[node name="PrintBoardButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=53325371]
 layout_mode = 2
 text = "Print Board State"
 
-[node name="RunResolverTestsButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+[node name="RunResolverTestsButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow" unique_id=978625324]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run Resolver Tests"
 
-[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=211771417]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Seed: -"
 
-[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=2043010952]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Timer: 0.00 s"
 
-[node name="BoardFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="CombatPhaseLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+text = "Combat Phase: -"
 
-[node name="BoardView" type="Control" parent="MarginContainer/VBoxContainer/BoardFrame"]
+[node name="EnemyIntentLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy Intent: -"
+
+[node name="PlayerStateLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player  HP -/-  Armor -  Gold -"
+
+[node name="EnemyStateLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy  HP -/-  Turn Block -"
+
+[node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Next"
+
+[node name="CombatLogFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+
+[node name="CombatLogText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/CombatLogFrame"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_minimum_size = Vector2(280, 340)
+scroll_following = true
+text = "Combat log will appear here."
+
+[node name="BoardFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=868162295]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardView" type="Control" parent="MarginContainer/VBoxContainer/BoardFrame" unique_id=912909472]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("2_jk72d")
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/HeaderRow/BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RegenerateButton" to="." method="_on_regenerate_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/PrintBoardButton" to="." method="_on_print_board_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/ControlsRow/RunResolverTestsButton" to="." method="_on_run_tests_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/NextButton" to="." method="_on_next_button_pressed"]
