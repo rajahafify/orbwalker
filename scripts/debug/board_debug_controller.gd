@@ -21,8 +21,8 @@ const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/debug/board_re
 const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
 const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
-	"debug_shortsword",
-	"debug_buckler",
+	"shortsword",
+	"buckler",
 ]
 const TEST_CONSUMABLE_ID := "fire_scroll"
 
@@ -31,6 +31,8 @@ const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
 const MAX_COMBAT_LOG_LINES := 120
 const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
+const LOG_LEVEL_NORMAL := "normal"
+const LOG_LEVEL_DETAILED := "detailed"
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -59,6 +61,7 @@ var _outcome_transition_queued := false
 var _pending_next_scene_path := ""
 var _combat_log_lines: Array[String] = []
 var _combat_log_command_flags: Array[bool] = []
+var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
 
 
@@ -407,6 +410,8 @@ func _handle_console_command(raw_text: String) -> void:
 			_combat_log_command_flags.clear()
 			_refresh_combat_log_display()
 			_status_label.text = "Console cleared."
+		"log_level":
+			_handle_log_level_command(parts)
 		"board":
 			if parts.size() < 2:
 				_command_error("usage: /board print|reroll|seed <number>")
@@ -525,13 +530,25 @@ func _handle_console_command(raw_text: String) -> void:
 					_command_error("unknown /consumable subcommand: %s" % consumable_sub)
 		"equipment":
 			if parts.size() < 2:
-				_command_error("usage: /equipment list")
+				_command_error("usage: /equipment list|show <id>|add <id>")
 				return
 			var equipment_sub := String(parts[1]).to_lower()
 			match equipment_sub:
 				"list":
 					var content: Variant = RunState.ensure_content_registry()
 					_print_content_id_list("Equipment IDs", content.list_equipment())
+				"show":
+					if parts.size() < 3:
+						_command_error("usage: /equipment show <id>")
+						return
+					var equipment_id := String(parts[2]).strip_edges()
+					_show_equipment_details(equipment_id)
+				"add":
+					if parts.size() < 3:
+						_command_error("usage: /equipment add <id>")
+						return
+					var equipment_id := String(parts[2]).strip_edges()
+					_add_equipment_by_id(equipment_id)
 				_:
 					_command_error("unknown /equipment subcommand: %s" % equipment_sub)
 		"fight":
@@ -573,6 +590,7 @@ func _print_command_list() -> void:
 	_append_combat_log("/commands (/help) - Show command list", true)
 	_append_combat_log("/state - Show current run/combat snapshot", true)
 	_append_combat_log("/clear - Clear console log", true)
+	_append_combat_log("/log_level [normal|detailed] - Show or set turn log verbosity", true)
 	_append_combat_log("/board print - Print current board", true)
 	_append_combat_log("/board reroll - Regenerate board with random seed", true)
 	_append_combat_log("/board seed <number> - Regenerate board with fixed seed", true)
@@ -583,12 +601,31 @@ func _print_command_list() -> void:
 	_append_combat_log("/consumable add <id> - Add consumable by content id", true)
 	_append_combat_log("/consumable list - List consumable IDs", true)
 	_append_combat_log("/equipment list - List equipment IDs", true)
+	_append_combat_log("/equipment show <id> - Show equipment details", true)
+	_append_combat_log("/equipment add <id> - Equip item into leftmost free slot", true)
 	_append_combat_log("/fight win - Queue victory flow", true)
 	_append_combat_log("/fight lose - Queue defeat flow", true)
 
 
 func _command_error(msg: String) -> void:
 	_append_combat_log("Command error: %s. Type /commands." % msg)
+
+
+func _handle_log_level_command(parts: PackedStringArray) -> void:
+	if parts.size() == 1:
+		_append_combat_log("Combat log level: %s." % _combat_log_level)
+		return
+	if parts.size() != 2:
+		_command_error("usage: /log_level normal|detailed")
+		return
+
+	var requested_level := String(parts[1]).to_lower()
+	if requested_level != LOG_LEVEL_NORMAL and requested_level != LOG_LEVEL_DETAILED:
+		_command_error("usage: /log_level normal|detailed")
+		return
+
+	_combat_log_level = requested_level
+	_append_combat_log("Combat log level set to %s." % _combat_log_level)
 
 
 func _orb_id_from_token(token: String) -> int:
@@ -666,6 +703,61 @@ func _print_content_id_list(label: String, entries: Array) -> void:
 		_append_combat_log("%s: (none)." % label)
 		return
 	_append_combat_log("%s (%d): %s" % [label, ids.size(), ", ".join(ids)])
+
+
+func _show_equipment_details(equipment_id: String) -> void:
+	if equipment_id == "":
+		_command_error("equipment id is required")
+		return
+
+	var content: Variant = RunState.ensure_content_registry()
+	var equipment: Dictionary = content.get_equipment(equipment_id)
+	if equipment.is_empty():
+		_command_error("unknown equipment id '%s'" % equipment_id)
+		return
+
+	var target_orb_id := int(equipment.get("target_orb_id", -1))
+	var target_orb := "Any"
+	if OrbType.is_valid_id(target_orb_id):
+		target_orb = OrbType.display_name(target_orb_id)
+	var modifiers: Dictionary = equipment.get("combat_modifiers", {})
+
+	_append_combat_log("Equipment %s" % equipment_id)
+	_append_combat_log("  Name: %s" % String(equipment.get("display_name", equipment_id)))
+	_append_combat_log("  Rarity: %s | Target: %s" % [String(equipment.get("rarity", "common")), target_orb])
+	_append_combat_log(
+		"  Price: %d | Sell: %d | Levels: %d-%d" % [
+			int(equipment.get("base_price", 0)),
+			int(equipment.get("sell_value", equipment.get("base_price", 0))),
+			int(equipment.get("min_level", 1)),
+			int(equipment.get("max_level", 3)),
+		]
+	)
+	_append_combat_log("  Icon: %s" % String(equipment.get("icon_key", "")))
+	_append_combat_log("  Description: %s" % String(equipment.get("description", "")))
+	if modifiers.is_empty():
+		_append_combat_log("  Combat Modifiers: none")
+	else:
+		_append_combat_log("  Combat Modifiers: %s" % JSON.stringify(modifiers))
+
+
+func _add_equipment_by_id(equipment_id: String) -> void:
+	if equipment_id == "":
+		_command_error("equipment id is required")
+		return
+
+	var progression_state: Variant = RunState.ensure_player_progression_state()
+	var progression_service: Variant = RunState.ensure_player_progression_service()
+	var content: Variant = RunState.ensure_content_registry()
+	var equip_result: Dictionary = progression_service.equip_item(progression_state, equipment_id, content)
+	if not bool(equip_result.get("ok", false)):
+		_command_error("equipment add failed: %s" % String(equip_result.get("reason", "unknown_error")))
+		return
+
+	var payload: Dictionary = equip_result.get("result", {})
+	var slot_index := int(payload.get("slot_index", -1))
+	_update_hud()
+	_append_combat_log("Equipment added: %s -> slot %d." % [equipment_id, slot_index])
 
 
 func _start_drag(board_local_position: Vector2) -> bool:
@@ -958,115 +1050,50 @@ func _format_intent(intent: Dictionary) -> String:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
+	if _combat_log_level == LOG_LEVEL_DETAILED:
+		_append_turn_log_detailed(turn_log)
+		return
+	_append_turn_log_normal(turn_log)
+
+
+func _append_turn_log_normal(turn_log: Dictionary) -> void:
 	var resolved_turn := int(turn_log.get("resolved_turn_index", 0))
 	var combo_count := int(turn_log.get("combo_count", 0))
+	var combo_count_with_bonus := int(turn_log.get("combo_count_with_bonus", combo_count))
 	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
-	var fire_orbs := int(matched_counts.get(OrbType.Id.FIRE, 0))
-	var ice_orbs := int(matched_counts.get(OrbType.Id.ICE, 0))
-	var earth_orbs := int(matched_counts.get(OrbType.Id.EARTH, 0))
-	var heart_orbs := int(matched_counts.get(OrbType.Id.HEART, 0))
-	var armor_orbs := int(matched_counts.get(OrbType.Id.ARMOR, 0))
-	var gold_orbs := int(matched_counts.get(OrbType.Id.GOLD, 0))
-	var fire_mastery_level := _player_state.orb_value(OrbType.Id.FIRE) - 1
-	var ice_mastery_level := _player_state.orb_value(OrbType.Id.ICE) - 1
-	var earth_mastery_level := _player_state.orb_value(OrbType.Id.EARTH) - 1
-	var heart_mastery_level := _player_state.orb_value(OrbType.Id.HEART) - 1
-	var armor_mastery_level := _player_state.orb_value(OrbType.Id.ARMOR) - 1
-	var gold_mastery_level := _player_state.orb_value(OrbType.Id.GOLD) - 1
-	var fire_base := int(turn_log.get("fire_base", 0))
-	var ice_base := int(turn_log.get("ice_base", 0))
-	var earth_base := int(turn_log.get("earth_base", 0))
-	var damage_combo_multiplier := float(turn_log.get("damage_combo_multiplier", 0.0))
-	var increase_combo_modifier := int(turn_log.get("increase_combo_modifier", 0))
-	var more_combo_modifier := float(turn_log.get("more_combo_modifier", 1.0))
-
 	_append_combat_log("---- Turn %d ----" % resolved_turn)
-	_append_combat_log("Matches: combos=%d | %s" % [combo_count, _format_matched_counts(matched_counts)])
+	_append_combat_log("Matches: combos=%d (effective %d) | %s" % [combo_count, combo_count_with_bonus, _format_matched_counts(matched_counts)])
 	_append_combat_log(
-		"Damage combo multiplier: (%d + %d) * %.2f = %.2f" % [
-			increase_combo_modifier,
-			combo_count,
-			more_combo_modifier,
-			damage_combo_multiplier,
+		"Player gains: Heal +%d, Armor +%d, Gold +%d." % [
+			int(turn_log.get("healed", 0)),
+			int(turn_log.get("armor_gained", 0)),
+			int(turn_log.get("gold_gained", 0)),
 		]
 	)
 	_append_combat_log(
-		"Heart = %d x (%d + 1) = %d # {orb_count: %d, heart_mastery_level: %d}" % [
-			heart_orbs,
-			heart_mastery_level,
-			int(turn_log.get("heart_base", 0)),
-			heart_orbs,
-			heart_mastery_level,
-		]
-	)
-	_append_combat_log(
-		"Armor gain: base %d (%d * (%d+1)) * %.2f = +%d Armor" % [
-			int(turn_log.get("armor_base", 0)),
-			armor_orbs,
-			armor_mastery_level,
-			damage_combo_multiplier,
-			int(turn_log.armor_gained),
-		]
-	)
-	_append_combat_log("Elemental calculation:")
-	_append_combat_log(
-		"Fire = %d x (%d + 1) = %d # {orb_count: %d, fire_mastery_level: %d}" % [
-			fire_orbs,
-			fire_mastery_level,
-			fire_base,
-			fire_orbs,
-			fire_mastery_level,
-		]
-	)
-	_append_combat_log(
-		"Ice = %d x (%d + 1) = %d # {orb_count: %d, ice_mastery_level: %d}" % [
-			ice_orbs,
-			ice_mastery_level,
-			ice_base,
-			ice_orbs,
-			ice_mastery_level,
-		]
-	)
-	_append_combat_log(
-		"Earth = %d x (%d + 1) = %d # {orb_count: %d, earth_mastery_level: %d}" % [
-			earth_orbs,
-			earth_mastery_level,
-			earth_base,
-			earth_orbs,
-			earth_mastery_level,
-		]
-	)
-	_append_combat_log("Damage combo multiplier applied to elemental base: %.2f" % damage_combo_multiplier)
-	_append_combat_log("Total Elemental Damage = %d" % int(turn_log.total_elemental_damage))
-	_append_combat_log(
-		"Enemy block reduced damage by %d. Enemy took %d." % [
-			int(turn_log.enemy_blocked),
-			int(turn_log.enemy_damage_taken),
-		]
-	)
-	_append_combat_log(
-		"Gold = %d x (%d + 1) = %d # {orb_count: %d, gold_mastery_level: %d}" % [
-			gold_orbs,
-			gold_mastery_level,
-			int(turn_log.get("gold_base", 0)),
-			gold_orbs,
-			gold_mastery_level,
+		"Damage dealt: Fire %d + Ice %d + Earth %d = %d (enemy blocked %d, enemy took %d)." % [
+			int(turn_log.get("fire_damage", 0)),
+			int(turn_log.get("ice_damage", 0)),
+			int(turn_log.get("earth_damage", 0)),
+			int(turn_log.get("total_elemental_damage", 0)),
+			int(turn_log.get("enemy_blocked", 0)),
+			int(turn_log.get("enemy_damage_taken", 0)),
 		]
 	)
 
 	if bool(turn_log.enemy_intent_skipped):
-		_append_combat_log("Enemy intent skipped because enemy was defeated first.")
+		_append_combat_log("Enemy intent: skipped (enemy defeated first).")
 	else:
 		var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
 		_append_combat_log(
-			"Enemy attack: incoming %d, blocked by armor %d, HP damage %d." % [
+			"Enemy intent: incoming %d, blocked %d, HP damage %d." % [
 				int(enemy_attack.get("incoming", 0)),
 				int(enemy_attack.get("blocked_by_armor", 0)),
 				int(enemy_attack.get("hp_damage", 0)),
 			]
 		)
 
-	_append_combat_log("Armor expired after enemy action: %d." % int(turn_log.expired_armor))
+	_append_combat_log("Armor expired after enemy action: %d." % int(turn_log.get("expired_armor", 0)))
 	_append_combat_log(
 		"End state: Player HP %d/%d Armor %d Gold %d | Enemy HP %d/%d" % [
 			_player_state.current_hp,
@@ -1077,6 +1104,169 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 			_enemy_state.max_hp,
 		]
 	)
+
+
+func _append_turn_log_detailed(turn_log: Dictionary) -> void:
+	_append_turn_log_normal(turn_log)
+
+	var combo_count := int(turn_log.get("combo_count", 0))
+	var combo_flat_bonus := int(turn_log.get("combo_flat_bonus", 0))
+	var combo_count_with_bonus := int(turn_log.get("combo_count_with_bonus", combo_count))
+	var increase_combo_modifier := int(turn_log.get("increase_combo_modifier", 0))
+	var more_combo_modifier := float(turn_log.get("more_combo_modifier", 1.0))
+	var combo_multiplier_mult := float(turn_log.get("combo_multiplier_mult", 1.0))
+	var damage_combo_multiplier := float(turn_log.get("damage_combo_multiplier", 0.0))
+	var prep_armor_added := int(turn_log.get("prep_armor_added", 0))
+	var flat_damage_bonus := int(turn_log.get("flat_damage_bonus", 0))
+	var flat_heal_bonus := int(turn_log.get("flat_heal_bonus", 0))
+	var flat_gold_bonus := int(turn_log.get("flat_gold_bonus", 0))
+	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
+	var orb_bonus_by_id: Dictionary = turn_log.get("orb_bonus_by_id", {})
+	var modifier_sources: Array = turn_log.get("modifier_sources", [])
+
+	_append_combat_log("Detailed combat breakdown:")
+	_append_combat_log(
+		"Modifier totals: combo+%d, combo_mult_x%.2f, prep_armor+%d, flat_damage+%d, flat_heal+%d, flat_gold+%d." % [
+			combo_flat_bonus,
+			combo_multiplier_mult,
+			prep_armor_added,
+			flat_damage_bonus,
+			flat_heal_bonus,
+			flat_gold_bonus,
+		]
+	)
+	_append_combat_log(
+		"Orb bonuses: F:+%d I:+%d E:+%d H:+%d A:+%d G:+%d." % [
+			int(orb_bonus_by_id.get(OrbType.Id.FIRE, 0)),
+			int(orb_bonus_by_id.get(OrbType.Id.ICE, 0)),
+			int(orb_bonus_by_id.get(OrbType.Id.EARTH, 0)),
+			int(orb_bonus_by_id.get(OrbType.Id.HEART, 0)),
+			int(orb_bonus_by_id.get(OrbType.Id.ARMOR, 0)),
+			int(orb_bonus_by_id.get(OrbType.Id.GOLD, 0)),
+		]
+	)
+
+	_append_combat_log("Formula path:")
+	_append_combat_log("effective_combo = %d + %d = %d" % [combo_count, combo_flat_bonus, combo_count_with_bonus])
+	_append_combat_log(
+		"damage_multiplier = ((increase_combo_modifier + effective_combo) * more_combo_modifier) * combo_multiplier_mult = ((%d + %d) * %.2f) * %.2f = %.2f" % [
+			increase_combo_modifier,
+			combo_count_with_bonus,
+			more_combo_modifier,
+			combo_multiplier_mult,
+			damage_combo_multiplier,
+		]
+	)
+	_append_detailed_element_formula_line(turn_log, matched_counts, orb_bonus_by_id, OrbType.Id.FIRE, "fire", damage_combo_multiplier)
+	_append_detailed_element_formula_line(turn_log, matched_counts, orb_bonus_by_id, OrbType.Id.ICE, "ice", damage_combo_multiplier)
+	_append_detailed_element_formula_line(turn_log, matched_counts, orb_bonus_by_id, OrbType.Id.EARTH, "earth", damage_combo_multiplier)
+	_append_combat_log(
+		"total_damage = fire_damage + ice_damage + earth_damage + flat_damage_bonus = %d + %d + %d + %d = %d" % [
+			int(turn_log.get("fire_damage", 0)),
+			int(turn_log.get("ice_damage", 0)),
+			int(turn_log.get("earth_damage", 0)),
+			flat_damage_bonus,
+			int(turn_log.get("total_elemental_damage", 0)),
+		]
+	)
+	_append_combat_log(
+		"final_enemy_damage = max(0, total_damage - enemy_block) = max(0, %d - %d) = %d" % [
+			int(turn_log.get("total_elemental_damage", 0)),
+			int(turn_log.get("enemy_blocked", 0)),
+			int(turn_log.get("enemy_damage_taken", 0)),
+		]
+	)
+
+	if modifier_sources.is_empty():
+		_append_combat_log("Modifier sources: none.")
+	else:
+		_append_combat_log("Modifier sources:")
+		for raw_source in modifier_sources:
+			var source: Dictionary = raw_source
+			_append_combat_log(
+				"  - [%s] %s (%s): %s" % [
+					String(source.get("source_type", "unknown")),
+					String(source.get("display_name", source.get("source_id", "unknown"))),
+					String(source.get("source_id", "")),
+					JSON.stringify(source.get("combat_modifiers", {})),
+				]
+			)
+
+	var player_start: Dictionary = turn_log.get("player_start", {})
+	var player_end: Dictionary = turn_log.get("player_end", {})
+	var enemy_start: Dictionary = turn_log.get("enemy_start", {})
+	var enemy_end: Dictionary = turn_log.get("enemy_end", {})
+	_append_combat_log(
+		"Player delta: HP %d -> %d (delta %s), Armor %d -> %d (delta %s), Gold %d -> %d (delta %s)." % [
+			int(player_start.get("hp", 0)),
+			int(player_end.get("hp", 0)),
+			_format_signed_delta(int(player_end.get("hp", 0)) - int(player_start.get("hp", 0))),
+			int(player_start.get("armor", 0)),
+			int(player_end.get("armor", 0)),
+			_format_signed_delta(int(player_end.get("armor", 0)) - int(player_start.get("armor", 0))),
+			int(player_start.get("gold", 0)),
+			int(player_end.get("gold", 0)),
+			_format_signed_delta(int(player_end.get("gold", 0)) - int(player_start.get("gold", 0))),
+		]
+	)
+	_append_combat_log(
+		"Enemy delta: HP %d -> %d (delta %s), Block %d -> %d (delta %s)." % [
+			int(enemy_start.get("hp", 0)),
+			int(enemy_end.get("hp", 0)),
+			_format_signed_delta(int(enemy_end.get("hp", 0)) - int(enemy_start.get("hp", 0))),
+			int(enemy_start.get("turn_block", 0)),
+			int(enemy_end.get("turn_block", 0)),
+			_format_signed_delta(int(enemy_end.get("turn_block", 0)) - int(enemy_start.get("turn_block", 0))),
+		]
+	)
+
+	if bool(turn_log.get("enemy_intent_skipped", false)):
+		_append_combat_log("Enemy attack resolution: skipped because enemy died before acting.")
+	else:
+		var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
+		_append_combat_log(
+			"Enemy attack resolution: incoming=%d, blocked_by_armor=%d, hp_damage=%d, post_hp=%d, post_armor=%d." % [
+				int(enemy_attack.get("incoming", 0)),
+				int(enemy_attack.get("blocked_by_armor", 0)),
+				int(enemy_attack.get("hp_damage", 0)),
+				int(enemy_attack.get("remaining_hp", 0)),
+				int(enemy_attack.get("remaining_armor", 0)),
+			]
+		)
+	_append_combat_log("Armor expiration after enemy action: %d." % int(turn_log.get("expired_armor", 0)))
+
+
+func _append_detailed_element_formula_line(
+	turn_log: Dictionary,
+	matched_counts: Dictionary,
+	orb_bonus_by_id: Dictionary,
+	orb_id: int,
+	element_name: String,
+	damage_multiplier: float
+) -> void:
+	var orbs_matched := int(matched_counts.get(orb_id, 0))
+	var mastery_level := _player_state.orb_value(orb_id) - 1
+	var orb_bonus := int(orb_bonus_by_id.get(orb_id, 0))
+	var base_key := "%s_base" % element_name
+	var damage_key := "%s_damage" % element_name
+	_append_combat_log(
+		"%s: element_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; element_damage = round(element_base * damage_multiplier) = round(%d * %.2f) = %d" % [
+			element_name.capitalize(),
+			orbs_matched,
+			mastery_level,
+			orb_bonus,
+			int(turn_log.get(base_key, 0)),
+			int(turn_log.get(base_key, 0)),
+			damage_multiplier,
+			int(turn_log.get(damage_key, 0)),
+		]
+	)
+
+
+func _format_signed_delta(value: int) -> String:
+	if value >= 0:
+		return "+%d" % value
+	return "%d" % value
 
 
 func _format_matched_counts(matched_counts: Dictionary) -> String:

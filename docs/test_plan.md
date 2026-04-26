@@ -167,7 +167,14 @@ Verification notes (2026-04-27):
 - [ ] At least 3 normal enemies are playable.
 - [ ] At least 3 bosses are playable.
 - [ ] Content pools respect rarity, category, orb type, and duplicate rules.
-- [ ] No player-facing content appears with missing text.
+- [x] No player-facing content appears with missing text.
+
+Verification notes (2026-04-27):
+- Godot MCP script/runtime validation passed after Milestone 8 content pack updates:
+  - full equipment/relic/mastery/consumable registry loads with no parse/runtime errors,
+  - content validation reports `OK` in `res://scenes/combat/board_debug.tscn`,
+  - shop offers now surface content descriptions from registry data.
+- Remaining Milestone 8 checks still require manual run-through coverage to confirm appearance and resolution of every item/enemy/boss entry in live gameplay.
 
 ## Milestone 9: UI And Game Feel
 

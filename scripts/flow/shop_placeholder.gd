@@ -89,11 +89,14 @@ func _refresh_ui() -> void:
 
 func _offer_button_text(offer: Dictionary) -> String:
 	var display_name := String(offer.get("display_name", "Offer"))
+	var description := String(offer.get("description", ""))
 	var offer_type := String(offer.get("type", ""))
 	var price := int(offer.get("price", 0))
 	var sold_out := bool(offer.get("sold_out", false))
 	var status := "SOLD" if sold_out else "Buy"
-	return "%s [%s] - %dg (%s)" % [display_name, offer_type, price, status]
+	if description == "":
+		return "%s [%s] - %dg (%s)" % [display_name, offer_type, price, status]
+	return "%s [%s] - %dg (%s)\n%s" % [display_name, offer_type, price, status, description]
 
 
 func _buy_offer_at(index: int) -> void:

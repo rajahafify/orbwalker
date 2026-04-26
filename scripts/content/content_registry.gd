@@ -6,243 +6,10 @@ const CONSUMABLES := "consumables"
 const MASTERY_CARDS := "mastery_cards"
 const BOOSTERS := "boosters"
 const RELICS := "relics"
+const ENEMIES := "enemies"
+const BOSSES := "bosses"
 
-var _player_state_content := {
-	EQUIPMENT: [
-		{
-			"id": "debug_shortsword",
-			"display_name": "Debug Shortsword",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.FIRE,
-			"base_price": 12,
-			"sell_value": 12,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_ITEM_EQUIPPED,
-					"operation": "log",
-					"value": "debug_shortsword_equipped",
-				},
-			],
-		},
-		{
-			"id": "debug_buckler",
-			"display_name": "Debug Buckler",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.ARMOR,
-			"base_price": 10,
-			"sell_value": 10,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_ITEM_EQUIPPED,
-					"operation": "log",
-					"value": "debug_buckler_equipped",
-				},
-			],
-		},
-	],
-	CONSUMABLES: [
-		{
-			"id": "fire_scroll",
-			"display_name": "Fire Scroll",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.FIRE,
-			"base_price": 9,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.FIRE,
-						"count": 3,
-					},
-				},
-			],
-		},
-		{
-			"id": "ice_scroll",
-			"display_name": "Ice Scroll",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.ICE,
-			"base_price": 9,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.ICE,
-						"count": 3,
-					},
-				},
-			],
-		},
-		{
-			"id": "earth_scroll",
-			"display_name": "Earth Scroll",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.EARTH,
-			"base_price": 9,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.EARTH,
-						"count": 3,
-					},
-				},
-			],
-		},
-		{
-			"id": "heart_scroll",
-			"display_name": "Heart Scroll",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.HEART,
-			"base_price": 9,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.HEART,
-						"count": 3,
-					},
-				},
-			],
-		},
-		{
-			"id": "armor_scroll",
-			"display_name": "Armor Scroll",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.ARMOR,
-			"base_price": 9,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.ARMOR,
-						"count": 3,
-					},
-				},
-			],
-		},
-		{
-			"id": "gold_scroll",
-			"display_name": "Gold Scroll",
-			"rarity": "uncommon",
-			"target_orb_id": OrbType.Id.GOLD,
-			"base_price": 13,
-			"convert_count": 3,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_CONSUMABLE_USED,
-					"operation": "convert_random_orbs",
-					"value": {
-						"target_orb_id": OrbType.Id.GOLD,
-						"count": 3,
-					},
-				},
-			],
-		},
-	],
-	MASTERY_CARDS: [
-		{
-			"id": "fire_mastery",
-			"display_name": "Fire Mastery",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.FIRE,
-			"amount": 1,
-			"base_price": 11,
-			"effects": [],
-		},
-		{
-			"id": "ice_mastery",
-			"display_name": "Ice Mastery",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.ICE,
-			"amount": 1,
-			"base_price": 11,
-			"effects": [],
-		},
-		{
-			"id": "earth_mastery",
-			"display_name": "Earth Mastery",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.EARTH,
-			"amount": 1,
-			"base_price": 11,
-			"effects": [],
-		},
-		{
-			"id": "heart_mastery",
-			"display_name": "Heart Mastery",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.HEART,
-			"amount": 1,
-			"base_price": 12,
-			"effects": [],
-		},
-		{
-			"id": "armor_mastery",
-			"display_name": "Armor Mastery",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.ARMOR,
-			"amount": 1,
-			"base_price": 12,
-			"effects": [],
-		},
-		{
-			"id": "gold_mastery",
-			"display_name": "Gold Mastery",
-			"rarity": "uncommon",
-			"target_orb_id": OrbType.Id.GOLD,
-			"amount": 1,
-			"base_price": 16,
-			"effects": [],
-		},
-	],
-	BOOSTERS: [
-		{
-			"id": "debug_elemental_booster",
-			"display_name": "Debug Elemental Booster",
-			"rarity": "common",
-			"target_orb_id": -1,
-			"option_count": 3,
-			"base_price": 9,
-			"effects": [],
-		},
-		{
-			"id": "debug_fire_booster",
-			"display_name": "Debug Fire Booster",
-			"rarity": "common",
-			"target_orb_id": OrbType.Id.FIRE,
-			"option_count": 3,
-			"base_price": 10,
-			"effects": [],
-		},
-	],
-	RELICS: [
-		{
-			"id": "debug_stalwart_mantle",
-			"display_name": "Debug Stalwart Mantle",
-			"rarity": "rare",
-			"base_price": 25,
-			"effects": [
-				{
-					"hook": EffectHooks.ON_RELIC_ADDED,
-					"operation": "log",
-					"value": "debug_relic_added",
-				},
-			],
-		},
-	],
-}
-
+var _player_state_content: Dictionary = {}
 var _index := {}
 var _shop_pricing_config := {
 	"rarity_base": {
@@ -257,6 +24,7 @@ var _shop_pricing_config := {
 
 
 func _init() -> void:
+	_player_state_content = _build_default_content()
 	_rebuild_index()
 
 
@@ -305,21 +73,39 @@ func list_relics() -> Array[Dictionary]:
 	return _collection_index_values(RELICS)
 
 
-func shop_item_pool(_dungeon_level: int) -> Array[Dictionary]:
+func list_enemies() -> Array[Dictionary]:
+	return _collection_index_values(ENEMIES)
+
+
+func list_bosses() -> Array[Dictionary]:
+	return _collection_index_values(BOSSES)
+
+
+func shop_item_pool(dungeon_level: int) -> Array[Dictionary]:
+	var level := maxi(1, dungeon_level)
 	var pool: Array[Dictionary] = []
 	for item in list_equipment():
-		pool.append({"type": "equipment", "id": String(item.get("id", ""))})
+		if _is_level_allowed(item, level):
+			pool.append({"type": "equipment", "id": String(item.get("id", ""))})
 	for item in list_consumables():
-		pool.append({"type": "consumable", "id": String(item.get("id", ""))})
+		if _is_level_allowed(item, level):
+			pool.append({"type": "consumable", "id": String(item.get("id", ""))})
 	for item in list_mastery_cards():
-		pool.append({"type": "mastery_card", "id": String(item.get("id", ""))})
+		if _is_level_allowed(item, level):
+			pool.append({"type": "mastery_card", "id": String(item.get("id", ""))})
 	for item in list_boosters():
-		pool.append({"type": "booster", "id": String(item.get("id", ""))})
+		if _is_level_allowed(item, level):
+			pool.append({"type": "booster", "id": String(item.get("id", ""))})
 	return pool
 
 
-func shop_relic_pool(_dungeon_level: int) -> Array[Dictionary]:
-	return list_relics()
+func shop_relic_pool(dungeon_level: int) -> Array[Dictionary]:
+	var level := maxi(1, dungeon_level)
+	var pool: Array[Dictionary] = []
+	for relic in list_relics():
+		if _is_level_allowed(relic, level):
+			pool.append(relic)
+	return pool
 
 
 func shop_pricing_config() -> Dictionary:
@@ -328,7 +114,7 @@ func shop_pricing_config() -> Dictionary:
 
 func validate_player_state_content() -> Array[Dictionary]:
 	var errors: Array[Dictionary] = []
-	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS]:
+	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS, ENEMIES, BOSSES]:
 		var entries: Array = _player_state_content.get(collection_name, [])
 		var seen_ids := {}
 		for raw_entry in entries:
@@ -344,6 +130,10 @@ func validate_player_state_content() -> Array[Dictionary]:
 
 			if String(entry.get("display_name", "")).strip_edges() == "":
 				errors.append(_validation_error(item_id, "missing_display_name"))
+			if String(entry.get("description", "")).strip_edges() == "":
+				errors.append(_validation_error(item_id, "missing_description"))
+			if String(entry.get("icon_key", "")).strip_edges() == "":
+				errors.append(_validation_error(item_id, "missing_icon_key"))
 
 			var effects: Array = entry.get("effects", [])
 			for raw_effect in effects:
@@ -360,7 +150,7 @@ func validate_player_state_content() -> Array[Dictionary]:
 
 func _rebuild_index() -> void:
 	_index.clear()
-	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS]:
+	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS, ENEMIES, BOSSES]:
 		_index[collection_name] = {}
 		var entries: Array = _player_state_content.get(collection_name, [])
 		for raw_entry in entries:
@@ -384,8 +174,629 @@ func _collection_index_values(collection_name: String) -> Array[Dictionary]:
 	return values
 
 
+func _is_level_allowed(entry: Dictionary, level: int) -> bool:
+	var min_level := int(entry.get("min_level", 1))
+	var max_level := int(entry.get("max_level", 999))
+	return level >= min_level and level <= max_level
+
+
 func _validation_error(item_id: String, reason: String) -> Dictionary:
 	return {
 		"item_id": item_id,
 		"reason": reason,
+	}
+
+
+func _build_default_content() -> Dictionary:
+	return {
+		EQUIPMENT: [
+			_make_equipment(
+				"shortsword",
+				"Shortsword",
+				"common",
+				OrbType.Id.FIRE,
+				12,
+				"Deal +2 flat elemental damage each turn.",
+				"equipment_shortsword",
+				{"flat_damage_bonus": 2}
+			),
+			_make_equipment(
+				"buckler",
+				"Buckler",
+				"common",
+				OrbType.Id.ARMOR,
+				11,
+				"Gain +2 armor at turn start.",
+				"equipment_buckler",
+				{"start_turn_armor": 2}
+			),
+			_make_equipment(
+				"coin_purse",
+				"Coin Purse",
+				"common",
+				OrbType.Id.GOLD,
+				10,
+				"Gain +1 bonus gold when gold orbs resolve.",
+				"equipment_coin_purse",
+				{"flat_gold_bonus": 1}
+			),
+			_make_equipment(
+				"healing_charm",
+				"Healing Charm",
+				"common",
+				OrbType.Id.HEART,
+				11,
+				"Gain +2 bonus healing when heart orbs resolve.",
+				"equipment_healing_charm",
+				{"flat_heal_bonus": 2}
+			),
+			_make_equipment(
+				"ember_ring",
+				"Ember Ring",
+				"common",
+				OrbType.Id.FIRE,
+				12,
+				"Fire orb value +1.",
+				"equipment_ember_ring",
+				{"orb_bonus_by_id": {OrbType.Id.FIRE: 1}}
+			),
+			_make_equipment(
+				"frost_ring",
+				"Frost Ring",
+				"common",
+				OrbType.Id.ICE,
+				12,
+				"Ice orb value +1.",
+				"equipment_frost_ring",
+				{"orb_bonus_by_id": {OrbType.Id.ICE: 1}}
+			),
+			_make_equipment(
+				"stone_ring",
+				"Stone Ring",
+				"common",
+				OrbType.Id.EARTH,
+				12,
+				"Earth orb value +1.",
+				"equipment_stone_ring",
+				{"orb_bonus_by_id": {OrbType.Id.EARTH: 1}}
+			),
+			_make_equipment(
+				"leather_gloves",
+				"Leather Gloves",
+				"common",
+				-1,
+				11,
+				"Combo count is treated as +1 for damage scaling.",
+				"equipment_leather_gloves",
+				{"combo_flat_bonus": 1}
+			),
+			_make_equipment(
+				"iron_helm",
+				"Iron Helm",
+				"common",
+				OrbType.Id.ARMOR,
+				12,
+				"Gain +3 armor at turn start.",
+				"equipment_iron_helm",
+				{"start_turn_armor": 3}
+			),
+			_make_equipment(
+				"combo_lens",
+				"Combo Lens",
+				"common",
+				-1,
+				13,
+				"Combo multiplier x1.10.",
+				"equipment_combo_lens",
+				{"combo_multiplier_mult": 1.10}
+			),
+			_make_equipment(
+				"twin_blades",
+				"Twin Blades",
+				"uncommon",
+				OrbType.Id.FIRE,
+				18,
+				"Deal +4 flat elemental damage each turn.",
+				"equipment_twin_blades",
+				{"flat_damage_bonus": 4},
+				2
+			),
+			_make_equipment(
+				"war_banner",
+				"War Banner",
+				"uncommon",
+				-1,
+				18,
+				"Combo count is treated as +2 for damage scaling.",
+				"equipment_war_banner",
+				{"combo_flat_bonus": 2},
+				2
+			),
+			_make_equipment(
+				"tower_shield",
+				"Tower Shield",
+				"uncommon",
+				OrbType.Id.ARMOR,
+				19,
+				"Gain +5 armor at turn start.",
+				"equipment_tower_shield",
+				{"start_turn_armor": 5},
+				2
+			),
+			_make_equipment(
+				"merchant_scales",
+				"Merchant Scales",
+				"uncommon",
+				OrbType.Id.GOLD,
+				17,
+				"Gain +2 bonus gold when gold orbs resolve.",
+				"equipment_merchant_scales",
+				{"flat_gold_bonus": 2},
+				2
+			),
+			_make_equipment(
+				"battle_drum",
+				"Battle Drum",
+				"uncommon",
+				-1,
+				18,
+				"Combo multiplier x1.20.",
+				"equipment_battle_drum",
+				{"combo_multiplier_mult": 1.20},
+				2
+			),
+			_make_equipment(
+				"earthbreaker_maul",
+				"Earthbreaker Maul",
+				"uncommon",
+				OrbType.Id.EARTH,
+				19,
+				"Earth orb value +2.",
+				"equipment_earthbreaker_maul",
+				{"orb_bonus_by_id": {OrbType.Id.EARTH: 2}},
+				2
+			),
+			_make_equipment(
+				"hearth_amulet",
+				"Hearth Amulet",
+				"uncommon",
+				OrbType.Id.HEART,
+				17,
+				"Gain +4 bonus healing when heart orbs resolve.",
+				"equipment_hearth_amulet",
+				{"flat_heal_bonus": 4},
+				2
+			),
+			_make_equipment(
+				"alchemist_gloves",
+				"Alchemist Gloves",
+				"uncommon",
+				OrbType.Id.GOLD,
+				17,
+				"Gold orb value +1 and +1 bonus gold on resolve.",
+				"equipment_alchemist_gloves",
+				{
+					"orb_bonus_by_id": {OrbType.Id.GOLD: 1},
+					"flat_gold_bonus": 1,
+				},
+				2
+			),
+			_make_equipment(
+				"training_manual",
+				"Training Manual",
+				"uncommon",
+				-1,
+				18,
+				"Fire, Ice, and Earth orb values +1.",
+				"equipment_training_manual",
+				{
+					"orb_bonus_by_id": {
+						OrbType.Id.FIRE: 1,
+						OrbType.Id.ICE: 1,
+						OrbType.Id.EARTH: 1,
+					},
+				},
+				2
+			),
+			_make_equipment(
+				"mirror_charm",
+				"Mirror Charm",
+				"uncommon",
+				-1,
+				19,
+				"Combo count +1 and combo multiplier x1.15.",
+				"equipment_mirror_charm",
+				{
+					"combo_flat_bonus": 1,
+					"combo_multiplier_mult": 1.15,
+				},
+				2
+			),
+			_make_equipment(
+				"ruby_brooch",
+				"Ruby Brooch",
+				"rare",
+				OrbType.Id.FIRE,
+				27,
+				"Fire orb value +3.",
+				"equipment_ruby_brooch",
+				{"orb_bonus_by_id": {OrbType.Id.FIRE: 3}},
+				3
+			),
+			_make_equipment(
+				"sapphire_brooch",
+				"Sapphire Brooch",
+				"rare",
+				OrbType.Id.ICE,
+				27,
+				"Ice orb value +3.",
+				"equipment_sapphire_brooch",
+				{"orb_bonus_by_id": {OrbType.Id.ICE: 3}},
+				3
+			),
+			_make_equipment(
+				"emerald_brooch",
+				"Emerald Brooch",
+				"rare",
+				OrbType.Id.EARTH,
+				27,
+				"Earth orb value +3.",
+				"equipment_emerald_brooch",
+				{"orb_bonus_by_id": {OrbType.Id.EARTH: 3}},
+				3
+			),
+			_make_equipment(
+				"royal_seal",
+				"Royal Seal",
+				"rare",
+				-1,
+				28,
+				"Combo count +2 and combo multiplier x1.25.",
+				"equipment_royal_seal",
+				{
+					"combo_flat_bonus": 2,
+					"combo_multiplier_mult": 1.25,
+				},
+				3
+			),
+			_make_equipment(
+				"champion_plate",
+				"Champion Plate",
+				"rare",
+				OrbType.Id.ARMOR,
+				29,
+				"Gain +8 armor at turn start and +3 bonus healing on heart matches.",
+				"equipment_champion_plate",
+				{
+					"start_turn_armor": 8,
+					"flat_heal_bonus": 3,
+				},
+				3
+			),
+		],
+		CONSUMABLES: [
+			_make_consumable("fire_scroll", "Fire Scroll", "common", OrbType.Id.FIRE, 9, 3, "consumable_fire_scroll"),
+			_make_consumable("ice_scroll", "Ice Scroll", "common", OrbType.Id.ICE, 9, 3, "consumable_ice_scroll"),
+			_make_consumable("earth_scroll", "Earth Scroll", "common", OrbType.Id.EARTH, 9, 3, "consumable_earth_scroll"),
+			_make_consumable("heart_scroll", "Heart Scroll", "common", OrbType.Id.HEART, 9, 3, "consumable_heart_scroll"),
+			_make_consumable("armor_scroll", "Armor Scroll", "common", OrbType.Id.ARMOR, 9, 3, "consumable_armor_scroll"),
+			_make_consumable("gold_scroll", "Gold Scroll", "uncommon", OrbType.Id.GOLD, 13, 3, "consumable_gold_scroll", 2),
+		],
+		MASTERY_CARDS: [
+			_make_mastery_card("fire_mastery", "Fire Mastery", "common", OrbType.Id.FIRE, 11, "mastery_fire"),
+			_make_mastery_card("ice_mastery", "Ice Mastery", "common", OrbType.Id.ICE, 11, "mastery_ice"),
+			_make_mastery_card("earth_mastery", "Earth Mastery", "common", OrbType.Id.EARTH, 11, "mastery_earth"),
+			_make_mastery_card("heart_mastery", "Heart Mastery", "common", OrbType.Id.HEART, 12, "mastery_heart"),
+			_make_mastery_card("armor_mastery", "Armor Mastery", "common", OrbType.Id.ARMOR, 12, "mastery_armor"),
+			_make_mastery_card("gold_mastery", "Gold Mastery", "uncommon", OrbType.Id.GOLD, 16, "mastery_gold", 2),
+		],
+		BOOSTERS: [
+			{
+				"id": "elemental_booster",
+				"display_name": "Elemental Booster",
+				"description": "Choose 1 of 3 elemental-focused options.",
+				"icon_key": "booster_elemental",
+				"rarity": "common",
+				"target_orb_id": -1,
+				"option_count": 3,
+				"base_price": 9,
+				"min_level": 1,
+				"max_level": 3,
+				"effects": [],
+			},
+			{
+				"id": "fire_booster",
+				"display_name": "Fire Booster",
+				"description": "Choose 1 of 3 Fire-aligned options.",
+				"icon_key": "booster_fire",
+				"rarity": "common",
+				"target_orb_id": OrbType.Id.FIRE,
+				"option_count": 3,
+				"base_price": 10,
+				"min_level": 1,
+				"max_level": 3,
+				"effects": [],
+			},
+		],
+		RELICS: [
+			_make_relic(
+				"deep_pockets",
+				"Deep Pockets",
+				"rare",
+				24,
+				"Gold orb value +2 and +2 bonus gold on gold matches.",
+				"relic_deep_pockets",
+				{
+					"orb_bonus_by_id": {OrbType.Id.GOLD: 2},
+					"flat_gold_bonus": 2,
+				}
+			),
+			_make_relic(
+				"stalwart_mantle",
+				"Stalwart Mantle",
+				"rare",
+				24,
+				"Gain +6 armor at turn start.",
+				"relic_stalwart_mantle",
+				{"start_turn_armor": 6}
+			),
+			_make_relic(
+				"golden_idol",
+				"Golden Idol",
+				"rare",
+				25,
+				"Combo multiplier x1.20 and +2 bonus gold on gold matches.",
+				"relic_golden_idol",
+				{
+					"combo_multiplier_mult": 1.20,
+					"flat_gold_bonus": 2,
+				}
+			),
+			_make_relic(
+				"crown_of_chains",
+				"Crown of Chains",
+				"rare",
+				25,
+				"Combo count +3 and +5 flat elemental damage each turn.",
+				"relic_crown_of_chains",
+				{
+					"combo_flat_bonus": 3,
+					"flat_damage_bonus": 5,
+				}
+			),
+			_make_relic(
+				"merchant_compass",
+				"Merchant Compass",
+				"rare",
+				24,
+				"+1 bonus gold and +2 bonus healing when matching gold/hearts.",
+				"relic_merchant_compass",
+				{
+					"flat_gold_bonus": 1,
+					"flat_heal_bonus": 2,
+				}
+			),
+		],
+		ENEMIES: [
+			_make_enemy(
+				"striker",
+				"Striker",
+				1,
+				76,
+				[
+					{"type": 0, "attack": 12, "block": 0, "label": "Slash 12"},
+					{"type": 2, "attack": 8, "block": 4, "label": "Shield Bash 8 + Guard 4"},
+					{"type": 0, "attack": 13, "block": 0, "label": "Heavy Slash 13"},
+				]
+			),
+			_make_enemy(
+				"defender",
+				"Defender",
+				1,
+				82,
+				[
+					{"type": 1, "attack": 0, "block": 10, "label": "Fortify 10"},
+					{"type": 2, "attack": 10, "block": 6, "label": "Counter 10 + Guard 6"},
+					{"type": 0, "attack": 11, "block": 0, "label": "Crush 11"},
+				]
+			),
+			_make_enemy(
+				"charger",
+				"Charger",
+				2,
+				98,
+				[
+					{"type": 0, "attack": 16, "block": 0, "label": "Pierce 16"},
+					{"type": 2, "attack": 10, "block": 8, "label": "Brace 8 + Jab 10"},
+					{"type": 0, "attack": 14, "block": 0, "label": "Thrust 14"},
+				]
+			),
+		],
+		BOSSES: [
+			_make_boss(
+				"iron_gate",
+				"Iron Gate",
+				1,
+				142,
+				[
+					{"type": 1, "attack": 0, "block": 16, "label": "Fortress Stance 16"},
+					{"type": 0, "attack": 20, "block": 0, "label": "Gate Slam 20"},
+					{"type": 2, "attack": 14, "block": 10, "label": "Wall Bash 14 + Guard 10"},
+				]
+			),
+			_make_boss(
+				"burning_knight",
+				"Burning Knight",
+				2,
+				158,
+				[
+					{"type": 0, "attack": 21, "block": 0, "label": "Inferno Cleave 21"},
+					{"type": 2, "attack": 15, "block": 10, "label": "Blazing Guard 10 + Slash 15"},
+					{"type": 0, "attack": 19, "block": 0, "label": "Scorching Lunge 19"},
+				]
+			),
+			_make_boss(
+				"prism_warden",
+				"Prism Warden",
+				3,
+				176,
+				[
+					{"type": 1, "attack": 0, "block": 18, "label": "Prism Shield 18"},
+					{"type": 0, "attack": 24, "block": 0, "label": "Spectrum Beam 24"},
+					{"type": 2, "attack": 16, "block": 12, "label": "Refraction 12 + Burst 16"},
+				]
+			),
+		],
+	}
+
+
+func _make_equipment(
+	item_id: String,
+	display_name: String,
+	rarity: String,
+	target_orb_id: int,
+	base_price: int,
+	description: String,
+	icon_key: String,
+	combat_modifiers: Dictionary,
+	min_level: int = 1
+) -> Dictionary:
+	return {
+		"id": item_id,
+		"display_name": display_name,
+		"description": description,
+		"icon_key": icon_key,
+		"rarity": rarity,
+		"target_orb_id": target_orb_id,
+		"base_price": base_price,
+		"sell_value": base_price,
+		"min_level": min_level,
+		"max_level": 3,
+		"combat_modifiers": combat_modifiers,
+		"effects": [],
+	}
+
+
+func _make_consumable(
+	item_id: String,
+	display_name: String,
+	rarity: String,
+	target_orb_id: int,
+	base_price: int,
+	convert_count: int,
+	icon_key: String,
+	min_level: int = 1
+) -> Dictionary:
+	return {
+		"id": item_id,
+		"display_name": display_name,
+		"description": "Convert %d random non-%s orbs into %s orbs." % [
+			convert_count,
+			OrbType.display_name(target_orb_id),
+			OrbType.display_name(target_orb_id),
+		],
+		"icon_key": icon_key,
+		"rarity": rarity,
+		"target_orb_id": target_orb_id,
+		"base_price": base_price,
+		"convert_count": convert_count,
+		"min_level": min_level,
+		"max_level": 3,
+		"effects": [
+			{
+				"hook": EffectHooks.ON_CONSUMABLE_USED,
+				"operation": "convert_random_orbs",
+				"value": {
+					"target_orb_id": target_orb_id,
+					"count": convert_count,
+				},
+			},
+		],
+	}
+
+
+func _make_mastery_card(
+	card_id: String,
+	display_name: String,
+	rarity: String,
+	target_orb_id: int,
+	base_price: int,
+	icon_key: String,
+	min_level: int = 1
+) -> Dictionary:
+	return {
+		"id": card_id,
+		"display_name": display_name,
+		"description": "Increase %s mastery by 1 (max 5)." % OrbType.display_name(target_orb_id),
+		"icon_key": icon_key,
+		"rarity": rarity,
+		"target_orb_id": target_orb_id,
+		"amount": 1,
+		"base_price": base_price,
+		"min_level": min_level,
+		"max_level": 3,
+		"effects": [],
+	}
+
+
+func _make_relic(
+	relic_id: String,
+	display_name: String,
+	rarity: String,
+	base_price: int,
+	description: String,
+	icon_key: String,
+	combat_modifiers: Dictionary
+) -> Dictionary:
+	return {
+		"id": relic_id,
+		"display_name": display_name,
+		"description": description,
+		"icon_key": icon_key,
+		"rarity": rarity,
+		"base_price": base_price,
+		"min_level": 1,
+		"max_level": 3,
+		"combat_modifiers": combat_modifiers,
+		"effects": [],
+	}
+
+
+func _make_enemy(
+	enemy_id: String,
+	display_name: String,
+	dungeon_level: int,
+	max_hp: int,
+	intent_cycle: Array,
+) -> Dictionary:
+	return {
+		"id": enemy_id,
+		"display_name": display_name,
+		"description": "Dungeon level %d normal enemy." % dungeon_level,
+		"icon_key": "enemy_%s" % enemy_id,
+		"dungeon_level": dungeon_level,
+		"max_hp": max_hp,
+		"is_boss": false,
+		"intent_cycle": intent_cycle,
+		"effects": [],
+	}
+
+
+func _make_boss(
+	boss_id: String,
+	display_name: String,
+	dungeon_level: int,
+	max_hp: int,
+	intent_cycle: Array,
+) -> Dictionary:
+	return {
+		"id": boss_id,
+		"display_name": display_name,
+		"description": "Dungeon level %d boss." % dungeon_level,
+		"icon_key": "boss_%s" % boss_id,
+		"dungeon_level": dungeon_level,
+		"max_hp": max_hp,
+		"is_boss": true,
+		"intent_cycle": intent_cycle,
+		"effects": [],
 	}

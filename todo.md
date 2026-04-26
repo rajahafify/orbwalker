@@ -388,37 +388,46 @@ Tasks:
   - Deliverable: Fire Scroll, Ice Scroll, Earth Scroll, Heart Scroll, Armor Scroll, and Gold Scroll.
   - Acceptance: Each scroll converts the correct number of random non-target orbs.
 
-- [ ] Implement common equipment.
+- [x] Implement common equipment.
   - Deliverable: Shortsword, Buckler, Coin Purse, Healing Charm, Ember Ring, Frost Ring, Stone Ring, Leather Gloves, Iron Helm, and Combo Lens.
   - Acceptance: Each common item has a working effect, price, icon or placeholder icon, and shop description.
 
-- [ ] Implement uncommon equipment.
+- [x] Implement uncommon equipment.
   - Deliverable: Twin Blades, War Banner, Tower Shield, Merchant Scales, Battle Drum, Earthbreaker Maul, Hearth Amulet, Alchemist Gloves, Training Manual, and Mirror Charm.
   - Acceptance: Each uncommon item has a working effect, price, icon or placeholder icon, and shop description.
 
-- [ ] Implement rare equipment.
+- [x] Implement rare equipment.
   - Deliverable: Ruby Brooch, Sapphire Brooch, Emerald Brooch, Royal Seal, and Champion Plate.
   - Acceptance: Each rare item has a working effect, price, icon or placeholder icon, and shop description.
 
-- [ ] Implement 5 relics.
+- [x] Implement 5 relics.
   - Deliverable: Deep Pockets, Stalwart Mantle, Golden Idol, Crown of Chains, and Merchant Compass.
   - Acceptance: Each relic modifies the run for the rest of the run and displays clearly in the relic inventory.
 
-- [ ] Implement at least 3 normal enemies.
+- [x] Implement at least 3 normal enemies.
   - Deliverable: Striker, Defender, and Charger or equivalent enemies based on the GDD pattern table.
   - Acceptance: Each enemy has HP, readable intent cycle, attack values, block values, and level scaling.
 
-- [ ] Implement at least 3 bosses.
+- [x] Implement at least 3 bosses.
   - Deliverable: Three boss checks chosen from Iron Gate, Burning Knight, Prism Warden, Combo Gate, and Rising Blade.
   - Acceptance: Each boss has a previewed identity, readable moveset, and a distinct build or execution pressure.
 
-- [ ] Implement content pool rules.
+- [x] Implement content pool rules.
   - Deliverable: Shop and booster pools by rarity, category, orb type, and current dungeon level.
   - Acceptance: Random generation produces valid content and avoids duplicates where the GDD requires no duplicates.
 
-- [ ] Add placeholder art pass.
+- [x] Add placeholder art pass.
   - Deliverable: Readable placeholder icons and board orb visuals for every orb and content type.
   - Acceptance: No shop, inventory, relic, enemy, or orb appears as missing art during normal prototype play.
+
+Verification notes (2026-04-27):
+- Replaced debug-only content definitions with full Milestone 8 pack in `scripts/content/content_registry.gd`:
+  - 10 common, 10 uncommon, and 5 rare equipment items.
+  - 5 relics, plus existing 6 mastery cards and 6 consumables.
+  - 3 normal enemies and 3 bosses represented in content data.
+- Added item/relic `combat_modifiers` and integrated them into turn resolution via `RunState.current_combat_modifiers()` and `CombatStateMachine`.
+- Added content pool level gating (`min_level`, `max_level`) for shop/relic generation and maintained no-duplicate offer selection.
+- Added placeholder content presentation fields (`description`, `icon_key`) and surfaced item description text in shop offer buttons.
 
 ## Milestone 9: UI, UX, And Game Feel
 

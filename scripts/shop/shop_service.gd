@@ -285,6 +285,8 @@ func _offer_from_content(content, entry_type: String, data: Dictionary, level: i
 		"type": entry_type,
 		"content_id": String(data.get("id", "")),
 		"display_name": String(data.get("display_name", entry_type)),
+		"description": String(data.get("description", "")),
+		"icon_key": String(data.get("icon_key", "")),
 		"rarity": rarity,
 		"price": price,
 		"sold_out": false,

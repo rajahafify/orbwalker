@@ -219,6 +219,34 @@ func progression_snapshot() -> Dictionary:
 	return ensure_player_progression_state().to_snapshot()
 
 
+func current_combat_modifiers() -> Dictionary:
+	var modifiers := {
+		"orb_bonus_by_id": {},
+		"combo_flat_bonus": 0,
+		"combo_multiplier_mult": 1.0,
+		"start_turn_armor": 0,
+		"flat_damage_bonus": 0,
+		"flat_heal_bonus": 0,
+		"flat_gold_bonus": 0,
+		"sources": [],
+	}
+	var progression = ensure_player_progression_state()
+	var content = ensure_content_registry()
+	for item_id in progression.equipped_item_ids:
+		if item_id == "":
+			continue
+		var equipment: Dictionary = content.get_equipment(item_id)
+		_merge_combat_modifiers(modifiers, equipment)
+		_append_combat_modifier_source(modifiers, equipment, "equipment")
+	for relic_id in progression.relic_ids:
+		if relic_id == "":
+			continue
+		var relic: Dictionary = content.get_relic(relic_id)
+		_merge_combat_modifiers(modifiers, relic)
+		_append_combat_modifier_source(modifiers, relic, "relic")
+	return modifiers
+
+
 func set_gold(amount: int) -> void:
 	run_gold = maxi(0, amount)
 	_sync_player_gold_from_run()
@@ -574,3 +602,35 @@ func _step_display_name(step: String) -> String:
 
 func _sync_player_gold_from_run() -> void:
 	ensure_player_state().gold = run_gold
+
+
+func _merge_combat_modifiers(target: Dictionary, source_data: Dictionary) -> void:
+	var modifiers: Dictionary = source_data.get("combat_modifiers", {})
+	var target_orb_bonus: Dictionary = target.get("orb_bonus_by_id", {})
+	var source_orb_bonus: Dictionary = modifiers.get("orb_bonus_by_id", {})
+	for orb_id in source_orb_bonus.keys():
+		var orb_key := int(orb_id)
+		target_orb_bonus[orb_key] = int(target_orb_bonus.get(orb_key, 0)) + int(source_orb_bonus.get(orb_id, 0))
+	target["orb_bonus_by_id"] = target_orb_bonus
+	target["combo_flat_bonus"] = int(target.get("combo_flat_bonus", 0)) + int(modifiers.get("combo_flat_bonus", 0))
+	target["combo_multiplier_mult"] = float(target.get("combo_multiplier_mult", 1.0)) * float(modifiers.get("combo_multiplier_mult", 1.0))
+	target["start_turn_armor"] = int(target.get("start_turn_armor", 0)) + int(modifiers.get("start_turn_armor", 0))
+	target["flat_damage_bonus"] = int(target.get("flat_damage_bonus", 0)) + int(modifiers.get("flat_damage_bonus", 0))
+	target["flat_heal_bonus"] = int(target.get("flat_heal_bonus", 0)) + int(modifiers.get("flat_heal_bonus", 0))
+	target["flat_gold_bonus"] = int(target.get("flat_gold_bonus", 0)) + int(modifiers.get("flat_gold_bonus", 0))
+
+
+func _append_combat_modifier_source(target: Dictionary, source_data: Dictionary, source_type: String) -> void:
+	if source_data.is_empty():
+		return
+	var source_modifiers: Dictionary = source_data.get("combat_modifiers", {})
+	if source_modifiers.is_empty():
+		return
+	var sources: Array = target.get("sources", [])
+	sources.append({
+		"source_type": source_type,
+		"source_id": String(source_data.get("id", "")),
+		"display_name": String(source_data.get("display_name", source_data.get("id", "unknown"))),
+		"combat_modifiers": source_modifiers.duplicate(true),
+	})
+	target["sources"] = sources
