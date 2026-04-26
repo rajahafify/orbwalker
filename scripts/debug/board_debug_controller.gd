@@ -28,8 +28,6 @@ const TEST_EQUIPMENT_IDS: Array[String] = [
 ]
 const TEST_CONSUMABLE_ID := "debug_fire_scroll"
 
-const VICTORY_SCENE_PATH := "res://scenes/flow/shop_placeholder.tscn"
-const DEFEAT_SCENE_PATH := "res://scenes/flow/run_summary_placeholder.tscn"
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
@@ -79,10 +77,19 @@ func _ready() -> void:
 
 
 func _initialize_combat_state() -> void:
+	if not RunState.run_active:
+		RunState.start_new_run()
+	if not RunState.is_current_step_fight():
+		var redirect_scene := RunState.next_scene_path()
+		if redirect_scene != "":
+			get_tree().call_deferred("change_scene_to_file", redirect_scene)
+		return
+
 	_player_state = RunState.ensure_player_state()
 	_progression_state = RunState.ensure_player_progression_state()
+	var encounter: Dictionary = RunState.current_encounter_snapshot()
 	_enemy_state = ENEMY_STATE_SCRIPT.new()
-	_enemy_state.reset_for_fight()
+	_enemy_state.configure_from_blueprint(encounter)
 	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
 	_combat.start_fight(_player_state, _enemy_state)
 	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
@@ -92,6 +99,9 @@ func _initialize_combat_state() -> void:
 	_next_button.disabled = true
 	_update_hud()
 	_combat_log_lines.clear()
+	_append_combat_log("Run flow: %s" % RunState.level_sequence_label())
+	if String(encounter.get("step_key", "")) == "enemy_1":
+		_append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
 	_append_combat_log("Fight started: %s HP %d." % [_enemy_state.display_name, _enemy_state.max_hp])
 	_append_combat_log("Player start: HP %d/%d, Gold %d." % [_player_state.current_hp, _player_state.max_hp, _player_state.gold])
 	if content_errors.is_empty():
@@ -113,7 +123,10 @@ func _begin_turn_preview() -> void:
 	_pending_next_scene_path = ""
 	_next_button.visible = false
 	_next_button.disabled = true
-	_status_label.text = "Turn %d. Enemy intent shown. Drag to make your move." % _combat.turn_index
+	_status_label.text = "%s | Turn %d. Enemy intent shown. Drag to make your move." % [
+		RunState.level_sequence_label(),
+		_combat.turn_index,
+	]
 	_update_hud()
 	_append_combat_log(
 		"Turn %d intent: %s." % [
@@ -352,16 +365,19 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	_update_hud()
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
+		var transition: Dictionary = RunState.mark_fight_victory()
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_status_label.text = _build_victory_status(turn_log) + " Press Next."
+		_status_label.text = _build_victory_status(turn_log, transition) + " Press Next."
 		_append_turn_log(turn_log)
-		_append_combat_log("Outcome: Victory. Waiting for Next button.")
-		_pending_next_scene_path = VICTORY_SCENE_PATH
+		_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
+		_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
 		_next_button.visible = true
 		_next_button.disabled = false
 		return
 
 	if _combat.phase == COMBAT_PHASE_DEFEAT:
+		var defeat_cause := _build_defeat_cause(turn_log)
+		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 		_status_label.text = _build_defeat_status(turn_log)
 		_append_turn_log(turn_log)
@@ -369,7 +385,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_pending_next_scene_path = ""
 		_next_button.visible = false
 		_next_button.disabled = true
-		_queue_outcome_transition(DEFEAT_SCENE_PATH)
+		_queue_outcome_transition(String(defeat_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
 		return
 
 	_status_label.text = _build_turn_summary_status(turn_log)
@@ -494,15 +510,33 @@ func _build_turn_summary_status(turn_log: Dictionary) -> String:
 	]
 
 
-func _build_victory_status(turn_log: Dictionary) -> String:
-	return "Victory. Enemy defeated before intent (%s). Transitioning to shop reward." % (
-		"skipped" if bool(turn_log.enemy_intent_skipped) else "resolved"
-	)
+func _build_victory_status(turn_log: Dictionary, transition: Dictionary) -> String:
+	var next_scene := String(transition.get("next_scene", ""))
+	var next_label := "Next scene"
+	if next_scene.find("shop") >= 0:
+		next_label = "shop"
+	elif next_scene.find("boss_relic_reward") >= 0:
+		next_label = "boss relic reward"
+	elif next_scene.find("run_summary") >= 0:
+		next_label = "run summary"
+	elif next_scene.find("board_debug") >= 0:
+		next_label = "next fight"
+	return "Victory. Enemy defeated before intent (%s). Continue to %s." % [
+		"skipped" if bool(turn_log.enemy_intent_skipped) else "resolved",
+		next_label,
+	]
 
 
 func _build_defeat_status(turn_log: Dictionary) -> String:
 	var hp_damage := int(turn_log.enemy_attack_resolution.get("hp_damage", 0))
 	return "Defeat. Enemy intent dealt %d HP damage. Transitioning to run summary." % hp_damage
+
+
+func _build_defeat_cause(turn_log: Dictionary) -> String:
+	var enemy_label := String(_enemy_state.display_name if _enemy_state != null else "Enemy")
+	var intent_label := String(Dictionary(turn_log.get("enemy_intent", {})).get("label", "Unknown intent"))
+	var hp_damage := int(Dictionary(turn_log.get("enemy_attack_resolution", {})).get("hp_damage", 0))
+	return "%s defeated the hero with %s for %d HP." % [enemy_label, intent_label, hp_damage]
 
 
 func _update_hud() -> void:
@@ -537,7 +571,7 @@ func _update_hud() -> void:
 
 	var intent := _enemy_state.get_current_intent()
 	_intent_label.text = "Enemy Intent: %s" % _format_intent(intent)
-	_phase_label.text = "Combat Phase: %s" % _combat.phase_name()
+	_phase_label.text = "Run: %s\nCombat Phase: %s" % [RunState.level_sequence_label(), _combat.phase_name()]
 
 
 func _format_intent(intent: Dictionary) -> String:

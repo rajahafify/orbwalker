@@ -39,7 +39,7 @@ text = "Back"
 [node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow" unique_id=726365973]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Milestone 5: Progression Debug"
+text = "Milestone 7: Run Combat"
 horizontal_alignment = 1
 vertical_alignment = 1
 

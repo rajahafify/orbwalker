@@ -11,6 +11,7 @@ var enemy_id: String = "training_goblin"
 var display_name: String = "Training Goblin"
 var max_hp: int = 90
 var current_hp: int = 90
+var is_boss: bool = false
 
 # Intent entries use: {"type": IntentType, "attack": int, "block": int, "label": String}
 var intent_cycle: Array[Dictionary] = []
@@ -24,6 +25,23 @@ func _init() -> void:
 
 func reset_for_fight() -> void:
 	current_hp = max_hp
+	intent_index = 0
+	current_turn_block = 0
+
+
+func configure_from_blueprint(blueprint: Dictionary) -> void:
+	enemy_id = String(blueprint.get("enemy_id", enemy_id))
+	display_name = String(blueprint.get("display_name", display_name))
+	max_hp = maxi(1, int(blueprint.get("max_hp", max_hp)))
+	current_hp = max_hp
+	is_boss = bool(blueprint.get("is_boss", false))
+	var configured_cycle: Array = blueprint.get("intent_cycle", [])
+	if configured_cycle.is_empty():
+		intent_cycle = _default_intent_cycle()
+	else:
+		intent_cycle = []
+		for raw_intent in configured_cycle:
+			intent_cycle.append(Dictionary(raw_intent).duplicate(true))
 	intent_index = 0
 	current_turn_block = 0
 

@@ -20,10 +20,19 @@ extends Control
 
 
 func _ready() -> void:
-	_title_label.text = "Milestone 6 Shop Debug"
+	if not RunState.run_active:
+		_title_label.text = "Shop"
+		_summary_label.text = "No active run. Returning to main menu."
+		get_tree().call_deferred("change_scene_to_file", "res://scenes/main.tscn")
+		return
+	if not RunState.is_current_step_shop():
+		get_tree().call_deferred("change_scene_to_file", RunState.next_scene_path())
+		return
+
+	_title_label.text = "Shop - %s" % RunState.level_sequence_label()
 	var open_result: Dictionary = RunState.open_shop_for_current_level()
 	if bool(open_result.get("ok", false)):
-		_summary_label.text = "Shop opened. Buy, reroll, sell, or skip."
+		_summary_label.text = "Shop opened. Buy, reroll, sell, or skip.\nLevel boss preview: %s" % RunState.current_level_boss_name()
 	else:
 		_summary_label.text = "Failed to open shop: %s" % String(open_result.get("reason", "unknown"))
 	_refresh_ui()
@@ -32,6 +41,7 @@ func _ready() -> void:
 func _refresh_ui() -> void:
 	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	_title_label.text = "Shop - %s" % RunState.level_sequence_label()
 	_gold_label.text = "Gold: %d" % RunState.run_gold
 	_reroll_button.text = "Reroll (%d)" % int(shop_snapshot.get("reroll_cost", 0))
 	_reroll_button.disabled = not bool(shop_snapshot.get("active", false))
@@ -154,13 +164,13 @@ func _on_booster_option_button_3_pressed() -> void:
 
 
 func _on_skip_shop_button_pressed() -> void:
-	RunState.close_shop(true)
-	get_tree().change_scene_to_file("res://scenes/combat/board_debug.tscn")
+	var transition: Dictionary = RunState.advance_after_shop(true)
+	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_next_fight_button_pressed() -> void:
-	RunState.close_shop(false)
-	get_tree().change_scene_to_file("res://scenes/combat/board_debug.tscn")
+	var transition: Dictionary = RunState.advance_after_shop(false)
+	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_main_menu_button_pressed() -> void:

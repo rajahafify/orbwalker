@@ -330,39 +330,45 @@ Verification notes (2026-04-26):
 
 ## Milestone 7: Dungeon And Run Structure
 
+Status: Complete.
+
 Goal: Turn isolated fights and shops into a 3-level first playable run.
 
 Primary deliverable: A complete 3 dungeon level run with normal enemies, shops, bosses, boss relic rewards, death, and victory.
 
 Tasks:
 
-- [ ] Implement run start.
+- [x] Implement run start.
   - Deliverable: New run initializes one hero, starting stats, starting gold, empty inventories, and level 1 dungeon state.
   - Acceptance: Starting a new run produces a clean state every time.
 
-- [ ] Implement dungeon level sequence.
+- [x] Implement dungeon level sequence.
   - Deliverable: Each level follows Enemy 1, Shop, Enemy 2, Shop, Boss, Boss Relic Reward, Shop, Advance.
   - Acceptance: The game advances through the sequence without manual debug intervention.
 
-- [ ] Implement 3-level prototype run.
+- [x] Implement 3-level prototype run.
   - Deliverable: Level counter and run completion after level 3 boss and final shop or victory screen.
   - Acceptance: The vertical slice can be completed from start to finish.
 
-- [ ] Add boss preview.
+- [x] Add boss preview.
   - Deliverable: Boss type is visible at the start of each dungeon level.
   - Acceptance: The player knows the level boss check before committing to shop and fight decisions.
 
-- [ ] Implement boss relic reward.
+- [x] Implement boss relic reward.
   - Deliverable: Boss victory grants or offers a relic reward before the next shop.
   - Acceptance: Boss relics are separate from shop relic offers.
 
-- [ ] Implement defeat summary.
+- [x] Implement defeat summary.
   - Deliverable: Run loss screen showing level reached, enemies defeated, gold earned, equipped items, relics, and cause of death.
   - Acceptance: Player death exits the run cleanly.
 
-- [ ] Implement prototype victory summary.
+- [x] Implement prototype victory summary.
   - Deliverable: Run win screen after clearing the prototype final boss.
   - Acceptance: Clearing all 3 levels produces a complete win state.
+
+Verification notes (2026-04-27):
+- Godot MCP sequence validation passed for run start, level sequence transitions, boss reward step, prototype victory transition, and defeat summary transition.
+- Run sequencing is now owned by `RunState` and consumed by combat/shop/summary scenes instead of hard-coded placeholder jumps.
 
 ## Milestone 8: Initial Content Pack
 
