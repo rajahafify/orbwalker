@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready() -> void:
-	_summary_label.text = "Enemy defeated. This placeholder represents shop or boss reward transition for Milestone 4."
+	_summary_label.text = "Enemy defeated. This placeholder represents shop or boss reward transition for Milestone 5."
 
 
 func _on_next_fight_button_pressed() -> void:

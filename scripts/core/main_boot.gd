@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready() -> void:
-	_status_label.text = "Milestone 4 started. Open combat debug to validate intent, combat math, turn order, and outcomes."
+	_status_label.text = "Milestone 5 started. Open combat debug to validate progression state contracts, transition guards, and content validation output."
 
 
 func _on_start_fight_button_pressed() -> void:

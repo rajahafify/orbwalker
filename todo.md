@@ -253,25 +253,27 @@ Verification notes (2026-04-26):
 
 ## Milestone 5: Player State Management
 
+Status: In progress.
+
 Goal: Implement a clear player-state runtime for progression systems with explicit acceptance gates.
 
 Primary deliverable: A canonical `PlayerProgressionState` (or equivalent) plus validated state transitions for equipment, mastery, consumables, and relics.
 
 Tasks:
 
-- [ ] Phase A: Define player-state contracts.
+- [x] Phase A: Define player-state contracts.
   - Deliverable: Canonical runtime and data structures for 5 equipment slots, 3 consumable slots, persistent relic list, and 6 mastery tracks with cap 5.
   - Acceptance: All fields have documented ownership, defaults, and run persistence behavior through `RunState`.
 
-- [ ] Phase B: Implement player-state transitions.
+- [x] Phase B: Implement player-state transitions.
   - Deliverable: Action interfaces or services for `equip_item`, `unequip_item`, `sell_equipment`, `grant_mastery`, `add_consumable`, `use_consumable`, and `add_relic`.
   - Acceptance: Each action defines deterministic preconditions and postconditions, and rejects invalid operations with explicit reasons.
 
-- [ ] Phase C: Scope effects to player-state actions.
+- [x] Phase C: Scope effects to player-state actions.
   - Deliverable: Milestone 5 effect coverage limited to hooks needed by equipment, consumable, and relic state actions.
   - Acceptance: Equipment and relic effects apply only while active, and player-state actions do not require combat-specific hardcoded special cases.
 
-- [ ] Phase D: Validate data and expose debug state.
+- [x] Phase D: Validate data and expose debug state.
   - Deliverable: Content checks for duplicate IDs, missing display data, and invalid effect references used by player-state content.
   - Deliverable: Standard validation result format as an error list with `item_id` and `reason`.
   - Deliverable: Debug visibility for current player-state snapshot during playtest.

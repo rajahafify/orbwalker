@@ -87,24 +87,24 @@ Verification notes (2026-04-26):
 ## Milestone 5: Player State Management
 
 Phase A: Player state contracts
-- [ ] Player progression state contains 5 equipment slots, 3 consumable slots, relic list, and 6 mastery tracks.
-- [ ] Player progression state defaults are deterministic and persist through run transitions.
+- [x] Player progression state contains 5 equipment slots, 3 consumable slots, relic list, and 6 mastery tracks.
+- [x] Player progression state defaults are deterministic and persist through run transitions.
 
 Phase B: State transitions
-- [ ] Equipment lifecycle works end to end (`equip_item`, `unequip_item`, `sell_equipment`) and updates state consistently.
-- [ ] Duplicate equipment and slot-limit violations are rejected with explicit error reasons.
-- [ ] Mastery gain updates the correct track and respects cap behavior.
-- [ ] Consumables can be added and used only in valid windows, then consumed and removed from slots.
-- [ ] Relics are added once and persist across fights for the full run.
+- [x] Equipment lifecycle works end to end (`equip_item`, `unequip_item`, `sell_equipment`) and updates state consistently.
+- [x] Duplicate equipment and slot-limit violations are rejected with explicit error reasons.
+- [x] Mastery gain updates the correct track and respects cap behavior.
+- [x] Consumables can be added and used only in valid windows, then consumed and removed from slots.
+- [x] Relics are added once and persist across fights for the full run.
 
 Phase C: Effect scope for player-state actions
-- [ ] Equipment and relic effects apply only while active and are removed cleanly when no longer active.
-- [ ] Player-state actions do not require combat-specific hardcoded effect branches.
+- [x] Equipment and relic effects apply only while active and are removed cleanly when no longer active.
+- [x] Player-state actions do not require combat-specific hardcoded effect branches.
 
 Phase D: Validation and debug visibility
-- [ ] Duplicate IDs, missing display data, and invalid effect references are surfaced before run entry.
-- [ ] Validation output reports an actionable error list with `item_id` and `reason`.
-- [ ] Runtime player-state snapshot is visible in debug/playtest tooling.
+- [x] Duplicate IDs, missing display data, and invalid effect references are surfaced before run entry.
+- [x] Validation output reports an actionable error list with `item_id` and `reason`.
+- [x] Runtime player-state snapshot is visible in debug/playtest tooling.
 
 ## Milestone 6: Shop And Boosters
 
