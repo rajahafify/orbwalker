@@ -372,17 +372,19 @@ Verification notes (2026-04-27):
 
 ## Milestone 8: Initial Content Pack
 
+Status: In progress.
+
 Goal: Fill the prototype with enough content to exercise the build-driven roguelike loop.
 
 Primary deliverable: A data-driven content pack matching the GDD initial lists.
 
 Tasks:
 
-- [ ] Implement 6 mastery cards.
+- [x] Implement 6 mastery cards.
   - Deliverable: Fire, Ice, Earth, Heart, Armor, and Gold mastery cards.
   - Acceptance: Each card increases its mastery by 1 up to the prototype cap.
 
-- [ ] Implement 6 consumables.
+- [x] Implement 6 consumables.
   - Deliverable: Fire Scroll, Ice Scroll, Earth Scroll, Heart Scroll, Armor Scroll, and Gold Scroll.
   - Acceptance: Each scroll converts the correct number of random non-target orbs.
 

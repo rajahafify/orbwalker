@@ -72,16 +72,22 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 
 	var combo_count: int = int(resolve_result.get("total_combos", 0))
 	var matched_counts: Dictionary = resolve_result.get("matched_counts", {})
+	var damage_combo_multiplier := player.combo_multiplier(combo_count)
 
 	phase = Phase.PLAYER_EFFECTS
-	var heal_amount := int(matched_counts.get(OrbType.Id.HEART, 0)) * player.orb_value(OrbType.Id.HEART)
-	var armor_gain := int(matched_counts.get(OrbType.Id.ARMOR, 0)) * player.orb_value(OrbType.Id.ARMOR)
-	var gold_gain := int(matched_counts.get(OrbType.Id.GOLD, 0)) * player.orb_value(OrbType.Id.GOLD)
+	var heart_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.HEART, 0)), OrbType.Id.HEART, 1.0)
+	var armor_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.ARMOR, 0)), OrbType.Id.ARMOR, damage_combo_multiplier)
+	var gold_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.GOLD, 0)), OrbType.Id.GOLD, 1.0)
+	var fire_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.FIRE, 0)), OrbType.Id.FIRE, damage_combo_multiplier)
+	var ice_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.ICE, 0)), OrbType.Id.ICE, damage_combo_multiplier)
+	var earth_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.EARTH, 0)), OrbType.Id.EARTH, damage_combo_multiplier)
 
-	var combo_scale := maxi(1, combo_count)
-	var fire_damage := int(matched_counts.get(OrbType.Id.FIRE, 0)) * player.orb_value(OrbType.Id.FIRE) * combo_scale
-	var ice_damage := int(matched_counts.get(OrbType.Id.ICE, 0)) * player.orb_value(OrbType.Id.ICE) * combo_scale
-	var earth_damage := int(matched_counts.get(OrbType.Id.EARTH, 0)) * player.orb_value(OrbType.Id.EARTH) * combo_scale
+	var heal_amount := int(heart_result.get("total", 0))
+	var armor_gain := int(armor_result.get("total", 0))
+	var gold_gain := int(gold_result.get("total", 0))
+	var fire_damage := int(fire_result.get("total", 0))
+	var ice_damage := int(ice_result.get("total", 0))
+	var earth_damage := int(earth_result.get("total", 0))
 	var total_elemental_damage := fire_damage + ice_damage + earth_damage
 
 	var healed := player.heal(heal_amount)
@@ -126,13 +132,22 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 		"resolved_turn_index": resolved_turn_index,
 		"turn_index": turn_index,
 		"combo_count": combo_count,
+		"damage_combo_multiplier": damage_combo_multiplier,
+		"increase_combo_modifier": player.increase_combo_modifier,
+		"more_combo_modifier": player.more_combo_modifier,
 		"matched_counts": matched_counts,
 		"healed": healed,
 		"armor_gained": added_armor,
 		"gold_gained": gold_gain,
+		"heart_base": int(heart_result.get("base", 0)),
+		"armor_base": int(armor_result.get("base", 0)),
+		"gold_base": int(gold_result.get("base", 0)),
 		"fire_damage": fire_damage,
 		"ice_damage": ice_damage,
 		"earth_damage": earth_damage,
+		"fire_base": int(fire_result.get("base", 0)),
+		"ice_base": int(ice_result.get("base", 0)),
+		"earth_base": int(earth_result.get("base", 0)),
 		"total_elemental_damage": total_elemental_damage,
 		"enemy_blocked": int(block_resolution.get("blocked", 0)),
 		"enemy_damage_taken": enemy_damage_dealt,
@@ -147,3 +162,14 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 
 func is_fight_over() -> bool:
 	return phase == Phase.VICTORY or phase == Phase.DEFEAT
+
+
+func _scaled_orb_total(orb_count: int, orb_id: int, combo_multiplier: float) -> Dictionary:
+	var count := maxi(0, orb_count)
+	var orb_value := player.orb_value(orb_id)
+	var base_damage := count * orb_value
+	var total_damage := int(round(base_damage * combo_multiplier))
+	return {
+		"base": base_damage,
+		"total": maxi(0, total_damage),
+	}

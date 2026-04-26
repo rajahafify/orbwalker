@@ -124,33 +124,41 @@ Gold orbs are rarer than other orb types. Their exact spawn rate is a balance ta
 
 ## Damage And Resource Formula
 
-Default damage formula:
+Damage-scaling orb calculations (Fire, Ice, Earth, Armor):
 
 ```text
-element_damage = matched_element_orbs * element_base_value * total_combo_count
+base_amount = orb_count * (orb_mastery_level + 1)
+damage_combo_multiplier = (increase_combo_modifier + combo_count) * more_combo_modifier
+total_amount = base_amount * damage_combo_multiplier
 ```
+
+Non-combo orb calculations:
+
+```text
+heart_total = heart_orb_count * (heart_mastery_level + 1)
+gold_total = gold_orb_count * (gold_mastery_level + 1)
+```
+
+Interpretation:
+
+- `orb_mastery_level` is tracked per orb type.
+- `increase_combo_modifier` is additive with combo count.
+- `more_combo_modifier` is multiplicative after the additive stage ("increase then more" style).
+- Heart and Gold explicitly do not use combo scaling.
 
 Example:
 
 ```text
-3 fire orbs matched
-fire base value = 1
-total combo count = 3
+fire_orb_count = 3
+fire_mastery_level = 0
+increase_combo_modifier = 0
+combo_count = 3
+more_combo_modifier = 1
 
-fire damage = 3 * 1 * 3 = 9
+base_amount = 3 * (0 + 1) = 3
+damage_combo_multiplier = (0 + 3) * 1 = 3
+total_amount = 3 * 3 = 9
 ```
-
-Only Fire, Ice, and Earth use the damage combo multiplier by default.
-
-Heart, Armor, and Gold do not scale with combo count by default:
-
-```text
-3 heart orbs = 3 HP restored
-3 armor orbs = 3 armor gained
-3 gold orbs = 3 gold gained
-```
-
-Equipment and relics can modify base values, add flat damage, multiply combo value, or change how non-damage orbs scale.
 
 ## Player Stats
 

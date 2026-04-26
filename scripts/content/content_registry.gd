@@ -42,35 +42,109 @@ var _player_state_content := {
 	],
 	CONSUMABLES: [
 		{
-			"id": "debug_fire_scroll",
-			"display_name": "Debug Fire Scroll",
+			"id": "fire_scroll",
+			"display_name": "Fire Scroll",
 			"rarity": "common",
 			"target_orb_id": OrbType.Id.FIRE,
-			"base_price": 8,
+			"base_price": 9,
+			"convert_count": 3,
 			"effects": [
 				{
 					"hook": EffectHooks.ON_CONSUMABLE_USED,
 					"operation": "convert_random_orbs",
 					"value": {
 						"target_orb_id": OrbType.Id.FIRE,
-						"count": 2,
+						"count": 3,
 					},
 				},
 			],
 		},
 		{
-			"id": "debug_heart_scroll",
-			"display_name": "Debug Heart Scroll",
+			"id": "ice_scroll",
+			"display_name": "Ice Scroll",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.ICE,
+			"base_price": 9,
+			"convert_count": 3,
+			"effects": [
+				{
+					"hook": EffectHooks.ON_CONSUMABLE_USED,
+					"operation": "convert_random_orbs",
+					"value": {
+						"target_orb_id": OrbType.Id.ICE,
+						"count": 3,
+					},
+				},
+			],
+		},
+		{
+			"id": "earth_scroll",
+			"display_name": "Earth Scroll",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.EARTH,
+			"base_price": 9,
+			"convert_count": 3,
+			"effects": [
+				{
+					"hook": EffectHooks.ON_CONSUMABLE_USED,
+					"operation": "convert_random_orbs",
+					"value": {
+						"target_orb_id": OrbType.Id.EARTH,
+						"count": 3,
+					},
+				},
+			],
+		},
+		{
+			"id": "heart_scroll",
+			"display_name": "Heart Scroll",
 			"rarity": "common",
 			"target_orb_id": OrbType.Id.HEART,
-			"base_price": 8,
+			"base_price": 9,
+			"convert_count": 3,
 			"effects": [
 				{
 					"hook": EffectHooks.ON_CONSUMABLE_USED,
 					"operation": "convert_random_orbs",
 					"value": {
 						"target_orb_id": OrbType.Id.HEART,
-						"count": 2,
+						"count": 3,
+					},
+				},
+			],
+		},
+		{
+			"id": "armor_scroll",
+			"display_name": "Armor Scroll",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.ARMOR,
+			"base_price": 9,
+			"convert_count": 3,
+			"effects": [
+				{
+					"hook": EffectHooks.ON_CONSUMABLE_USED,
+					"operation": "convert_random_orbs",
+					"value": {
+						"target_orb_id": OrbType.Id.ARMOR,
+						"count": 3,
+					},
+				},
+			],
+		},
+		{
+			"id": "gold_scroll",
+			"display_name": "Gold Scroll",
+			"rarity": "uncommon",
+			"target_orb_id": OrbType.Id.GOLD,
+			"base_price": 13,
+			"convert_count": 3,
+			"effects": [
+				{
+					"hook": EffectHooks.ON_CONSUMABLE_USED,
+					"operation": "convert_random_orbs",
+					"value": {
+						"target_orb_id": OrbType.Id.GOLD,
+						"count": 3,
 					},
 				},
 			],
@@ -78,8 +152,8 @@ var _player_state_content := {
 	],
 	MASTERY_CARDS: [
 		{
-			"id": "debug_fire_mastery",
-			"display_name": "Debug Fire Mastery",
+			"id": "fire_mastery",
+			"display_name": "Fire Mastery",
 			"rarity": "common",
 			"target_orb_id": OrbType.Id.FIRE,
 			"amount": 1,
@@ -87,8 +161,44 @@ var _player_state_content := {
 			"effects": [],
 		},
 		{
-			"id": "debug_gold_mastery",
-			"display_name": "Debug Gold Mastery",
+			"id": "ice_mastery",
+			"display_name": "Ice Mastery",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.ICE,
+			"amount": 1,
+			"base_price": 11,
+			"effects": [],
+		},
+		{
+			"id": "earth_mastery",
+			"display_name": "Earth Mastery",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.EARTH,
+			"amount": 1,
+			"base_price": 11,
+			"effects": [],
+		},
+		{
+			"id": "heart_mastery",
+			"display_name": "Heart Mastery",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.HEART,
+			"amount": 1,
+			"base_price": 12,
+			"effects": [],
+		},
+		{
+			"id": "armor_mastery",
+			"display_name": "Armor Mastery",
+			"rarity": "common",
+			"target_orb_id": OrbType.Id.ARMOR,
+			"amount": 1,
+			"base_price": 12,
+			"effects": [],
+		},
+		{
+			"id": "gold_mastery",
+			"display_name": "Gold Mastery",
 			"rarity": "uncommon",
 			"target_orb_id": OrbType.Id.GOLD,
 			"amount": 1,

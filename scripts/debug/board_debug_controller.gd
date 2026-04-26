@@ -26,7 +26,7 @@ const TEST_EQUIPMENT_IDS: Array[String] = [
 	"debug_shortsword",
 	"debug_buckler",
 ]
-const TEST_CONSUMABLE_ID := "debug_fire_scroll"
+const TEST_CONSUMABLE_ID := "fire_scroll"
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
@@ -59,9 +59,11 @@ var _last_resolve_result: Dictionary = {}
 var _outcome_transition_queued := false
 var _pending_next_scene_path := ""
 var _combat_log_lines: Array[String] = []
+var _consumable_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	_consumable_rng.randomize()
 	_seed_input.text = str(1337)
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
@@ -144,6 +146,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_P:
 			_print_board_state()
 			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_C:
+			_try_use_first_consumable()
+			get_viewport().set_input_as_handled()
 
 
 func _on_regenerate_button_pressed() -> void:
@@ -206,6 +211,74 @@ func _on_add_test_consumable_button_pressed() -> void:
 		_status_label.text = "Add test consumable failed: %s" % reason
 		_append_combat_log("Debug add consumable failed: %s" % reason)
 	_update_hud()
+
+
+func _try_use_first_consumable() -> void:
+	if _combat == null or _combat.is_fight_over():
+		return
+	if _input_phase != InputPhase.PLAYER_INPUT:
+		_status_label.text = "Consumables can only be used during player input."
+		return
+
+	var progression_state: Variant = RunState.ensure_player_progression_state()
+	var progression_service: Variant = RunState.ensure_player_progression_service()
+	var content: Variant = RunState.ensure_content_registry()
+	var use_result: Dictionary = progression_service.use_consumable(progression_state, 0, content)
+	if not bool(use_result.get("ok", false)):
+		var reason := String(use_result.get("reason", "unknown_error"))
+		_status_label.text = "Use consumable failed: %s" % reason
+		_append_combat_log("Use consumable failed: %s" % reason)
+		_update_hud()
+		return
+
+	var payload: Dictionary = use_result.get("result", {})
+	var consumable_id := String(payload.get("consumable_id", ""))
+	var effects: Array = payload.get("effects", [])
+	var conversion_total := _apply_consumable_effects(effects)
+	_board_view.board_state = _board_state
+	_refresh_drag_match_glow()
+	_status_label.text = "Used %s. Converted %d orbs." % [consumable_id, conversion_total]
+	_append_combat_log("Consumable used: %s. Converted %d orbs." % [consumable_id, conversion_total])
+	_update_hud()
+
+
+func _apply_consumable_effects(effects: Array) -> int:
+	var total_converted := 0
+	for raw_effect in effects:
+		var effect: Dictionary = raw_effect
+		var operation := String(effect.get("operation", ""))
+		if operation != "convert_random_orbs":
+			continue
+		var value: Dictionary = effect.get("value", {})
+		var target_orb_id := int(value.get("target_orb_id", -1))
+		var count := int(value.get("count", 0))
+		total_converted += _convert_random_non_target_orbs(target_orb_id, count)
+	return total_converted
+
+
+func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
+	if count <= 0 or not OrbType.is_valid_id(target_orb_id):
+		return 0
+
+	var candidates: Array[Vector2i] = []
+	for row in BoardState.ROW_COUNT:
+		for column in BoardState.COLUMN_COUNT:
+			var orb_id := _board_state.get_cell(column, row)
+			if orb_id == target_orb_id:
+				continue
+			candidates.append(Vector2i(column, row))
+	if candidates.is_empty():
+		return 0
+
+	var converted := 0
+	var picks := mini(count, candidates.size())
+	for _i in picks:
+		var pick_index := _consumable_rng.randi_range(0, candidates.size() - 1)
+		var cell := candidates[pick_index]
+		_board_state.set_cell(cell.x, cell.y, target_orb_id)
+		candidates.remove_at(pick_index)
+		converted += 1
+	return converted
 
 
 func _process(delta: float) -> void:
@@ -585,36 +658,45 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 	var resolved_turn := int(turn_log.get("resolved_turn_index", 0))
 	var combo_count := int(turn_log.get("combo_count", 0))
 	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
-	var fire_orbs := int(matched_counts.get(OrbType.Id.FIRE, 0))
-	var ice_orbs := int(matched_counts.get(OrbType.Id.ICE, 0))
-	var earth_orbs := int(matched_counts.get(OrbType.Id.EARTH, 0))
 	var heart_orbs := int(matched_counts.get(OrbType.Id.HEART, 0))
 	var armor_orbs := int(matched_counts.get(OrbType.Id.ARMOR, 0))
 	var gold_orbs := int(matched_counts.get(OrbType.Id.GOLD, 0))
-	var combo_scale := maxi(1, combo_count)
+	var damage_combo_multiplier := float(turn_log.get("damage_combo_multiplier", 0.0))
+	var increase_combo_modifier := int(turn_log.get("increase_combo_modifier", 0))
+	var more_combo_modifier := float(turn_log.get("more_combo_modifier", 1.0))
 
 	_append_combat_log("---- Turn %d ----" % resolved_turn)
 	_append_combat_log("Matches: combos=%d | %s" % [combo_count, _format_matched_counts(matched_counts)])
 	_append_combat_log(
-		"Heart heal: %d * %d = +%d HP" % [
+		"Damage combo multiplier: (%d + %d) * %.2f = %.2f" % [
+			increase_combo_modifier,
+			combo_count,
+			more_combo_modifier,
+			damage_combo_multiplier,
+		]
+	)
+	_append_combat_log(
+		"Heart heal: base %d from %d * (%d+1) = +%d HP (no combo scaling)" % [
+			int(turn_log.get("heart_base", 0)),
 			heart_orbs,
-			_player_state.orb_value(OrbType.Id.HEART),
+			_player_state.orb_value(OrbType.Id.HEART) - 1,
 			int(turn_log.healed),
 		]
 	)
 	_append_combat_log(
-		"Armor gain: %d * %d = +%d Armor" % [
+		"Armor gain: base %d (%d * (%d+1)) * %.2f = +%d Armor" % [
+			int(turn_log.get("armor_base", 0)),
 			armor_orbs,
-			_player_state.orb_value(OrbType.Id.ARMOR),
+			_player_state.orb_value(OrbType.Id.ARMOR) - 1,
+			damage_combo_multiplier,
 			int(turn_log.armor_gained),
 		]
 	)
 	_append_combat_log(
-		"Elemental (%dx combo): F %d*%d*%d=%d, I %d*%d*%d=%d, E %d*%d*%d=%d => total %d" % [
-			combo_scale,
-			fire_orbs, _player_state.orb_value(OrbType.Id.FIRE), combo_scale, int(turn_log.fire_damage),
-			ice_orbs, _player_state.orb_value(OrbType.Id.ICE), combo_scale, int(turn_log.ice_damage),
-			earth_orbs, _player_state.orb_value(OrbType.Id.EARTH), combo_scale, int(turn_log.earth_damage),
+		"Elemental: F base %d -> %d, I base %d -> %d, E base %d -> %d => total %d" % [
+			int(turn_log.get("fire_base", 0)), int(turn_log.fire_damage),
+			int(turn_log.get("ice_base", 0)), int(turn_log.ice_damage),
+			int(turn_log.get("earth_base", 0)), int(turn_log.earth_damage),
 			int(turn_log.total_elemental_damage),
 		]
 	)
@@ -625,9 +707,10 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		]
 	)
 	_append_combat_log(
-		"Gold gain: %d * %d = +%d Gold" % [
+		"Gold gain: base %d from %d * (%d+1) = +%d Gold (no combo scaling)" % [
+			int(turn_log.get("gold_base", 0)),
 			gold_orbs,
-			_player_state.orb_value(OrbType.Id.GOLD),
+			_player_state.orb_value(OrbType.Id.GOLD) - 1,
 			int(turn_log.gold_gained),
 		]
 	)

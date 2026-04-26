@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready() -> void:
-	_status_label.text = "Milestone 7 started. Start a new 3-level run with boss previews, boss relic rewards, shops, and run summary endpoints."
+	_status_label.text = "Milestone 8 started. Initial content pack is in progress: mastery cards and consumable scrolls are live, with equipment, relics, and content pools next."
 
 
 func _on_start_fight_button_pressed() -> void:

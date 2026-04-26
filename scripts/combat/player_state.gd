@@ -5,6 +5,8 @@ const DEFAULT_MAX_HP := 100
 const DEFAULT_EQUIPMENT_SLOTS := 5
 const DEFAULT_CONSUMABLE_SLOTS := 3
 const DEFAULT_MOVE_TIMER_SECONDS := 5.0
+const DEFAULT_INCREASE_COMBO_MODIFIER := 0
+const DEFAULT_MORE_COMBO_MODIFIER := 1.0
 
 var max_hp: int = DEFAULT_MAX_HP
 var current_hp: int = DEFAULT_MAX_HP
@@ -15,14 +17,16 @@ var base_orb_values := {
 	OrbType.Id.FIRE: 1,
 	OrbType.Id.ICE: 1,
 	OrbType.Id.EARTH: 1,
-	OrbType.Id.HEART: 2,
-	OrbType.Id.ARMOR: 2,
-	OrbType.Id.GOLD: 3,
+	OrbType.Id.HEART: 1,
+	OrbType.Id.ARMOR: 1,
+	OrbType.Id.GOLD: 1,
 }
 
 var equipment_slots: int = DEFAULT_EQUIPMENT_SLOTS
 var consumable_slots: int = DEFAULT_CONSUMABLE_SLOTS
 var move_timer_seconds: float = DEFAULT_MOVE_TIMER_SECONDS
+var increase_combo_modifier: int = DEFAULT_INCREASE_COMBO_MODIFIER
+var more_combo_modifier: float = DEFAULT_MORE_COMBO_MODIFIER
 
 
 func reset_for_new_run() -> void:
@@ -33,6 +37,8 @@ func reset_for_new_run() -> void:
 	equipment_slots = DEFAULT_EQUIPMENT_SLOTS
 	consumable_slots = DEFAULT_CONSUMABLE_SLOTS
 	move_timer_seconds = DEFAULT_MOVE_TIMER_SECONDS
+	increase_combo_modifier = DEFAULT_INCREASE_COMBO_MODIFIER
+	more_combo_modifier = DEFAULT_MORE_COMBO_MODIFIER
 
 
 func heal(amount: int, allow_overheal: bool = false) -> int:
@@ -80,4 +86,14 @@ func is_dead() -> bool:
 
 
 func orb_value(orb_id: int) -> int:
-	return int(base_orb_values.get(orb_id, 0))
+	if not OrbType.is_valid_id(orb_id):
+		return 0
+	var mastery_bonus := 0
+	if RunState != null and RunState.player_progression_state != null:
+		mastery_bonus = int(RunState.player_progression_state.mastery_level(orb_id))
+	return mastery_bonus + 1
+
+
+func combo_multiplier(combo_count: int) -> float:
+	var scaled_combo := increase_combo_modifier + maxi(0, combo_count)
+	return float(scaled_combo) * more_combo_modifier
