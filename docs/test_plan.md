@@ -108,21 +108,27 @@ Phase D: Validation and debug visibility
 
 ## Milestone 6: Shop And Boosters
 
-- [ ] Shop appears after each normal fight.
+- [x] Shop appears after each normal fight.
 - [ ] Shop appears after boss relic reward.
-- [ ] Shop has 3 random item slots.
-- [ ] Shop has 1 relic offer for the dungeon level.
-- [ ] Buying an item subtracts the correct gold.
-- [ ] Items cannot be bought without enough gold.
-- [ ] Equipment can be sold for full gold value.
-- [ ] Selling equipment removes its passive effect.
-- [ ] Reroll replaces the correct shop offers.
-- [ ] Reroll cost updates correctly.
+- [x] Shop has 3 random item slots.
+- [x] Shop has 1 relic offer for the dungeon level.
+- [x] Buying an item subtracts the correct gold.
+- [x] Items cannot be bought without enough gold.
+- [x] Equipment can be sold for full gold value.
+- [x] Selling equipment removes its passive effect.
+- [x] Reroll replaces the correct shop offers.
+- [x] Reroll cost updates correctly.
 - [ ] First shop reroll is free when Merchant Compass is active.
-- [ ] Booster purchase opens 3 generated options.
-- [ ] Choosing a booster option grants exactly one item.
-- [ ] Normal boosters do not generate relics by default.
+- [x] Booster purchase opens 3 generated options.
+- [x] Choosing a booster option grants exactly one item.
+- [x] Normal boosters do not generate relics by default.
 - [ ] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
+
+Verification notes (2026-04-26):
+- Shop flow is now wired to runtime systems (`ShopState`, `ShopService`) and accessible via post-fight transition to `res://scenes/flow/shop_placeholder.tscn`.
+- Milestone 6 debug shop UI supports buy, sell, reroll, relic offer purchase, booster option selection, and skip/next transitions.
+- Economy actions run through `RunState` gold helpers, and combat gold gain updates are synchronized to run-level gold.
+- `board_debug_controller.gd` parse stability was restored for debug add-item actions by switching `RunState` service locals to explicit `Variant`.
 
 ## Milestone 7: Dungeon And Run Flow
 

@@ -86,7 +86,9 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 
 	var healed := player.heal(heal_amount)
 	var added_armor := player.add_temporary_armor(armor_gain)
-	player.gold += gold_gain
+	if gold_gain > 0:
+		RunState.add_gold(gold_gain)
+	player.gold = RunState.run_gold
 
 	var block_resolution: Dictionary = enemy.consume_block_vs_player_damage(total_elemental_damage)
 	var enemy_damage_dealt := enemy.apply_damage(int(block_resolution.get("final_damage", 0)))

@@ -158,9 +158,9 @@ func _on_run_tests_button_pressed() -> void:
 
 
 func _on_add_test_equipment_button_pressed() -> void:
-	var progression_state := RunState.ensure_player_progression_state()
-	var progression_service := RunState.ensure_player_progression_service()
-	var content := RunState.ensure_content_registry()
+	var progression_state: Variant = RunState.ensure_player_progression_state()
+	var progression_service: Variant = RunState.ensure_player_progression_service()
+	var content: Variant = RunState.ensure_content_registry()
 	var candidate_item_id := ""
 	for item_id in TEST_EQUIPMENT_IDS:
 		if not progression_state.equipped_item_ids.has(item_id):
@@ -181,9 +181,9 @@ func _on_add_test_equipment_button_pressed() -> void:
 
 
 func _on_add_test_consumable_button_pressed() -> void:
-	var progression_state := RunState.ensure_player_progression_state()
-	var progression_service := RunState.ensure_player_progression_service()
-	var content := RunState.ensure_content_registry()
+	var progression_state: Variant = RunState.ensure_player_progression_state()
+	var progression_service: Variant = RunState.ensure_player_progression_service()
+	var content: Variant = RunState.ensure_content_registry()
 	var result: Dictionary = progression_service.add_consumable(progression_state, TEST_CONSUMABLE_ID, content)
 	if bool(result.get("ok", false)):
 		_status_label.text = "Added test consumable: %s" % TEST_CONSUMABLE_ID

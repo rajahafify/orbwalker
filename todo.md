@@ -253,7 +253,7 @@ Verification notes (2026-04-26):
 
 ## Milestone 5: Player State Management
 
-Status: In progress.
+Status: Complete.
 
 Goal: Implement a clear player-state runtime for progression systems with explicit acceptance gates.
 
@@ -281,43 +281,52 @@ Tasks:
 
 ## Milestone 6: Shop, Economy, And Boosters
 
+Status: In progress.
+
 Goal: Build the post-fight shop loop and the economy around matched gold.
 
 Primary deliverable: After each fight, the player enters a shop with 3 random item slots, 1 relic offer for the dungeon level, reroll, boosters, buying, selling, and skipping.
 
 Tasks:
 
-- [ ] Implement persistent run gold.
+- [x] Implement persistent run gold.
   - Deliverable: Gold is stored in `RunState` and displayed in combat and shop.
   - Acceptance: Gold earned in fights is available in later shops.
 
-- [ ] Implement shop generation.
+- [x] Implement shop generation.
   - Deliverable: Shop inventory with 3 random item slots and 1 relic offer per dungeon level.
   - Acceptance: The relic offer is lost if not bought before leaving that dungeon level.
 
-- [ ] Implement pricing rules.
+- [x] Implement pricing rules.
   - Deliverable: Configurable price ranges by rarity and dungeon level, plus reroll cost.
   - Acceptance: Price balance can be adjusted without changing shop UI code.
 
-- [ ] Implement buy action.
+- [x] Implement buy action.
   - Deliverable: Player can buy equipment, mastery cards, consumables, boosters, and relics when they can afford them.
   - Acceptance: Buying subtracts gold, applies the item or moves it into the correct inventory, and prevents invalid purchases.
 
-- [ ] Implement sell equipment action.
+- [x] Implement sell equipment action.
   - Deliverable: Equipped items can be sold for full gold value.
   - Acceptance: Selling removes the equipment, removes its passive effects, and refunds the correct amount.
 
-- [ ] Implement shop reroll.
+- [x] Implement shop reroll.
   - Deliverable: Reroll replaces random item slots and respects reroll cost.
   - Acceptance: Relic offer behavior is explicitly decided and implemented: either fixed for the dungeon level or rerolled only if the GDD is updated.
 
-- [ ] Implement booster pack purchase.
+- [x] Implement booster pack purchase.
   - Deliverable: Buying a booster opens a pack view with 3 generated options and allows the player to pick 1.
   - Acceptance: Boosters can generate element-based or category-based options and do not generate relics by default.
 
-- [ ] Tune early affordability.
+- [~] Tune early affordability.
   - Deliverable: Initial price and gold spawn settings.
   - Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 booster pack.
+
+Verification notes (2026-04-26):
+- Added `ShopState` and `ShopService` runtime systems under `scripts/shop/` for shop open, item/relic offers, buy, sell, reroll, and booster option pick flow.
+- `RunState` now owns persistent run gold (`run_gold`) and exposes shop/economy actions consumed by combat and shop UI.
+- Combat gold gain now syncs through `RunState`, and the shop scene moved from placeholder text to actionable debug controls.
+- Debug content and pricing scaffolding were extended in `ContentRegistry` to support Milestone 6 shop generation and purchase paths.
+- Fixed strict typing parse break in `scripts/debug/board_debug_controller.gd` by using explicit `Variant` locals for `RunState` service retrieval in debug add-item actions.
 
 ## Milestone 7: Dungeon And Run Structure
 

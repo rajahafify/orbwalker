@@ -39,6 +39,6 @@ horizontal_alignment = 1
 
 [node name="StartFightButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2
-text = "Open Milestone 5 Progression Debug"
+text = "Open Milestone 6 Combat+Shop Debug"
 
 [connection signal="pressed" from="CenterContainer/PanelContainer/VBoxContainer/StartFightButton" to="." method="_on_start_fight_button_pressed"]
