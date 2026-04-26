@@ -551,6 +551,29 @@ func _handle_console_command(raw_text: String) -> void:
 					_add_equipment_by_id(equipment_id)
 				_:
 					_command_error("unknown /equipment subcommand: %s" % equipment_sub)
+		"relic":
+			if parts.size() < 2:
+				_command_error("usage: /relic list|show <id>|add <id>")
+				return
+			var relic_sub := String(parts[1]).to_lower()
+			match relic_sub:
+				"list":
+					var content: Variant = RunState.ensure_content_registry()
+					_print_content_id_list("Relic IDs", content.list_relics())
+				"show":
+					if parts.size() < 3:
+						_command_error("usage: /relic show <id>")
+						return
+					var relic_id := String(parts[2]).strip_edges()
+					_show_relic_details(relic_id)
+				"add":
+					if parts.size() < 3:
+						_command_error("usage: /relic add <id>")
+						return
+					var relic_id := String(parts[2]).strip_edges()
+					_add_relic_by_id(relic_id)
+				_:
+					_command_error("unknown /relic subcommand: %s" % relic_sub)
 		"fight":
 			if parts.size() < 2:
 				_command_error("usage: /fight win|lose")
@@ -603,6 +626,9 @@ func _print_command_list() -> void:
 	_append_combat_log("/equipment list - List equipment IDs", true)
 	_append_combat_log("/equipment show <id> - Show equipment details", true)
 	_append_combat_log("/equipment add <id> - Equip item into leftmost free slot", true)
+	_append_combat_log("/relic list - List relic IDs", true)
+	_append_combat_log("/relic show <id> - Show relic details", true)
+	_append_combat_log("/relic add <id> - Add relic if not already owned", true)
 	_append_combat_log("/fight win - Queue victory flow", true)
 	_append_combat_log("/fight lose - Queue defeat flow", true)
 
@@ -758,6 +784,53 @@ func _add_equipment_by_id(equipment_id: String) -> void:
 	var slot_index := int(payload.get("slot_index", -1))
 	_update_hud()
 	_append_combat_log("Equipment added: %s -> slot %d." % [equipment_id, slot_index])
+
+
+func _show_relic_details(relic_id: String) -> void:
+	if relic_id == "":
+		_command_error("relic id is required")
+		return
+
+	var content: Variant = RunState.ensure_content_registry()
+	var relic: Dictionary = content.get_relic(relic_id)
+	if relic.is_empty():
+		_command_error("unknown relic id '%s'" % relic_id)
+		return
+
+	var modifiers: Dictionary = relic.get("combat_modifiers", {})
+	_append_combat_log("Relic %s" % relic_id)
+	_append_combat_log("  Name: %s" % String(relic.get("display_name", relic_id)))
+	_append_combat_log("  Rarity: %s" % String(relic.get("rarity", "common")))
+	_append_combat_log(
+		"  Price: %d | Levels: %d-%d" % [
+			int(relic.get("base_price", 0)),
+			int(relic.get("min_level", 1)),
+			int(relic.get("max_level", 3)),
+		]
+	)
+	_append_combat_log("  Icon: %s" % String(relic.get("icon_key", "")))
+	_append_combat_log("  Description: %s" % String(relic.get("description", "")))
+	if modifiers.is_empty():
+		_append_combat_log("  Combat Modifiers: none")
+	else:
+		_append_combat_log("  Combat Modifiers: %s" % JSON.stringify(modifiers))
+
+
+func _add_relic_by_id(relic_id: String) -> void:
+	if relic_id == "":
+		_command_error("relic id is required")
+		return
+
+	var progression_state: Variant = RunState.ensure_player_progression_state()
+	var progression_service: Variant = RunState.ensure_player_progression_service()
+	var content: Variant = RunState.ensure_content_registry()
+	var relic_result: Dictionary = progression_service.add_relic(progression_state, relic_id, content)
+	if not bool(relic_result.get("ok", false)):
+		_command_error("relic add failed: %s" % String(relic_result.get("reason", "unknown_error")))
+		return
+
+	_update_hud()
+	_append_combat_log("Relic added: %s." % relic_id)
 
 
 func _start_drag(board_local_position: Vector2) -> bool:
@@ -1155,6 +1228,56 @@ func _append_turn_log_detailed(turn_log: Dictionary) -> void:
 			more_combo_modifier,
 			combo_multiplier_mult,
 			damage_combo_multiplier,
+		]
+	)
+	var heart_orbs := int(matched_counts.get(OrbType.Id.HEART, 0))
+	var armor_orbs := int(matched_counts.get(OrbType.Id.ARMOR, 0))
+	var gold_orbs := int(matched_counts.get(OrbType.Id.GOLD, 0))
+	var heart_mastery := _player_state.orb_value(OrbType.Id.HEART) - 1
+	var armor_mastery := _player_state.orb_value(OrbType.Id.ARMOR) - 1
+	var gold_mastery := _player_state.orb_value(OrbType.Id.GOLD) - 1
+	var heart_orb_bonus := int(orb_bonus_by_id.get(OrbType.Id.HEART, 0))
+	var armor_orb_bonus := int(orb_bonus_by_id.get(OrbType.Id.ARMOR, 0))
+	var gold_orb_bonus := int(orb_bonus_by_id.get(OrbType.Id.GOLD, 0))
+	var heart_base := int(turn_log.get("heart_base", 0))
+	var armor_base := int(turn_log.get("armor_base", 0))
+	var gold_base := int(turn_log.get("gold_base", 0))
+	var heal_formula_total := heart_base + (flat_heal_bonus if heart_base > 0 else 0)
+	var gold_formula_total := gold_base + (flat_gold_bonus if gold_base > 0 else 0)
+	_append_combat_log(
+		"Health: heart_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; heal = heart_base%s = %d (applied %d)." % [
+			heart_orbs,
+			heart_mastery,
+			heart_orb_bonus,
+			heart_base,
+			(" + flat_heal_bonus(%d)" % flat_heal_bonus) if heart_base > 0 and flat_heal_bonus > 0 else "",
+			heal_formula_total,
+			int(turn_log.get("healed", 0)),
+		]
+	)
+	_append_combat_log(
+		"Armor: armor_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; armor_from_matches = round(armor_base * damage_multiplier) = round(%d * %.2f) = %d; total_armor_gain = armor_from_matches + prep_armor_bonus = %d + %d = %d." % [
+			armor_orbs,
+			armor_mastery,
+			armor_orb_bonus,
+			armor_base,
+			armor_base,
+			damage_combo_multiplier,
+			int(turn_log.get("armor_gained", 0)),
+			int(turn_log.get("armor_gained", 0)),
+			prep_armor_added,
+			int(turn_log.get("armor_gained", 0)) + prep_armor_added,
+		]
+	)
+	_append_combat_log(
+		"Gold: gold_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; gold = gold_base%s = %d (applied %d)." % [
+			gold_orbs,
+			gold_mastery,
+			gold_orb_bonus,
+			gold_base,
+			(" + flat_gold_bonus(%d)" % flat_gold_bonus) if gold_base > 0 and flat_gold_bonus > 0 else "",
+			gold_formula_total,
+			int(turn_log.get("gold_gained", 0)),
 		]
 	)
 	_append_detailed_element_formula_line(turn_log, matched_counts, orb_bonus_by_id, OrbType.Id.FIRE, "fire", damage_combo_multiplier)
