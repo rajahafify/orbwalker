@@ -4,7 +4,7 @@ extends Control
 
 
 func _ready() -> void:
-	_status_label.text = "Milestone 1 ready. Open board debug scene to validate generation and rendering."
+	_status_label.text = "Milestone 2 ready. Drag orbs in board debug to validate movement and timer."
 
 
 func _on_start_fight_button_pressed() -> void:

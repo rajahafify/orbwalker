@@ -64,6 +64,24 @@ func set_cell(column: int, row: int, orb_id: int) -> void:
 	_cells[_index(column, row)] = orb_id
 
 
+func swap_cells(column_a: int, row_a: int, column_b: int, row_b: int) -> bool:
+	if not in_bounds(column_a, row_a) or not in_bounds(column_b, row_b):
+		push_error("BoardState.swap_cells out of bounds: (%d, %d) <-> (%d, %d)" % [
+			column_a,
+			row_a,
+			column_b,
+			row_b,
+		])
+		return false
+
+	var index_a := _index(column_a, row_a)
+	var index_b := _index(column_b, row_b)
+	var temp := _cells[index_a]
+	_cells[index_a] = _cells[index_b]
+	_cells[index_b] = temp
+	return true
+
+
 func regenerate(new_seed: int = -1) -> void:
 	if new_seed >= 0:
 		rng_seed = new_seed

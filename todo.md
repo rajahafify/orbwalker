@@ -85,33 +85,35 @@ Tasks:
 
 ## Milestone 1: Board Foundation
 
+Status: Complete.
+
 Goal: Implement a deterministic 5x6 orb board that can render, refill, and avoid initial automatic matches.
 
 Primary deliverable: A visible 5x6 board with all six orb types, configurable spawn weights, and no automatic matches on newly generated starting boards.
 
 Tasks:
 
-- [ ] Implement orb type definitions.
+- [x] Implement orb type definitions.
   - Deliverable: `OrbType` enum or equivalent constants for Fire, Ice, Earth, Heart, Armor, and Gold.
   - Acceptance: All systems refer to one canonical orb type definition.
 
-- [ ] Implement board data model.
+- [x] Implement board data model.
   - Deliverable: `BoardState` with 5 columns, 6 rows, cell read/write helpers, bounds checks, cloning, and deterministic random generation.
   - Acceptance: Board logic can run without UI nodes.
 
-- [ ] Add configurable spawn weights.
+- [x] Add configurable spawn weights.
   - Deliverable: Board generation settings with Gold rarer than other orb types.
   - Acceptance: Gold spawn rate can be adjusted for balance without changing board logic.
 
-- [ ] Prevent initial automatic matches.
+- [x] Prevent initial automatic matches.
   - Deliverable: Board generator that retries or repairs generated boards until no starting match exists.
   - Acceptance: A new fight never begins with an immediate match already on the board.
 
-- [ ] Render the board.
+- [x] Render the board.
   - Deliverable: Board scene showing a stable 5x6 grid and one visual orb per cell.
   - Acceptance: The board fits desktop and mobile aspect ratios without stretched or overlapping cells.
 
-- [ ] Add debug board controls.
+- [x] Add debug board controls.
   - Deliverable: Debug actions for regenerate board, print board state, and optionally set a fixed seed.
   - Acceptance: Developers can reproduce board bugs using a known seed or printed board layout.
 
@@ -123,31 +125,31 @@ Primary deliverable: The player can select one orb, drag through adjacent orthog
 
 Tasks:
 
-- [ ] Implement pointer and touch selection.
+- [x] Implement pointer and touch selection.
   - Deliverable: Input handler that maps mouse or touch coordinates to board cells.
   - Acceptance: The same board can be controlled on PC with a mouse and on mobile with touch.
 
-- [ ] Implement selected orb state.
+- [x] Implement selected orb state.
   - Deliverable: The selected orb is tracked separately during drag while the board updates displaced cells.
   - Acceptance: The dragged orb follows the pointer and the board cells update predictably.
 
-- [ ] Implement orthogonal path movement.
+- [x] Implement orthogonal path movement.
   - Deliverable: Movement through adjacent horizontal and vertical cells only.
   - Acceptance: Diagonal movement does not swap cells and cannot skip cells.
 
-- [ ] Implement displacement swapping.
+- [x] Implement displacement swapping.
   - Deliverable: Each entered adjacent cell swaps or shifts with the selected orb according to the GDD movement rule.
   - Acceptance: Dragging through a path produces the same final board that a Puzzle & Dragons style player expects.
 
-- [ ] Implement 5 second movement timer.
+- [x] Implement 5 second movement timer.
   - Deliverable: Timer starts on drag start and ends the move on expiry.
   - Acceptance: Releasing early or timer expiry both lock the board and start match resolution.
 
-- [ ] Add movement feedback.
+- [x] Add movement feedback.
   - Deliverable: Selected orb highlight, timer display, and optional path or cell feedback.
   - Acceptance: The player can read which orb is selected and how much time remains.
 
-- [ ] Add input lock states.
+- [~] Add input lock states.
   - Deliverable: Board ignores new drag input while matches, cascades, combat, shop, or transitions are resolving.
   - Acceptance: The player cannot mutate the board during non-input phases.
 

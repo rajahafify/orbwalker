@@ -26,16 +26,21 @@ This checklist is intentionally written before implementation. Items become exec
 
 ## Milestone 2: Free Orb Movement And Timer
 
-- [ ] Mouse input can select an orb.
+- [x] Mouse input can select an orb.
 - [ ] Touch input can select an orb.
-- [ ] Dragging starts the movement timer.
-- [ ] Releasing input ends the move.
-- [ ] Timer expiry ends the move automatically.
-- [ ] Movement is limited to horizontal and vertical adjacent cells.
-- [ ] Diagonal movement does not swap cells.
-- [ ] Dragging through cells displaces orbs correctly.
-- [ ] The selected orb and remaining timer are visually clear.
+- [x] Dragging starts the movement timer.
+- [x] Releasing input ends the move.
+- [x] Timer expiry ends the move automatically.
+- [x] Movement is limited to horizontal and vertical adjacent cells.
+- [x] Diagonal movement does not swap cells.
+- [x] Dragging through cells displaces orbs correctly.
+- [x] The selected orb and remaining timer are visually clear.
 - [ ] The board is locked during resolution and transitions.
+
+Verification notes (2026-04-26):
+- Mouse drag path, displacement, and timer flow were verified in `res://scenes/combat/board_debug.tscn`.
+- Touch input still needs on-device validation.
+- Input lock is verified for local resolve phase; cross-system transition locks remain pending until combat/shop/run transitions are integrated.
 
 ## Milestone 3: Matching And Cascades
 
