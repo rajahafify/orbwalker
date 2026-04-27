@@ -372,7 +372,7 @@ Verification notes (2026-04-27):
 
 ## Milestone 8: Initial Content Pack
 
-Status: In progress.
+Status: Complete.
 
 Goal: Fill the prototype with enough content to exercise the build-driven roguelike loop.
 
@@ -416,10 +416,6 @@ Tasks:
   - Deliverable: Shop and booster pools by rarity, category, orb type, and current dungeon level.
   - Acceptance: Random generation produces valid content and avoids duplicates where the GDD requires no duplicates.
 
-- [x] Add placeholder art pass.
-  - Deliverable: Readable placeholder icons and board orb visuals for every orb and content type.
-  - Acceptance: No shop, inventory, relic, enemy, or orb appears as missing art during normal prototype play.
-
 Verification notes (2026-04-27):
 - Replaced debug-only content definitions with full Milestone 8 pack in `scripts/content/content_registry.gd`:
   - 10 common, 10 uncommon, and 5 rare equipment items.
@@ -428,6 +424,7 @@ Verification notes (2026-04-27):
 - Added item/relic `combat_modifiers` and integrated them into turn resolution via `RunState.current_combat_modifiers()` and `CombatStateMachine`.
 - Added content pool level gating (`min_level`, `max_level`) for shop/relic generation and maintained no-duplicate offer selection.
 - Added placeholder content presentation fields (`description`, `icon_key`) and surfaced item description text in shop offer buttons.
+- Milestone 8 QA execution completed via Godot MCP editor-script checks: mastery/consumable resolution paths, equipment buy/equip/sell/resolve flows, relic buy/resolve flows, enemy/boss run-sequence coverage, and shop/booster pool-rule checks all passed with no reported failures.
 
 ## Milestone 9: UI, UX, And Game Feel
 

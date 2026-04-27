@@ -158,15 +158,15 @@ Verification notes (2026-04-27):
 
 ## Milestone 8: Initial Content Pack
 
-- [ ] All 6 mastery cards can appear and resolve.
-- [ ] All 6 consumables can appear and resolve.
-- [ ] All common equipment items can appear, be bought, equipped, sold, and resolve.
-- [ ] All uncommon equipment items can appear, be bought, equipped, sold, and resolve.
-- [ ] All rare equipment items can appear, be bought, equipped, sold, and resolve.
-- [ ] All 5 relics can appear and resolve.
-- [ ] At least 3 normal enemies are playable.
-- [ ] At least 3 bosses are playable.
-- [ ] Content pools respect rarity, category, orb type, and duplicate rules.
+- [x] All 6 mastery cards can appear and resolve.
+- [x] All 6 consumables can appear and resolve.
+- [x] All common equipment items can appear, be bought, equipped, sold, and resolve.
+- [x] All uncommon equipment items can appear, be bought, equipped, sold, and resolve.
+- [x] All rare equipment items can appear, be bought, equipped, sold, and resolve.
+- [x] All 5 relics can appear and resolve.
+- [x] At least 3 normal enemies are playable.
+- [x] At least 3 bosses are playable.
+- [x] Content pools respect rarity, category, orb type, and duplicate rules.
 - [x] No player-facing content appears with missing text.
 
 Verification notes (2026-04-27):
@@ -174,7 +174,12 @@ Verification notes (2026-04-27):
   - full equipment/relic/mastery/consumable registry loads with no parse/runtime errors,
   - content validation reports `OK` in `res://scenes/combat/board_debug.tscn`,
   - shop offers now surface content descriptions from registry data.
-- Remaining Milestone 8 checks still require manual run-through coverage to confirm appearance and resolution of every item/enemy/boss entry in live gameplay.
+- Godot MCP editor-script QA execution passed for Milestone 8 functional checks:
+  - content totals and registry validation: 25 equipment (10 common/10 uncommon/5 rare), 6 mastery cards, 6 consumables, 5 relics, 3 enemies, and 3 bosses; validation errors `[]`,
+  - mastery grant and consumable add/use/effect resolution: no failures,
+  - equipment buy/equip/sell/combat-modifier resolution by rarity and relic buy/resolve flows: no failures,
+  - run-sequence enemy/boss coverage: normal IDs `cavern_striker`, `cavern_defender`, `ash_hunter`, `ruin_lancer`, `vault_executioner`, `goldbound_keeper`; boss IDs `iron_gate`, `burning_knight`, `prism_warden`,
+  - pool and booster rule checks: no duplicate-offer, type, level-gate, or target-orb filter violations.
 
 ## Milestone 9: UI And Game Feel
 
