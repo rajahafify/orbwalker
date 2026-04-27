@@ -8,22 +8,44 @@ extends Control
 @onready var _turn_summary_label: Label = %TurnSummaryLabel
 @onready var _combo_summary_label: Label = %ComboSummaryLabel
 @onready var _player_label: Label = %PlayerStateLabel
-@onready var _enemy_label: Label = %EnemyStateLabel
+@onready var _enemy_label: Label = %EnemyStageLabel
+@onready var _enemy_debug_label: Label = %EnemyStateLabel
 @onready var _intent_label: Label = %EnemyIntentLabel
 @onready var _phase_label: Label = %CombatPhaseLabel
 @onready var _combat_log_text: RichTextLabel = %CombatLogText
 @onready var _console_input: LineEdit = %ConsoleInput
 @onready var _next_button: Button = %NextButton
-@onready var _board_and_state_row: BoxContainer = %BoardAndStateRow
-@onready var _state_frame: PanelContainer = %StateFrame
+@onready var _back_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/BackButton"
+@onready var _debug_toggle_button: Button = %DebugToggleButton
+@onready var _settings_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/SettingsButton"
 @onready var _board_view_control: Control = %BoardView
+@onready var _top_hud_bar: PanelContainer = $"MainMargin/MainVBox/TopHudBar"
+@onready var _enemy_stage_panel: PanelContainer = $"MainMargin/MainVBox/EnemyStagePanel"
+@onready var _tempo_row_panel: PanelContainer = $"MainMargin/MainVBox/TempoRowPanel"
+@onready var _board_frame: PanelContainer = $"MainMargin/MainVBox/BoardArea/BoardFrame"
+@onready var _player_strip_panel: PanelContainer = %PlayerStripPanel
+@onready var _combat_log_frame: PanelContainer = $"DebugOverlay/DebugVBox/CombatLogFrame"
+@onready var _debug_overlay: PanelContainer = %DebugOverlay
+@onready var _title_label: Label = %TitleLabel
+@onready var _hint_label: Label = %HintLabel
 @onready var _enemy_portrait: TextureRect = %EnemyPortrait
 @onready var _intent_badge: TextureRect = %IntentBadge
 @onready var _enemy_hp_bar: ProgressBar = %EnemyHpBar
+@onready var _move_timer_bar: ProgressBar = %MoveTimerBar
+@onready var _player_hp_bar: ProgressBar = %PlayerHpBar
+@onready var _player_armor_bar: ProgressBar = %PlayerArmorBar
+@onready var _player_portrait: TextureRect = %PlayerPortrait
 @onready var _equipment_icons: HBoxContainer = %EquipmentIcons
 @onready var _consumable_icons: HBoxContainer = %ConsumableIcons
 @onready var _relic_icons: HBoxContainer = %RelicIcons
 @onready var _mastery_icons: HBoxContainer = %MasteryIcons
+@onready var _relic_row: HBoxContainer = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RelicRow"
+@onready var _mastery_row: HBoxContainer = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/MasteryRow"
+@onready var _build_row_label: Label = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/BuildRowLabel"
+@onready var _equipment_row_label: Label = %EquipmentLabel
+@onready var _consumable_row_label: Label = %ConsumableLabel
+@onready var _relic_row_label: Label = %RelicLabel
+@onready var _mastery_row_label: Label = %MasteryLabel
 @onready var _vfx_layer: Control = %VfxLayer
 
 const SWAP_ANIMATION_SECONDS := 0.08
@@ -45,6 +67,7 @@ const TEST_CONSUMABLE_ID := "fire_scroll"
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
+const MOVE_TIMER_MAX_SECONDS := 5.0
 const MAX_COMBAT_LOG_LINES := 120
 const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
 const LOG_LEVEL_NORMAL := "normal"
@@ -53,6 +76,8 @@ const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
+const ICON_INNER_SIZE := Vector2(22, 22)
+const SLOT_SIZE := Vector2(28, 28)
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -84,6 +109,7 @@ var _combat_log_command_flags: Array[bool] = []
 var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
+var _is_low_vertical_layout := false
 
 
 func _ready() -> void:
@@ -97,6 +123,7 @@ func _ready() -> void:
 		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
+	_apply_visual_chrome()
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
 	_resolver.gravity_applied.connect(_on_resolver_gravity_applied)
@@ -106,6 +133,7 @@ func _ready() -> void:
 	_initialize_combat_state()
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
+	_debug_overlay.visible = false
 	if _console_input.visible:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
@@ -114,6 +142,114 @@ func _ready() -> void:
 	_begin_turn_preview()
 	if _console_input.visible:
 		_console_input.grab_focus()
+
+
+func _apply_visual_chrome() -> void:
+	# Keep chrome code-driven to avoid any baked checkerboard artifacts from generated sheets.
+	_board_view.cell_frame_texture = null
+	_board_view.cell_spacing = 4.0
+	_board_view.board_padding = 8.0
+	_board_view.orb_scale_in_cell = 0.92
+	_board_view.cell_background = Color(0.07, 0.09, 0.12, 0.96)
+	_board_view.board_background = Color(0.03, 0.04, 0.06, 0.96)
+
+	var frame_style := StyleBoxFlat.new()
+	frame_style.bg_color = Color(0.05, 0.07, 0.10, 0.92)
+	frame_style.border_color = Color(0.55, 0.43, 0.22, 0.9)
+	frame_style.set_border_width_all(1)
+	frame_style.set_corner_radius_all(4)
+
+	_top_hud_bar.add_theme_stylebox_override("panel", frame_style)
+	_enemy_stage_panel.add_theme_stylebox_override("panel", frame_style)
+	_tempo_row_panel.add_theme_stylebox_override("panel", frame_style)
+	_board_frame.add_theme_stylebox_override("panel", frame_style)
+	_player_strip_panel.add_theme_stylebox_override("panel", frame_style)
+	_debug_overlay.add_theme_stylebox_override("panel", frame_style)
+	_combat_log_frame.add_theme_stylebox_override("panel", frame_style)
+
+	_apply_progressbar_flat_style(_enemy_hp_bar, Color(0.70, 0.12, 0.13, 1.0))
+	_apply_progressbar_flat_style(_move_timer_bar, Color(0.14, 0.46, 0.82, 1.0))
+	_apply_progressbar_flat_style(_player_hp_bar, Color(0.78, 0.16, 0.17, 1.0))
+	_apply_progressbar_flat_style(_player_armor_bar, Color(0.16, 0.50, 0.86, 1.0))
+
+	var ui_text_color := Color(0.94, 0.94, 0.96, 1.0)
+	for label in [_title_label, _hint_label, _timer_label, _combo_summary_label, _run_progress_label, _phase_label, _turn_summary_label, _player_label, _enemy_label, _intent_label]:
+		label.add_theme_color_override("font_color", ui_text_color)
+	_title_label.add_theme_font_size_override("font_size", 20)
+	_hint_label.add_theme_font_size_override("font_size", 18)
+	_intent_label.add_theme_font_size_override("font_size", 18)
+	_enemy_label.add_theme_font_size_override("font_size", 18)
+	_timer_label.add_theme_font_size_override("font_size", 16)
+	_combo_summary_label.add_theme_font_size_override("font_size", 16)
+	_player_label.add_theme_font_size_override("font_size", 18)
+	_run_progress_label.add_theme_font_size_override("font_size", 16)
+	_phase_label.add_theme_font_size_override("font_size", 16)
+	_turn_summary_label.add_theme_font_size_override("font_size", 16)
+	_build_row_label.add_theme_font_size_override("font_size", 16)
+	for row_label in [_equipment_row_label, _consumable_row_label, _relic_row_label, _mastery_row_label]:
+		row_label.add_theme_color_override("font_color", Color(0.85, 0.74, 0.47, 1.0))
+		row_label.add_theme_font_size_override("font_size", 14)
+	_apply_button_theme()
+
+	var hero_portrait := _visuals.clean_icon_for_key("equipment_iron_helm", false)
+	if hero_portrait != null:
+		_player_portrait.texture = hero_portrait
+	else:
+		_player_portrait.texture = _visuals.placeholder_texture("hero_portrait", Color(0.14, 0.16, 0.22, 1.0), Vector2i(128, 128))
+	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_player_portrait.stretch_mode = TextureRect.STRETCH_SCALE
+	_title_label.text = RunState.level_sequence_label()
+	_hint_label.text = "Gold 0"
+
+
+func _stylebox_from_texture(texture: Texture2D, left: int, right: int, top: int, bottom: int) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = left
+	style.texture_margin_right = right
+	style.texture_margin_top = top
+	style.texture_margin_bottom = bottom
+	style.content_margin_left = 12.0
+	style.content_margin_right = 12.0
+	style.content_margin_top = 10.0
+	style.content_margin_bottom = 10.0
+	return style
+
+
+func _apply_progressbar_style(bar: ProgressBar, frame_texture: Texture2D, fill_texture: Texture2D) -> void:
+	if frame_texture != null:
+		bar.add_theme_stylebox_override("background", _stylebox_from_texture(frame_texture, 12, 12, 7, 7))
+	if fill_texture != null:
+		bar.add_theme_stylebox_override("fill", _stylebox_from_texture(fill_texture, 12, 12, 7, 7))
+
+
+func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.08, 0.10, 0.14, 0.95)
+	bg.set_corner_radius_all(3)
+	bg.set_border_width_all(1)
+	bg.border_color = Color(0.38, 0.30, 0.16, 0.8)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = fill_color
+	fill.set_corner_radius_all(3)
+	bar.add_theme_stylebox_override("background", bg)
+	bar.add_theme_stylebox_override("fill", fill)
+
+
+func _apply_button_theme() -> void:
+	for button in [_back_button, _debug_toggle_button, _settings_button, _next_button]:
+		button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
+		button.add_theme_font_size_override("font_size", 16)
+		var style_normal := StyleBoxFlat.new()
+		style_normal.bg_color = Color(0.14, 0.10, 0.06, 0.75)
+		style_normal.border_color = Color(0.55, 0.43, 0.22, 0.88)
+		style_normal.set_border_width_all(1)
+		style_normal.set_corner_radius_all(3)
+		button.add_theme_stylebox_override("normal", style_normal)
+		var style_hover := style_normal.duplicate()
+		style_hover.bg_color = Color(0.20, 0.14, 0.08, 0.9)
+		button.add_theme_stylebox_override("hover", style_hover)
+		button.add_theme_stylebox_override("pressed", style_hover)
 
 
 func _initialize_combat_state() -> void:
@@ -182,6 +318,10 @@ func _begin_turn_preview() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F1:
+			_toggle_debug_overlay()
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_R:
 			_create_new_board()
 			get_viewport().set_input_as_handled()
@@ -191,6 +331,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_C:
 			_try_use_first_consumable()
 			get_viewport().set_input_as_handled()
+
+
+func _on_debug_toggle_button_pressed() -> void:
+	_toggle_debug_overlay()
+
+
+func _toggle_debug_overlay() -> void:
+	_debug_overlay.visible = not _debug_overlay.visible
+	if _debug_overlay.visible and _console_input.visible:
+		_console_input.grab_focus()
 
 
 func _on_regenerate_button_pressed() -> void:
@@ -1030,7 +1180,9 @@ func _set_input_phase(phase: InputPhase) -> void:
 
 
 func _update_timer_label(seconds_left: float) -> void:
-	_timer_label.text = "Timer: %.2f s" % seconds_left
+	_timer_label.text = "%.1f sec" % seconds_left
+	_move_timer_bar.max_value = MOVE_TIMER_MAX_SECONDS
+	_move_timer_bar.value = clampf(seconds_left, 0.0, _move_timer_bar.max_value)
 
 
 func _reset_drag_visuals() -> void:
@@ -1134,34 +1286,72 @@ func _update_hud() -> void:
 		return
 
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var validation_errors: Array[Dictionary] = RunState.player_state_content_errors()
-	var turn_number := int(_combat.turn_index)
+	_sync_top_hud()
+	_sync_enemy_stage()
+	_sync_tempo_row()
+	_sync_player_strip(progression_snapshot)
+	_sync_debug_overlay()
+
+
+func _sync_top_hud() -> void:
 	var level_label := RunState.level_sequence_label()
+	_title_label.text = "%s | %s" % [level_label, _enemy_state.display_name]
+	_hint_label.text = "Gold %d" % _player_state.gold
 
-	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d\nValidation: %s" % [
-		_player_state.current_hp,
-		_player_state.max_hp,
-		_player_state.armor,
-		_player_state.gold,
-		"OK" if validation_errors.is_empty() else ("%d issue(s)" % validation_errors.size()),
-	]
 
-	_enemy_label.text = "%s  HP %d/%d  Block %d" % [
+func _sync_enemy_stage() -> void:
+	var intent := _enemy_state.get_current_intent()
+	_intent_label.text = _format_intent(intent)
+	var badge_texture := _visuals.intent_badge(int(intent.get("type", 0)))
+	_intent_badge.texture = badge_texture
+	_intent_badge.visible = badge_texture != null
+	_enemy_portrait.texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	_enemy_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_enemy_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_enemy_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
+	_enemy_hp_bar.value = float(_enemy_state.current_hp)
+	_enemy_label.text = "%s HP %d/%d  Block %d" % [
 		_enemy_state.display_name,
 		_enemy_state.current_hp,
 		_enemy_state.max_hp,
 		_enemy_state.current_turn_block,
 	]
-	_enemy_portrait.texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
-	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
-	_enemy_hp_bar.value = float(_enemy_state.current_hp)
 
-	var intent := _enemy_state.get_current_intent()
-	_intent_label.text = "Enemy Intent: %s" % _format_intent(intent)
-	_intent_badge.texture = _visuals.intent_badge(int(intent.get("type", 0)))
-	_phase_label.text = "Turn %d | %s" % [turn_number, _combat.phase_name()]
-	_run_progress_label.text = "%s | Boss: %s" % [level_label, RunState.current_level_boss_name()]
+
+func _sync_tempo_row() -> void:
+	_phase_label.text = "Turn %d  %s" % [int(_combat.turn_index), _combat.phase_name()]
+	var turn_log: Dictionary = _last_resolve_result.get("turn_log", {})
+	var last_enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
+	_combo_summary_label.text = "Combos %d | Damage %d" % [
+		int(_last_resolve_result.get("combo_count", 0)),
+		last_enemy_damage,
+	]
+
+
+func _sync_player_strip(progression_snapshot: Dictionary) -> void:
+	_player_label.text = "HP %d/%d   Armor %d   Gold %d" % [
+		_player_state.current_hp,
+		_player_state.max_hp,
+		_player_state.armor,
+		_player_state.gold,
+	]
+	_player_hp_bar.max_value = float(maxi(1, _player_state.max_hp))
+	_player_hp_bar.value = float(_player_state.current_hp)
+	_player_armor_bar.max_value = float(maxi(30, _player_state.armor + 10))
+	_player_armor_bar.value = float(maxi(0, _player_state.armor))
+	_run_progress_label.text = "%s | Boss %s" % [RunState.level_sequence_label(), RunState.current_level_boss_name()]
 	_refresh_build_icon_rows(progression_snapshot)
+
+
+func _sync_debug_overlay() -> void:
+	_status_label.text = "%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index]
+	_enemy_debug_label.text = "%s HP %d/%d Block %d" % [
+		_enemy_state.display_name,
+		_enemy_state.current_hp,
+		_enemy_state.max_hp,
+		_enemy_state.current_turn_block,
+	]
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -1524,34 +1714,54 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	_populate_icon_row(_relic_icons, relic_ids, "relic")
 	_populate_mastery_row(_mastery_icons, mastery_levels)
 
+	var has_relic := false
+	for relic_id in relic_ids:
+		if String(relic_id) != "":
+			has_relic = true
+			break
+	var has_mastery := false
+	for orb_id in OrbType.ALL_TYPES:
+		if int(mastery_levels.get(orb_id, 0)) > 0:
+			has_mastery = true
+			break
+	_relic_row.visible = has_relic and not _is_low_vertical_layout
+	_mastery_row.visible = has_mastery and not _is_low_vertical_layout
+
 
 func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
 	for child in row.get_children():
 		child.queue_free()
 	for id_value in ids:
+		var slot := PanelContainer.new()
+		slot.custom_minimum_size = SLOT_SIZE
+		slot.add_theme_stylebox_override("panel", _slot_stylebox())
 		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(42, 42)
+		icon.custom_minimum_size = ICON_INNER_SIZE
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var id_text := String(id_value)
 		if id_text == "":
-			icon.texture = _visuals.placeholder_texture("%s_empty" % label, Color(0.22, 0.22, 0.25, 0.95), Vector2i(96, 96))
-			icon.modulate = Color(1.0, 1.0, 1.0, 0.5)
+			icon.texture = _visuals.placeholder_texture("%s_empty" % label, Color(0.20, 0.22, 0.26, 0.95), Vector2i(96, 96))
+			icon.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		else:
 			var content: Dictionary = _lookup_content_definition(id_text)
 			var icon_key := String(content.get("icon_key", ""))
-			icon.texture = _visuals.icon_for_key(icon_key)
+			icon.texture = _visuals.clean_icon_for_key(icon_key)
 			icon.tooltip_text = String(content.get("display_name", id_text))
-		row.add_child(icon)
+		slot.add_child(icon)
+		row.add_child(slot)
 
 
 func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> void:
 	for child in row.get_children():
 		child.queue_free()
 	for orb_id in OrbType.ALL_TYPES:
+		var slot := PanelContainer.new()
+		slot.custom_minimum_size = SLOT_SIZE
+		slot.add_theme_stylebox_override("panel", _slot_stylebox())
 		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(42, 42)
+		icon.custom_minimum_size = ICON_INNER_SIZE
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture = _visuals.mastery_icon(orb_id)
@@ -1559,7 +1769,21 @@ func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> vo
 		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
 		if level <= 0:
 			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
-		row.add_child(icon)
+		slot.add_child(icon)
+		row.add_child(slot)
+
+
+func _slot_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.10, 0.14, 0.95)
+	style.border_color = Color(0.50, 0.38, 0.18, 0.84)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.content_margin_left = 2.0
+	style.content_margin_right = 2.0
+	style.content_margin_top = 2.0
+	style.content_margin_bottom = 2.0
+	return style
 
 
 func _lookup_content_definition(content_id: String) -> Dictionary:
@@ -1646,14 +1870,24 @@ func _apply_responsive_layout() -> void:
 	if viewport_size.y <= 0.0:
 		return
 	var aspect := viewport_size.x / viewport_size.y
-	var is_compact := aspect < 1.35
-	var is_very_narrow := viewport_size.x < 980.0
-	_board_and_state_row.vertical = is_compact
-	_board_and_state_row.add_theme_constant_override("separation", 8 if is_compact else 12)
-	_state_frame.custom_minimum_size.x = 0 if is_compact else 440
-	_state_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL if is_compact else 0
-	_board_view_control.custom_minimum_size = Vector2(280, 260 if is_very_narrow else 300)
-	_combat_log_text.fit_content = is_very_narrow
+	var is_compact := aspect < 1.0
+	var is_low_vertical := viewport_size.y < 760.0
+	_is_low_vertical_layout = is_low_vertical
+	var is_very_narrow := viewport_size.x < 980.0 or is_low_vertical
+	_board_view_control.custom_minimum_size = Vector2(360 if is_very_narrow else 500, 420 if is_very_narrow else 600)
+	_player_portrait.custom_minimum_size = Vector2(44, 44) if is_very_narrow else Vector2(52, 52)
+	_enemy_portrait.custom_minimum_size = Vector2(360, 96) if is_very_narrow else Vector2(620, 128)
+	_turn_summary_label.visible = not is_low_vertical
+	if is_low_vertical:
+		_mastery_row.visible = false
+		_relic_row.visible = false
+	elif is_compact:
+		_relic_row.visible = false
+	_combo_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if is_compact else HORIZONTAL_ALIGNMENT_RIGHT
+	_debug_overlay.anchor_left = 0.08 if is_compact else 0.58
+	_debug_overlay.anchor_top = 0.05
+	_debug_overlay.anchor_right = 0.985
+	_debug_overlay.anchor_bottom = 0.97
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:

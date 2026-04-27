@@ -8,6 +8,9 @@ const PATH_INTENT_SHEET := "res://resources/art/first_pass/sheets/intent_badge_s
 const PATH_RARITY_SHEET := "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png"
 const PATH_MASTERY_SHEET := "res://resources/art/first_pass/sheets/mastery_icon_set_v1.png"
 const PATH_ITEM_SHEET := "res://resources/art/first_pass/sheets/item_icon_seed_set_v1.png"
+const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
+const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
+const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
 const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
 const PATH_UI_SHOP_CARD_SHEET := "res://resources/art/first_pass/ui/shop_card_kit_v1.png"
@@ -38,15 +41,48 @@ const _ICON_INDEX_BY_KEY := {
 	"equipment_shortsword": 0,
 	"equipment_buckler": 1,
 	"equipment_coin_purse": 2,
+	"equipment_healing_charm": 3,
 	"equipment_stone_ring": 3,
 	"equipment_ember_ring": 4,
 	"equipment_frost_ring": 5,
+	"equipment_leather_gloves": 1,
+	"equipment_iron_helm": 1,
+	"equipment_combo_lens": 7,
+	"equipment_twin_blades": 0,
+	"equipment_war_banner": 2,
+	"equipment_tower_shield": 1,
+	"equipment_merchant_scales": 2,
+	"equipment_battle_drum": 4,
+	"equipment_earthbreaker_maul": 8,
+	"equipment_hearth_amulet": 3,
+	"equipment_alchemist_gloves": 2,
+	"equipment_training_manual": 8,
+	"equipment_mirror_charm": 3,
+	"equipment_ruby_brooch": 4,
+	"equipment_sapphire_brooch": 5,
+	"equipment_emerald_brooch": 8,
+	"equipment_royal_seal": 11,
+	"equipment_champion_plate": 10,
 	"consumable_fire_scroll": 6,
 	"consumable_ice_scroll": 7,
 	"consumable_earth_scroll": 8,
+	"consumable_heart_scroll": 3,
+	"consumable_armor_scroll": 1,
+	"consumable_gold_scroll": 2,
+	"relic_deep_pockets": 2,
+	"relic_crown_of_chains": 9,
 	"relic_merchant_compass": 9,
 	"relic_stalwart_mantle": 10,
 	"relic_golden_idol": 11,
+}
+
+const _MASTERY_ORB_BY_ICON_KEY := {
+	"mastery_fire": OrbType.Id.FIRE,
+	"mastery_ice": OrbType.Id.ICE,
+	"mastery_earth": OrbType.Id.EARTH,
+	"mastery_heart": OrbType.Id.HEART,
+	"mastery_armor": OrbType.Id.ARMOR,
+	"mastery_gold": OrbType.Id.GOLD,
 }
 
 var _warned_keys: Dictionary = {}
@@ -56,6 +92,9 @@ var _intent_textures: Dictionary = {}
 var _rarity_textures: Dictionary = {}
 var _mastery_textures: Dictionary = {}
 var _icon_textures: Dictionary = {}
+var _derived_icon_textures: Dictionary = {}
+var _derived_hud_textures: Dictionary = {}
+var _derived_chrome_textures: Dictionary = {}
 var _vfx_textures: Dictionary = {}
 
 var _combat_background: Texture2D
@@ -102,15 +141,33 @@ func orb_texture(orb_id: int) -> Texture2D:
 
 
 func intent_badge(intent_type: int) -> Texture2D:
+	var hud_key := ""
+	match intent_type:
+		0:
+			hud_key = "intent_attack"
+		1:
+			hud_key = "intent_block"
+		2:
+			hud_key = "intent_attack_block"
+	if hud_key != "":
+		var hud_badge := clean_hud_texture(hud_key)
+		if hud_badge != null:
+			return hud_badge
 	var index := int(_INTENT_INDEX_BY_TYPE.get(intent_type, -1))
 	if index < 0:
 		_warn_missing("intent_type:%d" % intent_type)
 		return placeholder_texture("intent_missing")
-	return _intent_textures.get(index, placeholder_texture("intent_missing"))
+	var texture: Texture2D = _intent_textures.get(index, null)
+	if texture != null and not _looks_like_checkerboard_texture(texture):
+		return texture
+	return null
 
 
 func rarity_badge(rarity: String) -> Texture2D:
 	var key := rarity.to_lower()
+	var hud_badge := hud_texture("rarity_%s" % key, false)
+	if hud_badge != null:
+		return hud_badge
 	var index := int(_RARITY_INDEX.get(key, -1))
 	if index < 0:
 		_warn_missing("rarity:%s" % rarity)
@@ -123,11 +180,32 @@ func mastery_icon(orb_id: int) -> Texture2D:
 
 
 func icon_for_key(icon_key: String) -> Texture2D:
-	var index := int(_ICON_INDEX_BY_KEY.get(icon_key, -1))
+	var clean_icon := clean_icon_for_key(icon_key, false)
+	if clean_icon != null:
+		return clean_icon
+	_warn_missing("icon_key:%s" % icon_key)
+	return placeholder_texture("icon_missing")
+
+
+func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
+	var normalized_key := icon_key.strip_edges().to_lower()
+	var concrete_icon := _load_derived_icon(normalized_key)
+	if concrete_icon != null and not _looks_like_checkerboard_texture(concrete_icon):
+		return concrete_icon
+	if _MASTERY_ORB_BY_ICON_KEY.has(normalized_key):
+		return mastery_icon(int(_MASTERY_ORB_BY_ICON_KEY[normalized_key]))
+	var index := int(_ICON_INDEX_BY_KEY.get(normalized_key, -1))
 	if index < 0:
-		_warn_missing("icon_key:%s" % icon_key)
+		if use_placeholder:
+			_warn_missing("icon_key:%s" % icon_key)
+			return placeholder_texture("icon_missing")
+		return null
+	var fallback_texture: Texture2D = _icon_textures.get(index, null)
+	if fallback_texture != null and not _looks_like_checkerboard_texture(fallback_texture):
+		return fallback_texture
+	if use_placeholder:
 		return placeholder_texture("icon_missing")
-	return _icon_textures.get(index, placeholder_texture("icon_missing"))
+	return null
 
 
 func ui_frame_sheet() -> Texture2D:
@@ -140,6 +218,42 @@ func ui_bar_sheet() -> Texture2D:
 
 func ui_shop_card_sheet() -> Texture2D:
 	return _ui_shop_cards if _ui_shop_cards != null else placeholder_texture("ui_shop_cards")
+
+
+func hud_texture(key: String, use_placeholder: bool = true) -> Texture2D:
+	var normalized_key := key.strip_edges().to_lower()
+	var texture := _load_derived_texture(PATH_DERIVED_HUD_DIR, normalized_key, _derived_hud_textures)
+	if texture != null:
+		return texture
+	if use_placeholder:
+		_warn_missing("hud:%s" % normalized_key)
+		return placeholder_texture("hud_%s_missing" % normalized_key)
+	return null
+
+
+func chrome_texture(key: String, use_placeholder: bool = true) -> Texture2D:
+	var normalized_key := key.strip_edges().to_lower()
+	var texture := _load_derived_texture(PATH_DERIVED_CHROME_DIR, normalized_key, _derived_chrome_textures)
+	if texture != null:
+		return texture
+	if use_placeholder:
+		_warn_missing("chrome:%s" % normalized_key)
+		return placeholder_texture("chrome_%s_missing" % normalized_key)
+	return null
+
+
+func clean_hud_texture(key: String) -> Texture2D:
+	var texture := hud_texture(key, false)
+	if texture == null:
+		return null
+	return null if _looks_like_checkerboard_texture(texture) else texture
+
+
+func clean_chrome_texture(key: String) -> Texture2D:
+	var texture := chrome_texture(key, false)
+	if texture == null:
+		return null
+	return null if _looks_like_checkerboard_texture(texture) else texture
 
 
 func vfx_texture(effect_name: String) -> Texture2D:
@@ -248,6 +362,30 @@ func _build_vfx_textures() -> void:
 	_vfx_textures["gold_gain"] = _atlas_region(sheet, Rect2(cell_width * 2.0, 0.0, cell_width, cell_height))
 
 
+func _load_derived_icon(icon_key: String) -> Texture2D:
+	if icon_key == "":
+		return null
+	if _derived_icon_textures.has(icon_key):
+		return _derived_icon_textures[icon_key]
+	return _load_derived_texture(PATH_DERIVED_ICON_DIR, icon_key, _derived_icon_textures)
+
+
+func _load_derived_texture(base_path: String, key: String, cache: Dictionary) -> Texture2D:
+	if key == "":
+		return null
+	if cache.has(key):
+		return cache[key]
+	var path := "%s/%s.png" % [base_path, key]
+	var loaded: Variant = load(path)
+	if loaded == null:
+		return null
+	var texture := loaded as Texture2D
+	if texture == null:
+		return null
+	cache[key] = texture
+	return texture
+
+
 func _atlas_region(sheet: Texture2D, region: Rect2) -> AtlasTexture:
 	var atlas := AtlasTexture.new()
 	atlas.atlas = sheet
@@ -269,19 +407,46 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 
 	var cropped := Image.create(w, h, false, Image.FORMAT_RGBA8)
 	var center := Vector2((w - 1) * 0.5, (h - 1) * 0.5)
-	var radius := minf(float(w), float(h)) * 0.36
+	var radius := minf(float(w), float(h)) * 0.43
 	var radius_sq := radius * radius
+	var min_x := w
+	var min_y := h
+	var max_x := -1
+	var max_y := -1
 	for y in h:
 		for x in w:
 			var c := source_image.get_pixel(x0 + x, y0 + y)
 			var p := Vector2(float(x), float(y))
 			var delta := p - center
-			# Keep only the circular orb footprint; this removes baked checkerboard previews.
+			# Keep only the orb footprint; source sheet contains baked checkerboard outside the orb.
 			if delta.length_squared() > radius_sq:
 				c.a = 0.0
 			elif _is_checker_pixel(c):
 				c.a = 0.0
 			cropped.set_pixel(x, y, c)
+			if c.a > 0.01:
+				min_x = mini(min_x, x)
+				min_y = mini(min_y, y)
+				max_x = maxi(max_x, x)
+				max_y = maxi(max_y, y)
+
+	_clear_edge_checker_noise(cropped)
+
+	# Trim transparent borders so the orb fills BoardView cells instead of appearing tiny.
+	if max_x >= min_x and max_y >= min_y:
+		var padding := 1
+		var trim_left := maxi(0, min_x - padding)
+		var trim_top := maxi(0, min_y - padding)
+		var trim_right := mini(w - 1, max_x + padding)
+		var trim_bottom := mini(h - 1, max_y + padding)
+		var trim_rect := Rect2i(
+			trim_left,
+			trim_top,
+			trim_right - trim_left + 1,
+			trim_bottom - trim_top + 1
+		)
+		cropped = cropped.get_region(trim_rect)
+
 	return ImageTexture.create_from_image(cropped)
 
 
@@ -292,6 +457,81 @@ func _is_checker_pixel(c: Color) -> bool:
 		return false
 	var brightness := (c.r + c.g + c.b) / 3.0
 	return brightness >= 0.72 and brightness <= 0.96 and c.a >= 0.99
+
+
+func _is_loose_checker_pixel(c: Color) -> bool:
+	if c.a <= 0.01:
+		return false
+	var rg_diff := absf(c.r - c.g)
+	var gb_diff := absf(c.g - c.b)
+	if rg_diff > 0.06 or gb_diff > 0.06:
+		return false
+	var brightness := (c.r + c.g + c.b) / 3.0
+	return brightness >= 0.20 and brightness <= 0.95
+
+
+func _clear_edge_checker_noise(image: Image) -> void:
+	var width: int = image.get_width()
+	var height: int = image.get_height()
+	if width <= 0 or height <= 0:
+		return
+
+	var visited := PackedByteArray()
+	visited.resize(width * height)
+	var stack: Array[Vector2i] = []
+
+	for x in range(width):
+		stack.append(Vector2i(x, 0))
+		stack.append(Vector2i(x, height - 1))
+	for y in range(height):
+		stack.append(Vector2i(0, y))
+		stack.append(Vector2i(width - 1, y))
+
+	while not stack.is_empty():
+		var p_variant: Variant = stack.pop_back()
+		if not (p_variant is Vector2i):
+			continue
+		var p: Vector2i = p_variant
+		var x: int = p.x
+		var y: int = p.y
+		if x < 0 or x >= width or y < 0 or y >= height:
+			continue
+		var index: int = y * width + x
+		if visited[index] == 1:
+			continue
+		visited[index] = 1
+		var c := image.get_pixel(x, y)
+		if not _is_loose_checker_pixel(c):
+			continue
+		c.a = 0.0
+		image.set_pixel(x, y, c)
+		stack.append(Vector2i(x - 1, y))
+		stack.append(Vector2i(x + 1, y))
+		stack.append(Vector2i(x, y - 1))
+		stack.append(Vector2i(x, y + 1))
+
+
+func _looks_like_checkerboard_texture(texture: Texture2D) -> bool:
+	var image := texture.get_image()
+	if image == null:
+		return false
+	var width := image.get_width()
+	var height := image.get_height()
+	if width <= 0 or height <= 0:
+		return false
+
+	var checker_hits := 0
+	var sample_count := 0
+	var x_step := maxi(1, int(floor(float(width) / 16.0)))
+	var y_step := maxi(1, int(floor(float(height) / 16.0)))
+	for y in range(0, height, y_step):
+		for x in range(0, width, x_step):
+			sample_count += 1
+			if _is_checker_pixel(image.get_pixel(x, y)):
+				checker_hits += 1
+	if sample_count == 0:
+		return false
+	return float(checker_hits) / float(sample_count) > 0.28
 
 
 func _safe_load_texture(path: String, key: String) -> Texture2D:

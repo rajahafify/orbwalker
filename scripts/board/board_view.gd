@@ -5,6 +5,9 @@ class_name BoardView
 @export var board_padding: float = 12.0
 @export var cell_background: Color = Color("#1e232b")
 @export var board_background: Color = Color("#12161c")
+@export var cell_frame_texture: Texture2D
+@export var cell_frame_tint: Color = Color(1.0, 1.0, 1.0, 0.88)
+@export var orb_scale_in_cell: float = 0.74
 @export var selected_cell_color: Color = Color("#f7f2a6")
 @export var path_cell_color: Color = Color("#cfd7ff")
 @export var match_flash_color: Color = Color(1.0, 1.0, 1.0, 0.28)
@@ -91,7 +94,7 @@ func _draw() -> void:
 		return
 
 	var cell_size := _cell_size_for_rect(board_rect)
-	var cell_radius := cell_size * 0.33
+	var cell_radius := cell_size * 0.5 * clampf(orb_scale_in_cell, 0.35, 1.0)
 	for row in BoardState.ROW_COUNT:
 		for column in BoardState.COLUMN_COUNT:
 			var pos := board_rect.position + Vector2(
@@ -100,6 +103,8 @@ func _draw() -> void:
 			)
 			var rect := Rect2(pos, Vector2(cell_size, cell_size))
 			draw_rect(rect, cell_background)
+			if cell_frame_texture != null:
+				draw_texture_rect(cell_frame_texture, rect, false, cell_frame_tint)
 
 			var orb_id := board_state.get_cell(column, row)
 			var cell_index: int = _cell_index(column, row)
