@@ -33,15 +33,43 @@ layout_mode = 2
 text = "Shop"
 horizontal_alignment = 1
 
+[node name="RunProgressLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run: -"
+
+[node name="BossPreviewLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Boss preview: -"
+
 [node name="GoldLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Gold: 0"
 
+[node name="InventoryLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Equipment: -\nConsumables: -\nRelics: -"
+autowrap_mode = 3
+
+[node name="MasteryLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mastery: -"
+autowrap_mode = 3
+
 [node name="SummaryLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "-"
+autowrap_mode = 3
+
+[node name="DetailLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Details: Select an offer to inspect and buy."
 autowrap_mode = 3
 
 [node name="ShopActionsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]

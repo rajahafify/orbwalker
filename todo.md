@@ -428,43 +428,51 @@ Verification notes (2026-04-27):
 
 ## Milestone 9: UI, UX, And Game Feel
 
+Status: In progress.
+
 Goal: Make the prototype readable, playable, and comfortable enough for repeated playtesting.
 
 Primary deliverable: A cohesive game flow where combat, shop, inventory, item effects, enemy intent, and run progress are understandable without debug tools.
 
 Tasks:
 
-- [ ] Implement combat HUD.
+- [x] Implement combat HUD.
   - Deliverable: Player HP, armor, gold, move timer, enemy HP, enemy block, enemy intent, combo count, and recent result summary.
   - Acceptance: The player can understand the current turn at a glance.
 
-- [ ] Implement inventory UI.
+- [x] Implement inventory UI.
   - Deliverable: Equipment slots, consumable slots, relic list, and mastery levels.
   - Acceptance: The player can inspect current build state during combat and shop.
 
-- [ ] Implement item detail views.
+- [x] Implement item detail views.
   - Deliverable: Tooltip or detail panel for equipment, mastery cards, consumables, relics, and boosters.
   - Acceptance: Item effect text is visible before buying, using, or selling.
 
-- [ ] Implement shop UI.
+- [x] Implement shop UI.
   - Deliverable: Shop offers, prices, buy buttons, reroll, sell controls, booster opening view, and skip shop.
   - Acceptance: The player can complete all shop actions without debug input.
 
-- [ ] Implement boss and dungeon UI.
+- [x] Implement boss and dungeon UI.
   - Deliverable: Level number, upcoming boss preview, current sequence step, and transition screens.
   - Acceptance: The player knows where they are in the run and what threat is coming.
 
-- [ ] Add feedback for match resolution.
+- [x] Add feedback for match resolution.
   - Deliverable: Clear, fall, refill, cascade, combo, damage, heal, armor, and gold feedback.
   - Acceptance: The player can connect board results to combat outcomes.
 
-- [ ] Add basic audio and visual polish.
+- [~] Add basic audio and visual polish.
   - Deliverable: Placeholder sound effects, hit feedback, item purchase feedback, enemy death feedback, and simple transitions.
   - Acceptance: Important actions produce readable response without slowing play.
 
-- [ ] Validate responsive layout.
+- [~] Validate responsive layout.
   - Deliverable: Desktop and mobile aspect ratio checks for board, combat HUD, shop, and inventories.
   - Acceptance: Text and controls do not overlap on target resolutions.
+
+Verification notes (2026-04-27):
+- Promoted combat screen from debug-style readout to Milestone 9 HUD with explicit run progress, turn summary, combo summary, and readability-focused status feedback.
+- Extended shop and boss-reward scenes with run progress, inventory/mastery visibility, and inline effect/detail text so purchase and reward decisions are readable without console commands.
+- Added responsive compact-mode handling in combat HUD spacing/min-width logic; full mobile overlap verification remains pending on-device.
+- Godot MCP validation passed for updated scene load/instantiation checks and main-scene run smoke test with no reported session errors.
 
 ## Milestone 10: Balance Pass And QA
 

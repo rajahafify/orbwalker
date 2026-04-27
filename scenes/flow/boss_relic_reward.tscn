@@ -33,10 +33,21 @@ layout_mode = 2
 text = "Boss Relic Reward"
 horizontal_alignment = 1
 
+[node name="RunProgressLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run: -"
+
 [node name="SummaryLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "-"
+autowrap_mode = 3
+
+[node name="DetailLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Pick one relic."
 autowrap_mode = 3
 
 [node name="OptionButton1" type="Button" parent="MarginContainer/VBoxContainer"]

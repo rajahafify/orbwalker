@@ -3,6 +3,9 @@ extends Control
 @onready var _board_view: BoardView = %BoardView
 @onready var _status_label: Label = %StatusLabel
 @onready var _timer_label: Label = %TimerLabel
+@onready var _run_progress_label: Label = %RunProgressLabel
+@onready var _turn_summary_label: Label = %TurnSummaryLabel
+@onready var _combo_summary_label: Label = %ComboSummaryLabel
 @onready var _player_label: Label = %PlayerStateLabel
 @onready var _enemy_label: Label = %EnemyStateLabel
 @onready var _intent_label: Label = %EnemyIntentLabel
@@ -10,6 +13,8 @@ extends Control
 @onready var _combat_log_text: RichTextLabel = %CombatLogText
 @onready var _console_input: LineEdit = %ConsoleInput
 @onready var _next_button: Button = %NextButton
+@onready var _board_and_state_row: HBoxContainer = %BoardAndStateRow
+@onready var _state_frame: PanelContainer = %StateFrame
 
 const SWAP_ANIMATION_SECONDS := 0.08
 const MATCH_FLASH_SECONDS := 0.12
@@ -33,6 +38,10 @@ const MAX_COMBAT_LOG_LINES := 120
 const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
 const LOG_LEVEL_NORMAL := "normal"
 const LOG_LEVEL_DETAILED := "detailed"
+const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
+const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
+const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
+const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -77,7 +86,9 @@ func _ready() -> void:
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
 	_console_input.text_submitted.connect(_on_console_input_text_submitted)
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	set_process(true)
+	_apply_responsive_layout()
 	_begin_turn_preview()
 	_console_input.grab_focus()
 
@@ -130,10 +141,13 @@ func _begin_turn_preview() -> void:
 	_pending_next_scene_path = ""
 	_next_button.visible = false
 	_next_button.disabled = true
+	_turn_summary_label.text = "Turn Summary: Awaiting move."
+	_combo_summary_label.text = "Combos: 0"
 	_status_label.text = "%s | Turn %d." % [
 		RunState.level_sequence_label(),
 		_combat.turn_index,
 	]
+	_status_label.modulate = STATUS_COLOR_NEUTRAL
 	_update_hud()
 	_append_combat_log(
 		"Turn %d intent: %s." % [
@@ -853,6 +867,7 @@ func _start_drag(board_local_position: Vector2) -> bool:
 	_board_view.drag_orb_id = _drag_selected_orb_id
 	_update_timer_label(_move_time_left)
 	_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(_drag_selected_orb_id)
+	_status_label.modulate = STATUS_COLOR_NEUTRAL
 	return true
 
 
@@ -892,6 +907,7 @@ func _end_drag(timed_out: bool) -> void:
 	if timed_out:
 		move_end_reason = "timer expired"
 	_status_label.text = "Move ended: %s. Locking input for resolve phase." % move_end_reason
+	_status_label.modulate = STATUS_COLOR_WARNING
 
 	_reset_drag_visuals()
 	_set_input_phase(InputPhase.RESOLVING)
@@ -917,6 +933,9 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
 		_next_button.visible = true
 		_next_button.disabled = false
+		_turn_summary_label.text = "Turn Summary: Victory. Press Next to continue."
+		_combo_summary_label.text = _combo_summary_text(turn_log)
+		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 		return
 
 	if _combat.phase == COMBAT_PHASE_DEFEAT:
@@ -929,10 +948,17 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_pending_next_scene_path = ""
 		_next_button.visible = false
 		_next_button.disabled = true
+		_turn_summary_label.text = "Turn Summary: Defeat."
+		_combo_summary_label.text = _combo_summary_text(turn_log)
+		_pulse_label(_turn_summary_label, STATUS_COLOR_NEGATIVE)
 		_queue_outcome_transition(String(defeat_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
 		return
 
 	_status_label.text = _build_turn_summary_status(turn_log)
+	_status_label.modulate = STATUS_COLOR_POSITIVE
+	_turn_summary_label.text = "Turn Summary: %s" % _build_turn_summary_status(turn_log)
+	_combo_summary_label.text = _combo_summary_text(turn_log)
+	_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 	_append_turn_log(turn_log)
 	_begin_turn_preview()
 
@@ -1113,6 +1139,7 @@ func _update_hud() -> void:
 	var intent := _enemy_state.get_current_intent()
 	_intent_label.text = "Enemy Intent: %s" % _format_intent(intent)
 	_phase_label.text = "Run: %s\nCombat Phase: %s" % [RunState.level_sequence_label(), _combat.phase_name()]
+	_run_progress_label.text = "Run Progress: %s | Boss: %s" % [RunState.level_sequence_label(), RunState.current_level_boss_name()]
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -1465,6 +1492,37 @@ func _format_mastery_line(levels: Dictionary) -> String:
 
 func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
+	_status_label.modulate = STATUS_COLOR_WARNING
+
+
+func _combo_summary_text(turn_log: Dictionary) -> String:
+	return "Combos: %d (effective %d) | Damage %d | Heal +%d | Armor +%d | Gold +%d" % [
+		int(turn_log.get("combo_count", 0)),
+		int(turn_log.get("combo_count_with_bonus", turn_log.get("combo_count", 0))),
+		int(turn_log.get("enemy_damage_taken", 0)),
+		int(turn_log.get("healed", 0)),
+		int(turn_log.get("armor_gained", 0)),
+		int(turn_log.get("gold_gained", 0)),
+	]
+
+
+func _pulse_label(target: Label, tint: Color) -> void:
+	target.modulate = tint
+	var tween := create_tween()
+	tween.tween_property(target, "modulate", STATUS_COLOR_NEUTRAL, 0.28)
+
+
+func _on_viewport_size_changed() -> void:
+	_apply_responsive_layout()
+
+
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.y <= 0.0:
+		return
+	var is_compact := viewport_size.x / viewport_size.y < 1.35
+	_board_and_state_row.add_theme_constant_override("separation", 8 if is_compact else 12)
+	_state_frame.custom_minimum_size.x = 340 if is_compact else 440
 
 
 func _on_resolver_cells_cleared(_cells: Array) -> void:

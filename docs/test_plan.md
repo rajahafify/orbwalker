@@ -183,19 +183,28 @@ Verification notes (2026-04-27):
 
 ## Milestone 9: UI And Game Feel
 
-- [ ] Combat HUD shows player HP, armor, gold, timer, enemy HP, enemy block, and enemy intent.
-- [ ] Combo count and turn result feedback are readable.
-- [ ] Equipment slots are visible.
-- [ ] Consumable slots are visible.
-- [ ] Relics are visible.
-- [ ] Mastery levels are visible.
-- [ ] Item detail text is readable before purchase.
-- [ ] Shop controls are usable without debug tools.
-- [ ] Booster selection is clear.
-- [ ] Run progress and dungeon level are visible.
-- [ ] Important actions have clear visual or audio feedback.
+- [x] Combat HUD shows player HP, armor, gold, timer, enemy HP, enemy block, and enemy intent.
+- [x] Combo count and turn result feedback are readable.
+- [x] Equipment slots are visible.
+- [x] Consumable slots are visible.
+- [x] Relics are visible.
+- [x] Mastery levels are visible.
+- [x] Item detail text is readable before purchase.
+- [x] Shop controls are usable without debug tools.
+- [x] Booster selection is clear.
+- [x] Run progress and dungeon level are visible.
+- [x] Important actions have clear visual or audio feedback.
 - [ ] UI elements do not overlap on desktop.
 - [ ] UI elements do not overlap on mobile aspect ratios.
+
+Verification notes (2026-04-27):
+- Godot MCP script/scene checks passed for updated UI scene load + instantiation:
+  - `res://scenes/combat/board_debug.tscn`
+  - `res://scenes/flow/shop_placeholder.tscn`
+  - `res://scenes/flow/boss_relic_reward.tscn`
+  - `res://scenes/main.tscn`
+- Main scene smoke test (`play_scene` on main) ran and exited without reported session errors.
+- Remaining Milestone 9 QA: explicit overlap checks on desktop and on-device mobile aspect ratios.
 
 ## Milestone 10: Balance And Regression
 

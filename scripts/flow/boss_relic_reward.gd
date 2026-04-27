@@ -1,7 +1,9 @@
 extends Control
 
 @onready var _title_label: Label = %TitleLabel
+@onready var _run_progress_label: Label = %RunProgressLabel
 @onready var _summary_label: Label = %SummaryLabel
+@onready var _detail_label: Label = %DetailLabel
 @onready var _option_buttons: Array[Button] = [
 	%OptionButton1,
 	%OptionButton2,
@@ -19,7 +21,9 @@ func _ready() -> void:
 		return
 
 	_title_label.text = "Boss Relic Reward - %s" % RunState.level_sequence_label()
+	_run_progress_label.text = "Run: %s" % RunState.level_sequence_label()
 	_summary_label.text = "Choose one relic reward before the next shop."
+	_detail_label.text = "Pick one relic reward. Boss preview: %s" % RunState.current_level_boss_name()
 	_refresh_options()
 
 
@@ -55,6 +59,7 @@ func _pick_option(index: int) -> void:
 			_summary_label.text = "Reward selected: %s (already owned). Continue to shop." % String(payload.get("display_name", "Relic"))
 		else:
 			_summary_label.text = "Claimed relic: %s. Continue to shop." % String(payload.get("display_name", "Relic"))
+		_detail_label.text = "Reward choice locked."
 		_refresh_options()
 		return
 	_summary_label.text = "Failed to claim relic: %s" % String(result.get("reason", "unknown"))
