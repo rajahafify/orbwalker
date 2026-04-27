@@ -1,5 +1,8 @@
 extends Control
 
+const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+
+@onready var _background: TextureRect = %Background
 @onready var _title_label: Label = %TitleLabel
 @onready var _run_progress_label: Label = %RunProgressLabel
 @onready var _boss_preview_label: Label = %BossPreviewLabel
@@ -24,9 +27,16 @@ extends Control
 	%BoosterOptionButton3,
 ]
 @onready var _sell_slot_spin_box: SpinBox = %SellSlotSpinBox
+@onready var _equipment_icons: HBoxContainer = %EquipmentIcons
+@onready var _consumable_icons: HBoxContainer = %ConsumableIcons
+@onready var _relic_icons: HBoxContainer = %RelicIcons
+@onready var _mastery_icons: HBoxContainer = %MasteryIcons
+
+var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 
 
 func _ready() -> void:
+	_background.texture = _visuals.shop_background()
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	if not RunState.run_active:
 		_title_label.text = "Shop"
@@ -63,18 +73,22 @@ func _refresh_ui() -> void:
 		var button := _item_offer_buttons[index]
 		if index >= item_offers.size():
 			button.text = "Empty slot"
+			button.icon = _visuals.placeholder_texture("empty_shop_offer", Color(0.2, 0.2, 0.25, 1.0), Vector2i(96, 96))
 			button.disabled = true
 			continue
 		var offer: Dictionary = item_offers[index]
 		button.text = _offer_button_text(offer)
+		button.icon = _visuals.icon_for_key(String(offer.get("icon_key", "")))
 		button.disabled = bool(offer.get("sold_out", false))
 
 	var relic_offer: Dictionary = shop_snapshot.get("relic_offer", {})
 	if relic_offer.is_empty():
 		_relic_offer_button.text = "Relic offer unavailable"
+		_relic_offer_button.icon = _visuals.placeholder_texture("empty_relic_offer", Color(0.2, 0.2, 0.25, 1.0), Vector2i(96, 96))
 		_relic_offer_button.disabled = true
 	else:
 		_relic_offer_button.text = "Relic: %s" % _offer_button_text(relic_offer)
+		_relic_offer_button.icon = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
 		_relic_offer_button.disabled = bool(relic_offer.get("sold_out", false))
 
 	var pending_options: Array = shop_snapshot.get("pending_booster_options", [])
@@ -102,6 +116,7 @@ func _refresh_ui() -> void:
 		_format_id_line(relic_ids),
 	]
 	_mastery_label.text = "Mastery: %s" % _format_mastery_line(mastery_levels)
+	_refresh_build_icon_rows(progression_snapshot)
 
 
 func _offer_button_text(offer: Dictionary) -> String:
@@ -109,11 +124,12 @@ func _offer_button_text(offer: Dictionary) -> String:
 	var description := String(offer.get("description", ""))
 	var offer_type := String(offer.get("type", ""))
 	var price := int(offer.get("price", 0))
+	var rarity := String(offer.get("rarity", "common")).to_upper()
 	var sold_out := bool(offer.get("sold_out", false))
 	var status := "SOLD" if sold_out else "Buy"
 	if description == "":
-		return "%s [%s] - %dg (%s)" % [display_name, offer_type, price, status]
-	return "%s [%s] - %dg (%s)\n%s" % [display_name, offer_type, price, status, description]
+		return "%s [%s/%s] - %dg (%s)" % [display_name, offer_type, rarity, price, status]
+	return "%s [%s/%s] - %dg (%s)\n%s" % [display_name, offer_type, rarity, price, status, description]
 
 
 func _buy_offer_at(index: int) -> void:
@@ -232,6 +248,69 @@ func _format_mastery_line(levels: Dictionary) -> String:
 	for orb_id in OrbType.ALL_TYPES:
 		parts.append("%s:%d" % [OrbType.debug_symbol(orb_id), int(levels.get(orb_id, 0))])
 	return "[" + ", ".join(parts) + "]"
+
+
+func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
+	_populate_icon_row(_equipment_icons, progression_snapshot.get("equipment_slots", []), "equipment")
+	_populate_icon_row(_consumable_icons, progression_snapshot.get("consumable_slots", []), "consumable")
+	_populate_icon_row(_relic_icons, progression_snapshot.get("relic_ids", []), "relic")
+	_populate_mastery_row(_mastery_icons, progression_snapshot.get("mastery_levels", {}))
+
+
+func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
+	for child in row.get_children():
+		child.queue_free()
+	for id_value in ids:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(34, 34)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var id_text := String(id_value)
+		if id_text == "":
+			icon.texture = _visuals.placeholder_texture("%s_empty_strip" % label, Color(0.22, 0.22, 0.25, 0.95), Vector2i(96, 96))
+			icon.modulate = Color(1.0, 1.0, 1.0, 0.45)
+		else:
+			var content := _lookup_content_definition(id_text)
+			icon.texture = _visuals.icon_for_key(String(content.get("icon_key", "")))
+			icon.tooltip_text = String(content.get("display_name", id_text))
+		row.add_child(icon)
+
+
+func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> void:
+	for child in row.get_children():
+		child.queue_free()
+	for orb_id in OrbType.ALL_TYPES:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(34, 34)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture = _visuals.mastery_icon(orb_id)
+		var level := int(mastery_levels.get(orb_id, 0))
+		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
+		if level <= 0:
+			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
+		row.add_child(icon)
+
+
+func _lookup_content_definition(content_id: String) -> Dictionary:
+	var registry = RunState.ensure_content_registry()
+	var value: Dictionary = registry.get_equipment(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_consumable(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_relic(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_mastery_card(content_id)
+	if not value.is_empty():
+		return value
+	return {
+		"display_name": content_id,
+		"icon_key": "",
+	}
 
 
 func _lookup_offer_details(offer_id: String, shop_snapshot: Dictionary) -> String:

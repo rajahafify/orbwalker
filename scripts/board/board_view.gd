@@ -38,6 +38,11 @@ var board_state: BoardState = null:
 		board_state = value
 		queue_redraw()
 
+var orb_texture_map: Dictionary = {}:
+	set(value):
+		orb_texture_map = value
+		queue_redraw()
+
 var _flash_cells: Dictionary = {}
 var _glow_cells: Dictionary = {} # cell index -> true
 var _overlay_orbs: Array[Dictionary] = []
@@ -101,8 +106,7 @@ func _draw() -> void:
 			var is_selected_cell := selected_cell == Vector2i(column, row) and drag_orb_id >= 0
 			var is_suppressed: bool = _suppressed_cells.has(cell_index)
 			if not is_selected_cell and not is_suppressed and OrbType.is_valid_id(orb_id):
-				var orb_color := OrbType.color(orb_id)
-				draw_circle(rect.get_center(), cell_radius, orb_color)
+				_draw_orb_sprite(rect.get_center(), cell_radius, orb_id)
 
 			if selected_cell == Vector2i(column, row):
 				draw_rect(rect.grow(-2.0), selected_cell_color, false, 2.0)
@@ -143,12 +147,10 @@ func _draw() -> void:
 		var orb_id: int = int(overlay.orb_id)
 		if not OrbType.is_valid_id(orb_id):
 			continue
-		var orb_color := OrbType.color(orb_id)
-		orb_color.a = alpha
-		draw_circle(orb_pos, cell_radius * orb_scale, orb_color)
+		_draw_orb_sprite(orb_pos, cell_radius * orb_scale, orb_id, alpha)
 
 	if drag_orb_id >= 0:
-		draw_circle(drag_pointer_position, cell_radius, OrbType.color(drag_orb_id))
+		_draw_orb_sprite(drag_pointer_position, cell_radius, drag_orb_id)
 
 
 func clear_animations() -> void:
@@ -356,6 +358,24 @@ func _cell_center_from_float_row(column: int, row: float) -> Vector2:
 
 func _cell_index(column: int, row: int) -> int:
 	return row * BoardState.COLUMN_COUNT + column
+
+
+func set_orb_texture_map(texture_map: Dictionary) -> void:
+	orb_texture_map = texture_map
+	queue_redraw()
+
+
+func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float = 1.0) -> void:
+	var texture: Texture2D = orb_texture_map.get(orb_id, null)
+	if texture == null:
+		var orb_color := OrbType.color(orb_id)
+		orb_color.a = alpha
+		draw_circle(center, radius, orb_color)
+		return
+
+	var sprite_size := Vector2(radius * 2.0, radius * 2.0)
+	var rect := Rect2(center - sprite_size * 0.5, sprite_size)
+	draw_texture_rect(texture, rect, false, Color(1.0, 1.0, 1.0, alpha))
 
 
 func _add_overlay_orb(

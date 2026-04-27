@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://d4f7ouqy8ad44"]
 
-[ext_resource type="Script" path="res://scripts/flow/shop_placeholder.gd" id="1_shop"]
+[ext_resource type="Script" path="res://scripts/flow/shop_player.gd" id="1_shop"]
+[ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="2_theme"]
 
-[node name="ShopPlaceholder" type="Control"]
+[node name="ShopPlayer" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,6 +11,29 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_shop")
+theme = ExtResource("2_theme")
+
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackdropTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.3)
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -98,6 +122,7 @@ text = "Sell Equipped Slot"
 
 [node name="OffersFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="OffersVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/OffersFrame"]
 layout_mode = 2
@@ -156,6 +181,37 @@ text = "Option 3"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="BuildStripFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="BuildStripVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BuildStripFrame"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BuildStripLabel" type="Label" parent="MarginContainer/VBoxContainer/BuildStripFrame/BuildStripVBox"]
+layout_mode = 2
+text = "Current Build"
+
+[node name="EquipmentIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildStripFrame/BuildStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ConsumableIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildStripFrame/BuildStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RelicIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildStripFrame/BuildStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MasteryIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildStripFrame/BuildStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="SkipShopButton" type="Button" parent="MarginContainer/VBoxContainer/BottomActionsRow"]
 layout_mode = 2

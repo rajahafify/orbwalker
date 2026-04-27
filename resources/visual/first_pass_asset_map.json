@@ -1,0 +1,25 @@
+{
+  "backgrounds": {
+    "combat": "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png",
+    "shop": "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png"
+  },
+  "enemy_portraits": {
+    "cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+    "cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+    "ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+    "iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
+    "burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
+    "prism_warden": "res://resources/art/first_pass/enemies/boss_prism_warden.png"
+  },
+  "sheets": {
+    "orbs": "res://resources/art/first_pass/sheets/orb_icon_set_v1.png",
+    "intents": "res://resources/art/first_pass/sheets/intent_badge_set_v1.png",
+    "rarity": "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png",
+    "mastery": "res://resources/art/first_pass/sheets/mastery_icon_set_v1.png",
+    "items": "res://resources/art/first_pass/sheets/item_icon_seed_set_v1.png",
+    "frames": "res://resources/art/first_pass/ui/ui_frame_kit_v1.png",
+    "bars": "res://resources/art/first_pass/ui/bar_kit_v1.png",
+    "shop_cards": "res://resources/art/first_pass/ui/shop_card_kit_v1.png",
+    "vfx": "res://resources/art/first_pass/vfx/vfx_sprite_sheet_v1.png"
+  }
+}

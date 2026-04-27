@@ -1,6 +1,7 @@
 extends Control
 
 @onready var _board_view: BoardView = %BoardView
+@onready var _background: TextureRect = %Background
 @onready var _status_label: Label = %StatusLabel
 @onready var _timer_label: Label = %TimerLabel
 @onready var _run_progress_label: Label = %RunProgressLabel
@@ -16,6 +17,14 @@ extends Control
 @onready var _board_and_state_row: BoxContainer = %BoardAndStateRow
 @onready var _state_frame: PanelContainer = %StateFrame
 @onready var _board_view_control: Control = %BoardView
+@onready var _enemy_portrait: TextureRect = %EnemyPortrait
+@onready var _intent_badge: TextureRect = %IntentBadge
+@onready var _enemy_hp_bar: ProgressBar = %EnemyHpBar
+@onready var _equipment_icons: HBoxContainer = %EquipmentIcons
+@onready var _consumable_icons: HBoxContainer = %ConsumableIcons
+@onready var _relic_icons: HBoxContainer = %RelicIcons
+@onready var _mastery_icons: HBoxContainer = %MasteryIcons
+@onready var _vfx_layer: Control = %VfxLayer
 
 const SWAP_ANIMATION_SECONDS := 0.08
 const MATCH_FLASH_SECONDS := 0.12
@@ -26,6 +35,7 @@ const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_re
 const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/debug/board_resolver_test_runner.gd")
 const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
 const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
+const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -73,10 +83,20 @@ var _combat_log_lines: Array[String] = []
 var _combat_log_command_flags: Array[bool] = []
 var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
+var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 
 
 func _ready() -> void:
 	_consumable_rng.randomize()
+	_background.texture = _visuals.combat_background()
+	_board_view.set_orb_texture_map({
+		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
+		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
+		OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
+		OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
+		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
+		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
+	})
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
 	_resolver.gravity_applied.connect(_on_resolver_gravity_applied)
@@ -86,12 +106,14 @@ func _ready() -> void:
 	_initialize_combat_state()
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
-	_console_input.text_submitted.connect(_on_console_input_text_submitted)
+	if _console_input.visible:
+		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	set_process(true)
 	_apply_responsive_layout()
 	_begin_turn_preview()
-	_console_input.grab_focus()
+	if _console_input.visible:
+		_console_input.grab_focus()
 
 
 func _initialize_combat_state() -> void:
@@ -1112,35 +1134,34 @@ func _update_hud() -> void:
 		return
 
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
-	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
-	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
-	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
 	var validation_errors: Array[Dictionary] = RunState.player_state_content_errors()
+	var turn_number := int(_combat.turn_index)
+	var level_label := RunState.level_sequence_label()
 
-	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d\nEq: %s\nCons: %s\nRelics: %s\nMastery: %s\nContent Validation: %s" % [
+	_player_label.text = "Player  HP %d/%d  Armor %d  Gold %d\nValidation: %s" % [
 		_player_state.current_hp,
 		_player_state.max_hp,
 		_player_state.armor,
 		_player_state.gold,
-		_format_slot_line(equipment_slots),
-		_format_slot_line(consumable_slots),
-		_format_id_line(relic_ids),
-		_format_mastery_line(mastery_levels),
 		"OK" if validation_errors.is_empty() else ("%d issue(s)" % validation_errors.size()),
 	]
 
-	_enemy_label.text = "%s  HP %d/%d  Turn Block %d" % [
+	_enemy_label.text = "%s  HP %d/%d  Block %d" % [
 		_enemy_state.display_name,
 		_enemy_state.current_hp,
 		_enemy_state.max_hp,
 		_enemy_state.current_turn_block,
 	]
+	_enemy_portrait.texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
+	_enemy_hp_bar.value = float(_enemy_state.current_hp)
 
 	var intent := _enemy_state.get_current_intent()
 	_intent_label.text = "Enemy Intent: %s" % _format_intent(intent)
-	_phase_label.text = "Run: %s\nCombat Phase: %s" % [RunState.level_sequence_label(), _combat.phase_name()]
-	_run_progress_label.text = "Run Progress: %s | Boss: %s" % [RunState.level_sequence_label(), RunState.current_level_boss_name()]
+	_intent_badge.texture = _visuals.intent_badge(int(intent.get("type", 0)))
+	_phase_label.text = "Turn %d | %s" % [turn_number, _combat.phase_name()]
+	_run_progress_label.text = "%s | Boss: %s" % [level_label, RunState.current_level_boss_name()]
+	_refresh_build_icon_rows(progression_snapshot)
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -1151,6 +1172,7 @@ func _format_intent(intent: Dictionary) -> String:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
+	_emit_turn_feedback_vfx(turn_log)
 	if _combat_log_level == LOG_LEVEL_DETAILED:
 		_append_turn_log_detailed(turn_log)
 		return
@@ -1491,6 +1513,108 @@ func _format_mastery_line(levels: Dictionary) -> String:
 	return "[" + ", ".join(parts) + "]"
 
 
+func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
+	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
+	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
+
+	_populate_icon_row(_equipment_icons, equipment_slots, "equipment")
+	_populate_icon_row(_consumable_icons, consumable_slots, "consumable")
+	_populate_icon_row(_relic_icons, relic_ids, "relic")
+	_populate_mastery_row(_mastery_icons, mastery_levels)
+
+
+func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
+	for child in row.get_children():
+		child.queue_free()
+	for id_value in ids:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(42, 42)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var id_text := String(id_value)
+		if id_text == "":
+			icon.texture = _visuals.placeholder_texture("%s_empty" % label, Color(0.22, 0.22, 0.25, 0.95), Vector2i(96, 96))
+			icon.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		else:
+			var content: Dictionary = _lookup_content_definition(id_text)
+			var icon_key := String(content.get("icon_key", ""))
+			icon.texture = _visuals.icon_for_key(icon_key)
+			icon.tooltip_text = String(content.get("display_name", id_text))
+		row.add_child(icon)
+
+
+func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> void:
+	for child in row.get_children():
+		child.queue_free()
+	for orb_id in OrbType.ALL_TYPES:
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(42, 42)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture = _visuals.mastery_icon(orb_id)
+		var level := int(mastery_levels.get(orb_id, 0))
+		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
+		if level <= 0:
+			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
+		row.add_child(icon)
+
+
+func _lookup_content_definition(content_id: String) -> Dictionary:
+	var registry = RunState.ensure_content_registry()
+	var value: Dictionary = registry.get_equipment(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_consumable(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_relic(content_id)
+	if not value.is_empty():
+		return value
+	value = registry.get_mastery_card(content_id)
+	if not value.is_empty():
+		return value
+	return {
+		"display_name": content_id,
+		"icon_key": "",
+	}
+
+
+func _emit_turn_feedback_vfx(turn_log: Dictionary) -> void:
+	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
+	if enemy_damage > 0:
+		var target := _enemy_portrait.global_position + _enemy_portrait.size * 0.5
+		_spawn_vfx("hit_flash", target, Vector2(84, 84), 0.42)
+
+	var gold_gained := int(turn_log.get("gold_gained", 0))
+	if gold_gained > 0:
+		var target := _player_label.global_position + Vector2(18, 18)
+		_spawn_vfx("gold_gain", target, Vector2(70, 70), 0.55)
+
+
+func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float) -> void:
+	var tex := _visuals.vfx_texture(effect_name)
+	if tex == null:
+		return
+	var sprite := TextureRect.new()
+	sprite.texture = tex
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite.custom_minimum_size = draw_size
+	sprite.size = draw_size
+	sprite.global_position = global_center - draw_size * 0.5
+	_vfx_layer.add_child(sprite)
+	var tween := create_tween()
+	tween.tween_property(sprite, "modulate:a", 0.0, maxf(0.08, lifetime))
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(sprite):
+			sprite.queue_free()
+	)
+
+
 func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 	_status_label.modulate = STATUS_COLOR_WARNING
@@ -1532,8 +1656,14 @@ func _apply_responsive_layout() -> void:
 	_combat_log_text.fit_content = is_very_narrow
 
 
-func _on_resolver_cells_cleared(_cells: Array) -> void:
-	pass
+func _on_resolver_cells_cleared(cells: Array) -> void:
+	for raw_cell in cells:
+		var cell: Vector2i = raw_cell
+		if not _board_view.is_cell_valid(cell):
+			continue
+		var center := _board_view.get_cell_center(cell)
+		var global_center := _board_view.global_position + center
+		_spawn_vfx("orb_clear", global_center, Vector2(60, 60), 0.33)
 
 
 func _on_resolver_gravity_applied(_fall_moves: Array) -> void:

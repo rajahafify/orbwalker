@@ -17,7 +17,7 @@ func _on_main_menu_button_pressed() -> void:
 
 func _on_new_run_button_pressed() -> void:
 	RunState.start_new_run()
-	get_tree().change_scene_to_file("res://scenes/combat/board_debug.tscn")
+	get_tree().change_scene_to_file(RunState.next_scene_path())
 
 
 func _format_summary(summary: Dictionary) -> String:

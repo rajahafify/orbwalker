@@ -473,6 +473,28 @@ Verification notes (2026-04-27):
 - Extended shop and boss-reward scenes with run progress, inventory/mastery visibility, and inline effect/detail text so purchase and reward decisions are readable without console commands.
 - Added responsive compact-mode handling in combat HUD spacing/min-width logic; full mobile overlap verification remains pending on-device.
 - Godot MCP validation passed for updated scene load/instantiation checks and main-scene run smoke test with no reported session errors.
+- Added Milestone 9 responsive layout hardening for combat/shop surfaces:
+  - `BoardAndStateRow`, `ShopActionsRow`, and `BottomActionsRow` now use adaptive `BoxContainer` layout switching (horizontal desktop, vertical compact/mobile).
+  - Combat status/state labels now use autowrap to reduce clipping risk in narrow layouts.
+- Godot MCP post-change checks passed for script parse state, `res://scenes/main.tscn` run smoke, and shop scene load/instantiate.
+- Milestone 9 graphical asset integration pass (combat + shop) is now wired through a dedicated visual registry and player-facing scenes:
+  - Added `scripts/ui/visual_registry.gd` and `resources/visual/first_pass_asset_map.json` as the centralized texture lookup/mapping contract (backgrounds, enemy portraits, orb/intent/rarity/mastery/item atlases, and VFX sheet hooks with fallbacks).
+  - Added player-facing scene routes:
+	- Combat: `res://scenes/combat/combat_player.tscn` (controller: `res://scripts/combat/combat_player_controller.gd`)
+	- Shop: `res://scenes/flow/shop_player.tscn` (controller: `res://scripts/flow/shop_player.gd`)
+  - `RunState` transition constants now route fights and shops to the player-facing scenes while preserving `res://scenes/combat/board_debug.tscn` via explicit main-menu debug entry.
+  - `BoardView` now supports orb atlas rendering (`orb_id -> Texture2D`) with color fallback and preserves selection/path/flash/glow/fall/refill behavior.
+  - First-pass art assets were reorganized under `res://resources/art/first_pass/{backgrounds,enemies,sheets,ui,vfx}` with per-class mipmap policy in `.import` files (`backgrounds/enemies: true`, UI sheets: false).
+  - Added lightweight VFX hooks driven by combat events:
+	- enemy damage -> hit flash,
+	- resolver clear -> orb clear burst,
+	- gold gain -> sparkle.
+  - Added shared theme resource `res://resources/visual/first_pass_theme.tres` and applied it to player-facing combat/shop scenes.
+  - Godot MCP validation passed for scene instantiate and runtime smoke on:
+	- `res://scenes/combat/combat_player.tscn`
+	- `res://scenes/flow/shop_player.tscn`
+	- `res://scenes/combat/board_debug.tscn`
+	- `res://scenes/main.tscn`
 
 ## Milestone 10: Balance Pass And QA
 

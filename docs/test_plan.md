@@ -125,7 +125,7 @@ Phase D: Validation and debug visibility
 - [ ] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
 
 Verification notes (2026-04-26):
-- Shop flow is now wired to runtime systems (`ShopState`, `ShopService`) and accessible via post-fight transition to `res://scenes/flow/shop_placeholder.tscn`.
+- Shop flow is now wired to runtime systems (`ShopState`, `ShopService`) and accessible via post-fight transition to `res://scenes/flow/shop_player.tscn` (player-facing) and `res://scenes/flow/shop_placeholder.tscn` (debug/legacy).
 - Milestone 6 debug shop UI supports buy, sell, reroll, relic offer purchase, booster option selection, and skip/next transitions.
 - Economy actions run through `RunState` gold helpers, and combat gold gain updates are synchronized to run-level gold.
 - `board_debug_controller.gd` parse stability was restored for debug add-item actions by switching `RunState` service locals to explicit `Variant`.
@@ -199,12 +199,45 @@ Verification notes (2026-04-27):
 
 Verification notes (2026-04-27):
 - Godot MCP script/scene checks passed for updated UI scene load + instantiation:
-  - `res://scenes/combat/board_debug.tscn`
-  - `res://scenes/flow/shop_placeholder.tscn`
+  - `res://scenes/combat/combat_player.tscn`
+  - `res://scenes/flow/shop_player.tscn`
   - `res://scenes/flow/boss_relic_reward.tscn`
   - `res://scenes/main.tscn`
 - Main scene smoke test (`play_scene` on main) ran and exited without reported session errors.
+- Added responsive layout safeguards:
+  - Combat board/state panel now stacks vertically in compact aspect ratios and keeps state labels wrapped.
+  - Shop action rows now stack vertically in compact aspect ratios to avoid button overlap.
+- Godot MCP post-change checks passed:
+  - `get_godot_errors` reported no parse/runtime errors after edits.
+  - `play_scene` smoke on `res://scenes/combat/combat_player.tscn` completed and exited cleanly.
+  - `execute_editor_script` load/instantiate check for `res://scenes/flow/shop_player.tscn` returned success.
 - Remaining Milestone 9 QA: explicit overlap checks on desktop and on-device mobile aspect ratios.
+Verification notes (2026-04-27, graphical asset integration pass):
+- Added centralized visual mapping and fallback contract:
+  - `res://scripts/ui/visual_registry.gd`
+  - `res://resources/visual/first_pass_asset_map.json`
+- Player-facing scene paths are now:
+  - combat: `res://scenes/combat/combat_player.tscn`
+  - shop: `res://scenes/flow/shop_player.tscn`
+- Run routing validation:
+  - `RunState` scene constants now target the player-facing combat/shop scenes.
+  - Main menu keeps explicit debug access to `res://scenes/combat/board_debug.tscn`.
+- Godot MCP automated checks completed:
+  - script parse/load checks: no errors (`get_godot_errors`)
+  - scene instantiate checks passed for:
+	- `res://scenes/combat/combat_player.tscn`
+	- `res://scenes/flow/shop_player.tscn`
+	- `res://scenes/combat/board_debug.tscn`
+	- `res://scenes/main.tscn`
+  - runtime smoke passed (`play_scene` + `stop_running_scene`) for:
+	- `res://scenes/combat/combat_player.tscn`
+	- `res://scenes/flow/shop_player.tscn`
+	- `res://scenes/main.tscn`
+  - visual registry load probe passed (combat/shop backgrounds, orb atlas, intent/rarity badges, enemy portrait, icon atlas, VFX atlas).
+- Manual checks still required (not automated):
+  - full run-flow interaction from main menu through real fights/shops with user input,
+  - visual overlap audit at `1920x1080`, `1366x768`, `900x1600`, and `1080x1920`,
+  - readability/polish review for long offer text and dense inventory states.
 
 ## Milestone 10: Balance And Regression
 

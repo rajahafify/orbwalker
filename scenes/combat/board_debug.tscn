@@ -69,7 +69,7 @@ unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Console input (IO only)"
 
-[node name="BoardAndStateRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="BoardAndStateRow" type="BoxContainer" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 2
@@ -102,16 +102,19 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 text = "Seed: -"
+autowrap_mode = 3
 
 [node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox" unique_id=2043010952]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Timer: 0.00 s"
+autowrap_mode = 3
 
 [node name="RunProgressLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Run Progress: -"
+autowrap_mode = 3
 
 [node name="TurnSummaryLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
@@ -123,26 +126,31 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 2
 text = "Combos: 0"
+autowrap_mode = 3
 
 [node name="CombatPhaseLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Combat Phase: -"
+autowrap_mode = 3
 
 [node name="EnemyIntentLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Enemy Intent: -"
+autowrap_mode = 3
 
 [node name="PlayerStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Player  HP -/-  Armor -  Gold -"
+autowrap_mode = 3
 
 [node name="EnemyStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Enemy  HP -/-  Turn Block -"
+autowrap_mode = 3
 
 [node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
 unique_name_in_owner = true

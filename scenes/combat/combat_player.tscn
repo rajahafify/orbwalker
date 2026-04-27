@@ -1,0 +1,262 @@
+[gd_scene load_steps=3 format=3 uid="uid://drw4ejx7wqn6v"]
+
+[ext_resource type="Script" path="res://scripts/combat/combat_player_controller.gd" id="1_jrh0n"]
+[ext_resource type="Script" uid="uid://cohm3r6nkuq2i" path="res://scripts/board/board_view.gd" id="2_jk72d"]
+[ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="3_theme"]
+
+[node name="CombatPlayer" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jrh0n")
+theme = ExtResource("3_theme")
+
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackdropTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.32)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderRow"]
+layout_mode = 2
+text = "Back"
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Combat"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderRow"]
+layout_mode = 2
+text = "Drag to move orb"
+
+[node name="CombatLogFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 130)
+
+[node name="CombatLogVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CombatLogFrame"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CombatLogText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/CombatLogFrame/CombatLogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+scroll_following = true
+text = "Combat log will appear here."
+
+[node name="ConsoleInput" type="LineEdit" parent="MarginContainer/VBoxContainer/CombatLogFrame/CombatLogVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+placeholder_text = "Hidden"
+
+[node name="BoardAndStateRow" type="BoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="BoardFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardView" type="Control" parent="MarginContainer/VBoxContainer/BoardAndStateRow/BoardFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_jk72d")
+
+[node name="StateFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(480, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StateVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnemyStagePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 260)
+
+[node name="EnemyStageVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/EnemyStagePanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnemyPortrait" type="TextureRect" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/EnemyStagePanel/EnemyStageVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyHudRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/EnemyStagePanel/EnemyStageVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IntentBadge" type="TextureRect" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/EnemyStagePanel/EnemyStageVBox/EnemyHudRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyHpBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/EnemyStagePanel/EnemyStageVBox/EnemyHudRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+value = 50.0
+show_percentage = false
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Seed: -"
+autowrap_mode = 3
+
+[node name="TimerLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Timer: 0.00 s"
+autowrap_mode = 3
+
+[node name="RunProgressLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Run Progress: -"
+autowrap_mode = 3
+
+[node name="TurnSummaryLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Turn Summary: Awaiting move."
+autowrap_mode = 3
+
+[node name="ComboSummaryLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Combos: 0"
+autowrap_mode = 3
+
+[node name="CombatPhaseLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Combat Phase: -"
+autowrap_mode = 3
+
+[node name="EnemyIntentLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy Intent: -"
+autowrap_mode = 3
+
+[node name="PlayerStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Player  HP -/-  Armor -  Gold -"
+autowrap_mode = 3
+
+[node name="EnemyStateLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemy  HP -/-  Turn Block -"
+autowrap_mode = 3
+
+[node name="PlayerStripPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+layout_mode = 2
+
+[node name="PlayerStripVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BuildRowLabel" type="Label" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel/PlayerStripVBox"]
+text = "Build"
+layout_mode = 2
+
+[node name="EquipmentIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel/PlayerStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ConsumableIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel/PlayerStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RelicIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel/PlayerStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MasteryIcons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/PlayerStripPanel/PlayerStripVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Next"
+
+[node name="VfxLayer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HeaderRow/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/BoardAndStateRow/StateFrame/StateVBox/NextButton" to="." method="_on_next_button_pressed"]

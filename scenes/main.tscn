@@ -41,4 +41,9 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Start Prototype Run"
 
+[node name="DebugFightButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Debug Combat Scene"
+
 [connection signal="pressed" from="CenterContainer/PanelContainer/VBoxContainer/StartFightButton" to="." method="_on_start_fight_button_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/VBoxContainer/DebugFightButton" to="." method="_on_debug_fight_button_pressed"]
