@@ -242,7 +242,7 @@ Verification notes (2026-04-29, player section reference revamp):
 - Rebuilt the combat player panel to follow the provided reference bottom HUD: hero portrait card, primary HP bar, compact equipment/consumable rail, and persistent mastery strip.
 - Follow-up cleanup hid the cramped armor bar, stat chip row, and turn summary text from the compact player panel to prevent visual clutter at scaled desktop sizes.
 - Second spacing cleanup reduced the hero card footprint, pulled the equipment/consumable rail closer to the HP row, and compressed the mastery strip to remove excess empty space.
-- Layout correction pass keeps the simplified visible data set while matching the reference HUD structure: larger left hero portrait, primary HP bar, compact loadout rail, and full-width bottom mastery strip; armor/stat rows remain hidden to avoid empty placeholder UI.
+- Layout correction pass keeps the simplified visible data set while matching the reference HUD structure: larger left hero portrait, long primary HP bar, larger equipment/consumable slot rail, and full-width bottom mastery strip with icon-plus-number mastery cells; armor/stat rows remain hidden to avoid empty placeholder UI.
 - Godot MCP load/instantiate check passed for `res://scenes/combat/combat_player.tscn` with the new player-panel nodes present.
 - Godot MCP runtime scene-tree inspection confirmed the player panel, loadout rails, and mastery strip stay within the current `1080x1920` design-space player panel bounds.
 - Still needs manual visual review at `1920x1080`, `1366x768`, and `900x1600` before the desktop/mobile overlap checklist items can be marked complete.

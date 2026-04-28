@@ -114,17 +114,17 @@ const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
-const ICON_INNER_SIZE := Vector2(62, 62)
-const SLOT_SIZE := Vector2(76, 76)
-const MASTERY_ICON_INNER_SIZE := Vector2(30, 30)
-const MASTERY_SLOT_SIZE := Vector2(38, 38)
+const ICON_INNER_SIZE := Vector2(82, 82)
+const SLOT_SIZE := Vector2(96, 96)
+const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
+const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
 const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 72), Vector2(1048, 360))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 438), Vector2(1048, 72))
 const BOARD_PANEL_RECT := Rect2(Vector2(16, 520), Vector2(1048, 820))
-const PLAYER_PANEL_RECT := Rect2(Vector2(16, 1370), Vector2(1048, 382))
+const PLAYER_PANEL_RECT := Rect2(Vector2(16, 1328), Vector2(1048, 468))
 const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
 const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
 const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
@@ -132,27 +132,27 @@ const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
 const BOARD_SURFACE_SIZE := Vector2(620, 744)
 const BOARD_SURFACE_TOP := 22.0
-const HERO_CARD_RECT := Rect2(Vector2(24, 18), Vector2(170, 174))
-const HERO_PORTRAIT_RECT := Rect2(Vector2(10, 10), Vector2(150, 146))
-const HERO_LEVEL_BADGE_RECT := Rect2(Vector2(4, 132), Vector2(46, 38))
-const VITALS_PANEL_RECT := Rect2(Vector2(218, 28), Vector2(778, 48))
-const PLAYER_HP_BAR_RECT := Rect2(Vector2(0, 4), Vector2(710, 34))
+const HERO_CARD_RECT := Rect2(Vector2(42, 28), Vector2(188, 204))
+const HERO_PORTRAIT_RECT := Rect2(Vector2(10, 10), Vector2(168, 182))
+const HERO_LEVEL_BADGE_RECT := Rect2(Vector2(4, 166), Vector2(48, 38))
+const VITALS_PANEL_RECT := Rect2(Vector2(286, 68), Vector2(722, 58))
+const PLAYER_HP_BAR_RECT := Rect2(Vector2(0, 0), Vector2(680, 46))
 const PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(0, 48), Vector2(710, 30))
 const PLAYER_STAT_CHIP_RECT := Rect2(Vector2(222, 110), Vector2(552, 42))
 const PLAYER_META_RECT := Rect2(Vector2(230, 190), Vector2(740, 32))
 const PLAYER_SUMMARY_RECT := Rect2(Vector2(230, 224), Vector2(740, 28))
-const PLAYER_LOADOUT_RECT := Rect2(Vector2(24, 198), Vector2(980, 120))
-const PLAYER_MASTERY_RECT := Rect2(Vector2(24, 326), Vector2(980, 42))
+const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 252), Vector2(966, 150))
+const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 416), Vector2(966, 44))
 const PLAYER_RELIC_RECT := Rect2(Vector2(230, 224), Vector2(740, 38))
-const PLAYER_PORTRAIT_SIZE := Vector2(150, 146)
+const PLAYER_PORTRAIT_SIZE := Vector2(168, 182)
 const COMBAT_STRIP_INSET := 12.0
 const TIMER_TRACK_SIZE := Vector2(760, 46)
 const TIMER_TRACK_PADDING := 5.0
 const TIMER_ICON_SIZE := Vector2(34, 34)
-const EQUIPMENT_RAIL_RECT := Rect2(Vector2(20, 28), Vector2(412, 76))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(716, 28), Vector2(244, 76))
-const EQUIPMENT_LABEL_RECT := Rect2(Vector2(120, 4), Vector2(340, 26))
-const CONSUMABLE_LABEL_RECT := Rect2(Vector2(612, 4), Vector2(340, 26))
+const EQUIPMENT_RAIL_RECT := Rect2(Vector2(20, 42), Vector2(552, 96))
+const CONSUMABLE_RAIL_RECT := Rect2(Vector2(634, 42), Vector2(324, 96))
+const EQUIPMENT_LABEL_RECT := Rect2(Vector2(164, 10), Vector2(320, 28))
+const CONSUMABLE_LABEL_RECT := Rect2(Vector2(614, 10), Vector2(320, 28))
 const FONT_SIZE_TITLE := 20
 const FONT_SIZE_VALUE := 18
 const FONT_SIZE_META := 15
@@ -264,7 +264,7 @@ func _apply_visual_chrome() -> void:
 	_intent_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_enemy_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_timer_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_player_label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
+	_player_label.add_theme_font_size_override("font_size", 26)
 	_player_armor_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_hero_level_label.add_theme_font_size_override("font_size", 24)
 	for stat_label in [_attack_stat_label, _armor_stat_label, _heart_stat_label, _gold_stat_label]:
@@ -2024,8 +2024,13 @@ func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> vo
 	for child in row.get_children():
 		child.queue_free()
 	for orb_id in OrbType.ALL_TYPES:
+		var cell := HBoxContainer.new()
+		cell.custom_minimum_size = Vector2(74.0, MASTERY_SLOT_SIZE.y)
+		cell.add_theme_constant_override("separation", 8)
+		cell.alignment = BoxContainer.ALIGNMENT_BEGIN
 		var slot := PanelContainer.new()
 		slot.custom_minimum_size = MASTERY_SLOT_SIZE
+		slot.size = MASTERY_SLOT_SIZE
 		slot.add_theme_stylebox_override("panel", _slot_stylebox())
 		var icon := TextureRect.new()
 		icon.custom_minimum_size = MASTERY_ICON_INNER_SIZE
@@ -2039,13 +2044,16 @@ func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> vo
 		slot.add_child(icon)
 		var amount_label := Label.new()
 		amount_label.text = str(level)
-		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		amount_label.add_theme_font_size_override("font_size", 14)
+		amount_label.custom_minimum_size = Vector2(22.0, MASTERY_SLOT_SIZE.y)
+		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		amount_label.add_theme_font_size_override("font_size", 22)
 		amount_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
-		amount_label.anchors_preset = Control.PRESET_FULL_RECT
-		slot.add_child(amount_label)
-		row.add_child(slot)
+		amount_label.add_theme_constant_override("outline_size", 3)
+		amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
+		cell.add_child(slot)
+		cell.add_child(amount_label)
+		row.add_child(cell)
 
 
 func _equipment_badge_text(content: Dictionary) -> String:
@@ -2253,13 +2261,14 @@ func _apply_player_panel_layout() -> void:
 	_apply_design_rect(_relic_row, PLAYER_RELIC_RECT)
 	_loadout_root.position = Vector2.ZERO
 	_loadout_root.size = PLAYER_LOADOUT_RECT.size
-	_mastery_root.custom_minimum_size = Vector2(940.0, 40.0)
-	_mastery_root.size = Vector2(940.0, 40.0)
-	_mastery_root.position = Vector2(18.0, 1.0)
+	_mastery_root.custom_minimum_size = Vector2(930.0, 44.0)
+	_mastery_root.size = Vector2(930.0, 44.0)
+	_mastery_root.position = Vector2(18.0, 0.0)
 	_mastery_root.alignment = BoxContainer.ALIGNMENT_BEGIN
 	_mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_mastery_icons.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_mastery_icons.custom_minimum_size = Vector2(278.0, MASTERY_SLOT_SIZE.y)
+	_mastery_icons.add_theme_constant_override("separation", 34)
+	_mastery_icons.custom_minimum_size = Vector2(620.0, MASTERY_SLOT_SIZE.y)
 	_apply_design_rect(_player_portrait, HERO_PORTRAIT_RECT)
 	_apply_design_rect(_hero_level_badge, HERO_LEVEL_BADGE_RECT)
 	_apply_design_rect(_player_hp_bar, PLAYER_HP_BAR_RECT)

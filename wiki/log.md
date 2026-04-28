@@ -259,7 +259,8 @@ Append-only history of wiki operations.
 - Changed:
   - Restored the reference bottom-HUD proportions after the previous compact pass diverged too far
   - Enlarged the hero portrait card while keeping only the primary HP bar visible
-  - Moved the equipment/consumable rail under the vitals block and restored a full-width bottom mastery strip
+  - Moved the equipment/consumable rail under the vitals block with larger slots and restored a full-width bottom mastery strip
+  - Changed mastery entries from overlaid badges to icon-plus-number cells matching the reference row structure
   - Kept armor, stat chips, combat meta, and turn summary hidden so empty placeholder rows do not appear
 - Notes:
   - Godot MCP play-scene, runtime scene-tree, and error-log checks passed with the corrected player-panel geometry.
