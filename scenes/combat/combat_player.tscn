@@ -36,302 +36,293 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.34)
 
-[node name="MainMargin" type="MarginContainer" parent="."]
+[node name="CombatLayoutRoot" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+anchors_preset = 0
+mouse_filter = 2
 
-[node name="MainVBox" type="VBoxContainer" parent="MainMargin"]
-layout_mode = 2
-theme_override_constants/separation = 8
+[node name="TopBar" type="PanelContainer" parent="CombatLayoutRoot"]
+layout_mode = 1
 
-[node name="TopHudBar" type="PanelContainer" parent="MainMargin/MainVBox"]
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
-
-[node name="TopHudRow" type="HBoxContainer" parent="MainMargin/MainVBox/TopHudBar"]
+[node name="TopBarRow" type="HBoxContainer" parent="CombatLayoutRoot/TopBar"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="BackButton" type="Button" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="BackButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 layout_mode = 2
 text = "Back"
 
-[node name="TitleLabel" type="Label" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="TitleLabel" type="Label" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Dungeon 1-1"
 
-[node name="TopSpacer" type="Control" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="TopSpacer" type="Control" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HintLabel" type="Label" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="HintLabel" type="Label" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Gold 0"
 
-[node name="DebugToggleButton" type="Button" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="DebugToggleButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Debug"
 
-[node name="SettingsButton" type="Button" parent="MainMargin/MainVBox/TopHudBar/TopHudRow"]
+[node name="SettingsButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
 layout_mode = 2
 text = "Menu"
 
-[node name="EnemyStagePanel" type="PanelContainer" parent="MainMargin/MainVBox"]
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 146)
+[node name="EnemyPanel" type="PanelContainer" parent="CombatLayoutRoot"]
+layout_mode = 1
 
-[node name="EnemyStageVBox" type="VBoxContainer" parent="MainMargin/MainVBox/EnemyStagePanel"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-theme_override_constants/separation = 4
-
-[node name="EnemyIntentRow" type="HBoxContainer" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-theme_override_constants/separation = 6
-
-[node name="IntentBadge" type="TextureRect" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox/EnemyIntentRow"]
+[node name="EnemyPanelRoot" type="Control" parent="CombatLayoutRoot/EnemyPanel"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="IntentRow" type="HBoxContainer" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="IntentBadge" type="TextureRect" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/IntentRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="EnemyIntentLabel" type="Label" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox/EnemyIntentRow"]
+[node name="EnemyIntentLabel" type="Label" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/IntentRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Intent"
+vertical_alignment = 1
 
-[node name="EnemyPortraitCenter" type="CenterContainer" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyPortrait" type="TextureRect" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox/EnemyPortraitCenter"]
+[node name="EnemyStage" type="Control" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(620, 116)
-layout_mode = 2
+layout_mode = 1
+mouse_filter = 2
+
+[node name="EnemyPortrait" type="TextureRect" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/EnemyStage"]
+unique_name_in_owner = true
+layout_mode = 1
 expand_mode = 1
 stretch_mode = 5
 
-[node name="EnemyHpBar" type="ProgressBar" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox"]
+[node name="EnemyHpRow" type="Control" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(620, 14)
-layout_mode = 2
-size_flags_horizontal = 4
+layout_mode = 1
+mouse_filter = 2
+
+[node name="EnemyHpBar" type="ProgressBar" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/EnemyHpRow"]
+unique_name_in_owner = true
+layout_mode = 1
 show_percentage = false
 max_value = 100.0
 value = 70.0
 
-[node name="EnemyStageLabel" type="Label" parent="MainMargin/MainVBox/EnemyStagePanel/EnemyStageVBox"]
+[node name="EnemyStageLabel" type="Label" parent="CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/EnemyHpRow"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
 text = "Enemy"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="TempoRowPanel" type="PanelContainer" parent="MainMargin/MainVBox"]
-visible = false
+[node name="CombatStrip" type="PanelContainer" parent="CombatLayoutRoot"]
+layout_mode = 1
+
+[node name="CombatStripRow" type="HBoxContainer" parent="CombatLayoutRoot/CombatStrip"]
+unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 38)
+theme_override_constants/separation = 14
 
-[node name="TempoRow" type="HBoxContainer" parent="MainMargin/MainVBox/TempoRowPanel"]
+[node name="TimerBadgePanel" type="PanelContainer" parent="CombatLayoutRoot/CombatStrip/CombatStripRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
-theme_override_constants/separation = 10
 
-[node name="TimerBadgePanel" type="PanelContainer" parent="MainMargin/MainVBox/TempoRowPanel/TempoRow"]
-layout_mode = 2
-custom_minimum_size = Vector2(72, 32)
-
-[node name="TimerLabel" type="Label" parent="MainMargin/MainVBox/TempoRowPanel/TempoRow/TimerBadgePanel"]
+[node name="TimerLabel" type="Label" parent="CombatLayoutRoot/CombatStrip/CombatStripRow/TimerBadgePanel"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "5.0 sec"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MoveTimerBar" type="ProgressBar" parent="MainMargin/MainVBox/TempoRowPanel/TempoRow"]
+[node name="MoveTimerBar" type="ProgressBar" parent="CombatLayoutRoot/CombatStrip/CombatStripRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 16)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(300, 12)
 show_percentage = false
 max_value = 5.0
 value = 5.0
 
-[node name="ComboSummaryLabel" type="Label" parent="MainMargin/MainVBox/TempoRowPanel/TempoRow"]
+[node name="ComboSummaryLabel" type="Label" parent="CombatLayoutRoot/CombatStrip/CombatStripRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Combos: 0"
 horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="BoardAndStateRow" type="BoxContainer" parent="MainMargin/MainVBox"]
+[node name="BoardPanel" type="Control" parent="CombatLayoutRoot"]
 unique_name_in_owner = true
-visible = false
-layout_mode = 2
+layout_mode = 1
+mouse_filter = 2
 
-[node name="BoardArea" type="CenterContainer" parent="MainMargin/MainVBox"]
-layout_mode = 2
-size_flags_vertical = 3
+[node name="BoardSurface" parent="CombatLayoutRoot/BoardPanel" instance=ExtResource("2_board_surface")]
+unique_name_in_owner = true
+layout_mode = 1
 
-[node name="BoardSurface" parent="MainMargin/MainVBox/BoardArea" instance=ExtResource("2_board_surface")]
+[node name="PlayerPanel" type="PanelContainer" parent="CombatLayoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PlayerPanelRoot" type="Control" parent="CombatLayoutRoot/PlayerPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
 
-[node name="PlayerStripPanel" type="PanelContainer" parent="MainMargin/MainVBox"]
+[node name="PlayerStatsRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
 unique_name_in_owner = true
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 170)
+layout_mode = 1
+theme_override_constants/separation = 14
 
-[node name="PlayerStripVBox" type="VBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="PlayerHeaderRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="PlayerPortrait" type="TextureRect" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/PlayerHeaderRow"]
+[node name="PlayerPortrait" type="TextureRect" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/PlayerStatsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(52, 52)
+custom_minimum_size = Vector2(112, 112)
 layout_mode = 2
+size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PlayerHeaderVBox" type="VBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/PlayerHeaderRow"]
+[node name="PlayerHeaderVBox" type="VBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/PlayerStatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 2
+theme_override_constants/separation = 6
 
-[node name="PlayerHpBar" type="ProgressBar" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/PlayerHeaderRow/PlayerHeaderVBox"]
+[node name="PlayerHpBar" type="ProgressBar" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/PlayerStatsRow/PlayerHeaderVBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
 show_percentage = false
 max_value = 100.0
 value = 100.0
 
-[node name="PlayerArmorBar" type="ProgressBar" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/PlayerHeaderRow/PlayerHeaderVBox"]
+[node name="PlayerArmorBar" type="ProgressBar" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/PlayerStatsRow/PlayerHeaderVBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 22)
 layout_mode = 2
 show_percentage = false
 max_value = 100.0
 value = 0.0
 
-[node name="PlayerStateLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/PlayerHeaderRow/PlayerHeaderVBox"]
+[node name="PlayerStateLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/PlayerStatsRow/PlayerHeaderVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "HP 0/0  Armor 0  Gold 0"
 
-[node name="RunProgressRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
+[node name="CombatMetaRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+theme_override_constants/separation = 10
 
-[node name="RunProgressLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RunProgressRow"]
+[node name="RunProgressLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Run"
 
-[node name="CombatPhaseLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RunProgressRow"]
+[node name="CombatPhaseLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Phase"
 horizontal_alignment = 2
 
-[node name="TurnSummaryLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="TurnSummaryLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
 text = "Turn Summary"
 
-[node name="BuildRowLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="LoadoutRow" type="VBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+theme_override_constants/separation = 4
+
+[node name="BuildRowLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow"]
 layout_mode = 2
 text = "Build"
 
-[node name="EquipmentRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="LoadoutEquipmentRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="EquipmentLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/EquipmentRow"]
+[node name="EquipmentLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/LoadoutEquipmentRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(102, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 text = "Equipment"
 
-[node name="EquipmentIcons" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/EquipmentRow"]
+[node name="EquipmentIcons" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/LoadoutEquipmentRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="ConsumableRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="LoadoutConsumablesRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ConsumableLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/ConsumableRow"]
+[node name="ConsumableLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/LoadoutConsumablesRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(102, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 text = "Consumables"
 
-[node name="ConsumableIcons" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/ConsumableRow"]
+[node name="ConsumableIcons" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/LoadoutConsumablesRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="RelicRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="RelicRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RelicLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RelicRow"]
+[node name="RelicLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/RelicRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(102, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 text = "Relics"
 
-[node name="RelicIcons" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RelicRow"]
+[node name="RelicIcons" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/RelicRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="MasteryRow" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="MasteryRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="MasteryLabel" type="Label" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/MasteryRow"]
+[node name="MasteryLabel" type="Label" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/MasteryRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(102, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 text = "Mastery"
 
-[node name="MasteryIcons" type="HBoxContainer" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/MasteryRow"]
+[node name="MasteryIcons" type="HBoxContainer" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/MasteryRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
-[node name="NextButton" type="Button" parent="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox"]
+[node name="NextButton" type="Button" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
+layout_mode = 1
 text = "Next"
 
 [node name="DebugOverlay" type="PanelContainer" parent="."]
@@ -394,6 +385,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[connection signal="pressed" from="MainMargin/MainVBox/TopHudBar/TopHudRow/BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="MainMargin/MainVBox/TopHudBar/TopHudRow/DebugToggleButton" to="." method="_on_debug_toggle_button_pressed"]
-[connection signal="pressed" from="MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/NextButton" to="." method="_on_next_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/TopBar/TopBarRow/BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/TopBar/TopBarRow/DebugToggleButton" to="." method="_on_debug_toggle_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/NextButton" to="." method="_on_next_button_pressed"]

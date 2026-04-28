@@ -79,3 +79,82 @@ Append-only history of wiki operations.
   - Updated `wiki/file-map.md`
 - Notes:
   - Refactor keeps combat behavior intact while separating board composition from combat-specific scene layout.
+
+## [2026-04-28] code-change | Portrait Mobile Viewport And Combat HUD Layout Pass
+
+- Source: `project.godot`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Updated `project.godot` to portrait viewport `1080x1920`
+  - Updated `scenes/combat/combat_player.tscn` to show combat HUD sections by default and tune panel sizing/margins
+  - Updated `scripts/combat/combat_player_controller.gd` responsive breakpoints and portrait sizing targets
+  - Updated `wiki/features.md`
+- Notes:
+  - This pass focuses on matching overall mobile composition from the provided reference while keeping current runtime bindings and placeholder visuals.
+
+## [2026-04-28] code-change | Combat HUD Visual Polish Pass
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Updated `scripts/combat/combat_player_controller.gd` for stronger panel/bar/button styling and typography hierarchy
+  - Updated `scenes/combat/combat_player.tscn` section sizing and spacing for improved portrait composition
+  - Updated `wiki/features.md`
+- Notes:
+  - Kept gameplay logic and data bindings unchanged; this pass is presentation-only polish for readability and reference alignment.
+
+## [2026-04-28] code-change | Zone Refactor And Placeholder Blocks For Missing Combat Art
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Updated `scenes/combat/combat_player.tscn` to tighten section spacing and make `BoardArea` explicit for zone sizing
+  - Updated `scripts/combat/combat_player_controller.gd` with centralized zone-height profile (`_apply_zone_profile`)
+  - Added persistent placeholder textures for missing intent/enemy/hero art slots
+  - Updated `wiki/features.md`
+- Notes:
+  - Refactor is aimed at faster visual iteration and clearer zone-by-zone tuning without touching combat logic.
+
+## [2026-04-28] code-change | Promote Combat Zones To First-Class Scene Nodes
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Renamed and normalized major sections to explicit zone nodes: `TopBar`, `EnemyPanel`, `CombatStrip`, `BoardPanel`, `PlayerPanel`
+  - Updated controller bindings and style/size logic to target the new zone names
+  - Updated `wiki/features.md`
+- Notes:
+  - This is a structural readability refactor for faster polish iteration; no combat behavior changes.
+
+## [2026-04-28] code-change | Full Zone Polish Refactor With Placeholders And Guides
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Tightened major zone spacing and heights to reduce dead space (`EnemyPanel`, `CombatStrip`, `BoardPanel`, `PlayerPanel`)
+  - Refactored player internals into explicit subzones: `PlayerStatsRow`, `CombatMetaRow`, `LoadoutRow`
+  - Added stable placeholders for missing intent/enemy/hero visuals with preserved layout footprint
+  - Added toggleable zone guide labels/outlines on `F2` for polish iteration
+  - Updated `wiki/features.md`
+- Notes:
+  - Focused on presentation architecture and polish workflow; core combat logic remains unchanged.
+
+## [2026-04-28] code-change | Final Mobile Combat Polish Consolidation
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Reduced remaining dead space and rebalanced zone proportions for mobile portrait
+  - Consolidated layout/typography tuning into shared controller constants
+  - Stabilized combo block width and right alignment in combat strip
+  - Simplified player metadata line formatting and constrained summary verbosity
+  - Kept placeholder-driven enemy/intent/hero footprints active for continued artless polish
+  - Updated `wiki/features.md`
+- Notes:
+  - Intended as a full implementation of the requested polish checklist while keeping gameplay behavior unchanged.
+
+## [2026-04-29] code-change | Combat Screen Design-Space Layout Rebuild
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Replaced vertical combat HUD layout with `CombatLayoutRoot` and direct design-space rect positioning
+  - Added `_apply_combat_layout()` for scaled `1080x1920` zone placement
+  - Rebuilt enemy, combat strip, board, and player panel composition around explicit subzones
+  - Added generated placeholder helper methods for intent, enemy, and hero art footprints
+  - Updated `wiki/features.md`
+- Notes:
+  - Validated scene instantiation and current-scene runtime through Godot MCP with no reported runtime errors.

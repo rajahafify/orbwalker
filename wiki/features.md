@@ -4,7 +4,7 @@
 
 **Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 
@@ -41,6 +41,13 @@ The project already covers the early prototype loop: board generation, drag move
 - Combat and shop now have player-facing scenes; combat HUD functionality is restored with plain visuals (art-heavy background, enemy portrait, and intent badge presentation removed) for the HUD revamp baseline. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_board_only_controller.gd`, `scripts/flow/shop_player.gd`)
 - The visual registry provides the first-pass art lookup and fallback path for UI, backgrounds, and icons. (source: `scripts/ui/visual_registry.gd`)
 - Combat HUD styling now prefers texture-backed chrome/bars and uses compact reference-style callouts for intent and combo bonus; build slots were enlarged and now display consumable/mastery counts in-slot. (source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`)
+- Display viewport now defaults to portrait mobile (`1080x1920`) and combat HUD sections are enabled by default in `combat_player.tscn` with updated responsive sizing for portrait composition. (source: `project.godot`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
+- Combat UI received a second polish pass for stronger visual hierarchy: larger headline typography, richer gold-accent panel chrome, thicker bars/buttons, clearer timer text, and rebalanced section heights for mobile portrait readability. (source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`)
+- Combat layout now uses an explicit zone-height profile (`top/enemy/tempo/board/player`) to reduce dead space and speed up iterative polish; missing art areas now show stable placeholders for intent, enemy portrait, and hero portrait so alignment can be tuned before final assets. (source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`)
+- Combat scene hierarchy now exposes first-class zone nodes (`TopBar`, `EnemyPanel`, `CombatStrip`, `BoardPanel`, `PlayerPanel`) so zone-specific polish can be done without path hunting. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
+- Player zone internals are now split into explicit subzones (`PlayerStatsRow`, `CombatMetaRow`, `LoadoutRow`) and a debug zone-guide toggle (`F2`) can label core zones during polish passes. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
+- Combat polish tuning is now centralized through controller constants for zone heights, board clamps, typography tiers, combo block width, and board offset bias, enabling rapid single-point iteration for mobile layout fitting. (source: `scripts/combat/combat_player_controller.gd`)
+- Combat HUD layout now uses a dedicated `CombatLayoutRoot` with design-space rects at `1080x1920`; `_apply_combat_layout()` directly positions `TopBar`, `EnemyPanel`, `CombatStrip`, `BoardPanel`, and `PlayerPanel`, replacing the previous vertical container-driven layout. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
 
 ## Important Files
 

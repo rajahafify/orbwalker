@@ -16,15 +16,27 @@ extends Control
 @onready var _combat_log_text: RichTextLabel = %CombatLogText
 @onready var _console_input: LineEdit = %ConsoleInput
 @onready var _next_button: Button = %NextButton
-@onready var _back_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/BackButton"
+@onready var _back_button: Button = $"CombatLayoutRoot/TopBar/TopBarRow/BackButton"
 @onready var _debug_toggle_button: Button = %DebugToggleButton
-@onready var _settings_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/SettingsButton"
+@onready var _settings_button: Button = $"CombatLayoutRoot/TopBar/TopBarRow/SettingsButton"
 @onready var _board_view_control: Control = %BoardSurface
-@onready var _top_hud_bar: PanelContainer = $"MainMargin/MainVBox/TopHudBar"
-@onready var _enemy_stage_panel: PanelContainer = $"MainMargin/MainVBox/EnemyStagePanel"
-@onready var _tempo_row_panel: PanelContainer = $"MainMargin/MainVBox/TempoRowPanel"
-@onready var _board_frame: PanelContainer = $"MainMargin/MainVBox/BoardArea/BoardSurface/BoardFrame"
-@onready var _player_strip_panel: PanelContainer = %PlayerStripPanel
+@onready var _layout_root: Control = %CombatLayoutRoot
+@onready var _top_bar: PanelContainer = $"CombatLayoutRoot/TopBar"
+@onready var _enemy_panel: PanelContainer = $"CombatLayoutRoot/EnemyPanel"
+@onready var _enemy_panel_root: Control = %EnemyPanelRoot
+@onready var _intent_row: HBoxContainer = %IntentRow
+@onready var _enemy_stage: Control = %EnemyStage
+@onready var _enemy_hp_row: Control = %EnemyHpRow
+@onready var _combat_strip: PanelContainer = $"CombatLayoutRoot/CombatStrip"
+@onready var _combat_strip_row: HBoxContainer = %CombatStripRow
+@onready var _timer_badge_panel: PanelContainer = %TimerBadgePanel
+@onready var _board_frame: PanelContainer = $"CombatLayoutRoot/BoardPanel/BoardSurface/BoardFrame"
+@onready var _board_panel: Control = %BoardPanel
+@onready var _player_panel: PanelContainer = %PlayerPanel
+@onready var _player_panel_root: Control = %PlayerPanelRoot
+@onready var _player_stats_row: HBoxContainer = %PlayerStatsRow
+@onready var _combat_meta_row: HBoxContainer = %CombatMetaRow
+@onready var _loadout_row: VBoxContainer = %LoadoutRow
 @onready var _combat_log_frame: PanelContainer = $"DebugOverlay/DebugVBox/CombatLogFrame"
 @onready var _debug_overlay: PanelContainer = %DebugOverlay
 @onready var _title_label: Label = %TitleLabel
@@ -40,9 +52,9 @@ extends Control
 @onready var _consumable_icons: HBoxContainer = %ConsumableIcons
 @onready var _relic_icons: HBoxContainer = %RelicIcons
 @onready var _mastery_icons: HBoxContainer = %MasteryIcons
-@onready var _relic_row: HBoxContainer = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/RelicRow"
-@onready var _mastery_row: HBoxContainer = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/MasteryRow"
-@onready var _build_row_label: Label = $"MainMargin/MainVBox/PlayerStripPanel/PlayerStripVBox/BuildRowLabel"
+@onready var _relic_row: HBoxContainer = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/RelicRow"
+@onready var _mastery_row: HBoxContainer = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/MasteryRow"
+@onready var _build_row_label: Label = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/BuildRowLabel"
 @onready var _equipment_row_label: Label = %EquipmentLabel
 @onready var _consumable_row_label: Label = %ConsumableLabel
 @onready var _relic_row_label: Label = %RelicLabel
@@ -78,7 +90,33 @@ const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
 const ICON_INNER_SIZE := Vector2(42, 42)
-const SLOT_SIZE := Vector2(56, 56)
+const SLOT_SIZE := Vector2(48, 48)
+const DESIGN_SIZE := Vector2(1080, 1920)
+const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
+const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
+const ENEMY_PANEL_RECT := Rect2(Vector2(16, 72), Vector2(1048, 360))
+const COMBAT_STRIP_RECT := Rect2(Vector2(16, 438), Vector2(1048, 72))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 520), Vector2(1048, 820))
+const PLAYER_PANEL_RECT := Rect2(Vector2(16, 1360), Vector2(1048, 520))
+const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
+const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
+const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
+const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
+const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
+const BOARD_SURFACE_SIZE := Vector2(620, 744)
+const BOARD_SURFACE_TOP := 22.0
+const PLAYER_STATS_RECT := Rect2(Vector2(30, 28), Vector2(988, 132))
+const PLAYER_META_RECT := Rect2(Vector2(30, 168), Vector2(988, 32))
+const PLAYER_SUMMARY_RECT := Rect2(Vector2(30, 206), Vector2(988, 28))
+const PLAYER_LOADOUT_RECT := Rect2(Vector2(30, 244), Vector2(988, 238))
+const PLAYER_PORTRAIT_SIZE := Vector2(112, 112)
+const COMBAT_STRIP_INSET := 12.0
+const TIMER_BADGE_SIZE := Vector2(100, 48)
+const COMBO_BLOCK_WIDTH := 140.0
+const FONT_SIZE_TITLE := 20
+const FONT_SIZE_VALUE := 18
+const FONT_SIZE_META := 15
+const FONT_SIZE_ROW_LABEL := 14
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -111,12 +149,13 @@ var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _is_low_vertical_layout := false
+var _zone_guides_enabled := false
 
 
 func _ready() -> void:
 	_consumable_rng.randomize()
 	_background.texture = null
-	_background.modulate = Color(0.20, 0.20, 0.22, 1.0)
+	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
 	_board_view.set_orb_texture_map({
 		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
 		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
@@ -140,7 +179,7 @@ func _ready() -> void:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	set_process(true)
-	_apply_responsive_layout()
+	_apply_combat_layout()
 	_begin_turn_preview()
 	if _console_input.visible:
 		_console_input.grab_focus()
@@ -156,16 +195,20 @@ func _apply_visual_chrome() -> void:
 	_board_view.board_background = Color(0.03, 0.04, 0.06, 0.96)
 
 	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.05, 0.07, 0.10, 0.92)
-	frame_style.border_color = Color(0.55, 0.43, 0.22, 0.9)
-	frame_style.set_border_width_all(1)
-	frame_style.set_corner_radius_all(4)
+	frame_style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
+	frame_style.border_color = Color(0.62, 0.49, 0.23, 0.92)
+	frame_style.set_border_width_all(2)
+	frame_style.set_corner_radius_all(6)
+	frame_style.content_margin_left = 8.0
+	frame_style.content_margin_right = 8.0
+	frame_style.content_margin_top = 6.0
+	frame_style.content_margin_bottom = 6.0
 
-	_top_hud_bar.add_theme_stylebox_override("panel", frame_style)
-	_enemy_stage_panel.add_theme_stylebox_override("panel", frame_style)
-	_tempo_row_panel.add_theme_stylebox_override("panel", frame_style)
+	_top_bar.add_theme_stylebox_override("panel", frame_style)
+	_enemy_panel.add_theme_stylebox_override("panel", frame_style)
+	_combat_strip.add_theme_stylebox_override("panel", frame_style)
 	_board_frame.add_theme_stylebox_override("panel", frame_style)
-	_player_strip_panel.add_theme_stylebox_override("panel", frame_style)
+	_player_panel.add_theme_stylebox_override("panel", frame_style)
 	_debug_overlay.add_theme_stylebox_override("panel", frame_style)
 	_combat_log_frame.add_theme_stylebox_override("panel", frame_style)
 
@@ -174,27 +217,33 @@ func _apply_visual_chrome() -> void:
 	_apply_progressbar_flat_style(_player_hp_bar, Color(0.78, 0.16, 0.17, 1.0))
 	_apply_progressbar_flat_style(_player_armor_bar, Color(0.16, 0.50, 0.86, 1.0))
 
-	var ui_text_color := Color(0.94, 0.94, 0.96, 1.0)
+	var ui_text_color := Color(0.95, 0.96, 0.98, 1.0)
 	for label in [_title_label, _hint_label, _timer_label, _combo_summary_label, _run_progress_label, _phase_label, _turn_summary_label, _player_label, _enemy_label, _intent_label]:
 		label.add_theme_color_override("font_color", ui_text_color)
-	_title_label.add_theme_font_size_override("font_size", 20)
-	_hint_label.add_theme_font_size_override("font_size", 18)
-	_intent_label.add_theme_font_size_override("font_size", 18)
-	_enemy_label.add_theme_font_size_override("font_size", 18)
-	_timer_label.add_theme_font_size_override("font_size", 16)
-	_combo_summary_label.add_theme_font_size_override("font_size", 16)
-	_player_label.add_theme_font_size_override("font_size", 18)
-	_run_progress_label.add_theme_font_size_override("font_size", 16)
-	_phase_label.add_theme_font_size_override("font_size", 16)
-	_turn_summary_label.add_theme_font_size_override("font_size", 16)
-	_build_row_label.add_theme_font_size_override("font_size", 16)
+	_title_label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
+	_hint_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
+	_intent_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
+	_enemy_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
+	_timer_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
+	_combo_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
+	_player_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
+	_run_progress_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
+	_phase_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
+	_turn_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
+	_build_row_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	for row_label in [_equipment_row_label, _consumable_row_label, _relic_row_label, _mastery_row_label]:
-		row_label.add_theme_color_override("font_color", Color(0.85, 0.74, 0.47, 1.0))
-		row_label.add_theme_font_size_override("font_size", 14)
+		row_label.add_theme_color_override("font_color", Color(0.91, 0.80, 0.50, 1.0))
+		row_label.add_theme_font_size_override("font_size", FONT_SIZE_ROW_LABEL)
+	_combo_summary_label.add_theme_color_override("font_color", Color(0.98, 0.88, 0.52, 1.0))
+	_phase_label.add_theme_color_override("font_color", Color(0.84, 0.72, 0.44, 1.0))
+	_run_progress_label.add_theme_color_override("font_color", Color(0.82, 0.90, 0.98, 1.0))
+	_combo_summary_label.custom_minimum_size.x = COMBO_BLOCK_WIDTH
+	_combo_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_apply_button_theme()
 
-	_player_portrait.texture = null
-	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_ensure_placeholder_visuals()
+	_apply_zone_guides()
 	_title_label.text = RunState.level_sequence_label()
 	_hint_label.text = "Gold 0"
 
@@ -222,29 +271,33 @@ func _apply_progressbar_style(bar: ProgressBar, frame_texture: Texture2D, fill_t
 
 func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.08, 0.10, 0.14, 0.95)
-	bg.set_corner_radius_all(3)
-	bg.set_border_width_all(1)
-	bg.border_color = Color(0.38, 0.30, 0.16, 0.8)
+	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
+	bg.set_corner_radius_all(6)
+	bg.set_border_width_all(2)
+	bg.border_color = Color(0.52, 0.40, 0.19, 0.85)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = fill_color
-	fill.set_corner_radius_all(3)
+	fill.set_corner_radius_all(6)
 	bar.add_theme_stylebox_override("background", bg)
 	bar.add_theme_stylebox_override("fill", fill)
 
 
 func _apply_button_theme() -> void:
 	for button in [_back_button, _debug_toggle_button, _settings_button, _next_button]:
-		button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
-		button.add_theme_font_size_override("font_size", 16)
+		button.add_theme_color_override("font_color", Color(0.98, 0.93, 0.82, 1.0))
+		button.add_theme_font_size_override("font_size", 18)
 		var style_normal := StyleBoxFlat.new()
-		style_normal.bg_color = Color(0.14, 0.10, 0.06, 0.75)
-		style_normal.border_color = Color(0.55, 0.43, 0.22, 0.88)
-		style_normal.set_border_width_all(1)
-		style_normal.set_corner_radius_all(3)
+		style_normal.bg_color = Color(0.15, 0.11, 0.05, 0.84)
+		style_normal.border_color = Color(0.64, 0.49, 0.21, 0.92)
+		style_normal.set_border_width_all(2)
+		style_normal.set_corner_radius_all(5)
+		style_normal.content_margin_left = 8.0
+		style_normal.content_margin_right = 8.0
+		style_normal.content_margin_top = 4.0
+		style_normal.content_margin_bottom = 4.0
 		button.add_theme_stylebox_override("normal", style_normal)
 		var style_hover := style_normal.duplicate()
-		style_hover.bg_color = Color(0.20, 0.14, 0.08, 0.9)
+		style_hover.bg_color = Color(0.23, 0.16, 0.08, 0.94)
 		button.add_theme_stylebox_override("hover", style_hover)
 		button.add_theme_stylebox_override("pressed", style_hover)
 
@@ -317,6 +370,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F1:
 			_toggle_debug_overlay()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_F2:
+			_zone_guides_enabled = not _zone_guides_enabled
+			_apply_zone_guides()
 			get_viewport().set_input_as_handled()
 			return
 		if event.keycode == KEY_R:
@@ -1291,17 +1349,19 @@ func _update_hud() -> void:
 
 
 func _sync_top_hud() -> void:
-	_title_label.text = RunState.level_sequence_label()
+	_title_label.text = RunState.level_sequence_label().replace(" | ", "  |  ")
 	_hint_label.text = "Gold %d" % _player_state.gold
 
 
 func _sync_enemy_stage() -> void:
 	var intent := _enemy_state.get_current_intent()
 	_intent_label.text = _format_intent_compact(intent)
-	_intent_badge.texture = null
-	_intent_badge.visible = false
-	_enemy_portrait.texture = null
-	_enemy_portrait.visible = false
+	if _intent_badge.texture == null:
+		_intent_badge.texture = _make_intent_placeholder_texture()
+	_intent_badge.visible = true
+	if _enemy_portrait.texture == null:
+		_enemy_portrait.texture = _make_enemy_placeholder_texture()
+	_enemy_portrait.visible = true
 	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
 	_enemy_hp_bar.value = float(_enemy_state.current_hp)
 	_enemy_label.text = "%s HP %d/%d  Block %d" % [
@@ -1319,6 +1379,7 @@ func _sync_tempo_row() -> void:
 	var combo_multiplier := float(turn_log.get("damage_combo_multiplier", 1.0))
 	var bonus_percent := maxi(0, int(round((combo_multiplier - 1.0) * 100.0)))
 	_combo_summary_label.text = "%d Combos\n+%d%% Damage" % [combo_count, bonus_percent]
+	_timer_label.text = "%d SEC" % int(ceil(_move_time_left))
 
 
 func _sync_player_strip(progression_snapshot: Dictionary) -> void:
@@ -1333,12 +1394,13 @@ func _sync_player_strip(progression_snapshot: Dictionary) -> void:
 	_player_armor_bar.max_value = float(maxi(30, _player_state.armor + 10))
 	_player_armor_bar.value = float(maxi(0, _player_state.armor))
 	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
-	_run_progress_label.text = "ATK %d   ARM %d   HEART %d%%   GOLD %d%%" % [
+	_run_progress_label.text = "ATK %d | ARM %d | HEART %d%% | GOLD %d%%" % [
 		_player_state.orb_value(OrbType.Id.FIRE),
 		_player_state.orb_value(OrbType.Id.ARMOR),
 		int(mastery_levels.get(OrbType.Id.HEART, 0)) * 5,
 		int(mastery_levels.get(OrbType.Id.GOLD, 0)) * 5,
 	]
+	_turn_summary_label.text = _turn_summary_label.text.substr(0, mini(70, _turn_summary_label.text.length()))
 	_refresh_build_icon_rows(progression_snapshot)
 
 
@@ -1890,21 +1952,34 @@ func _pulse_label(target: Label, tint: Color) -> void:
 
 
 func _on_viewport_size_changed() -> void:
-	_apply_responsive_layout()
+	_apply_combat_layout()
 
 
-func _apply_responsive_layout() -> void:
+func _apply_combat_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.y <= 0.0:
 		return
 	var aspect := viewport_size.x / viewport_size.y
-	var is_compact := aspect < 1.0
+	var is_compact := aspect < 0.85
 	var is_low_vertical := viewport_size.y < 760.0
 	_is_low_vertical_layout = is_low_vertical
-	var is_very_narrow := viewport_size.x < 980.0 or is_low_vertical
-	_board_view_control.custom_minimum_size = Vector2(360 if is_very_narrow else 500, 420 if is_very_narrow else 600)
-	_player_portrait.custom_minimum_size = Vector2(44, 44) if is_very_narrow else Vector2(52, 52)
-	_enemy_portrait.custom_minimum_size = Vector2(360, 96) if is_very_narrow else Vector2(620, 128)
+
+	var scale_factor: float = minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+	var scaled_size := DESIGN_SIZE * scale_factor
+	_layout_root.position = (viewport_size - scaled_size) * 0.5
+	_layout_root.size = DESIGN_SIZE
+	_layout_root.scale = Vector2(scale_factor, scale_factor)
+
+	_apply_design_rect(_top_bar, TOP_BAR_RECT)
+	_apply_design_rect(_enemy_panel, ENEMY_PANEL_RECT)
+	_apply_design_rect(_combat_strip, COMBAT_STRIP_RECT)
+	_apply_design_rect(_board_panel, BOARD_PANEL_RECT)
+	_apply_design_rect(_player_panel, PLAYER_PANEL_RECT)
+	_apply_enemy_panel_layout()
+	_apply_combat_strip_layout()
+	_apply_board_panel_layout()
+	_apply_player_panel_layout()
+
 	_turn_summary_label.visible = not is_low_vertical
 	if is_low_vertical:
 		_mastery_row.visible = false
@@ -1916,6 +1991,154 @@ func _apply_responsive_layout() -> void:
 	_debug_overlay.anchor_top = 0.05
 	_debug_overlay.anchor_right = 0.985
 	_debug_overlay.anchor_bottom = 0.97
+
+
+func _apply_design_rect(control: Control, rect: Rect2) -> void:
+	control.position = rect.position
+	control.size = rect.size
+
+
+func _apply_enemy_panel_layout() -> void:
+	_enemy_panel_root.position = Vector2.ZERO
+	_enemy_panel_root.size = ENEMY_PANEL_RECT.size
+	_apply_design_rect(_intent_row, ENEMY_INTENT_RECT)
+	_apply_design_rect(_enemy_stage, ENEMY_STAGE_RECT)
+	_apply_design_rect(_enemy_hp_row, ENEMY_HP_ROW_RECT)
+	_intent_badge.custom_minimum_size = Vector2(56, 56)
+	_enemy_portrait.size = ENEMY_PORTRAIT_SIZE
+	_enemy_portrait.position = Vector2(
+		(ENEMY_STAGE_RECT.size.x - ENEMY_PORTRAIT_SIZE.x) * 0.5,
+		ENEMY_STAGE_RECT.size.y - ENEMY_PORTRAIT_SIZE.y
+	)
+	_enemy_hp_bar.size = ENEMY_HP_BAR_SIZE
+	_enemy_hp_bar.position = Vector2((ENEMY_HP_ROW_RECT.size.x - ENEMY_HP_BAR_SIZE.x) * 0.5, 0.0)
+	_enemy_label.position = Vector2(0.0, 22.0)
+	_enemy_label.size = Vector2(ENEMY_HP_ROW_RECT.size.x, 28.0)
+
+
+func _apply_combat_strip_layout() -> void:
+	_combat_strip_row.position = Vector2(COMBAT_STRIP_INSET, 12.0)
+	_combat_strip_row.size = Vector2(COMBAT_STRIP_RECT.size.x - COMBAT_STRIP_INSET * 2.0, 48.0)
+	_timer_badge_panel.custom_minimum_size = TIMER_BADGE_SIZE
+	_move_timer_bar.custom_minimum_size.y = 16.0
+	_combo_summary_label.custom_minimum_size.x = COMBO_BLOCK_WIDTH
+
+
+func _apply_board_panel_layout() -> void:
+	_board_surface.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_board_surface.position = Vector2((BOARD_PANEL_RECT.size.x - BOARD_SURFACE_SIZE.x) * 0.5, BOARD_SURFACE_TOP)
+	_board_surface.size = BOARD_SURFACE_SIZE
+	_board_view_control.custom_minimum_size = BOARD_SURFACE_SIZE
+
+
+func _apply_player_panel_layout() -> void:
+	_player_panel_root.position = Vector2.ZERO
+	_player_panel_root.size = PLAYER_PANEL_RECT.size
+	_apply_design_rect(_player_stats_row, PLAYER_STATS_RECT)
+	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
+	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
+	_apply_design_rect(_loadout_row, PLAYER_LOADOUT_RECT)
+	_player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
+
+
+func _ensure_placeholder_visuals() -> void:
+	if _intent_badge.texture == null:
+		_intent_badge.texture = _make_intent_placeholder_texture()
+	_intent_badge.visible = true
+	if _enemy_portrait.texture == null:
+		_enemy_portrait.texture = _make_enemy_placeholder_texture()
+	_enemy_portrait.visible = true
+	if _player_portrait.texture == null:
+		_player_portrait.texture = _make_hero_placeholder_texture()
+	_player_portrait.visible = true
+
+
+func _make_intent_placeholder_texture() -> Texture2D:
+	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.06, 0.08, 0.11, 0.95))
+	image.fill_rect(Rect2i(4, 4, 88, 88), Color(0.15, 0.10, 0.08, 1.0))
+	image.fill_rect(Rect2i(8, 8, 80, 80), Color(0.45, 0.12, 0.10, 1.0))
+	image.fill_rect(Rect2i(44, 18, 8, 60), Color(0.92, 0.86, 0.72, 1.0))
+	image.fill_rect(Rect2i(26, 48, 44, 8), Color(0.92, 0.86, 0.72, 1.0))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_enemy_placeholder_texture() -> Texture2D:
+	var image := Image.create(260, 230, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.05, 0.08, 0.11, 0.94))
+	image.fill_rect(Rect2i(4, 4, 252, 222), Color(0.48, 0.38, 0.18, 0.95))
+	image.fill_rect(Rect2i(8, 8, 244, 214), Color(0.09, 0.13, 0.17, 0.98))
+	image.fill_rect(Rect2i(98, 28, 64, 58), Color(0.19, 0.24, 0.29, 1.0))
+	image.fill_rect(Rect2i(72, 92, 116, 106), Color(0.16, 0.21, 0.27, 1.0))
+	image.fill_rect(Rect2i(42, 122, 50, 74), Color(0.13, 0.18, 0.24, 1.0))
+	image.fill_rect(Rect2i(168, 122, 50, 74), Color(0.13, 0.18, 0.24, 1.0))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_hero_placeholder_texture() -> Texture2D:
+	var image := Image.create(192, 192, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.05, 0.07, 0.10, 0.96))
+	image.fill_rect(Rect2i(4, 4, 184, 184), Color(0.50, 0.38, 0.18, 0.95))
+	image.fill_rect(Rect2i(8, 8, 176, 176), Color(0.11, 0.13, 0.17, 0.98))
+	image.fill_rect(Rect2i(66, 34, 60, 58), Color(0.20, 0.23, 0.28, 1.0))
+	image.fill_rect(Rect2i(44, 104, 104, 58), Color(0.16, 0.19, 0.25, 1.0))
+	image.fill_rect(Rect2i(134, 120, 28, 42), Color(0.16, 0.27, 0.42, 1.0))
+	return ImageTexture.create_from_image(image)
+
+
+func _apply_zone_guides() -> void:
+	_set_zone_guide(_top_bar, "TopBar")
+	_set_zone_guide(_enemy_panel, "EnemyPanel")
+	_set_zone_guide(_combat_strip, "CombatStrip")
+	_set_zone_guide(_board_panel, "BoardPanel")
+	_set_zone_guide(_player_panel, "PlayerPanel")
+
+
+func _set_zone_guide(zone: Control, label_text: String) -> void:
+	if zone == null:
+		return
+	if _zone_guides_enabled:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
+		style.border_color = Color(0.90, 0.72, 0.28, 0.95)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(6)
+		if zone is PanelContainer:
+			(zone as PanelContainer).add_theme_stylebox_override("panel", style)
+		else:
+			var frame := zone.get_node_or_null("ZoneGuideFrame")
+			if frame == null:
+				frame = Panel.new()
+				frame.name = "ZoneGuideFrame"
+				frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				frame.anchors_preset = Control.PRESET_FULL_RECT
+				zone.add_child(frame)
+			(frame as Panel).add_theme_stylebox_override("panel", style)
+		var guide := zone.get_node_or_null("ZoneGuideLabel")
+		if guide == null:
+			guide = Label.new()
+			guide.name = "ZoneGuideLabel"
+			guide.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			guide.position = Vector2(6, 4)
+			zone.add_child(guide)
+		(guide as Label).text = label_text
+		(guide as Label).add_theme_color_override("font_color", Color(0.95, 0.80, 0.30, 1.0))
+		(guide as Label).add_theme_font_size_override("font_size", 12)
+	else:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
+		style.border_color = Color(0.62, 0.49, 0.23, 0.92)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(6)
+		if zone is PanelContainer:
+			(zone as PanelContainer).add_theme_stylebox_override("panel", style)
+		else:
+			var frame := zone.get_node_or_null("ZoneGuideFrame")
+			if frame != null:
+				frame.queue_free()
+		var guide := zone.get_node_or_null("ZoneGuideLabel")
+		if guide != null:
+			guide.queue_free()
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:
