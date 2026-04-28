@@ -4,7 +4,7 @@
 
 **Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 
@@ -14,7 +14,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 
 ## Details
 
-- `scenes/` - Scene entry points and player-facing flow. Important files include `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, reusable board surface `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, and the placeholder run summary/shop scenes. (source: repository layout, `scripts/core/run_state.gd`)
+- `scenes/` - Scene entry points and player-facing flow. Important files include `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, reusable board surface `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, and the placeholder run summary/shop scenes. The combat scene now contains explicit mobile HUD zones and a timer-only strip plus split loadout groups (`EquipmentGroup`, `ConsumableGroup`). (source: repository layout, `scripts/core/run_state.gd`, `scenes/combat/combat_player.tscn`)
 - `scripts/core/` - Global run orchestration and shared startup logic. `run_state.gd` is the main autoload-backed controller, and `main_boot.gd` handles the main menu launch. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`)
 - `scripts/board/` - Board model, generation settings, orb typing, match resolver, board rendering, and board surface wrapper script for scene composition reuse. (source: `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/board/board_surface.gd`)
 - `scripts/combat/` - Combat state machine, player state, enemy state, and the combat scene controller. (source: `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`)

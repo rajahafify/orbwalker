@@ -7,7 +7,6 @@ extends Control
 @onready var _timer_label: Label = %TimerLabel
 @onready var _run_progress_label: Label = %RunProgressLabel
 @onready var _turn_summary_label: Label = %TurnSummaryLabel
-@onready var _combo_summary_label: Label = %ComboSummaryLabel
 @onready var _player_label: Label = %PlayerStateLabel
 @onready var _enemy_label: Label = %EnemyStageLabel
 @onready var _enemy_debug_label: Label = %EnemyStateLabel
@@ -28,8 +27,10 @@ extends Control
 @onready var _enemy_stage: Control = %EnemyStage
 @onready var _enemy_hp_row: Control = %EnemyHpRow
 @onready var _combat_strip: PanelContainer = $"CombatLayoutRoot/CombatStrip"
-@onready var _combat_strip_row: HBoxContainer = %CombatStripRow
-@onready var _timer_badge_panel: PanelContainer = %TimerBadgePanel
+@onready var _timer_track: Control = %TimerTrack
+@onready var _timer_fill: ColorRect = %TimerFill
+@onready var _timer_icon: TextureRect = %TimerIcon
+@onready var _timer_state_label: Label = %TimerStateLabel
 @onready var _board_frame: PanelContainer = $"CombatLayoutRoot/BoardPanel/BoardSurface/BoardFrame"
 @onready var _board_panel: Control = %BoardPanel
 @onready var _player_panel: PanelContainer = %PlayerPanel
@@ -37,6 +38,10 @@ extends Control
 @onready var _player_stats_row: HBoxContainer = %PlayerStatsRow
 @onready var _combat_meta_row: HBoxContainer = %CombatMetaRow
 @onready var _loadout_row: VBoxContainer = %LoadoutRow
+@onready var _loadout_groups_row: HBoxContainer = %LoadoutGroupsRow
+@onready var _equipment_group: PanelContainer = %EquipmentGroup
+@onready var _consumable_group: PanelContainer = %ConsumableGroup
+@onready var _secondary_rows: VBoxContainer = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/SecondaryRows"
 @onready var _combat_log_frame: PanelContainer = $"DebugOverlay/DebugVBox/CombatLogFrame"
 @onready var _debug_overlay: PanelContainer = %DebugOverlay
 @onready var _title_label: Label = %TitleLabel
@@ -44,7 +49,6 @@ extends Control
 @onready var _enemy_portrait: TextureRect = %EnemyPortrait
 @onready var _intent_badge: TextureRect = %IntentBadge
 @onready var _enemy_hp_bar: ProgressBar = %EnemyHpBar
-@onready var _move_timer_bar: ProgressBar = %MoveTimerBar
 @onready var _player_hp_bar: ProgressBar = %PlayerHpBar
 @onready var _player_armor_bar: ProgressBar = %PlayerArmorBar
 @onready var _player_portrait: TextureRect = %PlayerPortrait
@@ -52,9 +56,8 @@ extends Control
 @onready var _consumable_icons: HBoxContainer = %ConsumableIcons
 @onready var _relic_icons: HBoxContainer = %RelicIcons
 @onready var _mastery_icons: HBoxContainer = %MasteryIcons
-@onready var _relic_row: HBoxContainer = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/RelicRow"
-@onready var _mastery_row: HBoxContainer = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/MasteryRow"
-@onready var _build_row_label: Label = $"CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/LoadoutRow/BuildRowLabel"
+@onready var _relic_row: HBoxContainer = %RelicRow
+@onready var _mastery_row: HBoxContainer = %MasteryRow
 @onready var _equipment_row_label: Label = %EquipmentLabel
 @onready var _consumable_row_label: Label = %ConsumableLabel
 @onready var _relic_row_label: Label = %RelicLabel
@@ -81,6 +84,20 @@ const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
 const MOVE_TIMER_MAX_SECONDS := 5.0
+const TIMER_WARNING_SECONDS := 2.0
+const TIMER_CRITICAL_SECONDS := 1.0
+const TIMER_SAFE_COLOR := Color(0.60, 0.90, 1.0, 1.0)
+const TIMER_WARNING_COLOR := Color(1.0, 0.82, 0.36, 1.0)
+const TIMER_CRITICAL_COLOR := Color(1.0, 0.42, 0.38, 1.0)
+const TIMER_READY_COLOR := Color(0.30, 0.56, 0.72, 1.0)
+const TIMER_LOCKED_COLOR := Color(0.22, 0.24, 0.28, 1.0)
+const TIMER_TEXT_COLOR := Color(0.96, 0.98, 1.0, 1.0)
+const TIMER_TEXT_WARNING_COLOR := Color(1.0, 0.94, 0.68, 1.0)
+const TIMER_TEXT_CRITICAL_COLOR := Color(1.0, 0.88, 0.84, 1.0)
+const TIMER_TEXT_LOCKED_COLOR := Color(0.68, 0.72, 0.78, 1.0)
+const TIMER_STATE_READY := "ready"
+const TIMER_STATE_ACTIVE := "active"
+const TIMER_STATE_LOCKED := "locked"
 const MAX_COMBAT_LOG_LINES := 120
 const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
 const LOG_LEVEL_NORMAL := "normal"
@@ -89,8 +106,8 @@ const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
-const ICON_INNER_SIZE := Vector2(42, 42)
-const SLOT_SIZE := Vector2(48, 48)
+const ICON_INNER_SIZE := Vector2(56, 56)
+const SLOT_SIZE := Vector2(64, 64)
 const DESIGN_SIZE := Vector2(1080, 1920)
 const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
@@ -111,8 +128,13 @@ const PLAYER_SUMMARY_RECT := Rect2(Vector2(30, 206), Vector2(988, 28))
 const PLAYER_LOADOUT_RECT := Rect2(Vector2(30, 244), Vector2(988, 238))
 const PLAYER_PORTRAIT_SIZE := Vector2(112, 112)
 const COMBAT_STRIP_INSET := 12.0
-const TIMER_BADGE_SIZE := Vector2(100, 48)
-const COMBO_BLOCK_WIDTH := 140.0
+const TIMER_TRACK_SIZE := Vector2(760, 46)
+const TIMER_TRACK_PADDING := 5.0
+const TIMER_ICON_SIZE := Vector2(34, 34)
+const LOADOUT_GROUP_HEIGHT := 160.0
+const LOADOUT_GROUP_GAP := 16.0
+const EQUIPMENT_GROUP_WIDTH := 520.0
+const CONSUMABLE_GROUP_WIDTH := 240.0
 const FONT_SIZE_TITLE := 20
 const FONT_SIZE_VALUE := 18
 const FONT_SIZE_META := 15
@@ -213,33 +235,34 @@ func _apply_visual_chrome() -> void:
 	_combat_log_frame.add_theme_stylebox_override("panel", frame_style)
 
 	_apply_progressbar_flat_style(_enemy_hp_bar, Color(0.70, 0.12, 0.13, 1.0))
-	_apply_progressbar_flat_style(_move_timer_bar, Color(0.14, 0.46, 0.82, 1.0))
 	_apply_progressbar_flat_style(_player_hp_bar, Color(0.78, 0.16, 0.17, 1.0))
 	_apply_progressbar_flat_style(_player_armor_bar, Color(0.16, 0.50, 0.86, 1.0))
 
 	var ui_text_color := Color(0.95, 0.96, 0.98, 1.0)
-	for label in [_title_label, _hint_label, _timer_label, _combo_summary_label, _run_progress_label, _phase_label, _turn_summary_label, _player_label, _enemy_label, _intent_label]:
+	for label in [_title_label, _hint_label, _timer_label, _run_progress_label, _phase_label, _turn_summary_label, _player_label, _enemy_label, _intent_label]:
 		label.add_theme_color_override("font_color", ui_text_color)
 	_title_label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
 	_hint_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_intent_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_enemy_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_timer_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_combo_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	_player_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
 	_run_progress_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	_phase_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	_turn_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
-	_build_row_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	for row_label in [_equipment_row_label, _consumable_row_label, _relic_row_label, _mastery_row_label]:
 		row_label.add_theme_color_override("font_color", Color(0.91, 0.80, 0.50, 1.0))
 		row_label.add_theme_font_size_override("font_size", FONT_SIZE_ROW_LABEL)
-	_combo_summary_label.add_theme_color_override("font_color", Color(0.98, 0.88, 0.52, 1.0))
 	_phase_label.add_theme_color_override("font_color", Color(0.84, 0.72, 0.44, 1.0))
 	_run_progress_label.add_theme_color_override("font_color", Color(0.82, 0.90, 0.98, 1.0))
-	_combo_summary_label.custom_minimum_size.x = COMBO_BLOCK_WIDTH
-	_combo_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_timer_label.add_theme_color_override("font_color", Color(0.85, 0.93, 1.0, 1.0))
+	_timer_state_label.add_theme_color_override("font_color", Color(0.73, 0.84, 0.92, 1.0))
+	_timer_state_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
+	_apply_timer_label_readability(_timer_label)
+	_apply_timer_label_readability(_timer_state_label)
 	_apply_button_theme()
+	_apply_timer_track_theme()
+	_apply_loadout_group_theme()
 
 	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	_ensure_placeholder_visuals()
@@ -302,6 +325,39 @@ func _apply_button_theme() -> void:
 		button.add_theme_stylebox_override("pressed", style_hover)
 
 
+func _apply_timer_track_theme() -> void:
+	var timer_style := StyleBoxFlat.new()
+	timer_style.bg_color = Color(0.04, 0.10, 0.17, 0.96)
+	timer_style.border_color = Color(0.57, 0.45, 0.21, 0.95)
+	timer_style.set_border_width_all(2)
+	timer_style.set_corner_radius_all(8)
+	var frame := _timer_track.get_node_or_null("TimerTrackFrame")
+	if frame is Panel:
+		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
+
+
+func _apply_timer_label_readability(label: Label) -> void:
+	label.add_theme_color_override("font_shadow_color", Color(0.01, 0.02, 0.03, 0.95))
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.80))
+
+
+func _apply_loadout_group_theme() -> void:
+	var group_style := StyleBoxFlat.new()
+	group_style.bg_color = Color(0.05, 0.09, 0.14, 0.98)
+	group_style.border_color = Color(0.58, 0.45, 0.20, 0.94)
+	group_style.set_border_width_all(2)
+	group_style.set_corner_radius_all(6)
+	group_style.content_margin_left = 10.0
+	group_style.content_margin_right = 10.0
+	group_style.content_margin_top = 8.0
+	group_style.content_margin_bottom = 8.0
+	_equipment_group.add_theme_stylebox_override("panel", group_style)
+	_consumable_group.add_theme_stylebox_override("panel", group_style)
+
+
 func _initialize_combat_state() -> void:
 	if not RunState.run_active:
 		RunState.start_new_run()
@@ -351,7 +407,6 @@ func _begin_turn_preview() -> void:
 	_next_button.visible = false
 	_next_button.disabled = true
 	_turn_summary_label.text = "Turn Summary: Awaiting move."
-	_combo_summary_label.text = "Combos: 0"
 	_status_label.text = "%s | Turn %d." % [
 		RunState.level_sequence_label(),
 		_combat.turn_index,
@@ -529,13 +584,18 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
 
 
 func _process(delta: float) -> void:
+	if _player_state == null:
+		return
 	if not _active_drag:
-		_update_timer_label(0.0)
+		if _input_phase == InputPhase.PLAYER_INPUT:
+			_sync_timer_display(_timer_ready_seconds(), TIMER_STATE_READY)
+		else:
+			_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 		return
 
 	_refresh_drag_match_glow()
 	_move_time_left = maxf(0.0, _move_time_left - delta)
-	_update_timer_label(_move_time_left)
+	_sync_timer_display(_move_time_left, TIMER_STATE_ACTIVE)
 	if _move_time_left <= 0.0:
 		_end_drag(true)
 
@@ -1093,7 +1153,7 @@ func _start_drag(board_local_position: Vector2) -> bool:
 	_board_view.path_cells = _drag_path.duplicate()
 	_board_view.drag_pointer_position = board_local_position
 	_board_view.drag_orb_id = _drag_selected_orb_id
-	_update_timer_label(_move_time_left)
+	_sync_timer_display(_move_time_left, TIMER_STATE_ACTIVE)
 	_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(_drag_selected_orb_id)
 	_status_label.modulate = STATUS_COLOR_NEUTRAL
 	return true
@@ -1130,7 +1190,7 @@ func _end_drag(timed_out: bool) -> void:
 
 	_active_drag = false
 	_drag_touch_index = -1
-	_update_timer_label(0.0)
+	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 	var move_end_reason := "released"
 	if timed_out:
 		move_end_reason = "timer expired"
@@ -1162,7 +1222,6 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_next_button.visible = true
 		_next_button.disabled = false
 		_turn_summary_label.text = "Turn Summary: Victory. Press Next to continue."
-		_combo_summary_label.text = _combo_summary_text(turn_log)
 		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 		return
 
@@ -1177,7 +1236,6 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_next_button.visible = false
 		_next_button.disabled = true
 		_turn_summary_label.text = "Turn Summary: Defeat."
-		_combo_summary_label.text = _combo_summary_text(turn_log)
 		_pulse_label(_turn_summary_label, STATUS_COLOR_NEGATIVE)
 		_queue_outcome_transition(String(defeat_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
 		return
@@ -1185,7 +1243,6 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	_status_label.text = _build_turn_summary_status(turn_log)
 	_status_label.modulate = STATUS_COLOR_POSITIVE
 	_turn_summary_label.text = "Turn Summary: %s" % _build_turn_summary_status(turn_log)
-	_combo_summary_label.text = _combo_summary_text(turn_log)
 	_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 	_append_turn_log(turn_log)
 	_begin_turn_preview()
@@ -1234,10 +1291,65 @@ func _set_input_phase(phase: InputPhase) -> void:
 				_status_label.text = "Input locked: %s" % _external_lock_reason
 
 
-func _update_timer_label(seconds_left: float) -> void:
-	_timer_label.text = "%.1f sec" % seconds_left
-	_move_timer_bar.max_value = MOVE_TIMER_MAX_SECONDS
-	_move_timer_bar.value = clampf(seconds_left, 0.0, _move_timer_bar.max_value)
+func _sync_timer_display(seconds_left: float, state: String) -> void:
+	var clamped_seconds := clampf(seconds_left, 0.0, MOVE_TIMER_MAX_SECONDS)
+	var time_ratio := 0.0
+	if MOVE_TIMER_MAX_SECONDS > 0.0:
+		time_ratio = clamped_seconds / MOVE_TIMER_MAX_SECONDS
+
+	var label_text := "READY"
+	var state_text := "READY"
+	var timer_color := TIMER_READY_COLOR
+	var text_color := TIMER_TEXT_COLOR
+	var fill_ratio := 1.0
+	var text_alpha := 1.0
+	if state == TIMER_STATE_ACTIVE:
+		fill_ratio = time_ratio
+		state_text = "MOVE"
+		if clamped_seconds > 0.0 and clamped_seconds < TIMER_WARNING_SECONDS:
+			label_text = "%.1f SEC" % clamped_seconds
+		else:
+			label_text = "%d SEC" % int(ceil(clamped_seconds))
+		timer_color = TIMER_SAFE_COLOR
+		if clamped_seconds <= TIMER_CRITICAL_SECONDS:
+			state_text = "CRIT"
+			var blink := 0.70 + 0.30 * sin(Time.get_ticks_msec() * 0.024)
+			timer_color = TIMER_CRITICAL_COLOR.lerp(Color(1.0, 1.0, 1.0, 1.0), blink)
+			text_color = TIMER_TEXT_CRITICAL_COLOR
+			text_alpha = blink
+		elif clamped_seconds <= TIMER_WARNING_SECONDS:
+			state_text = "WARN"
+			var warning_t := inverse_lerp(TIMER_WARNING_SECONDS, TIMER_CRITICAL_SECONDS, clamped_seconds)
+			timer_color = TIMER_WARNING_COLOR.lerp(TIMER_CRITICAL_COLOR, warning_t)
+			text_color = TIMER_TEXT_WARNING_COLOR
+	else:
+		if state == TIMER_STATE_LOCKED:
+			label_text = "LOCK"
+			state_text = "LOCK"
+			timer_color = TIMER_LOCKED_COLOR
+			text_color = TIMER_TEXT_LOCKED_COLOR
+			fill_ratio = 0.0
+			text_alpha = 0.72
+
+	var track_size := _timer_track.size
+	if track_size.x <= 0.0 or track_size.y <= 0.0:
+		track_size = TIMER_TRACK_SIZE
+	var fill_width := maxf(0.0, (track_size.x - TIMER_TRACK_PADDING * 2.0) * fill_ratio)
+	_timer_fill.position = Vector2(TIMER_TRACK_PADDING, TIMER_TRACK_PADDING)
+	_timer_fill.size = Vector2(fill_width, maxf(0.0, track_size.y - TIMER_TRACK_PADDING * 2.0))
+	_timer_fill.color = Color(timer_color.r, timer_color.g, timer_color.b, 0.72)
+	_timer_label.text = label_text
+	_timer_state_label.text = state_text
+	var final_text_color := Color(text_color.r, text_color.g, text_color.b, text_alpha)
+	_timer_label.add_theme_color_override("font_color", final_text_color)
+	_timer_state_label.add_theme_color_override("font_color", final_text_color)
+	_timer_icon.modulate = final_text_color
+
+
+func _timer_ready_seconds() -> float:
+	if _player_state == null:
+		return MOVE_TIMER_MAX_SECONDS
+	return _player_state.move_timer_seconds
 
 
 func _reset_drag_visuals() -> void:
@@ -1259,7 +1371,7 @@ func _is_orthogonally_adjacent(from_cell: Vector2i, to_cell: Vector2i) -> bool:
 func _abort_active_drag() -> void:
 	_active_drag = false
 	_drag_touch_index = -1
-	_update_timer_label(0.0)
+	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 	_reset_drag_visuals()
 
 
@@ -1374,12 +1486,10 @@ func _sync_enemy_stage() -> void:
 
 func _sync_tempo_row() -> void:
 	_phase_label.text = "Turn %d  %s" % [int(_combat.turn_index), _combat.phase_name()]
-	var turn_log: Dictionary = _last_resolve_result.get("turn_log", {})
-	var combo_count := int(_last_resolve_result.get("combo_count", 0))
-	var combo_multiplier := float(turn_log.get("damage_combo_multiplier", 1.0))
-	var bonus_percent := maxi(0, int(round((combo_multiplier - 1.0) * 100.0)))
-	_combo_summary_label.text = "%d Combos\n+%d%% Damage" % [combo_count, bonus_percent]
-	_timer_label.text = "%d SEC" % int(ceil(_move_time_left))
+	var timer_state := TIMER_STATE_READY if _input_phase == InputPhase.PLAYER_INPUT else TIMER_STATE_LOCKED
+	if _active_drag:
+		timer_state = TIMER_STATE_ACTIVE
+	_sync_timer_display(_move_time_left if _active_drag else _timer_ready_seconds(), timer_state)
 
 
 func _sync_player_strip(progression_snapshot: Dictionary) -> void:
@@ -1782,8 +1892,8 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
 	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
 
-	_populate_icon_row(_equipment_icons, equipment_slots, "equipment")
-	_populate_icon_row(_consumable_icons, consumable_slots, "consumable")
+	_populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
+	_populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
 	_populate_icon_row(_relic_icons, relic_ids, "relic")
 	_populate_mastery_row(_mastery_icons, mastery_levels)
 
@@ -1799,6 +1909,17 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 			break
 	_relic_row.visible = has_relic and not _is_low_vertical_layout
 	_mastery_row.visible = has_mastery and not _is_low_vertical_layout
+	_secondary_rows.visible = _relic_row.visible or _mastery_row.visible
+
+
+func _populate_loadout_slot_row(row: HBoxContainer, ids: Array, label: String, slot_count: int) -> void:
+	var visible_ids: Array = []
+	for index in range(slot_count):
+		if index < ids.size():
+			visible_ids.append(ids[index])
+		else:
+			visible_ids.append("")
+	_populate_icon_row(row, visible_ids, label)
 
 
 func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
@@ -1809,12 +1930,14 @@ func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
 		slot.custom_minimum_size = SLOT_SIZE
 		slot.add_theme_stylebox_override("panel", _slot_stylebox())
 		var icon := TextureRect.new()
+		var amount_label: Label = null
 		icon.custom_minimum_size = ICON_INNER_SIZE
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var id_text := String(id_value)
 		if id_text == "":
+			slot.add_theme_stylebox_override("panel", _empty_slot_stylebox())
 			icon.texture = _visuals.placeholder_texture("%s_empty" % label, Color(0.20, 0.22, 0.26, 0.95), Vector2i(96, 96))
 			icon.modulate = Color(1.0, 1.0, 1.0, 0.35)
 		else:
@@ -1823,15 +1946,16 @@ func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
 			icon.texture = _visuals.clean_icon_for_key(icon_key)
 			icon.tooltip_text = String(content.get("display_name", id_text))
 			if label == "consumable":
-				var amount_label := Label.new()
+				amount_label = Label.new()
 				amount_label.text = "1"
 				amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 				amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-				amount_label.add_theme_font_size_override("font_size", 14)
+				amount_label.add_theme_font_size_override("font_size", 16)
 				amount_label.add_theme_color_override("font_color", Color(0.92, 0.94, 1.0, 1.0))
 				amount_label.anchors_preset = Control.PRESET_FULL_RECT
-				slot.add_child(amount_label)
 		slot.add_child(icon)
+		if amount_label != null:
+			slot.add_child(amount_label)
 		row.add_child(slot)
 
 
@@ -1867,12 +1991,25 @@ func _slot_stylebox() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.10, 0.14, 0.95)
 	style.border_color = Color(0.50, 0.38, 0.18, 0.84)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.content_margin_left = 2.0
-	style.content_margin_right = 2.0
-	style.content_margin_top = 2.0
-	style.content_margin_bottom = 2.0
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(5)
+	style.content_margin_left = 3.0
+	style.content_margin_right = 3.0
+	style.content_margin_top = 3.0
+	style.content_margin_bottom = 3.0
+	return style
+
+
+func _empty_slot_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.10, 0.98)
+	style.border_color = Color(0.29, 0.24, 0.14, 0.84)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(5)
+	style.content_margin_left = 3.0
+	style.content_margin_right = 3.0
+	style.content_margin_top = 3.0
+	style.content_margin_bottom = 3.0
 	return style
 
 
@@ -1934,17 +2071,6 @@ func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.modulate = STATUS_COLOR_WARNING
 
 
-func _combo_summary_text(turn_log: Dictionary) -> String:
-	return "Combos: %d (effective %d) | Damage %d | Heal +%d | Armor +%d | Gold +%d" % [
-		int(turn_log.get("combo_count", 0)),
-		int(turn_log.get("combo_count_with_bonus", turn_log.get("combo_count", 0))),
-		int(turn_log.get("enemy_damage_taken", 0)),
-		int(turn_log.get("healed", 0)),
-		int(turn_log.get("armor_gained", 0)),
-		int(turn_log.get("gold_gained", 0)),
-	]
-
-
 func _pulse_label(target: Label, tint: Color) -> void:
 	target.modulate = tint
 	var tween := create_tween()
@@ -1986,7 +2112,7 @@ func _apply_combat_layout() -> void:
 		_relic_row.visible = false
 	elif is_compact:
 		_relic_row.visible = false
-	_combo_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if is_compact else HORIZONTAL_ALIGNMENT_RIGHT
+	_secondary_rows.visible = _relic_row.visible or _mastery_row.visible
 	_debug_overlay.anchor_left = 0.08 if is_compact else 0.58
 	_debug_overlay.anchor_top = 0.05
 	_debug_overlay.anchor_right = 0.985
@@ -2017,11 +2143,13 @@ func _apply_enemy_panel_layout() -> void:
 
 
 func _apply_combat_strip_layout() -> void:
-	_combat_strip_row.position = Vector2(COMBAT_STRIP_INSET, 12.0)
-	_combat_strip_row.size = Vector2(COMBAT_STRIP_RECT.size.x - COMBAT_STRIP_INSET * 2.0, 48.0)
-	_timer_badge_panel.custom_minimum_size = TIMER_BADGE_SIZE
-	_move_timer_bar.custom_minimum_size.y = 16.0
-	_combo_summary_label.custom_minimum_size.x = COMBO_BLOCK_WIDTH
+	_timer_track.position = Vector2(
+		(COMBAT_STRIP_RECT.size.x - TIMER_TRACK_SIZE.x) * 0.5,
+		(COMBAT_STRIP_RECT.size.y - TIMER_TRACK_SIZE.y) * 0.5
+	)
+	_timer_track.size = TIMER_TRACK_SIZE
+	_timer_icon.custom_minimum_size = TIMER_ICON_SIZE
+	_sync_timer_display(_move_time_left if _active_drag else _timer_ready_seconds(), TIMER_STATE_ACTIVE if _active_drag else TIMER_STATE_READY)
 
 
 func _apply_board_panel_layout() -> void:
@@ -2038,10 +2166,17 @@ func _apply_player_panel_layout() -> void:
 	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
 	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
 	_apply_design_rect(_loadout_row, PLAYER_LOADOUT_RECT)
+	var groups_width := EQUIPMENT_GROUP_WIDTH + CONSUMABLE_GROUP_WIDTH + LOADOUT_GROUP_GAP
+	_loadout_groups_row.custom_minimum_size = Vector2(groups_width, LOADOUT_GROUP_HEIGHT)
+	_equipment_group.custom_minimum_size = Vector2(EQUIPMENT_GROUP_WIDTH, LOADOUT_GROUP_HEIGHT)
+	_consumable_group.custom_minimum_size = Vector2(CONSUMABLE_GROUP_WIDTH, LOADOUT_GROUP_HEIGHT)
 	_player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
 
 
 func _ensure_placeholder_visuals() -> void:
+	if _timer_icon.texture == null:
+		_timer_icon.texture = _make_timer_placeholder_texture()
+	_timer_icon.visible = true
 	if _intent_badge.texture == null:
 		_intent_badge.texture = _make_intent_placeholder_texture()
 	_intent_badge.visible = true
@@ -2051,6 +2186,17 @@ func _ensure_placeholder_visuals() -> void:
 	if _player_portrait.texture == null:
 		_player_portrait.texture = _make_hero_placeholder_texture()
 	_player_portrait.visible = true
+
+
+func _make_timer_placeholder_texture() -> Texture2D:
+	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.04, 0.10, 0.16, 0.0))
+	image.fill_rect(Rect2i(28, 14, 40, 12), Color(0.78, 0.88, 0.98, 1.0))
+	image.fill_rect(Rect2i(28, 70, 40, 12), Color(0.78, 0.88, 0.98, 1.0))
+	image.fill_rect(Rect2i(34, 24, 28, 14), Color(0.78, 0.88, 0.98, 1.0))
+	image.fill_rect(Rect2i(34, 58, 28, 14), Color(0.78, 0.88, 0.98, 1.0))
+	image.fill_rect(Rect2i(38, 38, 20, 20), Color(0.44, 0.74, 1.0, 0.95))
+	return ImageTexture.create_from_image(image)
 
 
 func _make_intent_placeholder_texture() -> Texture2D:

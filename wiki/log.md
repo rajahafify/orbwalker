@@ -158,3 +158,55 @@ Append-only history of wiki operations.
   - Updated `wiki/features.md`
 - Notes:
   - Validated scene instantiation and current-scene runtime through Godot MCP with no reported runtime errors.
+
+## [2026-04-29] code-change | Timer-Only Strip And Loadout Group Polish
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Removed combat strip combo/damage label and rebuilt timer lane with `TimerBadgePanel` icon+value plus single timer bar
+  - Added timer placeholder generation and timer badge styling in combat controller
+  - Rebuilt player loadout to centered framed groups: `EquipmentGroup` (5 slots) and `ConsumableGroup` (3 slots)
+  - Updated slot rendering to 64px with darker empty placeholders and consumable count overlays
+  - Updated `wiki/features.md` and `wiki/file-map.md`
+- Notes:
+  - Runtime validated via Godot MCP (`open_scene`, `play_scene`, `get_running_scene_screenshot`, `get_godot_errors`) with no active runtime errors.
+
+## [2026-04-29] code-change | Combat Timer Urgency Readability Revamp
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`
+- Changed:
+  - Updated timer formatting to show whole seconds in normal state and tenth-second precision during final warning window
+  - Added timer urgency color states (`safe`, `warning`, `critical`) and applied them to both timer label and timer bar fill
+  - Added critical low-time pulse behavior for better timeout visibility during drag
+  - Updated `wiki/features.md`
+- Notes:
+  - Timer duration and move-end rules remain unchanged; this pass is readability and urgency signaling only.
+
+## [2026-04-29] code-change | Combat Strip Timer Centering Fix
+
+- Source: `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Centered the timer strip based on actual content width (`TimerBadgePanel + separator + MoveTimerBar`) instead of left-inset anchoring
+  - Added responsive timer-bar width clamp so centering stays stable across viewport sizes
+- Notes:
+  - No timer logic changes; this is layout-only.
+
+## [2026-04-29] code-change | Unified Combat Timer Track Revamp
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Replaced the separate timer badge and progress bar with one centered `TimerTrack` control
+  - Added track fill, overlay icon/value/state labels, and unified timer display syncing
+  - Kept the 5 second movement timer, release behavior, and timeout behavior unchanged
+  - Updated `wiki/features.md`
+- Notes:
+  - This replaces the previous centering workaround with a single fixed design-space timer slab.
+
+## [2026-04-29] code-change | Timer Label Readability Fix
+
+- Source: `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Separated timer foreground colors from timer fill colors for higher contrast
+  - Added label outline and shadow styling to timer value and state labels
+- Notes:
+  - No timer logic or layout changes.
