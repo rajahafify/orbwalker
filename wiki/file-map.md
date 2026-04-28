@@ -2,7 +2,7 @@
 
 **Summary**: High-level map of the important folders and files in the current Matchatro checkout.
 
-**Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
+**Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
 **Last updated**: 2026-04-28
 
@@ -14,9 +14,9 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 
 ## Details
 
-- `scenes/` - Scene entry points and player-facing flow. Important files include `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, and the placeholder run summary/shop scenes. (source: repository layout, `scripts/core/run_state.gd`)
+- `scenes/` - Scene entry points and player-facing flow. Important files include `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, reusable board surface `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, and the placeholder run summary/shop scenes. (source: repository layout, `scripts/core/run_state.gd`)
 - `scripts/core/` - Global run orchestration and shared startup logic. `run_state.gd` is the main autoload-backed controller, and `main_boot.gd` handles the main menu launch. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`)
-- `scripts/board/` - Board model, generation settings, orb typing, match resolver, and board rendering. (source: `scripts/board/board_state.gd`, `scripts/board/board_view.gd`)
+- `scripts/board/` - Board model, generation settings, orb typing, match resolver, board rendering, and board surface wrapper script for scene composition reuse. (source: `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/board/board_surface.gd`)
 - `scripts/combat/` - Combat state machine, player state, enemy state, and the combat scene controller. (source: `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`)
 - `scripts/content/` - Content registry and validation. (source: `scripts/content/content_registry.gd`)
 - `scripts/run/` - Player progression state and service. (source: `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`)

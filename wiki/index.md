@@ -21,6 +21,7 @@
 ## Features
 
 - [[features]] - Implemented gameplay, UI, and content features
+- [[milestone-9-combat-ui-replication-plan]] - Approved combat UI replication plan for Milestone 9 close-match pass
 
 ## Decisions
 
@@ -30,4 +31,3 @@
 
 - [[known-issues]] - Current bugs, risks, and validation gaps
 - [[open-questions]] - Open design and implementation questions
-

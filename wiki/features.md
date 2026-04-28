@@ -38,8 +38,9 @@ The project already covers the early prototype loop: board generation, drag move
 
 ### UI and presentation
 
-- Combat and shop now have player-facing scenes with HUD information, run progress, inventory visibility, and item detail text. (source: `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`)
+- Combat and shop now have player-facing scenes; combat HUD functionality is restored with plain visuals (art-heavy background, enemy portrait, and intent badge presentation removed) for the HUD revamp baseline. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_board_only_controller.gd`, `scripts/flow/shop_player.gd`)
 - The visual registry provides the first-pass art lookup and fallback path for UI, backgrounds, and icons. (source: `scripts/ui/visual_registry.gd`)
+- Combat HUD styling now prefers texture-backed chrome/bars and uses compact reference-style callouts for intent and combo bonus; build slots were enlarged and now display consumable/mastery counts in-slot. (source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`)
 
 ## Important Files
 
@@ -62,4 +63,3 @@ The project already covers the early prototype loop: board generation, drag move
 - [[setup]]
 - [[file-map]]
 - [[known-issues]]
-

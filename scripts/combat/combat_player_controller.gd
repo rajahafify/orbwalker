@@ -1,6 +1,7 @@
 extends Control
 
-@onready var _board_view: BoardView = %BoardView
+@onready var _board_surface: BoardSurface = %BoardSurface
+@onready var _board_view: BoardView = _board_surface.board_view()
 @onready var _background: TextureRect = %Background
 @onready var _status_label: Label = %StatusLabel
 @onready var _timer_label: Label = %TimerLabel
@@ -18,11 +19,11 @@ extends Control
 @onready var _back_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/BackButton"
 @onready var _debug_toggle_button: Button = %DebugToggleButton
 @onready var _settings_button: Button = $"MainMargin/MainVBox/TopHudBar/TopHudRow/SettingsButton"
-@onready var _board_view_control: Control = %BoardView
+@onready var _board_view_control: Control = %BoardSurface
 @onready var _top_hud_bar: PanelContainer = $"MainMargin/MainVBox/TopHudBar"
 @onready var _enemy_stage_panel: PanelContainer = $"MainMargin/MainVBox/EnemyStagePanel"
 @onready var _tempo_row_panel: PanelContainer = $"MainMargin/MainVBox/TempoRowPanel"
-@onready var _board_frame: PanelContainer = $"MainMargin/MainVBox/BoardArea/BoardFrame"
+@onready var _board_frame: PanelContainer = $"MainMargin/MainVBox/BoardArea/BoardSurface/BoardFrame"
 @onready var _player_strip_panel: PanelContainer = %PlayerStripPanel
 @onready var _combat_log_frame: PanelContainer = $"DebugOverlay/DebugVBox/CombatLogFrame"
 @onready var _debug_overlay: PanelContainer = %DebugOverlay
@@ -76,8 +77,8 @@ const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
-const ICON_INNER_SIZE := Vector2(22, 22)
-const SLOT_SIZE := Vector2(28, 28)
+const ICON_INNER_SIZE := Vector2(42, 42)
+const SLOT_SIZE := Vector2(56, 56)
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -114,7 +115,8 @@ var _is_low_vertical_layout := false
 
 func _ready() -> void:
 	_consumable_rng.randomize()
-	_background.texture = _visuals.combat_background()
+	_background.texture = null
+	_background.modulate = Color(0.20, 0.20, 0.22, 1.0)
 	_board_view.set_orb_texture_map({
 		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
 		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
@@ -191,13 +193,8 @@ func _apply_visual_chrome() -> void:
 		row_label.add_theme_font_size_override("font_size", 14)
 	_apply_button_theme()
 
-	var hero_portrait := _visuals.clean_icon_for_key("equipment_iron_helm", false)
-	if hero_portrait != null:
-		_player_portrait.texture = hero_portrait
-	else:
-		_player_portrait.texture = _visuals.placeholder_texture("hero_portrait", Color(0.14, 0.16, 0.22, 1.0), Vector2i(128, 128))
-	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_player_portrait.stretch_mode = TextureRect.STRETCH_SCALE
+	_player_portrait.texture = null
+	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	_title_label.text = RunState.level_sequence_label()
 	_hint_label.text = "Gold 0"
 
@@ -1294,21 +1291,17 @@ func _update_hud() -> void:
 
 
 func _sync_top_hud() -> void:
-	var level_label := RunState.level_sequence_label()
-	_title_label.text = "%s | %s" % [level_label, _enemy_state.display_name]
+	_title_label.text = RunState.level_sequence_label()
 	_hint_label.text = "Gold %d" % _player_state.gold
 
 
 func _sync_enemy_stage() -> void:
 	var intent := _enemy_state.get_current_intent()
-	_intent_label.text = _format_intent(intent)
-	var badge_texture := _visuals.intent_badge(int(intent.get("type", 0)))
-	_intent_badge.texture = badge_texture
-	_intent_badge.visible = badge_texture != null
-	_enemy_portrait.texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
-	_enemy_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_enemy_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_enemy_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_intent_label.text = _format_intent_compact(intent)
+	_intent_badge.texture = null
+	_intent_badge.visible = false
+	_enemy_portrait.texture = null
+	_enemy_portrait.visible = false
 	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
 	_enemy_hp_bar.value = float(_enemy_state.current_hp)
 	_enemy_label.text = "%s HP %d/%d  Block %d" % [
@@ -1322,11 +1315,10 @@ func _sync_enemy_stage() -> void:
 func _sync_tempo_row() -> void:
 	_phase_label.text = "Turn %d  %s" % [int(_combat.turn_index), _combat.phase_name()]
 	var turn_log: Dictionary = _last_resolve_result.get("turn_log", {})
-	var last_enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
-	_combo_summary_label.text = "Combos %d | Damage %d" % [
-		int(_last_resolve_result.get("combo_count", 0)),
-		last_enemy_damage,
-	]
+	var combo_count := int(_last_resolve_result.get("combo_count", 0))
+	var combo_multiplier := float(turn_log.get("damage_combo_multiplier", 1.0))
+	var bonus_percent := maxi(0, int(round((combo_multiplier - 1.0) * 100.0)))
+	_combo_summary_label.text = "%d Combos\n+%d%% Damage" % [combo_count, bonus_percent]
 
 
 func _sync_player_strip(progression_snapshot: Dictionary) -> void:
@@ -1340,7 +1332,13 @@ func _sync_player_strip(progression_snapshot: Dictionary) -> void:
 	_player_hp_bar.value = float(_player_state.current_hp)
 	_player_armor_bar.max_value = float(maxi(30, _player_state.armor + 10))
 	_player_armor_bar.value = float(maxi(0, _player_state.armor))
-	_run_progress_label.text = "%s | Boss %s" % [RunState.level_sequence_label(), RunState.current_level_boss_name()]
+	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
+	_run_progress_label.text = "ATK %d   ARM %d   HEART %d%%   GOLD %d%%" % [
+		_player_state.orb_value(OrbType.Id.FIRE),
+		_player_state.orb_value(OrbType.Id.ARMOR),
+		int(mastery_levels.get(OrbType.Id.HEART, 0)) * 5,
+		int(mastery_levels.get(OrbType.Id.GOLD, 0)) * 5,
+	]
 	_refresh_build_icon_rows(progression_snapshot)
 
 
@@ -1359,6 +1357,19 @@ func _format_intent(intent: Dictionary) -> String:
 	var attack := int(intent.get("attack", 0))
 	var block := int(intent.get("block", 0))
 	return "%s (Atk %d / Block %d)" % [label, attack, block]
+
+
+func _format_intent_compact(intent: Dictionary) -> String:
+	var label := String(intent.get("label", "Intent"))
+	var attack := int(intent.get("attack", 0))
+	var block := int(intent.get("block", 0))
+	if attack > 0 and block > 0:
+		return "%s %d / %d" % [label, attack, block]
+	if attack > 0:
+		return "%s %d" % [label, attack]
+	if block > 0:
+		return "%s %d" % [label, block]
+	return label
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
@@ -1749,6 +1760,15 @@ func _populate_icon_row(row: HBoxContainer, ids: Array, label: String) -> void:
 			var icon_key := String(content.get("icon_key", ""))
 			icon.texture = _visuals.clean_icon_for_key(icon_key)
 			icon.tooltip_text = String(content.get("display_name", id_text))
+			if label == "consumable":
+				var amount_label := Label.new()
+				amount_label.text = "1"
+				amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+				amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+				amount_label.add_theme_font_size_override("font_size", 14)
+				amount_label.add_theme_color_override("font_color", Color(0.92, 0.94, 1.0, 1.0))
+				amount_label.anchors_preset = Control.PRESET_FULL_RECT
+				slot.add_child(amount_label)
 		slot.add_child(icon)
 		row.add_child(slot)
 
@@ -1770,6 +1790,14 @@ func _populate_mastery_row(row: HBoxContainer, mastery_levels: Dictionary) -> vo
 		if level <= 0:
 			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
 		slot.add_child(icon)
+		var amount_label := Label.new()
+		amount_label.text = str(level)
+		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+		amount_label.add_theme_font_size_override("font_size", 14)
+		amount_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
+		amount_label.anchors_preset = Control.PRESET_FULL_RECT
+		slot.add_child(amount_label)
 		row.add_child(slot)
 
 

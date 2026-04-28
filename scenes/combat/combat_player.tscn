@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://drw4ejx7wqn6v"]
 
 [ext_resource type="Script" path="res://scripts/combat/combat_player_controller.gd" id="1_ctrl"]
-[ext_resource type="Script" uid="uid://cohm3r6nkuq2i" path="res://scripts/board/board_view.gd" id="2_board"]
+[ext_resource type="PackedScene" path="res://scenes/board/board_surface.tscn" id="2_board_surface"]
 [ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="3_theme"]
 
 [node name="CombatPlayer" type="Control"]
@@ -53,6 +53,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="TopHudBar" type="PanelContainer" parent="MainMargin/MainVBox"]
+visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 
@@ -88,6 +89,7 @@ layout_mode = 2
 text = "Menu"
 
 [node name="EnemyStagePanel" type="PanelContainer" parent="MainMargin/MainVBox"]
+visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 146)
 
@@ -143,6 +145,7 @@ text = "Enemy"
 horizontal_alignment = 1
 
 [node name="TempoRowPanel" type="PanelContainer" parent="MainMargin/MainVBox"]
+visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 38)
 
@@ -185,27 +188,15 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BoardFrame" type="PanelContainer" parent="MainMargin/MainVBox/BoardArea"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="BoardAspect" type="AspectRatioContainer" parent="MainMargin/MainVBox/BoardArea/BoardFrame"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-ratio = 0.833333
-stretch_mode = 3
-
-[node name="BoardView" type="Control" parent="MainMargin/MainVBox/BoardArea/BoardFrame/BoardAspect"]
+[node name="BoardSurface" parent="MainMargin/MainVBox/BoardArea" instance=ExtResource("2_board_surface")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-script = ExtResource("2_board")
 
 [node name="PlayerStripPanel" type="PanelContainer" parent="MainMargin/MainVBox"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 170)
 
@@ -394,6 +385,7 @@ autowrap_mode = 3
 
 [node name="VfxLayer" type="Control" parent="."]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

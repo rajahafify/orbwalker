@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/board/board_surface.gd" id="1_surface"]
+[ext_resource type="Script" uid="uid://cohm3r6nkuq2i" path="res://scripts/board/board_view.gd" id="2_board"]
+
+[node name="BoardSurface" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_surface")
+
+[node name="BoardFrame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BoardAspect" type="AspectRatioContainer" parent="BoardFrame"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+ratio = 0.833333
+stretch_mode = 3
+
+[node name="BoardView" type="Control" parent="BoardFrame/BoardAspect"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_board")

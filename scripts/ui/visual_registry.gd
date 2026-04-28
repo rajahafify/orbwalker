@@ -431,6 +431,7 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 				max_y = maxi(max_y, y)
 
 	_clear_edge_checker_noise(cropped)
+	_keep_primary_orb_component(cropped)
 
 	# Trim transparent borders so the orb fills BoardView cells instead of appearing tiny.
 	if max_x >= min_x and max_y >= min_y:
@@ -448,6 +449,87 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 		cropped = cropped.get_region(trim_rect)
 
 	return ImageTexture.create_from_image(cropped)
+
+
+func _keep_primary_orb_component(image: Image) -> void:
+	var width: int = image.get_width()
+	var height: int = image.get_height()
+	if width <= 0 or height <= 0:
+		return
+
+	var visited := PackedByteArray()
+	visited.resize(width * height)
+	var labels := PackedInt32Array()
+	labels.resize(width * height)
+	var component_sizes: Array[int] = []
+	var component_touches_center: Array[bool] = []
+	var component_index := 0
+	var center_x: int = int(width * 0.5)
+	var center_y: int = int(height * 0.5)
+	var center_radius_sq := 16
+
+	for y in range(height):
+		for x in range(width):
+			var idx := y * width + x
+			if visited[idx] == 1:
+				continue
+			var c := image.get_pixel(x, y)
+			if c.a <= 0.01:
+				visited[idx] = 1
+				continue
+
+			component_index += 1
+			var size := 0
+			var touches_center := false
+			var queue: Array[Vector2i] = [Vector2i(x, y)]
+			visited[idx] = 1
+			labels[idx] = component_index
+			while not queue.is_empty():
+				var p: Vector2i = queue.pop_back()
+				size += 1
+				var dx := p.x - center_x
+				var dy := p.y - center_y
+				if dx * dx + dy * dy <= center_radius_sq:
+					touches_center = true
+				for n in [Vector2i(p.x - 1, p.y), Vector2i(p.x + 1, p.y), Vector2i(p.x, p.y - 1), Vector2i(p.x, p.y + 1)]:
+					if n.x < 0 or n.x >= width or n.y < 0 or n.y >= height:
+						continue
+					var n_idx: int = n.y * width + n.x
+					if visited[n_idx] == 1:
+						continue
+					visited[n_idx] = 1
+					var nc := image.get_pixel(n.x, n.y)
+					if nc.a <= 0.01:
+						continue
+					labels[n_idx] = component_index
+					queue.append(n)
+
+			component_sizes.append(size)
+			component_touches_center.append(touches_center)
+
+	if component_index <= 1:
+		return
+
+	var keep_component := -1
+	for i in range(component_sizes.size()):
+		if component_touches_center[i]:
+			keep_component = i + 1
+			break
+	if keep_component == -1:
+		var best_size := -1
+		for i in range(component_sizes.size()):
+			if component_sizes[i] > best_size:
+				best_size = component_sizes[i]
+				keep_component = i + 1
+
+	for y in range(height):
+		for x in range(width):
+			var idx := y * width + x
+			if labels[idx] != keep_component:
+				var cc := image.get_pixel(x, y)
+				if cc.a > 0.01:
+					cc.a = 0.0
+					image.set_pixel(x, y, cc)
 
 
 func _is_checker_pixel(c: Color) -> bool:
