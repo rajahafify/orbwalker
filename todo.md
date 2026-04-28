@@ -495,6 +495,10 @@ Verification notes (2026-04-27):
 	- `res://scenes/flow/shop_player.tscn`
 	- `res://scenes/combat/board_debug.tscn`
 	- `res://scenes/main.tscn`
+- Reference player-panel revamp added for `res://scenes/combat/combat_player.tscn`:
+  - Rebuilt the bottom player HUD into a reference-style hero portrait card, primary HP bar, compact equipment/consumable rails, and bottom mastery strip.
+  - Armor, stat chip, combat meta, and turn summary rows stay hidden so the simplified HUD does not show empty placeholder bars or clutter.
+  - Godot MCP load/instantiate and running scene-tree checks passed for the reference-aligned player-panel structure at the current portrait design size.
 
 ## Milestone 10: Balance Pass And QA
 

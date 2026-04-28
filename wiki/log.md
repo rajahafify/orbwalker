@@ -210,3 +210,56 @@ Append-only history of wiki operations.
   - Added label outline and shadow styling to timer value and state labels
 - Notes:
   - No timer logic or layout changes.
+
+## [2026-04-29] code-change | Reference Player Panel Revamp
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `C:/Users/Home/Desktop/combat-ref.png`
+- Changed:
+  - Rebuilt the combat player panel around reference-style bottom HUD zones: hero card, HP/armor vitals, stat chips, compact loadout rail, and mastery strip
+  - Replaced large equipment/consumable boxes with fixed manual slot rails for 5 equipment and 3 consumables
+  - Added equipment value badges, consumable count badges, dim empty-slot placeholders, and always-visible mastery levels
+  - Updated `docs/test_plan.md`, `wiki/features.md`, and `wiki/file-map.md`
+- Notes:
+  - Godot MCP load/instantiate and running scene-tree checks passed for the new player-panel node structure and current portrait layout bounds.
+
+## [2026-04-29] code-change | Compact Player Panel Cleanup
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Hid the cramped armor bar, stat chip row, and turn summary text from the compact combat player panel
+  - Moved the equipment/consumable rail and mastery strip upward with larger vertical spacing
+  - Updated documentation to record the simplified compact player-panel presentation
+- Notes:
+  - Godot MCP runtime scene-tree inspection confirmed the cleaned player panel sections are visible and bounded in the current design-space layout.
+
+## [2026-04-29] code-change | Player Panel Spacing Tightening
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`
+- Changed:
+  - Reduced the hero card and portrait footprint
+  - Pulled the equipment/consumable rail closer to the HP row
+  - Compressed the mastery strip to remove unused vertical space
+- Notes:
+  - Godot MCP runtime scene-tree inspection confirmed the tightened player panel layout positions and bounds.
+
+## [2026-04-29] code-change | Player Panel Frame Collapse
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Shortened the active player panel frame to the compact HUD content height
+  - Kept the hero, HP, loadout, and mastery rows in fixed design-space positions
+  - Converted `MasteryStrip` from `PanelContainer` to `Panel` so the compact mastery frame does not expand from child minimum sizing
+  - Grouped mastery icons beside the `MASTERY` label and kept hidden legacy rows out of the visible panel
+- Notes:
+  - Godot MCP play-scene, runtime scene-tree, and error-log checks passed for the compact player panel bounds.
+
+## [2026-04-29] code-change | Player Panel Reference Correction
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Restored the reference bottom-HUD proportions after the previous compact pass diverged too far
+  - Enlarged the hero portrait card while keeping only the primary HP bar visible
+  - Moved the equipment/consumable rail under the vitals block and restored a full-width bottom mastery strip
+  - Kept armor, stat chips, combat meta, and turn summary hidden so empty placeholder rows do not appear
+- Notes:
+  - Godot MCP play-scene, runtime scene-tree, and error-log checks passed with the corrected player-panel geometry.
