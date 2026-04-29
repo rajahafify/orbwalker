@@ -2,7 +2,7 @@
 
 **Summary**: Snapshot of the currently implemented gameplay, UI, and content features in the Matchatro prototype.
 
-**Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`
+**Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/ui/player_loadout_hud.gd`
 
 **Last updated**: 2026-04-29
 
@@ -39,6 +39,8 @@ The project already covers the early prototype loop: board generation, drag move
 ### UI and presentation
 
 - Combat and shop now have player-facing scenes; combat HUD functionality is restored with plain visuals (art-heavy background, enemy portrait, and intent badge presentation removed) for the HUD revamp baseline. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_board_only_controller.gd`, `scripts/flow/shop_player.gd`)
+- Shop UI now uses a reference-style merchant layout with a top run/gold bar, merchant stage, 3 stock offer cards, a premium relic card, large reroll/sell/continue actions, selectable equipment sell slots, a booster choice overlay, and a combat-style player HUD footer. The footer uses the same shared player-panel geometry as combat instead of the old shop-only build panel. (source: `scenes/flow/shop_player.tscn`, `scripts/flow/shop_player.gd`, `scripts/ui/player_loadout_hud.gd`)
+- Combat and shop player HUDs share `PlayerLoadoutHud`, which provides combat player-panel layout geometry plus equipment slots, consumable slots, relic icons, mastery cells, empty-slot silhouettes, and equipment badges from current progression content. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`)
 - The visual registry provides the first-pass art lookup and fallback path for UI, backgrounds, and icons. (source: `scripts/ui/visual_registry.gd`)
 - Combat strip is now timer-only: a centered unified `TimerTrack` slab contains the generated hourglass icon, timer value, state label, and draining fill layer (combo/damage panel removed). (source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`)
 - Display viewport now defaults to portrait mobile (`1080x1920`) and combat HUD sections are enabled by default in `combat_player.tscn` with updated responsive sizing for portrait composition. (source: `project.godot`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
@@ -62,6 +64,7 @@ The project already covers the early prototype loop: board generation, drag move
 - `scripts/content/content_registry.gd` - content pack and pools
 - `scripts/shop/shop_service.gd` - shop actions
 - `scripts/run/player_progression_service.gd` - progression transitions
+- `scripts/ui/player_loadout_hud.gd` - shared combat/shop loadout and mastery renderer
 - `scripts/combat/combat_player_controller.gd` - player-facing combat UI
 - `scripts/flow/shop_player.gd` - player-facing shop UI
 

@@ -392,3 +392,36 @@ Append-only history of wiki operations.
   - Adjusted debug console input minimum height from 96px down to 72px
 - Notes:
   - This is a UI-only tuning pass after 36px proved too large.
+
+## [2026-04-29] code-change | Shop UI Revamp
+
+- Source: `scenes/flow/shop_player.tscn`, `scripts/flow/shop_player.gd`, `scripts/ui/visual_registry.gd`, `wiki/features.md`
+- Changed:
+  - Rebuilt the shop scene around a portrait merchant layout root with explicit runtime zones for top bar, merchant stage, stock cards, relic card, actions, build panel, mastery strip, and booster overlay
+  - Replaced the old text-list offers and sell `SpinBox` with card-based buying, selectable equipment sell slots, and large primary action buttons
+  - Added a stable booster icon placeholder path in `VisualRegistry` so missing booster art does not trigger repeated fallback warnings
+  - Updated `wiki/features.md` for the player-facing shop UI structure
+- Notes:
+  - This is a presentation and interaction polish pass; shop economy and service mechanics remain unchanged.
+
+## [2026-04-29] code-change | Shared Player Loadout HUD
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Extracted combat loadout/mastery rendering into reusable `PlayerLoadoutHud`
+  - Rewired combat and shop to render equipment slots, consumable slots, relic icons, mastery cells, empty silhouettes, and slot badges through the shared helper
+  - Kept shop-specific selling behavior by using the helper's selectable equipment-slot signal
+  - Updated wiki feature and file-map documentation for the shared UI helper
+- Notes:
+  - Godot MCP script reload and scene instantiate checks passed for combat and shop; combat runtime smoke confirmed shared loadout/mastery nodes in the running scene.
+
+## [2026-04-29] code-change | Combat-Style Shop Player HUD
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `wiki/features.md`
+- Changed:
+  - Moved combat player-panel geometry into `PlayerLoadoutHud.apply_combat_player_panel_layout`
+  - Updated combat to call the shared layout helper for its player HUD geometry
+  - Replaced the shop-only build panel and separate mastery strip with a `PlayerPanel` using combat HUD subzones: `HeroCard`, `VitalsPanel`, `LoadoutFrame`, and `MasteryStrip`
+  - Kept shop-specific gold badge and selectable equipment slots inside the shared combat-style HUD structure
+- Notes:
+  - Godot MCP script reload, shop/combat scene instantiation, combat runtime HUD tree, and shop no-active-run runtime checks passed.

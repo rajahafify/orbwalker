@@ -2,7 +2,7 @@
 
 **Summary**: High-level map of the important folders and files in the current Matchatro checkout.
 
-**Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
+**Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
 **Last updated**: 2026-04-29
 
@@ -23,7 +23,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `scripts/shop/` - Shop state and shop service. (source: `scripts/shop/shop_state.gd`, `scripts/shop/shop_service.gd`)
 - `scripts/flow/` - Transition and flow controllers for shop, boss relic reward, and summary surfaces. (source: `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/run_summary_placeholder.gd`, `scripts/flow/shop_placeholder.gd`)
 - `scripts/debug/` - Debug controller and resolver test runner. (source: `scripts/debug/board_debug_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)
-- `scripts/ui/` - Shared presentation helpers such as the visual registry. (source: `scripts/ui/visual_registry.gd`)
+- `scripts/ui/` - Shared presentation helpers such as the visual registry and reusable player loadout/mastery HUD renderer. (source: `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`)
 - `resources/art/first_pass/` - First-pass backgrounds, enemy portraits, UI sheets, VFX, and derived icons. (source: repository layout)
 - `resources/content/` - Content asset folders reserved for equipment, mastery, consumables, relics, boosters, enemies, bosses, and pricing. The current runtime content is still dictionary-backed, so these folders are not the primary source of truth yet. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
 - `resources/visual/` - First-pass visual asset map and theme resource. (source: repository layout)
@@ -37,6 +37,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `scenes/main.tscn` - startup scene
 - `scripts/core/run_state.gd` - central runtime controller
 - `scripts/content/content_registry.gd` - content data source and validation
+- `scripts/ui/player_loadout_hud.gd` - shared combat/shop player loadout and mastery renderer
 
 ## Open Questions
 

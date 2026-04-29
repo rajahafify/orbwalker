@@ -85,6 +85,11 @@ const _MASTERY_ORB_BY_ICON_KEY := {
 	"mastery_gold": OrbType.Id.GOLD,
 }
 
+const _STABLE_PLACEHOLDER_ICON_COLORS := {
+	"booster_elemental": Color(0.90, 0.34, 0.16, 1.0),
+	"booster_fire": Color(0.90, 0.34, 0.16, 1.0),
+}
+
 var _warned_keys: Dictionary = {}
 var _placeholder_cache: Dictionary = {}
 var _orb_textures: Dictionary = {}
@@ -194,6 +199,9 @@ func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Textu
 		return concrete_icon
 	if _MASTERY_ORB_BY_ICON_KEY.has(normalized_key):
 		return mastery_icon(int(_MASTERY_ORB_BY_ICON_KEY[normalized_key]))
+	if _STABLE_PLACEHOLDER_ICON_COLORS.has(normalized_key):
+		var placeholder_color: Color = _STABLE_PLACEHOLDER_ICON_COLORS[normalized_key]
+		return placeholder_texture("stable_icon_%s" % normalized_key, placeholder_color)
 	var index := int(_ICON_INDEX_BY_KEY.get(normalized_key, -1))
 	if index < 0:
 		if use_placeholder:
@@ -376,6 +384,8 @@ func _load_derived_texture(base_path: String, key: String, cache: Dictionary) ->
 	if cache.has(key):
 		return cache[key]
 	var path := "%s/%s.png" % [base_path, key]
+	if not ResourceLoader.exists(path):
+		return null
 	var loaded: Variant = load(path)
 	if loaded == null:
 		return null
@@ -440,12 +450,9 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 		var trim_top := maxi(0, min_y - padding)
 		var trim_right := mini(w - 1, max_x + padding)
 		var trim_bottom := mini(h - 1, max_y + padding)
-		var trim_rect := Rect2i(
-			trim_left,
-			trim_top,
-			trim_right - trim_left + 1,
-			trim_bottom - trim_top + 1
-		)
+		var trim_position := Vector2i(trim_left, trim_top)
+		var trim_size := Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)
+		var trim_rect := Rect2i(trim_position, trim_size)
 		cropped = cropped.get_region(trim_rect)
 
 	return ImageTexture.create_from_image(cropped)

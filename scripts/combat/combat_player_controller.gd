@@ -90,6 +90,7 @@ const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/debug/board_re
 const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
 const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -204,6 +205,7 @@ var _combat_log_command_flags: Array[bool] = []
 var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
+var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 
@@ -2044,10 +2046,10 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
 	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
 
-	_populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
-	_populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
-	_populate_icon_row(_relic_icons, relic_ids, "relic")
-	_populate_mastery_row(_mastery_icons, mastery_levels)
+	_player_loadout_hud.populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
+	_player_loadout_hud.populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
+	_player_loadout_hud.populate_icon_row(_relic_icons, relic_ids, "relic")
+	_player_loadout_hud.populate_mastery_row(_mastery_icons, mastery_levels)
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
 
@@ -2058,198 +2060,6 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 			break
 	_relic_row.visible = has_relic and not _is_low_vertical_layout
 	_mastery_strip.visible = not _is_low_vertical_layout
-
-
-func _populate_loadout_slot_row(row: Control, ids: Array, label: String, slot_count: int) -> void:
-	var visible_ids: Array = []
-	for index in range(slot_count):
-		if index < ids.size():
-			visible_ids.append(ids[index])
-		else:
-			visible_ids.append("")
-	_populate_icon_row(row, visible_ids, label)
-
-
-func _apply_loadout_rail_layout() -> void:
-	_apply_design_rect(_equipment_icons, EQUIPMENT_RAIL_RECT)
-	_apply_design_rect(_consumable_icons, CONSUMABLE_RAIL_RECT)
-
-
-func _populate_icon_row(row: Control, ids: Array, label: String) -> void:
-	for child in row.get_children():
-		child.queue_free()
-	for index in range(ids.size()):
-		var id_value = ids[index]
-		var slot := PanelContainer.new()
-		slot.custom_minimum_size = SLOT_SIZE
-		slot.size = SLOT_SIZE
-		slot.position = Vector2(float(index) * (SLOT_SIZE.x + 8.0), 0.0)
-		slot.add_theme_stylebox_override("panel", _slot_stylebox())
-		var icon := TextureRect.new()
-		var amount_label: Label = null
-		icon.custom_minimum_size = ICON_INNER_SIZE
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var id_text := String(id_value)
-		if id_text == "":
-			slot.add_theme_stylebox_override("panel", _empty_slot_stylebox())
-			icon.texture = _empty_slot_silhouette(label)
-			icon.modulate = Color(1.0, 1.0, 1.0, 0.35)
-		else:
-			var content: Dictionary = _lookup_content_definition(id_text)
-			var icon_key := String(content.get("icon_key", ""))
-			icon.texture = _visuals.clean_icon_for_key(icon_key)
-			icon.tooltip_text = String(content.get("display_name", id_text))
-			var badge_text := ""
-			if label == "equipment":
-				badge_text = _equipment_badge_text(content)
-			elif label == "consumable":
-				badge_text = "1"
-			if badge_text != "":
-				amount_label = Label.new()
-				amount_label.text = badge_text
-				amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-				amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-				amount_label.add_theme_font_size_override("font_size", 19)
-				amount_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.34, 1.0))
-				amount_label.add_theme_constant_override("outline_size", 3)
-				amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
-				amount_label.anchors_preset = Control.PRESET_FULL_RECT
-		slot.add_child(icon)
-		if amount_label != null:
-			slot.add_child(amount_label)
-		row.add_child(slot)
-
-
-func _populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
-	for child in row.get_children():
-		child.queue_free()
-	for index in range(OrbType.ALL_TYPES.size()):
-		var orb_id = OrbType.ALL_TYPES[index]
-		var cell := Control.new()
-		cell.size = Vector2(92.0, MASTERY_SLOT_SIZE.y)
-		cell.position = Vector2(float(index) * 116.0, 0.0)
-		var slot := PanelContainer.new()
-		slot.custom_minimum_size = MASTERY_SLOT_SIZE
-		slot.size = MASTERY_SLOT_SIZE
-		slot.position = Vector2.ZERO
-		slot.add_theme_stylebox_override("panel", _slot_stylebox())
-		var icon := TextureRect.new()
-		icon.custom_minimum_size = MASTERY_ICON_INNER_SIZE
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture = _visuals.mastery_icon(orb_id)
-		var level := int(mastery_levels.get(orb_id, 0))
-		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
-		if level <= 0:
-			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
-		slot.add_child(icon)
-		var amount_label := Label.new()
-		amount_label.text = str(level)
-		amount_label.position = Vector2(52.0, 0.0)
-		amount_label.size = Vector2(28.0, MASTERY_SLOT_SIZE.y)
-		amount_label.custom_minimum_size = amount_label.size
-		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		amount_label.add_theme_font_size_override("font_size", 24)
-		amount_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
-		amount_label.add_theme_constant_override("outline_size", 2)
-		amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
-		cell.add_child(slot)
-		cell.add_child(amount_label)
-		row.add_child(cell)
-
-
-func _equipment_badge_text(content: Dictionary) -> String:
-	var modifiers: Dictionary = content.get("combat_modifiers", {})
-	if int(modifiers.get("flat_damage_bonus", 0)) != 0:
-		return "+%d" % int(modifiers.get("flat_damage_bonus", 0))
-	if int(modifiers.get("start_turn_armor", 0)) != 0:
-		return "+%d" % int(modifiers.get("start_turn_armor", 0))
-	if int(modifiers.get("flat_heal_bonus", 0)) != 0:
-		return "+%d" % int(modifiers.get("flat_heal_bonus", 0))
-	if int(modifiers.get("flat_gold_bonus", 0)) != 0:
-		return "+%d" % int(modifiers.get("flat_gold_bonus", 0))
-	var orb_bonus_by_id: Dictionary = modifiers.get("orb_bonus_by_id", {})
-	for value in orb_bonus_by_id.values():
-		if int(value) != 0:
-			return "+%d" % int(value)
-	if int(modifiers.get("combo_flat_bonus", 0)) != 0:
-		return "+%d" % int(modifiers.get("combo_flat_bonus", 0))
-	var combo_mult := float(modifiers.get("combo_multiplier_mult", 1.0))
-	if not is_equal_approx(combo_mult, 1.0):
-		return "x%.1f" % combo_mult
-	return ""
-
-
-func _slot_stylebox() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.08, 0.13, 0.98)
-	style.border_color = Color(0.68, 0.49, 0.23, 0.94)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	style.content_margin_left = 5.0
-	style.content_margin_right = 5.0
-	style.content_margin_top = 5.0
-	style.content_margin_bottom = 5.0
-	return style
-
-
-func _empty_slot_stylebox() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.05, 0.08, 0.98)
-	style.border_color = Color(0.21, 0.26, 0.34, 0.90)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	style.content_margin_left = 5.0
-	style.content_margin_right = 5.0
-	style.content_margin_top = 5.0
-	style.content_margin_bottom = 5.0
-	return style
-
-
-func _empty_slot_silhouette(label: String) -> Texture2D:
-	var key := "%s_empty_silhouette" % label
-	var base := Color(0.00, 0.00, 0.00, 0.0)
-	var tone := Color(0.56, 0.62, 0.72, 0.82)
-	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
-	image.fill(base)
-	if label == "equipment":
-		image.fill_rect(Rect2i(45, 16, 6, 46), tone)
-		image.fill_rect(Rect2i(34, 46, 28, 8), tone)
-		image.fill_rect(Rect2i(36, 54, 24, 10), Color(tone.r, tone.g, tone.b, 0.58))
-		image.fill_rect(Rect2i(42, 62, 12, 14), Color(tone.r, tone.g, tone.b, 0.52))
-	elif label == "consumable":
-		image.fill_rect(Rect2i(34, 18, 28, 12), tone)
-		image.fill_rect(Rect2i(38, 30, 20, 10), Color(tone.r, tone.g, tone.b, 0.70))
-		image.fill_rect(Rect2i(31, 40, 34, 36), Color(tone.r, tone.g, tone.b, 0.62))
-		image.fill_rect(Rect2i(42, 52, 12, 12), Color(tone.r, tone.g, tone.b, 0.34))
-	else:
-		image.fill_rect(Rect2i(30, 30, 36, 36), tone)
-	var texture := ImageTexture.create_from_image(image)
-	_visuals.placeholder_texture(key, Color(0.0, 0.0, 0.0, 0.0), Vector2i(96, 96))
-	return texture
-
-
-func _lookup_content_definition(content_id: String) -> Dictionary:
-	var registry = RunState.ensure_content_registry()
-	var value: Dictionary = registry.get_equipment(content_id)
-	if not value.is_empty():
-		return value
-	value = registry.get_consumable(content_id)
-	if not value.is_empty():
-		return value
-	value = registry.get_relic(content_id)
-	if not value.is_empty():
-		return value
-	value = registry.get_mastery_card(content_id)
-	if not value.is_empty():
-		return value
-	return {
-		"display_name": content_id,
-		"icon_key": "",
-	}
 
 
 func _emit_turn_feedback_vfx(turn_log: Dictionary) -> void:
@@ -2392,46 +2202,50 @@ func _apply_board_panel_layout() -> void:
 
 
 func _apply_player_panel_layout() -> void:
-	_player_panel_root.position = Vector2.ZERO
-	_player_panel_root.size = PLAYER_PANEL_RECT.size
-	_apply_design_rect(_hero_card, HERO_CARD_RECT)
-	_apply_design_rect(_vitals_panel, VITALS_PANEL_RECT)
-	_apply_design_rect(_vitals_frame, VITALS_FRAME_RECT)
+	_player_loadout_hud.apply_combat_player_panel_layout(_combat_player_hud_nodes())
 	_apply_design_rect(_stat_chip_row, PLAYER_STAT_CHIP_RECT)
 	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
 	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
-	_apply_design_rect(_loadout_frame, PLAYER_LOADOUT_RECT)
-	_apply_design_rect(_mastery_strip, PLAYER_MASTERY_RECT)
 	_apply_design_rect(_relic_row, PLAYER_RELIC_RECT)
-	_loadout_root.position = Vector2.ZERO
-	_loadout_root.size = PLAYER_LOADOUT_RECT.size
-	_mastery_root.custom_minimum_size = Vector2(964.0, 46.0)
-	_mastery_root.size = Vector2(964.0, 46.0)
-	_mastery_root.position = Vector2(16.0, 2.0)
 	_mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_mastery_row_label.position = Vector2.ZERO
-	_mastery_row_label.size = Vector2(120.0, 46.0)
-	_mastery_icons.position = Vector2(172.0, 2.0)
-	_mastery_icons.size = Vector2(720.0, MASTERY_SLOT_SIZE.y)
-	_apply_design_rect(_player_portrait, HERO_PORTRAIT_RECT)
 	_hero_level_badge.visible = false
-	_apply_design_rect(_player_hp_bar, PLAYER_HP_BAR_RECT)
-	_apply_design_rect(_player_armor_bar, PLAYER_ARMOR_BAR_RECT)
-	_apply_design_rect(_armor_badge, ARMOR_BADGE_RECT)
-	_player_hp_label.position = PLAYER_HP_BAR_RECT.position
-	_player_hp_label.size = PLAYER_HP_BAR_RECT.size
-	_armor_badge_label.custom_minimum_size = ARMOR_BADGE_RECT.size
-	_player_armor_label.position = PLAYER_ARMOR_BAR_RECT.position
-	_player_armor_label.size = PLAYER_ARMOR_BAR_RECT.size
 	_player_armor_bar.visible = false
 	_player_armor_label.visible = false
 	_stat_chip_row.visible = false
 	_combat_meta_row.visible = false
 	_turn_summary_label.visible = false
-	_apply_design_rect(_equipment_row_label, EQUIPMENT_LABEL_RECT)
-	_apply_design_rect(_consumable_row_label, CONSUMABLE_LABEL_RECT)
 	_apply_loadout_rail_layout()
 	_player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
+
+
+func _combat_player_hud_nodes() -> Dictionary:
+	return {
+		"root": _player_panel_root,
+		"hero_card": _hero_card,
+		"hero_portrait": _player_portrait,
+		"vitals_panel": _vitals_panel,
+		"vitals_frame": _vitals_frame,
+		"hp_bar": _player_hp_bar,
+		"hp_label": _player_hp_label,
+		"armor_bar": _player_armor_bar,
+		"armor_label": _player_armor_label,
+		"armor_badge": _armor_badge,
+		"armor_badge_label": _armor_badge_label,
+		"loadout_frame": _loadout_frame,
+		"loadout_root": _loadout_root,
+		"equipment_label": _equipment_row_label,
+		"equipment_icons": _equipment_icons,
+		"consumable_label": _consumable_row_label,
+		"consumable_icons": _consumable_icons,
+		"mastery_strip": _mastery_strip,
+		"mastery_root": _mastery_root,
+		"mastery_label": _mastery_row_label,
+		"mastery_icons": _mastery_icons,
+	}
+
+
+func _apply_loadout_rail_layout() -> void:
+	_player_loadout_hud.apply_loadout_rail_layout(_equipment_icons, EQUIPMENT_RAIL_RECT, _consumable_icons, CONSUMABLE_RAIL_RECT)
 
 
 func _ensure_placeholder_visuals() -> void:
