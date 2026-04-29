@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Main Menu Layout Guide</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #0d1522;
+      --line: #2b3b55;
+      --line-strong: #9e7b3b;
+      --text: #dce6f5;
+      --muted: #95a6bd;
+      --accent: #58a6ff;
+      --guide: rgba(88, 166, 255, 0.35);
+      --safe: rgba(158, 123, 59, 0.35);
+      --zone: rgba(13, 21, 34, 0.58);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #132039 0%, var(--bg) 45%, #05080f 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr 360px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel > header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .panel > .content { padding: 14px; }
+
+    .mock {
+      position: relative;
+      width: min(100%, 620px);
+      aspect-ratio: 9 / 16;
+      margin: 0 auto;
+      background: #08111f url("../resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png") center/cover no-repeat;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.45);
+    }
+
+    .mock::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(var(--guide), var(--guide)) 0 15% / 100% 1px no-repeat,
+        linear-gradient(var(--guide), var(--guide)) 0 47% / 100% 1px no-repeat,
+        linear-gradient(var(--guide), var(--guide)) 0 74% / 100% 1px no-repeat,
+        linear-gradient(var(--guide), var(--guide)) 0 90% / 100% 1px no-repeat,
+        linear-gradient(90deg, var(--guide), var(--guide)) 50% 0 / 1px 100% no-repeat;
+      pointer-events: none;
+    }
+
+    .zone {
+      position: absolute;
+      border: 1px dashed var(--accent);
+      background: var(--zone);
+      color: #d7ecff;
+      padding: 6px 8px;
+      font-size: 12px;
+      line-height: 1.2;
+      border-radius: 6px;
+      backdrop-filter: blur(1px);
+    }
+
+    .safe-area {
+      position: absolute;
+      top: 3%;
+      left: 3.5%;
+      right: 3.5%;
+      bottom: 3%;
+      border: 1px solid var(--safe);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .z-logo   { top: 6%; left: 12%; width: 76%; height: 12%; }
+    .z-menu   { top: 25%; left: 46%; width: 46%; height: 30%; }
+    .z-orbs   { top: 56%; left: 8%;  width: 84%; height: 11%; }
+    .z-stats  { top: 69%; left: 7%;  width: 86%; height: 11%; }
+    .z-bottom { top: 82%; left: 7%;  width: 86%; height: 10%; }
+
+    .legend {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      color: var(--text);
+      background: rgba(255,255,255,0.02);
+    }
+
+    code {
+      color: #9fd1ff;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    @media (max-width: 1024px) {
+      .page { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel">
+      <header>Main Menu Layout Overlay (1080 x 1920 target)</header>
+      <div class="content">
+        <div class="mock">
+          <div class="safe-area"></div>
+          <div class="zone z-logo"><strong>Logo Zone</strong><br>Title + compass ornament</div>
+          <div class="zone z-menu"><strong>Action Menu Zone</strong><br>Start/Continue/Collection/Settings/Quit</div>
+          <div class="zone z-orbs"><strong>Element Row Zone</strong><br>6 mastery/element medallions</div>
+          <div class="zone z-stats"><strong>Progress Zone</strong><br>Relics, mastery %, best run</div>
+          <div class="zone z-bottom"><strong>Footer Zone</strong><br>Profile/Achievements/Settings + version</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <header>Zone Rules</header>
+      <div class="content legend">
+        <p><strong>Safe area</strong>: keep critical text and icons inside the gold box (3% inset).</p>
+        <p><strong>Menu stack</strong>: keep button widths consistent; use primary style only for the selected action.</p>
+        <p><strong>Element row</strong>: six equal slots; reuse existing mastery icons for fire/ice/earth/heart/armor/gold.</p>
+        <p><strong>Stats panel</strong>: three equal columns for run summary metrics and progress bars.</p>
+      </div>
+    </aside>
+
+    <section class="panel" style="grid-column: 1 / -1;">
+      <header>Asset Slot Map</header>
+      <div class="content">
+        <table>
+          <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Target Region</th>
+              <th>Asset</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Background</td>
+              <td>Full frame</td>
+              <td><code>resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png</code></td>
+              <td>Base plate with left-character silhouette and right-side negative space.</td>
+            </tr>
+            <tr>
+              <td>Outer border</td>
+              <td>Full frame overlay</td>
+              <td><code>resources/art/first_pass/menu/main_menu_border_outer_v1.png</code></td>
+              <td>Keep above background, below all UI controls.</td>
+            </tr>
+            <tr>
+              <td>Title</td>
+              <td>Top 6-18%</td>
+              <td><code>resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png</code></td>
+              <td>Center aligned; reserve top padding for ornate tips.</td>
+            </tr>
+            <tr>
+              <td>Primary action</td>
+              <td>Menu Zone row 1</td>
+              <td><code>resources/art/first_pass/menu/main_menu_button_primary_v1.png</code></td>
+              <td>Use once for focused/selected action only.</td>
+            </tr>
+            <tr>
+              <td>Secondary actions</td>
+              <td>Menu Zone rows 2-5</td>
+              <td><code>resources/art/first_pass/menu/main_menu_button_secondary_v1.png</code></td>
+              <td>Reuse for all non-selected actions.</td>
+            </tr>
+            <tr>
+              <td>Element row</td>
+              <td>56-67%</td>
+              <td><code>resources/art/first_pass/derived/icons/mastery_*.png</code></td>
+              <td>Six equal circular slots: fire, ice, earth, heart, armor, gold.</td>
+            </tr>
+            <tr>
+              <td>Stats panel</td>
+              <td>69-80%</td>
+              <td><code>resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png</code></td>
+              <td>Three-column panel for relics, mastery progress, best run.</td>
+            </tr>
+            <tr>
+              <td>Footer icons</td>
+              <td>82-92%</td>
+              <td><code>resources/art/first_pass/menu/main_menu_icon_*.png</code></td>
+              <td>Profile/Achievements/Settings icon family.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

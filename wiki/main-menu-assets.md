@@ -2,9 +2,9 @@
 
 **Summary**: Inventory and map for the generated main menu art package. This page records the new menu background, logo, UI chrome, stat panel, and icon assets, plus the existing mastery icons that are reused for the elemental row.
 
-**Sources**: `resources/art/first_pass/menu/`, `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`, `resources/visual/first_pass_asset_map.json`, `scenes/main.tscn`, `scripts/ui/visual_registry.gd`
+**Sources**: `resources/art/first_pass/menu/`, `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`, `resources/visual/first_pass_asset_map.json`, `docs/main_menu_layout_guide.html`, `docs/main_menu_recreation.html`, `scenes/main.tscn`, `scripts/ui/visual_registry.gd`
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-04-30
 
 ---
 
@@ -21,7 +21,8 @@ The menu assets are documented, but the runtime main menu scene still needs wiri
 ### Generated menu art
 
 - `resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png` - vertical dungeon-city background plate for the main menu.
-- `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png` - logo wordmark with integrated compass emblem.
+- `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png` - original logo wordmark export (fully opaque background).
+- `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png` - cleaned transparent logo wordmark used by the HTML recreation prototype.
 - `resources/art/first_pass/menu/main_menu_border_outer_v1.png` - ornate outer screen border.
 - `resources/art/first_pass/menu/main_menu_button_primary_v1.png` - highlighted primary action button plate.
 - `resources/art/first_pass/menu/main_menu_button_secondary_v1.png` - darker secondary button plate.
@@ -57,10 +58,14 @@ The menu assets are documented, but the runtime main menu scene still needs wiri
 
 This keeps the menu-specific art package separated from the combat and shop art families. (source: `resources/visual/first_pass_asset_map.json`)
 
+The mapped `menu.logo` path now points to the cleaned alpha logo variant to avoid white/checkerboard background bleed in UI composition prototypes. (source: `resources/visual/first_pass_asset_map.json`, `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png`)
+
 ## Important Files
 
 - `resources/art/first_pass/menu/` - generated menu art package.
 - `resources/visual/first_pass_asset_map.json` - JSON map for the new menu art package and the reused mastery icons.
+- `docs/main_menu_layout_guide.html` - HTML overlay and slot map for main menu composition/layout planning.
+- `docs/main_menu_recreation.html` - HTML visual recreation of the reference menu using the generated art pack.
 - `scripts/ui/visual_registry.gd` - current runtime registry; does not yet expose dedicated menu accessors.
 - `scenes/main.tscn` - main menu scene that still needs wiring to the new art package.
 

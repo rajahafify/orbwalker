@@ -495,3 +495,32 @@ Append-only history of wiki operations.
   - Updated `wiki/index.md`, `wiki/file-map.md`, and `wiki/features.md` to point at the new menu art package
 - Notes:
   - The main menu scene still needs runtime wiring before the new art is used in-game.
+
+## [2026-04-29] docs | Main Menu HTML Layout Guide
+
+- Source: `docs/main_menu_layout_guide.html`, `wiki/main-menu-assets.md`
+- Changed:
+  - Added `docs/main_menu_layout_guide.html` with a 9:16 overlay mock, zone boundaries, safe area, and asset slot table for menu implementation planning
+  - Updated `wiki/main-menu-assets.md` sources and important files to include the HTML guide
+- Notes:
+  - This guide is documentation-only; runtime scene wiring is still pending.
+
+## [2026-04-29] docs | Main Menu HTML Recreation Prototype
+
+- Source: `docs/main_menu_recreation.html`, `wiki/main-menu-assets.md`
+- Changed:
+  - Added `docs/main_menu_recreation.html` to visually recreate the reference main menu using the generated menu art pack and reused mastery icons
+  - Updated `wiki/main-menu-assets.md` to include the HTML recreation artifact
+- Notes:
+  - This is an HTML prototype for visual matching; it does not change Godot runtime scene behavior.
+
+## [2026-04-30] docs | Main Menu HTML Prototype Correction Pass
+
+- Source: `docs/main_menu_recreation.html`, `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png`, `resources/visual/first_pass_asset_map.json`, `wiki/main-menu-assets.md`
+- Changed:
+  - Corrected the HTML recreation composition with fixed section coordinates and tuned typography/spacing for closer visual parity with the reference menu
+  - Created `main_menu_logo_orbwalker_v1_alpha.png` and switched the HTML logo usage to the transparent variant
+  - Updated the menu asset map `menu.logo` entry to the alpha logo path
+  - Updated `wiki/main-menu-assets.md` with alpha logo documentation and revised update date
+- Notes:
+  - The main issue reported in the screenshot was the non-transparent logo background and oversized section layout in the first HTML pass.

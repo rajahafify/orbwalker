@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Main Menu Recreation</title>
+  <style>
+    :root {
+      --gold: #c79b50;
+      --gold-dim: #8f6d36;
+      --ink: #08101b;
+      --text: #dbc08a;
+      --text-dim: #c4b08a;
+      --panel-glass: rgba(6, 12, 20, 0.74);
+      --panel-dark: rgba(7, 14, 22, 0.92);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 0%, #1b2742 0%, #060a12 60%, #02040a 100%);
+      font-family: "Garamond", "Palatino Linotype", serif;
+      color: var(--text);
+    }
+
+    .frame {
+      position: relative;
+      width: min(100vw, calc(100vh * 9 / 16));
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      background: #050b16;
+      border: 1px solid #162843;
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 2px solid rgba(198, 152, 75, 0.9);
+      outline: 1px solid rgba(130, 96, 41, 0.8);
+      box-shadow: inset 0 0 0 2px rgba(9, 16, 28, 0.85);
+      z-index: 28;
+      pointer-events: none;
+    }
+
+    .frame::after {
+      content: "";
+      position: absolute;
+      inset: 26px;
+      border: 1px solid rgba(198, 152, 75, 0.72);
+      z-index: 28;
+      pointer-events: none;
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+      background: url("../resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png") center / cover no-repeat;
+      filter: saturate(1.08) contrast(1.05);
+    }
+
+    .content {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .logo-wrap {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 3.5%;
+      height: 19%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: hidden;
+    }
+
+    .logo-wrap img {
+      width: 98%;
+      margin-top: 6px;
+      mix-blend-mode: multiply;
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.6));
+    }
+
+    .menu {
+      position: absolute;
+      left: 44%;
+      right: 6%;
+      top: 28%;
+      height: 30%;
+      display: grid;
+      grid-template-rows: repeat(5, 18%);
+      row-gap: 2.5%;
+    }
+
+    .menu-btn {
+      width: 100%;
+      border: none;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: clamp(15px, 1.9vw, 34px);
+      font-weight: 600;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.85);
+      background: linear-gradient(180deg, rgba(16, 28, 44, 0.98), rgba(6, 12, 22, 0.98));
+      border: 2px solid rgba(152, 113, 50, 0.95);
+      box-shadow: inset 0 0 0 1px rgba(32, 52, 80, 0.75), 0 4px 10px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .menu-btn.primary {
+      background: linear-gradient(180deg, rgba(24, 43, 67, 0.98), rgba(9, 18, 31, 0.98));
+      border-color: rgba(224, 169, 74, 0.98);
+      color: #f0d29b;
+    }
+
+    .menu-btn.secondary {
+      color: #d6bb8a;
+    }
+
+    .orbs {
+      position: absolute;
+      left: 7%;
+      right: 7%;
+      top: 59%;
+      height: 10%;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1.4%;
+      align-items: center;
+    }
+
+    .orb {
+      text-align: center;
+      display: grid;
+      gap: 2px;
+      justify-items: center;
+    }
+
+    .orb img {
+      width: clamp(42px, 4.8vw, 86px);
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+    }
+
+    .orb span {
+      font-size: clamp(10px, 1vw, 20px);
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .stats {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 71.5%;
+      height: 13%;
+      background: linear-gradient(180deg, rgba(10, 19, 32, 0.9), rgba(5, 11, 20, 0.95));
+      border: 2px solid rgba(143, 109, 54, 0.92);
+      box-shadow: inset 0 0 0 1px rgba(36, 58, 84, 0.6);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: center;
+      padding: 2.8% 3.2%;
+      gap: 2%;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .stat img {
+      width: clamp(26px, 2.5vw, 48px);
+      mix-blend-mode: multiply;
+      filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.6));
+    }
+
+    .stat h4 {
+      margin: 0 0 2px;
+      color: var(--text);
+      font-size: clamp(9px, 0.86vw, 15px);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .stat p {
+      margin: 0;
+      color: #f2e2c1;
+      font-size: clamp(11px, 1.06vw, 20px);
+      line-height: 1.1;
+    }
+
+    .footer {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 86%;
+      height: 8.4%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.6%;
+      align-items: stretch;
+    }
+
+    .footer-btn {
+      border: 1px solid rgba(143, 109, 54, 0.72);
+      background: linear-gradient(180deg, rgba(6, 12, 20, 0.84), rgba(4, 8, 14, 0.95));
+      border-radius: 10px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: clamp(10px, 0.95vw, 18px);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 0 8px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+
+    .footer-btn img {
+      width: clamp(24px, 2vw, 40px);
+      mix-blend-mode: multiply;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
+    }
+
+    .version {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 95.2%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: clamp(11px, 0.92vw, 18px);
+      letter-spacing: 0.05em;
+      color: #9d8250;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 900px) {
+      .menu { left: 42%; right: 5%; top: 27%; }
+      .orbs { left: 5%; right: 5%; }
+      .stats { left: 5%; right: 5%; }
+      .footer { left: 5%; right: 5%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="frame" aria-label="Recreated Orbwalker main menu">
+    <div class="bg"></div>
+
+    <section class="content">
+      <div class="logo-wrap">
+        <img src="../resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png" alt="Orbwalker">
+      </div>
+
+      <nav class="menu" aria-label="Primary menu">
+        <button class="menu-btn primary">Start Run</button>
+        <button class="menu-btn secondary">Continue</button>
+        <button class="menu-btn secondary">Collection</button>
+        <button class="menu-btn secondary">Settings</button>
+        <button class="menu-btn secondary">Quit</button>
+      </nav>
+
+      <section class="orbs" aria-label="Element categories">
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_fire.png" alt=""><span>Fire</span></div>
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_ice.png" alt=""><span>Ice</span></div>
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_earth.png" alt=""><span>Earth</span></div>
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_heart.png" alt=""><span>Heart</span></div>
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_armor.png" alt=""><span>Armor</span></div>
+        <div class="orb"><img src="../resources/art/first_pass/derived/icons/mastery_gold.png" alt=""><span>Gold</span></div>
+      </section>
+
+      <section class="stats" aria-label="Run stats">
+        <article class="stat">
+          <img src="../resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png" alt="">
+          <div><h4>Relics Unlocked</h4><p>18 / 36</p></div>
+        </article>
+        <article class="stat">
+          <img src="../resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png" alt="">
+          <div><h4>Mastery Progress</h4><p>27%</p></div>
+        </article>
+        <article class="stat">
+          <img src="../resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png" alt="">
+          <div><h4>Best Run</h4><p>Depth 23</p></div>
+        </article>
+      </section>
+
+      <section class="footer" aria-label="Secondary actions">
+        <button class="footer-btn"><img src="../resources/art/first_pass/menu/main_menu_icon_profile_v1.png" alt="">Profile</button>
+        <button class="footer-btn"><img src="../resources/art/first_pass/menu/main_menu_icon_achievements_v1.png" alt="">Achievements</button>
+        <button class="footer-btn"><img src="../resources/art/first_pass/menu/main_menu_icon_settings_v1.png" alt="">Settings</button>
+      </section>
+
+      <div class="version">Version 0.1</div>
+    </section>
+
+  </main>
+</body>
+</html>
