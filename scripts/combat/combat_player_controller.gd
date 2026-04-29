@@ -1545,6 +1545,10 @@ func _play_resolve_animations(result: Dictionary) -> void:
 		return
 
 	for pass_result in result.passes:
+		for raw_group in pass_result.groups:
+			_resolve_combo_running += 1
+			var group: Dictionary = raw_group
+			_spawn_combo_floating_text(group, _resolve_combo_running)
 		_board_view.flash_match_groups(pass_result.groups, MATCH_FLASH_SECONDS)
 		await get_tree().create_timer(MATCH_FLASH_SECONDS).timeout
 
@@ -2102,10 +2106,6 @@ func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2,
 func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 	_status_label.modulate = STATUS_COLOR_WARNING
-	for raw_group in groups:
-		_resolve_combo_running += 1
-		var group: Dictionary = raw_group
-		_spawn_combo_floating_text(group, _resolve_combo_running)
 
 
 func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:

@@ -450,3 +450,13 @@ Append-only history of wiki operations.
 - Notes:
   - Godot MCP load/instantiate checks passed for `res://scenes/combat/combat_player.tscn`.
   - Current runtime warnings are existing `VisualRegistry` fallback icon warnings, not parse/runtime script errors from this change.
+
+## [2026-04-29] code-change | Cascade Combo Popup Timing Fix
+
+- Source: `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Moved combo popup emission from resolver `match_found` callback timing to per-pass timing inside `_play_resolve_animations`
+  - Kept combo counter progression (`x1`, `x2`, ...) but now increments and renders in the same order as visible cascade passes
+  - Updated feature note to reflect per-pass animation-loop emission
+- Notes:
+  - Fix targets visibility timing only; combat resolution math is unchanged.
