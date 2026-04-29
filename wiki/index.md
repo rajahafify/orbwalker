@@ -13,6 +13,7 @@
 - [[architecture]] - Current and planned runtime architecture
 - [[setup]] - How to open, run, and validate the project
 - [[file-map]] - Folder and file responsibility map
+- [[main-menu-assets]] - Main menu art package and asset map
 
 ## Current Goal
 

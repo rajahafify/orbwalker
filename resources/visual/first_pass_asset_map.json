@@ -1,7 +1,8 @@
 {
   "backgrounds": {
     "combat": "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png",
-    "shop": "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png"
+    "shop": "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png",
+    "main_menu": "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
   },
   "enemy_portraits": {
     "cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
@@ -65,5 +66,29 @@
     "mastery_heart": "res://resources/art/first_pass/derived/icons/mastery_heart.png",
     "mastery_armor": "res://resources/art/first_pass/derived/icons/mastery_armor.png",
     "mastery_gold": "res://resources/art/first_pass/derived/icons/mastery_gold.png"
+  },
+  "menu": {
+    "background": "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png",
+    "logo": "res://resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png",
+    "outer_border": "res://resources/art/first_pass/menu/main_menu_border_outer_v1.png",
+    "button_primary": "res://resources/art/first_pass/menu/main_menu_button_primary_v1.png",
+    "button_secondary": "res://resources/art/first_pass/menu/main_menu_button_secondary_v1.png",
+    "stats_panel": "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png",
+    "menu_icons": {
+      "relics_unlocked": "res://resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png",
+      "mastery_progress": "res://resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png",
+      "best_run": "res://resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png",
+      "profile": "res://resources/art/first_pass/menu/main_menu_icon_profile_v1.png",
+      "achievements": "res://resources/art/first_pass/menu/main_menu_icon_achievements_v1.png",
+      "settings": "res://resources/art/first_pass/menu/main_menu_icon_settings_v1.png"
+    },
+    "reused_mastery_icons": {
+      "fire": "res://resources/art/first_pass/derived/icons/mastery_fire.png",
+      "ice": "res://resources/art/first_pass/derived/icons/mastery_ice.png",
+      "earth": "res://resources/art/first_pass/derived/icons/mastery_earth.png",
+      "heart": "res://resources/art/first_pass/derived/icons/mastery_heart.png",
+      "armor": "res://resources/art/first_pass/derived/icons/mastery_armor.png",
+      "gold": "res://resources/art/first_pass/derived/icons/mastery_gold.png"
+    }
   }
 }

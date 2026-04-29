@@ -484,3 +484,14 @@ Append-only history of wiki operations.
   - Renamed the active design, architecture, QA, todo, and wiki titles to `Orbwalker`
 - Notes:
   - Historical log entries were left unchanged.
+
+## [2026-04-29] docs | Main Menu Art Package
+
+- Source: `resources/art/first_pass/menu/`, `resources/visual/first_pass_asset_map.json`, `wiki/main-menu-assets.md`, `wiki/index.md`, `wiki/file-map.md`, `wiki/features.md`
+- Changed:
+  - Added the generated main menu art package under `resources/art/first_pass/menu/`
+  - Extended `resources/visual/first_pass_asset_map.json` with a `menu` mapping block for the background, logo, border, button plates, stat panel, menu icons, and reused mastery icons
+  - Created `wiki/main-menu-assets.md` to document the generated assets and reuse rules
+  - Updated `wiki/index.md`, `wiki/file-map.md`, and `wiki/features.md` to point at the new menu art package
+- Notes:
+  - The main menu scene still needs runtime wiring before the new art is used in-game.
