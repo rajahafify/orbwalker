@@ -10,6 +10,8 @@ const STOCK_PANEL_RECT := Rect2(Vector2(16, 452), Vector2(1048, 552))
 const RELIC_PANEL_RECT := Rect2(Vector2(16, 1018), Vector2(1048, 208))
 const ACTION_ROW_RECT := Rect2(Vector2(16, 1240), Vector2(1048, 112))
 const PLAYER_HUD_PANEL_RECT := Rect2(Vector2(0, 1366), Vector2(1080, 468))
+const PLAYER_RELIC_LABEL_RECT := Rect2(Vector2(52, 206), Vector2(120, 24))
+const PLAYER_RELIC_ICONS_RECT := Rect2(Vector2(176, 190), Vector2(560, 58))
 const OFFER_CARD_SIZE := Vector2(320, 468)
 const OFFER_CARD_GAP := 18.0
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
@@ -164,8 +166,6 @@ func _create_ui() -> void:
 	_consumable_slots_root = _make_root("ConsumableIcons", _loadout_root)
 	_relic_label = _make_label("RelicLabel", _player_panel_root, "RELICS", 18, MUTED_COLOR)
 	_relic_slots_root = _make_root("RelicIcons", _player_panel_root)
-	_relic_label.visible = false
-	_relic_slots_root.visible = false
 
 	_mastery_strip = _make_panel("MasteryStrip", _player_panel_root)
 	_mastery_root = _make_root("MasteryRoot", _mastery_strip)
@@ -320,7 +320,15 @@ func _render_build_panel(progression_snapshot: Dictionary) -> void:
 	_player_loadout_hud.set_selected_equipment_slot(_selected_equipment_slot)
 	_player_loadout_hud.populate_loadout_slot_row(_equipment_slots_root, equipment_slots, "equipment", 5, true)
 	_player_loadout_hud.populate_loadout_slot_row(_consumable_slots_root, Array(progression_snapshot.get("consumable_slots", [])), "consumable", 3)
-	_player_loadout_hud.populate_icon_row(_relic_slots_root, Array(progression_snapshot.get("relic_ids", [])), "relic")
+	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
+	_player_loadout_hud.populate_relic_row(_relic_slots_root, relic_ids, 4)
+	var has_relic := false
+	for relic_id in relic_ids:
+		if String(relic_id) != "":
+			has_relic = true
+			break
+	_relic_label.visible = has_relic
+	_relic_slots_root.visible = has_relic
 
 
 func _render_mastery_strip(mastery_levels: Dictionary) -> void:
@@ -547,6 +555,8 @@ func _apply_shop_layout() -> void:
 	_player_loadout_hud.apply_combat_player_panel_layout(_shop_player_hud_nodes())
 	_apply_rect(_gold_badge, Rect2(Vector2(474, 112), Vector2(222, 34)))
 	_apply_rect(_build_gold_label, Rect2(Vector2.ZERO, Vector2(222, 34)))
+	_apply_rect(_relic_label, PLAYER_RELIC_LABEL_RECT)
+	_apply_rect(_relic_slots_root, PLAYER_RELIC_ICONS_RECT)
 
 	_apply_rect(_booster_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
 	_apply_rect(_booster_modal, Rect2(Vector2(152, 610), Vector2(776, 420)))

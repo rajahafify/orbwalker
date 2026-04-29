@@ -460,3 +460,17 @@ Append-only history of wiki operations.
   - Updated feature note to reflect per-pass animation-loop emission
 - Notes:
   - Fix targets visibility timing only; combat resolution math is unchanged.
+
+## [2026-04-29] code-change | Equipment Mastery Relic Asset Polish Pass
+
+- Source: `tools/asset_tools/clean_derived_icons.py`, `resources/art/first_pass/derived/icons/`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/boss_relic_reward.gd`
+- Changed:
+  - Created `tools/asset_tools/clean_derived_icons.py` to strip checkerboard backgrounds, restore icon alpha, and normalize derived icon canvas sizing
+  - Reprocessed derived icon assets used by equipment, mastery, relics, and shared item card paths under `resources/art/first_pass/derived/icons/`
+  - Added compact owned-relic rendering with overflow handling in `PlayerLoadoutHud` and rewired combat/shop to use it
+  - Kept combat relic visibility for compact layouts (still hidden for low-vertical layouts) and exposed owned relics in the shop footer
+  - Upgraded boss relic reward option buttons to visual card presentation with icon, rarity tint, and description text
+  - Updated `wiki/features.md`, `wiki/file-map.md`, and `docs/test_plan.md`
+- Notes:
+  - Gameplay logic, pricing, progression math, and content IDs were unchanged.
+  - Godot MCP verification remains pending in this thread because MCP tools were not exposed.

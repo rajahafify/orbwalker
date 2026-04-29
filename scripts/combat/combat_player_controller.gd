@@ -2056,7 +2056,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 
 	_player_loadout_hud.populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
 	_player_loadout_hud.populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
-	_player_loadout_hud.populate_icon_row(_relic_icons, relic_ids, "relic")
+	_player_loadout_hud.populate_relic_row(_relic_icons, relic_ids, 4)
 	_player_loadout_hud.populate_mastery_row(_mastery_icons, mastery_levels)
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
@@ -2189,8 +2189,6 @@ func _apply_combat_layout() -> void:
 
 	if is_low_vertical:
 		_mastery_strip.visible = false
-		_relic_row.visible = false
-	elif is_compact:
 		_relic_row.visible = false
 	_debug_overlay.anchor_left = 0.08 if is_compact else 0.58
 	_debug_overlay.anchor_top = 0.05

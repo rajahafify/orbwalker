@@ -257,6 +257,14 @@ Verification notes (2026-04-29, player section cohesion fix pass):
   - `ArmorBadge` starts hidden at zero armor.
   - `MasteryIcons` renders six fixed-width cells under the expanded `MasteryStrip`.
 - Manual visual acceptance pass is still required at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
+Verification notes (2026-04-29, equipment/mastery/relic asset polish pass):
+- Reprocessed all derived icon PNGs under `res://resources/art/first_pass/derived/icons/` using `tools/asset_tools/clean_derived_icons.py` to remove checkerboard backgrounds, restore alpha transparency, and normalize icon canvas sizing.
+- Added compact owned-relic row rendering with overflow handling (`+N`) via `PlayerLoadoutHud.populate_relic_row(...)`; combat now keeps relic visibility in compact layout (hidden only in low-vertical layout), and shop now displays owned relic tokens in the player footer.
+- Updated boss relic reward presentation in `res://scripts/flow/boss_relic_reward.gd` to visual card-style option buttons using icon, rarity tint, and description text while keeping existing reward claim logic.
+- Godot MCP verification is still pending in this thread because MCP tools were not exposed in the current session; rerun `get_godot_errors`, `play_scene`, and scene instantiate checks for:
+  - `res://scenes/combat/combat_player.tscn`
+  - `res://scenes/flow/shop_player.tscn`
+  - `res://scenes/flow/boss_relic_reward.tscn`
 
 ## Milestone 10: Balance And Regression
 

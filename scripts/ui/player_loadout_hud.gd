@@ -12,6 +12,9 @@ const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const MASTERY_CELL_WIDTH := 92.0
 const MASTERY_CELL_GAP := 24.0
+const RELIC_SLOT_SIZE := Vector2(58, 58)
+const RELIC_ICON_SIZE := Vector2(48, 48)
+const RELIC_SLOT_GAP := 8.0
 const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 468)
 const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
@@ -132,6 +135,54 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		cell.add_child(slot)
 		cell.add_child(amount_label)
 		row.add_child(cell)
+
+
+func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) -> void:
+	_clear_children(row)
+	var visible_ids: Array[String] = []
+	for raw_id in relic_ids:
+		var relic_id := String(raw_id)
+		if relic_id != "":
+			visible_ids.append(relic_id)
+	if visible_ids.is_empty():
+		return
+
+	var show_count := mini(max_visible, visible_ids.size())
+	for index in range(show_count):
+		var relic_id := visible_ids[index]
+		var slot := PanelContainer.new()
+		slot.name = "RelicSlot%d" % index
+		slot.custom_minimum_size = RELIC_SLOT_SIZE
+		slot.size = RELIC_SLOT_SIZE
+		slot.position = Vector2(float(index) * (RELIC_SLOT_SIZE.x + RELIC_SLOT_GAP), 0.0)
+		slot.add_theme_stylebox_override("panel", _slot_stylebox())
+
+		var content := lookup_content_definition(relic_id)
+		slot.tooltip_text = _slot_tooltip(content, relic_id)
+
+		var icon := TextureRect.new()
+		icon.name = "RelicIcon"
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.position = Vector2((RELIC_SLOT_SIZE.x - RELIC_ICON_SIZE.x) * 0.5, (RELIC_SLOT_SIZE.y - RELIC_ICON_SIZE.y) * 0.5)
+		icon.size = RELIC_ICON_SIZE
+		icon.custom_minimum_size = RELIC_ICON_SIZE
+		icon.texture = _visuals.clean_icon_for_key(String(content.get("icon_key", "")))
+		slot.add_child(icon)
+		row.add_child(slot)
+
+	if visible_ids.size() > show_count:
+		var overflow := Label.new()
+		overflow.name = "RelicOverflow"
+		overflow.text = "+%d" % (visible_ids.size() - show_count)
+		overflow.position = Vector2(float(show_count) * (RELIC_SLOT_SIZE.x + RELIC_SLOT_GAP) + 4.0, 15.0)
+		overflow.size = Vector2(50.0, 28.0)
+		overflow.add_theme_font_size_override("font_size", 20)
+		overflow.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
+		overflow.add_theme_constant_override("outline_size", 2)
+		overflow.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
+		row.add_child(overflow)
 
 
 func apply_loadout_rail_layout(equipment_row: Control, equipment_rect: Rect2, consumable_row: Control, consumable_rect: Rect2) -> void:

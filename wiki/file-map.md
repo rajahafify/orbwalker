@@ -24,6 +24,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `scripts/flow/` - Transition and flow controllers for shop, boss relic reward, and summary surfaces. (source: `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/run_summary_placeholder.gd`, `scripts/flow/shop_placeholder.gd`)
 - `scripts/debug/` - Debug controller and resolver test runner. (source: `scripts/debug/board_debug_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)
 - `scripts/ui/` - Shared presentation helpers such as the visual registry and reusable player loadout/mastery HUD renderer. (source: `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`)
+- `tools/asset_tools/` - Utility scripts for asset extraction and cleanup, including HUD slicing and derived icon alpha cleanup. (source: `tools/asset_tools/hud_extractor.gd`, `tools/asset_tools/clean_derived_icons.py`)
 - `resources/art/first_pass/` - First-pass backgrounds, enemy portraits, UI sheets, VFX, and derived icons. (source: repository layout)
 - `resources/content/` - Content asset folders reserved for equipment, mastery, consumables, relics, boosters, enemies, bosses, and pricing. The current runtime content is still dictionary-backed, so these folders are not the primary source of truth yet. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
 - `resources/visual/` - First-pass visual asset map and theme resource. (source: repository layout)
