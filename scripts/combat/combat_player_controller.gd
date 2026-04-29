@@ -174,6 +174,8 @@ const FONT_SIZE_ROW_LABEL := 16
 const DEBUG_TEXT_FONT_SIZE := 24
 const DEBUG_INPUT_FONT_SIZE := 24
 const DEBUG_INPUT_HEIGHT := 72.0
+const COMBO_FLOAT_RISE := 74.0
+const COMBO_FLOAT_DURATION := 0.62
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -208,6 +210,7 @@ var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
+var _resolve_combo_running := 0
 
 
 func _ready() -> void:
@@ -1336,6 +1339,7 @@ func _end_drag(timed_out: bool) -> void:
 
 	_reset_drag_visuals()
 	_set_input_phase(InputPhase.RESOLVING)
+	_resolve_combo_running = 0
 	_last_resolve_result = _resolver.resolve_all(_board_state)
 	_board_view.board_state = _board_state
 	await _play_resolve_animations(_last_resolve_result)
@@ -2098,6 +2102,54 @@ func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2,
 func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 	_status_label.modulate = STATUS_COLOR_WARNING
+	for raw_group in groups:
+		_resolve_combo_running += 1
+		var group: Dictionary = raw_group
+		_spawn_combo_floating_text(group, _resolve_combo_running)
+
+
+func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
+	var cells: Array = group.get("cells", [])
+	if cells.is_empty():
+		return
+	var sum := Vector2.ZERO
+	var valid_count := 0
+	for raw_cell in cells:
+		var cell: Vector2i = raw_cell
+		if not _board_view.is_cell_valid(cell):
+			continue
+		sum += _board_view.get_cell_center(cell)
+		valid_count += 1
+	if valid_count <= 0:
+		return
+	var board_center := sum / float(valid_count)
+	var board_local_center := _board_surface.position + board_center
+	var combo_label := Label.new()
+	combo_label.text = "COMBO x%d" % combo_value
+	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	combo_label.add_theme_font_size_override("font_size", 40)
+	combo_label.add_theme_constant_override("outline_size", 4)
+	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02, 0.95))
+	combo_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.48, 1.0))
+	combo_label.size = Vector2(300, 52)
+	combo_label.pivot_offset = combo_label.size * 0.5
+	combo_label.position = board_local_center - combo_label.size * 0.5
+	combo_label.z_index = 80
+	_board_panel.add_child(combo_label)
+	var pop_tween := create_tween()
+	pop_tween.tween_property(combo_label, "scale", Vector2(1.18, 1.18), 0.10)
+	pop_tween.tween_property(combo_label, "scale", Vector2(1.0, 1.0), 0.12)
+	var rise_tween := create_tween()
+	rise_tween.tween_property(combo_label, "position:y", combo_label.position.y - COMBO_FLOAT_RISE, COMBO_FLOAT_DURATION)
+	var fade_tween := create_tween()
+	fade_tween.tween_interval(0.30)
+	fade_tween.tween_property(combo_label, "modulate:a", 0.0, 0.45)
+	fade_tween.finished.connect(func() -> void:
+		if is_instance_valid(combo_label):
+			combo_label.queue_free()
+	)
 
 
 func _pulse_label(target: Label, tint: Color) -> void:

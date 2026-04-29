@@ -425,3 +425,28 @@ Append-only history of wiki operations.
   - Kept shop-specific gold badge and selectable equipment slots inside the shared combat-style HUD structure
 - Notes:
   - Godot MCP script reload, shop/combat scene instantiation, combat runtime HUD tree, and shop no-active-run runtime checks passed.
+
+## [2026-04-29] code-change | Post-Drag Result Overlay Sequence
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Added board-level top and bottom edge overlay cards under `BoardPanel` for post-drag combat feedback
+  - Added combo-first display right after drag resolve starts, then step-sequenced post-turn cards for damage calculator formulas, player effects, and enemy block/intent effects
+  - Reused existing turn-log fields from `CombatStateMachine.resolve_player_turn()` to format player-facing substituted formulas and effect summaries without changing combat math
+  - Kept victory/defeat on the existing centered outcome panel and ensured post-drag overlays hide before outcome flow
+  - Updated feature documentation with the new post-drag overlay behavior
+- Notes:
+  - Godot MCP scene load/instantiate checks passed and runtime error checks reported no session errors.
+
+## [2026-04-29] code-change | Combo Floating Text Pivot
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`, `wiki/features.md`
+- Changed:
+  - Removed the post-drag edge-card result sequence and its damage/effect calculator presentation path
+  - Added floating `COMBO xN` text popups on board-space near each matched resolver group via `_on_resolver_match_found`
+  - Implemented pop + rise + fade combo text animation directly in the existing `VfxLayer` so combo feedback appears close to match locations during cascades
+  - Cleaned now-unused post-drag scene nodes from `combat_player.tscn`
+  - Updated feature documentation to describe the combo-floating behavior
+- Notes:
+  - Godot MCP load/instantiate checks passed for `res://scenes/combat/combat_player.tscn`.
+  - Current runtime warnings are existing `VisualRegistry` fallback icon warnings, not parse/runtime script errors from this change.
