@@ -1,4 +1,4 @@
-# Matchatro System Architecture
+# Orbwalker System Architecture
 
 Source GDD: `docs/game_design_document.md`  
 Type: Long-lived technical architecture and implementation reference

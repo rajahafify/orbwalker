@@ -1,4 +1,4 @@
-# Matchatro Execution Todo
+# Orbwalker Execution Todo
 
 Source GDD: `docs/game_design_document.md`  
 Created: 2026-04-26  
@@ -6,7 +6,7 @@ Target: First playable prototype vertical slice from the GDD.
 
 ## Current Project State
 
-- Godot project exists and is configured as `Matchatro`.
+- Godot project exists and is configured as `Orbwalker`.
 - `docs/game_design_document.md` defines the game direction and first playable scope.
 - `scripts/` exists but currently has no gameplay scripts.
 - No gameplay scenes, board implementation, combat loop, shop, or content data files are present yet.

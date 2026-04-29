@@ -474,3 +474,13 @@ Append-only history of wiki operations.
 - Notes:
   - Gameplay logic, pricing, progression math, and content IDs were unchanged.
   - Godot MCP verification remains pending in this thread because MCP tools were not exposed.
+
+## [2026-04-29] docs | Rename Project to Orbwalker
+
+- Source: `project.godot`, `scenes/main.tscn`, `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`, `todo.md`
+- Changed:
+  - Renamed the Godot project to `Orbwalker`
+  - Updated the main menu title and start button copy to match the new game name
+  - Renamed the active design, architecture, QA, todo, and wiki titles to `Orbwalker`
+- Notes:
+  - Historical log entries were left unchanged.

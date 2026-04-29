@@ -1,4 +1,4 @@
-# Matchatro Game Design Document
+# Orbwalker Game Design Document
 
 Status: Draft 0.1  
 Title: Temporary  
@@ -8,7 +8,7 @@ Primary inputs: Mouse and touch
 
 ## High Concept
 
-Matchatro is a fantasy match-3 roguelike where the free orb movement of Puzzle & Dragons / Tower of Saviors meets Balatro-style run progression, shops, boosters, equipment, mastery cards, consumables, and relics.
+Orbwalker is a fantasy match-3 roguelike where the free orb movement of Puzzle & Dragons / Tower of Saviors meets Balatro-style run progression, shops, boosters, equipment, mastery cards, consumables, and relics.
 
 The player controls a single hero through a run of dungeon levels. Each fight is turn-based. The player moves one orb freely across a 5x6 board under a short timer, creates matches, resolves cascades, and uses the resulting damage, healing, armor, and gold to survive the run.
 

@@ -1,10 +1,10 @@
 # Milestone 9 Combat UI Replication Plan
 
-**Summary**: Implementation plan to replicate the provided combat reference composition in Matchatro's player-facing combat scene, with close-match fidelity and no mana system changes.
+**Summary**: Implementation plan to replicate the provided combat reference composition in Orbwalker's player-facing combat scene, with close-match fidelity and no mana system changes.
 
 **Sources**: `todo.md`, `docs/test_plan.md`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/visual_registry.gd`, `C:/Users/Home/Desktop/combat-ref.png`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 

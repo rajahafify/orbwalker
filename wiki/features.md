@@ -1,6 +1,6 @@
 # Features
 
-**Summary**: Snapshot of the currently implemented gameplay, UI, and content features in the Matchatro prototype.
+**Summary**: Snapshot of the currently implemented gameplay, UI, and content features in the Orbwalker prototype.
 
 **Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/ui/player_loadout_hud.gd`
 

@@ -1,10 +1,10 @@
 # Architecture
 
-**Summary**: Current runtime architecture for Matchatro, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.
+**Summary**: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.
 
 **Sources**: `docs/system_architecture.md`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 
@@ -58,4 +58,3 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - [[file-map]]
 - [[features]]
 - [[decisions]]
-

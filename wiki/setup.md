@@ -4,13 +4,13 @@
 
 **Sources**: `project.godot`, `docs/system_architecture.md`, `docs/test_plan.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scenes/flow/run_summary_placeholder.tscn`, `addons/gdai-mcp-plugin-godot/plugin.cfg`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 
 ## Overview
 
-The project is a Godot 4.6 game named `Matchatro`. The main scene is `res://scenes/main.tscn`, and `project.godot` configures `RunState` as an autoload and enables the bundled GDAI MCP editor plugin. (source: `project.godot`)
+The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scenes/main.tscn`, and `project.godot` configures `RunState` as an autoload and enables the bundled GDAI MCP editor plugin. (source: `project.godot`)
 
 ## Details
 

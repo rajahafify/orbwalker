@@ -1,6 +1,6 @@
 # File Map
 
-**Summary**: High-level map of the important folders and files in the current Matchatro checkout.
+**Summary**: High-level map of the important folders and files in the current Orbwalker checkout.
 
 **Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 

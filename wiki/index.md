@@ -1,10 +1,10 @@
 # Wiki Index
 
-**Summary**: Entry point for the Matchatro repo wiki. This maps the current project goal, the main technical pages, and the maintenance pages that should stay current.
+**Summary**: Entry point for the Orbwalker repo wiki. This maps the current project goal, the main technical pages, and the maintenance pages that should stay current.
 
 **Sources**: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`, `todo.md`, `project.godot`, `scripts/core/run_state.gd`
 
-**Last updated**: 2026-04-28
+**Last updated**: 2026-04-29
 
 ---
 

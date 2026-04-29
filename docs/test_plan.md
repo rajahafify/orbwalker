@@ -1,4 +1,4 @@
-# Matchatro Manual QA Checklist
+# Orbwalker Manual QA Checklist
 
 Source GDD: `docs/game_design_document.md`  
 Purpose: Repeatable manual checks for the first playable prototype.
