@@ -170,6 +170,9 @@ const FONT_SIZE_TITLE := 20
 const FONT_SIZE_VALUE := 18
 const FONT_SIZE_META := 15
 const FONT_SIZE_ROW_LABEL := 16
+const DEBUG_TEXT_FONT_SIZE := 24
+const DEBUG_INPUT_FONT_SIZE := 24
+const DEBUG_INPUT_HEIGHT := 72.0
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -304,6 +307,7 @@ func _apply_visual_chrome() -> void:
 	_apply_timer_track_theme()
 	_apply_loadout_group_theme()
 	_apply_board_focus_theme()
+	_apply_debug_overlay_theme()
 	_apply_stat_chip_theme()
 
 	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
@@ -346,6 +350,20 @@ func _apply_board_focus_theme() -> void:
 	_outcome_body_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
 	_next_button.text = "Continue"
 	_next_button.add_theme_font_size_override("font_size", 22)
+
+
+func _apply_debug_overlay_theme() -> void:
+	_status_label.add_theme_font_size_override("font_size", DEBUG_TEXT_FONT_SIZE)
+	_enemy_debug_label.add_theme_font_size_override("font_size", DEBUG_TEXT_FONT_SIZE)
+	_combat_log_text.add_theme_font_size_override("normal_font_size", DEBUG_TEXT_FONT_SIZE)
+	_combat_log_text.add_theme_font_size_override("bold_font_size", DEBUG_TEXT_FONT_SIZE)
+	_combat_log_text.add_theme_font_size_override("italics_font_size", DEBUG_TEXT_FONT_SIZE)
+	_combat_log_text.add_theme_font_size_override("bold_italics_font_size", DEBUG_TEXT_FONT_SIZE)
+	_combat_log_text.add_theme_font_size_override("mono_font_size", DEBUG_TEXT_FONT_SIZE)
+	_console_input.custom_minimum_size = Vector2(0.0, DEBUG_INPUT_HEIGHT)
+	_console_input.add_theme_font_size_override("font_size", DEBUG_INPUT_FONT_SIZE)
+	_console_input.add_theme_color_override("font_color", Color(0.95, 0.98, 1.0, 1.0))
+	_console_input.add_theme_color_override("font_placeholder_color", Color(0.72, 0.76, 0.82, 0.95))
 
 
 func _apply_stat_chip_theme() -> void:

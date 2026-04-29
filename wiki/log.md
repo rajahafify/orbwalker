@@ -363,3 +363,32 @@ Append-only history of wiki operations.
   - Centered the outcome title, gold summary, and button within the card
 - Notes:
   - This is a UI-only polish pass for victory outcome presentation.
+
+## [2026-04-29] code-change | Larger Combat Debug Overlay Text
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Added explicit debug overlay font sizing for status text, enemy debug text, combat log text, and command input
+  - Increased the console input minimum height to make the command area at least 1.5x larger
+  - Increased debug overlay internal spacing to match the larger typography
+  - Updated feature documentation for the debug overlay readability pass
+- Notes:
+  - This is a UI-only debug readability change.
+
+## [2026-04-29] code-change | Double Combat Debug Overlay Font Size
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Doubled combat debug overlay font constants from 18px to 36px
+  - Increased debug console input minimum height from 54px to 96px
+- Notes:
+  - This is a UI-only adjustment after visual review showed the previous debug text was still too small.
+
+## [2026-04-29] code-change | Tune Combat Debug Overlay Font Size
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Adjusted combat debug overlay font constants from 36px down to 24px
+  - Adjusted debug console input minimum height from 96px down to 72px
+- Notes:
+  - This is a UI-only tuning pass after 36px proved too large.

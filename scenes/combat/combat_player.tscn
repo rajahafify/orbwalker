@@ -449,7 +449,7 @@ grow_vertical = 0
 
 [node name="DebugVBox" type="VBoxContainer" parent="DebugOverlay"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 9
 
 [node name="StatusLabel" type="Label" parent="DebugOverlay/DebugVBox"]
 unique_name_in_owner = true
@@ -463,7 +463,7 @@ size_flags_vertical = 3
 
 [node name="CombatLogVBox" type="VBoxContainer" parent="DebugOverlay/DebugVBox/CombatLogFrame"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 9
 
 [node name="CombatLogText" type="RichTextLabel" parent="DebugOverlay/DebugVBox/CombatLogFrame/CombatLogVBox"]
 unique_name_in_owner = true
@@ -475,6 +475,7 @@ text = "Combat log"
 
 [node name="ConsoleInput" type="LineEdit" parent="DebugOverlay/DebugVBox/CombatLogFrame/CombatLogVBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 placeholder_text = "Hidden"
 
