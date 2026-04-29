@@ -264,3 +264,102 @@ Append-only history of wiki operations.
   - Kept armor, stat chips, combat meta, and turn summary hidden so empty placeholder rows do not appear
 - Notes:
   - Godot MCP play-scene, runtime scene-tree, and error-log checks passed with the corrected player-panel geometry.
+
+## [2026-04-29] docs | Combat Player UI Redesign Brief
+
+- Source: `docs/combat-player-ui.md`, user-provided combat screen screenshot
+- Changed:
+  - Created `docs/combat-player-ui.md`
+  - Documented player-section visual problems and a design-focused fix for each issue
+  - Added layout proportions, visual treatment guidance, phased implementation direction, and acceptance criteria
+- Notes:
+  - This is a design/implementation brief only; no runtime UI changes were made.
+
+## [2026-04-29] code-change | Combat Player Section Cohesion Fix Pass
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added `VitalsFrame`, `ArmorBadge`, and `ArmorBadgeLabel` nodes under the combat player `VitalsPanel`
+  - Rebalanced player panel layout rects to a clearer three-layer composition (`hero status`, `loadout`, `mastery`)
+  - Updated HP presentation to `HP current / max` and added conditional Slay the Spire-inspired `BLOCK +N` armor badge visibility
+  - Reworked empty equipment/consumable slot visuals to recessed silhouettes
+  - Updated mastery cells to `icon + Lv N` labeling for non-debug readability
+  - Updated `docs/test_plan.md` and `wiki/features.md` with verification notes and final behavior summary
+- Notes:
+  - Godot MCP `play_scene` and running scene-tree inspection confirmed player-panel node wiring and bounds in `res://scenes/combat/combat_player.tscn`.
+  - Manual visual overlap/readability checks across target desktop/mobile aspect ratios remain required.
+
+## [2026-04-29] code-change | Player HUD Level Badge Removal And Padding Tightening
+
+- Source: `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Removed visible player-HUD level treatment by disabling `HeroLevelBadge` usage in runtime styling and layout flow
+  - Tightened player-section spacing by moving loadout/mastery blocks upward and reducing internal loadout frame padding
+  - Reduced top padding inside equipment/consumable rails and section labels for denser, cleaner vertical rhythm
+  - Updated feature documentation to reflect that the level badge is no longer part of the visible player panel
+- Notes:
+  - This pass is UI-only and preserves existing combat/runtime data behavior.
+
+## [2026-04-29] code-change | Player HUD Full-Width And Mastery Token Rebuild
+
+- Source: `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Expanded player HUD bounds to full design width and rebalanced top-row geometry for cleaner portrait-to-vitals alignment
+  - Kept a clear vertical gap between top status row and loadout row by separating row bounds with explicit spacing
+  - Rebuilt mastery entries as fixed token cells with centered `icon + numeric value` (removed `Lv` wording)
+  - Tuned mastery strip sizing and icon-row spacing to avoid cramped labels and overflow
+- Notes:
+  - This pass is visual/UI-only and does not change combat, progression, or content logic.
+
+## [2026-04-29] code-change | Player HUD Reference Layout Correction
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`
+- Changed:
+  - Kept the player HUD full-width while restoring the top row to a taller portrait/status block
+  - Moved the loadout row down to create a real margin below the top row
+  - Rebuilt mastery as one fixed-position strip of icon/value pairs instead of boxed `Lv` cells or nested container cards
+  - Converted `MasteryRoot` and `MasteryIcons` to plain `Control` nodes so the row no longer expands from container minimum sizing
+- Notes:
+  - Godot MCP script parse and running scene-tree checks passed for the corrected player panel and mastery strip bounds.
+
+## [2026-04-29] code-change | Player HUD Bottom Stick And Loadout Padding
+
+- Source: `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Moved the player HUD to the bottom edge of the 1080x1920 design space by setting `PlayerPanel` to `y=1452` with height `468`
+  - Increased `LoadoutFrame` height to add lower padding below the equipment and consumable slots
+  - Moved `MasteryStrip` down to preserve spacing after the loadout padding increase
+- Notes:
+  - Godot MCP parse, scene load, play-scene, and running scene-tree checks passed; runtime bounds confirmed the player HUD bottom is exactly `1920`.
+
+## [2026-04-29] code-change | Player HUD Padding Refinement
+
+- Source: `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Increased loadout frame height and inset the equipment/consumable slot rails to add clearer internal padding
+  - Moved mastery lower while preserving an explicit bottom gutter inside the sticky player HUD
+  - Kept the portrait content inset within the hero card instead of reintroducing the hidden level badge
+- Notes:
+  - Godot MCP parse and refreshed running scene-tree checks confirmed the updated player-panel, loadout, mastery, and portrait bounds.
+
+## [2026-04-29] code-change | Board Outcome Summary And Next Button Move
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Moved `NextButton` from the player HUD into a new hidden board-level `OutcomeSummaryPanel`
+  - Added `BoardShadow` behind `BoardSurface` and lowered the board to make room for the summary panel above it
+  - Rewired victory/debug-victory flow to show the board outcome summary with the continue button, while player HUD stays focused on player status/loadout/mastery
+  - Updated feature documentation for the board outcome overlay behavior
+- Notes:
+  - Godot MCP parse, scene load, play-scene, and board subtree inspection passed; manual visual review of the visible victory summary remains useful.
+
+## [2026-04-29] code-change | Centered Victory Outcome Card
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `wiki/features.md`
+- Changed:
+  - Enlarged and centered the board-level `OutcomeSummaryPanel` so victory reads as a modal card instead of a cramped banner
+  - Updated victory summary copy to show `Victory` and `GOLD GAINED +N`
+  - Renamed the outcome action button from `Next` to `Continue`
+  - Centered the outcome title, gold summary, and button within the card
+- Notes:
+  - This is a UI-only polish pass for victory outcome presentation.

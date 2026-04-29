@@ -246,6 +246,17 @@ Verification notes (2026-04-29, player section reference revamp):
 - Godot MCP load/instantiate check passed for `res://scenes/combat/combat_player.tscn` with the new player-panel nodes present.
 - Godot MCP runtime scene-tree inspection confirmed the player panel, loadout rails, and mastery strip stay within the current `1080x1920` design-space player panel bounds.
 - Still needs manual visual review at `1920x1080`, `1366x768`, and `900x1600` before the desktop/mobile overlap checklist items can be marked complete.
+Verification notes (2026-04-29, player section cohesion fix pass):
+- Added `VitalsFrame`, `ArmorBadge`, and `ArmorBadgeLabel` to the combat player `VitalsPanel` and rewired player HUD sync to show `HP current / max` text plus conditional armor badge visibility.
+- Armor badge now follows Slay the Spire-inspired visibility: hidden when armor is `0`, visible with `BLOCK +N` when armor is positive.
+- Rebalanced player panel design-space geometry toward a three-layer HUD composition (`hero status`, `loadout`, `mastery`) while keeping board and combat logic unchanged.
+- Updated loadout empty states to recessed silhouettes for equipment and consumables instead of generic placeholders.
+- Updated mastery cells to `icon + Lv N` badges instead of bare numeric counters for non-debug readability.
+- Godot MCP `play_scene` + running scene-tree checks confirmed new nodes and bounds:
+  - `VitalsPanel` now includes `VitalsFrame` and `ArmorBadge`.
+  - `ArmorBadge` starts hidden at zero armor.
+  - `MasteryIcons` renders six fixed-width cells under the expanded `MasteryStrip`.
+- Manual visual acceptance pass is still required at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
 
 ## Milestone 10: Balance And Regression
 
