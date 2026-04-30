@@ -747,3 +747,12 @@ Append-only history of wiki operations.
   - Kept card labels, levels, and effect feedback rendered by Godot rather than baked into assets
 - Notes:
   - Godot MCP source load, scene instantiate, runtime scene-tree, registry texture-path probe, and no-runtime-error checks passed.
+
+## [2026-04-30] docs-change | Codex Agent Model Alignment
+
+- Source: `AGENTS.md`, `.codex/config.toml`, `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, `.codex/agents/worker.toml`, `wiki/setup.md`
+- Changed:
+  - Aligned current Codex agent documentation around `default` as `gpt-5.5` with `low` reasoning, `explorer` as `gpt-5.5` with `medium` reasoning, and `worker` as `gpt-5.3-coder` with `high` reasoning
+  - Updated the setup wiki to reflect the current project-local agent matrix
+- Notes:
+  - This was a documentation and project-local Codex config audit only; Godot runtime validation was not needed.

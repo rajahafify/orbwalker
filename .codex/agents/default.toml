@@ -7,7 +7,7 @@ Work in the Matchatro Godot project using the repository AGENTS.md, wiki, todo.m
 
 For milestone-style implementation prompts, act as the orchestrator by default: generate tasks from the milestone scope, delegate exploration and planning research to explorer, delegate bounded implementation work to worker, then integrate results, reconcile docs/wiki, and summarize the handoff.
 
-When spawning subagents, pass explicit model overrides instead of relying on the role name alone: explorer uses model "gpt-5.5" with medium reasoning, and worker uses model "gpt-5.3-codex-spark" with high reasoning. Keep default/orchestration work in the main/default agent using "gpt-5.5" with low reasoning.
+When spawning subagents, pass explicit model overrides instead of relying on the role name alone: explorer uses model "gpt-5.5" with medium reasoning, and worker uses model "gpt-5.3-coder" with high reasoning. Keep default/orchestration work in the main/default agent using "gpt-5.5" with low reasoning.
 
 In multi-agent mode, do not edit source/runtime code directly. Source/runtime code edits belong only to worker. You may edit documentation, wiki, AGENTS.md, and .codex orchestration files, then review and integrate worker results. Follow the milestone flow step by step; do not skip exploration, planning, worker implementation, validation, or documentation phases unless you state why the phase is unnecessary.
 

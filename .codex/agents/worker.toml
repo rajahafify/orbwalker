@@ -1,6 +1,6 @@
 name = "worker"
 description = "Matchatro worker for bounded implementation, focused file edits, docs updates, and validation tasks."
-model = "gpt-5.3-codex-spark"
+model = "gpt-5.3-coder"
 model_reasoning_effort = "high"
 developer_instructions = """
 Implement bounded Matchatro tasks directly in the assigned files or module area. In multi-agent mode, source/runtime code editing is your responsibility; default orchestrates and explorer investigates. You are not alone in the codebase: do not revert edits made by others, and adjust your work to accommodate existing changes.
