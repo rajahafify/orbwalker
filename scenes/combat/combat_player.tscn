@@ -238,6 +238,24 @@ custom_minimum_size = Vector2(150, 56)
 layout_mode = 2
 text = "Continue"
 
+[node name="ElementalMasteryPanel" type="PanelContainer" parent="CombatLayoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ElementalMasteryRoot" type="Control" parent="CombatLayoutRoot/ElementalMasteryPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ElementalMasteryTitle" type="Label" parent="CombatLayoutRoot/ElementalMasteryPanel/ElementalMasteryRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "ELEMENTAL MASTERY"
+horizontal_alignment = 1
+
+[node name="ElementalMasteryCards" type="Control" parent="CombatLayoutRoot/ElementalMasteryPanel/ElementalMasteryRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
 [node name="PlayerPanel" type="PanelContainer" parent="CombatLayoutRoot"]
 unique_name_in_owner = true
 layout_mode = 1
@@ -404,6 +422,7 @@ layout_mode = 1
 
 [node name="MasteryStrip" type="Panel" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 
 [node name="MasteryRoot" type="Control" parent="CombatLayoutRoot/PlayerPanel/PlayerPanelRoot/MasteryStrip"]

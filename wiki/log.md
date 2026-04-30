@@ -2,6 +2,26 @@
 
 Append-only history of wiki operations.
 
+## [2026-04-30] combat | Visible resolve burst polish
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`
+- Changed:
+  - Enabled the combat `VfxLayer` at runtime so transient resolve effects render in the player-facing combat scene
+  - Moved visible orb-clear bursts into the resolve animation pass next to combo floating text
+  - Added combat resolver phase log lines for match found, clear, gravity, refill, cascade complete, and resolve complete states
+- Notes:
+  - This is a small post-drag polish step that makes the visible match clear feel punchier without touching combat math.
+
+## [2026-04-30] code-change | Resolve Bubble Orb Detail And Burst Scaling
+
+- Source: `scripts/combat/combat_player_controller.gd`
+- Changed:
+  - Updated floating combo popups in `_spawn_combo_floating_text()` to show `COMBO`, orb type, and matched orb count from resolver groups.
+  - Tinted popup text with orb color instead of fixed gold styling.
+  - Scaled clear burst size in `_spawn_group_resolve_burst()` based on group match size, preserving all existing resolve timing.
+- Notes:
+  - This is a UI feedback polish pass; combat math and resolver sequencing were not modified.
+
 ## [2026-04-28] ingest | Initial Project Ingestion
 
 - Source: `AGENTS.md`, `project.godot`, `todo.md`, `docs/system_architecture.md`, `docs/test_plan.md`, `docs/game_design_document.md`, `scripts/core/run_state.gd`, `scripts/content/content_registry.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/boss_relic_reward.gd`, `scripts/core/main_boot.gd`, `scripts/debug/board_debug_controller.gd`
@@ -649,3 +669,71 @@ Append-only history of wiki operations.
   - Preserved source-of-truth rules, default multi-agent milestone workflow, explicit spawn model overrides, Godot MCP validation rules, wiki workflow, safety rules, and completion criteria
 - Notes:
   - The new guide is shorter and focused on Matchatro/Orbwalker work in this repository.
+
+## [2026-04-30] docs | Worker-Only Code Editing In Multi-Agent Mode
+
+- Source: `AGENTS.md`, `.codex/agents/default.toml`, `.codex/agents/worker.toml`
+- Changed:
+  - Clarified that source/runtime code edits in multi-agent mode are done only by `worker`
+  - Added step-by-step phase rules for default task generation, explorer investigation/planning, worker implementation, and default documentation handoff
+  - Updated default and worker agent instructions to preserve the role boundary
+- Notes:
+  - `default` may still edit documentation, wiki, `AGENTS.md`, and `.codex/` orchestration files.
+
+## [2026-04-30] code-change | Elemental Mastery Combat Feedback Panel
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/ui/visual_registry.gd`, `tools/asset_tools/generate_mastery_beam_placeholders.py`, `resources/art/first_pass/derived/vfx/`, `docs/test_plan.md`
+- Changed:
+  - Moved visible combat mastery from the bottom player HUD into a dedicated `ElementalMasteryPanel` above the player panel
+  - Added six compact mastery cards with icon, level, fixed-height progress strip, and transient match feedback labels
+  - Added match-time mastery feedback accumulation during resolve animations, plus card pulse and temporary elemental beam VFX from board matches to the matching mastery card
+  - Added deterministic temporary mastery beam placeholder PNGs for fire, ice, earth, heart, armor, and gold
+  - Updated `VisualRegistry` with `mastery_beam_texture(orb_id)`
+  - Updated `docs/test_plan.md`, `wiki/features.md`, and `wiki/file-map.md`
+- Notes:
+  - Godot MCP parse, scene instantiate, beam texture, runtime smoke, running tree, and feedback-format probes passed.
+  - Manual live-match visual acceptance is still needed for beam readability and cascade timing.
+
+## [2026-04-30] code-change | Elemental Mastery Reference Replay Revamp
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/ui/visual_registry.gd`, `tools/asset_tools/generate_mastery_reference_assets.py`, `resources/art/first_pass/derived/ui_chrome/`, `resources/art/first_pass/derived/vfx/`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Rebuilt combat mastery as a taller reference-style six-card panel between the board and player HUD
+  - Replaced the previous compact temporary beam assets with generated panel frame, card chrome, beams, armor shell, and hit/heal/gold impact PNGs with alpha transparency
+  - Moved mastery beams out of cascade resolution and into a post-cascade left-to-right replay driven by `turn_log`
+  - Added visual replay for enemy block before HP damage, player heal/armor/gold effects, and enemy attack armor-before-HP removal
+  - Updated visual registry loading so newly generated repo PNGs can load before Godot writes `.import` metadata
+- Notes:
+  - Combat math remains in `CombatStateMachine`; this pass adds controller-level replay and presentation only.
+  - Godot MCP disk-source parse, scene instantiate, asset probe, runtime scene-tree bounds, and no-runtime-error checks passed; live manual drag-turn review is still needed for animation feel.
+
+## [2026-04-30] code-change | Elemental Mastery Panel Visual Correction
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Applied the generated mastery panel frame at runtime behind the mastery title and card row
+  - Expanded the mastery panel to 216 design-space pixels tall and centered the title above the cards
+  - Replaced combat-card mastery icon textures with combat orb textures to remove the white square backing visible in the previous screenshot
+  - Increased combat-card icons to `84x84` and verified card internals fit inside six `160x176` cards
+- Notes:
+  - Godot MCP source load, scene instantiate, runtime scene-tree, and no-runtime-error checks passed.
+  - Manual drag-turn review is still needed for animation timing and final screenshot acceptance.
+
+## [2026-04-30] code-change | Elemental Mastery Feedback Slot Cleanup
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Removed the unused combat-card `MasteryProgress` bar under each mastery orb
+  - Moved `MasteryFeedback` into the freed lower card slot and increased its label height for readability
+- Notes:
+  - Godot MCP source load, scene instantiate, runtime scene-tree, and no-runtime-error checks passed.
+
+## [2026-04-30] code-change | Elemental Mastery Icon And Card Cleanup
+
+- Source: `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`, `tools/asset_tools/generate_mastery_reference_assets.py`, `resources/art/first_pass/derived/icons/`, `resources/art/first_pass/derived/ui_chrome/`
+- Changed:
+  - Combat mastery cards now use `menu_mastery_icon(orb_id)` to load the same six derived mastery icons reused by the main menu
+  - Regenerated the six mastery card chrome PNGs without baked glimmer-strip or rune-stack marks
+  - Kept card labels, levels, and effect feedback rendered by Godot rather than baked into assets
+- Notes:
+  - Godot MCP source load, scene instantiate, runtime scene-tree, registry texture-path probe, and no-runtime-error checks passed.

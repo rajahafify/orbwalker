@@ -257,6 +257,21 @@ Verification notes (2026-04-29, player section cohesion fix pass):
   - `ArmorBadge` starts hidden at zero armor.
   - `MasteryIcons` renders six fixed-width cells under the expanded `MasteryStrip`.
 - Manual visual acceptance pass is still required at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
+Verification notes (2026-04-30, elemental mastery reference replay pass):
+- Rebuilt `ElementalMasteryPanel` as a taller reference-style panel between board and player HUD; the former bottom `MasteryStrip` remains hidden in combat.
+- Added six large mastery cards with generated card chrome, main-menu mastery iconography, title, `Lv N`, and transient `+N DAMAGE/HEAL/ARMOR/GOLD` text in the lower card slot.
+- Added generated reference assets for mastery panel frame, card chrome, elemental beams, armor shell, and hit/heal/gold impacts under `res://resources/art/first_pass/derived/ui_chrome/` and `res://resources/art/first_pass/derived/vfx/`.
+- Added post-cascade turn replay from `turn_log`: Fire, Ice, Earth, Heart, Armor, and Gold cards replay left-to-right after cascades finish; enemy block is consumed before HP damage, armor gain shows shell feedback, gold beams to the gold label, and enemy response removes armor before HP.
+- Godot MCP checks completed:
+  - `execute_editor_script` with `ResourceLoader.CACHE_MODE_IGNORE` parsed `combat_player_controller.gd`, `player_loadout_hud.gd`, and `visual_registry.gd` with result `0`.
+  - Scene load/instantiate check confirmed `ElementalMasteryPanel` and `ElementalMasteryCards` exist and the old bottom `MasteryStrip` is hidden.
+  - Visual registry probe confirmed generated panel frame `1048x188`, card texture `320x256`, shell `168x168`, and hit/heal/gold impact texture loading.
+  - `play_scene` on `res://scenes/combat/combat_player.tscn` reported no runtime session errors.
+  - Follow-up running scene-tree inspection confirmed board/mastery/player design-space bounds after the visual correction pass: `BoardPanel` ends y=1234, `ElementalMasteryPanel` spans y=1236..1452, and `PlayerPanel` starts y=1452.
+  - Running card inspection confirmed six `160x176` mastery cards, `84x84` main-menu mastery icons, no combat-card `MasteryProgress` bar nodes, a centered `ElementalMasteryTitle`, active `ElementalMasteryPanelFrame`, and old bottom `MasteryStrip` hidden.
+  - Follow-up registry probe confirmed combat mastery card icons resolve through `menu_mastery_icon(orb_id)` to `res://resources/art/first_pass/derived/icons/mastery_*.png`, and card chrome resolves to the regenerated clean `mastery_card_*.png` assets.
+- Read-only PNG audit confirmed generated mastery PNGs have alpha, transparent corners, and no fully opaque background coverage.
+- Remaining manual verification: perform real drag-match turns to judge post-cascade replay timing/readability and run the desktop/mobile overlap audit before marking the overlap checklist items complete.
 Verification notes (2026-04-29, equipment/mastery/relic asset polish pass):
 - Reprocessed all derived icon PNGs under `res://resources/art/first_pass/derived/icons/` using `tools/asset_tools/clean_derived_icons.py` to remove checkerboard backgrounds, restore alpha transparency, and normalize icon canvas sizing.
 - Added compact owned-relic row rendering with overflow handling (`+N`) via `PlayerLoadoutHud.populate_relic_row(...)`; combat now keeps relic visibility in compact layout (hidden only in low-vertical layout), and shop now displays owned relic tokens in the player footer.

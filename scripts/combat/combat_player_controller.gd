@@ -73,6 +73,9 @@ extends Control
 @onready var _consumable_icons: Control = %ConsumableIcons
 @onready var _relic_icons: HBoxContainer = %RelicIcons
 @onready var _mastery_icons: Control = %MasteryIcons
+@onready var _elemental_mastery_cards: Control = %ElementalMasteryCards
+@onready var _elemental_mastery_panel: PanelContainer = %ElementalMasteryPanel
+@onready var _elemental_mastery_title: Label = %ElementalMasteryTitle
 @onready var _relic_row: HBoxContainer = %RelicRow
 @onready var _equipment_row_label: Label = %EquipmentLabel
 @onready var _consumable_row_label: Label = %ConsumableLabel
@@ -132,15 +135,18 @@ const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 72), Vector2(1048, 360))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 438), Vector2(1048, 72))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 520), Vector2(1048, 820))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 500), Vector2(1048, 720))
+const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1220), Vector2(1048, 232))
+const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(344, 6), Vector2(360, 42))
+const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(10, 40), Vector2(1028, 186))
 const PLAYER_PANEL_RECT := Rect2(Vector2(0, 1452), Vector2(1080, 468))
 const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
 const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
 const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
 const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
-const BOARD_SURFACE_SIZE := Vector2(620, 744)
-const BOARD_SURFACE_TOP := 76.0
+const BOARD_SURFACE_SIZE := Vector2(560, 672)
+const BOARD_SURFACE_TOP := 30.0
 const BOARD_SHADOW_OFFSET := Vector2(18, 22)
 const BOARD_SHADOW_EXPAND := Vector2(34, 34)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 250), Vector2(600, 320))
@@ -176,6 +182,11 @@ const DEBUG_INPUT_FONT_SIZE := 24
 const DEBUG_INPUT_HEIGHT := 72.0
 const COMBO_FLOAT_RISE := 74.0
 const COMBO_FLOAT_DURATION := 0.62
+const COMBO_POPUP_SIZE := Vector2(270.0, 98.0)
+const COMBO_POPUP_OFFSET := 16.0
+const COMBO_POPUP_MARGIN := 10.0
+const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
+const COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS := 0.85
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -211,6 +222,7 @@ var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_combo_running := 0
+var _combat_mastery_feedback_token := 0
 
 
 func _ready() -> void:
@@ -239,6 +251,7 @@ func _ready() -> void:
 	if _console_input.visible:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
+	_vfx_layer.visible = true
 	set_process(true)
 	_apply_combat_layout()
 	_begin_turn_preview()
@@ -1353,6 +1366,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
 	_update_hud()
+	_replay_turn_resolution_from_log(turn_log)
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
 		var transition: Dictionary = RunState.mark_fight_victory()
@@ -1478,7 +1492,7 @@ func _sync_timer_display(seconds_left: float, state: String) -> void:
 	else:
 		if state == TIMER_STATE_LOCKED:
 			label_text = "LOCK"
-			state_text = "LOCK"
+			state_text = ""
 			timer_color = TIMER_LOCKED_COLOR
 			text_color = TIMER_TEXT_LOCKED_COLOR
 			fill_ratio = 0.0
@@ -1609,6 +1623,92 @@ func _build_defeat_cause(turn_log: Dictionary) -> String:
 	return "%s defeated the hero with %s for %d HP." % [enemy_label, intent_label, hp_damage]
 
 
+func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
+	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
+	var fire_damage := int(turn_log.get("fire_damage", 0))
+	var ice_damage := int(turn_log.get("ice_damage", 0))
+	var earth_damage := int(turn_log.get("earth_damage", 0))
+	var heart_heal := int(turn_log.get("healed", 0))
+	var armor_gain := int(turn_log.get("armor_gained", 0))
+	var gold_gain := int(turn_log.get("gold_gained", 0))
+	var feedback_values := {
+		OrbType.Id.FIRE: fire_damage,
+		OrbType.Id.ICE: ice_damage,
+		OrbType.Id.EARTH: earth_damage,
+		OrbType.Id.HEART: heart_heal,
+		OrbType.Id.ARMOR: armor_gain,
+		OrbType.Id.GOLD: gold_gain,
+	}
+	var enemy_target := _control_global_center(_enemy_portrait, 0.48)
+	var player_target := _control_global_center(_player_portrait, 0.64)
+
+	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
+		if fire_damage > 0:
+			_spawn_replay_impact(enemy_target, "fire", Vector2(84, 84), 0.42)
+			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, 0.42)
+		if ice_damage > 0:
+			_spawn_replay_impact(enemy_target, "ice", Vector2(84, 84), 0.42)
+			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, 0.42)
+		if earth_damage > 0:
+			_spawn_replay_impact(enemy_target, "earth", Vector2(84, 84), 0.42)
+			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, 0.42)
+	elif enemy_damage > 0:
+		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
+		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), Vector2(84, 84), 0.42)
+		_spawn_mastery_beam(impact_orb, enemy_target, 0.42)
+
+	if heart_heal > 0:
+		_spawn_replay_impact(player_target, "heart", Vector2(84, 84), 0.45)
+		_spawn_mastery_beam(OrbType.Id.HEART, player_target, 0.45)
+
+	if armor_gain > 0:
+		_spawn_replay_impact(player_target, "armor", Vector2(84, 84), 0.45)
+		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, 0.45)
+
+	if gold_gain > 0:
+		_spawn_replay_impact(player_target, "gold", Vector2(70, 70), 0.55)
+		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, 0.55)
+	_play_combat_mastery_feedback_from_turn_log(feedback_values)
+
+
+func _play_combat_mastery_feedback_from_turn_log(feedback_values: Dictionary) -> void:
+	if _elemental_mastery_cards == null:
+		return
+	_combat_mastery_feedback_token += 1
+	var token := _combat_mastery_feedback_token
+	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+
+	var has_feedback := false
+	var delay_seconds := 0.0
+	for orb_id in OrbType.ALL_TYPES:
+		var amount := int(feedback_values.get(int(orb_id), 0))
+		if amount <= 0:
+			continue
+		has_feedback = true
+		var feedback_orb_id := int(orb_id)
+		var feedback_amount := amount
+		var show_timer := get_tree().create_timer(delay_seconds)
+		show_timer.timeout.connect(func() -> void:
+			if _combat_mastery_feedback_token != token:
+				return
+			if _elemental_mastery_cards == null:
+				return
+			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, feedback_orb_id, feedback_amount)
+		)
+		delay_seconds += COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS
+
+	if not has_feedback:
+		return
+	var clear_timer := get_tree().create_timer(delay_seconds + COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS)
+	clear_timer.timeout.connect(func() -> void:
+		if _combat_mastery_feedback_token != token:
+			return
+		if _elemental_mastery_cards == null:
+			return
+		_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+	)
+
+
 func _update_hud() -> void:
 	if _player_state == null or _enemy_state == null or _combat == null:
 		return
@@ -1708,7 +1808,6 @@ func _format_intent_compact(intent: Dictionary) -> String:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
-	_emit_turn_feedback_vfx(turn_log)
 	if _combat_log_level == LOG_LEVEL_DETAILED:
 		_append_turn_log_detailed(turn_log)
 		return
@@ -2058,7 +2157,8 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	_player_loadout_hud.populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
 	_player_loadout_hud.populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
 	_player_loadout_hud.populate_relic_row(_relic_icons, relic_ids, 4)
-	_player_loadout_hud.populate_mastery_row(_mastery_icons, mastery_levels)
+	if _elemental_mastery_cards != null:
+		_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
 
@@ -2068,39 +2168,172 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 			has_relic = true
 			break
 	_relic_row.visible = has_relic and not _is_low_vertical_layout
-	_mastery_strip.visible = not _is_low_vertical_layout
+	_mastery_strip.visible = false
 
 
-func _emit_turn_feedback_vfx(turn_log: Dictionary) -> void:
-	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
-	if enemy_damage > 0:
-		var target := _enemy_portrait.global_position + _enemy_portrait.size * 0.5
-		_spawn_vfx("hit_flash", target, Vector2(84, 84), 0.42)
-
-	var gold_gained := int(turn_log.get("gold_gained", 0))
-	if gold_gained > 0:
-		var target := _player_label.global_position + Vector2(18, 18)
-		_spawn_vfx("gold_gain", target, Vector2(70, 70), 0.55)
+func _emit_turn_feedback_vfx(_turn_log: Dictionary) -> void:
+	pass
 
 
-func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float) -> void:
+func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
 	var tex := _visuals.vfx_texture(effect_name)
 	if tex == null:
 		return
+	_spawn_vfx_texture(tex, global_center, draw_size, lifetime, modulate_color)
+
+
+func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
+	if texture == null:
+		return
 	var sprite := TextureRect.new()
-	sprite.texture = tex
+	sprite.texture = texture
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	sprite.custom_minimum_size = draw_size
 	sprite.size = draw_size
 	sprite.global_position = global_center - draw_size * 0.5
+	sprite.modulate = modulate_color
 	_vfx_layer.add_child(sprite)
 	var tween := create_tween()
 	tween.tween_property(sprite, "modulate:a", 0.0, maxf(0.08, lifetime))
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(sprite):
 			sprite.queue_free()
+	)
+
+
+func _spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float) -> void:
+	if global_center == Vector2.ZERO:
+		return
+	var impact_texture := _visuals.mastery_impact_texture(impact_kind)
+	if impact_texture == null:
+		impact_texture = _visuals.vfx_texture("orb_clear")
+	_spawn_vfx_texture(impact_texture, global_center, draw_size, lifetime, Color(1.0, 1.0, 1.0, 0.92))
+
+
+func _mastery_impact_kind(orb_id: int) -> String:
+	match orb_id:
+		OrbType.Id.HEART:
+			return "heart"
+		OrbType.Id.GOLD:
+			return "gold"
+		_:
+			return "fire"
+
+
+func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
+	var selected_orb: int = OrbType.Id.FIRE
+	var selected_count: int = -1
+	for orb_id in OrbType.ALL_TYPES:
+		var count: int = int(matched_counts.get(orb_id, 0))
+		if count > selected_count:
+			selected_count = count
+			selected_orb = int(orb_id)
+	if selected_count <= 0:
+		return OrbType.Id.FIRE
+	return selected_orb
+
+
+func _mastery_card_source(orb_id: int) -> Control:
+	var elemental_mastery_cards := _elemental_mastery_cards
+	if _player_loadout_hud == null or elemental_mastery_cards == null:
+		return null
+
+	var card := _player_loadout_hud.get_combat_mastery_card(elemental_mastery_cards, orb_id)
+	if card == null:
+		var fallback_name := "CombatMasteryCard%d" % orb_id
+		card = elemental_mastery_cards.get_node_or_null(fallback_name) as Control
+	if card == null:
+		return null
+
+	var slot := card.get_node_or_null("CardPanel") as Control
+	if slot == null:
+		return card
+	var icon := slot.get_node_or_null("MasteryIcon")
+	if icon == null and card.get_node_or_null("MasteryIconSlot") is Control:
+		slot = card.get_node_or_null("MasteryIconSlot") as Control
+		icon = slot.get_node_or_null("MasteryIcon")
+	return icon if icon is Control else slot
+
+
+func _control_global_center(control: Control, vertical_bias: float = 0.5) -> Vector2:
+	if control == null:
+		return Vector2.ZERO
+	var rect := control.get_global_rect()
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return Vector2.ZERO
+	return Vector2(
+		rect.position.x + rect.size.x * 0.5,
+		rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0)
+	)
+
+
+func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
+	var source: Control = null
+	var target_global: Vector2 = Vector2.ZERO
+	var orb_id: int = OrbType.Id.FIRE
+	var beam_lifetime: float = lifetime
+
+	if source_orb_or_node is int:
+		orb_id = int(source_orb_or_node)
+		source = _mastery_card_source(orb_id)
+		if source == null:
+			return
+		target_global = target_or_start
+		if orb_or_target is Vector2:
+			target_global = orb_or_target
+		elif orb_or_target is float:
+			beam_lifetime = float(orb_or_target)
+	elif source_orb_or_node is Control:
+		source = source_orb_or_node
+		if orb_or_target is int:
+			orb_id = int(orb_or_target)
+		elif orb_or_target is float:
+			beam_lifetime = float(orb_or_target)
+		target_global = target_or_start
+	else:
+		return
+
+	if source == null or target_global == Vector2.ZERO:
+		return
+
+	if _vfx_layer == null or source == null:
+		return
+	var source_point := _control_global_center(source, 0.5)
+	if source_point == Vector2.ZERO:
+		return
+	var beam_texture := _visuals.mastery_beam_texture(orb_id)
+	if beam_texture == null:
+		return
+
+	var inverse_canvas_transform: Transform2D = _vfx_layer.get_global_transform_with_canvas().affine_inverse()
+	var source_local: Vector2 = inverse_canvas_transform * source_point
+	var target_local: Vector2 = inverse_canvas_transform * target_global
+	var delta: Vector2 = target_local - source_local
+	var distance: float = delta.length()
+	if distance <= 1.0:
+		return
+
+	var beam := TextureRect.new()
+	beam.texture = beam_texture
+	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	beam.stretch_mode = TextureRect.STRETCH_SCALE
+	var beam_thickness := 16.0
+	beam.size = Vector2(distance, beam_thickness)
+	beam.pivot_offset = Vector2(0.0, beam_thickness * 0.5)
+	beam.position = source_local - Vector2(0.0, beam_thickness * 0.5)
+	beam.rotation = delta.angle()
+	beam.modulate = Color(1.0, 1.0, 1.0, 0.86)
+	beam.z_index = 92
+	_vfx_layer.add_child(beam)
+
+	var fade_tween := create_tween()
+	fade_tween.tween_property(beam, "modulate:a", 0.0, maxf(0.08, beam_lifetime))
+	fade_tween.finished.connect(func() -> void:
+		if is_instance_valid(beam):
+			beam.queue_free()
 	)
 
 
@@ -2113,44 +2346,145 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	var cells: Array = group.get("cells", [])
 	if cells.is_empty():
 		return
+	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
+	var matched_count: int = 0
+	var min_x: float = INF
+	var max_x: float = -INF
+	var min_y: float = INF
+	var max_y: float = -INF
 	var sum := Vector2.ZERO
-	var valid_count := 0
 	for raw_cell in cells:
 		var cell: Vector2i = raw_cell
 		if not _board_view.is_cell_valid(cell):
 			continue
-		sum += _board_view.get_cell_center(cell)
-		valid_count += 1
-	if valid_count <= 0:
+		var center := _board_view.get_cell_center(cell)
+		sum += center
+		matched_count += 1
+		min_x = minf(min_x, center.x)
+		max_x = maxf(max_x, center.x)
+		min_y = minf(min_y, center.y)
+		max_y = maxf(max_y, center.y)
+	if matched_count <= 0:
 		return
-	var board_center := sum / float(valid_count)
+	var board_center := sum / float(matched_count)
 	var board_local_center := _board_surface.position + board_center
+	var cell_span: float = absf(
+		_board_view.get_cell_center(Vector2i(1, 0)).x - _board_view.get_cell_center(Vector2i(0, 0)).x
+	)
+	var blocked_radius: float = maxf(14.0, cell_span * 0.50)
+	var blocked_area := Rect2(
+		Vector2(min_x - blocked_radius, min_y - blocked_radius),
+		Vector2((max_x - min_x) + blocked_radius * 2.0, (max_y - min_y) + blocked_radius * 2.0)
+	)
+	blocked_area.position += _board_surface.position
+	var board_bounds := Rect2(_board_surface.position, _board_surface.size)
+	var popup_positions := PackedVector2Array([
+		Vector2(
+			board_local_center.x - COMBO_POPUP_SIZE.x * 0.5,
+			blocked_area.position.y - COMBO_POPUP_SIZE.y - COMBO_POPUP_OFFSET
+		),
+		Vector2(
+			board_local_center.x - COMBO_POPUP_SIZE.x * 0.5,
+			blocked_area.position.y + blocked_area.size.y + COMBO_POPUP_OFFSET
+		),
+		Vector2(
+			blocked_area.position.x - COMBO_POPUP_SIZE.x - COMBO_POPUP_OFFSET,
+			board_local_center.y - COMBO_POPUP_SIZE.y * 0.5
+		),
+		Vector2(
+			blocked_area.position.x + blocked_area.size.x + COMBO_POPUP_OFFSET,
+			board_local_center.y - COMBO_POPUP_SIZE.y * 0.5
+		),
+	])
+	var popup_position := _select_combo_popup_position(popup_positions, COMBO_POPUP_SIZE, blocked_area, board_bounds)
+	var combo_text := "COMBO x%d" % combo_value
+	var orb_name := OrbType.display_name(orb_id)
+	var orb_text := "%s x%d" % [orb_name.to_upper(), matched_count]
+
+	var combo_panel := PanelContainer.new()
+	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	combo_panel.size = COMBO_POPUP_SIZE
+	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
+	combo_panel.position = popup_position
+	combo_panel.z_index = 80
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.03, 0.06, 0.10, 0.80)
+	panel_style.border_color = Color(0.82, 0.68, 0.26, 0.94)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	panel_style.content_margin_left = 10.0
+	panel_style.content_margin_right = 10.0
+	panel_style.content_margin_top = 8.0
+	panel_style.content_margin_bottom = 8.0
+	combo_panel.add_theme_stylebox_override("panel", panel_style)
+
+	var text_stack := VBoxContainer.new()
+	text_stack.position = Vector2(10.0, 5.0)
+	text_stack.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, COMBO_POPUP_SIZE.y - 16.0)
+
 	var combo_label := Label.new()
-	combo_label.text = "COMBO x%d" % combo_value
+	combo_label.text = combo_text
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	combo_label.add_theme_font_size_override("font_size", 40)
+	combo_label.add_theme_font_size_override("font_size", 34)
 	combo_label.add_theme_constant_override("outline_size", 4)
-	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02, 0.95))
+	combo_label.add_theme_color_override("font_outline_color", Color(0.06, 0.03, 0.00, 0.95))
 	combo_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.48, 1.0))
-	combo_label.size = Vector2(300, 52)
-	combo_label.pivot_offset = combo_label.size * 0.5
-	combo_label.position = board_local_center - combo_label.size * 0.5
-	combo_label.z_index = 80
-	_board_panel.add_child(combo_label)
+	combo_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, 40.0)
+
+	var orb_label := Label.new()
+	orb_label.text = orb_text
+	orb_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	orb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	orb_label.add_theme_font_size_override("font_size", 26)
+	orb_label.add_theme_constant_override("outline_size", 3)
+	orb_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.01, 0.95))
+	orb_label.add_theme_color_override("font_color", Color(1.0, 0.97, 0.70, 1.0))
+	orb_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, 34.0)
+
+	text_stack.add_child(combo_label)
+	text_stack.add_child(orb_label)
+	combo_panel.add_child(text_stack)
+	_board_panel.add_child(combo_panel)
+
+	combo_panel.pivot_offset = combo_panel.size * 0.5
+	combo_panel.scale = Vector2(1.0, 1.0)
 	var pop_tween := create_tween()
-	pop_tween.tween_property(combo_label, "scale", Vector2(1.18, 1.18), 0.10)
-	pop_tween.tween_property(combo_label, "scale", Vector2(1.0, 1.0), 0.12)
+	pop_tween.tween_property(combo_panel, "scale", Vector2(1.10, 1.10), 0.10)
+	pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.12)
 	var rise_tween := create_tween()
-	rise_tween.tween_property(combo_label, "position:y", combo_label.position.y - COMBO_FLOAT_RISE, COMBO_FLOAT_DURATION)
+	rise_tween.tween_property(combo_panel, "position:y", popup_position.y - COMBO_FLOAT_RISE, COMBO_FLOAT_DURATION)
 	var fade_tween := create_tween()
 	fade_tween.tween_interval(0.30)
-	fade_tween.tween_property(combo_label, "modulate:a", 0.0, 0.45)
+	fade_tween.tween_property(combo_panel, "modulate:a", 0.0, 0.45)
 	fade_tween.finished.connect(func() -> void:
-		if is_instance_valid(combo_label):
-			combo_label.queue_free()
+		if is_instance_valid(combo_panel):
+			combo_panel.queue_free()
 	)
+
+
+func _select_combo_popup_position(candidates: PackedVector2Array, popup_size: Vector2, blocked_area: Rect2, board_area: Rect2) -> Vector2:
+	for index in candidates.size():
+		var candidate := Vector2(candidates[index])
+		var candidate_area := Rect2(candidate, popup_size)
+		if board_area.encloses(candidate_area) and not candidate_area.intersects(blocked_area):
+			return candidate
+	return _clamp_combo_popup_position(
+		Vector2(
+			(board_area.position.x + board_area.size.x * 0.5) - popup_size.x * 0.5,
+			(board_area.position.y + board_area.size.y * 0.5) - popup_size.y * 0.5
+		),
+		popup_size,
+		board_area
+	)
+
+
+func _clamp_combo_popup_position(candidate: Vector2, popup_size: Vector2, board_area: Rect2) -> Vector2:
+	var min_pos := board_area.position + Vector2(COMBO_POPUP_MARGIN, COMBO_POPUP_MARGIN)
+	var max_pos := board_area.position + board_area.size - popup_size - Vector2(COMBO_POPUP_MARGIN, COMBO_POPUP_MARGIN)
+	return Vector2(clampf(candidate.x, min_pos.x, max_pos.x), clampf(candidate.y, min_pos.y, max_pos.y))
 
 
 func _pulse_label(target: Label, tint: Color) -> void:
@@ -2187,6 +2521,7 @@ func _apply_combat_layout() -> void:
 	_apply_combat_strip_layout()
 	_apply_board_panel_layout()
 	_apply_player_panel_layout()
+	_apply_combat_mastery_panel_layout()
 
 	if is_low_vertical:
 		_mastery_strip.visible = false
@@ -2265,8 +2600,42 @@ func _apply_player_panel_layout() -> void:
 	_stat_chip_row.visible = false
 	_combat_meta_row.visible = false
 	_turn_summary_label.visible = false
+	_mastery_strip.visible = false
 	_apply_loadout_rail_layout()
 	_player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
+
+
+func _apply_combat_mastery_panel_layout() -> void:
+	if _elemental_mastery_panel == null:
+		return
+	_apply_design_rect(_elemental_mastery_panel, ELEMENTAL_MASTERY_PANEL_RECT)
+	if _elemental_mastery_title != null:
+		_apply_design_rect(_elemental_mastery_title, ELEMENTAL_MASTERY_TITLE_RECT)
+		_elemental_mastery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_elemental_mastery_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_elemental_mastery_title.add_theme_font_size_override("font_size", 30)
+		_elemental_mastery_title.add_theme_color_override("font_color", Color(1.0, 0.95, 0.54, 1.0))
+		_elemental_mastery_title.add_theme_constant_override("outline_size", 2)
+		_elemental_mastery_title.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.01, 0.92))
+	if _elemental_mastery_cards != null:
+		_apply_design_rect(_elemental_mastery_cards, ELEMENTAL_MASTERY_CARDS_RECT)
+
+	var frame_texture: Texture2D = _visuals.mastery_panel_frame_texture()
+	if frame_texture == null:
+		return
+	var frame := _elemental_mastery_panel.get_node_or_null("ElementalMasteryPanelFrame") as TextureRect
+	if frame == null:
+		frame = TextureRect.new()
+		frame.name = "ElementalMasteryPanelFrame"
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_elemental_mastery_panel.add_child(frame)
+		_elemental_mastery_panel.move_child(frame, 0)
+	frame.size = ELEMENTAL_MASTERY_PANEL_RECT.size
+	frame.position = Vector2.ZERO
+	frame.anchors_preset = Control.PRESET_TOP_LEFT
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	frame.texture = frame_texture
 
 
 func _combat_player_hud_nodes() -> Dictionary:
@@ -2439,7 +2808,7 @@ func _on_resolver_cells_cleared(cells: Array) -> void:
 			continue
 		var center := _board_view.get_cell_center(cell)
 		var global_center := _board_view.global_position + center
-		_spawn_vfx("orb_clear", global_center, Vector2(60, 60), 0.33)
+		_spawn_vfx("orb_clear", global_center, Vector2(60, 60), 0.33, Color(1.0, 1.0, 1.0, 0.78))
 
 
 func _on_resolver_gravity_applied(_fall_moves: Array) -> void:

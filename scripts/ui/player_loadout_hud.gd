@@ -12,6 +12,9 @@ const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const MASTERY_CELL_WIDTH := 92.0
 const MASTERY_CELL_GAP := 24.0
+const COMBAT_MASTERY_CARD_SIZE := Vector2(164, 186)
+const COMBAT_MASTERY_CARD_GAP := 8.0
+const COMBAT_MASTERY_ICON_SIZE := Vector2(96, 96)
 const RELIC_SLOT_SIZE := Vector2(58, 58)
 const RELIC_ICON_SIZE := Vector2(48, 48)
 const RELIC_SLOT_GAP := 8.0
@@ -32,6 +35,7 @@ const CONSUMABLE_LABEL_RECT := Rect2(Vector2(628, 4), Vector2(328, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
+const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2(8, 2), Vector2(1032, 206))
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _selected_equipment_slot := -1
@@ -135,6 +139,145 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		cell.add_child(slot)
 		cell.add_child(amount_label)
 		row.add_child(cell)
+
+
+func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
+	if row == null:
+		return null
+	var card_name := _combat_mastery_card_name(orb_id)
+	for child in row.get_children():
+		if child.name == card_name:
+			return child as Control
+	return null
+
+
+func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
+	_clear_children(row)
+	for index in range(OrbType.ALL_TYPES.size()):
+		var orb_id: int = OrbType.ALL_TYPES[index]
+		var level := int(mastery_levels.get(orb_id, 0))
+		var feedback_value := int(feedback_totals.get(orb_id, 0))
+
+		var card := Control.new()
+		card.name = _combat_mastery_card_name(orb_id)
+		card.size = COMBAT_MASTERY_CARD_SIZE
+		card.position = Vector2(float(index) * (COMBAT_MASTERY_CARD_SIZE.x + COMBAT_MASTERY_CARD_GAP), 0.0)
+
+		var panel := TextureRect.new()
+		panel.name = "CardPanel"
+		panel.custom_minimum_size = COMBAT_MASTERY_CARD_SIZE
+		panel.size = COMBAT_MASTERY_CARD_SIZE
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.texture = _visuals.mastery_card_texture(orb_id)
+		panel.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		panel.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+		var icon := TextureRect.new()
+		icon.name = "MasteryIcon"
+		icon.custom_minimum_size = COMBAT_MASTERY_ICON_SIZE
+		icon.size = COMBAT_MASTERY_ICON_SIZE
+		icon.position = Vector2((COMBAT_MASTERY_CARD_SIZE.x - COMBAT_MASTERY_ICON_SIZE.x) * 0.5, 10.0)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture = _visuals.menu_mastery_icon(orb_id)
+		icon.tooltip_text = "%s Mastery" % OrbType.display_name(orb_id)
+
+		var name_label := Label.new()
+		name_label.name = "MasteryLabel"
+		name_label.text = OrbType.display_name(orb_id)
+		name_label.position = Vector2(6.0, 106.0)
+		name_label.size = Vector2(152.0, 22.0)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 18)
+		name_label.add_theme_color_override("font_color", Color(0.93, 0.89, 0.76, 1.0))
+		name_label.add_theme_constant_override("outline_size", 2)
+		name_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
+
+		var level_label := Label.new()
+		level_label.name = "MasteryLevel"
+		level_label.text = "Lv %d" % level
+		level_label.position = Vector2(6.0, 133.0)
+		level_label.size = Vector2(152.0, 20.0)
+		level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		level_label.add_theme_font_size_override("font_size", 16)
+		level_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
+		level_label.add_theme_constant_override("outline_size", 2)
+		level_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
+		level_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+		var feedback_label := Label.new()
+		feedback_label.name = "MasteryFeedback"
+		feedback_label.text = _combat_mastery_feedback_text(orb_id, feedback_value)
+		feedback_label.position = Vector2(6.0, 158.0)
+		feedback_label.size = Vector2(152.0, 24.0)
+		feedback_label.add_theme_font_size_override("font_size", 20)
+		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		feedback_label.add_theme_constant_override("outline_size", 1)
+		if feedback_value > 0:
+			feedback_label.modulate = Color(1.0, 0.94, 0.62, 1.0)
+			feedback_label.visible = true
+		else:
+			feedback_label.visible = false
+			feedback_label.modulate = Color(1.0, 1.0, 1.0, 0.38)
+
+		panel.add_child(icon)
+		panel.add_child(name_label)
+		panel.add_child(level_label)
+		panel.add_child(feedback_label)
+		card.add_child(panel)
+		row.add_child(card)
+
+
+func clear_combat_mastery_feedback(row: Control) -> void:
+	for orb_id in OrbType.ALL_TYPES:
+		set_combat_mastery_feedback(row, int(orb_id), 0)
+
+
+func set_combat_mastery_feedback(row: Control, orb_id: int, feedback_value: int) -> void:
+	if not OrbType.is_valid_id(orb_id):
+		return
+	var card: Control = get_combat_mastery_card(row, orb_id)
+	if card == null:
+		return
+	var panel: Control = card.get_node_or_null("CardPanel") as Control
+	if panel == null:
+		return
+	var feedback_label: Label = panel.get_node_or_null("MasteryFeedback") as Label
+	if feedback_label == null:
+		return
+	var feedback_text := _combat_mastery_feedback_text(orb_id, feedback_value)
+	feedback_label.text = feedback_text
+	feedback_label.visible = feedback_text != ""
+	feedback_label.modulate = Color(1.0, 0.94, 0.62, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
+
+
+func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
+	if value <= 0:
+		return ""
+	var feedback_kind: String = ""
+	match orb_id:
+		OrbType.Id.FIRE:
+			feedback_kind = "DAMAGE"
+		OrbType.Id.ICE:
+			feedback_kind = "DAMAGE"
+		OrbType.Id.EARTH:
+			feedback_kind = "DAMAGE"
+		OrbType.Id.HEART:
+			feedback_kind = "HEAL"
+		OrbType.Id.ARMOR:
+			feedback_kind = "ARMOR"
+		OrbType.Id.GOLD:
+			feedback_kind = "GOLD"
+		_:
+			return ""
+	return "+%d %s" % [value, feedback_kind]
+
+
+func _combat_mastery_card_name(orb_id: int) -> String:
+	return "CombatMasteryCard%d" % orb_id
 
 
 func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) -> void:

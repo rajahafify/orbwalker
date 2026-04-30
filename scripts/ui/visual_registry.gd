@@ -11,6 +11,7 @@ const PATH_ITEM_SHEET := "res://resources/art/first_pass/sheets/item_icon_seed_s
 const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
 const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
 const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
+const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
 const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
 const PATH_UI_SHOP_CARD_SHEET := "res://resources/art/first_pass/ui/shop_card_kit_v1.png"
@@ -91,6 +92,31 @@ const _MASTERY_ORB_BY_ICON_KEY := {
 	"mastery_heart": OrbType.Id.HEART,
 	"mastery_armor": OrbType.Id.ARMOR,
 	"mastery_gold": OrbType.Id.GOLD,
+}
+
+const _MASTERY_BEAM_BY_ORB_ID := {
+	OrbType.Id.FIRE: "fire",
+	OrbType.Id.ICE: "ice",
+	OrbType.Id.EARTH: "earth",
+	OrbType.Id.HEART: "heart",
+	OrbType.Id.ARMOR: "armor",
+	OrbType.Id.GOLD: "gold",
+}
+const _MASTERY_CARD_BY_ORB_ID := {
+	OrbType.Id.FIRE: "fire",
+	OrbType.Id.ICE: "ice",
+	OrbType.Id.EARTH: "earth",
+	OrbType.Id.HEART: "heart",
+	OrbType.Id.ARMOR: "armor",
+	OrbType.Id.GOLD: "gold",
+}
+const _MASTERY_ICON_BY_ORB_ID := {
+	OrbType.Id.FIRE: "mastery_fire",
+	OrbType.Id.ICE: "mastery_ice",
+	OrbType.Id.EARTH: "mastery_earth",
+	OrbType.Id.HEART: "mastery_heart",
+	OrbType.Id.ARMOR: "mastery_armor",
+	OrbType.Id.GOLD: "mastery_gold",
 }
 
 const _STABLE_PLACEHOLDER_ICON_COLORS := {
@@ -202,12 +228,87 @@ func mastery_icon(orb_id: int) -> Texture2D:
 	return _mastery_textures.get(orb_id, placeholder_texture("mastery_missing"))
 
 
+func menu_mastery_icon(orb_id: int) -> Texture2D:
+	if not OrbType.is_valid_id(orb_id):
+		return placeholder_texture("mastery_missing")
+	var icon_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
+	if icon_key == "":
+		return placeholder_texture("mastery_missing")
+	var menu_icon := _load_derived_icon(icon_key)
+	if menu_icon != null and not _looks_like_checkerboard_texture(menu_icon):
+		return menu_icon
+	var fallback := mastery_icon(orb_id)
+	return fallback if fallback != null else placeholder_texture("mastery_missing")
+
+
 func icon_for_key(icon_key: String) -> Texture2D:
 	var clean_icon := clean_icon_for_key(icon_key, false)
 	if clean_icon != null:
 		return clean_icon
 	_warn_missing("icon_key:%s" % icon_key)
 	return placeholder_texture("icon_missing")
+
+
+func mastery_beam_texture(orb_id: int) -> Texture2D:
+	if not OrbType.is_valid_id(orb_id):
+		return null
+	var beam_suffix := String(_MASTERY_BEAM_BY_ORB_ID.get(orb_id, ""))
+	if beam_suffix == "":
+		return null
+	return _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_beam_%s" % beam_suffix, _vfx_textures)
+
+
+func mastery_panel_frame_texture() -> Texture2D:
+	var frame_texture := chrome_texture("mastery_panel_frame", false)
+	if frame_texture != null:
+		return frame_texture
+	return placeholder_texture("mastery_panel_frame_missing", Color(0.10, 0.10, 0.14, 0.94), Vector2i(8, 8))
+
+
+func mastery_card_texture(orb_id: int) -> Texture2D:
+	if not OrbType.is_valid_id(orb_id):
+		return _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_missing", _derived_chrome_textures)
+	var card_suffix := String(_MASTERY_CARD_BY_ORB_ID.get(orb_id, ""))
+	if card_suffix == "":
+		return _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_missing", _derived_chrome_textures)
+	var card_texture := _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_%s" % card_suffix, _derived_chrome_textures)
+	if card_texture != null:
+		return card_texture
+	card_texture = _load_derived_texture(PATH_DERIVED_HUD_DIR, "mastery_card_%s" % card_suffix, _derived_hud_textures)
+	if card_texture != null:
+		return card_texture
+	return mastery_icon(orb_id)
+
+
+func mastery_shell_texture() -> Texture2D:
+	var shell_texture := _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_shell_armor", _vfx_textures)
+	if shell_texture != null:
+		return shell_texture
+	shell_texture = _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_shell", _vfx_textures)
+	if shell_texture != null:
+		return shell_texture
+	return placeholder_texture("mastery_shell_missing", Color(0.25, 0.34, 0.52, 0.90), Vector2i(120, 120))
+
+
+func mastery_impact_texture(kind: String) -> Texture2D:
+	var clean_kind := kind.strip_edges().to_lower()
+	if clean_kind == "":
+		return null
+	if clean_kind == "armor":
+		return mastery_shell_texture()
+	var impact_lookup := {
+		"fire": "hit",
+		"ice": "hit",
+		"earth": "hit",
+		"heart": "heal",
+		"gold": "gold",
+	}
+	var impact_suffix := String(impact_lookup.get(clean_kind, ""))
+	if impact_suffix != "":
+		var impact_texture := _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_%s_impact" % impact_suffix, _vfx_textures)
+		if impact_texture != null:
+			return impact_texture
+	return null
 
 
 func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
@@ -402,11 +503,15 @@ func _load_derived_texture(base_path: String, key: String, cache: Dictionary) ->
 	if cache.has(key):
 		return cache[key]
 	var path := "%s/%s.png" % [base_path, key]
-	if not ResourceLoader.exists(path):
-		return null
-	var loaded: Variant = load(path)
+	var loaded: Variant = null
+	if ResourceLoader.exists(path):
+		loaded = load(path)
 	if loaded == null:
-		return null
+		var safe_loaded := _safe_load_texture(path, key)
+		if safe_loaded == null:
+			return null
+		cache[key] = safe_loaded
+		return safe_loaded
 	var texture := loaded as Texture2D
 	if texture == null:
 		return null

@@ -10,7 +10,7 @@ class_name BoardView
 @export var orb_scale_in_cell: float = 0.74
 @export var selected_cell_color: Color = Color("#f7f2a6")
 @export var path_cell_color: Color = Color("#cfd7ff")
-@export var match_flash_color: Color = Color(1.0, 1.0, 1.0, 0.28)
+@export var match_flash_color: Color = Color(1.0, 1.0, 1.0, 0.16)
 @export var glow_halo_scale: float = 1.42
 @export var glow_halo_alpha: float = 0.30
 @export var glow_core_alpha: float = 0.20

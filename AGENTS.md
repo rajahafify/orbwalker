@@ -43,26 +43,37 @@ Role split:
 - `explorer` uses `gpt-5.5` for exploration tasks, planning research, behavior checks, risk review, and source/wiki contradiction checks.
 - `worker` uses `gpt-5.3-codex-spark` for bounded implementation, focused file edits, assigned docs/wiki updates, and validation follow-through.
 
+Code editing rule:
+
+- In multi-agent mode, source/runtime code edits are done only by `worker`.
+- `default` may edit documentation, wiki, `AGENTS.md`, and `.codex/` orchestration files, but must not directly edit gameplay/runtime files such as `scripts/`, `scenes/`, `resources/`, `addons/`, `tools/`, `project.godot`, `.gd`, `.tscn`, `.tres`, or `.res` files.
+- `explorer` must not edit any files.
+- If a worker cannot be spawned, `default` must stop and report the blocker before making source/runtime code edits, unless the human explicitly authorizes main-thread implementation.
+
 When spawning subagents, pass explicit model overrides. Do not rely on the role name or `.codex/agents/*.toml` alone to select the model:
 
 - Spawn `explorer` with `agent_type = "explorer"`, `model = "gpt-5.5"`, and `reasoning_effort = "medium"`.
 - Spawn `worker` with `agent_type = "worker"`, `model = "gpt-5.3-codex-spark"`, and `reasoning_effort = "high"`.
 - Keep orchestration and final handoff in the main/default agent using `gpt-5.4-mini`.
 
-Default milestone flow:
+Default milestone flow, step by step:
 
 1. `default` reads `todo.md`, `docs/test_plan.md`, relevant wiki pages, and the human request.
 2. `default` generates concrete tasks and separates exploration, planning, implementation, validation, and documentation work.
 3. `explorer` handles exploration tasks: relevant files, current behavior, risks, stale docs, and source/wiki contradictions.
 4. `explorer` handles planning research tasks when the plan depends on codebase facts, milestone scope, validation surfaces, or implementation risks.
-5. `worker` handles working tasks with explicit file or module ownership.
-6. `default` integrates results, reviews changed files, resolves docs/wiki updates, runs or records validation, and summarizes remaining uncertainty.
+5. `default` turns explorer findings into an ordered implementation plan with explicit worker ownership.
+6. `worker` handles source/runtime code edits with explicit file or module ownership.
+7. `default` reviews worker results, coordinates or records validation, resolves docs/wiki updates, and summarizes remaining uncertainty.
+
+Do not skip phases in multi-agent mode. If a phase is unnecessary, state why before moving to the next phase.
 
 Worker rules:
 
 - Tell workers they are not alone in the codebase.
 - Tell workers not to revert edits made by others.
 - Give each worker a clear ownership area or file/module scope.
+- Assign all source/runtime code edits to workers in multi-agent mode.
 - Do not assign overlapping worker write scopes unless the human explicitly accepts the merge risk.
 - Require workers to report changed file paths and validation performed.
 
