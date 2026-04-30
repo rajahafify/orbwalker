@@ -2,6 +2,16 @@
 
 Append-only history of wiki operations.
 
+## [2026-04-30] codex | Default Agent Model Updated
+
+- Source: `.codex/config.toml`, `.codex/agents/default.toml`
+- Changed:
+  - Updated the project-local default Codex model to `gpt-5.5`
+  - Set the default Codex reasoning effort to `low`
+  - Updated the default agent instructions to match the new baseline
+- Notes:
+  - Explorer and worker role profiles were left unchanged.
+
 ## [2026-04-30] combat | Visible resolve burst polish
 
 - Source: `scripts/combat/combat_player_controller.gd`, `scenes/combat/combat_player.tscn`
