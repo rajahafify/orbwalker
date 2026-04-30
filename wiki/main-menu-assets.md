@@ -14,7 +14,7 @@ The menu art package now lives under `resources/art/first_pass/menu/` and is doc
 
 The six elemental row icons are reused from the existing mastery icon family instead of being regenerated. (source: `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`)
 
-The menu assets are documented, but the runtime main menu scene still needs wiring before these files are used in-game. (source: `scenes/main.tscn`, `scripts/ui/visual_registry.gd`)
+The runtime main menu scene is now wired to the menu art package for background and logo layers, while panel/button chrome is rendered with `StyleBoxFlat` styling to avoid opaque checkerboard artifacts in generated chrome PNGs. (source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `resources/visual/first_pass_asset_map.json`)
 
 ## Details
 
@@ -22,7 +22,7 @@ The menu assets are documented, but the runtime main menu scene still needs wiri
 
 - `resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png` - vertical dungeon-city background plate for the main menu.
 - `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png` - original logo wordmark export (fully opaque background).
-- `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png` - cleaned transparent logo wordmark used by the HTML recreation prototype.
+- `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png` - cleaned transparent logo wordmark used at runtime; enclosed checkerboard regions were removed in the 2026-04-30 MCP validation pass.
 - `resources/art/first_pass/menu/main_menu_border_outer_v1.png` - ornate outer screen border.
 - `resources/art/first_pass/menu/main_menu_button_primary_v1.png` - highlighted primary action button plate.
 - `resources/art/first_pass/menu/main_menu_button_secondary_v1.png` - darker secondary button plate.
@@ -60,18 +60,26 @@ This keeps the menu-specific art package separated from the combat and shop art 
 
 The mapped `menu.logo` path now points to the cleaned alpha logo variant to avoid white/checkerboard background bleed in UI composition prototypes. (source: `resources/visual/first_pass_asset_map.json`, `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png`)
 
+### Runtime defect remediation (2026-04-30)
+
+- Resolved logo clipping and menu overlap caused by native texture-size expansion in runtime layout.
+- Resolved elemental row/stats/footer overflow caused by unbounded icon minimum sizes.
+- Resolved footer panel blowout and bottom text collisions by clamping runtime icon sizes and simplifying bottom label usage.
+- Resolution is implemented in runtime scene composition code, not by changing source art dimensions. (source: `scripts/core/main_boot.gd`, `docs/test_plan.md`)
+
 ## Important Files
 
 - `resources/art/first_pass/menu/` - generated menu art package.
 - `resources/visual/first_pass_asset_map.json` - JSON map for the new menu art package and the reused mastery icons.
 - `docs/main_menu_layout_guide.html` - HTML overlay and slot map for main menu composition/layout planning.
 - `docs/main_menu_recreation.html` - HTML visual recreation of the reference menu using the generated art pack.
-- `scripts/ui/visual_registry.gd` - current runtime registry; does not yet expose dedicated menu accessors.
-- `scenes/main.tscn` - main menu scene that still needs wiring to the new art package.
+- `scenes/main.tscn` - authored main menu scene with background/logo zones, button stack, element row, stats panel, footer actions, and debug button.
+- `scripts/core/main_boot.gd` - main menu runtime layout, StyleBox chrome, texture binding, and button behavior wiring.
+- `scripts/ui/visual_registry.gd` - still does not expose dedicated menu accessors; main menu currently reads mapped paths directly.
 
 ## Open Questions
 
-- Should the menu art be loaded through `VisualRegistry`, or should `scenes/main.tscn` load the files directly? (needs verification)
+- Should main menu textures be migrated behind dedicated `VisualRegistry` accessors in a later cleanup pass. (needs verification)
 - Should the menu icon family stay in `resources/art/first_pass/menu/`, or be split into a future `resources/art/first_pass/derived/menu/` family if iteration continues? (needs verification)
 
 ## Related Pages

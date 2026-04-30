@@ -266,6 +266,35 @@ Verification notes (2026-04-29, equipment/mastery/relic asset polish pass):
   - `res://scenes/flow/shop_player.tscn`
   - `res://scenes/flow/boss_relic_reward.tscn`
 
+Verification notes (2026-04-30, main menu runtime implementation pass):
+- `res://scenes/main.tscn` is now wired as an authored portrait menu scene with explicit zones for background, frame chrome, logo, menu stack, element row, stats panel, footer actions, version, and debug access.
+- `scripts/core/main_boot.gd` now applies fixed design-space layout coordinates against the active viewport, binds mapped background/logo assets, and renders runtime panel/button chrome with `StyleBoxFlat` (generated border/button/stats PNG chrome intentionally not used at runtime).
+- Functional action coverage in this pass:
+  - `Start Run` starts a run and routes through `RunState.next_scene_path()`.
+  - `Debug Combat` routes to `res://scenes/combat/board_debug.tscn`.
+  - `Continue`, `Collection`, `Settings`, `Quit`, `Profile`, and `Achievements` are visible disabled placeholders.
+- Godot MCP checks completed in-session (2026-04-30):
+  - `get_godot_errors` clean after fixing runtime-ready path issues in `scripts/core/main_boot.gd`.
+  - `play_scene` on main scene succeeded with no runtime errors.
+  - `get_scene_tree` confirmed presence of key nodes in runtime tree: `LogoTexture`, `StartRunButton`, `DebugCombatButton`, `ElementRow`, `StatsPanel`, `FooterActions`.
+  - `simulate_input` (`ui_focus_next` + `ui_accept`) transitioned from `res://scenes/main.tscn` into `res://scenes/combat/combat_player.tscn`, confirming `Start Run` route wiring.
+  - `DebugCombatButton` wiring validated via scene-signal + script-target inspection (`_on_debug_fight_button_pressed` contains `res://scenes/combat/board_debug.tscn`); direct button-press simulation still needs manual click validation.
+- Visual cleanup verified:
+  - Reprocessed `main_menu_logo_orbwalker_v1_alpha.png` to remove baked checkerboard background regions.
+  - Runtime screenshot now shows transparent logo composition over the main-menu background.
+- Main menu defect list from runtime screenshot review (2026-04-30) and fix status:
+  - Logo clipping/oversize from native texture dimensions forcing control minimum size: fixed in `scripts/core/main_boot.gd` (`TextureRect.EXPAND_IGNORE_SIZE` + safe-area rect layout).
+  - Logo overlapping menu stack: fixed by moving logo/menu zones to non-overlapping safe-area coordinates.
+  - Element row overflow and right-edge clipping (`Fire/Ice/Earth/...` lane wider than viewport): fixed by icon minimum-size clamping and texture-expand handling.
+  - Stats panel overflow and stat icon bleed beyond panel bounds: fixed by icon size clamping and stats-row bounds enforcement.
+  - Footer action row vertically exploding from 384px icon minimum size: fixed by downscaled runtime footer icon textures and capped icon width.
+  - Footer row colliding with bottom controls: fixed after footer height normalization.
+  - Bottom text overlap (`StatusLabel` crossing version/debug controls): fixed by hiding `StatusLabel` in runtime.
+  - Right-edge clipping of footer/element text: fixed after safe-area coordinate remap and bounded container widths.
+- Remaining verification is still manual:
+  - visual overlap/readability audit at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`,
+  - direct mouse-click confirmation for `Debug Combat` routing in editor runtime.
+
 ## Milestone 10: Balance And Regression
 
 - [ ] Level 1 normal enemies are killable in roughly 3 turns by expert play.

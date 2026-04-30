@@ -60,7 +60,10 @@ func _refresh_options() -> void:
 		var rarity := String(option.get("rarity", "common")).to_lower()
 		var rarity_color: Color = RARITY_COLORS.get(rarity, RARITY_COLORS["common"])
 		var relic_id := String(option.get("id", ""))
-		var content := RunState.ensure_content_registry().get_relic(relic_id)
+		var content_value: Variant = RunState.ensure_content_registry().get_relic(relic_id)
+		var content: Dictionary = {}
+		if content_value is Dictionary:
+			content = content_value
 		button.icon = _visuals.icon_for_key(String(content.get("icon_key", "")))
 		button.text = "%s\n%s relic\n%s" % [
 			String(option.get("display_name", "Relic")),

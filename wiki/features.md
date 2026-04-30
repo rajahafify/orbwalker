@@ -2,9 +2,9 @@
 
 **Summary**: Snapshot of the currently implemented gameplay, UI, and content features in the Orbwalker prototype.
 
-**Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/ui/player_loadout_hud.gd`
+**Sources**: `todo.md`, `docs/game_design_document.md`, `docs/test_plan.md`, `scenes/main.tscn`, `scripts/core/main_boot.gd`, `scripts/core/run_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/ui/player_loadout_hud.gd`
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-04-30
 
 ---
 
@@ -43,6 +43,8 @@ The project already covers the early prototype loop: board generation, drag move
 - Combat and shop player HUDs share `PlayerLoadoutHud`, which provides combat player-panel layout geometry plus equipment slots, consumable slots, relic icons, mastery cells, empty-slot silhouettes, and equipment badges from current progression content. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`)
 - The visual registry provides the first-pass art lookup and fallback path for UI, backgrounds, and icons. (source: `scripts/ui/visual_registry.gd`)
 - The main menu now has a dedicated first-pass art package under `resources/art/first_pass/menu/`, and the visual asset map documents the background, logo, border, button plates, stat panel, and menu icon set. The six elemental row icons reuse the existing mastery icon family. (source: `resources/art/first_pass/menu/`, `resources/visual/first_pass_asset_map.json`, `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`)
+- Main menu runtime now uses an authored portrait scene composition with fixed design-space zones for logo/menu/element row/stats/footer, `Start Run` and `Debug Combat` as functional actions, and disabled placeholder buttons for `Continue`, `Collection`, `Settings`, `Quit`, `Profile`, and `Achievements`. Runtime chrome is rendered with `StyleBoxFlat` instead of generated border/button/stat-panel PNGs. (source: `scenes/main.tscn`, `scripts/core/main_boot.gd`)
+- Main menu runtime applies explicit texture-size containment (`EXPAND_IGNORE_SIZE`), safe-area coordinate remapping, and icon size clamping so logo/element/stats/footer controls no longer expand beyond viewport bounds or overlap each other at the default portrait resolution. (source: `scripts/core/main_boot.gd`, `docs/test_plan.md`)
 - Derived equipment/mastery/relic icons were reprocessed to remove baked checkerboard backgrounds, restore alpha transparency, and normalize icon canvas sizing for cleaner slot/card rendering. (source: `tools/asset_tools/clean_derived_icons.py`, `resources/art/first_pass/derived/icons/`)
 - Combat and shop now use compact owned-relic token rows with overflow (`+N`) handling so relic ownership is readable without consuming full footer space. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`)
 - Boss relic reward options now render as visual cards (icon, rarity tint, description) instead of plain text buttons, while keeping the existing reward claim flow. (source: `scripts/flow/boss_relic_reward.gd`)

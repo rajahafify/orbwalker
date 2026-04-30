@@ -524,3 +524,40 @@ Append-only history of wiki operations.
   - Updated `wiki/main-menu-assets.md` with alpha logo documentation and revised update date
 - Notes:
   - The main issue reported in the screenshot was the non-transparent logo background and oversized section layout in the first HTML pass.
+
+## [2026-04-30] code-change | Main Menu Runtime Scene Implementation
+
+- Source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `docs/test_plan.md`, `wiki/main-menu-assets.md`, `wiki/features.md`
+- Changed:
+  - Replaced the prototype center-panel menu in `scenes/main.tscn` with an authored portrait main-menu scene tree containing explicit zones: `BackgroundTexture`, `OuterFrame`, `LogoTexture`, `MenuButtonColumn`, `ElementRow`, `StatsPanel`, `FooterActions`, `DebugCombatButton`, `VersionLabel`, and `StatusLabel`
+  - Reworked `scripts/core/main_boot.gd` to load mapped background/logo assets, apply fixed design-space coordinate layout against the viewport, style runtime chrome with `StyleBoxFlat`, and keep `Start Run` plus `Debug Combat` as the only functional actions
+  - Kept `Continue`, `Collection`, `Settings`, `Quit`, `Profile`, and `Achievements` visible as disabled placeholders
+  - Updated test and wiki documentation to mark the scene as wired and capture remaining manual QA requirements
+- Notes:
+  - Generated menu border/button/stat-panel PNG chrome remains staged assets and is not used for runtime UI chrome in this pass.
+  - Godot MCP validation is still pending in this session because MCP tools were not exposed.
+
+## [2026-04-30] code-change | Main Menu MCP Validation And Cleanup
+
+- Source: `scripts/core/main_boot.gd`, `scripts/flow/boss_relic_reward.gd`, `resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png`, `docs/test_plan.md`, `wiki/main-menu-assets.md`
+- Changed:
+  - Ran Godot MCP validation on `res://scenes/main.tscn` (`get_project_info`, `view_script`, `get_godot_errors`, `play_scene`, `get_scene_tree`, `simulate_input`, runtime screenshot capture)
+  - Fixed main-menu runtime binding issues in `scripts/core/main_boot.gd` by replacing `%ProfileButton`-style lookups with explicit footer paths and renaming local `scale` to `scale_factor` to avoid class-property shadow warnings
+  - Fixed parse instability in `scripts/flow/boss_relic_reward.gd` by replacing `Variant`-inferred relic content assignment with explicit typed dictionary handling
+  - Reprocessed `main_menu_logo_orbwalker_v1_alpha.png` to remove remaining checkerboard background regions visible at runtime
+  - Updated `docs/test_plan.md` verification notes to record completed MCP checks and remaining manual steps
+- Notes:
+  - MCP input simulation confirmed `Start Run` routes from main menu to `res://scenes/combat/combat_player.tscn`.
+  - `Debug Combat` routing target was verified through signal/method wiring inspection; direct mouse-click runtime confirmation remains a manual check item.
+
+## [2026-04-30] code-change | Main Menu Runtime Defect Remediation
+
+- Source: `scripts/core/main_boot.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/main-menu-assets.md`
+- Changed:
+  - Fixed main-menu runtime overflow/overlap defects caused by texture-driven minimum sizing on logo/element/stat/footer controls
+  - Added texture containment (`EXPAND_IGNORE_SIZE`), safe-area coordinate remap, icon-size clamps, and footer icon downscaling
+  - Removed runtime bottom status-label overlap by disabling `StatusLabel` visibility
+  - Documented screenshot-derived defect list and fix status in `docs/test_plan.md` and wiki pages
+- Notes:
+  - `Start Run` routing was revalidated through MCP input simulation after layout fixes.
+  - Direct mouse-click verification for `Debug Combat` remains a manual check item.
