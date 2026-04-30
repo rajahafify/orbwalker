@@ -846,6 +846,48 @@ When the human asks a question about the project:
 
 
 
+\## Multi-Agent Workflow
+
+
+
+Project-local Codex agent definitions live in `.codex/agents/`.
+
+
+
+Use these roles when the human asks for multi-agent work, delegation, or a specific role:
+
+
+
+\- `default` uses `gpt-5.4-mini` for normal project work, repo maintenance, and direct implementation in the main thread.
+
+\- `explorer` uses `gpt-5.5` for read-only investigation, codebase questions, architecture lookup, bug tracing, risk review, and source/wiki contradiction checks.
+
+\- `worker` uses `gpt-5.3-codex-spark` for bounded implementation tasks, focused file edits, docs/wiki updates, and validation follow-through.
+
+
+
+Rules:
+
+
+
+1\. Keep orchestration in the main/default agent unless the human explicitly asks to use subagents or parallel work.
+
+2\. Use `explorer` for sidecar research that can run without blocking immediate local progress.
+
+3\. Use `worker` for bounded implementation with a clear ownership area or file/module scope.
+
+4\. Tell workers they are not alone in the codebase, must not revert edits made by others, and must report changed file paths plus validation performed.
+
+5\. Do not assign two workers overlapping write scopes unless the human explicitly accepts the merge risk.
+
+6\. Treat explorer findings as advisory evidence; verify against source before changing behavior.
+
+
+
+\---
+
+
+
 \## Development Workflow
 
 
@@ -1259,4 +1301,3 @@ A task is complete when:
 &#x20; - What was tested
 
 &#x20; - What remains uncertain
-

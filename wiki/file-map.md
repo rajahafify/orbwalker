@@ -2,7 +2,7 @@
 
 **Summary**: High-level map of the important folders and files in the current Orbwalker checkout.
 
-**Sources**: `project.godot`, `.codex/config.toml`, `.codex/agents/`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
+**Sources**: `project.godot`, `AGENTS.md`, `.codex/config.toml`, `.codex/agents/`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
 **Last updated**: 2026-04-30
 
@@ -30,6 +30,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `resources/visual/` - First-pass visual asset map and theme resource. `resources/visual/first_pass_asset_map.json` includes main-menu art mappings plus complete runtime `enemy_portraits` and shared `hero_portraits` entries used by combat and shop portrait wiring. (source: repository layout, `resources/visual/first_pass_asset_map.json`)
 - `docs/` - Human-facing design, architecture, and QA docs. (source: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`)
 - `todo.md` - Milestone and scope tracker for prototype work. (source: `todo.md`)
+- `AGENTS.md` - Operating rules for source/wiki precedence, development workflow, and the project-local multi-agent workflow. (source: `AGENTS.md`)
 - `.codex/` - Project-local Codex configuration, including the default model setting and custom `default`, `explorer`, and `worker` agent definitions. (source: `.codex/config.toml`, `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, `.codex/agents/worker.toml`)
 
 ## Important Files

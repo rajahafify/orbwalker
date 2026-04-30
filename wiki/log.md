@@ -610,3 +610,13 @@ Append-only history of wiki operations.
   - Updated `wiki/setup.md` and `wiki/file-map.md` with the project-local Codex configuration
 - Notes:
   - The requested `gpt-55` explorer model was recorded using the available Codex model slug `gpt-5.5`.
+
+## [2026-04-30] docs | Multi-Agent Workflow Guidance
+
+- Source: `AGENTS.md`, `.codex/agents/`
+- Changed:
+  - Added a multi-agent workflow section to `AGENTS.md`
+  - Documented the `default`, `explorer`, and `worker` role responsibilities
+  - Updated `wiki/setup.md` and `wiki/file-map.md` to reference the new operating guidance
+- Notes:
+  - The workflow keeps orchestration in the default agent unless the human explicitly asks for subagents or parallel work.
