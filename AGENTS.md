@@ -41,7 +41,7 @@ Role split:
 
 - `default` uses `gpt-5.5` with low reasoning for orchestration, task generation, integration, documentation, summary, and handoff.
 - `explorer` uses `gpt-5.5` for exploration tasks, planning research, behavior checks, risk review, and source/wiki contradiction checks.
-- `worker` uses `gpt-5.3-coder` for bounded implementation, focused file edits, assigned docs/wiki updates, and validation follow-through.
+- `worker` uses `gpt-5.3-codex` for bounded implementation, focused file edits, assigned docs/wiki updates, and validation follow-through.
 
 Code editing rule:
 
@@ -53,7 +53,7 @@ Code editing rule:
 When spawning subagents, pass explicit model overrides. Do not rely on the role name or `.codex/agents/*.toml` alone to select the model:
 
 - Spawn `explorer` with `agent_type = "explorer"`, `model = "gpt-5.5"`, and `reasoning_effort = "medium"`.
-- Spawn `worker` with `agent_type = "worker"`, `model = "gpt-5.3-coder"`, and `reasoning_effort = "high"`.
+- Spawn `worker` with `agent_type = "worker"`, `model = "gpt-5.3-codex"`, and `reasoning_effort = "high"`.
 - Keep orchestration and final handoff in the main/default agent using `gpt-5.5` with low reasoning.
 
 Default milestone flow, step by step:
