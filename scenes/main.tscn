@@ -27,13 +27,10 @@ unique_name_in_owner = true
 layout_mode = 0
 mouse_filter = 2
 
-[node name="OuterBorder" type="Panel" parent="OuterFrame"]
+[node name="OuterBorderTexture" type="TextureRect" parent="OuterFrame"]
 layout_mode = 0
 mouse_filter = 2
-
-[node name="InnerBorder" type="Panel" parent="OuterFrame"]
-layout_mode = 0
-mouse_filter = 2
+stretch_mode = 6
 
 [node name="LogoTexture" type="TextureRect" parent="."]
 unique_name_in_owner = true
@@ -279,11 +276,6 @@ size_flags_horizontal = 3
 disabled = true
 text = "Settings"
 
-[node name="DebugCombatButton" type="Button" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
-text = "Debug Combat"
-
 [node name="VersionLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
@@ -298,4 +290,3 @@ autowrap_mode = 3
 text = "Main menu ready."
 
 [connection signal="pressed" from="MenuButtonColumn/StartRunButton" to="." method="_on_start_fight_button_pressed"]
-[connection signal="pressed" from="DebugCombatButton" to="." method="_on_debug_fight_button_pressed"]

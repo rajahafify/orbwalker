@@ -561,3 +561,27 @@ Append-only history of wiki operations.
 - Notes:
   - `Start Run` routing was revalidated through MCP input simulation after layout fixes.
   - Direct mouse-click verification for `Debug Combat` remains a manual check item.
+
+## [2026-04-30] code-change | Main Menu Reference-Match Runtime Art Pass
+
+- Source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `docs/test_plan.md`, `wiki/main-menu-assets.md`, `wiki/features.md`
+- Changed:
+  - Replaced flat frame panels with textured outer border runtime node (`OuterBorderTexture`) and removed the visible `DebugCombatButton` node/signal from `res://scenes/main.tscn`
+  - Reworked `scripts/core/main_boot.gd` to load and apply mapped menu textures for outer border, button chrome, stats panel chrome, and menu icon families
+  - Restaged main-menu composition toward the reference shape (larger logo, right-biased menu stack, larger element row, larger footer plates, stronger gold text hierarchy)
+  - Preserved player-facing behavior constraints: `Start Run` remains functional; other menu/footer actions remain disabled placeholders
+  - Updated QA and wiki pages to document the runtime textured pass and current manual verification gaps
+- Notes:
+  - Godot MCP checks in this pass (`get_godot_errors`, `play_scene`, `get_scene_tree`) were clean, and running scene-tree confirms `DebugCombatButton` is no longer present.
+  - Remaining manual work is visual overlap/readability checks at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`, plus click-through confirmation from main menu into combat.
+
+## [2026-04-30] code-change | Main Menu Checkerboard Alpha Cleanup
+
+- Source: `resources/art/first_pass/menu/`, `tools/asset_tools/clean_menu_art.py`, `scripts/core/main_boot.gd`, `docs/test_plan.md`, `wiki/main-menu-assets.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added `tools/asset_tools/clean_menu_art.py` for generated main-menu chrome/icon alpha cleanup
+  - Reprocessed the menu outer border, primary/secondary button plates, stats triptych panel, and all `main_menu_icon_*` PNGs so transparent regions use alpha instead of baked checkerboard pixels
+  - Adjusted `scripts/core/main_boot.gd` texture-style margins for compressed menu button/footer/stat plates so the cleaned art renders visibly at runtime
+  - Updated QA and wiki docs to record the checkerboard fix and remaining multi-resolution visual QA
+- Notes:
+  - Godot MCP `play_scene`, `get_running_scene_screenshot`, and `get_godot_errors` passed after the cleanup; the running screenshot no longer shows the opaque checkerboard overlay.

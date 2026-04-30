@@ -267,6 +267,7 @@ Verification notes (2026-04-29, equipment/mastery/relic asset polish pass):
   - `res://scenes/flow/boss_relic_reward.tscn`
 
 Verification notes (2026-04-30, main menu runtime implementation pass):
+- Historical note: this pass was later superseded by the `main menu reference-match runtime art pass` below, which removed the visible debug menu path.
 - `res://scenes/main.tscn` is now wired as an authored portrait menu scene with explicit zones for background, frame chrome, logo, menu stack, element row, stats panel, footer actions, version, and debug access.
 - `scripts/core/main_boot.gd` now applies fixed design-space layout coordinates against the active viewport, binds mapped background/logo assets, and renders runtime panel/button chrome with `StyleBoxFlat` (generated border/button/stats PNG chrome intentionally not used at runtime).
 - Functional action coverage in this pass:
@@ -294,6 +295,39 @@ Verification notes (2026-04-30, main menu runtime implementation pass):
 - Remaining verification is still manual:
   - visual overlap/readability audit at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`,
   - direct mouse-click confirmation for `Debug Combat` routing in editor runtime.
+
+Verification notes (2026-04-30, main menu reference-match runtime art pass):
+- `res://scenes/main.tscn` now removes visible debug-menu entry points and keeps `Start Run` as the only player-facing functional action on the menu surface.
+- `scripts/core/main_boot.gd` now resolves and uses generated menu art assets from `resources/visual/first_pass_asset_map.json` for:
+  - outer border (`menu.outer_border`),
+  - menu button chrome (`menu.button_primary`, `menu.button_secondary`),
+  - stats strip chrome (`menu.stats_panel`),
+  - stats/footer icon sets (`menu.menu_icons`),
+  - mastery row icon reuse (`menu.reused_mastery_icons`).
+- Main-menu copy and hierarchy were restaged for closer reference parity:
+  - larger logo and right-biased menu stack,
+  - larger element medallion row,
+  - larger footer action plates,
+  - stronger gold text treatment with outlines.
+- Godot MCP checks completed in-session (2026-04-30):
+  - `get_godot_errors`: no parse/runtime errors.
+  - `play_scene` (`main`): scene launches successfully.
+  - `get_scene_tree` (`running_scene`): `DebugCombatButton` is absent; `OuterBorderTexture`, `MenuButtonColumn`, `ElementRow`, `StatsPanel`, and `FooterActions` are present.
+  - `StartRunButton` remains connected to `_on_start_fight_button_pressed` and still routes through `RunState.next_scene_path()`.
+- Remaining manual verification:
+  - visual overlap/readability audit at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`,
+  - user click-through confirmation from main menu into combat at runtime.
+
+Verification notes (2026-04-30, main menu checkerboard asset cleanup):
+- Fixed the checkerboard-background regression by reprocessing opaque generated menu chrome and menu icon PNGs into real transparent assets using `tools/asset_tools/clean_menu_art.py`.
+- Cleaned assets now report alpha ranges of `0-255` instead of fully opaque `255-255` for the outer border, primary/secondary button plates, stats panel, and menu icon family.
+- Reduced menu button, footer button, and stats panel texture-slice margins in `scripts/core/main_boot.gd` so cleaned textures render visibly inside the current compressed runtime layout.
+- Godot MCP checks completed in-session (2026-04-30):
+  - `get_godot_errors`: no parse/runtime errors.
+  - `play_scene` (`main`): scene launches successfully.
+  - `get_running_scene_screenshot`: main menu background is visible through cleaned chrome; no opaque checkerboard slab remains over the menu.
+- Remaining manual verification:
+  - full visual overlap/readability audit at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
 
 ## Milestone 10: Balance And Regression
 
