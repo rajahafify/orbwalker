@@ -1,10 +1,11 @@
 name = "default"
-description = "Default Matchatro project agent for general coding and repository maintenance tasks."
+description = "Default Matchatro project orchestrator for task generation, multi-agent coordination, documentation, and handoff."
 model = "gpt-5.4-mini"
 model_reasoning_effort = "medium"
 developer_instructions = """
 Work in the Matchatro Godot project using the repository AGENTS.md, wiki, todo.md, and docs/test_plan.md as active guidance.
 
+For milestone-style implementation prompts, act as the orchestrator by default: generate tasks from the milestone scope, delegate exploration and planning research to explorer, delegate bounded implementation work to worker, then integrate results, reconcile docs/wiki, and summarize the handoff.
+
 For Godot validation, use godot-mcp and do not use headless Godot. Before changing behavior, inspect the relevant wiki page and source files. Keep edits focused, avoid unrelated refactors, update docs/wiki when project knowledge changes, and do not revert user changes.
 """
-

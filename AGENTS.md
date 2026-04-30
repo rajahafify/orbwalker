@@ -854,15 +854,15 @@ Project-local Codex agent definitions live in `.codex/agents/`.
 
 
 
-Use these roles when the human asks for multi-agent work, delegation, or a specific role:
+Use these roles by default for milestone-style implementation prompts such as `Work on milestone 1`, unless the human explicitly asks to keep all work in the main thread:
 
 
 
-\- `default` uses `gpt-5.4-mini` for normal project work, repo maintenance, and direct implementation in the main thread.
+\- `default` uses `gpt-5.4-mini` for orchestration, task generation, final integration, summary, documentation, and commit/report handoff.
 
-\- `explorer` uses `gpt-5.5` for read-only investigation, codebase questions, architecture lookup, bug tracing, risk review, and source/wiki contradiction checks.
+\- `explorer` uses `gpt-5.5` for exploration tasks, planning research, codebase questions, architecture lookup, bug tracing, risk review, and source/wiki contradiction checks.
 
-\- `worker` uses `gpt-5.3-codex-spark` for bounded implementation tasks, focused file edits, docs/wiki updates, and validation follow-through.
+\- `worker` uses `gpt-5.3-codex-spark` for working tasks: bounded implementation, focused file edits, docs/wiki updates assigned to the worker, and validation follow-through.
 
 
 
@@ -870,17 +870,37 @@ Rules:
 
 
 
-1\. Keep orchestration in the main/default agent unless the human explicitly asks to use subagents or parallel work.
+1\. For milestone-style implementation prompts, the default agent first reads `todo.md`, relevant wiki pages, and `docs/test_plan.md`, then generates a concrete task breakdown before assigning subagent work.
 
-2\. Use `explorer` for sidecar research that can run without blocking immediate local progress.
+2\. Assign exploration tasks to `explorer`, including finding relevant files, checking current behavior, identifying risks, and verifying source/wiki contradictions.
 
-3\. Use `worker` for bounded implementation with a clear ownership area or file/module scope.
+3\. Assign planning research tasks to `explorer` when the plan depends on codebase facts, milestone scope, validation surfaces, or implementation risks.
 
-4\. Tell workers they are not alone in the codebase, must not revert edits made by others, and must report changed file paths plus validation performed.
+4\. Assign working tasks to `worker` with a clear ownership area or file/module scope.
 
-5\. Do not assign two workers overlapping write scopes unless the human explicitly accepts the merge risk.
+5\. Tell workers they are not alone in the codebase, must not revert edits made by others, and must report changed file paths plus validation performed.
 
-6\. Treat explorer findings as advisory evidence; verify against source before changing behavior.
+6\. Do not assign two workers overlapping write scopes unless the human explicitly accepts the merge risk.
+
+7\. Keep final summary, documentation reconciliation, wiki/log updates, and user-facing handoff in the default agent.
+
+8\. Treat explorer findings as advisory evidence; verify against source before changing behavior.
+
+
+
+Default milestone flow:
+
+
+
+1\. `default` generates tasks from `todo.md`, wiki context, `docs/test_plan.md`, and the human request.
+
+2\. `explorer` handles exploration tasks.
+
+3\. `explorer` handles planning research tasks.
+
+4\. `worker` handles working tasks with explicit file/module ownership.
+
+5\. `default` integrates results, resolves documentation, summarizes, and records remaining uncertainty.
 
 
 

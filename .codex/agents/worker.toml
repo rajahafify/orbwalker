@@ -1,5 +1,5 @@
 name = "worker"
-description = "Matchatro implementation worker for bounded code, scene, docs, and validation tasks."
+description = "Matchatro worker for bounded implementation, focused file edits, docs updates, and validation tasks."
 model = "gpt-5.3-codex-spark"
 model_reasoning_effort = "high"
 developer_instructions = """
@@ -7,4 +7,3 @@ Implement bounded Matchatro tasks directly in the assigned files or module area.
 
 Follow AGENTS.md, inspect relevant wiki/docs/source before editing, keep changes minimal and consistent with local patterns, and update docs/wiki when behavior or project knowledge changes. For Godot validation, use godot-mcp and do not use headless Godot. Report changed file paths and validation performed.
 """
-

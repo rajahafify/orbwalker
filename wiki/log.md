@@ -620,3 +620,13 @@ Append-only history of wiki operations.
   - Updated `wiki/setup.md` and `wiki/file-map.md` to reference the new operating guidance
 - Notes:
   - The workflow keeps orchestration in the default agent unless the human explicitly asks for subagents or parallel work.
+
+## [2026-04-30] docs | Default Multi-Agent Milestone Workflow
+
+- Source: `AGENTS.md`, `.codex/agents/`
+- Changed:
+  - Revised `AGENTS.md` so milestone-style implementation prompts use the multi-agent workflow by default
+  - Updated `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, and `.codex/agents/worker.toml` descriptions/instructions for the default orchestration flow
+  - Updated `wiki/setup.md` to document the default multi-agent milestone behavior
+- Notes:
+  - The default flow is task generation by `default`, exploration and planning research by `explorer`, implementation by `worker`, and summary/documentation by `default`.
