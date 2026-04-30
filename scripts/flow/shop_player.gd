@@ -312,7 +312,7 @@ func _render_build_panel(progression_snapshot: Dictionary) -> void:
 	_hp_label.text = "HP %d / %d" % [int(player_state.current_hp), int(player_state.max_hp)]
 	_hp_bar.max_value = float(maxi(1, int(player_state.max_hp)))
 	_hp_bar.value = float(maxi(0, int(player_state.current_hp)))
-	_hero_portrait.texture = _visuals.placeholder_texture("shop_hero_portrait", Color(0.11, 0.16, 0.21, 1.0), Vector2i(192, 192))
+	_hero_portrait.texture = _visuals.hero_portrait()
 	_build_gold_label.text = "GOLD %d" % RunState.run_gold
 	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
 	if _selected_equipment_slot >= equipment_slots.size() or (_selected_equipment_slot >= 0 and String(equipment_slots[_selected_equipment_slot]) == ""):

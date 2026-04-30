@@ -585,3 +585,18 @@ Append-only history of wiki operations.
   - Updated QA and wiki docs to record the checkerboard fix and remaining multi-resolution visual QA
 - Notes:
   - Godot MCP `play_scene`, `get_running_scene_screenshot`, and `get_godot_errors` passed after the cleanup; the running screenshot no longer shows the opaque checkerboard overlay.
+
+## [2026-04-30] code-change | Character Art Polish Wiring
+
+- Source: `tools/asset_tools/generate_character_placeholders.py`, `resources/art/first_pass/enemies/`, `resources/art/first_pass/heroes/`, `resources/visual/first_pass_asset_map.json`, `scripts/ui/visual_registry.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`
+- Changed:
+  - Added deterministic placeholder portrait generator `tools/asset_tools/generate_character_placeholders.py`
+  - Added runtime portrait assets: `hero_orbwalker`, `enemy_ruin_lancer`, `enemy_vault_executioner`, `enemy_goldbound_keeper`
+  - Expanded `VisualRegistry` enemy portrait mapping for all current run encounter IDs and added `hero_portrait()` accessor
+  - Updated combat portrait binding to refresh `EnemyPortrait` from `_enemy_state.enemy_id` and bind `PlayerPortrait` from shared hero portrait
+  - Updated shop footer portrait binding to use the same shared hero portrait accessor
+  - Updated visual asset map with complete `enemy_portraits` and shared `hero_portraits` entries
+  - Updated `docs/test_plan.md`, `wiki/features.md`, and `wiki/file-map.md`
+- Notes:
+  - Godot MCP checks passed for script parse/runtime health and runtime first-encounter portrait binding (`enemy_1` + hero).
+  - Runtime boss-step and shop-step portrait progression still require manual interactive playthrough to observe in a single run flow.

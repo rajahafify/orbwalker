@@ -8,9 +8,17 @@
     "cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
     "cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
     "ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+    "ruin_lancer": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+    "vault_executioner": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+    "goldbound_keeper": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+    "training_goblin": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
     "iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
     "burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
     "prism_warden": "res://resources/art/first_pass/enemies/boss_prism_warden.png"
+  },
+  "hero_portraits": {
+    "default": "res://resources/art/first_pass/heroes/hero_orbwalker.png",
+    "orbwalker": "res://resources/art/first_pass/heroes/hero_orbwalker.png"
   },
   "sheets": {
     "orbs": "res://resources/art/first_pass/sheets/orb_icon_set_v1.png",

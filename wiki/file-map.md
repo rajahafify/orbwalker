@@ -4,7 +4,7 @@
 
 **Sources**: `project.godot`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-04-30
 
 ---
 
@@ -24,10 +24,10 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `scripts/flow/` - Transition and flow controllers for shop, boss relic reward, and summary surfaces. (source: `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/run_summary_placeholder.gd`, `scripts/flow/shop_placeholder.gd`)
 - `scripts/debug/` - Debug controller and resolver test runner. (source: `scripts/debug/board_debug_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)
 - `scripts/ui/` - Shared presentation helpers such as the visual registry and reusable player loadout/mastery HUD renderer. (source: `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`)
-- `tools/asset_tools/` - Utility scripts for asset extraction and cleanup, including HUD slicing, derived icon alpha cleanup, and generated main-menu chrome/icon alpha cleanup. (source: `tools/asset_tools/hud_extractor.gd`, `tools/asset_tools/clean_derived_icons.py`, `tools/asset_tools/clean_menu_art.py`)
-- `resources/art/first_pass/` - First-pass backgrounds, enemy portraits, UI sheets, VFX, derived icons, and the new `menu/` art package for the main menu background, logo, border, button plates, stat panel, and menu symbols. (source: repository layout, `resources/art/first_pass/menu/`)
+- `tools/asset_tools/` - Utility scripts for asset extraction, cleanup, and deterministic placeholder generation, including HUD slicing, derived icon alpha cleanup, menu chrome/icon alpha cleanup, and character portrait placeholder generation. (source: `tools/asset_tools/hud_extractor.gd`, `tools/asset_tools/clean_derived_icons.py`, `tools/asset_tools/clean_menu_art.py`, `tools/asset_tools/generate_character_placeholders.py`)
+- `resources/art/first_pass/` - First-pass backgrounds, enemy portraits, hero portraits, UI sheets, VFX, derived icons, and the `menu/` art package for the main menu background, logo, border, button plates, stat panel, and menu symbols. Character portrait placeholders now include `heroes/hero_orbwalker.png` and enemy variants for `ruin_lancer`, `vault_executioner`, and `goldbound_keeper`. (source: repository layout, `resources/art/first_pass/menu/`, `resources/art/first_pass/heroes/`, `resources/art/first_pass/enemies/`)
 - `resources/content/` - Content asset folders reserved for equipment, mastery, consumables, relics, boosters, enemies, bosses, and pricing. The current runtime content is still dictionary-backed, so these folders are not the primary source of truth yet. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
-- `resources/visual/` - First-pass visual asset map and theme resource. `resources/visual/first_pass_asset_map.json` now includes the main menu art package as a dedicated mapping block. (source: repository layout, `resources/visual/first_pass_asset_map.json`)
+- `resources/visual/` - First-pass visual asset map and theme resource. `resources/visual/first_pass_asset_map.json` includes main-menu art mappings plus complete runtime `enemy_portraits` and shared `hero_portraits` entries used by combat and shop portrait wiring. (source: repository layout, `resources/visual/first_pass_asset_map.json`)
 - `docs/` - Human-facing design, architecture, and QA docs. (source: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`)
 - `todo.md` - Milestone and scope tracker for prototype work. (source: `todo.md`)
 

@@ -329,6 +329,24 @@ Verification notes (2026-04-30, main menu checkerboard asset cleanup):
 - Remaining manual verification:
   - full visual overlap/readability audit at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
 
+Verification notes (2026-04-30, character art polish pass):
+- Added deterministic in-repo character placeholder PNGs for:
+  - `res://resources/art/first_pass/heroes/hero_orbwalker.png`
+  - `res://resources/art/first_pass/enemies/enemy_ruin_lancer.png`
+  - `res://resources/art/first_pass/enemies/enemy_vault_executioner.png`
+  - `res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png`
+- Updated portrait wiring and registry:
+  - `VisualRegistry.enemy_portrait(enemy_id)` now covers all runtime `enemy_id` values from `RunState` encounter tables plus fallback `training_goblin`.
+  - `VisualRegistry.hero_portrait()` added and used by both combat and shop.
+  - `resources/visual/first_pass_asset_map.json` now includes complete `enemy_portraits` entries and `hero_portraits.default`.
+- Godot MCP checks completed:
+  - `get_godot_errors`: session reported no parse/runtime errors after script/resource updates.
+  - editor-script portrait probe: hero and all runtime enemy/boss portraits loaded with no missing IDs; includes `ruin_lancer`, `vault_executioner`, `goldbound_keeper`, and boss IDs (`iron_gate`, `burning_knight`, `prism_warden`).
+  - runtime combat check (`play_scene` on `res://scenes/combat/combat_player.tscn` + `get_node_properties`): first encounter is `enemy_1` and both `EnemyPortrait` and `PlayerPortrait` are visible and bound to `enemy_cavern_striker.png` and `hero_orbwalker.png`.
+- Remaining manual verification:
+  - interactive progression to first boss in runtime combat (to observe live swap from normal-enemy portrait to boss portrait during real run advancement),
+  - interactive shop-step runtime check to confirm footer hero portrait visually matches combat portrait in the same run session.
+
 ## Milestone 10: Balance And Regression
 
 - [ ] Level 1 normal enemies are killable in roughly 3 turns by expert play.

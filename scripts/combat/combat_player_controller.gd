@@ -515,6 +515,7 @@ func _initialize_combat_state() -> void:
 	var encounter: Dictionary = RunState.current_encounter_snapshot()
 	_enemy_state = ENEMY_STATE_SCRIPT.new()
 	_enemy_state.configure_from_blueprint(encounter)
+	_refresh_character_portraits()
 	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
 	_combat.start_fight(_player_state, _enemy_state)
 	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
@@ -1631,8 +1632,8 @@ func _sync_enemy_stage() -> void:
 	if _intent_badge.texture == null:
 		_intent_badge.texture = _make_intent_placeholder_texture()
 	_intent_badge.visible = true
-	if _enemy_portrait.texture == null:
-		_enemy_portrait.texture = _make_enemy_placeholder_texture()
+	var enemy_texture := _visuals.enemy_portrait(_enemy_state.enemy_id)
+	_enemy_portrait.texture = enemy_texture if enemy_texture != null else _make_enemy_placeholder_texture()
 	_enemy_portrait.visible = true
 	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
 	_enemy_hp_bar.value = float(_enemy_state.current_hp)
@@ -2305,12 +2306,31 @@ func _ensure_placeholder_visuals() -> void:
 	if _intent_badge.texture == null:
 		_intent_badge.texture = _make_intent_placeholder_texture()
 	_intent_badge.visible = true
-	if _enemy_portrait.texture == null:
-		_enemy_portrait.texture = _make_enemy_placeholder_texture()
+	var enemy_texture: Texture2D = null
+	if _enemy_state != null:
+		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	if enemy_texture == null:
+		enemy_texture = _make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_texture
 	_enemy_portrait.visible = true
-	if _player_portrait.texture == null:
-		_player_portrait.texture = _make_hero_placeholder_texture()
+	var hero_texture := _visuals.hero_portrait()
+	if hero_texture == null:
+		hero_texture = _make_hero_placeholder_texture()
+	_player_portrait.texture = hero_texture
 	_player_portrait.visible = true
+
+
+func _refresh_character_portraits() -> void:
+	var enemy_texture: Texture2D = null
+	if _enemy_state != null:
+		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	if enemy_texture == null:
+		enemy_texture = _make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_texture
+	var hero_texture := _visuals.hero_portrait()
+	if hero_texture == null:
+		hero_texture = _make_hero_placeholder_texture()
+	_player_portrait.texture = hero_texture
 
 
 func _make_timer_placeholder_texture() -> Texture2D:

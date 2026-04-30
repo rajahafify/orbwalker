@@ -15,6 +15,7 @@ const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
 const PATH_UI_SHOP_CARD_SHEET := "res://resources/art/first_pass/ui/shop_card_kit_v1.png"
 const PATH_VFX_SHEET := "res://resources/art/first_pass/vfx/vfx_sprite_sheet_v1.png"
+const PATH_HERO_PORTRAIT := "res://resources/art/first_pass/heroes/hero_orbwalker.png"
 
 const _INTENT_INDEX_BY_TYPE := {
 	0: 0, # ATTACK
@@ -32,9 +33,16 @@ const _ENEMY_PORTRAIT_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
 	"ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+	"ruin_lancer": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+	"vault_executioner": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+	"goldbound_keeper": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+	"training_goblin": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
 	"burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
 	"prism_warden": "res://resources/art/first_pass/enemies/boss_prism_warden.png",
+	"striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+	"defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+	"charger": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
 }
 
 const _ICON_INDEX_BY_KEY := {
@@ -104,6 +112,7 @@ var _vfx_textures: Dictionary = {}
 
 var _combat_background: Texture2D
 var _shop_background: Texture2D
+var _hero_portrait: Texture2D
 var _ui_frames: Texture2D
 var _ui_bars: Texture2D
 var _ui_shop_cards: Texture2D
@@ -112,6 +121,7 @@ var _ui_shop_cards: Texture2D
 func _init() -> void:
 	_combat_background = _safe_load_texture(PATH_COMBAT_BACKGROUND, "combat_background")
 	_shop_background = _safe_load_texture(PATH_SHOP_BACKGROUND, "shop_background")
+	_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
 	_ui_frames = _safe_load_texture(PATH_UI_FRAME_SHEET, "ui_frame_sheet")
 	_ui_bars = _safe_load_texture(PATH_UI_BAR_SHEET, "ui_bar_sheet")
 	_ui_shop_cards = _safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
@@ -132,13 +142,21 @@ func shop_background() -> Texture2D:
 
 
 func enemy_portrait(enemy_id: String) -> Texture2D:
-	var path := String(_ENEMY_PORTRAIT_PATHS.get(enemy_id, ""))
+	var normalized_id := enemy_id.strip_edges().to_lower()
+	var path := String(_ENEMY_PORTRAIT_PATHS.get(normalized_id, ""))
 	if path == "":
-		_warn_missing("enemy_id:%s" % enemy_id)
+		_warn_missing("enemy_id:%s" % normalized_id)
 		var fallback := String(_ENEMY_PORTRAIT_PATHS.get("cavern_striker", ""))
 		return _safe_load_texture(fallback, "enemy_fallback")
-	var loaded := _safe_load_texture(path, "enemy:%s" % enemy_id)
+	var loaded := _safe_load_texture(path, "enemy:%s" % normalized_id)
 	return loaded if loaded != null else placeholder_texture("enemy_portrait")
+
+
+func hero_portrait() -> Texture2D:
+	if _hero_portrait != null:
+		return _hero_portrait
+	var fallback := placeholder_texture("hero_portrait_missing", Color(0.10, 0.16, 0.24, 1.0), Vector2i(192, 192))
+	return fallback
 
 
 func orb_texture(orb_id: int) -> Texture2D:
@@ -625,10 +643,16 @@ func _looks_like_checkerboard_texture(texture: Texture2D) -> bool:
 
 func _safe_load_texture(path: String, key: String) -> Texture2D:
 	var loaded: Variant = load(path)
-	if loaded == null:
-		_warn_missing("texture_path:%s" % key)
-		return null
-	return loaded as Texture2D
+	var texture := loaded as Texture2D
+	if texture != null:
+		return texture
+	if FileAccess.file_exists(path):
+		var image := Image.new()
+		var load_error := image.load(path)
+		if load_error == OK:
+			return ImageTexture.create_from_image(image)
+	_warn_missing("texture_path:%s" % key)
+	return null
 
 
 func _warn_missing(key: String) -> void:
