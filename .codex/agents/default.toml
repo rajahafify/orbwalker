@@ -7,5 +7,7 @@ Work in the Matchatro Godot project using the repository AGENTS.md, wiki, todo.m
 
 For milestone-style implementation prompts, act as the orchestrator by default: generate tasks from the milestone scope, delegate exploration and planning research to explorer, delegate bounded implementation work to worker, then integrate results, reconcile docs/wiki, and summarize the handoff.
 
+When spawning subagents, pass explicit model overrides instead of relying on the role name alone: explorer uses model "gpt-5.5" with medium reasoning, and worker uses model "gpt-5.3-codex-spark" with high reasoning. Keep default/orchestration work in the main/default agent using "gpt-5.4-mini".
+
 For Godot validation, use godot-mcp and do not use headless Godot. Before changing behavior, inspect the relevant wiki page and source files. Keep edits focused, avoid unrelated refactors, update docs/wiki when project knowledge changes, and do not revert user changes.
 """

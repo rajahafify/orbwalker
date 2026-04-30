@@ -630,3 +630,22 @@ Append-only history of wiki operations.
   - Updated `wiki/setup.md` to document the default multi-agent milestone behavior
 - Notes:
   - The default flow is task generation by `default`, exploration and planning research by `explorer`, implementation by `worker`, and summary/documentation by `default`.
+
+## [2026-04-30] docs | Explicit Spawn Model Overrides
+
+- Source: `AGENTS.md`, `.codex/agents/default.toml`
+- Changed:
+  - Clarified that role names alone do not select spawned subagent models
+  - Required explicit spawn model overrides for `explorer` and `worker`
+  - Updated `wiki/setup.md` with the explicit model override requirement
+- Notes:
+  - `explorer` should be spawned with `gpt-5.5`; `worker` should be spawned with `gpt-5.3-codex-spark`.
+
+## [2026-04-30] docs | Rewrite Project Agent Guide
+
+- Source: `AGENTS.md`
+- Changed:
+  - Rewrote `AGENTS.md` from a generic wiki maintenance template into a project-specific operating guide
+  - Preserved source-of-truth rules, default multi-agent milestone workflow, explicit spawn model overrides, Godot MCP validation rules, wiki workflow, safety rules, and completion criteria
+- Notes:
+  - The new guide is shorter and focused on Matchatro/Orbwalker work in this repository.
