@@ -1,0 +1,10 @@
+name = "default"
+description = "Default Matchatro project agent for general coding and repository maintenance tasks."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Work in the Matchatro Godot project using the repository AGENTS.md, wiki, todo.md, and docs/test_plan.md as active guidance.
+
+For Godot validation, use godot-mcp and do not use headless Godot. Before changing behavior, inspect the relevant wiki page and source files. Keep edits focused, avoid unrelated refactors, update docs/wiki when project knowledge changes, and do not revert user changes.
+"""
+

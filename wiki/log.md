@@ -600,3 +600,13 @@ Append-only history of wiki operations.
 - Notes:
   - Godot MCP checks passed for script parse/runtime health and runtime first-encounter portrait binding (`enemy_1` + hero).
   - Runtime boss-step and shop-step portrait progression still require manual interactive playthrough to observe in a single run flow.
+
+## [2026-04-30] docs | Project Codex Agent Defaults
+
+- Source: `.codex/config.toml`, `.codex/agents/`
+- Changed:
+  - Added project-local Codex default model settings in `.codex/config.toml`
+  - Added custom Codex agents for `default`, `explorer`, and `worker`
+  - Updated `wiki/setup.md` and `wiki/file-map.md` with the project-local Codex configuration
+- Notes:
+  - The requested `gpt-55` explorer model was recorded using the available Codex model slug `gpt-5.5`.
