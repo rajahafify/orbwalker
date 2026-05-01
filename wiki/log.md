@@ -824,3 +824,13 @@ Append-only history of wiki operations.
   - Rebalanced the combat board zone upward/smaller so the taller mastery panel fits between board and player HUD without overlap.
 - Notes:
   - Godot MCP `view_script`, `open_scene res://scenes/combat/combat_player.tscn`, `play_scene current`, `get_running_scene_screenshot`, `search_nodes`, `get_node_properties`, `execute_editor_script`, `get_godot_errors`, and `stop_running_scene` checks passed with no runtime errors. Running-scene properties confirmed the selected panel/card geometry and real icon/card texture paths; editor-script probes confirmed nonzero feedback text renders in the reserved lower lane.
+
+## [2026-05-01] code-change | Combat Minimal Chrome Taste Pass
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `wiki/features.md`
+- Changed:
+  - Rebalanced live combat into neutral, flatter panels with thinner borders and less gold chrome.
+  - Converted the live Elemental Mastery combat panel from the large ornate variant frame into a compact flat six-card rail while preserving mastery feedback labels and replay VFX source cards.
+  - Repositioned the player HUD internals to fit the expanded footer area after compacting mastery.
+- Notes:
+  - Godot MCP `play_scene current`, `get_scene_tree`, `get_node_properties`, and `get_godot_errors` checks passed with no runtime errors. Running-scene geometry confirmed board, compact mastery, and player panel zones do not overlap.

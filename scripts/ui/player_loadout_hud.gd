@@ -12,9 +12,9 @@ const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const MASTERY_CELL_WIDTH := 92.0
 const MASTERY_CELL_GAP := 24.0
-const COMBAT_MASTERY_CARD_SIZE := Vector2(156, 222)
-const COMBAT_MASTERY_CARD_GAP := 8.0
-const COMBAT_MASTERY_ICON_SIZE := Vector2(112, 112)
+const COMBAT_MASTERY_CARD_SIZE := Vector2(132, 104)
+const COMBAT_MASTERY_CARD_GAP := 14.0
+const COMBAT_MASTERY_ICON_SIZE := Vector2(46, 46)
 const COMBAT_MASTERY_ORDER: Array[int] = [
 	OrbType.Id.FIRE,
 	OrbType.Id.ICE,
@@ -23,26 +23,18 @@ const COMBAT_MASTERY_ORDER: Array[int] = [
 	OrbType.Id.ARMOR,
 	OrbType.Id.GOLD,
 ]
-const COMBAT_MASTERY_PREVIEW_CARD_PATH_BY_ORB_ID := {
-	OrbType.Id.FIRE: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_fire.png",
-	OrbType.Id.ICE: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_ice.png",
-	OrbType.Id.EARTH: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_earth.png",
-	OrbType.Id.HEART: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_heart.png",
-	OrbType.Id.ARMOR: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_armor.png",
-	OrbType.Id.GOLD: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_gold.png",
-}
 const RELIC_SLOT_SIZE := Vector2(58, 58)
 const RELIC_ICON_SIZE := Vector2(48, 48)
 const RELIC_SLOT_GAP := 8.0
-const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 468)
-const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
-const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
-const VITALS_PANEL_RECT := Rect2(Vector2(272, 26), Vector2(714, 176))
-const VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(714, 176))
-const PLAYER_HP_BAR_RECT := Rect2(Vector2(18, 52), Vector2(678, 54))
+const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 640)
+const HERO_CARD_RECT := Rect2(Vector2(42, 58), Vector2(220, 246))
+const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 214))
+const VITALS_PANEL_RECT := Rect2(Vector2(294, 76), Vector2(714, 196))
+const VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(714, 196))
+const PLAYER_HP_BAR_RECT := Rect2(Vector2(18, 62), Vector2(678, 54))
 const PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(18, 112), Vector2(434, 34))
 const ARMOR_BADGE_RECT := Rect2(Vector2(474, 112), Vector2(222, 34))
-const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 248), Vector2(996, 150))
+const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 430), Vector2(996, 166))
 const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 404), Vector2(996, 50))
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 34), Vector2(522, 88))
 const CONSUMABLE_RAIL_RECT := Rect2(Vector2(664, 34), Vector2(288, 88))
@@ -51,12 +43,11 @@ const CONSUMABLE_LABEL_RECT := Rect2(Vector2(628, 4), Vector2(328, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
-const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 222))
+const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _selected_equipment_slot := -1
 var _empty_silhouette_cache: Dictionary = {}
-var _combat_mastery_preview_card_cache: Dictionary = {}
 
 
 func set_selected_equipment_slot(slot_index: int) -> void:
@@ -185,56 +176,53 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		card.size = COMBAT_MASTERY_CARD_SIZE
 		card.position = Vector2(start_x + float(index) * (COMBAT_MASTERY_CARD_SIZE.x + COMBAT_MASTERY_CARD_GAP), 0.0)
 
-		var panel := TextureRect.new()
+		var panel := Panel.new()
 		panel.name = "CardPanel"
 		panel.custom_minimum_size = COMBAT_MASTERY_CARD_SIZE
 		panel.size = COMBAT_MASTERY_CARD_SIZE
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.texture = _combat_mastery_card_texture(orb_id)
-		panel.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		panel.stretch_mode = TextureRect.STRETCH_SCALE
-		panel.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
 
 		var icon := TextureRect.new()
 		icon.name = "MasteryIcon"
 		icon.custom_minimum_size = COMBAT_MASTERY_ICON_SIZE
 		icon.size = COMBAT_MASTERY_ICON_SIZE
-		icon.position = Vector2((COMBAT_MASTERY_CARD_SIZE.x - COMBAT_MASTERY_ICON_SIZE.x) * 0.5, 16.0)
+		icon.position = Vector2((COMBAT_MASTERY_CARD_SIZE.x - COMBAT_MASTERY_ICON_SIZE.x) * 0.5, 8.0)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_SCALE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture = _visuals.menu_mastery_icon(orb_id)
 		icon.tooltip_text = "%s Mastery" % OrbType.display_name(orb_id)
 
 		var name_label := Label.new()
 		name_label.name = "MasteryLabel"
 		name_label.text = OrbType.display_name(orb_id)
-		name_label.position = Vector2(8.0, 130.0)
-		name_label.size = Vector2(140.0, 38.0)
+		name_label.position = Vector2(8.0, 56.0)
+		name_label.size = Vector2(116.0, 22.0)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		name_label.add_theme_font_size_override("font_size", 24)
-		name_label.add_theme_color_override("font_color", Color(0.96, 0.89, 0.72, 1.0))
-		name_label.add_theme_constant_override("outline_size", 2)
-		name_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.98))
+		name_label.add_theme_font_size_override("font_size", 16)
+		name_label.add_theme_color_override("font_color", Color(0.88, 0.92, 0.96, 1.0))
+		name_label.add_theme_constant_override("outline_size", 1)
+		name_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
 
 		var level_label := Label.new()
 		level_label.name = "MasteryLevel"
 		level_label.text = "Lv %d" % level
-		level_label.position = Vector2(8.0, 160.0)
-		level_label.size = Vector2(140.0, 30.0)
+		level_label.position = Vector2(8.0, 76.0)
+		level_label.size = Vector2(116.0, 18.0)
 		level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		level_label.add_theme_font_size_override("font_size", 20)
-		level_label.add_theme_color_override("font_color", Color(0.99, 0.76, 0.31, 1.0))
-		level_label.add_theme_constant_override("outline_size", 2)
-		level_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.98))
+		level_label.add_theme_font_size_override("font_size", 14)
+		level_label.add_theme_color_override("font_color", Color(0.70, 0.76, 0.84, 1.0))
+		level_label.add_theme_constant_override("outline_size", 1)
+		level_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
 		level_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 		var feedback_label := Label.new()
 		feedback_label.name = "MasteryFeedback"
 		feedback_label.text = _combat_mastery_feedback_text(orb_id, feedback_value)
-		feedback_label.position = Vector2(8.0, 190.0)
-		feedback_label.size = Vector2(140.0, 24.0)
-		feedback_label.add_theme_font_size_override("font_size", 14)
+		feedback_label.position = Vector2(4.0, 78.0)
+		feedback_label.size = Vector2(124.0, 22.0)
+		feedback_label.add_theme_font_size_override("font_size", 13)
 		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.50, 0.86))
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -300,22 +288,22 @@ func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
 	return "+%d %s" % [value, feedback_kind]
 
 
+func _combat_mastery_card_stylebox(orb_id: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	var accent := OrbType.color(orb_id)
+	style.bg_color = Color(0.035, 0.055, 0.08, 0.96)
+	style.border_color = Color(accent.r, accent.g, accent.b, 0.58)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 4.0
+	style.content_margin_right = 4.0
+	style.content_margin_top = 4.0
+	style.content_margin_bottom = 4.0
+	return style
+
+
 func _combat_mastery_card_name(orb_id: int) -> String:
 	return "CombatMasteryCard%d" % orb_id
-
-
-func _combat_mastery_card_texture(orb_id: int) -> Texture2D:
-	var preview_path := String(COMBAT_MASTERY_PREVIEW_CARD_PATH_BY_ORB_ID.get(orb_id, ""))
-	if preview_path != "":
-		var cached := _combat_mastery_preview_card_cache.get(preview_path, null) as Texture2D
-		if cached != null:
-			return cached
-		if ResourceLoader.exists(preview_path):
-			var loaded := load(preview_path) as Texture2D
-			if loaded != null:
-				_combat_mastery_preview_card_cache[preview_path] = loaded
-				return loaded
-	return _visuals.mastery_card_texture(orb_id)
 
 
 func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) -> void:

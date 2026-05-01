@@ -133,18 +133,17 @@ const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
 const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
-const ENEMY_PANEL_RECT := Rect2(Vector2(16, 72), Vector2(1048, 360))
-const COMBAT_STRIP_RECT := Rect2(Vector2(16, 438), Vector2(1048, 72))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 500), Vector2(1048, 584))
-const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1084), Vector2(1048, 368))
-const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(0, 28), Vector2(1048, 68))
-const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(0, 122), Vector2(1048, 222))
-const MASTERY_PREVIEW_PANEL_FRAME_PATH := "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png"
-const PLAYER_PANEL_RECT := Rect2(Vector2(0, 1452), Vector2(1080, 468))
+const ENEMY_PANEL_RECT := Rect2(Vector2(16, 70), Vector2(1048, 340))
+const COMBAT_STRIP_RECT := Rect2(Vector2(16, 424), Vector2(1048, 56))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 492), Vector2(1048, 584))
+const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1092), Vector2(1048, 172))
+const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(0, 8), Vector2(1048, 32))
+const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(0, 48), Vector2(1048, 108))
+const PLAYER_PANEL_RECT := Rect2(Vector2(0, 1280), Vector2(1080, 640))
 const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
-const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
-const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
-const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
+const ENEMY_STAGE_RECT := Rect2(Vector2(0, 70), Vector2(1048, 216))
+const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 286), Vector2(1048, 52))
+const ENEMY_PORTRAIT_SIZE := Vector2(280, 216)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
 const BOARD_SURFACE_SIZE := Vector2(480, 576)
 const BOARD_SURFACE_TOP := 4.0
@@ -167,7 +166,7 @@ const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 404), Vector2(996, 50))
 const PLAYER_RELIC_RECT := Rect2(Vector2(230, 224), Vector2(740, 38))
 const PLAYER_PORTRAIT_SIZE := Vector2(188, 194)
 const COMBAT_STRIP_INSET := 12.0
-const TIMER_TRACK_SIZE := Vector2(760, 46)
+const TIMER_TRACK_SIZE := Vector2(720, 36)
 const TIMER_TRACK_PADDING := 5.0
 const TIMER_ICON_SIZE := Vector2(34, 34)
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 34), Vector2(522, 88))
@@ -270,10 +269,10 @@ func _apply_visual_chrome() -> void:
 	_board_view.board_background = Color(0.03, 0.04, 0.06, 0.96)
 
 	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
-	frame_style.border_color = Color(0.62, 0.49, 0.23, 0.92)
-	frame_style.set_border_width_all(2)
-	frame_style.set_corner_radius_all(6)
+	frame_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
+	frame_style.border_color = Color(0.18, 0.24, 0.31, 0.90)
+	frame_style.set_border_width_all(1)
+	frame_style.set_corner_radius_all(4)
 	frame_style.content_margin_left = 8.0
 	frame_style.content_margin_right = 8.0
 	frame_style.content_margin_top = 6.0
@@ -307,13 +306,13 @@ func _apply_visual_chrome() -> void:
 	_phase_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	_turn_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
 	for row_label in [_equipment_row_label, _consumable_row_label, _relic_row_label, _mastery_row_label]:
-		row_label.add_theme_color_override("font_color", Color(0.91, 0.80, 0.50, 1.0))
+		row_label.add_theme_color_override("font_color", Color(0.67, 0.73, 0.80, 1.0))
 		row_label.add_theme_font_size_override("font_size", FONT_SIZE_ROW_LABEL)
 	_armor_badge_label.add_theme_font_size_override("font_size", 16)
 	_armor_badge_label.add_theme_color_override("font_color", Color(0.88, 0.95, 1.0, 1.0))
 	_armor_badge_label.add_theme_constant_override("outline_size", 2)
 	_armor_badge_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.94))
-	_phase_label.add_theme_color_override("font_color", Color(0.84, 0.72, 0.44, 1.0))
+	_phase_label.add_theme_color_override("font_color", Color(0.70, 0.78, 0.86, 1.0))
 	_run_progress_label.add_theme_color_override("font_color", Color(0.82, 0.90, 0.98, 1.0))
 	_player_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.92, 1.0))
 	_player_armor_label.add_theme_color_override("font_color", Color(0.82, 0.94, 1.0, 1.0))
@@ -338,14 +337,14 @@ func _apply_visual_chrome() -> void:
 
 func _apply_board_focus_theme() -> void:
 	var shadow_style := StyleBoxFlat.new()
-	shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.36)
+	shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.24)
 	shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
 	shadow_style.set_corner_radius_all(12)
 	_board_shadow.add_theme_stylebox_override("panel", shadow_style)
 
 	var summary_style := StyleBoxFlat.new()
 	summary_style.bg_color = Color(0.03, 0.06, 0.10, 0.97)
-	summary_style.border_color = Color(0.66, 0.50, 0.24, 0.96)
+	summary_style.border_color = Color(0.26, 0.34, 0.44, 0.96)
 	summary_style.set_border_width_all(2)
 	summary_style.set_corner_radius_all(12)
 	summary_style.content_margin_left = 40.0
@@ -388,9 +387,9 @@ func _apply_debug_overlay_theme() -> void:
 func _apply_stat_chip_theme() -> void:
 	for stat_label in [_attack_stat_label, _armor_stat_label, _heart_stat_label, _gold_stat_label]:
 		var chip_style := StyleBoxFlat.new()
-		chip_style.bg_color = Color(0.08, 0.07, 0.06, 0.92)
-		chip_style.border_color = Color(0.44, 0.32, 0.16, 0.95)
-		chip_style.set_border_width_all(2)
+		chip_style.bg_color = Color(0.04, 0.07, 0.10, 0.92)
+		chip_style.border_color = Color(0.20, 0.27, 0.35, 0.95)
+		chip_style.set_border_width_all(1)
 		chip_style.set_corner_radius_all(4)
 		chip_style.content_margin_left = 8.0
 		chip_style.content_margin_right = 8.0
@@ -426,42 +425,42 @@ func _apply_progressbar_style(bar: ProgressBar, frame_texture: Texture2D, fill_t
 func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
-	bg.set_corner_radius_all(6)
-	bg.set_border_width_all(2)
-	bg.border_color = Color(0.52, 0.40, 0.19, 0.85)
+	bg.set_corner_radius_all(4)
+	bg.set_border_width_all(1)
+	bg.border_color = Color(0.18, 0.25, 0.34, 0.85)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = fill_color
-	fill.set_corner_radius_all(6)
+	fill.set_corner_radius_all(4)
 	bar.add_theme_stylebox_override("background", bg)
 	bar.add_theme_stylebox_override("fill", fill)
 
 
 func _apply_button_theme() -> void:
 	for button in [_back_button, _debug_toggle_button, _settings_button, _next_button]:
-		button.add_theme_color_override("font_color", Color(0.98, 0.93, 0.82, 1.0))
+		button.add_theme_color_override("font_color", Color(0.84, 0.89, 0.94, 1.0))
 		button.add_theme_font_size_override("font_size", 18)
 		var style_normal := StyleBoxFlat.new()
-		style_normal.bg_color = Color(0.15, 0.11, 0.05, 0.84)
-		style_normal.border_color = Color(0.64, 0.49, 0.21, 0.92)
-		style_normal.set_border_width_all(2)
-		style_normal.set_corner_radius_all(5)
+		style_normal.bg_color = Color(0.04, 0.07, 0.10, 0.84)
+		style_normal.border_color = Color(0.22, 0.30, 0.39, 0.92)
+		style_normal.set_border_width_all(1)
+		style_normal.set_corner_radius_all(4)
 		style_normal.content_margin_left = 8.0
 		style_normal.content_margin_right = 8.0
 		style_normal.content_margin_top = 4.0
 		style_normal.content_margin_bottom = 4.0
 		button.add_theme_stylebox_override("normal", style_normal)
 		var style_hover := style_normal.duplicate()
-		style_hover.bg_color = Color(0.23, 0.16, 0.08, 0.94)
+		style_hover.bg_color = Color(0.08, 0.12, 0.17, 0.94)
 		button.add_theme_stylebox_override("hover", style_hover)
 		button.add_theme_stylebox_override("pressed", style_hover)
 
 
 func _apply_timer_track_theme() -> void:
 	var timer_style := StyleBoxFlat.new()
-	timer_style.bg_color = Color(0.04, 0.10, 0.17, 0.96)
-	timer_style.border_color = Color(0.57, 0.45, 0.21, 0.95)
-	timer_style.set_border_width_all(2)
-	timer_style.set_corner_radius_all(8)
+	timer_style.bg_color = Color(0.035, 0.075, 0.11, 0.94)
+	timer_style.border_color = Color(0.20, 0.30, 0.40, 0.90)
+	timer_style.set_border_width_all(1)
+	timer_style.set_corner_radius_all(4)
 	var frame := _timer_track.get_node_or_null("TimerTrackFrame")
 	if frame is Panel:
 		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
@@ -471,16 +470,16 @@ func _apply_timer_label_readability(label: Label) -> void:
 	label.add_theme_color_override("font_shadow_color", Color(0.01, 0.02, 0.03, 0.95))
 	label.add_theme_constant_override("shadow_offset_x", 1)
 	label.add_theme_constant_override("shadow_offset_y", 2)
-	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_constant_override("outline_size", 2)
 	label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.80))
 
 
 func _apply_loadout_group_theme() -> void:
 	var inner_panel_style := StyleBoxFlat.new()
 	inner_panel_style.bg_color = Color(0.05, 0.08, 0.12, 0.98)
-	inner_panel_style.border_color = Color(0.21, 0.26, 0.33, 0.95)
-	inner_panel_style.set_border_width_all(2)
-	inner_panel_style.set_corner_radius_all(6)
+	inner_panel_style.border_color = Color(0.18, 0.24, 0.31, 0.95)
+	inner_panel_style.set_border_width_all(1)
+	inner_panel_style.set_corner_radius_all(4)
 	inner_panel_style.content_margin_left = 8.0
 	inner_panel_style.content_margin_right = 8.0
 	inner_panel_style.content_margin_top = 6.0
@@ -491,22 +490,22 @@ func _apply_loadout_group_theme() -> void:
 
 	var vitals_frame_style := StyleBoxFlat.new()
 	vitals_frame_style.bg_color = Color(0.04, 0.08, 0.13, 0.98)
-	vitals_frame_style.border_color = Color(0.21, 0.28, 0.37, 0.96)
-	vitals_frame_style.set_border_width_all(2)
-	vitals_frame_style.set_corner_radius_all(6)
+	vitals_frame_style.border_color = Color(0.18, 0.25, 0.34, 0.96)
+	vitals_frame_style.set_border_width_all(1)
+	vitals_frame_style.set_corner_radius_all(4)
 	_vitals_frame.add_theme_stylebox_override("panel", vitals_frame_style)
 
 	var badge_style := StyleBoxFlat.new()
 	badge_style.bg_color = Color(0.08, 0.09, 0.12, 0.98)
-	badge_style.border_color = Color(0.66, 0.49, 0.24, 1.0)
-	badge_style.set_border_width_all(2)
+	badge_style.border_color = Color(0.24, 0.32, 0.42, 1.0)
+	badge_style.set_border_width_all(1)
 	badge_style.set_corner_radius_all(6)
 	_hero_level_badge.visible = false
 
 	var armor_badge_style := StyleBoxFlat.new()
 	armor_badge_style.bg_color = Color(0.08, 0.19, 0.31, 0.98)
 	armor_badge_style.border_color = Color(0.40, 0.70, 0.96, 0.96)
-	armor_badge_style.set_border_width_all(2)
+	armor_badge_style.set_border_width_all(1)
 	armor_badge_style.set_corner_radius_all(6)
 	armor_badge_style.content_margin_left = 8.0
 	armor_badge_style.content_margin_right = 8.0
@@ -2632,38 +2631,22 @@ func _apply_combat_mastery_panel_layout() -> void:
 		_apply_design_rect(_elemental_mastery_title, ELEMENTAL_MASTERY_TITLE_RECT)
 		_elemental_mastery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_elemental_mastery_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_elemental_mastery_title.add_theme_font_size_override("font_size", 46)
-		_elemental_mastery_title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
-		_elemental_mastery_title.add_theme_constant_override("outline_size", 3)
+		_elemental_mastery_title.add_theme_font_size_override("font_size", 22)
+		_elemental_mastery_title.add_theme_color_override("font_color", Color(0.78, 0.84, 0.90, 1.0))
+		_elemental_mastery_title.add_theme_constant_override("outline_size", 1)
 		_elemental_mastery_title.add_theme_color_override("font_outline_color", Color(0.08, 0.04, 0.00, 0.98))
 	if _elemental_mastery_cards != null:
 		_apply_design_rect(_elemental_mastery_cards, ELEMENTAL_MASTERY_CARDS_RECT)
 
-	var frame_texture: Texture2D = _mastery_panel_frame_texture()
-	if frame_texture == null:
-		return
-	var frame := _elemental_mastery_panel.get_node_or_null("ElementalMasteryPanelFrame") as TextureRect
-	if frame == null:
-		frame = TextureRect.new()
-		frame.name = "ElementalMasteryPanelFrame"
-		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_elemental_mastery_panel.add_child(frame)
-		_elemental_mastery_panel.move_child(frame, 0)
-	frame.size = ELEMENTAL_MASTERY_PANEL_RECT.size
-	frame.position = Vector2.ZERO
-	frame.anchors_preset = Control.PRESET_TOP_LEFT
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_SCALE
-	frame.modulate = Color(1.0, 1.0, 1.0, 0.98)
-	frame.texture = frame_texture
-
-
-func _mastery_panel_frame_texture() -> Texture2D:
-	if ResourceLoader.exists(MASTERY_PREVIEW_PANEL_FRAME_PATH):
-		var preview := load(MASTERY_PREVIEW_PANEL_FRAME_PATH) as Texture2D
-		if preview != null:
-			return preview
-	return _visuals.mastery_panel_frame_texture()
+	var frame := _elemental_mastery_panel.get_node_or_null("ElementalMasteryPanelFrame")
+	if frame != null:
+		frame.queue_free()
+	var mastery_style := StyleBoxFlat.new()
+	mastery_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
+	mastery_style.border_color = Color(0.18, 0.24, 0.31, 0.90)
+	mastery_style.set_border_width_all(1)
+	mastery_style.set_corner_radius_all(4)
+	_elemental_mastery_panel.add_theme_stylebox_override("panel", mastery_style)
 
 
 func _combat_player_hud_nodes() -> Dictionary:
@@ -2814,10 +2797,10 @@ func _set_zone_guide(zone: Control, label_text: String) -> void:
 		(guide as Label).add_theme_font_size_override("font_size", 12)
 	else:
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
-		style.border_color = Color(0.62, 0.49, 0.23, 0.92)
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(6)
+		style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
+		style.border_color = Color(0.18, 0.24, 0.31, 0.90)
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(4)
 		if zone is PanelContainer:
 			(zone as PanelContainer).add_theme_stylebox_override("panel", style)
 		else:
