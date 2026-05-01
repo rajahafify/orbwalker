@@ -1621,7 +1621,8 @@ func _play_resolve_animations(
 	for pass_index in range(pass_results.size()):
 		var pass_result: Dictionary = pass_results[pass_index]
 		_resolve_trace_pass_index = pass_index
-		var group_count := Array(pass_result.get("groups", [])).size()
+		var presented_groups := _sorted_match_groups_for_presentation(pass_result.get("groups", []))
+		var group_count := presented_groups.size()
 		var fall_count := Array(pass_result.get("fall_moves", [])).size()
 		var refill_count := Array(pass_result.get("refill_spawns", [])).size()
 		var step_index := int(pass_result.get("step_index", pass_index))
@@ -1635,39 +1636,12 @@ func _play_resolve_animations(
 				refill_count,
 			]
 		)
-		var match_flash_seconds := _post_drag_duration(MATCH_FLASH_SECONDS)
-		_resolve_trace(
+		await _play_match_groups_for_pass(
+			presented_groups,
+			visual_board_state,
 			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_start groups=%d flash_ms=%d" % [
-				pass_index,
-				group_count,
-				int(round(match_flash_seconds * 1000.0)),
-			]
+			pass_index
 		)
-		await _trigger_match_feedback(pass_result.groups, match_flash_seconds)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_end groups=%d" % [pass_index, group_count]
-		)
-
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=clear_start groups=%d clear_ms=%d" % [
-				pass_index,
-				group_count,
-				int(round(_post_drag_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
-			]
-		)
-		_spawn_match_clear_bursts(pass_result.groups)
-		var clear_animation_seconds := _post_drag_duration(CLEAR_ANIMATION_SECONDS)
-		_board_view.animate_clear_groups(pass_result.groups, clear_animation_seconds)
-		await _wait_post_drag_presentation(CLEAR_ANIMATION_SECONDS)
-		_apply_visual_clear_groups(visual_board_state, pass_result.groups)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=clear_visual_commit groups=%d" % [pass_index, group_count]
-		)
-		await _play_combo_ticks_for_pass(pass_result.groups, resolve_trace_origin_usec, pass_index)
 		await _wait_post_drag_presentation(CASCADE_PASS_HOLD_SECONDS)
 
 		_resolve_trace(
@@ -1722,9 +1696,48 @@ func _trigger_match_feedback(groups: Array, flash_seconds: float) -> void:
 	await get_tree().create_timer(flash_seconds).timeout
 
 
-func _play_combo_ticks_for_pass(groups: Array, resolve_trace_origin_usec: int, pass_index: int) -> void:
+func _play_match_groups_for_pass(
+	groups: Array,
+	visual_board_state: BoardState,
+	resolve_trace_origin_usec: int,
+	pass_index: int
+) -> void:
 	for group_index in range(groups.size()):
 		var typed_group: Dictionary = groups[group_index]
+		var one_group: Array[Dictionary] = [typed_group]
+		var match_flash_seconds := _post_drag_duration(MATCH_FLASH_SECONDS)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=match_flash_start group_index=%d flash_ms=%d" % [
+				pass_index,
+				group_index,
+				int(round(match_flash_seconds * 1000.0)),
+			]
+		)
+		await _trigger_match_feedback(one_group, match_flash_seconds)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=match_flash_end group_index=%d" % [pass_index, group_index]
+		)
+
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=clear_start group_index=%d clear_ms=%d" % [
+				pass_index,
+				group_index,
+				int(round(_post_drag_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
+			]
+		)
+		_spawn_match_clear_bursts(one_group)
+		var clear_animation_seconds := _post_drag_duration(CLEAR_ANIMATION_SECONDS)
+		_board_view.animate_clear_groups(one_group, clear_animation_seconds)
+		await _wait_post_drag_presentation(CLEAR_ANIMATION_SECONDS)
+		_apply_visual_clear_groups(visual_board_state, one_group)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=clear_visual_commit group_index=%d" % [pass_index, group_index]
+		)
+
 		_resolve_combo_running += 1
 		var orb_id := int(typed_group.get("orb_id", -1))
 		var orb_symbol := "?"
@@ -1748,6 +1761,37 @@ func _play_combo_ticks_for_pass(groups: Array, resolve_trace_origin_usec: int, p
 		)
 		_update_combo_feedback(typed_group, _resolve_combo_running)
 		await _wait_post_drag_presentation(COMBO_COUNT_STEP_SECONDS)
+
+
+func _sorted_match_groups_for_presentation(groups: Array) -> Array:
+	var sorted_groups := groups.duplicate()
+	sorted_groups.sort_custom(_compare_match_groups_for_presentation)
+	return sorted_groups
+
+
+func _compare_match_groups_for_presentation(left: Dictionary, right: Dictionary) -> bool:
+	var left_anchor := _match_group_anchor(left)
+	var right_anchor := _match_group_anchor(right)
+	if left_anchor.y == right_anchor.y:
+		return left_anchor.x < right_anchor.x
+	return left_anchor.y < right_anchor.y
+
+
+func _match_group_anchor(group: Dictionary) -> Vector2i:
+	var cells: Array = group.get("cells", [])
+	if cells.is_empty():
+		return Vector2i(BoardState.COLUMN_COUNT, BoardState.ROW_COUNT)
+
+	var min_row := BoardState.ROW_COUNT
+	var min_column := BoardState.COLUMN_COUNT
+	for cell in cells:
+		var typed_cell: Vector2i = cell
+		if typed_cell.y < min_row:
+			min_row = typed_cell.y
+			min_column = typed_cell.x
+		elif typed_cell.y == min_row:
+			min_column = mini(min_column, typed_cell.x)
+	return Vector2i(min_column, min_row)
 
 
 func _update_combo_feedback(group: Dictionary, combo_value: int) -> void:

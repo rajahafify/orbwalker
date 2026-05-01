@@ -980,3 +980,13 @@ Append-only history of wiki operations.
   - Rebuilt shop's player area as the same `PlayerHudSection` hierarchy and compacted merchant, stock, relic, and action regions above the locked HUD position without changing shop economy or interaction behavior.
 - Notes:
   - Godot MCP `view_script`, scene load/instantiate probes, combat `play_scene` running-tree inspection, an active-run shop probe, and final `get_godot_errors` checks passed. Runtime geometry confirmed combat and shop share `PlayerHudSection` `(0,1092) 1080x828`, mastery `(16,0) 1048x172`, footer `(0,188) 1080x640`, and non-overlapping shop action row ending at `y=1076`.
+
+## [2026-05-02] code-change | Sequential Same-Pass Match Presentation
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Changed combat resolve presentation so same-pass match groups are sorted by top row then left column and shown one at a time.
+  - Moved each visible group through flash, clear animation, visual clear commit, combo tick, and Elemental Mastery preview before the next same-pass group begins.
+  - Kept gravity and refill after all groups in the pass so resolver logic, combo totals, and cascade outcomes remain unchanged.
+- Notes:
+  - Godot MCP `get_project_info`, `view_script`, `get_godot_errors`, `play_scene current`, and an editor-script ordering probe passed. Manual real-drag feel acceptance remains useful because the change is presentation timing.
