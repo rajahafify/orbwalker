@@ -834,3 +834,11 @@ Append-only history of wiki operations.
   - Repositioned the player HUD internals to fit the expanded footer area after compacting mastery.
 - Notes:
   - Godot MCP `play_scene current`, `get_scene_tree`, `get_node_properties`, and `get_godot_errors` checks passed with no runtime errors. Running-scene geometry confirmed board, compact mastery, and player panel zones do not overlap.
+
+## [2026-05-01] code-change | Combat Player HUD Spacing Tightening
+
+- Source: `scripts/ui/player_loadout_hud.gd`
+- Changed:
+  - Moved the combat footer hero card, vitals panel, and equipment/consumable loadout upward inside the player panel to remove the oversized empty gap between HP and loadout.
+- Notes:
+  - Godot MCP `play_scene current`, `get_scene_tree`, and `get_godot_errors` checks passed with no runtime errors. Running-scene geometry confirmed the player HUD sections remain visible and non-overlapping.
