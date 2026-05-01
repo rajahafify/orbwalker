@@ -146,10 +146,10 @@ const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
 const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
 const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
-const BOARD_SURFACE_SIZE := Vector2(560, 536)
-const BOARD_SURFACE_TOP := 24.0
-const BOARD_SHADOW_OFFSET := Vector2(18, 22)
-const BOARD_SHADOW_EXPAND := Vector2(34, 34)
+const BOARD_SURFACE_SIZE := Vector2(480, 576)
+const BOARD_SURFACE_TOP := 4.0
+const BOARD_SHADOW_OFFSET := Vector2(10, 0)
+const BOARD_SHADOW_EXPAND := Vector2(24, 8)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 250), Vector2(600, 320))
 const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
@@ -1796,16 +1796,27 @@ func _format_intent(intent: Dictionary) -> String:
 
 
 func _format_intent_compact(intent: Dictionary) -> String:
-	var label := String(intent.get("label", "Intent"))
+	var label := _intent_action_label(String(intent.get("label", "Intent")))
 	var attack := int(intent.get("attack", 0))
 	var block := int(intent.get("block", 0))
 	if attack > 0 and block > 0:
-		return "%s %d / %d" % [label, attack, block]
+		return "%s Atk %d / Block %d" % [label, attack, block]
 	if attack > 0:
-		return "%s %d" % [label, attack]
+		return "%s Atk %d" % [label, attack]
 	if block > 0:
-		return "%s %d" % [label, block]
+		return "%s Block %d" % [label, block]
 	return label
+
+
+func _intent_action_label(raw_label: String) -> String:
+	var parts := raw_label.strip_edges().split(" ", false)
+	var action_parts: Array[String] = []
+	for part in parts:
+		if not String(part).is_valid_int():
+			action_parts.append(part)
+	if action_parts.is_empty():
+		return "Intent"
+	return " ".join(action_parts)
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
@@ -2567,12 +2578,19 @@ func _apply_combat_strip_layout() -> void:
 
 
 func _apply_board_panel_layout() -> void:
+	_board_panel.clip_contents = true
 	_board_surface.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_board_surface.position = Vector2((BOARD_PANEL_RECT.size.x - BOARD_SURFACE_SIZE.x) * 0.5, BOARD_SURFACE_TOP)
 	_board_surface.size = BOARD_SURFACE_SIZE
 	_board_view_control.custom_minimum_size = BOARD_SURFACE_SIZE
-	_board_shadow.position = _board_surface.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
-	_board_shadow.size = BOARD_SURFACE_SIZE + BOARD_SHADOW_EXPAND
+	var shadow_position := _board_surface.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
+	var shadow_size := BOARD_SURFACE_SIZE + BOARD_SHADOW_EXPAND
+	shadow_size.x = minf(shadow_size.x, BOARD_PANEL_RECT.size.x)
+	shadow_size.y = minf(shadow_size.y, BOARD_PANEL_RECT.size.y)
+	shadow_position.x = clampf(shadow_position.x, 0.0, maxf(0.0, BOARD_PANEL_RECT.size.x - shadow_size.x))
+	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, BOARD_PANEL_RECT.size.y - shadow_size.y))
+	_board_shadow.position = shadow_position
+	_board_shadow.size = shadow_size
 	_apply_design_rect(_outcome_summary_panel, OUTCOME_SUMMARY_RECT)
 	_outcome_summary_root.position = Vector2(40.0, 34.0)
 	_outcome_summary_root.size = OUTCOME_SUMMARY_RECT.size - Vector2(80.0, 68.0)
