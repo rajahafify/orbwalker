@@ -313,6 +313,8 @@ func mastery_impact_texture(kind: String) -> Texture2D:
 
 func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
 	var normalized_key := icon_key.strip_edges().to_lower()
+	if normalized_key == "booster_fire" or normalized_key == "booster_elemental":
+		return menu_mastery_icon(OrbType.Id.FIRE)
 	var concrete_icon := _load_derived_icon(normalized_key)
 	if concrete_icon != null and not _looks_like_checkerboard_texture(concrete_icon):
 		return concrete_icon

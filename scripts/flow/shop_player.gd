@@ -5,14 +5,11 @@ const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.
 
 const DESIGN_SIZE := Vector2(1080, 1920)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 86))
-const MERCHANT_STAGE_RECT := Rect2(Vector2(16, 108), Vector2(1048, 330))
-const STOCK_PANEL_RECT := Rect2(Vector2(16, 452), Vector2(1048, 552))
-const RELIC_PANEL_RECT := Rect2(Vector2(16, 1018), Vector2(1048, 208))
-const ACTION_ROW_RECT := Rect2(Vector2(16, 1240), Vector2(1048, 112))
-const PLAYER_HUD_PANEL_RECT := Rect2(Vector2(0, 1366), Vector2(1080, 468))
-const PLAYER_RELIC_LABEL_RECT := Rect2(Vector2(52, 206), Vector2(120, 24))
-const PLAYER_RELIC_ICONS_RECT := Rect2(Vector2(176, 190), Vector2(560, 58))
-const OFFER_CARD_SIZE := Vector2(320, 468)
+const MERCHANT_STAGE_RECT := Rect2(Vector2(16, 108), Vector2(1048, 220))
+const STOCK_PANEL_RECT := Rect2(Vector2(16, 342), Vector2(1048, 454))
+const RELIC_PANEL_RECT := Rect2(Vector2(16, 810), Vector2(1048, 168))
+const ACTION_ROW_RECT := Rect2(Vector2(16, 992), Vector2(1048, 84))
+const OFFER_CARD_SIZE := Vector2(320, 370)
 const OFFER_CARD_GAP := 18.0
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
@@ -38,6 +35,9 @@ var _gold_pill: Panel
 var _gold_label: Label
 var _main_menu_button: Button
 var _merchant_stage: Panel
+var _merchant_backdrop: TextureRect
+var _merchant_scrim: ColorRect
+var _merchant_counter: ColorRect
 var _speech_card: Panel
 var _speech_label: Label
 var _boss_preview_label: Label
@@ -52,7 +52,11 @@ var _action_row: Control
 var _reroll_button: Button
 var _sell_equipment_button: Button
 var _continue_button: Button
+var _player_hud_section: Panel
 var _build_panel: Panel
+var _elemental_mastery_panel: Panel
+var _elemental_mastery_title: Label
+var _elemental_mastery_cards: Control
 var _player_panel_root: Control
 var _hero_card: Panel
 var _hero_card_root: Control
@@ -61,20 +65,12 @@ var _vitals_panel: Control
 var _vitals_frame: Panel
 var _hp_bar: ProgressBar
 var _hp_label: Label
-var _build_gold_label: Label
-var _gold_badge: Panel
 var _equipment_label: Label
 var _equipment_slots_root: Control
 var _consumable_label: Label
 var _consumable_slots_root: Control
-var _relic_label: Label
-var _relic_slots_root: Control
 var _loadout_frame: Panel
 var _loadout_root: Control
-var _mastery_strip: Panel
-var _mastery_root: Control
-var _mastery_title_label: Label
-var _mastery_cells_root: Control
 var _booster_overlay: ColorRect
 var _booster_modal: Panel
 var _booster_title_label: Label
@@ -121,6 +117,11 @@ func _create_ui() -> void:
 	_main_menu_button = _make_button("MainMenuButton", _top_bar, "Menu")
 
 	_merchant_stage = _make_panel("MerchantStage", _layout_root)
+	_merchant_backdrop = _make_texture("MerchantBackdrop", _merchant_stage)
+	_merchant_backdrop.texture = _visuals.shop_background()
+	_merchant_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_merchant_scrim = _make_color_rect("MerchantScrim", _merchant_stage, Color(0.0, 0.0, 0.0, 0.30))
+	_merchant_counter = _make_color_rect("MerchantCounter", _merchant_stage, Color(0.08, 0.045, 0.025, 0.88))
 	_speech_card = _make_panel("SpeechCard", _merchant_stage)
 	_speech_label = _make_label("SpeechLabel", _speech_card, "Well met. New stock, fresh from the depths.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_boss_preview_label = _make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 15, MUTED_COLOR)
@@ -144,7 +145,11 @@ func _create_ui() -> void:
 	_sell_equipment_button = _make_button("SellEquipmentButton", _action_row, "Sell Selected")
 	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
 
-	_build_panel = _make_panel("PlayerPanel", _layout_root)
+	_player_hud_section = _make_panel("PlayerHudSection", _layout_root)
+	_elemental_mastery_panel = _make_panel("ElementalMasteryPanel", _player_hud_section)
+	_elemental_mastery_title = _make_label("ElementalMasteryTitle", _elemental_mastery_panel, "ELEMENTAL MASTERY", 22, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_elemental_mastery_cards = _make_root("ElementalMasteryCards", _elemental_mastery_panel)
+	_build_panel = _make_panel("PlayerPanel", _player_hud_section)
 	_player_panel_root = _make_root("PlayerPanelRoot", _build_panel)
 	_hero_card = _make_panel("HeroCard", _player_panel_root)
 	_hero_card_root = _make_root("HeroCardRoot", _hero_card)
@@ -156,21 +161,12 @@ func _create_ui() -> void:
 	_hp_bar.show_percentage = false
 	_vitals_panel.add_child(_hp_bar)
 	_hp_label = _make_label("PlayerHpLabel", _vitals_panel, "HP -", 24, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_gold_badge = _make_panel("GoldBadge", _vitals_panel)
-	_build_gold_label = _make_label("GoldBadgeLabel", _gold_badge, "GOLD 0", 18, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_loadout_frame = _make_panel("LoadoutFrame", _player_panel_root)
 	_loadout_root = _make_root("LoadoutRoot", _loadout_frame)
 	_equipment_label = _make_label("EquipmentLabel", _loadout_root, "EQUIPMENT", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_equipment_slots_root = _make_root("EquipmentIcons", _loadout_root)
 	_consumable_label = _make_label("ConsumableLabel", _loadout_root, "CONSUMABLES", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_consumable_slots_root = _make_root("ConsumableIcons", _loadout_root)
-	_relic_label = _make_label("RelicLabel", _player_panel_root, "RELICS", 18, MUTED_COLOR)
-	_relic_slots_root = _make_root("RelicIcons", _player_panel_root)
-
-	_mastery_strip = _make_panel("MasteryStrip", _player_panel_root)
-	_mastery_root = _make_root("MasteryRoot", _mastery_strip)
-	_mastery_title_label = _make_label("MasteryLabel", _mastery_root, "MASTERY", 24, GOLD_COLOR)
-	_mastery_cells_root = _make_root("MasteryIcons", _mastery_root)
 
 	_booster_overlay = ColorRect.new()
 	_booster_overlay.name = "BoosterOverlay"
@@ -206,7 +202,6 @@ func _refresh_ui() -> void:
 	_run_progress_label.text = "Dungeon %d / %d | %s" % [RunState.dungeon_level, RunState.MAX_DUNGEON_LEVELS, RunState.level_sequence_label()]
 	_boss_preview_label.text = "Boss preview: %s" % RunState.current_level_boss_name()
 	_gold_label.text = "G  %d" % RunState.run_gold
-	_build_gold_label.text = "Gold %d" % RunState.run_gold
 	_detail_label.text = "Select a stock card or relic card to buy. Select an equipment slot before selling."
 
 	var item_offers: Array = shop_snapshot.get("item_offers", [])
@@ -219,7 +214,7 @@ func _refresh_ui() -> void:
 	_render_relic_card(Dictionary(shop_snapshot.get("relic_offer", {})), booster_pending)
 	_render_action_row(shop_snapshot, progression_snapshot, booster_pending)
 	_render_build_panel(progression_snapshot)
-	_render_mastery_strip(Dictionary(progression_snapshot.get("mastery_levels", {})))
+	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
 	_render_booster_overlay(pending_options)
 	_apply_shop_layout()
 
@@ -238,17 +233,17 @@ func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) 
 	_apply_button_chrome(card, _card_bg_color(rarity, disabled), _rarity_color(rarity), Color(0.18, 0.13, 0.08, 1.0))
 
 	var root := _make_child_root(card)
-	_make_dynamic_label(root, String(offer.get("type", "offer")).replace("_", " ").to_upper(), Rect2(Vector2(18, 12), Vector2(284, 24)), MUTED_COLOR, 15, HORIZONTAL_ALIGNMENT_CENTER)
-	_make_dynamic_label(root, String(offer.get("display_name", "Offer")), Rect2(Vector2(18, 38), Vector2(284, 78)), _rarity_color(rarity), 28, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_dynamic_label(root, rarity.to_upper(), Rect2(Vector2(70, 110), Vector2(180, 28)), _rarity_color(rarity), 17, HORIZONTAL_ALIGNMENT_CENTER)
+	_make_dynamic_label(root, rarity.to_upper(), Rect2(Vector2(70, 8), Vector2(180, 24)), _rarity_color(rarity), 16, HORIZONTAL_ALIGNMENT_CENTER)
+	_make_dynamic_label(root, String(offer.get("display_name", "Offer")), Rect2(Vector2(22, 36), Vector2(276, 64)), _rarity_color(rarity), 25, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_make_dynamic_label(root, String(offer.get("type", "offer")).replace("_", " ").to_upper(), Rect2(Vector2(18, 102), Vector2(284, 22)), MUTED_COLOR, 13, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(62, 144), Vector2(196, 138)), _panel_style(Color(0.05, 0.06, 0.08, 0.92), _rarity_color(rarity), 2, 8))
+	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(62, 134), Vector2(196, 116)), _panel_style(Color(0.04, 0.04, 0.05, 0.94), _rarity_color(rarity), 2, 8))
 	var icon := _make_texture("OfferIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(offer.get("icon_key", "")))
-	icon.position = Vector2(24, 14)
-	icon.size = Vector2(148, 110)
-	_make_dynamic_label(root, String(offer.get("description", "No details available.")), Rect2(Vector2(24, 300), Vector2(272, 82)), INK_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_price_badge(root, Rect2(Vector2(48, 400), Vector2(224, 54)), _price_text(price, sold_out, affordable, booster_pending), disabled)
+	icon.position = Vector2(18, 10)
+	icon.size = Vector2(160, 96)
+	_make_dynamic_label(root, String(offer.get("description", "No details available.")), Rect2(Vector2(26, 262), Vector2(268, 52)), INK_COLOR, 15, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_make_price_badge(root, Rect2(Vector2(56, 326), Vector2(208, 40)), _price_text(price, sold_out, affordable, booster_pending), disabled)
 
 
 func _render_empty_offer_card(card: Button) -> void:
@@ -286,15 +281,15 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 
 	var root := _make_child_root(_relic_card)
 	_make_dynamic_label(root, "DUNGEON RELIC", Rect2(Vector2(24, 10), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
-	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(30, 48), Vector2(160, 136)), _panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8))
+	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(30, 44), Vector2(150, 104)), _panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8))
 	var icon := _make_texture("RelicIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
-	icon.position = Vector2(12, 10)
-	icon.size = Vector2(136, 116)
-	_make_dynamic_label(root, "%s RELIC" % rarity.to_upper(), Rect2(Vector2(220, 50), Vector2(560, 26)), _rarity_color(rarity), 18)
-	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), Rect2(Vector2(220, 78), Vector2(560, 44)), _rarity_color(rarity), 30)
-	_make_dynamic_label(root, String(relic_offer.get("description", "No details available.")), Rect2(Vector2(220, 126), Vector2(560, 54)), INK_COLOR, 20, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_make_price_badge(root, Rect2(Vector2(810, 80), Vector2(196, 66)), _price_text(price, sold_out, affordable, booster_pending), disabled)
+	icon.position = Vector2(15, 8)
+	icon.size = Vector2(120, 88)
+	_make_dynamic_label(root, "%s RELIC" % rarity.to_upper(), Rect2(Vector2(210, 42), Vector2(560, 24)), _rarity_color(rarity), 16)
+	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), Rect2(Vector2(210, 66), Vector2(560, 38)), _rarity_color(rarity), 26)
+	_make_dynamic_label(root, String(relic_offer.get("description", "No details available.")), Rect2(Vector2(210, 108), Vector2(560, 42)), INK_COLOR, 17, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_make_price_badge(root, Rect2(Vector2(812, 58), Vector2(194, 54)), _price_text(price, sold_out, affordable, booster_pending), disabled)
 
 
 func _render_action_row(shop_snapshot: Dictionary, progression_snapshot: Dictionary, booster_pending: bool) -> void:
@@ -313,26 +308,16 @@ func _render_build_panel(progression_snapshot: Dictionary) -> void:
 	_hp_bar.max_value = float(maxi(1, int(player_state.max_hp)))
 	_hp_bar.value = float(maxi(0, int(player_state.current_hp)))
 	_hero_portrait.texture = _visuals.hero_portrait()
-	_build_gold_label.text = "GOLD %d" % RunState.run_gold
 	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
 	if _selected_equipment_slot >= equipment_slots.size() or (_selected_equipment_slot >= 0 and String(equipment_slots[_selected_equipment_slot]) == ""):
 		_selected_equipment_slot = -1
 	_player_loadout_hud.set_selected_equipment_slot(_selected_equipment_slot)
 	_player_loadout_hud.populate_loadout_slot_row(_equipment_slots_root, equipment_slots, "equipment", 5, true)
 	_player_loadout_hud.populate_loadout_slot_row(_consumable_slots_root, Array(progression_snapshot.get("consumable_slots", [])), "consumable", 3)
-	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
-	_player_loadout_hud.populate_relic_row(_relic_slots_root, relic_ids, 4)
-	var has_relic := false
-	for relic_id in relic_ids:
-		if String(relic_id) != "":
-			has_relic = true
-			break
-	_relic_label.visible = has_relic
-	_relic_slots_root.visible = has_relic
 
 
-func _render_mastery_strip(mastery_levels: Dictionary) -> void:
-	_player_loadout_hud.populate_mastery_row(_mastery_cells_root, mastery_levels)
+func _render_elemental_mastery_panel(mastery_levels: Dictionary) -> void:
+	_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
 
 
 func _render_booster_overlay(pending_options: Array) -> void:
@@ -527,7 +512,6 @@ func _apply_shop_layout() -> void:
 	_apply_rect(_stock_panel, STOCK_PANEL_RECT)
 	_apply_rect(_relic_card, RELIC_PANEL_RECT)
 	_apply_rect(_action_row, ACTION_ROW_RECT)
-	_apply_rect(_build_panel, PLAYER_HUD_PANEL_RECT)
 
 	_apply_rect(_crest_panel, Rect2(Vector2(18, 15), Vector2(58, 58)))
 	_apply_rect(_crest_label, Rect2(Vector2.ZERO, Vector2(58, 58)))
@@ -537,11 +521,14 @@ func _apply_shop_layout() -> void:
 	_apply_rect(_gold_label, Rect2(Vector2.ZERO, Vector2(190, 58)))
 	_apply_rect(_main_menu_button, Rect2(Vector2(928, 15), Vector2(96, 58)))
 
-	_apply_rect(_speech_card, Rect2(Vector2(34, 42), Vector2(380, 150)))
-	_apply_rect(_speech_label, Rect2(Vector2(20, 18), Vector2(340, 90)))
-	_apply_rect(_boss_preview_label, Rect2(Vector2(20, 116), Vector2(340, 22)))
-	_apply_rect(_summary_label, Rect2(Vector2(34, 218), Vector2(680, 34)))
-	_apply_rect(_detail_label, Rect2(Vector2(34, 258), Vector2(830, 34)))
+	_apply_rect(_merchant_backdrop, Rect2(Vector2.ZERO, MERCHANT_STAGE_RECT.size))
+	_apply_rect(_merchant_scrim, Rect2(Vector2.ZERO, MERCHANT_STAGE_RECT.size))
+	_apply_rect(_merchant_counter, Rect2(Vector2(0, 166), Vector2(MERCHANT_STAGE_RECT.size.x, 54)))
+	_apply_rect(_speech_card, Rect2(Vector2(34, 32), Vector2(380, 122)))
+	_apply_rect(_speech_label, Rect2(Vector2(20, 14), Vector2(340, 72)))
+	_apply_rect(_boss_preview_label, Rect2(Vector2(20, 92), Vector2(340, 22)))
+	_apply_rect(_summary_label, Rect2(Vector2(34, 162), Vector2(704, 26)))
+	_apply_rect(_detail_label, Rect2(Vector2(34, 190), Vector2(858, 24)))
 
 	_apply_rect(_stock_title_label, Rect2(Vector2.ZERO + Vector2(0, 14), Vector2(STOCK_PANEL_RECT.size.x, 40)))
 	_apply_rect(_offer_grid, Rect2(Vector2(22, 68), Vector2(STOCK_PANEL_RECT.size.x - 44.0, OFFER_CARD_SIZE.y)))
@@ -552,11 +539,7 @@ func _apply_shop_layout() -> void:
 	_apply_rect(_sell_equipment_button, Rect2(Vector2(342, 0), Vector2(316, ACTION_ROW_RECT.size.y)))
 	_apply_rect(_continue_button, Rect2(Vector2(684, 0), Vector2(364, ACTION_ROW_RECT.size.y)))
 
-	_player_loadout_hud.apply_combat_player_panel_layout(_shop_player_hud_nodes())
-	_apply_rect(_gold_badge, Rect2(Vector2(474, 112), Vector2(222, 34)))
-	_apply_rect(_build_gold_label, Rect2(Vector2.ZERO, Vector2(222, 34)))
-	_apply_rect(_relic_label, PLAYER_RELIC_LABEL_RECT)
-	_apply_rect(_relic_slots_root, PLAYER_RELIC_ICONS_RECT)
+	_player_loadout_hud.apply_player_hud_layout(_shop_player_hud_nodes())
 
 	_apply_rect(_booster_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
 	_apply_rect(_booster_modal, Rect2(Vector2(152, 610), Vector2(776, 420)))
@@ -575,38 +558,36 @@ func _apply_rect(control: Control, rect: Rect2) -> void:
 
 func _shop_player_hud_nodes() -> Dictionary:
 	return {
+		"section": _player_hud_section,
+		"mastery_panel": _elemental_mastery_panel,
+		"mastery_title": _elemental_mastery_title,
+		"mastery_cards": _elemental_mastery_cards,
+		"footer_panel": _build_panel,
+		"footer_root": _player_panel_root,
 		"root": _player_panel_root,
 		"hero_card": _hero_card,
+		"hero_card_root": _hero_card_root,
 		"hero_portrait": _hero_portrait,
 		"vitals_panel": _vitals_panel,
 		"vitals_frame": _vitals_frame,
 		"hp_bar": _hp_bar,
 		"hp_label": _hp_label,
-		"armor_badge": _gold_badge,
-		"armor_badge_label": _build_gold_label,
 		"loadout_frame": _loadout_frame,
 		"loadout_root": _loadout_root,
 		"equipment_label": _equipment_label,
 		"equipment_icons": _equipment_slots_root,
 		"consumable_label": _consumable_label,
 		"consumable_icons": _consumable_slots_root,
-		"mastery_strip": _mastery_strip,
-		"mastery_root": _mastery_root,
-		"mastery_label": _mastery_title_label,
-		"mastery_icons": _mastery_cells_root,
 	}
 
 
 func _apply_visual_chrome() -> void:
-	for panel in [_top_bar, _merchant_stage, _stock_panel, _build_panel]:
+	for panel in [_top_bar, _stock_panel]:
 		(panel as Panel).add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8))
-	_speech_card.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.05, 0.06, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8))
+	_merchant_stage.add_theme_stylebox_override("panel", _panel_style(Color(0.03, 0.04, 0.05, 0.60), Color(0.66, 0.48, 0.21, 0.98), 2, 8))
+	_speech_card.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8))
 	_crest_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32))
 	_gold_pill.add_theme_stylebox_override("panel", _panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8))
-	for panel in [_hero_card, _vitals_frame, _loadout_frame, _mastery_strip]:
-		(panel as Panel).add_theme_stylebox_override("panel", _panel_style(Color(0.05, 0.08, 0.12, 0.98), Color(0.21, 0.26, 0.33, 0.95), 2, 6))
-	_gold_badge.add_theme_stylebox_override("panel", _panel_style(Color(0.14, 0.09, 0.04, 0.96), GOLD_COLOR, 2, 5))
-	_apply_progressbar_flat_style(_hp_bar, Color(0.78, 0.16, 0.17, 1.0))
 	_booster_modal.add_theme_stylebox_override("panel", _panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12))
 	_booster_overlay.color = Color(0.0, 0.0, 0.0, 0.68)
 
@@ -615,20 +596,20 @@ func _apply_visual_chrome() -> void:
 	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
 	_apply_button_chrome(_continue_button, Color(0.12, 0.30, 0.06, 0.96), Color(0.54, 0.78, 0.24, 1.0), Color(0.18, 0.40, 0.08, 0.98))
 
-	for label in [_title_label, _gold_label, _stock_title_label, _mastery_title_label, _booster_title_label]:
+	for label in [_title_label, _gold_label, _stock_title_label, _booster_title_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for label in [_run_progress_label, _boss_preview_label, _detail_label, _equipment_label, _consumable_label, _relic_label, _booster_hint_label]:
+	for label in [_run_progress_label, _boss_preview_label, _detail_label, _equipment_label, _consumable_label, _elemental_mastery_title, _booster_hint_label]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
-	for label in [_speech_label, _hp_label, _build_gold_label, _crest_label]:
+	for label in [_speech_label, _hp_label, _crest_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	_build_gold_label.add_theme_color_override("font_color", GOLD_COLOR)
 	for button in [_main_menu_button, _reroll_button, _sell_equipment_button, _continue_button]:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 23)
+	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())
 
 
 func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
@@ -650,19 +631,6 @@ func _panel_style(bg_color: Color, border_color: Color, border_width: int = 2, r
 	style.content_margin_top = 6.0
 	style.content_margin_bottom = 6.0
 	return style
-
-
-func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
-	bg.border_color = Color(0.52, 0.40, 0.19, 0.85)
-	bg.set_border_width_all(2)
-	bg.set_corner_radius_all(6)
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = fill_color
-	fill.set_corner_radius_all(6)
-	bar.add_theme_stylebox_override("background", bg)
-	bar.add_theme_stylebox_override("fill", fill)
 
 
 func _make_panel(node_name: String, parent: Node) -> Panel:
@@ -698,6 +666,15 @@ func _make_texture(node_name: String, parent: Node) -> TextureRect:
 	texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(texture)
 	return texture
+
+
+func _make_color_rect(node_name: String, parent: Node, color: Color) -> ColorRect:
+	var rect := ColorRect.new()
+	rect.name = node_name
+	rect.color = color
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(rect)
+	return rect
 
 
 func _make_label(node_name: String, parent: Node, text: String, font_size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, enable_wrap: bool = false) -> Label:

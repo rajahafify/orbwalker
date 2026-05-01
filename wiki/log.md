@@ -842,3 +842,34 @@ Append-only history of wiki operations.
   - Moved the combat footer hero card, vitals panel, and equipment/consumable loadout upward inside the player panel to remove the oversized empty gap between HP and loadout.
 - Notes:
   - Godot MCP `play_scene current`, `get_scene_tree`, and `get_godot_errors` checks passed with no runtime errors. Running-scene geometry confirmed the player HUD sections remain visible and non-overlapping.
+
+## [2026-05-02] code-change | Shop Page Polish
+
+- Source: `scripts/flow/shop_player.gd`, `scripts/ui/visual_registry.gd`, `wiki/features.md`
+- Changed:
+  - Added an image-backed merchant stage layer with backdrop, scrim, and counter band so the shop page reads closer to the supplied reference instead of a flat debug panel.
+  - Rebalanced stock and relic card internals around rarity, name, larger item art, shorter description lanes, and price badges without changing buy/sell/reroll behavior.
+  - Routed booster fire/elemental icon fallback to the existing fire mastery icon so booster cards avoid plain color-block placeholder art.
+- Notes:
+  - Godot MCP `get_project_info`, `view_script`, `execute_editor_script` scene instantiate probe, and `get_godot_errors` were used. A stale pre-fix booster fallback warning remained in the Godot log buffer, but the post-fix editor-script probe confirmed `booster_fire` resolves to a non-null icon.
+
+## [2026-05-02] code-change | Reusable Player Footer
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `wiki/features.md`
+- Changed:
+  - Added `PlayerLoadoutHud.apply_player_footer_layout(...)` as the explicit reusable footer layout contract and switched combat/shop call sites to it.
+  - Removed shop-only footer gold and relic nodes from `shop_player.gd`; shop now uses a combat-style player HUD structure with Elemental Mastery as the sibling rail above `PlayerPanel`, and the shared footer inside `PlayerPanel` for hero portrait, HP, equipment, and consumables.
+  - Kept shop gold in the top bar and left shop offers, relic offer, reroll, sell, continue, and booster behavior unchanged.
+- Notes:
+  - Godot MCP `view_script`, `execute_editor_script` scene instantiate checks, combat `play_scene`, combat running scene-tree inspection, and `get_godot_errors` checks passed. A follow-up source/parse check confirmed the shop footer-root offset was removed and `ElementalMasteryPanel` is no longer parented under `PlayerPanel`. Shop runtime scene-tree inspection still needs an active-run launch path because playing the shop scene directly redirects to main when the game-process `RunState` is inactive.
+
+## [2026-05-02] code-change | Connected Shared Player HUD
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Promoted `PlayerLoadoutHud` from footer-only layout helper to the shared full player HUD contract with `apply_player_hud_layout(...)` and `apply_player_hud_chrome(...)`.
+  - Added a connected `PlayerHudSection` layout shared by combat and shop: fixed bottom section, Elemental Mastery rail, footer panel, hero portrait, HP, equipment, and consumables.
+  - Reparented combat `ElementalMasteryPanel` and `PlayerPanel` under `PlayerHudSection` and normalized combat subpanels to marginless `Panel` nodes so shop and combat rects match.
+  - Rebuilt shop's player area as the same `PlayerHudSection` hierarchy and compacted merchant, stock, relic, and action regions above the locked HUD position without changing shop economy or interaction behavior.
+- Notes:
+  - Godot MCP `view_script`, scene load/instantiate probes, combat `play_scene` running-tree inspection, an active-run shop probe, and final `get_godot_errors` checks passed. Runtime geometry confirmed combat and shop share `PlayerHudSection` `(0,1092) 1080x828`, mastery `(16,0) 1048x172`, footer `(0,188) 1080x640`, and non-overlapping shop action row ending at `y=1076`.

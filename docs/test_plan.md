@@ -257,6 +257,16 @@ Verification notes (2026-04-29, player section cohesion fix pass):
   - `ArmorBadge` starts hidden at zero armor.
   - `MasteryIcons` renders six fixed-width cells under the expanded `MasteryStrip`.
 - Manual visual acceptance pass is still required at `1080x1920`, `900x1600`, `1920x1080`, and `1366x768`.
+Verification notes (2026-05-02, connected shared player HUD pass):
+- Promoted `PlayerLoadoutHud` into the canonical combat/shop player HUD layout helper with `apply_player_hud_layout(...)` and `apply_player_hud_chrome(...)`; `apply_player_footer_layout(...)` remains as a compatibility wrapper for footer-only callers.
+- Combat and shop now use one connected `PlayerHudSection` contract at `Rect2(Vector2(0, 1092), Vector2(1080, 828))`, with Elemental Mastery at `Rect2(Vector2(16, 0), Vector2(1048, 172))` and the footer at `Rect2(Vector2(0, 188), Vector2(1080, 640))`.
+- Shared visible HUD content is hero portrait, `HP current / max`, 5 equipment slots, 3 consumable slots, and the Elemental Mastery rail. Shop-specific footer gold, relic rows, sell/reroll controls, and relic offers stay outside the shared HUD; shop gold remains in the top bar.
+- Shop content was compacted above the locked HUD position without changing buy/sell/reroll/continue/booster behavior. The shop action row ends at design-space `y=1076`, leaving a 16px gap before `PlayerHudSection` starts at `y=1092`.
+- Godot MCP checks completed:
+  - `view_script` parse checks for `res://scripts/ui/player_loadout_hud.gd`, `res://scripts/flow/shop_player.gd`, and `res://scripts/combat/combat_player_controller.gd` reported no session errors.
+  - `execute_editor_script` scene load/instantiate check passed for `res://scenes/combat/combat_player.tscn` and `res://scenes/flow/shop_player.tscn`.
+  - Combat `play_scene current` plus running scene-tree inspection confirmed `PlayerHudSection`, `ElementalMasteryPanel`, `PlayerPanel`, `HeroCard`, `VitalsPanel`, `EquipmentIcons`, and `ConsumableIcons` retain the shared HUD geometry.
+  - Active-run shop runtime scene-tree inspection was performed through a temporary MCP-launched probe scene that started a run, advanced to shop, loaded `res://scenes/flow/shop_player.tscn`, and was removed after validation. The running shop tree matched the same `PlayerHudSection`, mastery, footer, hero, vitals, equipment, and consumable rects, and `get_godot_errors` reported no session errors after rerunning a real scene.
 Verification notes (2026-04-30, elemental mastery reference replay pass):
 - Rebuilt `ElementalMasteryPanel` as a taller reference-style panel between board and player HUD; the former bottom `MasteryStrip` remains hidden in combat.
 - Added six large mastery cards with generated card chrome, main-menu mastery iconography, title, `Lv N`, and transient `+N DAMAGE/HEAL/ARMOR/GOLD` text in the lower card slot.

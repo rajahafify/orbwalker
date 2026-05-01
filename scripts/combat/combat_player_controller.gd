@@ -39,9 +39,11 @@ extends Control
 @onready var _outcome_text_column: Control = %OutcomeTextColumn
 @onready var _outcome_title_label: Label = %OutcomeTitleLabel
 @onready var _outcome_body_label: Label = %OutcomeBodyLabel
-@onready var _player_panel: PanelContainer = %PlayerPanel
+@onready var _player_hud_section: Panel = %PlayerHudSection
+@onready var _player_panel: Panel = %PlayerPanel
 @onready var _player_panel_root: Control = %PlayerPanelRoot
-@onready var _hero_card: PanelContainer = %HeroCard
+@onready var _hero_card: Panel = %HeroCard
+@onready var _hero_card_root: Control = %HeroCardRoot
 @onready var _hero_level_badge: PanelContainer = %HeroLevelBadge
 @onready var _vitals_panel: Control = %VitalsPanel
 @onready var _vitals_frame: Panel = %VitalsFrame
@@ -55,7 +57,7 @@ extends Control
 @onready var _heart_stat_label: Label = %HeartStatLabel
 @onready var _gold_stat_label: Label = %GoldStatLabel
 @onready var _combat_meta_row: HBoxContainer = %CombatMetaRow
-@onready var _loadout_frame: PanelContainer = %LoadoutFrame
+@onready var _loadout_frame: Panel = %LoadoutFrame
 @onready var _loadout_root: Control = %LoadoutRoot
 @onready var _mastery_strip: Panel = %MasteryStrip
 @onready var _mastery_root: Control = %MasteryRoot
@@ -74,7 +76,7 @@ extends Control
 @onready var _relic_icons: HBoxContainer = %RelicIcons
 @onready var _mastery_icons: Control = %MasteryIcons
 @onready var _elemental_mastery_cards: Control = %ElementalMasteryCards
-@onready var _elemental_mastery_panel: PanelContainer = %ElementalMasteryPanel
+@onready var _elemental_mastery_panel: Panel = %ElementalMasteryPanel
 @onready var _elemental_mastery_title: Label = %ElementalMasteryTitle
 @onready var _relic_row: HBoxContainer = %RelicRow
 @onready var _equipment_row_label: Label = %EquipmentLabel
@@ -136,10 +138,6 @@ const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 70), Vector2(1048, 340))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 424), Vector2(1048, 56))
 const BOARD_PANEL_RECT := Rect2(Vector2(16, 492), Vector2(1048, 584))
-const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1092), Vector2(1048, 172))
-const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(0, 8), Vector2(1048, 32))
-const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(0, 48), Vector2(1048, 108))
-const PLAYER_PANEL_RECT := Rect2(Vector2(0, 1280), Vector2(1080, 640))
 const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
 const ENEMY_STAGE_RECT := Rect2(Vector2(0, 70), Vector2(1048, 216))
 const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 286), Vector2(1048, 52))
@@ -282,7 +280,6 @@ func _apply_visual_chrome() -> void:
 	_enemy_panel.add_theme_stylebox_override("panel", frame_style)
 	_combat_strip.add_theme_stylebox_override("panel", frame_style)
 	_board_frame.add_theme_stylebox_override("panel", frame_style)
-	_player_panel.add_theme_stylebox_override("panel", frame_style)
 	_debug_overlay.add_theme_stylebox_override("panel", frame_style)
 	_combat_log_frame.add_theme_stylebox_override("panel", frame_style)
 
@@ -324,6 +321,7 @@ func _apply_visual_chrome() -> void:
 	_apply_button_theme()
 	_apply_timer_track_theme()
 	_apply_loadout_group_theme()
+	_player_loadout_hud.apply_player_hud_chrome(_combat_player_hud_nodes())
 	_apply_board_focus_theme()
 	_apply_debug_overlay_theme()
 	_apply_stat_chip_theme()
@@ -2527,12 +2525,11 @@ func _apply_combat_layout() -> void:
 	_apply_design_rect(_enemy_panel, ENEMY_PANEL_RECT)
 	_apply_design_rect(_combat_strip, COMBAT_STRIP_RECT)
 	_apply_design_rect(_board_panel, BOARD_PANEL_RECT)
-	_apply_design_rect(_player_panel, PLAYER_PANEL_RECT)
+	_player_loadout_hud.apply_player_hud_layout(_combat_player_hud_nodes())
 	_apply_enemy_panel_layout()
 	_apply_combat_strip_layout()
 	_apply_board_panel_layout()
 	_apply_player_panel_layout()
-	_apply_combat_mastery_panel_layout()
 
 	if is_low_vertical:
 		_mastery_strip.visible = false
@@ -2606,7 +2603,6 @@ func _apply_board_panel_layout() -> void:
 
 
 func _apply_player_panel_layout() -> void:
-	_player_loadout_hud.apply_combat_player_panel_layout(_combat_player_hud_nodes())
 	_apply_design_rect(_stat_chip_row, PLAYER_STAT_CHIP_RECT)
 	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
 	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
@@ -2624,35 +2620,20 @@ func _apply_player_panel_layout() -> void:
 
 
 func _apply_combat_mastery_panel_layout() -> void:
-	if _elemental_mastery_panel == null:
-		return
-	_apply_design_rect(_elemental_mastery_panel, ELEMENTAL_MASTERY_PANEL_RECT)
-	if _elemental_mastery_title != null:
-		_apply_design_rect(_elemental_mastery_title, ELEMENTAL_MASTERY_TITLE_RECT)
-		_elemental_mastery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_elemental_mastery_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_elemental_mastery_title.add_theme_font_size_override("font_size", 22)
-		_elemental_mastery_title.add_theme_color_override("font_color", Color(0.78, 0.84, 0.90, 1.0))
-		_elemental_mastery_title.add_theme_constant_override("outline_size", 1)
-		_elemental_mastery_title.add_theme_color_override("font_outline_color", Color(0.08, 0.04, 0.00, 0.98))
-	if _elemental_mastery_cards != null:
-		_apply_design_rect(_elemental_mastery_cards, ELEMENTAL_MASTERY_CARDS_RECT)
-
-	var frame := _elemental_mastery_panel.get_node_or_null("ElementalMasteryPanelFrame")
-	if frame != null:
-		frame.queue_free()
-	var mastery_style := StyleBoxFlat.new()
-	mastery_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
-	mastery_style.border_color = Color(0.18, 0.24, 0.31, 0.90)
-	mastery_style.set_border_width_all(1)
-	mastery_style.set_corner_radius_all(4)
-	_elemental_mastery_panel.add_theme_stylebox_override("panel", mastery_style)
+	pass
 
 
 func _combat_player_hud_nodes() -> Dictionary:
 	return {
+		"section": _player_hud_section,
+		"mastery_panel": _elemental_mastery_panel,
+		"mastery_title": _elemental_mastery_title,
+		"mastery_cards": _elemental_mastery_cards,
+		"footer_panel": _player_panel,
+		"footer_root": _player_panel_root,
 		"root": _player_panel_root,
 		"hero_card": _hero_card,
+		"hero_card_root": _hero_card_root,
 		"hero_portrait": _player_portrait,
 		"vitals_panel": _vitals_panel,
 		"vitals_frame": _vitals_frame,

@@ -26,6 +26,11 @@ const COMBAT_MASTERY_ORDER: Array[int] = [
 const RELIC_SLOT_SIZE := Vector2(58, 58)
 const RELIC_ICON_SIZE := Vector2(48, 48)
 const RELIC_SLOT_GAP := 8.0
+const PLAYER_HUD_SECTION_RECT := Rect2(Vector2(0, 1092), Vector2(1080, 828))
+const PLAYER_HUD_MASTERY_PANEL_RECT := Rect2(Vector2(16, 0), Vector2(1048, 172))
+const PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 8), Vector2(1048, 32))
+const PLAYER_HUD_MASTERY_CARDS_RECT := Rect2(Vector2(0, 48), Vector2(1048, 108))
+const PLAYER_HUD_FOOTER_PANEL_RECT := Rect2(Vector2(0, 188), Vector2(1080, 640))
 const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 640)
 const HERO_CARD_RECT := Rect2(Vector2(42, 32), Vector2(220, 246))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 214))
@@ -359,9 +364,36 @@ func apply_loadout_rail_layout(equipment_row: Control, equipment_rect: Rect2, co
 	_apply_rect(consumable_row, consumable_rect)
 
 
-func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
-	_apply_node_rect(nodes, "root", Rect2(Vector2.ZERO, COMBAT_PLAYER_PANEL_SIZE))
+func apply_player_hud_layout(nodes: Dictionary) -> void:
+	_apply_node_rect(nodes, "section", PLAYER_HUD_SECTION_RECT)
+	_apply_node_rect(nodes, "mastery_panel", PLAYER_HUD_MASTERY_PANEL_RECT)
+	_apply_node_rect(nodes, "mastery_title", PLAYER_HUD_MASTERY_TITLE_RECT)
+	_apply_node_rect(nodes, "mastery_cards", PLAYER_HUD_MASTERY_CARDS_RECT)
+	_apply_node_rect(nodes, "footer_panel", PLAYER_HUD_FOOTER_PANEL_RECT)
+	apply_player_footer_layout(nodes)
+
+
+func apply_player_hud_chrome(nodes: Dictionary) -> void:
+	_apply_node_stylebox(nodes, "section", _hud_section_stylebox())
+	_apply_node_stylebox(nodes, "mastery_panel", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "hero_card", _hud_inner_panel_stylebox())
+	_apply_node_stylebox(nodes, "vitals_frame", _hud_vitals_stylebox())
+	_apply_node_stylebox(nodes, "loadout_frame", _hud_inner_panel_stylebox())
+	_apply_progressbar_flat_style(nodes.get("hp_bar") as ProgressBar, Color(0.78, 0.16, 0.17, 1.0))
+	_apply_hud_label_style(nodes.get("mastery_title") as Label, Color(0.78, 0.84, 0.90, 1.0), 22)
+	_apply_hud_label_style(nodes.get("hp_label") as Label, Color(0.95, 0.96, 0.98, 1.0), 24)
+	_apply_hud_label_style(nodes.get("equipment_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
+	_apply_hud_label_style(nodes.get("consumable_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
+
+
+func apply_player_footer_layout(nodes: Dictionary) -> void:
+	if nodes.has("footer_root"):
+		_apply_node_rect(nodes, "footer_root", Rect2(Vector2.ZERO, COMBAT_PLAYER_PANEL_SIZE))
+	else:
+		_apply_node_rect(nodes, "root", Rect2(Vector2.ZERO, COMBAT_PLAYER_PANEL_SIZE))
 	_apply_node_rect(nodes, "hero_card", HERO_CARD_RECT)
+	_apply_node_rect(nodes, "hero_card_root", Rect2(Vector2.ZERO, HERO_CARD_RECT.size))
 	_apply_node_rect(nodes, "hero_portrait", HERO_PORTRAIT_RECT)
 	_apply_node_rect(nodes, "vitals_panel", VITALS_PANEL_RECT)
 	_apply_node_rect(nodes, "vitals_frame", VITALS_FRAME_RECT)
@@ -381,6 +413,10 @@ func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
 	_apply_node_rect(nodes, "mastery_root", MASTERY_ROOT_RECT)
 	_apply_node_rect(nodes, "mastery_label", MASTERY_LABEL_RECT)
 	_apply_node_rect(nodes, "mastery_icons", MASTERY_ICONS_RECT)
+
+
+func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
+	apply_player_footer_layout(nodes)
 
 
 func lookup_content_definition(content_id: String) -> Dictionary:
@@ -405,6 +441,67 @@ func lookup_content_definition(content_id: String) -> Dictionary:
 		"description": "",
 		"icon_key": "",
 	}
+
+
+func _hud_section_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
+	style.border_color = Color(0.18, 0.24, 0.31, 0.90)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 8.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	return style
+
+
+func _hud_inner_panel_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.08, 0.12, 0.98)
+	style.border_color = Color(0.18, 0.24, 0.31, 0.95)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 8.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	return style
+
+
+func _hud_vitals_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.08, 0.13, 0.98)
+	style.border_color = Color(0.18, 0.25, 0.34, 0.96)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	return style
+
+
+func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
+	if bar == null:
+		return
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
+	bg.set_corner_radius_all(4)
+	bg.set_border_width_all(1)
+	bg.border_color = Color(0.18, 0.25, 0.34, 0.85)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = fill_color
+	fill.set_corner_radius_all(4)
+	bar.add_theme_stylebox_override("background", bg)
+	bar.add_theme_stylebox_override("fill", fill)
+
+
+func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
+	if label == null:
+		return
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_constant_override("outline_size", 1)
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
 
 
 func _make_slot(index: int, filled: bool, selectable: bool) -> Control:
@@ -549,6 +646,13 @@ func _apply_rect(control: Control, rect: Rect2) -> void:
 func _apply_node_rect(nodes: Dictionary, key: String, rect: Rect2) -> void:
 	var control := nodes.get(key, null) as Control
 	_apply_rect(control, rect)
+
+
+func _apply_node_stylebox(nodes: Dictionary, key: String, stylebox: StyleBox) -> void:
+	var control := nodes.get(key, null) as Control
+	if control == null:
+		return
+	control.add_theme_stylebox_override("panel", stylebox)
 
 
 func _apply_node_min_size(nodes: Dictionary, key: String, size: Vector2) -> void:
