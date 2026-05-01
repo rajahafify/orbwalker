@@ -225,6 +225,9 @@ var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_combo_running := 0
+var _resolve_trace_origin_usec := 0
+var _resolve_trace_active := false
+var _resolve_trace_pass_index := -1
 var _combat_mastery_feedback_token := 0
 var _match_clear_burst_texture: Texture2D
 var _combo_popup_panel: PanelContainer
@@ -1358,17 +1361,56 @@ func _end_drag(timed_out: bool) -> void:
 		move_end_reason = "timer expired"
 	_status_label.text = "Move ended: %s. Locking input for resolve phase." % move_end_reason
 	_status_label.modulate = STATUS_COLOR_WARNING
+	var resolve_trace_origin_usec := Time.get_ticks_usec()
+	_resolve_trace_origin_usec = resolve_trace_origin_usec
+	_resolve_trace_active = _resolve_trace_enabled()
+	_resolve_trace_pass_index = -1
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=resolve_start move_end_reason=\"%s\" board_seed=%d" % [move_end_reason, _board_state.rng_seed]
+	)
 
 	_reset_drag_visuals()
+	_board_view.clear_animations()
 	_set_input_phase(InputPhase.RESOLVING)
 	_resolve_combo_running = 0
-	var visual_board_state := _board_state.clone()
-	_last_resolve_result = _resolver.resolve_all(_board_state)
+	var visual_board_state: BoardState = _board_state.clone()
+	var simulation_board_state: BoardState = _board_state.clone()
 	_board_view.board_state = visual_board_state
-	await _play_resolve_animations(_last_resolve_result, visual_board_state)
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=visual_state_ready board_seed=%d" % visual_board_state.rng_seed
+	)
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=simulation_resolve_start board_seed=%d" % simulation_board_state.rng_seed
+	)
+	_last_resolve_result = _resolver.resolve_all(simulation_board_state)
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=simulation_resolve_complete total_combos=%d passes=%d" % [
+			int(_last_resolve_result.get("total_combos", 0)),
+			Array(_last_resolve_result.get("passes", [])).size(),
+		]
+	)
+	await _play_resolve_animations(_last_resolve_result, visual_board_state, resolve_trace_origin_usec)
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=resolve_presentation_complete total_combos=%d passes=%d" % [
+			int(_last_resolve_result.get("total_combos", 0)),
+			Array(_last_resolve_result.get("passes", [])).size(),
+		]
+	)
+	_board_state = simulation_board_state
 	_board_view.board_state = _board_state
+	_resolve_trace(
+		resolve_trace_origin_usec,
+		"phase=final_board_commit board_seed=%d" % _board_state.rng_seed
+	)
 	if _input_phase == InputPhase.RESOLVING:
 		await _resolve_combat_turn_from_board(_last_resolve_result)
+	_resolve_trace_active = false
+	_resolve_trace_pass_index = -1
 
 
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
@@ -1565,49 +1607,150 @@ func _refresh_drag_match_glow() -> void:
 	_board_view.set_live_match_glow(predicted_groups)
 
 
-func _play_resolve_animations(result: Dictionary, visual_board_state: BoardState = null) -> void:
+func _play_resolve_animations(
+	result: Dictionary,
+	visual_board_state: BoardState = null,
+	resolve_trace_origin_usec: int = 0
+) -> void:
 	if result.total_combos <= 0:
 		return
 
-	for pass_result in result.passes:
+	var pass_results: Array = result.get("passes", [])
+	for pass_index in range(pass_results.size()):
+		var pass_result: Dictionary = pass_results[pass_index]
+		_resolve_trace_pass_index = pass_index
+		var group_count := Array(pass_result.get("groups", [])).size()
+		var fall_count := Array(pass_result.get("fall_moves", [])).size()
+		var refill_count := Array(pass_result.get("refill_spawns", [])).size()
+		var step_index := int(pass_result.get("step_index", pass_index))
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=pass_start step_index=%d groups=%d fall=%d refill=%d" % [
+				pass_index,
+				step_index,
+				group_count,
+				fall_count,
+				refill_count,
+			]
+		)
 		var match_flash_seconds := _post_drag_duration(MATCH_FLASH_SECONDS)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=match_flash_start groups=%d flash_ms=%d" % [
+				pass_index,
+				group_count,
+				int(round(match_flash_seconds * 1000.0)),
+			]
+		)
 		await _trigger_match_feedback(pass_result.groups, match_flash_seconds)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=match_flash_end groups=%d" % [pass_index, group_count]
+		)
 
-		for raw_group in pass_result.groups:
-			var group: Dictionary = raw_group
-			_trigger_combo_feedback(group)
-			await _wait_post_drag_presentation(COMBO_COUNT_STEP_SECONDS)
-
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=clear_start groups=%d clear_ms=%d" % [
+				pass_index,
+				group_count,
+				int(round(_post_drag_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
+			]
+		)
 		_spawn_match_clear_bursts(pass_result.groups)
 		var clear_animation_seconds := _post_drag_duration(CLEAR_ANIMATION_SECONDS)
 		_board_view.animate_clear_groups(pass_result.groups, clear_animation_seconds)
+		await _wait_post_drag_presentation(CLEAR_ANIMATION_SECONDS)
 		_apply_visual_clear_groups(visual_board_state, pass_result.groups)
-		await _wait_post_drag_presentation(CLEAR_ANIMATION_SECONDS + CASCADE_PASS_HOLD_SECONDS)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=clear_visual_commit groups=%d" % [pass_index, group_count]
+		)
+		await _play_combo_ticks_for_pass(pass_result.groups, resolve_trace_origin_usec, pass_index)
+		await _wait_post_drag_presentation(CASCADE_PASS_HOLD_SECONDS)
 
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=gravity_start moves=%d gravity_ms=%d" % [
+				pass_index,
+				fall_count,
+				int(round(_post_drag_duration(GRAVITY_ANIMATION_SECONDS) * 1000.0)),
+			]
+		)
 		var gravity_animation_seconds := _post_drag_duration(GRAVITY_ANIMATION_SECONDS)
 		_board_view.animate_fall_moves(pass_result.fall_moves, gravity_animation_seconds)
-		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
 		await _wait_post_drag_presentation(GRAVITY_ANIMATION_SECONDS)
+		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=gravity_visual_commit moves=%d" % [pass_index, fall_count]
+		)
 
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=refill_start spawns=%d refill_ms=%d" % [
+				pass_index,
+				refill_count,
+				int(round(_post_drag_duration(REFILL_ANIMATION_SECONDS) * 1000.0)),
+			]
+		)
 		var refill_animation_seconds := _post_drag_duration(REFILL_ANIMATION_SECONDS)
 		_board_view.animate_refill_spawns(pass_result.refill_spawns, refill_animation_seconds)
+		await _wait_post_drag_presentation(REFILL_ANIMATION_SECONDS)
 		_apply_visual_refill_spawns(visual_board_state, pass_result.refill_spawns)
-		await _wait_post_drag_presentation(REFILL_ANIMATION_SECONDS + CASCADE_PASS_HOLD_SECONDS)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=refill_visual_commit spawns=%d" % [pass_index, refill_count]
+		)
+		await _wait_post_drag_presentation(CASCADE_PASS_HOLD_SECONDS)
+		_resolve_trace(resolve_trace_origin_usec, "pass=%d phase=pass_complete" % pass_index)
 
+	_resolve_trace_pass_index = -1
+	_resolve_trace(resolve_trace_origin_usec, "phase=animations_drain_start")
 	while _board_view.has_active_animations():
 		await get_tree().create_timer(0.02).timeout
 	_finish_combo_popup()
+	_resolve_trace(resolve_trace_origin_usec, "phase=animations_drain_complete")
 
 
 func _trigger_match_feedback(groups: Array, flash_seconds: float) -> void:
 	_board_view.flash_match_groups(groups, flash_seconds)
-	await get_tree().process_frame
+	if flash_seconds <= 0.01:
+		await get_tree().process_frame
+		return
+	await get_tree().create_timer(flash_seconds).timeout
 
 
-func _trigger_combo_feedback(group: Dictionary) -> void:
-	_resolve_combo_running += 1
-	_spawn_combo_floating_text(group, _resolve_combo_running)
-	_trigger_match_mastery_feedback(group, _resolve_combo_running)
+func _play_combo_ticks_for_pass(groups: Array, resolve_trace_origin_usec: int, pass_index: int) -> void:
+	for group_index in range(groups.size()):
+		var typed_group: Dictionary = groups[group_index]
+		_resolve_combo_running += 1
+		var orb_id := int(typed_group.get("orb_id", -1))
+		var orb_symbol := "?"
+		var orb_name := "unknown"
+		if OrbType.is_valid_id(orb_id):
+			orb_symbol = OrbType.debug_symbol(orb_id)
+			orb_name = OrbType.display_name(orb_id)
+		var cell_count := Array(typed_group.get("cells", [])).size()
+		var preview_amount := _preview_match_feedback_value(typed_group, _resolve_combo_running)
+		_resolve_trace(
+			resolve_trace_origin_usec,
+			"pass=%d phase=combo_tick group_index=%d combo_value=%d orb=%s orb_name=\"%s\" cells=%d preview=%d" % [
+				pass_index,
+				group_index,
+				_resolve_combo_running,
+				orb_symbol,
+				orb_name,
+				cell_count,
+				preview_amount,
+			]
+		)
+		_update_combo_feedback(typed_group, _resolve_combo_running)
+		await _wait_post_drag_presentation(COMBO_COUNT_STEP_SECONDS)
+
+
+func _update_combo_feedback(group: Dictionary, combo_value: int) -> void:
+	_spawn_combo_floating_text(group, combo_value)
+	_trigger_match_mastery_feedback(group, combo_value)
 
 
 func _trigger_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
@@ -1955,6 +2098,19 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		_append_turn_log_detailed(turn_log)
 		return
 	_append_turn_log_normal(turn_log)
+
+
+func _resolve_trace_enabled() -> bool:
+	return true
+
+
+func _resolve_trace(start_ticks_usec: int, message: String) -> void:
+	if not _resolve_trace_enabled():
+		return
+	if start_ticks_usec <= 0:
+		return
+	var elapsed_ms := maxi(0, int(float(Time.get_ticks_usec() - start_ticks_usec) / 1000.0))
+	print("[ResolveTrace +%04dms] %s" % [elapsed_ms, message])
 
 
 func _append_turn_log_normal(turn_log: Dictionary) -> void:
@@ -2979,21 +3135,52 @@ func _set_zone_guide(zone: Control, label_text: String) -> void:
 			guide.queue_free()
 
 
-func _on_resolver_cells_cleared(_cells: Array) -> void:
-	pass
+func _on_resolver_cells_cleared(cells: Array) -> void:
+	if not _resolve_trace_active:
+		return
+	_resolve_trace(
+		_resolve_trace_origin_usec,
+		"phase=clear_applied source=simulation_signal cells=%d" % cells.size()
+	)
 
 
-func _on_resolver_gravity_applied(_fall_moves: Array) -> void:
-	pass
+func _on_resolver_gravity_applied(fall_moves: Array) -> void:
+	if not _resolve_trace_active:
+		return
+	_resolve_trace(
+		_resolve_trace_origin_usec,
+		"phase=gravity_applied source=simulation_signal moves=%d" % fall_moves.size()
+	)
 
 
-func _on_resolver_refill_applied(_refill_spawns: Array) -> void:
-	pass
+func _on_resolver_refill_applied(refill_spawns: Array) -> void:
+	if not _resolve_trace_active:
+		return
+	_resolve_trace(
+		_resolve_trace_origin_usec,
+		"phase=refill_applied source=simulation_signal spawns=%d" % refill_spawns.size()
+	)
 
 
-func _on_resolver_cascade_step_complete(_step_index: int, _total_combos: int) -> void:
-	pass
+func _on_resolver_cascade_step_complete(step_index: int, total_combos: int) -> void:
+	if not _resolve_trace_active:
+		return
+	_resolve_trace(
+		_resolve_trace_origin_usec,
+		"phase=pass_complete source=simulation_signal step_index=%d total_combos=%d" % [
+			step_index,
+			total_combos,
+		]
+	)
 
 
-func _on_resolver_complete(_result: Dictionary) -> void:
-	pass
+func _on_resolver_complete(result: Dictionary) -> void:
+	if not _resolve_trace_active:
+		return
+	_resolve_trace(
+		_resolve_trace_origin_usec,
+		"phase=simulation_resolve_complete source=signal total_combos=%d passes=%d" % [
+			int(result.get("total_combos", 0)),
+			Array(result.get("passes", [])).size(),
+		]
+	)

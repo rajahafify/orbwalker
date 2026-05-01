@@ -2,6 +2,87 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-02] combat | Combo After Clear Timing
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Moved combo/mastery presentation ticks to run after match flash, clear animation, and `clear_visual_commit`.
+  - Kept combo/mastery before gravity and refill, matching the intended visible order: drag finish, match flash, clear animation, combo, mastery preview, gravity, refill.
+  - Updated feature and QA notes that previously described combo ticks immediately after match flash.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully and reported no session errors.
+  - User manual acceptance confirmed the revised presentation order feels correct.
+
+## [2026-05-02] combat | Delayed Visual Resolve Commits
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Delayed visual board clone mutation for clear, gravity, and refill until after each matching BoardView animation duration completes.
+  - Split the post-animation hold from the animation duration so cascade pacing stays the same while visual board state no longer jumps at animation start.
+  - Renamed presentation trace points to `clear_visual_commit`, `gravity_visual_commit`, and `refill_visual_commit` to distinguish visible state mutation from resolver simulation signals.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully and reported no session errors.
+- Notes:
+  - This keeps the hidden simulation resolver unchanged; only visible presentation replay timing changed.
+
+## [2026-05-02] combat | Resolve Trace Console Output
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Corrected resolve timing trace output from the in-game combat log to Godot console/output `print(...)` lines.
+  - Kept the `[ResolveTrace +NNNNms]` phase format so `get_godot_errors` recent output logs can capture the same resolve timing sequence during runtime.
+  - Restored combat log retention to 120 lines because resolve tracing no longer consumes in-game log history.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully and reported no session errors.
+- Notes:
+  - This entry supersedes the previous `/log_level detailed` enablement note for resolve timing traces.
+
+## [2026-05-02] combat | Resolve Trace Logging
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added detailed-only `[ResolveTrace +NNNNms]` combat log lines for post-drag resolve presentation debugging.
+  - Logged drag release, visual/simulation board setup, resolver simulation signals, presentation pass starts, match flash, combo ticks, clear, gravity, refill, animation drain, final board commit, and combo/mastery preview amounts.
+  - Increased retained combat log lines from 120 to 220 so a multi-pass cascade trace is less likely to push earlier phase lines out of the debug console.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully; a narrowed running scene-tree query confirmed the combat hierarchy.
+- Notes:
+  - Enable with `/log_level detailed` before dragging; normal log level stays compact.
+
+## [2026-05-02] combat | Explicit Combo Timing Phase
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Changed match feedback to wait for the full scaled flash duration before combo feedback starts.
+  - Added an explicit per-pass combo tick phase between match flash and clear animation.
+  - Combo ticks now preserve resolver group order, update the single `COMBO xN` popup, trigger matching Elemental Mastery preview immediately, and hold before the next tick or clear.
+  - Kept the previous visual/simulation board split, but this entry supersedes it as the fix for combo timing specifically.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP resolver tick-order probe confirmed simultaneous groups become sequential combo ticks across passes.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully; a narrowed running scene-tree query confirmed the combat hierarchy.
+- Notes:
+  - Manual feel acceptance is still needed for real drag/cascade timing.
+
+## [2026-05-02] combat | Resolve Presentation State Split
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Cleared active board animations at drag release before resolve presentation starts, preventing leftover swap overlays and suppressed cells from leaking into match clear/fall/refill.
+  - Split post-drag board handling into a visual clone for `BoardView` presentation and a simulation clone for `BoardMatchResolverV3.resolve_all(...)`.
+  - Committed the simulated final board back to `_board_state` only after visual clear, gravity, refill, and cascade replay completes.
+  - Updated QA and feature notes for the new resolve presentation ownership model.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Godot MCP deterministic replay probe returned `ok: true`, proving replayed visual mutations end at the same board as resolver simulation.
+  - Godot MCP `play_scene` smoke for `res://scenes/combat/combat_player.tscn` started successfully; a narrowed running scene-tree query confirmed the combat hierarchy.
+- Notes:
+  - Manual feel acceptance is still needed for real drag/cascade timing.
+
 ## [2026-05-02] combat | Post-drag presentation speed
 
 - Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
