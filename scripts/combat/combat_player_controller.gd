@@ -178,9 +178,7 @@ const FONT_SIZE_ROW_LABEL := 16
 const DEBUG_TEXT_FONT_SIZE := 24
 const DEBUG_INPUT_FONT_SIZE := 24
 const DEBUG_INPUT_HEIGHT := 72.0
-const COMBO_FLOAT_RISE := 74.0
-const COMBO_FLOAT_DURATION := 0.62
-const COMBO_POPUP_SIZE := Vector2(270.0, 98.0)
+const COMBO_POPUP_SIZE := Vector2(236.0, 58.0)
 const COMBO_POPUP_OFFSET := 16.0
 const COMBO_POPUP_MARGIN := 10.0
 const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
@@ -221,6 +219,10 @@ var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_combo_running := 0
 var _combat_mastery_feedback_token := 0
+var _match_clear_burst_texture: Texture2D
+var _combo_popup_panel: PanelContainer
+var _combo_popup_label: Label
+var _combo_popup_fade_tween: Tween
 
 
 func _ready() -> void:
@@ -1565,6 +1567,7 @@ func _play_resolve_animations(result: Dictionary) -> void:
 		_board_view.flash_match_groups(pass_result.groups, MATCH_FLASH_SECONDS)
 		await get_tree().create_timer(MATCH_FLASH_SECONDS).timeout
 
+		_spawn_match_clear_bursts(pass_result.groups)
 		_board_view.animate_clear_groups(pass_result.groups, CLEAR_ANIMATION_SECONDS)
 		await get_tree().create_timer(CLEAR_ANIMATION_SECONDS).timeout
 
@@ -1576,6 +1579,7 @@ func _play_resolve_animations(result: Dictionary) -> void:
 
 	while _board_view.has_active_animations():
 		await get_tree().create_timer(0.02).timeout
+	_finish_combo_popup()
 
 
 func _build_turn_summary_status(turn_log: Dictionary) -> String:
@@ -2201,9 +2205,10 @@ func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: V
 	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	sprite.custom_minimum_size = draw_size
 	sprite.size = draw_size
-	sprite.global_position = global_center - draw_size * 0.5
 	sprite.modulate = modulate_color
 	_vfx_layer.add_child(sprite)
+	var local_center: Vector2 = _vfx_layer.get_global_transform_with_canvas().affine_inverse() * global_center
+	sprite.position = local_center - draw_size * 0.5
 	var tween := create_tween()
 	tween.tween_property(sprite, "modulate:a", 0.0, maxf(0.08, lifetime))
 	tween.finished.connect(func() -> void:
@@ -2351,11 +2356,63 @@ func _on_resolver_match_found(groups: Array) -> void:
 	_status_label.modulate = STATUS_COLOR_WARNING
 
 
+func _spawn_match_clear_bursts(groups: Array) -> void:
+	for raw_group in groups:
+		var group: Dictionary = raw_group
+		var cells: Array = group.get("cells", [])
+		var matched_count: int = cells.size()
+		var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
+		var burst_size := Vector2(60.0, 60.0)
+		if matched_count >= 5:
+			burst_size = Vector2(78.0, 78.0)
+		elif matched_count >= 4:
+			burst_size = Vector2(68.0, 68.0)
+		for raw_cell in cells:
+			var cell: Vector2i = raw_cell
+			if not _board_view.is_cell_valid(cell):
+				continue
+			var board_center: Vector2 = _board_view.get_cell_center(cell)
+			var global_center: Vector2 = _board_view.get_global_transform_with_canvas() * board_center
+			_spawn_match_clear_burst(global_center, burst_size, orb_id)
+
+
+func _spawn_match_clear_burst(global_center: Vector2, draw_size: Vector2, orb_id: int) -> void:
+	var burst_texture := _match_clear_burst()
+	var orb_tint := OrbType.color(orb_id)
+	orb_tint = orb_tint.lerp(Color.WHITE, 0.42)
+	orb_tint.a = 0.72
+	_spawn_vfx_texture(burst_texture, global_center, draw_size, 0.22, orb_tint)
+
+
+func _match_clear_burst() -> Texture2D:
+	if _match_clear_burst_texture != null:
+		return _match_clear_burst_texture
+	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
+	image.fill(Color(1.0, 1.0, 1.0, 0.0))
+	var center := Vector2(47.5, 47.5)
+	for y in 96:
+		for x in 96:
+			var point := Vector2(float(x), float(y))
+			var offset := point - center
+			var distance := offset.length()
+			var radial_alpha: float = clampf(1.0 - distance / 44.0, 0.0, 1.0)
+			var ring_alpha: float = maxf(0.0, 1.0 - absf(distance - 24.0) / 7.0) * 0.38
+			var axis_alpha: float = 0.0
+			if absf(offset.x) < 2.0 or absf(offset.y) < 2.0:
+				axis_alpha = clampf(1.0 - distance / 43.0, 0.0, 1.0) * 0.74
+			if absf(absf(offset.x) - absf(offset.y)) < 1.7:
+				axis_alpha = maxf(axis_alpha, clampf(1.0 - distance / 39.0, 0.0, 1.0) * 0.44)
+			var alpha: float = maxf(radial_alpha * radial_alpha * 0.34, maxf(ring_alpha, axis_alpha))
+			if alpha > 0.01:
+				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	_match_clear_burst_texture = ImageTexture.create_from_image(image)
+	return _match_clear_burst_texture
+
+
 func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	var cells: Array = group.get("cells", [])
 	if cells.is_empty():
 		return
-	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
 	var matched_count: int = 0
 	var min_x: float = INF
 	var max_x: float = -INF
@@ -2407,14 +2464,29 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	])
 	var popup_position := _select_combo_popup_position(popup_positions, COMBO_POPUP_SIZE, blocked_area, board_bounds)
 	var combo_text := "COMBO x%d" % combo_value
-	var orb_name := OrbType.display_name(orb_id)
-	var orb_text := "%s x%d" % [orb_name.to_upper(), matched_count]
 
+	var combo_panel := _ensure_combo_popup_panel()
+	combo_panel.position = popup_position if combo_value == 1 else combo_panel.position
+	combo_panel.modulate.a = 1.0
+	_combo_popup_label.text = combo_text
+	_combo_popup_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, COMBO_POPUP_SIZE.y - 12.0)
+	if _combo_popup_fade_tween != null and _combo_popup_fade_tween.is_valid():
+		_combo_popup_fade_tween.kill()
+
+	combo_panel.pivot_offset = combo_panel.size * 0.5
+	combo_panel.scale = Vector2(1.0, 1.0)
+	var pop_tween := create_tween()
+	pop_tween.tween_property(combo_panel, "scale", Vector2(1.08, 1.08), 0.07)
+	pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10)
+
+
+func _ensure_combo_popup_panel() -> PanelContainer:
+	if is_instance_valid(_combo_popup_panel):
+		return _combo_popup_panel
 	var combo_panel := PanelContainer.new()
 	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_panel.size = COMBO_POPUP_SIZE
 	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
-	combo_panel.position = popup_position
 	combo_panel.z_index = 80
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.03, 0.06, 0.10, 0.80)
@@ -2427,12 +2499,7 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	panel_style.content_margin_bottom = 8.0
 	combo_panel.add_theme_stylebox_override("panel", panel_style)
 
-	var text_stack := VBoxContainer.new()
-	text_stack.position = Vector2(10.0, 5.0)
-	text_stack.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, COMBO_POPUP_SIZE.y - 16.0)
-
 	var combo_label := Label.new()
-	combo_label.text = combo_text
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -2440,37 +2507,26 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	combo_label.add_theme_constant_override("outline_size", 4)
 	combo_label.add_theme_color_override("font_outline_color", Color(0.06, 0.03, 0.00, 0.95))
 	combo_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.48, 1.0))
-	combo_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, 40.0)
-
-	var orb_label := Label.new()
-	orb_label.text = orb_text
-	orb_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	orb_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	orb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	orb_label.add_theme_font_size_override("font_size", 26)
-	orb_label.add_theme_constant_override("outline_size", 3)
-	orb_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.01, 0.95))
-	orb_label.add_theme_color_override("font_color", Color(1.0, 0.97, 0.70, 1.0))
-	orb_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, 34.0)
-
-	text_stack.add_child(combo_label)
-	text_stack.add_child(orb_label)
-	combo_panel.add_child(text_stack)
+	combo_label.position = Vector2(10.0, 6.0)
+	combo_panel.add_child(combo_label)
 	_board_panel.add_child(combo_panel)
+	_combo_popup_panel = combo_panel
+	_combo_popup_label = combo_label
+	return combo_panel
 
-	combo_panel.pivot_offset = combo_panel.size * 0.5
-	combo_panel.scale = Vector2(1.0, 1.0)
-	var pop_tween := create_tween()
-	pop_tween.tween_property(combo_panel, "scale", Vector2(1.10, 1.10), 0.10)
-	pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.12)
-	var rise_tween := create_tween()
-	rise_tween.tween_property(combo_panel, "position:y", popup_position.y - COMBO_FLOAT_RISE, COMBO_FLOAT_DURATION)
-	var fade_tween := create_tween()
-	fade_tween.tween_interval(0.30)
-	fade_tween.tween_property(combo_panel, "modulate:a", 0.0, 0.45)
-	fade_tween.finished.connect(func() -> void:
+
+func _finish_combo_popup() -> void:
+	if not is_instance_valid(_combo_popup_panel):
+		return
+	var combo_panel := _combo_popup_panel
+	_combo_popup_fade_tween = create_tween()
+	_combo_popup_fade_tween.tween_interval(0.18)
+	_combo_popup_fade_tween.tween_property(combo_panel, "modulate:a", 0.0, 0.36)
+	_combo_popup_fade_tween.finished.connect(func() -> void:
 		if is_instance_valid(combo_panel):
 			combo_panel.queue_free()
+		_combo_popup_panel = null
+		_combo_popup_label = null
 	)
 
 
@@ -2793,14 +2849,8 @@ func _set_zone_guide(zone: Control, label_text: String) -> void:
 			guide.queue_free()
 
 
-func _on_resolver_cells_cleared(cells: Array) -> void:
-	for raw_cell in cells:
-		var cell: Vector2i = raw_cell
-		if not _board_view.is_cell_valid(cell):
-			continue
-		var center := _board_view.get_cell_center(cell)
-		var global_center := _board_view.global_position + center
-		_spawn_vfx("orb_clear", global_center, Vector2(60, 60), 0.33, Color(1.0, 1.0, 1.0, 0.78))
+func _on_resolver_cells_cleared(_cells: Array) -> void:
+	pass
 
 
 func _on_resolver_gravity_applied(_fall_moves: Array) -> void:
