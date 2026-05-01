@@ -2,6 +2,17 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-02] combat | Pooled Mastery Number Release
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Changed Elemental Mastery numeric feedback to pool during match/combo ticks instead of replacing the previous card value.
+  - Reapplied the pooled values after HUD refresh so they stay visible between cascade resolution and turn replay.
+  - Released pooled mastery values one card at a time as post-cascade beam/impact effects fire.
+  - Temporarily widened mastery replay beams and made them fully opaque for easier playtest visibility.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors after the controller edit.
+
 ## [2026-05-02] combat | Combo After Clear Timing
 
 - Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`

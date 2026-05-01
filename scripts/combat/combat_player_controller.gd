@@ -182,7 +182,6 @@ const COMBO_POPUP_SIZE := Vector2(236.0, 58.0)
 const COMBO_POPUP_OFFSET := 16.0
 const COMBO_POPUP_MARGIN := 10.0
 const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
-const COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS := 0.85
 const POST_DRAG_PRESENTATION_SLOW := "slow"
 const POST_DRAG_PRESENTATION_FAST := "fast"
 const POST_DRAG_PRESENTATION_INSTANT := "instant"
@@ -229,6 +228,7 @@ var _resolve_trace_origin_usec := 0
 var _resolve_trace_active := false
 var _resolve_trace_pass_index := -1
 var _combat_mastery_feedback_token := 0
+var _combat_mastery_preview_totals: Dictionary = {}
 var _match_clear_burst_texture: Texture2D
 var _combo_popup_panel: PanelContainer
 var _combo_popup_label: Label
@@ -1374,6 +1374,7 @@ func _end_drag(timed_out: bool) -> void:
 	_board_view.clear_animations()
 	_set_input_phase(InputPhase.RESOLVING)
 	_resolve_combo_running = 0
+	_reset_combat_mastery_preview()
 	var visual_board_state: BoardState = _board_state.clone()
 	var simulation_board_state: BoardState = _board_state.clone()
 	_board_view.board_state = visual_board_state
@@ -1418,6 +1419,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
 	_update_hud()
+	_sync_combat_mastery_preview_totals()
 	await _replay_turn_resolution_from_log(turn_log)
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
@@ -1819,9 +1821,40 @@ func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	var amount := _preview_match_feedback_value(group, combo_value)
 	if amount <= 0:
 		return
+	var current_total := int(_combat_mastery_preview_totals.get(orb_id, 0))
+	var next_total := current_total + amount
+	_combat_mastery_preview_totals[orb_id] = next_total
+	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, next_total)
+
+
+func _reset_combat_mastery_preview() -> void:
 	_combat_mastery_feedback_token += 1
-	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
-	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, amount)
+	_combat_mastery_preview_totals.clear()
+	if _elemental_mastery_cards != null:
+		_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+
+
+func _sync_combat_mastery_preview_totals() -> void:
+	if _elemental_mastery_cards == null:
+		return
+	for orb_id in OrbType.ALL_TYPES:
+		var total := int(_combat_mastery_preview_totals.get(int(orb_id), 0))
+		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), total)
+
+
+func _release_combat_mastery_feedback(orb_id: int) -> void:
+	if _elemental_mastery_cards == null or not OrbType.is_valid_id(orb_id):
+		return
+	_combat_mastery_preview_totals.erase(orb_id)
+	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, 0)
+
+
+func _release_remaining_combat_mastery_feedback() -> void:
+	for orb_id in OrbType.ALL_TYPES:
+		if int(_combat_mastery_preview_totals.get(int(orb_id), 0)) <= 0:
+			continue
+		_release_combat_mastery_feedback(int(orb_id))
+		await _wait_post_drag_presentation(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
 
 
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
@@ -1891,14 +1924,6 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var heart_heal := int(turn_log.get("healed", 0))
 	var armor_gain := int(turn_log.get("armor_gained", 0))
 	var gold_gain := int(turn_log.get("gold_gained", 0))
-	var feedback_values := {
-		OrbType.Id.FIRE: fire_damage,
-		OrbType.Id.ICE: ice_damage,
-		OrbType.Id.EARTH: earth_damage,
-		OrbType.Id.HEART: heart_heal,
-		OrbType.Id.ARMOR: armor_gain,
-		OrbType.Id.GOLD: gold_gain,
-	}
 	var enemy_target := _control_global_center(_enemy_portrait, 0.48)
 	var player_target := _control_global_center(_player_portrait, 0.64)
 	var enemy_impact_size := Vector2(84, 84)
@@ -1913,75 +1938,44 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
 			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
 			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
 			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
 			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
 			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
 		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
 		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
 		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+		_release_combat_mastery_feedback(impact_orb)
 
 	if heart_heal > 0:
 		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
 		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+		_release_combat_mastery_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
 		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
 		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
+		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
 		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
-	_play_combat_mastery_feedback_from_turn_log(feedback_values)
+		_release_combat_mastery_feedback(OrbType.Id.GOLD)
+	await _release_remaining_combat_mastery_feedback()
 	await _wait_post_drag_presentation(TURN_REPLAY_FINAL_HOLD_SECONDS)
-
-
-func _play_combat_mastery_feedback_from_turn_log(feedback_values: Dictionary) -> void:
-	if _elemental_mastery_cards == null:
-		return
-	_combat_mastery_feedback_token += 1
-	var token := _combat_mastery_feedback_token
-	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
-
-	var has_feedback := false
-	var delay_seconds := 0.0
-	var feedback_stagger_seconds := _post_drag_duration(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
-	for orb_id in OrbType.ALL_TYPES:
-		var amount := int(feedback_values.get(int(orb_id), 0))
-		if amount <= 0:
-			continue
-		has_feedback = true
-		var feedback_orb_id := int(orb_id)
-		var feedback_amount := amount
-		var show_timer := get_tree().create_timer(delay_seconds)
-		show_timer.timeout.connect(func() -> void:
-			if _combat_mastery_feedback_token != token:
-				return
-			if _elemental_mastery_cards == null:
-				return
-			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, feedback_orb_id, feedback_amount)
-		)
-		delay_seconds += feedback_stagger_seconds
-
-	if not has_feedback:
-		return
-	var clear_timer := get_tree().create_timer(delay_seconds + _post_drag_duration(COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS))
-	clear_timer.timeout.connect(func() -> void:
-		if _combat_mastery_feedback_token != token:
-			return
-		if _elemental_mastery_cards == null:
-			return
-		_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
-	)
+	_reset_combat_mastery_preview()
 
 
 func _update_hud() -> void:
@@ -2620,12 +2614,12 @@ func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, 
 	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	beam.stretch_mode = TextureRect.STRETCH_SCALE
-	var beam_thickness := 16.0
+	var beam_thickness := 28.0
 	beam.size = Vector2(distance, beam_thickness)
 	beam.pivot_offset = Vector2(0.0, beam_thickness * 0.5)
 	beam.position = source_local - Vector2(0.0, beam_thickness * 0.5)
 	beam.rotation = delta.angle()
-	beam.modulate = Color(1.0, 1.0, 1.0, 0.86)
+	beam.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	beam.z_index = 92
 	_vfx_layer.add_child(beam)
 
