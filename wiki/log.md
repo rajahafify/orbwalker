@@ -990,3 +990,13 @@ Append-only history of wiki operations.
   - Kept gravity and refill after all groups in the pass so resolver logic, combo totals, and cascade outcomes remain unchanged.
 - Notes:
   - Godot MCP `get_project_info`, `view_script`, `get_godot_errors`, `play_scene current`, and an editor-script ordering probe passed. Manual real-drag feel acceptance remains useful because the change is presentation timing.
+
+## [2026-05-02] code-change | Centered Scaling Combo Text
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Replaced match-relative combo popup placement with a fixed center-stage position over the board.
+  - Removed the combo popup panel border/background so the readout behaves like floating text.
+  - Increased combo font and pulse scale as the combo count rises.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, and combat scene smoke checks passed. Manual real-drag feel acceptance remains useful.

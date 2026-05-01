@@ -178,9 +178,9 @@ const FONT_SIZE_ROW_LABEL := 16
 const DEBUG_TEXT_FONT_SIZE := 24
 const DEBUG_INPUT_FONT_SIZE := 24
 const DEBUG_INPUT_HEIGHT := 72.0
-const COMBO_POPUP_SIZE := Vector2(236.0, 58.0)
-const COMBO_POPUP_OFFSET := 16.0
-const COMBO_POPUP_MARGIN := 10.0
+const COMBO_POPUP_SIZE := Vector2(420.0, 96.0)
+const COMBO_POPUP_BASE_FONT_SIZE := 42
+const COMBO_POPUP_MAX_FONT_SIZE := 78
 const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
 const POST_DRAG_PRESENTATION_SLOW := "slow"
 const POST_DRAG_PRESENTATION_FAST := "fast"
@@ -2737,70 +2737,23 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	var cells: Array = group.get("cells", [])
 	if cells.is_empty():
 		return
-	var matched_count: int = 0
-	var min_x: float = INF
-	var max_x: float = -INF
-	var min_y: float = INF
-	var max_y: float = -INF
-	var sum := Vector2.ZERO
-	for raw_cell in cells:
-		var cell: Vector2i = raw_cell
-		if not _board_view.is_cell_valid(cell):
-			continue
-		var center := _board_view.get_cell_center(cell)
-		sum += center
-		matched_count += 1
-		min_x = minf(min_x, center.x)
-		max_x = maxf(max_x, center.x)
-		min_y = minf(min_y, center.y)
-		max_y = maxf(max_y, center.y)
-	if matched_count <= 0:
-		return
-	var board_center := sum / float(matched_count)
-	var board_local_center := _board_surface.position + board_center
-	var cell_span: float = absf(
-		_board_view.get_cell_center(Vector2i(1, 0)).x - _board_view.get_cell_center(Vector2i(0, 0)).x
-	)
-	var blocked_radius: float = maxf(14.0, cell_span * 0.50)
-	var blocked_area := Rect2(
-		Vector2(min_x - blocked_radius, min_y - blocked_radius),
-		Vector2((max_x - min_x) + blocked_radius * 2.0, (max_y - min_y) + blocked_radius * 2.0)
-	)
-	blocked_area.position += _board_surface.position
-	var board_bounds := Rect2(_board_surface.position, _board_surface.size)
-	var popup_positions := PackedVector2Array([
-		Vector2(
-			board_local_center.x - COMBO_POPUP_SIZE.x * 0.5,
-			blocked_area.position.y - COMBO_POPUP_SIZE.y - COMBO_POPUP_OFFSET
-		),
-		Vector2(
-			board_local_center.x - COMBO_POPUP_SIZE.x * 0.5,
-			blocked_area.position.y + blocked_area.size.y + COMBO_POPUP_OFFSET
-		),
-		Vector2(
-			blocked_area.position.x - COMBO_POPUP_SIZE.x - COMBO_POPUP_OFFSET,
-			board_local_center.y - COMBO_POPUP_SIZE.y * 0.5
-		),
-		Vector2(
-			blocked_area.position.x + blocked_area.size.x + COMBO_POPUP_OFFSET,
-			board_local_center.y - COMBO_POPUP_SIZE.y * 0.5
-		),
-	])
-	var popup_position := _select_combo_popup_position(popup_positions, COMBO_POPUP_SIZE, blocked_area, board_bounds)
 	var combo_text := "COMBO x%d" % combo_value
+	var font_size := mini(COMBO_POPUP_MAX_FONT_SIZE, COMBO_POPUP_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 6)
 
 	var combo_panel := _ensure_combo_popup_panel()
-	combo_panel.position = popup_position if combo_value == 1 else combo_panel.position
+	combo_panel.position = _center_combo_popup_position()
 	combo_panel.modulate.a = 1.0
 	_combo_popup_label.text = combo_text
-	_combo_popup_label.size = Vector2(COMBO_POPUP_SIZE.x - 20.0, COMBO_POPUP_SIZE.y - 12.0)
+	_combo_popup_label.add_theme_font_size_override("font_size", font_size)
+	_combo_popup_label.size = COMBO_POPUP_SIZE
 	if _combo_popup_fade_tween != null and _combo_popup_fade_tween.is_valid():
 		_combo_popup_fade_tween.kill()
 
 	combo_panel.pivot_offset = combo_panel.size * 0.5
 	combo_panel.scale = Vector2(1.0, 1.0)
+	var pulse_scale := 1.0 + minf(0.22, float(combo_value) * 0.018)
 	var pop_tween := create_tween()
-	pop_tween.tween_property(combo_panel, "scale", Vector2(1.08, 1.08), 0.07)
+	pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07)
 	pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10)
 
 
@@ -2813,25 +2766,21 @@ func _ensure_combo_popup_panel() -> PanelContainer:
 	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
 	combo_panel.z_index = 80
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.03, 0.06, 0.10, 0.80)
-	panel_style.border_color = Color(0.82, 0.68, 0.26, 0.94)
-	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(8)
-	panel_style.content_margin_left = 10.0
-	panel_style.content_margin_right = 10.0
-	panel_style.content_margin_top = 8.0
-	panel_style.content_margin_bottom = 8.0
+	panel_style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	panel_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	panel_style.set_border_width_all(0)
 	combo_panel.add_theme_stylebox_override("panel", panel_style)
 
 	var combo_label := Label.new()
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	combo_label.add_theme_font_size_override("font_size", 34)
-	combo_label.add_theme_constant_override("outline_size", 4)
-	combo_label.add_theme_color_override("font_outline_color", Color(0.06, 0.03, 0.00, 0.95))
-	combo_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.48, 1.0))
-	combo_label.position = Vector2(10.0, 6.0)
+	combo_label.add_theme_font_size_override("font_size", COMBO_POPUP_BASE_FONT_SIZE)
+	combo_label.add_theme_constant_override("outline_size", 7)
+	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.00, 0.96))
+	combo_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.28, 1.0))
+	combo_label.position = Vector2.ZERO
+	combo_label.size = COMBO_POPUP_SIZE
 	combo_panel.add_child(combo_label)
 	_board_panel.add_child(combo_panel)
 	_combo_popup_panel = combo_panel
@@ -2854,26 +2803,8 @@ func _finish_combo_popup() -> void:
 	)
 
 
-func _select_combo_popup_position(candidates: PackedVector2Array, popup_size: Vector2, blocked_area: Rect2, board_area: Rect2) -> Vector2:
-	for index in candidates.size():
-		var candidate := Vector2(candidates[index])
-		var candidate_area := Rect2(candidate, popup_size)
-		if board_area.encloses(candidate_area) and not candidate_area.intersects(blocked_area):
-			return candidate
-	return _clamp_combo_popup_position(
-		Vector2(
-			(board_area.position.x + board_area.size.x * 0.5) - popup_size.x * 0.5,
-			(board_area.position.y + board_area.size.y * 0.5) - popup_size.y * 0.5
-		),
-		popup_size,
-		board_area
-	)
-
-
-func _clamp_combo_popup_position(candidate: Vector2, popup_size: Vector2, board_area: Rect2) -> Vector2:
-	var min_pos := board_area.position + Vector2(COMBO_POPUP_MARGIN, COMBO_POPUP_MARGIN)
-	var max_pos := board_area.position + board_area.size - popup_size - Vector2(COMBO_POPUP_MARGIN, COMBO_POPUP_MARGIN)
-	return Vector2(clampf(candidate.x, min_pos.x, max_pos.x), clampf(candidate.y, min_pos.y, max_pos.y))
+func _center_combo_popup_position() -> Vector2:
+	return _board_surface.position + (_board_surface.size - COMBO_POPUP_SIZE) * 0.5
 
 
 func _pulse_label(target: Label, tint: Color) -> void:
