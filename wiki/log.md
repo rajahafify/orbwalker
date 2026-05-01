@@ -756,3 +756,71 @@ Append-only history of wiki operations.
   - Updated the setup wiki to reflect the current project-local agent matrix
 - Notes:
   - This was a documentation and project-local Codex config audit only; Godot runtime validation was not needed.
+
+## [2026-04-30] code-change | Elemental Mastery HUD Variant Gallery
+
+- Source: `scenes/ui/elemental_mastery_hud_variants.tscn`, `scripts/ui/elemental_mastery_hud_variants.gd`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added a standalone scrollable UI scene with five Elemental Mastery HUD variants for visual comparison against the attached reference
+  - Variants cover reference-faithful, current combat-fit, taller-section, reduced-border-noise, and feedback-ready directions
+- Notes:
+  - Godot MCP `view_script`, `open_scene`, `play_scene`, `get_scene_tree`, `get_running_scene_screenshot`, and `get_godot_errors` checks passed with no runtime errors reported.
+  - The scene is not hooked into combat flow; the selected variant still needs to be ported into combat runtime layout after review.
+
+## [2026-04-30] code-change | Elemental Mastery Variant Crop Fix
+
+- Source: `scripts/ui/elemental_mastery_hud_variants.gd`, `docs/tmp_elemental_mastery_visual_issues.md`
+- Changed:
+  - Reworked preview cards to avoid `STRETCH_KEEP_ASPECT_COVERED` cropping for the landscape mastery card art
+  - Added contained art regions, circular icon medallions, and separate name/level/feedback lanes so labels do not sit on top of oversized cropped art
+- Follow-up:
+  - Replaced generated icon textures in the preview cards with procedural element marks after the derived icon assets still produced checkerboard, padding, or bleed artifacts at preview scale
+  - The comparison scene now prioritizes readable layout selection over final asset fidelity
+- Notes:
+  - Godot MCP `view_script`, `open_scene`, `play_scene`, `get_scene_tree`, `get_running_scene_screenshot`, and `get_godot_errors` checks passed with no runtime errors reported.
+
+## [2026-05-01] code-change | Elemental Mastery Preview Symbol Icons
+
+- Source: `tools/asset_tools/generate_mastery_symbol_icons.py`, `resources/art/first_pass/derived/icons/mastery_symbol_*.png`, `scripts/ui/elemental_mastery_hud_variants.gd`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added a repeatable asset step that generates six transparent symbol-only mastery PNGs for Fire, Ice, Earth, Heart, Armor, and Gold preview cards
+  - Updated the Elemental Mastery HUD variant gallery to use those generated symbol textures inside clipped circular medallions instead of empty, letter, old sheet, or full-badge placeholders
+  - Enlarged the preview medallions and icon stages so the five variants read closer to the dark/gold reference while preserving the six-card order and fit
+- Notes:
+  - Godot MCP `view_script`, `open_scene`, `play_scene`, `get_running_scene_screenshot`, and `get_godot_errors` checks passed on the standalone preview scene after targeted texture reimport.
+  - This remains preview-only; live combat `ElementalMasteryPanel` was not changed.
+
+## [2026-05-01] code-change | Elemental Mastery Reference Preview Assets
+
+- Source: `tools/asset_tools/generate_mastery_symbol_icons.py`, `resources/art/first_pass/derived/ui_chrome/mastery_preview_*.png`, `resources/art/first_pass/derived/icons/mastery_preview_emblem_*.png`, `scripts/ui/elemental_mastery_hud_variants.gd`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Expanded the preview asset generator to create a tall reference-style panel frame, six portrait card backgrounds, and six ornate emblem badges for the HUD variant gallery
+  - Updated the standalone Elemental Mastery HUD comparison scene to use the generated preview frame/card/emblem textures with a separated title band and lower six-card row
+  - Preserved the five preview variants and kept the change out of live combat runtime
+- Notes:
+  - Godot MCP `view_script`, `open_scene`, targeted texture reimport, `play_scene`, `get_running_scene_screenshot`, `get_scene_tree`, `get_godot_errors`, and `stop_running_scene` checks passed with no runtime errors or image-load export warnings.
+
+## [2026-05-01] code-change | Elemental Mastery Real Preview Icons
+
+- Source: `scripts/ui/elemental_mastery_hud_variants.gd`, `tools/asset_tools/generate_mastery_symbol_icons.py`, `resources/art/first_pass/derived/icons/mastery_*.png`, `resources/art/first_pass/derived/ui_chrome/mastery_preview_*.png`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Replaced generated preview emblem usage with the existing real main-menu mastery icons for Fire, Ice, Earth, Heart, Armor, and Gold
+  - Stopped the preview chrome generator from recreating generated symbol or emblem placeholder icon files
+  - Removed generated preview emblem and symbol icon outputs from the worktree
+- Notes:
+  - Godot MCP `view_script`, `open_scene`, targeted texture reimport, `play_scene`, `get_running_scene_screenshot`, `get_scene_tree`, `get_godot_errors`, and `stop_running_scene` checks passed with no runtime errors or image-load export warnings.
+
+## [2026-05-01] docs | Elemental Mastery Preview Tool Naming
+
+- Source: `tools/asset_tools/generate_mastery_preview_chrome.py`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Renamed the preview asset generator documentation target from symbol-icon generation to preview chrome generation so the current workflow is explicit: chrome is generated, badge icons come from existing real mastery icon assets.
+
+## [2026-05-01] code-change | Elemental Mastery Variant 5 Combat Integration
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png`, `resources/art/first_pass/derived/ui_chrome/mastery_preview_card_*.png`, `resources/art/first_pass/derived/icons/mastery_*.png`, `docs/tmp_elemental_mastery_visual_issues.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Ported the selected `Feedback Ready` variant into live combat as a `1048 x 368` Elemental Mastery panel with full-width title band, centered six-card row, preview panel/card chrome, real mastery icons, and reserved lower feedback lanes.
+  - Rebalanced the combat board zone upward/smaller so the taller mastery panel fits between board and player HUD without overlap.
+- Notes:
+  - Godot MCP `view_script`, `open_scene res://scenes/combat/combat_player.tscn`, `play_scene current`, `get_running_scene_screenshot`, `search_nodes`, `get_node_properties`, `execute_editor_script`, `get_godot_errors`, and `stop_running_scene` checks passed with no runtime errors. Running-scene properties confirmed the selected panel/card geometry and real icon/card texture paths; editor-script probes confirmed nonzero feedback text renders in the reserved lower lane.

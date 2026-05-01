@@ -135,18 +135,19 @@ const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 72), Vector2(1048, 360))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 438), Vector2(1048, 72))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 500), Vector2(1048, 720))
-const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1220), Vector2(1048, 232))
-const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(344, 6), Vector2(360, 42))
-const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(10, 40), Vector2(1028, 186))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 500), Vector2(1048, 584))
+const ELEMENTAL_MASTERY_PANEL_RECT := Rect2(Vector2(16, 1084), Vector2(1048, 368))
+const ELEMENTAL_MASTERY_TITLE_RECT := Rect2(Vector2(0, 28), Vector2(1048, 68))
+const ELEMENTAL_MASTERY_CARDS_RECT := Rect2(Vector2(0, 122), Vector2(1048, 222))
+const MASTERY_PREVIEW_PANEL_FRAME_PATH := "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png"
 const PLAYER_PANEL_RECT := Rect2(Vector2(0, 1452), Vector2(1080, 468))
 const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
 const ENEMY_STAGE_RECT := Rect2(Vector2(0, 76), Vector2(1048, 230))
 const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 306), Vector2(1048, 52))
 const ENEMY_PORTRAIT_SIZE := Vector2(260, 230)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
-const BOARD_SURFACE_SIZE := Vector2(560, 672)
-const BOARD_SURFACE_TOP := 30.0
+const BOARD_SURFACE_SIZE := Vector2(560, 536)
+const BOARD_SURFACE_TOP := 24.0
 const BOARD_SHADOW_OFFSET := Vector2(18, 22)
 const BOARD_SHADOW_EXPAND := Vector2(34, 34)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 250), Vector2(600, 320))
@@ -2613,14 +2614,14 @@ func _apply_combat_mastery_panel_layout() -> void:
 		_apply_design_rect(_elemental_mastery_title, ELEMENTAL_MASTERY_TITLE_RECT)
 		_elemental_mastery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_elemental_mastery_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_elemental_mastery_title.add_theme_font_size_override("font_size", 30)
-		_elemental_mastery_title.add_theme_color_override("font_color", Color(1.0, 0.95, 0.54, 1.0))
-		_elemental_mastery_title.add_theme_constant_override("outline_size", 2)
-		_elemental_mastery_title.add_theme_color_override("font_outline_color", Color(0.08, 0.06, 0.01, 0.92))
+		_elemental_mastery_title.add_theme_font_size_override("font_size", 46)
+		_elemental_mastery_title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
+		_elemental_mastery_title.add_theme_constant_override("outline_size", 3)
+		_elemental_mastery_title.add_theme_color_override("font_outline_color", Color(0.08, 0.04, 0.00, 0.98))
 	if _elemental_mastery_cards != null:
 		_apply_design_rect(_elemental_mastery_cards, ELEMENTAL_MASTERY_CARDS_RECT)
 
-	var frame_texture: Texture2D = _visuals.mastery_panel_frame_texture()
+	var frame_texture: Texture2D = _mastery_panel_frame_texture()
 	if frame_texture == null:
 		return
 	var frame := _elemental_mastery_panel.get_node_or_null("ElementalMasteryPanelFrame") as TextureRect
@@ -2634,8 +2635,17 @@ func _apply_combat_mastery_panel_layout() -> void:
 	frame.position = Vector2.ZERO
 	frame.anchors_preset = Control.PRESET_TOP_LEFT
 	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	frame.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	frame.stretch_mode = TextureRect.STRETCH_SCALE
+	frame.modulate = Color(1.0, 1.0, 1.0, 0.98)
 	frame.texture = frame_texture
+
+
+func _mastery_panel_frame_texture() -> Texture2D:
+	if ResourceLoader.exists(MASTERY_PREVIEW_PANEL_FRAME_PATH):
+		var preview := load(MASTERY_PREVIEW_PANEL_FRAME_PATH) as Texture2D
+		if preview != null:
+			return preview
+	return _visuals.mastery_panel_frame_texture()
 
 
 func _combat_player_hud_nodes() -> Dictionary:
