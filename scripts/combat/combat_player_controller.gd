@@ -183,6 +183,13 @@ const COMBO_POPUP_OFFSET := 16.0
 const COMBO_POPUP_MARGIN := 10.0
 const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
 const COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS := 0.85
+const POST_DRAG_PRESENTATION_SLOW := "slow"
+const POST_DRAG_PRESENTATION_FAST := "fast"
+const POST_DRAG_PRESENTATION_INSTANT := "instant"
+const COMBO_COUNT_STEP_SECONDS := 0.22
+const CASCADE_PASS_HOLD_SECONDS := 0.16
+const TURN_REPLAY_STEP_SECONDS := 0.34
+const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -223,6 +230,7 @@ var _match_clear_burst_texture: Texture2D
 var _combo_popup_panel: PanelContainer
 var _combo_popup_label: Label
 var _combo_popup_fade_tween: Tween
+var _post_drag_presentation_speed := POST_DRAG_PRESENTATION_SLOW
 
 
 func _ready() -> void:
@@ -1354,11 +1362,13 @@ func _end_drag(timed_out: bool) -> void:
 	_reset_drag_visuals()
 	_set_input_phase(InputPhase.RESOLVING)
 	_resolve_combo_running = 0
+	var visual_board_state := _board_state.clone()
 	_last_resolve_result = _resolver.resolve_all(_board_state)
+	_board_view.board_state = visual_board_state
+	await _play_resolve_animations(_last_resolve_result, visual_board_state)
 	_board_view.board_state = _board_state
-	await _play_resolve_animations(_last_resolve_result)
 	if _input_phase == InputPhase.RESOLVING:
-		_resolve_combat_turn_from_board(_last_resolve_result)
+		await _resolve_combat_turn_from_board(_last_resolve_result)
 
 
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
@@ -1366,7 +1376,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
 	_update_hud()
-	_replay_turn_resolution_from_log(turn_log)
+	await _replay_turn_resolution_from_log(turn_log)
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
 		var transition: Dictionary = RunState.mark_fight_victory()
@@ -1555,31 +1565,136 @@ func _refresh_drag_match_glow() -> void:
 	_board_view.set_live_match_glow(predicted_groups)
 
 
-func _play_resolve_animations(result: Dictionary) -> void:
+func _play_resolve_animations(result: Dictionary, visual_board_state: BoardState = null) -> void:
 	if result.total_combos <= 0:
 		return
 
 	for pass_result in result.passes:
+		var match_flash_seconds := _post_drag_duration(MATCH_FLASH_SECONDS)
+		await _trigger_match_feedback(pass_result.groups, match_flash_seconds)
+
 		for raw_group in pass_result.groups:
-			_resolve_combo_running += 1
 			var group: Dictionary = raw_group
-			_spawn_combo_floating_text(group, _resolve_combo_running)
-		_board_view.flash_match_groups(pass_result.groups, MATCH_FLASH_SECONDS)
-		await get_tree().create_timer(MATCH_FLASH_SECONDS).timeout
+			_trigger_combo_feedback(group)
+			await _wait_post_drag_presentation(COMBO_COUNT_STEP_SECONDS)
 
 		_spawn_match_clear_bursts(pass_result.groups)
-		_board_view.animate_clear_groups(pass_result.groups, CLEAR_ANIMATION_SECONDS)
-		await get_tree().create_timer(CLEAR_ANIMATION_SECONDS).timeout
+		var clear_animation_seconds := _post_drag_duration(CLEAR_ANIMATION_SECONDS)
+		_board_view.animate_clear_groups(pass_result.groups, clear_animation_seconds)
+		_apply_visual_clear_groups(visual_board_state, pass_result.groups)
+		await _wait_post_drag_presentation(CLEAR_ANIMATION_SECONDS + CASCADE_PASS_HOLD_SECONDS)
 
-		_board_view.animate_fall_moves(pass_result.fall_moves, GRAVITY_ANIMATION_SECONDS)
-		await get_tree().create_timer(GRAVITY_ANIMATION_SECONDS).timeout
+		var gravity_animation_seconds := _post_drag_duration(GRAVITY_ANIMATION_SECONDS)
+		_board_view.animate_fall_moves(pass_result.fall_moves, gravity_animation_seconds)
+		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
+		await _wait_post_drag_presentation(GRAVITY_ANIMATION_SECONDS)
 
-		_board_view.animate_refill_spawns(pass_result.refill_spawns, REFILL_ANIMATION_SECONDS)
-		await get_tree().create_timer(REFILL_ANIMATION_SECONDS).timeout
+		var refill_animation_seconds := _post_drag_duration(REFILL_ANIMATION_SECONDS)
+		_board_view.animate_refill_spawns(pass_result.refill_spawns, refill_animation_seconds)
+		_apply_visual_refill_spawns(visual_board_state, pass_result.refill_spawns)
+		await _wait_post_drag_presentation(REFILL_ANIMATION_SECONDS + CASCADE_PASS_HOLD_SECONDS)
 
 	while _board_view.has_active_animations():
 		await get_tree().create_timer(0.02).timeout
 	_finish_combo_popup()
+
+
+func _trigger_match_feedback(groups: Array, flash_seconds: float) -> void:
+	_board_view.flash_match_groups(groups, flash_seconds)
+	await get_tree().process_frame
+
+
+func _trigger_combo_feedback(group: Dictionary) -> void:
+	_resolve_combo_running += 1
+	_spawn_combo_floating_text(group, _resolve_combo_running)
+	_trigger_match_mastery_feedback(group, _resolve_combo_running)
+
+
+func _trigger_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
+	_show_match_mastery_feedback(group, combo_value)
+
+
+func _apply_visual_clear_groups(visual_board_state: BoardState, groups: Array) -> void:
+	if visual_board_state == null:
+		return
+	for group in groups:
+		for cell in group.cells:
+			var typed_cell: Vector2i = cell
+			visual_board_state.clear_cell(typed_cell.x, typed_cell.y)
+	_board_view.queue_redraw()
+
+
+func _apply_visual_fall_moves(visual_board_state: BoardState, fall_moves: Array) -> void:
+	if visual_board_state == null:
+		return
+	for move in fall_moves:
+		var from_cell: Vector2i = move.from
+		visual_board_state.clear_cell(from_cell.x, from_cell.y)
+	for move in fall_moves:
+		var to_cell: Vector2i = move.to
+		var orb_id := int(move.orb_id)
+		if OrbType.is_valid_id(orb_id):
+			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
+	_board_view.queue_redraw()
+
+
+func _apply_visual_refill_spawns(visual_board_state: BoardState, refill_spawns: Array) -> void:
+	if visual_board_state == null:
+		return
+	for spawn in refill_spawns:
+		var to_cell: Vector2i = spawn.to
+		var orb_id := int(spawn.orb_id)
+		if OrbType.is_valid_id(orb_id):
+			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
+	_board_view.queue_redraw()
+
+
+func _post_drag_duration(base_seconds: float) -> float:
+	match _post_drag_presentation_speed:
+		POST_DRAG_PRESENTATION_INSTANT:
+			return 0.01
+		POST_DRAG_PRESENTATION_FAST:
+			return base_seconds
+		_:
+			return base_seconds * 2.35
+
+
+func _wait_post_drag_presentation(base_seconds: float) -> void:
+	var wait_seconds := _post_drag_duration(base_seconds)
+	if wait_seconds <= 0.01:
+		await get_tree().process_frame
+		return
+	await get_tree().create_timer(wait_seconds).timeout
+
+
+func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
+	if _elemental_mastery_cards == null or _player_state == null:
+		return
+	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
+	if not OrbType.is_valid_id(orb_id):
+		return
+	var amount := _preview_match_feedback_value(group, combo_value)
+	if amount <= 0:
+		return
+	_combat_mastery_feedback_token += 1
+	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, amount)
+
+
+func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
+	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
+	if not OrbType.is_valid_id(orb_id) or _player_state == null:
+		return 0
+	var cells: Array = group.get("cells", [])
+	var matched_count := cells.size()
+	if matched_count <= 0:
+		return 0
+	var base_amount := matched_count * _player_state.orb_value(orb_id)
+	match orb_id:
+		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH, OrbType.Id.ARMOR:
+			return int(round(float(base_amount) * _player_state.combo_multiplier(combo_value)))
+		_:
+			return base_amount
 
 
 func _build_turn_summary_status(turn_log: Dictionary) -> String:
@@ -1643,34 +1758,48 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	}
 	var enemy_target := _control_global_center(_enemy_portrait, 0.48)
 	var player_target := _control_global_center(_player_portrait, 0.64)
+	var enemy_impact_size := Vector2(84, 84)
+	var player_impact_size := Vector2(84, 84)
+	var gold_impact_size := Vector2(70, 70)
+	var damage_lifetime := _post_drag_duration(0.42)
+	var player_lifetime := _post_drag_duration(0.45)
+	var gold_lifetime := _post_drag_duration(0.55)
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
-			_spawn_replay_impact(enemy_target, "fire", Vector2(84, 84), 0.42)
-			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, 0.42)
+			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
+			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
+			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 		if ice_damage > 0:
-			_spawn_replay_impact(enemy_target, "ice", Vector2(84, 84), 0.42)
-			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, 0.42)
+			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
+			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
+			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 		if earth_damage > 0:
-			_spawn_replay_impact(enemy_target, "earth", Vector2(84, 84), 0.42)
-			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, 0.42)
+			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
+			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
+			await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), Vector2(84, 84), 0.42)
-		_spawn_mastery_beam(impact_orb, enemy_target, 0.42)
+		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
+		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
+		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 
 	if heart_heal > 0:
-		_spawn_replay_impact(player_target, "heart", Vector2(84, 84), 0.45)
-		_spawn_mastery_beam(OrbType.Id.HEART, player_target, 0.45)
+		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
+		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
+		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 
 	if armor_gain > 0:
-		_spawn_replay_impact(player_target, "armor", Vector2(84, 84), 0.45)
-		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, 0.45)
+		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
+		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
+		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 
 	if gold_gain > 0:
-		_spawn_replay_impact(player_target, "gold", Vector2(70, 70), 0.55)
-		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, 0.55)
+		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
+		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
+		await _wait_post_drag_presentation(TURN_REPLAY_STEP_SECONDS)
 	_play_combat_mastery_feedback_from_turn_log(feedback_values)
+	await _wait_post_drag_presentation(TURN_REPLAY_FINAL_HOLD_SECONDS)
 
 
 func _play_combat_mastery_feedback_from_turn_log(feedback_values: Dictionary) -> void:
@@ -1682,6 +1811,7 @@ func _play_combat_mastery_feedback_from_turn_log(feedback_values: Dictionary) ->
 
 	var has_feedback := false
 	var delay_seconds := 0.0
+	var feedback_stagger_seconds := _post_drag_duration(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
 	for orb_id in OrbType.ALL_TYPES:
 		var amount := int(feedback_values.get(int(orb_id), 0))
 		if amount <= 0:
@@ -1697,11 +1827,11 @@ func _play_combat_mastery_feedback_from_turn_log(feedback_values: Dictionary) ->
 				return
 			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, feedback_orb_id, feedback_amount)
 		)
-		delay_seconds += COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS
+		delay_seconds += feedback_stagger_seconds
 
 	if not has_feedback:
 		return
-	var clear_timer := get_tree().create_timer(delay_seconds + COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS)
+	var clear_timer := get_tree().create_timer(delay_seconds + _post_drag_duration(COMBAT_MASTERY_FEEDBACK_VISIBLE_SECONDS))
 	clear_timer.timeout.connect(func() -> void:
 		if _combat_mastery_feedback_token != token:
 			return

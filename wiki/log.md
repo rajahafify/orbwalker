@@ -2,6 +2,21 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-02] combat | Post-drag presentation speed
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added a hidden post-drag presentation speed setting with `slow`, `fast`, and `instant` options; `slow` is the default.
+  - Slowed combo count updates, match flash/clear, gravity/refill, and turn replay sequencing so cascade counts and elemental beams are easier to observe.
+  - Kept combo feedback to one updating `COMBO xN` popup and removed per-orb detail text from the popup.
+  - Reframed visible match presentation as an explicit trigger chain: match feedback triggers the combo counter, and the combo counter update triggers the matching Elemental Mastery preview.
+  - Kept a cloned pre-resolve board on screen during resolve animation so the first matched orbs flash and clear before refill orbs appear.
+  - Added a one-frame render handoff after queuing match flash so the first combo counter cannot appear before the board flash is drawn.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP script check and `res://scenes/combat/combat_player.tscn` run/load check reported no errors.
+  - Manual screenshot/feel acceptance is still pending.
+
 ## [2026-04-30] codex | Default Agent Model Updated
 
 - Source: `.codex/config.toml`, `.codex/agents/default.toml`

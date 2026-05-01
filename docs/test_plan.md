@@ -185,6 +185,7 @@ Verification notes (2026-04-27):
 
 - [x] Combat HUD shows player HP, armor, gold, timer, enemy HP, enemy block, and enemy intent.
 - [x] Combo count and turn result feedback are readable.
+  - 2026-05-02: Post-drag presentation now defaults to hidden `slow` speed so combo count updates, cascades, and elemental replay VFX are easier to observe. Drag release now holds a pre-resolve visual board until the first match flash/clear animation begins, preventing immediate refill display. Visible match feedback triggers the combo counter update, and that combo update triggers the per-match Elemental Mastery value preview. Godot MCP script/load/run checks passed. Manual feel acceptance remains visual QA.
 - [x] Equipment slots are visible.
 - [x] Consumable slots are visible.
 - [x] Relics are visible.
