@@ -1000,3 +1000,13 @@ Append-only history of wiki operations.
   - Increased combo font and pulse scale as the combo count rises.
 - Notes:
   - Godot MCP `view_script`, `get_godot_errors`, and combat scene smoke checks passed. Manual real-drag feel acceptance remains useful.
+
+## [2026-05-02] code-change | Combat Speed Timing Setting
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Renamed the hidden post-drag presentation speed setting to `combat_speed`.
+  - Defined four combat speed modes: `slow`, `normal`, `fast`, and `instant`.
+  - Set the default combat speed to `normal`.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, and combat scene smoke checks passed.
