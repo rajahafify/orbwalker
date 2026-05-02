@@ -96,6 +96,7 @@ var _hover_slot_title := ""
 
 
 func _ready() -> void:
+	_audio_play_music("shop")
 	_background.texture = _visuals.shop_background()
 	_backdrop_tint.color = Color(0.0, 0.0, 0.0, 0.33)
 	_create_ui()
@@ -448,6 +449,7 @@ func _buy_offer_at(index: int) -> void:
 		return
 	var offer: Dictionary = item_offers[index]
 	var result: Dictionary = RunState.buy_shop_offer(String(offer.get("offer_id", "")))
+	_play_shop_result_sfx(result, "purchase")
 	_set_status(_result_message("Buy %s" % String(offer.get("display_name", "offer")), result), bool(result.get("ok", false)))
 	_refresh_ui()
 
@@ -458,6 +460,7 @@ func _buy_relic_offer() -> void:
 	if relic_offer.is_empty():
 		return
 	var result: Dictionary = RunState.buy_shop_offer(String(relic_offer.get("offer_id", "")))
+	_play_shop_result_sfx(result, "purchase")
 	_set_status(_result_message("Buy %s" % String(relic_offer.get("display_name", "relic")), result), bool(result.get("ok", false)))
 	_refresh_ui()
 
@@ -465,6 +468,7 @@ func _buy_relic_offer() -> void:
 func _on_reroll_button_pressed() -> void:
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.reroll_shop_items()
+	_play_shop_result_sfx(result, "ui_accept")
 	_set_status(_result_message("Reroll", result), bool(result.get("ok", false)))
 	_refresh_ui()
 
@@ -477,6 +481,7 @@ func _on_sell_equipment_button_pressed() -> void:
 		return
 	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if selected_kind == "equipment" else RunState.sell_consumable_item(slot_index)
+	_play_shop_result_sfx(result, "gold")
 	var action := "Sell equipment slot %d" % slot_index if selected_kind == "equipment" else "Sell consumable slot %d" % slot_index
 	_set_status(_result_message(action, result), bool(result.get("ok", false)))
 	if bool(result.get("ok", false)):
@@ -490,6 +495,7 @@ func _on_sell_equipment_button_pressed() -> void:
 func _choose_booster_option(index: int) -> void:
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.choose_booster_option(index)
+	_play_shop_result_sfx(result, "purchase")
 	if not bool(result.get("ok", false)) and _is_full_slot_reason(String(result.get("reason", ""))):
 		_set_status("No free slot for this reward. Sell from the loadout HUD, then pick again, or press Skip.", false)
 	else:
@@ -500,11 +506,41 @@ func _choose_booster_option(index: int) -> void:
 func _skip_pending_booster() -> void:
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.discard_pending_booster_options()
+	_play_shop_result_sfx(result, "ui_cancel")
 	var message := _result_message("Skip booster reward", result)
 	if bool(result.get("ok", false)):
 		message = "Skipped booster reward. Gold %d." % RunState.run_gold
 	_set_status(message, bool(result.get("ok", false)))
 	_refresh_ui()
+
+
+func _play_shop_result_sfx(result: Dictionary, success_key: String) -> void:
+	_audio_play_sfx(success_key if bool(result.get("ok", false)) else "error")
+
+
+func _audio_play_music(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_music"):
+		audio.call("play_music", key)
+
+
+func _audio_play_sfx(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_sfx"):
+		audio.call("play_sfx", key)
+
+
+func _audio_manager_node() -> Node:
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio != null:
+		return audio
+	var script: GDScript = load("res://scripts/core/audio_manager.gd")
+	if script == null:
+		return null
+	audio = script.new()
+	audio.name = "AudioManager"
+	get_tree().root.add_child(audio)
+	return audio
 
 
 func _select_equipment_slot(index: int) -> void:

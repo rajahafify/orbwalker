@@ -9,6 +9,8 @@ const FALLBACK_OUTER_BORDER_PATH := "res://resources/art/first_pass/menu/main_me
 const FALLBACK_BUTTON_PRIMARY_PATH := "res://resources/art/first_pass/menu/main_menu_button_primary_v1.png"
 const FALLBACK_BUTTON_SECONDARY_PATH := "res://resources/art/first_pass/menu/main_menu_button_secondary_v1.png"
 const FALLBACK_STATS_PANEL_PATH := "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png"
+const MAIN_MENU_MUSIC_PATH := "res://resources/audio/music/main-menu.wav"
+const MAIN_MENU_MUSIC_VOLUME_DB := -12.0
 
 const ELEMENT_KEYS: Array[String] = ["fire", "ice", "earth", "heart", "armor", "gold"]
 const ELEMENT_ICON_FALLBACK_PATHS: Array[String] = [
@@ -95,6 +97,8 @@ var _menu_icons: Dictionary = {}
 var _primary_button_texture: Texture2D = null
 var _secondary_button_texture: Texture2D = null
 var _stats_panel_texture: Texture2D = null
+var _menu_music_player: AudioStreamPlayer = null
+var _menu_music_retry_time := 0.0
 
 
 func _ready() -> void:
@@ -106,6 +110,8 @@ func _ready() -> void:
 	_apply_static_text()
 	_apply_chrome_styles()
 	_layout_ui()
+	_start_menu_music.call_deferred()
+	set_process(true)
 
 	var viewport := get_viewport()
 	if viewport != null and not viewport.size_changed.is_connected(_on_viewport_size_changed):
@@ -117,8 +123,126 @@ func _on_viewport_size_changed() -> void:
 
 
 func _on_start_fight_button_pressed() -> void:
+	_audio_play_sfx("ui_accept")
 	RunState.start_new_run()
 	get_tree().change_scene_to_file(RunState.next_scene_path())
+
+
+func _process(delta: float) -> void:
+	_menu_music_retry_time -= delta
+	if _menu_music_retry_time > 0.0:
+		return
+	_menu_music_retry_time = 0.5
+	if _menu_music_player == null:
+		_start_menu_music()
+		return
+	if _menu_music_player.stream != null and not _menu_music_player.playing:
+		_menu_music_player.play()
+
+
+func _audio_play_music(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_music"):
+		audio.call("play_music", key)
+
+
+func _audio_play_sfx(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_sfx"):
+		audio.call("play_sfx", key)
+
+
+func _audio_manager_node() -> Node:
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio != null:
+		return audio
+	var script: GDScript = load("res://scripts/core/audio_manager.gd")
+	if script == null:
+		return null
+	audio = script.new()
+	audio.name = "AudioManager"
+	get_tree().root.add_child(audio)
+	return audio
+
+
+func _start_menu_music() -> void:
+	if _menu_music_player == null:
+		_menu_music_player = AudioStreamPlayer.new()
+		_menu_music_player.name = "MainMenuMusicPlayer"
+		_menu_music_player.bus = "Master"
+		add_child(_menu_music_player)
+	_menu_music_player.volume_db = MAIN_MENU_MUSIC_VOLUME_DB
+	_menu_music_player.stream = _load_menu_music_stream()
+	if _menu_music_player.stream != null:
+		_menu_music_player.play()
+		print("Main menu music playing: stream=%s volume_db=%s bus=%s" % [
+			_menu_music_player.stream.get_class(),
+			str(_menu_music_player.volume_db),
+			_menu_music_player.bus,
+		])
+
+
+func _load_menu_music_stream() -> AudioStream:
+	if not ResourceLoader.exists(MAIN_MENU_MUSIC_PATH):
+		push_warning("Main menu music missing at %s" % MAIN_MENU_MUSIC_PATH)
+		return null
+	var stream := _load_pcm16_wav_stream(MAIN_MENU_MUSIC_PATH)
+	if stream != null:
+		return stream
+	var imported_stream: Variant = load(MAIN_MENU_MUSIC_PATH)
+	if imported_stream is AudioStreamWAV:
+		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	if imported_stream is AudioStream:
+		return imported_stream
+	push_warning("Main menu music is not a playable AudioStream: %s" % MAIN_MENU_MUSIC_PATH)
+	return null
+
+
+func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
+	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.READ)
+	if file == null:
+		file = FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return null
+	var bytes := file.get_buffer(file.get_length())
+	if bytes.size() < 44:
+		return null
+	if bytes.slice(0, 4).get_string_from_ascii() != "RIFF" or bytes.slice(8, 12).get_string_from_ascii() != "WAVE":
+		return null
+
+	var channels := 0
+	var sample_rate := 0
+	var bits_per_sample := 0
+	var data := PackedByteArray()
+	var offset := 12
+	while offset + 8 <= bytes.size():
+		var chunk_id := bytes.slice(offset, offset + 4).get_string_from_ascii()
+		var chunk_size := bytes.decode_u32(offset + 4)
+		var chunk_start := offset + 8
+		var chunk_end := mini(chunk_start + chunk_size, bytes.size())
+		if chunk_id == "fmt " and chunk_size >= 16:
+			var audio_format := bytes.decode_u16(chunk_start)
+			if audio_format != 1:
+				return null
+			channels = bytes.decode_u16(chunk_start + 2)
+			sample_rate = bytes.decode_u32(chunk_start + 4)
+			bits_per_sample = bytes.decode_u16(chunk_start + 14)
+		elif chunk_id == "data":
+			data = bytes.slice(chunk_start, chunk_end)
+			break
+		offset = chunk_end + int(chunk_size % 2)
+
+	if data.is_empty() or sample_rate <= 0 or bits_per_sample != 16 or (channels != 1 and channels != 2):
+		return null
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = sample_rate
+	stream.stereo = channels == 2
+	stream.data = data
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = int(float(data.size()) / (2.0 * float(channels)))
+	return stream
 
 
 func _configure_ui_nodes() -> void:

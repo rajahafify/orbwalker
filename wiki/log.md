@@ -1064,3 +1064,91 @@ Append-only history of wiki operations.
   - Added inventory-focus dismissal so clicking outside inventory slots/popover or using non-inventory shop actions clears the selected slot and hides the popover without breaking the embedded Sell action.
 - Notes:
   - Godot MCP `view_script`, `get_godot_errors`, and scene instantiate/probe (`play_scene` + `get_scene_tree`) were run; latest reported no session errors.
+
+## [2026-05-02] code-change | Placeholder Audio Hooks
+
+- Source: `scripts/core/audio_manager.gd`, `project.godot`, `scripts/core/main_boot.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `todo.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added an `AudioManager` autoload that generates placeholder looped music and short SFX tones in code, so the prototype has audio feedback without imported audio assets.
+  - Wired menu, combat, and shop music contexts.
+  - Wired SFX hooks for menu start, combat match/combo/result/victory/defeat events, and shop purchase/reroll/sell/booster success or failure feedback.
+  - Added lazy `/root/AudioManager` resolution in scene controllers so audio works in already-open editor sessions before the new autoload is refreshed.
+- Notes:
+  - Godot MCP `view_script`, script load probes, main-scene runtime smoke, scene instantiate probes, and `get_godot_errors` passed. Manual listening and volume/feel review remains pending.
+
+## [2026-05-02] code-change | MIDI Music Export
+
+- Source: `raw/`, `tools/audio/export_midi_to_wav.py`, `resources/audio/music/`, `scripts/core/audio_manager.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/setup.md`
+- Changed:
+  - Added a Python MIDI-to-WAV export helper that renders raw MIDI files through the local FluidSynth binary and `raw/GeneralUser GS v1.471.sf2`.
+  - Exported `combat.wav`, `credit.wav`, `main-menu.wav`, `melody.wav`, and `shop.wav` into `resources/audio/music/`.
+  - Updated `AudioManager` so menu/combat/shop music uses exported WAV assets when present and falls back to generated loops when missing.
+- Notes:
+  - Current exporter uses FluidSynth, signed 16-bit WAV output, WAV header verification, and PCM peak normalization. Godot MCP filesystem scan, WAV load probe, and `get_godot_errors` passed. Manual listening and loop-point review remains pending.
+
+## [2026-05-02] fix | Audible Music Levels
+
+- Source: `tools/audio/export_midi_to_wav.py`, `resources/audio/music/`, `scripts/core/audio_manager.gd`, `scripts/core/main_boot.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Normalized exported WAV music to a louder peak target during MIDI export.
+  - Raised `AudioManager` music playback from `-20 dB` to `-8 dB`.
+  - Added music-player volume enforcement after scene music requests so already-open editor sessions do not keep stale quiet child-player settings.
+- Notes:
+  - WAV RMS/peak checks now show audible music data. Godot MCP `view_script` and `get_godot_errors` passed. Manual listening remains the final acceptance check.
+
+## [2026-05-02] fix | FluidSynth WAV Export
+
+- Source: `tools/audio/export_midi_to_wav.py`, `resources/audio/music/`, `wiki/features.md`, `wiki/file-map.md`, `wiki/setup.md`
+- Changed:
+  - Replaced the Python synth rendering path with the provided local FluidSynth binary.
+  - Fixed FluidSynth argument ordering so `-F output.wav` is supplied before the SoundFont and MIDI files.
+  - Regenerated all music WAVs as signed 16-bit stereo 44.1 kHz files and normalized their PCM peak levels.
+- Notes:
+  - Python `wave` checks passed for all exported files, and Godot MCP loaded every WAV as `AudioStreamWAV`.
+
+## [2026-05-02] fix | Main Menu Direct Music
+
+- Source: `scripts/core/main_boot.gd`, `resources/audio/music/main-menu.wav`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Added a direct `MainMenuMusicPlayer` under the main menu scene.
+  - Deferred main-menu music startup until after menu layout setup.
+  - Kept the global `AudioManager` music request after direct startup for later scene-transition consistency.
+- Notes:
+  - Godot MCP confirmed `MainMenuMusicPlayer` exists in the running main scene and `get_godot_errors` reported no session errors. Manual listening remains the acceptance check.
+
+## [2026-05-02] fix | Main Menu PCM Music Playback
+
+- Source: `scripts/core/main_boot.gd`, `resources/audio/music/main-menu.wav`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Changed main menu music loading to parse the source signed 16-bit WAV and create an in-memory `AudioStreamWAV`, bypassing Godot's imported WAV resource path.
+  - Set main-menu music to `0 dB` for focused audibility testing.
+  - Added a retry loop if playback stops.
+- Notes:
+  - Runtime log confirmed main-menu music playback on the Master bus. User confirmed the music was audible, then the direct menu music volume was lowered from `0 dB` to `-12 dB` for mix comfort. Godot MCP `get_godot_errors` reported no session errors before the volume adjustment.
+
+## [2026-05-02] tune | Main Menu Music Volume
+
+- Source: `scripts/core/main_boot.gd`, `docs/test_plan.md`, `wiki/log.md`
+- Changed:
+  - Lowered direct main-menu music playback from `0 dB` to `-12 dB` after user reported it was too loud.
+- Notes:
+  - This is a mix adjustment only; no source asset or export pipeline changes.
+
+## [2026-05-02] fix | Start Run Music Restart
+
+- Source: `scripts/core/main_boot.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Removed the first-input main-menu music restart workaround.
+  - Kept the non-invasive retry guard that only resumes music if the player stops.
+- Notes:
+  - Start Run clicks no longer call `stop()` then `play()` on `MainMenuMusicPlayer` before scene transition.
+
+## [2026-05-02] fix | Combat Source WAV Music
+
+- Source: `scripts/core/audio_manager.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `scripts/core/main_boot.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Moved reliable music loading into `AudioManager` by opening the absolute project WAV and decoding signed 16-bit PCM into an in-memory `AudioStreamWAV` before falling back to Godot's imported resource.
+  - Set shared music playback to `-12 dB` and removed scene-level `-8 dB` overrides.
+  - Allowed same-key music requests to restart playback if the music player has stopped.
+- Notes:
+  - Godot MCP confirmed `combat.wav` decodes through `AudioManager` as stereo 44.1 kHz PCM with 14,012,416 data bytes and loop end 3,503,104. A direct combat scene smoke printed `AudioManager music playing: key=combat stream=AudioStreamWAV volume_db=-12.0 bus=Master`. Manual listening remains the final acceptance check.

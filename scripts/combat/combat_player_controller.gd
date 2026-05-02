@@ -241,6 +241,7 @@ var _combat_speed := COMBAT_SPEED_NORMAL
 
 
 func _ready() -> void:
+	_audio_play_music("combat")
 	_consumable_rng.randomize()
 	_background.texture = null
 	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
@@ -1444,6 +1445,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	await _replay_turn_resolution_from_log(turn_log)
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
+		_audio_play_sfx("victory")
 		var transition: Dictionary = RunState.mark_fight_victory()
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 		_append_turn_log(turn_log)
@@ -1463,6 +1465,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 
 	if _combat.phase == COMBAT_PHASE_DEFEAT:
+		_audio_play_sfx("defeat")
 		var defeat_cause := _build_defeat_cause(turn_log)
 		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
@@ -1476,6 +1479,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 
 	_status_label.text = _build_turn_summary_status(turn_log)
+	_play_turn_result_sfx(turn_log)
 	_status_label.modulate = STATUS_COLOR_POSITIVE
 	_turn_summary_label.text = "Turn Summary: %s" % _build_turn_summary_status(turn_log)
 	_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
@@ -1485,14 +1489,55 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 
 func _on_next_button_pressed() -> void:
 	if _boss_reward_pending:
+		_audio_play_sfx("error")
 		_status_label.text = "Choose a boss relic or skip the reward before continuing."
 		return
 	if _pending_next_scene_path == "":
 		return
+	_audio_play_sfx("ui_accept")
 	var target_scene := _pending_next_scene_path
 	_pending_next_scene_path = ""
 	_hide_outcome_summary()
 	get_tree().change_scene_to_file(target_scene)
+
+
+func _play_turn_result_sfx(turn_log: Dictionary) -> void:
+	if int(turn_log.get("enemy_damage_taken", 0)) > 0:
+		_audio_play_sfx("hit")
+	if int(turn_log.get("healed", 0)) > 0:
+		_audio_play_sfx("heal")
+	if int(turn_log.get("armor_gained", 0)) > 0:
+		_audio_play_sfx("armor")
+	if int(turn_log.get("gold_gained", 0)) > 0:
+		_audio_play_sfx("gold")
+	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
+	if int(enemy_attack.get("hp_damage", 0)) > 0:
+		_audio_play_sfx("hit")
+
+
+func _audio_play_music(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_music"):
+		audio.call("play_music", key)
+
+
+func _audio_play_sfx(key: String) -> void:
+	var audio := _audio_manager_node()
+	if audio != null and audio.has_method("play_sfx"):
+		audio.call("play_sfx", key)
+
+
+func _audio_manager_node() -> Node:
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio != null:
+		return audio
+	var script: GDScript = load("res://scripts/core/audio_manager.gd")
+	if script == null:
+		return null
+	audio = script.new()
+	audio.name = "AudioManager"
+	get_tree().root.add_child(audio)
+	return audio
 
 
 func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:
@@ -2850,6 +2895,7 @@ func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, 
 
 
 func _on_resolver_match_found(groups: Array) -> void:
+	_audio_play_sfx("match")
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 	_status_label.modulate = STATUS_COLOR_WARNING
 
@@ -2912,6 +2958,7 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	if cells.is_empty():
 		return
 	var combo_text := "COMBO x%d" % combo_value
+	_audio_play_sfx("combo")
 	var font_size := mini(COMBO_POPUP_MAX_FONT_SIZE, COMBO_POPUP_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 6)
 
 	var combo_panel := _ensure_combo_popup_panel()
