@@ -2,6 +2,9 @@ extends RefCounted
 class_name PlayerLoadoutHud
 
 signal equipment_slot_selected(slot_index: int)
+signal consumable_slot_selected(slot_index: int)
+signal slot_hover_started(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2)
+signal slot_hover_ended()
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
@@ -39,12 +42,14 @@ const VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(714, 196))
 const PLAYER_HP_BAR_RECT := Rect2(Vector2(18, 62), Vector2(678, 54))
 const PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(18, 112), Vector2(434, 34))
 const ARMOR_BADGE_RECT := Rect2(Vector2(474, 112), Vector2(222, 34))
-const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 320), Vector2(996, 166))
+const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 258), Vector2(996, 228))
 const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 404), Vector2(996, 50))
-const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 34), Vector2(522, 88))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(664, 34), Vector2(288, 88))
-const EQUIPMENT_LABEL_RECT := Rect2(Vector2(146, 4), Vector2(296, 22))
-const CONSUMABLE_LABEL_RECT := Rect2(Vector2(628, 4), Vector2(328, 22))
+const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
+const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
+const FOOTER_RELIC_RAIL_RECT := Rect2(Vector2(390, 30), Vector2(216, 58))
+const EQUIPMENT_LABEL_RECT := Rect2(Vector2(118, 108), Vector2(296, 22))
+const CONSUMABLE_LABEL_RECT := Rect2(Vector2(514, 108), Vector2(288, 22))
+const FOOTER_RELIC_LABEL_RECT := Rect2(Vector2(390, 6), Vector2(216, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
@@ -52,6 +57,7 @@ const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _selected_equipment_slot := -1
+var _selected_consumable_slot := -1
 var _empty_silhouette_cache: Dictionary = {}
 
 
@@ -59,22 +65,26 @@ func set_selected_equipment_slot(slot_index: int) -> void:
 	_selected_equipment_slot = slot_index
 
 
-func populate_loadout_slot_row(row: Control, ids: Array, label: String, slot_count: int, selectable_equipment: bool = false) -> void:
+func set_selected_consumable_slot(slot_index: int) -> void:
+	_selected_consumable_slot = slot_index
+
+
+func populate_loadout_slot_row(row: Control, ids: Array, label: String, slot_count: int, selectable_label: String = "") -> void:
 	var visible_ids: Array = []
 	for index in range(slot_count):
 		visible_ids.append(ids[index] if index < ids.size() else "")
-	populate_icon_row(row, visible_ids, label, selectable_equipment)
+	populate_icon_row(row, visible_ids, label, selectable_label)
 
 
-func populate_icon_row(row: Control, ids: Array, label: String, selectable_equipment: bool = false) -> void:
+func populate_icon_row(row: Control, ids: Array, label: String, selectable_label: String = "") -> void:
 	_clear_children(row)
 	for index in range(ids.size()):
 		var id_text := String(ids[index])
 		var filled := id_text != ""
-		var selectable := selectable_equipment and label == "equipment"
-		var slot := _make_slot(index, filled, selectable)
+		var slot := _make_slot(index, filled, label, selectable_label)
 		slot.name = "%sSlot%d" % [label.capitalize(), index]
 		slot.position = Vector2(float(index) * (SLOT_SIZE.x + SLOT_GAP), 0.0)
+		var content: Dictionary = {}
 
 		var icon := TextureRect.new()
 		icon.name = "SlotIcon"
@@ -87,7 +97,7 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_equip
 
 		var amount_label: Label = null
 		if filled:
-			var content: Dictionary = lookup_content_definition(id_text)
+			content = lookup_content_definition(id_text)
 			var icon_key := String(content.get("icon_key", ""))
 			icon.texture = _visuals.clean_icon_for_key(icon_key)
 			icon.tooltip_text = String(content.get("display_name", id_text))
@@ -103,6 +113,8 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_equip
 		slot.add_child(icon)
 		if amount_label != null:
 			slot.add_child(amount_label)
+		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, label, index, content, id_text, filled))
+		slot.mouse_exited.connect(_on_slot_mouse_exited)
 		row.add_child(slot)
 
 
@@ -344,6 +356,8 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 		icon.custom_minimum_size = RELIC_ICON_SIZE
 		icon.texture = _visuals.clean_icon_for_key(String(content.get("icon_key", "")))
 		slot.add_child(icon)
+		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, "relic", index, content, relic_id, true))
+		slot.mouse_exited.connect(_on_slot_mouse_exited)
 		row.add_child(slot)
 
 	if visible_ids.size() > show_count:
@@ -385,6 +399,7 @@ func apply_player_hud_chrome(nodes: Dictionary) -> void:
 	_apply_hud_label_style(nodes.get("hp_label") as Label, Color(0.95, 0.96, 0.98, 1.0), 24)
 	_apply_hud_label_style(nodes.get("equipment_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
 	_apply_hud_label_style(nodes.get("consumable_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
+	_apply_hud_label_style(nodes.get("relic_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
 
 
 func apply_player_footer_layout(nodes: Dictionary) -> void:
@@ -407,8 +422,10 @@ func apply_player_footer_layout(nodes: Dictionary) -> void:
 	_apply_node_rect(nodes, "loadout_root", Rect2(Vector2.ZERO, PLAYER_LOADOUT_RECT.size))
 	_apply_node_rect(nodes, "equipment_label", EQUIPMENT_LABEL_RECT)
 	_apply_node_rect(nodes, "consumable_label", CONSUMABLE_LABEL_RECT)
+	_apply_node_rect(nodes, "relic_label", FOOTER_RELIC_LABEL_RECT)
 	_apply_node_rect(nodes, "equipment_icons", EQUIPMENT_RAIL_RECT)
 	_apply_node_rect(nodes, "consumable_icons", CONSUMABLE_RAIL_RECT)
+	_apply_node_rect(nodes, "relic_icons", FOOTER_RELIC_RAIL_RECT)
 	_apply_node_rect(nodes, "mastery_strip", PLAYER_MASTERY_RECT)
 	_apply_node_rect(nodes, "mastery_root", MASTERY_ROOT_RECT)
 	_apply_node_rect(nodes, "mastery_label", MASTERY_LABEL_RECT)
@@ -504,7 +521,8 @@ func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
 	label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
 
 
-func _make_slot(index: int, filled: bool, selectable: bool) -> Control:
+func _make_slot(index: int, filled: bool, slot_label: String, selectable_label: String = "") -> Control:
+	var selectable := selectable_label != "" and slot_label == selectable_label
 	if selectable:
 		var button := Button.new()
 		button.text = ""
@@ -512,13 +530,20 @@ func _make_slot(index: int, filled: bool, selectable: bool) -> Control:
 		button.custom_minimum_size = SLOT_SIZE
 		button.focus_mode = Control.FOCUS_NONE
 		button.disabled = not filled
-		var selected := index == _selected_equipment_slot
+		var selected := false
+		if slot_label == "equipment":
+			selected = index == _selected_equipment_slot
+		elif slot_label == "consumable":
+			selected = index == _selected_consumable_slot
 		button.add_theme_stylebox_override("normal", _slot_stylebox(selected, not filled))
 		button.add_theme_stylebox_override("hover", _slot_stylebox(true, not filled))
 		button.add_theme_stylebox_override("pressed", _slot_stylebox(true, not filled))
 		button.add_theme_stylebox_override("disabled", _slot_stylebox(selected, not filled))
 		if filled:
-			button.pressed.connect(_on_equipment_slot_pressed.bind(index))
+			if slot_label == "equipment":
+				button.pressed.connect(_on_equipment_slot_pressed.bind(index))
+			elif slot_label == "consumable":
+				button.pressed.connect(_on_consumable_slot_pressed.bind(index))
 		return button
 
 	var panel := PanelContainer.new()
@@ -530,7 +555,29 @@ func _make_slot(index: int, filled: bool, selectable: bool) -> Control:
 
 func _on_equipment_slot_pressed(index: int) -> void:
 	_selected_equipment_slot = index
+	_selected_consumable_slot = -1
 	equipment_slot_selected.emit(index)
+
+
+func _on_consumable_slot_pressed(index: int) -> void:
+	_selected_consumable_slot = index
+	_selected_equipment_slot = -1
+	consumable_slot_selected.emit(index)
+
+
+func _on_slot_mouse_entered(slot: Control, slot_type: String, slot_index: int, content: Dictionary, fallback_id: String, filled: bool) -> void:
+	if slot == null:
+		return
+	var title := "Empty %s slot" % slot_type
+	var description := ""
+	if filled:
+		title = String(content.get("display_name", fallback_id))
+		description = String(content.get("description", ""))
+	slot_hover_started.emit(slot_type, slot_index, title, description, slot.get_global_rect())
+
+
+func _on_slot_mouse_exited() -> void:
+	slot_hover_ended.emit()
 
 
 func _make_badge_label(text: String, slot_size: Vector2) -> Label:

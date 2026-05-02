@@ -11,6 +11,7 @@ const RELIC_PANEL_RECT := Rect2(Vector2(16, 810), Vector2(1048, 168))
 const ACTION_ROW_RECT := Rect2(Vector2(16, 992), Vector2(1048, 84))
 const OFFER_CARD_SIZE := Vector2(320, 370)
 const OFFER_CARD_GAP := 18.0
+const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
@@ -26,6 +27,7 @@ const RARITY_COLORS := {
 @onready var _backdrop_tint: ColorRect = %BackdropTint
 @onready var _layout_root: Control = %ShopLayoutRoot
 
+var _hud_overlay: Control
 var _top_bar: Panel
 var _crest_panel: Panel
 var _crest_label: Label
@@ -67,8 +69,14 @@ var _hp_bar: ProgressBar
 var _hp_label: Label
 var _equipment_label: Label
 var _equipment_slots_root: Control
+var _slot_detail_bubble: Panel
+var _slot_detail_title: Label
+var _slot_detail_description: Label
+var _slot_detail_sell_button: Button
 var _consumable_label: Label
 var _consumable_slots_root: Control
+var _relic_label: Label
+var _relic_icons_root: Control
 var _loadout_frame: Panel
 var _loadout_root: Control
 var _booster_overlay: ColorRect
@@ -76,10 +84,15 @@ var _booster_modal: Panel
 var _booster_title_label: Label
 var _booster_hint_label: Label
 var _booster_option_buttons: Array[Button] = []
+var _skip_booster_button: Button
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _selected_equipment_slot := -1
+var _selected_consumable_slot := -1
+var _hover_slot_global_rect := Rect2()
+var _hover_slot_type := ""
+var _hover_slot_title := ""
 
 
 func _ready() -> void:
@@ -107,6 +120,11 @@ func _ready() -> void:
 
 func _create_ui() -> void:
 	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_overlay = _make_root("HudOverlay", _layout_root)
+	_hud_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_overlay.z_index = 50
+	_hud_overlay.clip_contents = false
+
 	_top_bar = _make_panel("TopBar", _layout_root)
 	_crest_panel = _make_panel("CrestPanel", _top_bar)
 	_crest_label = _make_label("CrestLabel", _crest_panel, "M", 28, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
@@ -146,11 +164,14 @@ func _create_ui() -> void:
 	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
 
 	_player_hud_section = _make_panel("PlayerHudSection", _layout_root)
+	_player_hud_section.clip_contents = false
 	_elemental_mastery_panel = _make_panel("ElementalMasteryPanel", _player_hud_section)
 	_elemental_mastery_title = _make_label("ElementalMasteryTitle", _elemental_mastery_panel, "ELEMENTAL MASTERY", 22, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_elemental_mastery_cards = _make_root("ElementalMasteryCards", _elemental_mastery_panel)
 	_build_panel = _make_panel("PlayerPanel", _player_hud_section)
+	_build_panel.clip_contents = false
 	_player_panel_root = _make_root("PlayerPanelRoot", _build_panel)
+	_player_panel_root.clip_contents = false
 	_hero_card = _make_panel("HeroCard", _player_panel_root)
 	_hero_card_root = _make_root("HeroCardRoot", _hero_card)
 	_hero_portrait = _make_texture("PlayerPortrait", _hero_card_root)
@@ -163,22 +184,41 @@ func _create_ui() -> void:
 	_hp_label = _make_label("PlayerHpLabel", _vitals_panel, "HP -", 24, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_loadout_frame = _make_panel("LoadoutFrame", _player_panel_root)
 	_loadout_root = _make_root("LoadoutRoot", _loadout_frame)
+	_loadout_frame.clip_contents = false
+	_loadout_root.clip_contents = false
 	_equipment_label = _make_label("EquipmentLabel", _loadout_root, "EQUIPMENT", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_equipment_slots_root = _make_root("EquipmentIcons", _loadout_root)
+	_equipment_slots_root.clip_contents = false
 	_consumable_label = _make_label("ConsumableLabel", _loadout_root, "CONSUMABLES", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_consumable_slots_root = _make_root("ConsumableIcons", _loadout_root)
+	_consumable_slots_root.clip_contents = false
+	_relic_label = _make_label("RelicLabel", _loadout_root, "RELICS", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_relic_icons_root = _make_root("RelicIcons", _loadout_root)
+	_relic_icons_root.clip_contents = false
+	_slot_detail_bubble = _make_panel("SlotDetailBubble", _hud_overlay)
+	_slot_detail_bubble.visible = false
+	_slot_detail_bubble.z_index = 51
+	_slot_detail_title = _make_label("SlotDetailTitle", _slot_detail_bubble, "", 20, INK_COLOR)
+	_slot_detail_description = _make_label("SlotDetailDescription", _slot_detail_bubble, "", 15, MUTED_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_slot_detail_sell_button = _make_button("SlotDetailSellButton", _slot_detail_bubble, "Sell")
+	_slot_detail_sell_button.visible = false
+	_slot_detail_sell_button.disabled = true
 
 	_booster_overlay = ColorRect.new()
 	_booster_overlay.name = "BoosterOverlay"
 	_booster_overlay.visible = false
-	_booster_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_booster_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_layout_root.add_child(_booster_overlay)
 	_booster_modal = _make_panel("BoosterModal", _booster_overlay)
+	_booster_modal.mouse_filter = Control.MOUSE_FILTER_PASS
 	_booster_title_label = _make_label("BoosterTitleLabel", _booster_modal, "Choose One Booster Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_booster_hint_label = _make_label("BoosterHintLabel", _booster_modal, "Pick one option to finish opening the booster.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_booster_hint_label = _make_label("BoosterHintLabel", _booster_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	for index in 3:
 		var button := _make_button("BoosterOptionButton%d" % (index + 1), _booster_modal, "")
 		_booster_option_buttons.append(button)
+	_skip_booster_button = _make_button("SkipBoosterButton", _booster_modal, "Skip")
+	_skip_booster_button.visible = false
 
 func _connect_signals() -> void:
 	for index in _offer_cards.size():
@@ -186,14 +226,20 @@ func _connect_signals() -> void:
 	_relic_card.pressed.connect(_buy_relic_offer)
 	_reroll_button.pressed.connect(_on_reroll_button_pressed)
 	_sell_equipment_button.pressed.connect(_on_sell_equipment_button_pressed)
+	_slot_detail_sell_button.pressed.connect(_on_sell_equipment_button_pressed)
 	_continue_button.pressed.connect(_on_continue_button_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
 	for index in _booster_option_buttons.size():
 		_booster_option_buttons[index].pressed.connect(_choose_booster_option.bind(index))
+	_skip_booster_button.pressed.connect(_skip_pending_booster)
 	_player_loadout_hud.equipment_slot_selected.connect(_select_equipment_slot)
+	_player_loadout_hud.consumable_slot_selected.connect(_select_consumable_slot)
+	_player_loadout_hud.slot_hover_started.connect(_on_loadout_slot_hover_started)
+	_player_loadout_hud.slot_hover_ended.connect(_on_loadout_slot_hover_ended)
 
 
 func _refresh_ui() -> void:
+	_hide_slot_detail_bubble()
 	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var pending_options: Array = shop_snapshot.get("pending_booster_options", [])
@@ -202,7 +248,7 @@ func _refresh_ui() -> void:
 	_run_progress_label.text = "Dungeon %d / %d | %s" % [RunState.dungeon_level, RunState.MAX_DUNGEON_LEVELS, RunState.level_sequence_label()]
 	_boss_preview_label.text = "Boss preview: %s" % RunState.current_level_boss_name()
 	_gold_label.text = "G  %d" % RunState.run_gold
-	_detail_label.text = "Select a stock card or relic card to buy. Select an equipment slot before selling."
+	_detail_label.text = "Select a stock card or relic card to buy. Select an equipped or consumable slot before selling."
 
 	var item_offers: Array = shop_snapshot.get("item_offers", [])
 	for index in _offer_cards.size():
@@ -212,7 +258,7 @@ func _refresh_ui() -> void:
 			_render_offer_card(_offer_cards[index], Dictionary(item_offers[index]), booster_pending)
 
 	_render_relic_card(Dictionary(shop_snapshot.get("relic_offer", {})), booster_pending)
-	_render_action_row(shop_snapshot, progression_snapshot, booster_pending)
+	_render_action_row(shop_snapshot, booster_pending)
 	_render_build_panel(progression_snapshot)
 	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
 	_render_booster_overlay(pending_options)
@@ -292,13 +338,13 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 	_make_price_badge(root, Rect2(Vector2(812, 58), Vector2(194, 54)), _price_text(price, sold_out, affordable, booster_pending), disabled)
 
 
-func _render_action_row(shop_snapshot: Dictionary, progression_snapshot: Dictionary, booster_pending: bool) -> void:
+func _render_action_row(shop_snapshot: Dictionary, booster_pending: bool) -> void:
 	var active := bool(shop_snapshot.get("active", false))
 	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
 	_reroll_button.text = "Reroll\nCost %d" % reroll_cost
 	_reroll_button.disabled = booster_pending or not active or not RunState.can_afford(reroll_cost)
-	_sell_equipment_button.text = "Sell Selected\n%s" % _selected_slot_sell_text(progression_snapshot)
-	_sell_equipment_button.disabled = booster_pending or not _selected_slot_has_equipment(progression_snapshot)
+	_sell_equipment_button.visible = false
+	_sell_equipment_button.disabled = true
 	_continue_button.text = "Continue\nLeave Shop"
 	_continue_button.disabled = booster_pending
 
@@ -311,9 +357,47 @@ func _render_build_panel(progression_snapshot: Dictionary) -> void:
 	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
 	if _selected_equipment_slot >= equipment_slots.size() or (_selected_equipment_slot >= 0 and String(equipment_slots[_selected_equipment_slot]) == ""):
 		_selected_equipment_slot = -1
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	if _selected_consumable_slot >= consumable_slots.size() or (_selected_consumable_slot >= 0 and String(consumable_slots[_selected_consumable_slot]) == ""):
+		_selected_consumable_slot = -1
 	_player_loadout_hud.set_selected_equipment_slot(_selected_equipment_slot)
-	_player_loadout_hud.populate_loadout_slot_row(_equipment_slots_root, equipment_slots, "equipment", 5, true)
-	_player_loadout_hud.populate_loadout_slot_row(_consumable_slots_root, Array(progression_snapshot.get("consumable_slots", [])), "consumable", 3)
+	_player_loadout_hud.set_selected_consumable_slot(_selected_consumable_slot)
+	_player_loadout_hud.populate_loadout_slot_row(_equipment_slots_root, equipment_slots, "equipment", 5, "equipment")
+	_player_loadout_hud.populate_loadout_slot_row(_consumable_slots_root, consumable_slots, "consumable", 3, "consumable")
+	_player_loadout_hud.populate_relic_row(_relic_icons_root, Array(progression_snapshot.get("relic_ids", [])), 2)
+	_suppress_slot_native_tooltips()
+	_refresh_slot_popover_for_selected_slot(progression_snapshot)
+
+
+func _refresh_slot_popover_for_selected_slot(progression_snapshot: Dictionary) -> void:
+	var selected_kind := _selected_slot_kind(progression_snapshot)
+	if selected_kind == "":
+		if _hover_slot_type == "":
+			_hide_slot_detail_bubble()
+		return
+	var slot_name := "EquipmentSlot%d" % _selected_equipment_slot if selected_kind == "equipment" else "ConsumableSlot%d" % _selected_consumable_slot
+	var slot_root := _equipment_slots_root if selected_kind == "equipment" else _consumable_slots_root
+	var slot := slot_root.get_node_or_null(slot_name) as Control
+	if slot == null:
+		return
+	var slots: Array = progression_snapshot.get("equipment_slots", []) if selected_kind == "equipment" else progression_snapshot.get("consumable_slots", [])
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	if slot_index < 0 or slot_index >= slots.size():
+		return
+	var item_id := String(slots[slot_index])
+	if item_id == "":
+		return
+	var content := _lookup_content_definition(item_id)
+	_set_slot_popover_content(selected_kind, String(content.get("display_name", item_id)), String(content.get("description", "")), slot.get_global_rect())
+
+
+func _suppress_slot_native_tooltips() -> void:
+	for row in [_equipment_slots_root, _consumable_slots_root, _relic_icons_root]:
+		if row == null:
+			continue
+		for child in row.get_children():
+			if child is Control:
+				(child as Control).tooltip_text = ""
 
 
 func _render_elemental_mastery_panel(mastery_levels: Dictionary) -> void:
@@ -325,7 +409,12 @@ func _render_booster_overlay(pending_options: Array) -> void:
 	_booster_overlay.visible = overlay_visible
 	_booster_modal.visible = overlay_visible
 	if not overlay_visible:
+		_skip_booster_button.visible = false
 		return
+	_booster_title_label.text = "Choose One Booster Reward"
+	_booster_hint_label.text = "Pick one option now, or press Skip to continue shopping."
+	for button in _booster_option_buttons:
+		button.visible = true
 	for index in _booster_option_buttons.size():
 		var button := _booster_option_buttons[index]
 		_clear_children(button)
@@ -347,9 +436,12 @@ func _render_booster_overlay(pending_options: Array) -> void:
 		icon.position = Vector2(58, 98)
 		icon.size = Vector2(92, 86)
 		_make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
+	_skip_booster_button.visible = true
+	_skip_booster_button.disabled = false
 
 
 func _buy_offer_at(index: int) -> void:
+	_clear_inventory_focus()
 	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
 	var item_offers: Array = shop_snapshot.get("item_offers", [])
 	if index < 0 or index >= item_offers.size():
@@ -361,6 +453,7 @@ func _buy_offer_at(index: int) -> void:
 
 
 func _buy_relic_offer() -> void:
+	_clear_inventory_focus()
 	var relic_offer: Dictionary = RunState.ensure_shop_state().relic_offer
 	if relic_offer.is_empty():
 		return
@@ -370,26 +463,47 @@ func _buy_relic_offer() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
+	_clear_inventory_focus()
 	var result: Dictionary = RunState.reroll_shop_items()
 	_set_status(_result_message("Reroll", result), bool(result.get("ok", false)))
 	_refresh_ui()
 
 
 func _on_sell_equipment_button_pressed() -> void:
-	if _selected_equipment_slot < 0:
-		_set_status("Sell failed: select an occupied equipment slot first.", false)
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	var selected_kind := _selected_slot_kind(progression_snapshot)
+	if selected_kind == "":
+		_set_status("Sell failed: select an occupied equipment or consumable slot first.", false)
 		return
-	var slot_index := _selected_equipment_slot
-	var result: Dictionary = RunState.sell_equipped_item(slot_index)
-	_set_status(_result_message("Sell equipment slot %d" % slot_index, result), bool(result.get("ok", false)))
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	var result: Dictionary = RunState.sell_equipped_item(slot_index) if selected_kind == "equipment" else RunState.sell_consumable_item(slot_index)
+	var action := "Sell equipment slot %d" % slot_index if selected_kind == "equipment" else "Sell consumable slot %d" % slot_index
+	_set_status(_result_message(action, result), bool(result.get("ok", false)))
 	if bool(result.get("ok", false)):
-		_selected_equipment_slot = -1
+		if selected_kind == "equipment":
+			_selected_equipment_slot = -1
+		else:
+			_selected_consumable_slot = -1
 	_refresh_ui()
 
 
 func _choose_booster_option(index: int) -> void:
+	_clear_inventory_focus()
 	var result: Dictionary = RunState.choose_booster_option(index)
-	_set_status(_result_message("Booster pick", result), bool(result.get("ok", false)))
+	if not bool(result.get("ok", false)) and _is_full_slot_reason(String(result.get("reason", ""))):
+		_set_status("No free slot for this reward. Sell from the loadout HUD, then pick again, or press Skip.", false)
+	else:
+		_set_status(_result_message("Booster pick", result), bool(result.get("ok", false)))
+	_refresh_ui()
+
+
+func _skip_pending_booster() -> void:
+	_clear_inventory_focus()
+	var result: Dictionary = RunState.discard_pending_booster_options()
+	var message := _result_message("Skip booster reward", result)
+	if bool(result.get("ok", false)):
+		message = "Skipped booster reward. Gold %d." % RunState.run_gold
+	_set_status(message, bool(result.get("ok", false)))
 	_refresh_ui()
 
 
@@ -401,16 +515,159 @@ func _select_equipment_slot(index: int) -> void:
 		_set_status("Select a filled equipment slot before selling.", false)
 	else:
 		_selected_equipment_slot = index
+		_selected_consumable_slot = -1
 		var content := _lookup_content_definition(String(equipment_slots[index]))
 		_set_status("Selected %s for selling." % String(content.get("display_name", equipment_slots[index])), true)
 	_refresh_ui()
 
+
+func _select_consumable_slot(index: int) -> void:
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	if index < 0 or index >= consumable_slots.size() or String(consumable_slots[index]) == "":
+		_selected_consumable_slot = -1
+		_set_status("Select a filled consumable slot before selling.", false)
+	else:
+		_selected_consumable_slot = index
+		_selected_equipment_slot = -1
+		var content := _lookup_content_definition(String(consumable_slots[index]))
+		_set_status("Selected %s for selling." % String(content.get("display_name", consumable_slots[index])), true)
+	_refresh_ui()
+
+
+func _on_loadout_slot_hover_started(slot_type: String, _slot_index: int, title: String, description: String, slot_global_rect: Rect2) -> void:
+	if _slot_detail_bubble == null:
+		return
+	_set_slot_popover_content(slot_type, title, description, slot_global_rect)
+
+
+func _on_loadout_slot_hover_ended() -> void:
+	_hover_slot_type = ""
+	_hover_slot_title = ""
+	_refresh_slot_popover_for_selected_slot(RunState.progression_snapshot())
+
+
+func _hide_slot_detail_bubble() -> void:
+	if _slot_detail_bubble == null:
+		return
+	_hover_slot_global_rect = Rect2()
+	_hover_slot_type = ""
+	_hover_slot_title = ""
+	_slot_detail_bubble.visible = false
+
+
+func _set_slot_popover_content(slot_type: String, title: String, description: String, slot_global_rect: Rect2) -> void:
+	_hover_slot_global_rect = slot_global_rect
+	_hover_slot_type = slot_type
+	_hover_slot_title = title
+	_slot_detail_title.text = title
+	_slot_detail_description.text = description
+	_slot_detail_description.visible = description != ""
+	_slot_detail_bubble.visible = title != ""
+	_update_slot_detail_bubble()
+
+
+func _update_slot_detail_bubble() -> void:
+	if _slot_detail_bubble == null or not _slot_detail_bubble.visible:
+		return
+	var has_description := _slot_detail_description.text != ""
+	var show_sell_action := _slot_popover_shows_sell_action()
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	var can_sell := _selected_slot_kind(progression_snapshot) != ""
+	var bubble_height := 70.0
+	if has_description:
+		bubble_height = 104.0
+	if show_sell_action:
+		bubble_height += 74.0
+	var bubble_size := Vector2(SLOT_DETAIL_BUBBLE_WIDTH, bubble_height)
+	var overlay_global: Rect2 = _hud_overlay.get_global_rect()
+	var slot_top_left: Vector2 = _hover_slot_global_rect.position - overlay_global.position
+	var slot_size: Vector2 = _hover_slot_global_rect.size
+	var local_x: float = slot_top_left.x + (slot_size.x - bubble_size.x) * 0.5
+	local_x = clampf(local_x, 0.0, maxf(0.0, _hud_overlay.size.x - bubble_size.x))
+	var local_y: float = slot_top_left.y - bubble_size.y - 12.0
+	if local_y < 0.0:
+		local_y = slot_top_left.y + slot_size.y + 12.0
+	_slot_detail_bubble.position = Vector2(local_x, local_y)
+	_slot_detail_bubble.size = bubble_size
+	_apply_rect(_slot_detail_title, Rect2(Vector2(12, 8), Vector2(bubble_size.x - 24.0, 26.0)))
+	if has_description:
+		_apply_rect(_slot_detail_description, Rect2(Vector2(12, 36), Vector2(bubble_size.x - 24.0, 36.0)))
+	var sell_button_y := 38.0 if not has_description else 78.0
+	_slot_detail_sell_button.visible = show_sell_action
+	_slot_detail_sell_button.disabled = not can_sell
+	_slot_detail_sell_button.text = "Sell\n%s" % _selected_slot_sell_text(progression_snapshot)
+	_apply_rect(_slot_detail_sell_button, Rect2(Vector2(12, sell_button_y), Vector2(bubble_size.x - 24.0, 62.0)))
+
+
+func _slot_popover_shows_sell_action() -> bool:
+	if _hover_slot_type != "equipment" and _hover_slot_type != "consumable":
+		return false
+	if _hover_slot_title == "":
+		return false
+	return not _hover_slot_title.begins_with("Empty ")
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	var mouse_event := event as InputEventMouseButton
+	if mouse_event == null:
+		return
+	if not mouse_event.pressed or mouse_event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if not _has_inventory_focus():
+		return
+	if _is_inside_inventory_focus_area(mouse_event.position):
+		return
+	_clear_inventory_focus()
+
+
+func _has_inventory_focus() -> bool:
+	return _selected_equipment_slot >= 0 or _selected_consumable_slot >= 0 or (_slot_detail_bubble != null and _slot_detail_bubble.visible)
+
+
+func _is_inside_inventory_focus_area(global_point: Vector2) -> bool:
+	if _control_contains_point(_slot_detail_bubble, global_point):
+		return true
+	if _control_contains_point(_slot_detail_sell_button, global_point):
+		return true
+	if _point_hits_control_children(_equipment_slots_root, global_point):
+		return true
+	if _point_hits_control_children(_consumable_slots_root, global_point):
+		return true
+	if _point_hits_control_children(_relic_icons_root, global_point):
+		return true
+	return false
+
+
+func _point_hits_control_children(root: Control, global_point: Vector2) -> bool:
+	if root == null:
+		return false
+	for child in root.get_children():
+		if child is Control and _control_contains_point(child as Control, global_point):
+			return true
+	return false
+
+
+func _control_contains_point(control: Control, global_point: Vector2) -> bool:
+	if control == null or not control.is_visible_in_tree():
+		return false
+	return control.get_global_rect().has_point(global_point)
+
+
+func _clear_inventory_focus() -> void:
+	_selected_equipment_slot = -1
+	_selected_consumable_slot = -1
+	_hide_slot_detail_bubble()
+
+
 func _on_continue_button_pressed() -> void:
+	_clear_inventory_focus()
 	var transition: Dictionary = RunState.advance_after_shop(false)
 	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_main_menu_button_pressed() -> void:
+	_clear_inventory_focus()
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 
@@ -428,19 +685,24 @@ func _set_status(message: String, positive: bool) -> void:
 
 
 func _selected_slot_sell_text(progression_snapshot: Dictionary) -> String:
-	if not _selected_slot_has_equipment(progression_snapshot):
-		return "Select gear slot"
-	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
-	var item_id := String(equipment_slots[_selected_equipment_slot])
+	var selected_kind := _selected_slot_kind(progression_snapshot)
+	if selected_kind == "":
+		return "Select slot"
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	var slots: Array = progression_snapshot.get("equipment_slots", []) if selected_kind == "equipment" else progression_snapshot.get("consumable_slots", [])
+	var item_id := String(slots[slot_index])
 	var content := _lookup_content_definition(item_id)
 	return "+%d gold" % int(content.get("sell_value", content.get("base_price", 0)))
 
 
-func _selected_slot_has_equipment(progression_snapshot: Dictionary) -> bool:
+func _selected_slot_kind(progression_snapshot: Dictionary) -> String:
 	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
-	if _selected_equipment_slot < 0 or _selected_equipment_slot >= equipment_slots.size():
-		return false
-	return String(equipment_slots[_selected_equipment_slot]) != ""
+	if _selected_equipment_slot >= 0 and _selected_equipment_slot < equipment_slots.size() and String(equipment_slots[_selected_equipment_slot]) != "":
+		return "equipment"
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	if _selected_consumable_slot >= 0 and _selected_consumable_slot < consumable_slots.size() and String(consumable_slots[_selected_consumable_slot]) != "":
+		return "consumable"
+	return ""
 
 
 func _lookup_content_definition(content_id: String) -> Dictionary:
@@ -475,6 +737,10 @@ func _price_text(price: int, sold_out: bool, affordable: bool, booster_pending: 
 	if not affordable:
 		return "NEED %d G" % price
 	return "G  %d" % price
+
+
+func _is_full_slot_reason(reason: String) -> bool:
+	return reason == "equipment_slots_full" or reason == "consumable_slots_full"
 
 
 func _rarity_color(rarity: String) -> Color:
@@ -535,18 +801,22 @@ func _apply_shop_layout() -> void:
 	for index in _offer_cards.size():
 		_apply_rect(_offer_cards[index], Rect2(Vector2(float(index) * (OFFER_CARD_SIZE.x + OFFER_CARD_GAP), 0.0), OFFER_CARD_SIZE))
 
-	_apply_rect(_reroll_button, Rect2(Vector2.ZERO, Vector2(316, ACTION_ROW_RECT.size.y)))
-	_apply_rect(_sell_equipment_button, Rect2(Vector2(342, 0), Vector2(316, ACTION_ROW_RECT.size.y)))
-	_apply_rect(_continue_button, Rect2(Vector2(684, 0), Vector2(364, ACTION_ROW_RECT.size.y)))
+	_apply_rect(_reroll_button, Rect2(Vector2.ZERO, Vector2(512, ACTION_ROW_RECT.size.y)))
+	_apply_rect(_continue_button, Rect2(Vector2(536, 0), Vector2(512, ACTION_ROW_RECT.size.y)))
+	_apply_rect(_sell_equipment_button, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
+	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
 
 	_player_loadout_hud.apply_player_hud_layout(_shop_player_hud_nodes())
+	_refresh_slot_popover_for_selected_slot(RunState.progression_snapshot())
+	_update_slot_detail_bubble()
 
-	_apply_rect(_booster_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
-	_apply_rect(_booster_modal, Rect2(Vector2(152, 610), Vector2(776, 420)))
+	_apply_rect(_booster_overlay, Rect2(Vector2.ZERO, Vector2(DESIGN_SIZE.x, 1080.0)))
+	_apply_rect(_booster_modal, Rect2(Vector2(152, 382), Vector2(776, 420)))
 	_apply_rect(_booster_title_label, Rect2(Vector2(0, 30), Vector2(776, 42)))
 	_apply_rect(_booster_hint_label, Rect2(Vector2(80, 82), Vector2(616, 42)))
 	for index in _booster_option_buttons.size():
 		_apply_rect(_booster_option_buttons[index], Rect2(Vector2(46 + float(index) * 238.0, 150), Vector2(208, 236)))
+	_apply_rect(_skip_booster_button, Rect2(Vector2(302, 340), Vector2(172, 54)))
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
@@ -578,6 +848,8 @@ func _shop_player_hud_nodes() -> Dictionary:
 		"equipment_icons": _equipment_slots_root,
 		"consumable_label": _consumable_label,
 		"consumable_icons": _consumable_slots_root,
+		"relic_label": _relic_label,
+		"relic_icons": _relic_icons_root,
 	}
 
 
@@ -588,25 +860,34 @@ func _apply_visual_chrome() -> void:
 	_speech_card.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8))
 	_crest_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32))
 	_gold_pill.add_theme_stylebox_override("panel", _panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8))
+	_slot_detail_bubble.add_theme_stylebox_override("panel", _panel_style(Color(0.03, 0.04, 0.05, 0.98), Color(0.68, 0.49, 0.23, 0.98), 2, 8))
 	_booster_modal.add_theme_stylebox_override("panel", _panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12))
-	_booster_overlay.color = Color(0.0, 0.0, 0.0, 0.68)
+	_booster_overlay.color = Color(0.0, 0.0, 0.0, 0.44)
 
 	_apply_button_chrome(_main_menu_button, Color(0.13, 0.09, 0.05, 0.95), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
 	_apply_button_chrome(_reroll_button, Color(0.05, 0.17, 0.27, 0.96), Color(0.31, 0.62, 0.84, 1.0), Color(0.08, 0.24, 0.36, 0.98))
 	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
+	_apply_button_chrome(_slot_detail_sell_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
 	_apply_button_chrome(_continue_button, Color(0.12, 0.30, 0.06, 0.96), Color(0.54, 0.78, 0.24, 1.0), Color(0.18, 0.40, 0.08, 0.98))
+	_apply_button_chrome(_skip_booster_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
 
 	for label in [_title_label, _gold_label, _stock_title_label, _booster_title_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for label in [_run_progress_label, _boss_preview_label, _detail_label, _equipment_label, _consumable_label, _elemental_mastery_title, _booster_hint_label]:
+	for label in [_run_progress_label, _boss_preview_label, _detail_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title, _booster_hint_label]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
+	_slot_detail_title.add_theme_color_override("font_color", INK_COLOR)
+	_slot_detail_title.add_theme_constant_override("outline_size", 2)
+	_slot_detail_title.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.90))
+	_slot_detail_description.add_theme_color_override("font_color", MUTED_COLOR)
+	_slot_detail_description.add_theme_constant_override("outline_size", 1)
+	_slot_detail_description.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
 	for label in [_speech_label, _hp_label, _crest_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for button in [_main_menu_button, _reroll_button, _sell_equipment_button, _continue_button]:
+	for button in [_main_menu_button, _reroll_button, _sell_equipment_button, _slot_detail_sell_button, _continue_button, _skip_booster_button]:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 23)
 	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())

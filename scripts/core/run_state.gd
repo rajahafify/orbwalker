@@ -38,6 +38,7 @@ var run_victory: bool = false
 var current_step_key: String = LEVEL_SEQUENCE[0]
 var _step_index: int = 0
 var enemies_defeated: int = 0
+var bosses_defeated: int = 0
 var total_gold_earned: int = 0
 var _current_encounter: Dictionary = {}
 var _boss_relic_reward_options: Array[Dictionary] = []
@@ -291,8 +292,20 @@ func sell_equipped_item(slot_index: int) -> Dictionary:
 	return ensure_shop_service().sell_equipped_item(self, slot_index)
 
 
+func sell_consumable_item(slot_index: int) -> Dictionary:
+	return ensure_shop_service().sell_consumable_item(self, slot_index)
+
+
 func choose_booster_option(option_index: int) -> Dictionary:
 	return ensure_shop_service().choose_booster_option(self, option_index)
+
+
+func replace_pending_booster_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
+	return ensure_shop_service().replace_pending_booster_option(self, option_index, slot_index, sell_replaced)
+
+
+func discard_pending_booster_options() -> Dictionary:
+	return ensure_shop_service().discard_pending_booster_options(self)
 
 
 func close_shop(mark_skipped: bool = false) -> void:
@@ -319,6 +332,7 @@ func reset_run() -> void:
 	current_step_key = LEVEL_SEQUENCE[0]
 	_step_index = 0
 	enemies_defeated = 0
+	bosses_defeated = 0
 	total_gold_earned = 0
 	_current_encounter.clear()
 	_boss_relic_reward_options.clear()
@@ -401,6 +415,16 @@ func claim_boss_relic_reward(option_index: int) -> Dictionary:
 	}
 
 
+func skip_boss_relic_reward() -> Dictionary:
+	if not run_active:
+		return {"ok": false, "reason": "run_not_active"}
+	if not is_current_step_boss_reward():
+		return {"ok": false, "reason": "not_boss_reward_step"}
+	_boss_reward_claimed_relic_id = ""
+	_boss_relic_reward_options.clear()
+	return {"ok": true, "reason": ""}
+
+
 func advance_after_boss_reward() -> Dictionary:
 	if not run_active:
 		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
@@ -418,6 +442,7 @@ func mark_fight_victory() -> Dictionary:
 
 	enemies_defeated += 1
 	if bool(_current_encounter.get("is_boss", false)):
+		bosses_defeated += 1
 		_prepare_boss_relic_reward_options()
 	_advance_sequence()
 	return _transition_result()
@@ -445,6 +470,7 @@ func run_summary_snapshot() -> Dictionary:
 			"level_reached": dungeon_level,
 			"levels_cleared": maxi(0, dungeon_level - 1),
 			"enemies_defeated": enemies_defeated,
+			"bosses_defeated": bosses_defeated,
 			"gold_earned": total_gold_earned,
 			"final_gold": run_gold,
 			"cause": "Run not finished.",
@@ -552,6 +578,7 @@ func _finalize_run(victory: bool, cause: String) -> void:
 		"level_reached": level_reached,
 		"levels_cleared": maxi(0, levels_cleared),
 		"enemies_defeated": enemies_defeated,
+		"bosses_defeated": bosses_defeated,
 		"gold_earned": total_gold_earned,
 		"final_gold": run_gold,
 		"cause": cause,
@@ -572,14 +599,20 @@ func _transition_result() -> Dictionary:
 
 func next_scene_path() -> String:
 	if not run_active:
+		if not run_victory:
+			return SCENE_MAIN
 		return SCENE_RUN_SUMMARY
 	if is_current_step_fight():
 		return SCENE_COMBAT
 	if is_current_step_shop():
 		return SCENE_SHOP
 	if is_current_step_boss_reward():
-		return SCENE_BOSS_RELIC_REWARD
+		return SCENE_COMBAT
 	return SCENE_MAIN
+
+
+func legacy_boss_reward_scene_path() -> String:
+	return SCENE_BOSS_RELIC_REWARD
 
 
 func _step_display_name(step: String) -> String:

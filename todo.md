@@ -315,7 +315,7 @@ Tasks:
 
 - [x] Implement booster pack purchase.
   - Deliverable: Buying a booster opens a pack view with 3 generated options and allows the player to pick 1.
-  - Acceptance: Boosters can generate element-based or category-based options and do not generate relics by default.
+  - Acceptance: Boosters can generate element-based or category-based options and do not generate relics by default; full equipment or consumable inventories leave the player HUD usable and provide a clear Skip path instead of blocking shop progression.
 
 - [~] Tune early affordability.
   - Deliverable: Initial price and gold spawn settings.
@@ -327,6 +327,7 @@ Verification notes (2026-04-26):
 - Combat gold gain now syncs through `RunState`, and the shop scene moved from placeholder text to actionable debug controls.
 - Debug content and pricing scaffolding were extended in `ContentRegistry` to support Milestone 6 shop generation and purchase paths.
 - Fixed strict typing parse break in `scripts/debug/board_debug_controller.gd` by using explicit `Variant` locals for `RunState` service retrieval in debug add-item actions.
+- 2026-05-02 shop UX follow-up: pending booster choices no longer block the shared player HUD, full-slot picks tell the player to sell from the loadout HUD or skip, and `shop_player.gd` now shows a contextual sell bubble near the selected equipment or consumable slot instead of a permanent action-row sell button.
 
 ## Milestone 7: Dungeon And Run Structure
 
@@ -356,7 +357,7 @@ Tasks:
 
 - [x] Implement boss relic reward.
   - Deliverable: Boss victory grants or offers a relic reward before the next shop.
-  - Acceptance: Boss relics are separate from shop relic offers.
+  - Acceptance: Boss relics are separate from shop relic offers and are selected or explicitly skipped from the combat victory overlay before the shop transition.
 
 - [x] Implement defeat summary.
   - Deliverable: Run loss screen showing level reached, enemies defeated, gold earned, equipped items, relics, and cause of death.
@@ -369,6 +370,7 @@ Tasks:
 Verification notes (2026-04-27):
 - Godot MCP sequence validation passed for run start, level sequence transitions, boss reward step, prototype victory transition, and defeat summary transition.
 - Run sequencing is now owned by `RunState` and consumed by combat/shop/summary scenes instead of hard-coded placeholder jumps.
+- 2026-05-02 dungeon playthrough fix: normal player-facing boss reward routing stays in `combat_player.tscn` for the victory overlay picker, then advances to the post-boss shop; the old boss relic scene is retained only as legacy/debug fallback.
 
 ## Milestone 8: Initial Content Pack
 
@@ -442,7 +444,7 @@ Tasks:
 
 - [x] Implement inventory UI.
   - Deliverable: Equipment slots, consumable slots, relic list, and mastery levels.
-  - Acceptance: The player can inspect current build state during combat and shop.
+  - Acceptance: The player can inspect current build state during combat and shop, including owned relics in the shared footer HUD.
 
 - [x] Implement item detail views.
   - Deliverable: Tooltip or detail panel for equipment, mastery cards, consumables, relics, and boosters.
@@ -477,6 +479,8 @@ Verification notes (2026-04-27):
   - `BoardAndStateRow`, `ShopActionsRow`, and `BottomActionsRow` now use adaptive `BoxContainer` layout switching (horizontal desktop, vertical compact/mobile).
   - Combat status/state labels now use autowrap to reduce clipping risk in narrow layouts.
 - Godot MCP post-change checks passed for script parse state, `res://scenes/main.tscn` run smoke, and shop scene load/instantiate.
+- 2026-05-02 dungeon playthrough fix: shared `PlayerLoadoutHud` footer now includes owned relics for combat and shop, with compact icon overflow for tight space.
+- 2026-05-02 shop generation follow-up: shop stock and booster equipment options filter out already-equipped equipment, consumables can be sold from a unified non-clipped inventory popover, owned relics sit between the HP panel and the equipment/consumable rows, and the popover dismisses when inventory focus is lost.
 - Milestone 9 graphical asset integration pass (combat + shop) is now wired through a dedicated visual registry and player-facing scenes:
   - Added `scripts/ui/visual_registry.gd` and `resources/visual/first_pass_asset_map.json` as the centralized texture lookup/mapping contract (backgrounds, enemy portraits, orb/intent/rarity/mastery/item atlases, and VFX sheet hooks with fallbacks).
   - Added player-facing scene routes:

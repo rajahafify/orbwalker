@@ -23,6 +23,30 @@ func equip_item(state: PlayerProgressionState, item_id: String, content: Content
 	})
 
 
+func replace_equipment(state: PlayerProgressionState, slot_index: int, item_id: String, content: ContentRegistry) -> Dictionary:
+	var validated_index := _validate_slot_index(slot_index, state.equipped_item_ids.size())
+	if validated_index < 0:
+		return _error(state, "invalid_equipment_slot_index")
+	if item_id == "":
+		return _error(state, "invalid_item_id")
+	var item_data: Dictionary = content.get_equipment(item_id)
+	if item_data.is_empty():
+		return _error(state, "unknown_equipment_id")
+	if state.equipped_item_ids.has(item_id):
+		return _error(state, "equipment_already_equipped")
+
+	var replaced_item_id := String(state.equipped_item_ids[validated_index])
+	if replaced_item_id == "":
+		return _error(state, "equipment_slot_empty")
+	state.equipped_item_ids[validated_index] = item_id
+	_rebuild_active_effects(state, content)
+	return _ok(state, {
+		"slot_index": validated_index,
+		"item_id": item_id,
+		"replaced_item_id": replaced_item_id,
+	})
+
+
 func unequip_item(state: PlayerProgressionState, slot_index: int, content: ContentRegistry) -> Dictionary:
 	var validated_index := _validate_slot_index(slot_index, state.equipped_item_ids.size())
 	if validated_index < 0:
@@ -96,6 +120,25 @@ func add_consumable(state: PlayerProgressionState, consumable_id: String, conten
 	})
 
 
+func replace_consumable(state: PlayerProgressionState, slot_index: int, consumable_id: String, content: ContentRegistry) -> Dictionary:
+	var validated_index := _validate_slot_index(slot_index, state.held_consumable_ids.size())
+	if validated_index < 0:
+		return _error(state, "invalid_consumable_slot_index")
+	if consumable_id == "":
+		return _error(state, "invalid_consumable_id")
+	if content.get_consumable(consumable_id).is_empty():
+		return _error(state, "unknown_consumable_id")
+	var replaced_consumable_id := String(state.held_consumable_ids[validated_index])
+	if replaced_consumable_id == "":
+		return _error(state, "consumable_slot_empty")
+	state.held_consumable_ids[validated_index] = consumable_id
+	return _ok(state, {
+		"slot_index": validated_index,
+		"consumable_id": consumable_id,
+		"replaced_consumable_id": replaced_consumable_id,
+	})
+
+
 func use_consumable(state: PlayerProgressionState, slot_index: int, content: ContentRegistry) -> Dictionary:
 	var validated_index := _validate_slot_index(slot_index, state.held_consumable_ids.size())
 	if validated_index < 0:
@@ -114,6 +157,25 @@ func use_consumable(state: PlayerProgressionState, slot_index: int, content: Con
 		"slot_index": validated_index,
 		"consumable_id": consumable_id,
 		"effects": consumable_data.get("effects", []),
+	})
+
+
+func sell_consumable(state: PlayerProgressionState, slot_index: int, content: ContentRegistry) -> Dictionary:
+	var validated_index := _validate_slot_index(slot_index, state.held_consumable_ids.size())
+	if validated_index < 0:
+		return _error(state, "invalid_consumable_slot_index")
+
+	var consumable_id := state.held_consumable_ids[validated_index]
+	if consumable_id == "":
+		return _error(state, "consumable_slot_empty")
+
+	var consumable_data: Dictionary = content.get_consumable(consumable_id)
+	var sell_value := int(consumable_data.get("sell_value", consumable_data.get("base_price", 0)))
+	state.held_consumable_ids[validated_index] = ""
+	return _ok(state, {
+		"slot_index": validated_index,
+		"consumable_id": consumable_id,
+		"gold_gained": maxi(0, sell_value),
 	})
 
 

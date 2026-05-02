@@ -147,7 +147,7 @@ const BOARD_SURFACE_SIZE := Vector2(480, 576)
 const BOARD_SURFACE_TOP := 4.0
 const BOARD_SHADOW_OFFSET := Vector2(10, 0)
 const BOARD_SHADOW_EXPAND := Vector2(24, 8)
-const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 250), Vector2(600, 320))
+const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
 const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
 const HERO_LEVEL_BADGE_RECT := Rect2(Vector2(8, 178), Vector2(60, 40))
@@ -167,10 +167,10 @@ const COMBAT_STRIP_INSET := 12.0
 const TIMER_TRACK_SIZE := Vector2(720, 36)
 const TIMER_TRACK_PADDING := 5.0
 const TIMER_ICON_SIZE := Vector2(34, 34)
-const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 34), Vector2(522, 88))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(664, 34), Vector2(288, 88))
-const EQUIPMENT_LABEL_RECT := Rect2(Vector2(146, 4), Vector2(296, 22))
-const CONSUMABLE_LABEL_RECT := Rect2(Vector2(628, 4), Vector2(328, 22))
+const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
+const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
+const EQUIPMENT_LABEL_RECT := Rect2(Vector2(118, 108), Vector2(296, 22))
+const CONSUMABLE_LABEL_RECT := Rect2(Vector2(514, 108), Vector2(288, 22))
 const FONT_SIZE_TITLE := 20
 const FONT_SIZE_VALUE := 18
 const FONT_SIZE_META := 15
@@ -222,6 +222,9 @@ var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+var _boss_reward_buttons: Array[Button] = []
+var _boss_reward_skip_button: Button
+var _boss_reward_pending := false
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_combo_running := 0
@@ -249,6 +252,8 @@ func _ready() -> void:
 		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
+	_ensure_boss_reward_controls()
+	_adopt_relic_footer_nodes_for_shared_layout()
 	_apply_visual_chrome()
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
@@ -373,10 +378,10 @@ func _apply_board_focus_theme() -> void:
 	_outcome_title_label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.92))
 	_outcome_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_outcome_body_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_outcome_body_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_outcome_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_outcome_body_label.clip_text = true
 	_outcome_body_label.custom_minimum_size = Vector2.ZERO
-	_outcome_body_label.add_theme_font_size_override("font_size", 30)
+	_outcome_body_label.add_theme_font_size_override("font_size", 24)
 	_outcome_body_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
 	_next_button.text = "Continue"
 	_next_button.add_theme_font_size_override("font_size", 22)
@@ -529,6 +534,22 @@ func _apply_loadout_group_theme() -> void:
 func _initialize_combat_state() -> void:
 	if not RunState.run_active:
 		RunState.start_new_run()
+	if RunState.is_current_step_boss_reward():
+		_player_state = RunState.ensure_player_state()
+		_progression_state = RunState.ensure_player_progression_state()
+		var preview: Dictionary = RunState.current_level_boss_preview()
+		_enemy_state = ENEMY_STATE_SCRIPT.new()
+		_enemy_state.configure_from_blueprint(preview)
+		_combat = null
+		_outcome_transition_queued = false
+		_pending_next_scene_path = ""
+		_hide_outcome_summary()
+		_refresh_character_portraits()
+		_refresh_build_icon_rows(_progression_state.to_snapshot())
+		_show_boss_reward_summary("Boss defeated.")
+		_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
+		_status_label.modulate = STATUS_COLOR_WARNING
+		return
 	if not RunState.is_current_step_fight():
 		var redirect_scene := RunState.next_scene_path()
 		if redirect_scene != "":
@@ -1058,18 +1079,17 @@ func _handle_console_command(raw_text: String) -> void:
 					_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 					_pending_next_scene_path = String(win_transition.get("next_scene", "res://scenes/main.tscn"))
 					_update_hud()
-					_show_outcome_summary("Victory", "GOLD GAINED +0", true)
+					_show_outcome_summary("Victory", _build_run_outcome_summary("Debug command."), true)
 					_status_label.text = "Debug victory queued. Press Continue."
 					_append_combat_log("Fight win queued. Press Next to continue.")
 				"lose":
 					var lose_transition: Dictionary = RunState.mark_player_defeated("Debug command.")
 					_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-					_pending_next_scene_path = ""
+					_pending_next_scene_path = String(lose_transition.get("next_scene", "res://scenes/main.tscn"))
 					_update_hud()
-					_show_outcome_summary("Defeat", "Debug defeat queued. Transitioning to run summary.", false)
-					_status_label.text = "Debug defeat queued. Transitioning..."
-					_append_combat_log("Fight lose queued. Transitioning to run summary.")
-					_queue_outcome_transition(String(lose_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
+					_show_outcome_summary("Defeat", _build_run_outcome_summary("Debug command."), true, "Main Menu")
+					_status_label.text = "Debug defeat queued. Main Menu available."
+					_append_combat_log("Fight lose queued. Press Main Menu.")
 				_:
 					_command_error("unknown /fight subcommand: %s" % fight_sub)
 		_:
@@ -1426,12 +1446,19 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	if _combat.phase == COMBAT_PHASE_VICTORY:
 		var transition: Dictionary = RunState.mark_fight_victory()
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_status_label.text = _build_victory_status(turn_log, transition) + " Press Continue."
 		_append_turn_log(turn_log)
-		_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
-		_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
-		_show_outcome_summary("Victory", _build_victory_gold_summary(turn_log), true)
-		_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
+		if RunState.is_current_step_boss_reward():
+			_pending_next_scene_path = ""
+			_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
+			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
+			_show_boss_reward_summary(_build_victory_gold_summary(turn_log))
+			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
+		else:
+			_status_label.text = _build_victory_status(turn_log, transition) + " Press Continue."
+			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
+			_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
+			_show_outcome_summary("Victory", _build_victory_gold_summary(turn_log), true)
+			_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
 		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 		return
 
@@ -1439,14 +1466,13 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		var defeat_cause := _build_defeat_cause(turn_log)
 		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_status_label.text = _build_defeat_status(turn_log)
+		_status_label.text = _build_defeat_status(turn_log) + " Main Menu available."
 		_append_turn_log(turn_log)
-		_append_combat_log("Outcome: Defeat. Transitioning to run summary.")
-		_pending_next_scene_path = ""
-		_show_outcome_summary("Defeat", _build_defeat_status(turn_log), false)
-		_turn_summary_label.text = "Turn Summary: Defeat."
+		_append_combat_log("Outcome: Defeat. Waiting for Main Menu button.")
+		_pending_next_scene_path = String(defeat_transition.get("next_scene", "res://scenes/main.tscn"))
+		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Main Menu")
+		_turn_summary_label.text = "Turn Summary: Defeat. Main Menu available."
 		_pulse_label(_turn_summary_label, STATUS_COLOR_NEGATIVE)
-		_queue_outcome_transition(String(defeat_transition.get("next_scene", "res://scenes/flow/run_summary_placeholder.tscn")))
 		return
 
 	_status_label.text = _build_turn_summary_status(turn_log)
@@ -1458,6 +1484,9 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 
 
 func _on_next_button_pressed() -> void:
+	if _boss_reward_pending:
+		_status_label.text = "Choose a boss relic or skip the reward before continuing."
+		return
 	if _pending_next_scene_path == "":
 		return
 	var target_scene := _pending_next_scene_path
@@ -1466,9 +1495,11 @@ func _on_next_button_pressed() -> void:
 	get_tree().change_scene_to_file(target_scene)
 
 
-func _show_outcome_summary(title: String, body: String, show_next: bool) -> void:
+func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:
 	_outcome_title_label.text = title
 	_outcome_body_label.text = body
+	_set_boss_reward_controls_visible(false)
+	_next_button.text = button_text
 	_outcome_summary_panel.visible = true
 	_next_button.visible = show_next
 	_next_button.disabled = not show_next
@@ -1476,8 +1507,134 @@ func _show_outcome_summary(title: String, body: String, show_next: bool) -> void
 
 func _hide_outcome_summary() -> void:
 	_outcome_summary_panel.visible = false
+	_set_boss_reward_controls_visible(false)
+	_boss_reward_pending = false
+	_next_button.text = "Continue"
 	_next_button.visible = false
 	_next_button.disabled = true
+
+
+func _ensure_boss_reward_controls() -> void:
+	if not _boss_reward_buttons.is_empty():
+		return
+	for index in 3:
+		var button := Button.new()
+		button.name = "BossRewardButton%d" % (index + 1)
+		button.visible = false
+		button.focus_mode = Control.FOCUS_NONE
+		button.pressed.connect(_claim_boss_reward_option.bind(index))
+		_outcome_summary_root.add_child(button)
+		_apply_outcome_button_theme(button)
+		_boss_reward_buttons.append(button)
+	_boss_reward_skip_button = Button.new()
+	_boss_reward_skip_button.name = "BossRewardSkipButton"
+	_boss_reward_skip_button.text = "Skip Relic"
+	_boss_reward_skip_button.visible = false
+	_boss_reward_skip_button.focus_mode = Control.FOCUS_NONE
+	_boss_reward_skip_button.pressed.connect(_skip_boss_reward_option)
+	_outcome_summary_root.add_child(_boss_reward_skip_button)
+	_apply_outcome_button_theme(_boss_reward_skip_button)
+
+
+func _show_boss_reward_summary(body: String) -> void:
+	_outcome_title_label.text = "Boss Victory"
+	_outcome_body_label.text = "%s\nChoose one boss relic reward." % body
+	_outcome_summary_panel.visible = true
+	_boss_reward_pending = true
+	_pending_next_scene_path = ""
+	_next_button.text = "Continue To Shop"
+	_next_button.visible = true
+	_next_button.disabled = true
+	_set_boss_reward_controls_visible(true)
+	_apply_board_panel_layout()
+	var options: Array = RunState.boss_relic_reward_options_snapshot()
+	for index in _boss_reward_buttons.size():
+		var button := _boss_reward_buttons[index]
+		if index >= options.size():
+			button.text = "No Relic"
+			button.disabled = true
+			continue
+		var option: Dictionary = options[index]
+		var relic_id := String(option.get("relic_id", option.get("id", "")))
+		var content: Dictionary = RunState.ensure_content_registry().get_relic(relic_id)
+		button.text = "%s\n%s\n%s" % [
+			String(option.get("display_name", content.get("display_name", "Relic"))),
+			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
+			String(content.get("description", "")),
+		]
+		button.tooltip_text = button.text
+		button.disabled = false
+	if options.is_empty():
+		_outcome_body_label.text = "%s\nNo boss relic options generated. Use Skip Relic to continue." % body
+		for button in _boss_reward_buttons:
+			button.visible = false
+			button.disabled = true
+		if _boss_reward_skip_button != null:
+			_boss_reward_skip_button.visible = true
+			_boss_reward_skip_button.disabled = false
+		_next_button.disabled = true
+
+
+func _claim_boss_reward_option(index: int) -> void:
+	if not _boss_reward_pending:
+		return
+	var result: Dictionary = RunState.claim_boss_relic_reward(index)
+	if not bool(result.get("ok", false)):
+		_status_label.text = "Boss relic claim failed: %s" % String(result.get("reason", "unknown"))
+		return
+	var payload: Dictionary = result.get("result", {})
+	var transition: Dictionary = RunState.advance_after_boss_reward()
+	_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
+	_boss_reward_pending = false
+	_set_boss_reward_controls_visible(false)
+	_next_button.disabled = false
+	_outcome_body_label.text = "Claimed relic: %s.\nContinue to shop." % String(payload.get("display_name", "Relic"))
+	_status_label.text = "Boss relic claimed. Continue to shop."
+	_apply_board_panel_layout()
+	_update_hud()
+
+
+func _skip_boss_reward_option() -> void:
+	if not _boss_reward_pending:
+		return
+	var skip_result: Dictionary = RunState.skip_boss_relic_reward()
+	if not bool(skip_result.get("ok", false)):
+		_status_label.text = "Boss relic skip failed: %s" % String(skip_result.get("reason", "unknown"))
+		return
+	var transition: Dictionary = RunState.advance_after_boss_reward()
+	_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
+	_boss_reward_pending = false
+	_set_boss_reward_controls_visible(false)
+	_next_button.disabled = false
+	_outcome_body_label.text = "Boss relic reward skipped.\nContinue to shop."
+	_status_label.text = "Boss relic skipped. Continue to shop."
+	_apply_board_panel_layout()
+
+
+func _set_boss_reward_controls_visible(should_show: bool) -> void:
+	for button in _boss_reward_buttons:
+		button.visible = should_show
+	if _boss_reward_skip_button != null:
+		_boss_reward_skip_button.visible = should_show
+
+
+func _apply_outcome_button_theme(button: Button) -> void:
+	button.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 1.0))
+	button.add_theme_font_size_override("font_size", 15)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.10, 0.96)
+	style.border_color = Color(0.72, 0.54, 0.24, 0.95)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 8.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	button.add_theme_stylebox_override("normal", style)
+	var hover := style.duplicate()
+	hover.bg_color = Color(0.10, 0.10, 0.08, 0.98)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
 
 
 func _queue_outcome_transition(scene_path: String) -> void:
@@ -1953,9 +2110,26 @@ func _build_victory_gold_summary(turn_log: Dictionary) -> String:
 	return "GOLD GAINED +%d" % int(turn_log.get("gold_gained", 0))
 
 
+func _build_run_outcome_summary(fallback_cause: String = "") -> String:
+	var summary: Dictionary = RunState.run_summary_snapshot()
+	var cause := String(summary.get("cause", fallback_cause))
+	if cause == "":
+		cause = fallback_cause
+	var bosses_killed := int(summary.get("bosses_defeated", 0))
+	var monsters_killed := maxi(0, int(summary.get("enemies_defeated", 0)) - bosses_killed)
+	return "Total Gold +%d\nMonsters Killed %d\nBosses Killed %d\nLevel Reached %d/%d\n%s" % [
+		int(summary.get("gold_earned", 0)),
+		monsters_killed,
+		bosses_killed,
+		int(summary.get("level_reached", 1)),
+		RunState.MAX_DUNGEON_LEVELS,
+		cause,
+	]
+
+
 func _build_defeat_status(turn_log: Dictionary) -> String:
 	var hp_damage := int(turn_log.enemy_attack_resolution.get("hp_damage", 0))
-	return "Defeat. Enemy intent dealt %d HP damage. Transitioning to run summary." % hp_damage
+	return "Defeat. Enemy intent dealt %d HP damage." % hp_damage
 
 
 func _build_defeat_cause(turn_log: Dictionary) -> String:
@@ -2498,18 +2672,13 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 
 	_player_loadout_hud.populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
 	_player_loadout_hud.populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
-	_player_loadout_hud.populate_relic_row(_relic_icons, relic_ids, 4)
+	_player_loadout_hud.populate_relic_row(_relic_icons, relic_ids, 2)
 	if _elemental_mastery_cards != null:
 		_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
 
-	var has_relic := false
-	for relic_id in relic_ids:
-		if String(relic_id) != "":
-			has_relic = true
-			break
-	_relic_row.visible = has_relic and not _is_low_vertical_layout
+	_relic_row.visible = false
 	_mastery_strip.visible = false
 
 
@@ -2912,9 +3081,15 @@ func _apply_board_panel_layout() -> void:
 	_outcome_body_label.custom_minimum_size = Vector2.ZERO
 	_outcome_title_label.position = Vector2.ZERO
 	_outcome_title_label.size = Vector2(_outcome_text_column.size.x, 72.0)
-	_outcome_body_label.position = Vector2(0.0, 94.0)
-	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 58.0)
-	_next_button.position = Vector2((_outcome_summary_root.size.x - 220.0) * 0.5, 198.0)
+	_outcome_body_label.position = Vector2(0.0, 90.0)
+	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 132.0)
+	for index in _boss_reward_buttons.size():
+		_boss_reward_buttons[index].position = Vector2(18.0 + float(index) * 186.0, 224.0)
+		_boss_reward_buttons[index].size = Vector2(174.0, 116.0)
+	if _boss_reward_skip_button != null:
+		_boss_reward_skip_button.position = Vector2(576.0, 224.0)
+		_boss_reward_skip_button.size = Vector2(130.0, 116.0)
+	_next_button.position = Vector2((_outcome_summary_root.size.x - 220.0) * 0.5, 354.0 if _boss_reward_pending else 236.0)
 	_next_button.size = Vector2(220.0, 64.0)
 
 
@@ -2922,7 +3097,6 @@ func _apply_player_panel_layout() -> void:
 	_apply_design_rect(_stat_chip_row, PLAYER_STAT_CHIP_RECT)
 	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
 	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
-	_apply_design_rect(_relic_row, PLAYER_RELIC_RECT)
 	_mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_hero_level_badge.visible = false
 	_player_armor_bar.visible = false
@@ -2965,11 +3139,30 @@ func _combat_player_hud_nodes() -> Dictionary:
 		"equipment_icons": _equipment_icons,
 		"consumable_label": _consumable_row_label,
 		"consumable_icons": _consumable_icons,
+		"relic_label": _relic_row_label,
+		"relic_icons": _relic_icons,
 		"mastery_strip": _mastery_strip,
 		"mastery_root": _mastery_root,
 		"mastery_label": _mastery_row_label,
 		"mastery_icons": _mastery_icons,
 	}
+
+
+func _adopt_relic_footer_nodes_for_shared_layout() -> void:
+	if _loadout_root == null:
+		return
+	if _relic_row != null:
+		_relic_row.visible = false
+	if _relic_row_label != null and _relic_row_label.get_parent() != _loadout_root:
+		var label_parent := _relic_row_label.get_parent()
+		if label_parent != null:
+			label_parent.remove_child(_relic_row_label)
+		_loadout_root.add_child(_relic_row_label)
+	if _relic_icons != null and _relic_icons.get_parent() != _loadout_root:
+		var icons_parent := _relic_icons.get_parent()
+		if icons_parent != null:
+			icons_parent.remove_child(_relic_icons)
+		_loadout_root.add_child(_relic_icons)
 
 
 func _apply_loadout_rail_layout() -> void:

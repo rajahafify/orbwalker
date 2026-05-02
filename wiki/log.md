@@ -2,6 +2,17 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-02] code-change | Defeat Overlay Run Summary
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/core/run_state.gd`, `scripts/flow/run_summary_placeholder.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changes:
+  - Changed defeat flow to stay on the combat board-level outcome overlay and show a `Main Menu` button instead of continuing to a separate post-defeat summary screen.
+  - Added defeat overlay summary copy for total gold earned, monsters killed, bosses killed, level reached, and defeat cause.
+  - Added `bosses_defeated` tracking to `RunState` and kept the legacy run summary scene aligned with monster and boss counts.
+- Validation:
+  - Godot MCP script focus and `get_godot_errors` reported no script errors.
+  - Godot MCP opened and played `res://scenes/combat/combat_player.tscn`; the running scene contains the resized hidden `OutcomeSummaryPanel` under `BoardPanel`.
+
 ## [2026-05-02] combat | Pooled Mastery Number Release
 
 - Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
@@ -1010,3 +1021,46 @@ Append-only history of wiki operations.
   - Set the default combat speed to `normal`.
 - Notes:
   - Godot MCP `view_script`, `get_godot_errors`, and combat scene smoke checks passed.
+
+## [2026-05-02] code-change | Dungeon Playthrough Flow Fixes
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/core/run_state.gd`, `scripts/flow/shop_player.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/player_loadout_hud.gd`, `todo.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Moved normal boss relic selection into the combat victory overlay with explicit relic choice or skip before continuing to the post-boss shop.
+  - Kept `res://scenes/flow/boss_relic_reward.tscn` as legacy/debug fallback instead of the normal `RunState.next_scene_path()` player route.
+  - Added booster full-slot replacement and discard flow for equipment and consumables, with replacement APIs enforcing active shop, pending booster options, and filled target slots.
+  - Extended the shared `PlayerLoadoutHud` footer to render owned relic icons with compact overflow in both combat and shop.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, combat/shop scene instantiate probes, and worker runtime probes passed. Manual end-to-end playthrough remains useful for visual acceptance of the full boss victory to shop path.
+
+## [2026-05-02] code-change | Booster Skip And Sell Bubble
+
+- Source: `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Changed the pending booster overlay so its scrim ignores mouse input and no longer blocks the shared player HUD.
+  - Replaced the booster replacement/discard UI presentation with a single Skip button; full-slot picks now keep the booster choices open and instruct the player to sell from the HUD or skip.
+  - Moved shop selling out of the bottom action row into a contextual sell bubble near the selected equipment slot.
+- Notes:
+  - Godot MCP `view_script`, shop scene instantiate, and `get_godot_errors` passed. Worker runtime smoke also reported no session errors, but full pending-booster UI interaction should still be visually checked in an active run.
+
+## [2026-05-02] code-change | Shop Offer Filtering And Consumable Sell
+
+- Source: `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`, `scripts/core/run_state.gd`, `scripts/flow/shop_player.gd`, `scripts/ui/player_loadout_hud.gd`, `wiki/features.md`
+- Changed:
+  - Filtered generated shop stock and booster option equipment candidates to exclude items already equipped by the player.
+  - Added consumable selling support through progression and shop services, with a `RunState.sell_consumable_item(...)` wrapper used by the shop scene.
+  - Extended shared HUD slot selection to include consumables and wired shop sell bubble flow to sell either selected equipment or selected consumable.
+  - Moved shared HUD relic label/icons to a row between HP and the equipment/consumable rows.
+- Notes:
+  - Godot MCP `view_script`, `execute_editor_script`, and `get_godot_errors` were run. Service probes confirmed shop and booster equipment filtering plus consumable selling, scene instantiate probes passed for combat and shop, and latest `get_godot_errors` reported no parse/runtime errors.
+
+## [2026-05-02] code-change | Unified Shop Inventory Popover
+
+- Source: `scripts/flow/shop_player.gd`, `wiki/features.md`
+- Changed:
+  - Replaced separate overlapping shop HUD slot detail and sell bubbles with one shared non-clipped inventory popover.
+  - Moved Sell into the same popover for equipment/consumable slot hovers or selected slots, while relic slot popovers remain details-only.
+  - Kept the existing selected-slot sell flow by wiring the new popover Sell action to the same selection-based sell handler.
+  - Added inventory-focus dismissal so clicking outside inventory slots/popover or using non-inventory shop actions clears the selected slot and hides the popover without breaking the embedded Sell action.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, and scene instantiate/probe (`play_scene` + `get_scene_tree`) were run; latest reported no session errors.

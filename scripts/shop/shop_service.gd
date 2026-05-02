@@ -118,9 +118,34 @@ func sell_equipped_item(run_state: Node, slot_index: int) -> Dictionary:
 	}
 
 
+func sell_consumable_item(run_state: Node, slot_index: int) -> Dictionary:
+	var content = run_state.ensure_content_registry()
+	var progression_state = run_state.ensure_player_progression_state()
+	var progression_service = run_state.ensure_player_progression_service()
+	var sell_result: Dictionary = progression_service.sell_consumable(progression_state, slot_index, content)
+	if not bool(sell_result.get("ok", false)):
+		return {
+			"ok": false,
+			"reason": String(sell_result.get("reason", "sell_failed")),
+			"gold": run_state.run_gold,
+		}
+	var gold_gained := int(sell_result.get("result", {}).get("gold_gained", 0))
+	run_state.add_gold(gold_gained)
+	return {
+		"ok": true,
+		"reason": "",
+		"gold": run_state.run_gold,
+		"result": sell_result.get("result", {}),
+	}
+
+
 func choose_booster_option(run_state: Node, option_index: int) -> Dictionary:
 	var content = run_state.ensure_content_registry()
 	var shop = run_state.ensure_shop_state()
+	if not shop.active:
+		return _result(shop, run_state.run_gold, false, "shop_not_active")
+	if shop.pending_booster_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
 	if option_index < 0 or option_index >= shop.pending_booster_options.size():
 		return _result(shop, run_state.run_gold, false, "invalid_booster_option")
 	var option: Dictionary = shop.pending_booster_options[option_index]
@@ -131,6 +156,41 @@ func choose_booster_option(run_state: Node, option_index: int) -> Dictionary:
 	shop.pending_booster_offer_id = ""
 	return _result(shop, run_state.run_gold, true, "", {
 		"granted": option,
+	})
+
+
+func replace_pending_booster_option(run_state: Node, option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
+	var content = run_state.ensure_content_registry()
+	var shop = run_state.ensure_shop_state()
+	if not shop.active:
+		return _result(shop, run_state.run_gold, false, "shop_not_active")
+	if shop.pending_booster_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
+	if option_index < 0 or option_index >= shop.pending_booster_options.size():
+		return _result(shop, run_state.run_gold, false, "invalid_booster_option")
+	var option: Dictionary = shop.pending_booster_options[option_index]
+	var option_type := String(option.get("type", ""))
+	if option_type != ITEM_TYPE_EQUIPMENT and option_type != ITEM_TYPE_CONSUMABLE:
+		return _result(shop, run_state.run_gold, false, "unsupported_replacement_option")
+	var apply_result := _apply_booster_option_to_slot(run_state, content, option, slot_index, sell_replaced)
+	if not bool(apply_result.get("ok", false)):
+		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "booster_replace_failed")))
+	shop.pending_booster_options.clear()
+	shop.pending_booster_offer_id = ""
+	return _result(shop, run_state.run_gold, true, "", {
+		"granted": option,
+		"replacement": apply_result.get("result", {}),
+	})
+
+
+func discard_pending_booster_options(run_state: Node) -> Dictionary:
+	var shop = run_state.ensure_shop_state()
+	if shop.pending_booster_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
+	shop.pending_booster_options.clear()
+	shop.pending_booster_offer_id = ""
+	return _result(shop, run_state.run_gold, true, "", {
+		"discarded": true,
 	})
 
 
@@ -155,7 +215,7 @@ func _apply_offer(run_state: Node, content, shop, offer: Dictionary) -> Dictiona
 		ITEM_TYPE_BOOSTER:
 			var booster_data: Dictionary = content.get_booster(content_id)
 			shop.pending_booster_offer_id = String(offer.get("offer_id", ""))
-			shop.pending_booster_options = _generate_booster_options(content, booster_data)
+			shop.pending_booster_options = _generate_booster_options(run_state, content, booster_data)
 			return {
 				"ok": not shop.pending_booster_options.is_empty(),
 				"reason": "" if not shop.pending_booster_options.is_empty() else "booster_generated_no_options",
@@ -193,6 +253,54 @@ func _apply_booster_option(run_state: Node, content, option: Dictionary) -> Dict
 			}
 
 
+func _apply_booster_option_to_slot(run_state: Node, content, option: Dictionary, slot_index: int, sell_replaced: bool) -> Dictionary:
+	var progression_state = run_state.ensure_player_progression_state()
+	var progression_service = run_state.ensure_player_progression_service()
+	var option_type := String(option.get("type", ""))
+	var content_id := String(option.get("content_id", ""))
+	match option_type:
+		ITEM_TYPE_EQUIPMENT:
+			var replaced_item_id := ""
+			if slot_index >= 0 and slot_index < progression_state.equipped_item_ids.size():
+				replaced_item_id = String(progression_state.equipped_item_ids[slot_index])
+			if replaced_item_id == "":
+				return {
+					"ok": false,
+					"reason": "replacement_slot_empty",
+				}
+			var replace_result: Dictionary = progression_service.replace_equipment(progression_state, slot_index, content_id, content)
+			if not bool(replace_result.get("ok", false)):
+				return replace_result
+			var payload: Dictionary = replace_result.get("result", {})
+			if sell_replaced and replaced_item_id != "":
+				var replaced_data: Dictionary = content.get_equipment(replaced_item_id)
+				var gold_gained := maxi(0, int(replaced_data.get("sell_value", replaced_data.get("base_price", 0))))
+				run_state.add_gold(gold_gained)
+				payload["gold_gained"] = gold_gained
+			return {
+				"ok": true,
+				"reason": "",
+				"result": payload,
+			}
+		ITEM_TYPE_CONSUMABLE:
+			if slot_index < 0 or slot_index >= progression_state.held_consumable_ids.size():
+				return {
+					"ok": false,
+					"reason": "invalid_consumable_slot_index",
+				}
+			if String(progression_state.held_consumable_ids[slot_index]) == "":
+				return {
+					"ok": false,
+					"reason": "replacement_slot_empty",
+				}
+			return progression_service.replace_consumable(progression_state, slot_index, content_id, content)
+		_:
+			return {
+				"ok": false,
+				"reason": "unsupported_replacement_option",
+			}
+
+
 func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
 	var relic_id: String = run_state.relic_offer_id_for_level(level)
 	if relic_id == "":
@@ -216,7 +324,12 @@ func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
 
 func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictionary]:
 	var pool: Array[Dictionary] = []
+	var equipped_ids := _equipped_equipment_ids(run_state)
 	for entry in content.shop_item_pool(level):
+		var entry_type := String(entry.get("type", ""))
+		var content_id := String(entry.get("id", ""))
+		if entry_type == ITEM_TYPE_EQUIPMENT and equipped_ids.has(content_id):
+			continue
 		pool.append(entry)
 	var selected_entries := _pick_random_entries(pool, 3)
 	var offers: Array[Dictionary] = []
@@ -238,17 +351,21 @@ func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictio
 	return offers
 
 
-func _generate_booster_options(content, booster_data: Dictionary) -> Array[Dictionary]:
+func _generate_booster_options(run_state: Node, content, booster_data: Dictionary) -> Array[Dictionary]:
 	var candidates: Array[Dictionary] = []
 	var options: Array[Dictionary] = []
 	var target_orb_id := int(booster_data.get("target_orb_id", -1))
+	var equipped_ids := _equipped_equipment_ids(run_state)
 
 	for item in content.list_equipment():
+		var item_id := String(item.get("id", ""))
+		if item_id == "" or equipped_ids.has(item_id):
+			continue
 		if target_orb_id >= 0 and int(item.get("target_orb_id", -1)) != target_orb_id:
 			continue
 		candidates.append({
 			"type": ITEM_TYPE_EQUIPMENT,
-			"content_id": String(item.get("id", "")),
+			"content_id": item_id,
 			"display_name": String(item.get("display_name", "Equipment")),
 		})
 	for item in content.list_consumables():
@@ -275,6 +392,16 @@ func _generate_booster_options(content, booster_data: Dictionary) -> Array[Dicti
 	for item in selected:
 		options.append(item)
 	return options
+
+
+func _equipped_equipment_ids(run_state: Node) -> Dictionary:
+	var equipped_ids := {}
+	var progression_state = run_state.ensure_player_progression_state()
+	for raw_id in progression_state.equipped_item_ids:
+		var item_id := String(raw_id)
+		if item_id != "":
+			equipped_ids[item_id] = true
+	return equipped_ids
 
 
 func _offer_from_content(content, entry_type: String, data: Dictionary, level: int, offer_id: String) -> Dictionary:
@@ -318,8 +445,6 @@ func _pick_random_entries(pool: Array, count: int) -> Array:
 		var idx := _rng.randi_range(0, mutable_pool.size() - 1)
 		result.append(mutable_pool[idx])
 		mutable_pool.remove_at(idx)
-	while result.size() < count and not pool.is_empty():
-		result.append(pool[_rng.randi_range(0, pool.size() - 1)])
 	return result
 
 

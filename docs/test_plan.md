@@ -121,6 +121,8 @@ Phase D: Validation and debug visibility
 - [ ] First shop reroll is free when Merchant Compass is active.
 - [x] Booster purchase opens 3 generated options.
 - [x] Choosing a booster option grants exactly one item.
+- [x] Generated shop stock and booster equipment options do not show equipment already equipped by the player.
+- [x] Full-slot booster rewards keep the player HUD usable and can be skipped without locking shop progression.
 - [x] Normal boosters do not generate relics by default.
 - [ ] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
 
@@ -130,6 +132,8 @@ Verification notes (2026-04-26):
 - Economy actions run through `RunState` gold helpers, and combat gold gain updates are synchronized to run-level gold.
 - `board_debug_controller.gd` parse stability was restored for debug add-item actions by switching `RunState` service locals to explicit `Variant`.
 - User-confirmed on 2026-04-27: shop appears after boss relic reward.
+- Godot MCP validation on 2026-05-02: pending booster choices no longer block the shared player HUD, full-slot picks leave the booster choices open with a visible Skip path, and equipment can be selected/sold from a contextual loadout bubble while the booster is pending.
+- Godot MCP validation on 2026-05-02: editor-script service probes confirmed generated shop stock and booster equipment options exclude already-equipped equipment, consumable selling clears the selected consumable slot, `res://scenes/flow/shop_player.tscn` and `res://scenes/combat/combat_player.tscn` instantiate, and `get_godot_errors` reported no session errors.
 
 ## Milestone 7: Dungeon And Run Flow
 
@@ -140,18 +144,21 @@ Verification notes (2026-04-26):
 - [x] Each dungeon level follows Enemy 1, Shop, Enemy 2, Shop, Boss, Boss Relic Reward, Shop, Advance.
 - [x] Boss type is previewed at the start of the dungeon level.
 - [x] Boss relic reward is separate from shop relic offer.
+- [x] Boss relic reward choices are presented in the combat victory overlay before continuing to shop.
 - [x] Clearing level 3 boss can produce prototype victory.
-- [x] Dying at any fight produces a run summary.
+- [x] Dying at any fight shows the combat-scene defeat overlay with run summary stats and a Main Menu button.
 
 Verification notes (2026-04-27):
 - Godot MCP editor-script sequence checks passed for:
   - clean run start (`enemy_1`, level 1, zeroed run resources),
   - full level sequence progression including boss reward and post-boss shop,
   - prototype victory summary transition after level 3 completion,
-  - defeat summary transition from an active run.
+  - defeat finalization from an active run.
 - Scene wiring checks passed for:
   - `res://scenes/flow/boss_relic_reward.tscn` attached to `res://scripts/flow/boss_relic_reward.gd`,
   - run summary scene/controller integration.
+- Godot MCP validation on 2026-05-02: `res://scenes/combat/combat_player.tscn` opens and runs without script errors, the board-level `OutcomeSummaryPanel` is present in the running combat scene, and `RunState.run_summary_snapshot()` now reports total gold earned plus monster and boss kill counts for defeat overlays.
+- Godot MCP validation on 2026-05-02: boss reward routing now keeps the player-facing flow in `res://scenes/combat/combat_player.tscn`, shows relic choices or explicit skip on the victory overlay, and then advances to `res://scenes/flow/shop_player.tscn`; `res://scenes/flow/boss_relic_reward.tscn` remains legacy/debug fallback only.
 - Remaining unchecked persistence items require manual end-to-end fight/shop playthrough validation with real combat outcomes.
 - User-confirmed on 2026-04-27: HP and gold persist correctly between fights.
 - User-confirmed on 2026-04-27: equipment, consumables, mastery, and relics persist correctly between fights.
@@ -201,6 +208,7 @@ Verification notes (2026-04-27):
 - [x] Item detail text is readable before purchase.
 - [x] Shop controls are usable without debug tools.
 - [x] Booster selection is clear.
+- [x] Booster full-inventory sell-or-skip paths are clear.
 - [x] Run progress and dungeon level are visible.
 - [x] Important actions have clear visual or audio feedback.
 - [ ] UI elements do not overlap on desktop.
@@ -221,6 +229,9 @@ Verification notes (2026-04-27):
   - `play_scene` smoke on `res://scenes/combat/combat_player.tscn` completed and exited cleanly.
   - `execute_editor_script` load/instantiate check for `res://scenes/flow/shop_player.tscn` returned success.
 - Remaining Milestone 9 QA: explicit overlap checks on desktop and on-device mobile aspect ratios.
+- Godot MCP validation on 2026-05-02: shared `PlayerLoadoutHud` footer now includes compact owned relics for combat and shop, the shop footer renders owned relics with compact overflow support, and combat/shop scene instantiate checks plus `get_godot_errors` reported clean after the dungeon playthrough flow fixes.
+- Godot MCP validation on 2026-05-02: shared HUD relics were moved between the HP panel and equipment/consumable rows, and shop consumable slots now use the same contextual sell bubble as equipment slots.
+- Godot MCP validation on 2026-05-02: shop inventory details and selling now share one non-clipped popover; clicking outside inventory focus or using non-inventory shop actions clears the selected slot and hides the popover while preserving the embedded Sell action.
 Verification notes (2026-04-27, graphical asset integration pass):
 - Added centralized visual mapping and fallback contract:
   - `res://scripts/ui/visual_registry.gd`

@@ -23,10 +23,11 @@ func _on_new_run_button_pressed() -> void:
 func _format_summary(summary: Dictionary) -> String:
 	var equipment_slots: Array = summary.get("equipment_slots", [])
 	var relic_ids: Array = summary.get("relic_ids", [])
-	return "Result: %s\nLevel reached: %d\nEnemies defeated: %d\nGold earned: %d (Final %d)\nCause: %s\nEquipped: %s\nRelics: %s" % [
+	return "Result: %s\nLevel reached: %d\nMonsters defeated: %d\nBosses defeated: %d\nGold earned: %d (Final %d)\nCause: %s\nEquipped: %s\nRelics: %s" % [
 		"Victory" if bool(summary.get("victory", false)) else "Defeat",
 		int(summary.get("level_reached", 1)),
-		int(summary.get("enemies_defeated", 0)),
+		maxi(0, int(summary.get("enemies_defeated", 0)) - int(summary.get("bosses_defeated", 0))),
+		int(summary.get("bosses_defeated", 0)),
 		int(summary.get("gold_earned", 0)),
 		int(summary.get("final_gold", 0)),
 		String(summary.get("cause", "Unknown")),
