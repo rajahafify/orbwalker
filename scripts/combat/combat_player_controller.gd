@@ -1363,6 +1363,7 @@ func _update_drag(board_local_position: Vector2) -> void:
 	var moving_orb_id := _board_state.get_cell(from_cell.x, from_cell.y)
 	var displaced_orb_id := _board_state.get_cell(target_cell.x, target_cell.y)
 	_board_state.swap_cells(_drag_current_cell.x, _drag_current_cell.y, target_cell.x, target_cell.y)
+	_audio_play_sfx("swap")
 	_drag_current_cell = target_cell
 	_drag_path.append(target_cell)
 	_board_view.animate_swap(from_cell, target_cell, moving_orb_id, displaced_orb_id, SWAP_ANIMATION_SECONDS)

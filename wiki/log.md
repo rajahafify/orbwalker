@@ -1152,3 +1152,12 @@ Append-only history of wiki operations.
   - Allowed same-key music requests to restart playback if the music player has stopped.
 - Notes:
   - Godot MCP confirmed `combat.wav` decodes through `AudioManager` as stereo 44.1 kHz PCM with 14,012,416 data bytes and loop end 3,503,104. A direct combat scene smoke printed `AudioManager music playing: key=combat stream=AudioStreamWAV volume_db=-12.0 bus=Master`. Manual listening remains the final acceptance check.
+
+## [2026-05-02] code-change | Combat Orb Swap SFX
+
+- Source: `scripts/core/audio_manager.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`
+- Changed:
+  - Added a short generated `swap` SFX to `AudioManager`.
+  - Played the `swap` SFX after each valid adjacent combat orb swap during drag movement.
+- Notes:
+  - The hook is on the actual `_board_state.swap_cells(...)` path, so invalid moves and stationary pointer movement do not play the sound. Manual listening remains the final acceptance check.

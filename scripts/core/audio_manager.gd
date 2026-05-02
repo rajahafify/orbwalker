@@ -204,6 +204,8 @@ func _stream_for_sfx(key: String) -> AudioStreamWAV:
 			stream = _make_chirp([520.0, 780.0, 1040.0], 0.16, 0.28)
 		"combo":
 			stream = _make_chirp([740.0, 980.0], 0.10, 0.24)
+		"swap":
+			stream = _make_chirp([360.0, 510.0], 0.055, 0.18)
 		"hit":
 			stream = _make_chirp([150.0, 95.0], 0.18, 0.42)
 		"heal":
