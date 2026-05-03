@@ -149,12 +149,33 @@ func _on_start_fight_button_pressed() -> void:
 		route_id,
 		next_scene
 	)
-	RunState.flow_trace_change_scene(
+	var transition_result: Variant = RunState.flow_trace_change_scene(
 		get_tree(),
 		next_scene,
 		route_id,
 		"main_boot.start_button"
 	)
+	if _scene_change_succeeded(transition_result):
+		return
+	_start_run_transitioning = false
+	_start_run_button.disabled = false
+	var failure_reason := _scene_change_failure_reason(transition_result)
+	_status_label.text = "Start Run failed: %s" % failure_reason
+	_status_label.visible = true
+	push_error("Start Run transition failed: %s -> %s (%s)" % [route_id, next_scene, failure_reason])
+
+
+func _scene_change_succeeded(result: Variant) -> bool:
+	if result is Dictionary:
+		return bool((result as Dictionary).get("ok", false))
+	return int(result) == OK
+
+
+func _scene_change_failure_reason(result: Variant) -> String:
+	if result is Dictionary:
+		var typed_result := result as Dictionary
+		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
+	return "error_code_%d" % int(result)
 
 
 func _process(delta: float) -> void:

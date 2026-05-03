@@ -10,6 +10,8 @@ const COMBO_POPUP_BASE_FONT_SIZE := 42
 const COMBO_POPUP_MAX_FONT_SIZE := 78
 const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
+const ANIMATION_DRAIN_MAX_ITERATIONS := 600
+const ANIMATION_DRAIN_MAX_SECONDS := 8.0
 const COMBAT_SPEED_SLOW := "slow"
 const COMBAT_SPEED_NORMAL := "normal"
 const COMBAT_SPEED_FAST := "fast"
@@ -72,7 +74,7 @@ func play_resolve_animations(
 	resolve_trace_origin_usec: int = 0,
 	callbacks: Dictionary = {}
 ) -> void:
-	if _board_view == null or result.get("total_combos", 0) <= 0:
+	if not _can_continue_after_wait() or result.get("total_combos", 0) <= 0:
 		return
 
 	var trace_callback: Callable = callbacks.get("trace_callback", Callable())
@@ -111,7 +113,11 @@ func play_resolve_animations(
 			combo_preview_callback,
 			combo_feedback_callback
 		)
+		if not _can_continue_after_wait():
+			return
 		await wait_combat_speed(CASCADE_PASS_HOLD_SECONDS)
+		if not _can_continue_after_wait():
+			return
 
 		_call_trace(
 			trace_callback,
@@ -122,9 +128,13 @@ func play_resolve_animations(
 				int(round(combat_speed_duration(GRAVITY_ANIMATION_SECONDS) * 1000.0)),
 			]
 		)
+		if not _can_continue_after_wait():
+			return
 		var gravity_animation_seconds := combat_speed_duration(GRAVITY_ANIMATION_SECONDS)
 		_board_view.animate_fall_moves(pass_result.fall_moves, gravity_animation_seconds)
 		await wait_combat_speed(GRAVITY_ANIMATION_SECONDS)
+		if not _can_continue_after_wait():
+			return
 		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
 		_call_trace(
 			trace_callback,
@@ -141,9 +151,13 @@ func play_resolve_animations(
 				int(round(combat_speed_duration(REFILL_ANIMATION_SECONDS) * 1000.0)),
 			]
 		)
+		if not _can_continue_after_wait():
+			return
 		var refill_animation_seconds := combat_speed_duration(REFILL_ANIMATION_SECONDS)
 		_board_view.animate_refill_spawns(pass_result.refill_spawns, refill_animation_seconds)
 		await wait_combat_speed(REFILL_ANIMATION_SECONDS)
+		if not _can_continue_after_wait():
+			return
 		_apply_visual_refill_spawns(visual_board_state, pass_result.refill_spawns)
 		_call_trace(
 			trace_callback,
@@ -151,13 +165,31 @@ func play_resolve_animations(
 			"pass=%d phase=refill_visual_commit spawns=%d" % [pass_index, refill_count]
 		)
 		await wait_combat_speed(CASCADE_PASS_HOLD_SECONDS)
+		if not _can_continue_after_wait():
+			return
 		_call_trace(trace_callback, resolve_trace_origin_usec, "pass=%d phase=pass_complete" % pass_index)
 
 	if set_pass_index_callback.is_valid():
 		set_pass_index_callback.call(-1)
 	_call_trace(trace_callback, resolve_trace_origin_usec, "phase=animations_drain_start")
-	while _board_view.has_active_animations():
+	var drain_iterations := 0
+	var drain_start_usec := Time.get_ticks_usec()
+	while _can_continue_after_wait() and _board_view.has_active_animations():
+		drain_iterations += 1
+		var elapsed_seconds := float(Time.get_ticks_usec() - drain_start_usec) / 1000000.0
+		if drain_iterations > ANIMATION_DRAIN_MAX_ITERATIONS or elapsed_seconds >= ANIMATION_DRAIN_MAX_SECONDS:
+			_call_trace(
+				trace_callback,
+				resolve_trace_origin_usec,
+				"phase=animations_drain_timeout iterations=%d elapsed_ms=%d" % [
+					drain_iterations,
+					int(round(elapsed_seconds * 1000.0)),
+				]
+			)
+			break
 		await _wait_duration(0.02)
+	if not _can_continue_after_wait():
+		return
 	_finish_combo_popup()
 	_call_trace(trace_callback, resolve_trace_origin_usec, "phase=animations_drain_complete")
 
@@ -172,6 +204,8 @@ func _play_match_groups_for_pass(
 	combo_feedback_callback: Callable
 ) -> void:
 	for group_index in range(groups.size()):
+		if not _can_continue_after_wait():
+			return
 		var typed_group: Dictionary = groups[group_index]
 		var one_group: Array[Dictionary] = [typed_group]
 		var match_flash_seconds := combat_speed_duration(MATCH_FLASH_SECONDS)
@@ -185,6 +219,8 @@ func _play_match_groups_for_pass(
 			]
 		)
 		await _trigger_match_feedback(one_group, match_flash_seconds)
+		if not _can_continue_after_wait():
+			return
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
@@ -204,6 +240,8 @@ func _play_match_groups_for_pass(
 		var clear_animation_seconds := combat_speed_duration(CLEAR_ANIMATION_SECONDS)
 		_board_view.animate_clear_groups(one_group, clear_animation_seconds)
 		await wait_combat_speed(CLEAR_ANIMATION_SECONDS)
+		if not _can_continue_after_wait():
+			return
 		_apply_visual_clear_groups(visual_board_state, one_group)
 		_call_trace(
 			trace_callback,
@@ -239,10 +277,12 @@ func _play_match_groups_for_pass(
 		if combo_feedback_callback.is_valid():
 			combo_feedback_callback.call(typed_group, _resolve_combo_running)
 		await wait_combat_speed(COMBO_COUNT_STEP_SECONDS)
+		if not _can_continue_after_wait():
+			return
 
 
 func _trigger_match_feedback(groups: Array, flash_seconds: float) -> void:
-	if _board_view == null:
+	if not _can_continue_after_wait():
 		return
 	_board_view.flash_match_groups(groups, flash_seconds)
 	if flash_seconds <= 0.01:
@@ -283,7 +323,7 @@ func _match_group_anchor(group: Dictionary) -> Vector2i:
 
 
 func _apply_visual_clear_groups(visual_board_state: BoardState, groups: Array) -> void:
-	if visual_board_state == null:
+	if visual_board_state == null or _board_view == null:
 		return
 	for group in groups:
 		for cell in group.cells:
@@ -293,7 +333,7 @@ func _apply_visual_clear_groups(visual_board_state: BoardState, groups: Array) -
 
 
 func _apply_visual_fall_moves(visual_board_state: BoardState, fall_moves: Array) -> void:
-	if visual_board_state == null:
+	if visual_board_state == null or _board_view == null:
 		return
 	for move in fall_moves:
 		var from_cell: Vector2i = move.from
@@ -307,7 +347,7 @@ func _apply_visual_fall_moves(visual_board_state: BoardState, fall_moves: Array)
 
 
 func _apply_visual_refill_spawns(visual_board_state: BoardState, refill_spawns: Array) -> void:
-	if visual_board_state == null:
+	if visual_board_state == null or _board_view == null:
 		return
 	for spawn in refill_spawns:
 		var to_cell: Vector2i = spawn.to
@@ -318,7 +358,7 @@ func _apply_visual_refill_spawns(visual_board_state: BoardState, refill_spawns: 
 
 
 func _spawn_match_clear_bursts(groups: Array) -> void:
-	if _board_view == null:
+	if not _can_continue_after_wait():
 		return
 	for raw_group in groups:
 		var group: Dictionary = raw_group
@@ -375,6 +415,8 @@ func _match_clear_burst() -> Texture2D:
 
 
 func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
+	if not _can_continue_after_wait():
+		return
 	var cells: Array = group.get("cells", [])
 	if cells.is_empty():
 		return
@@ -406,7 +448,7 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 func _ensure_combo_popup_panel() -> PanelContainer:
 	if is_instance_valid(_combo_popup_panel):
 		return _combo_popup_panel
-	if _board_panel == null:
+	if not _can_continue_after_wait() or _board_panel == null:
 		return null
 	var combo_panel := PanelContainer.new()
 	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -463,15 +505,23 @@ func _center_combo_popup_position() -> Vector2:
 
 
 func _wait_duration(seconds: float) -> void:
-	if _timer_owner == null or not is_instance_valid(_timer_owner):
+	if not _can_continue_after_wait():
 		return
 	var tree := _timer_owner.get_tree()
-	if tree == null:
-		return
 	if seconds <= 0.01:
 		await tree.process_frame
 		return
 	await tree.create_timer(seconds).timeout
+
+
+func _can_continue_after_wait() -> bool:
+	if _timer_owner == null or not is_instance_valid(_timer_owner):
+		return false
+	if _timer_owner.get_tree() == null:
+		return false
+	if _board_view == null or not is_instance_valid(_board_view):
+		return false
+	return true
 
 
 func _call_trace(trace_callback: Callable, start_ticks_usec: int, message: String) -> void:

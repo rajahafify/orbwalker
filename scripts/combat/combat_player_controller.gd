@@ -648,7 +648,14 @@ func _initialize_combat_state() -> void:
 				_flow_trace_route_id,
 				redirect_scene
 			)
-			get_tree().call_deferred("change_scene_to_file", redirect_scene)
+			var change_result: Variant = RunState.flow_trace_change_scene(
+				get_tree(),
+				redirect_scene,
+				_flow_trace_route_id,
+				"combat_player_controller._initialize_combat_state"
+			)
+			if not _scene_change_succeeded(change_result):
+				push_error("Combat initialize redirect failed: %s" % _scene_change_failure_reason(change_result))
 		return
 
 	_player_state = RunState.ensure_player_state()
@@ -1574,6 +1581,10 @@ func _end_drag(timed_out: bool) -> void:
 		]
 	)
 	await _play_resolve_animations(_last_resolve_result, visual_board_state, resolve_trace_origin_usec)
+	if not _can_continue_after_async_wait(true):
+		_resolve_trace_active = false
+		_resolve_trace_pass_index = -1
+		return
 	_resolve_trace(
 		resolve_trace_origin_usec,
 		"phase=resolve_presentation_complete total_combos=%d passes=%d" % [
@@ -1589,6 +1600,10 @@ func _end_drag(timed_out: bool) -> void:
 	)
 	if _input_phase == InputPhase.RESOLVING:
 		await _resolve_combat_turn_from_board(_last_resolve_result)
+		if not _can_continue_after_async_wait():
+			_resolve_trace_active = false
+			_resolve_trace_pass_index = -1
+			return
 	_resolve_trace_active = false
 	_resolve_trace_pass_index = -1
 
@@ -1608,6 +1623,8 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_flow_trace_route_id
 	)
 	await _replay_turn_resolution_from_log(turn_log)
+	if not _can_continue_after_async_wait():
+		return
 	RunState.flow_trace_mark(
 		"combat_after_replay_turn_resolution_from_log",
 		{
@@ -2121,10 +2138,13 @@ func _wait_combat_speed(base_seconds: float) -> void:
 	if _resolve_presenter != null:
 		await _resolve_presenter.wait_combat_speed(base_seconds)
 		return
-	if base_seconds <= 0.01:
-		await get_tree().process_frame
+	var tree := get_tree()
+	if tree == null:
 		return
-	await get_tree().create_timer(base_seconds).timeout
+	if base_seconds <= 0.01:
+		await tree.process_frame
+		return
+	await tree.create_timer(base_seconds).timeout
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
@@ -2170,6 +2190,8 @@ func _release_remaining_combat_mastery_feedback() -> void:
 			continue
 		_release_combat_mastery_feedback(int(orb_id))
 		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 
 
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
@@ -2270,44 +2292,85 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+			if not _can_continue_after_async_wait():
+				return
 			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
 			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+			if not _can_continue_after_async_wait():
+				return
 			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
 			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+			if not _can_continue_after_async_wait():
+				return
 			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
 		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
 		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 		_release_combat_mastery_feedback(impact_orb)
 
 	if heart_heal > 0:
 		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 		_release_combat_mastery_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
 		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
 		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 		_release_combat_mastery_feedback(OrbType.Id.GOLD)
 	await _release_remaining_combat_mastery_feedback()
+	if not _can_continue_after_async_wait():
+		return
 	await _wait_combat_speed(TURN_REPLAY_FINAL_HOLD_SECONDS)
+	if not _can_continue_after_async_wait():
+		return
 	_reset_combat_mastery_preview()
+
+
+func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
+	if not is_inside_tree():
+		return false
+	if get_tree() == null:
+		return false
+	if require_board_view and (_board_view == null or not is_instance_valid(_board_view)):
+		return false
+	return true
+
+
+func _scene_change_succeeded(result: Variant) -> bool:
+	if result is Dictionary:
+		return bool((result as Dictionary).get("ok", false))
+	return int(result) == OK
+
+
+func _scene_change_failure_reason(result: Variant) -> String:
+	if result is Dictionary:
+		var typed_result := result as Dictionary
+		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
+	return "error_code_%d" % int(result)
 
 
 func _update_hud() -> void:

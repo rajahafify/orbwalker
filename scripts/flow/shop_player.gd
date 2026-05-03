@@ -2,6 +2,7 @@ extends Control
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := Vector2(1080, 1920)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 86))
@@ -327,7 +328,7 @@ func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) 
 	_make_dynamic_label(root, String(offer.get("display_name", "Offer")), Rect2(Vector2(22, 36), Vector2(276, 64)), _rarity_color(rarity), 25, HORIZONTAL_ALIGNMENT_CENTER, true)
 	_make_dynamic_label(root, String(offer.get("type", "offer")).replace("_", " ").to_upper(), Rect2(Vector2(18, 102), Vector2(284, 22)), MUTED_COLOR, 13, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(62, 134), Vector2(196, 116)), _panel_style(Color(0.04, 0.04, 0.05, 0.94), _rarity_color(rarity), 2, 8))
+	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(62, 134), Vector2(196, 116)), UI_UTILS.panel_style(Color(0.04, 0.04, 0.05, 0.94), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
 	var icon := _make_texture("OfferIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(offer.get("icon_key", "")))
 	icon.position = Vector2(18, 10)
@@ -371,7 +372,7 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 
 	var root := _make_child_root(_relic_card)
 	_make_dynamic_label(root, "DUNGEON RELIC", Rect2(Vector2(24, 10), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
-	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(30, 44), Vector2(150, 104)), _panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8))
+	var art_frame := _make_dynamic_panel(root, Rect2(Vector2(30, 44), Vector2(150, 104)), UI_UTILS.panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
 	var icon := _make_texture("RelicIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
 	icon.position = Vector2(15, 8)
@@ -878,12 +879,12 @@ func _shop_player_hud_nodes() -> Dictionary:
 
 func _apply_visual_chrome() -> void:
 	for panel in [_top_bar, _stock_panel]:
-		(panel as Panel).add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8))
-	_merchant_stage.add_theme_stylebox_override("panel", _panel_style(Color(0.03, 0.04, 0.05, 0.60), Color(0.66, 0.48, 0.21, 0.98), 2, 8))
-	_speech_card.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8))
-	_crest_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32))
-	_gold_pill.add_theme_stylebox_override("panel", _panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8))
-	_booster_modal.add_theme_stylebox_override("panel", _panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12))
+		(panel as Panel).add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
+	_merchant_stage.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.03, 0.04, 0.05, 0.60), Color(0.66, 0.48, 0.21, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
+	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
+	_crest_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32, Vector4(8, 6, 8, 6)))
+	_gold_pill.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8, Vector4(8, 6, 8, 6)))
+	_booster_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
 	_booster_overlay.color = Color(0.0, 0.0, 0.0, 0.44)
 
 	_apply_button_chrome(_main_menu_button, Color(0.13, 0.09, 0.05, 0.95), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
@@ -909,24 +910,11 @@ func _apply_visual_chrome() -> void:
 
 
 func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
-	button.add_theme_stylebox_override("normal", _panel_style(bg_color, border_color, 2, 8))
-	button.add_theme_stylebox_override("hover", _panel_style(hover_color, border_color.lightened(0.16), 2, 8))
-	button.add_theme_stylebox_override("pressed", _panel_style(hover_color.darkened(0.10), border_color, 2, 8))
-	button.add_theme_stylebox_override("disabled", _panel_style(Color(0.05, 0.06, 0.07, 0.88), Color(0.24, 0.25, 0.29, 0.92), 2, 8))
+	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 8, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 8, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 8, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.05, 0.06, 0.07, 0.88), Color(0.24, 0.25, 0.29, 0.92), 2, 8, Vector4(8, 6, 8, 6)))
 	button.add_theme_color_override("font_disabled_color", Color(0.55, 0.56, 0.60, 1.0))
-
-
-func _panel_style(bg_color: Color, border_color: Color, border_width: int = 2, radius: int = 6) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg_color
-	style.border_color = border_color
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(radius)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	return style
 
 
 func _make_panel(node_name: String, parent: Node) -> Panel:
@@ -1026,7 +1014,7 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
 	var bg := Color(0.32, 0.18, 0.04, 0.96) if not disabled else Color(0.07, 0.07, 0.08, 0.94)
 	var border := GOLD_COLOR if not disabled else Color(0.28, 0.28, 0.30, 0.92)
-	var badge := _make_dynamic_panel(parent, rect, _panel_style(bg, border, 2, 6))
+	var badge := _make_dynamic_panel(parent, rect, UI_UTILS.panel_style(bg, border, 2, 6, Vector4(8, 6, 8, 6)))
 	_make_dynamic_label(badge, text, Rect2(Vector2.ZERO, rect.size), GOLD_COLOR if not disabled else MUTED_COLOR, 26, HORIZONTAL_ALIGNMENT_CENTER)
 
 

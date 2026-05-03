@@ -1,5 +1,7 @@
 extends Control
 
+const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
+
 @onready var _summary_label: Label = %SummaryLabel
 @onready var _title_label: Label = %TitleLabel
 @onready var _center_container: CenterContainer = $CenterContainer
@@ -20,6 +22,8 @@ const COLOR_GOLD := Color(1.0, 0.77, 0.25, 1.0)
 const COLOR_VICTORY := Color(1.0, 0.86, 0.36, 1.0)
 const COLOR_DEFEAT := Color(0.95, 0.36, 0.32, 1.0)
 
+var _is_transitioning := false
+
 
 func _ready() -> void:
 	var summary: Dictionary = RunState.run_summary_snapshot()
@@ -29,12 +33,57 @@ func _ready() -> void:
 
 
 func _on_main_menu_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	_route_from_summary(false)
 
 
 func _on_new_run_button_pressed() -> void:
-	RunState.start_new_run()
-	get_tree().change_scene_to_file(RunState.next_scene_path())
+	_route_from_summary(true)
+
+
+func _route_from_summary(start_new_run: bool) -> void:
+	if _is_transitioning:
+		return
+	_is_transitioning = true
+	_set_action_buttons_disabled(true)
+	var source := "final_run_summary.main_menu"
+	var route_name := "final_summary_to_main_menu"
+	var target_scene := "res://scenes/main.tscn"
+	if start_new_run:
+		source = "final_run_summary.new_run"
+		route_name = "final_summary_to_combat"
+		RunState.start_new_run()
+		target_scene = RunState.next_scene_path()
+	var route_id := RunState.flow_trace_begin(route_name, target_scene, {"source": source})
+	RunState.flow_trace_mark("final_summary_before_change_scene", {"source": source}, route_id, target_scene)
+	var transition_result: Variant = RunState.flow_trace_change_scene(get_tree(), target_scene, route_id, source)
+	if _scene_change_succeeded(transition_result):
+		return
+	var failure := _scene_change_failure_reason(transition_result)
+	push_error("Final summary transition failed: %s -> %s (%s)" % [source, target_scene, failure])
+	_summary_label.text = "Transition failed: %s" % failure
+	_summary_label.add_theme_color_override("font_color", COLOR_DEFEAT)
+	_is_transitioning = false
+	_set_action_buttons_disabled(false)
+
+
+func _set_action_buttons_disabled(disabled: bool) -> void:
+	if _new_run_button != null:
+		_new_run_button.disabled = disabled
+	if _main_menu_button != null:
+		_main_menu_button.disabled = disabled
+
+
+func _scene_change_succeeded(result: Variant) -> bool:
+	if result is Dictionary:
+		return bool((result as Dictionary).get("ok", false))
+	return int(result) == OK
+
+
+func _scene_change_failure_reason(result: Variant) -> String:
+	if result is Dictionary:
+		var typed_result := result as Dictionary
+		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
+	return "error_code_%d" % int(result)
 
 
 func _apply_static_layout() -> void:
@@ -59,7 +108,7 @@ func _apply_static_layout() -> void:
 
 	_center_container.custom_minimum_size = Vector2(1080, 1920)
 	_panel_container.custom_minimum_size = Vector2(860, 1160)
-	_panel_container.add_theme_stylebox_override("panel", _panel_style(COLOR_PANEL, COLOR_PANEL_EDGE, 22, 5))
+	_panel_container.add_theme_stylebox_override("panel", UI_UTILS.panel_style(COLOR_PANEL, COLOR_PANEL_EDGE, 5, 22, Vector4(24, 20, 24, 20)))
 	_content_box.custom_minimum_size = Vector2(760, 1020)
 	_content_box.add_theme_constant_override("separation", 18)
 	_content_box.add_theme_constant_override("margin_left", 34)
@@ -125,7 +174,7 @@ func _add_stat_card(parent: GridContainer, label_text: String, value_text: Strin
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(368, 118)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.add_theme_stylebox_override("panel", _panel_style(COLOR_CARD, COLOR_CARD_EDGE, 14, 3))
+	card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(COLOR_CARD, COLOR_CARD_EDGE, 3, 14, Vector4(24, 20, 24, 20)))
 	var box := VBoxContainer.new()
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 3)
@@ -149,7 +198,7 @@ func _make_loadout_section(title: String, values: Array[String]) -> PanelContain
 	var panel := PanelContainer.new()
 	panel.name = "%sSection" % title.replace(" ", "")
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.095, 0.078, 0.06, 0.92), COLOR_CARD_EDGE, 12, 2))
+	panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.095, 0.078, 0.06, 0.92), COLOR_CARD_EDGE, 2, 12, Vector4(24, 20, 24, 20)))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 9)
 	panel.add_child(box)
@@ -208,28 +257,9 @@ func _style_action_button(button: Button, primary: bool) -> void:
 	button.add_theme_color_override("font_color", Color(0.08, 0.055, 0.025, 1.0) if primary else COLOR_TEXT)
 	var normal_color := Color(0.95, 0.68, 0.20, 1.0) if primary else Color(0.16, 0.13, 0.10, 1.0)
 	var edge_color := Color(1.0, 0.86, 0.42, 1.0) if primary else COLOR_CARD_EDGE
-	button.add_theme_stylebox_override("normal", _panel_style(normal_color, edge_color, 12, 3))
-	button.add_theme_stylebox_override("hover", _panel_style(normal_color.lightened(0.08), edge_color.lightened(0.1), 12, 3))
-	button.add_theme_stylebox_override("pressed", _panel_style(normal_color.darkened(0.12), edge_color, 12, 3))
-
-
-func _panel_style(fill: Color, border: Color, radius: int, border_width: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.border_width_left = border_width
-	style.border_width_top = border_width
-	style.border_width_right = border_width
-	style.border_width_bottom = border_width
-	style.corner_radius_top_left = radius
-	style.corner_radius_top_right = radius
-	style.corner_radius_bottom_left = radius
-	style.corner_radius_bottom_right = radius
-	style.content_margin_left = 24
-	style.content_margin_top = 20
-	style.content_margin_right = 24
-	style.content_margin_bottom = 20
-	return style
+	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(normal_color, edge_color, 3, 12, Vector4(24, 20, 24, 20)))
+	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(normal_color.lightened(0.08), edge_color.lightened(0.1), 3, 12, Vector4(24, 20, 24, 20)))
+	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(normal_color.darkened(0.12), edge_color, 3, 12, Vector4(24, 20, 24, 20)))
 
 
 func _make_spacer(height: int) -> Control:

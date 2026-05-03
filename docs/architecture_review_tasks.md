@@ -83,3 +83,35 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 - Next action: Move to the next architecture-review batch. If a replacement board-debug workflow is needed later, implement it as a new scoped debug tooling task rather than reviving the deleted scene.
 - Validation: Godot MCP `view_script` passed for touched scripts; `get_godot_errors` reported no session errors; retained AR-01 combat result-envelope probe still matched baseline; RunState route probes preserved combat/shop/boss-reward/final-victory route shapes with final victory routing to `res://scenes/flow/final_run_summary.tscn`; defeat now also routes to `res://scenes/flow/final_run_summary.tscn` in defeat mode while reset/no-summary inactive state still routes to main; main, combat, shop, and final summary scenes instantiate/run as validation surfaces; deleted-scene reference searches are clean; `git diff --check` passed.
 - Docs/wiki impact: `AGENTS.md`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`, `wiki/setup.md`, and `wiki/log.md` updated for the completed cleanup and new validation surfaces.
+
+## AR-09: Stability And Shared UI Utility Cleanup
+
+- Status: `done`
+- Owner/scope: Fix the confirmed post-AR-08 stability risks before larger architecture movement. Scope includes lifecycle-safe awaits in combat resolve presentation, bounded animation-drain behavior, duplicate-transition guards in final summary, main-menu failed-transition recovery, one untraced combat redirect, and the duplicated `_panel_style()` signature risk between player-facing flow scenes.
+- Progress: 2026-05-03 completed the stability cleanup without changing combat math, resolver order, visible resolve order, combo/mastery timing, content data, audio priority, route semantics, debug commands, or `/skip`. `combat_player_controller.gd` now checks scene/board continuation after awaited resolve presentation and turn replay steps before committing final board state or routing outcomes. `CombatResolvePresenter` now checks timer owner, scene tree, and board-view validity after waits and before touching bound nodes, and the final animation drain exits on invalid lifecycle state or a bounded timeout/iteration cap. The combat wrong-step redirect now uses `RunState.flow_trace_change_scene(...)` instead of a bare deferred `change_scene_to_file`. `main_boot.gd` now checks Start Run transition results and restores the button/status state on failure. `final_run_summary.gd` now guards `New Run` and `Main Menu` actions with a single transition lock and disabled buttons while routing. `scripts/ui/ui_utils.gd` now owns the canonical `panel_style(fill, border, border_width := 2, radius := 6, margins := Vector4.ZERO)` helper used by `shop_player.gd` and `final_run_summary.gd`, preserving their previous border/radius/margin visuals while removing the signature mismatch.
+- Out of scope:
+  - Do not change combat math, accepted resolve order, combo/mastery feedback timing, content data shape, audio priority behavior, or broader controller ownership.
+  - Do not migrate every `StyleBoxFlat` in `player_loadout_hud.gd`; this batch only fixes the duplicated helper-signature trap in flow scenes.
+- Validation: `git status --short --branch` confirmed branch `codex/ar-09-stability-ui-cleanup` with the preserved uncommitted AR tracker edit plus AR-09 source/doc changes; `git diff --check` passed. Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_resolve_presenter.gd`, `main_boot.gd`, `final_run_summary.gd`, `shop_player.gd`, and `ui_utils.gd`; `get_godot_errors` reported no session errors. Focused editor probes passed for scene instantiation of `main.tscn`, `combat_player.tscn`, and `final_run_summary.tscn`, and for canonical `UiUtils.panel_style(...)` border/radius/margin mapping. `play_scene main` launched with desktop `MainMenuMusicPlayer` playback and no session errors. User manual sanity QA on 2026-05-04 confirmed Start Run, combat resolve/cascade feel, combat routing, final-summary actions, shop regression, and visible panel styling are all good.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the stability fixes and shared `UiUtils` ownership.
+
+## AR-10: Combat Controller God-Object Refactor
+
+- Status: `not started`
+- Owner/scope: Reduce `scripts/combat/combat_player_controller.gd` by extracting the lowest-risk remaining responsibilities after AR-09 stability cleanup. First extraction target is debug console ownership plus turn-log formatting, because those areas are large, mostly isolated, and less coupled to combat math or resolve timing than input, layout, VFX, HUD sync, or routing.
+- Plan:
+  - Add `scripts/combat/combat_debug_console.gd` for debug command parsing, help text, debug output formatting, command dispatch, and `/skip <level> <fight>` handling.
+  - Keep privileged gameplay actions owned by `combat_player_controller.gd`. The debug console should call controller-provided callbacks for actions such as skip routing, run-state mutation, combat refresh, and status updates instead of directly owning gameplay state.
+  - Add `scripts/combat/combat_turn_logger.gd` for turn-log text generation, verbosity-specific formatting, summary string construction, and reusable result-envelope display text.
+  - Keep combat result dictionaries, `turn_log` shape, debug command names, and visible command output stable unless a confirmed bug is found during extraction.
+  - Leave input handling, resolve presentation, combo timing, mastery feedback, VFX spawning, layout management, HUD sync, outcome routing, and RunState transitions in the controller for later AR batches.
+- Out of scope:
+  - Do not change combat math, enemy intent resolution, rewards, shop routing, boss reward flow, accepted resolve animation order, or scene transitions.
+  - Do not start content migration or theme-resource extraction in this batch.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP, not headless: `view_script` for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; `get_godot_errors`; instantiate/run `res://scenes/combat/combat_player.tscn`.
+  - Rerun the retained AR-01 combat result-envelope probe to confirm combat result shape is unchanged.
+  - Add focused probes or manual checks confirming representative debug commands still work, including `/skip <level> <fight>`, and turn summary text for a known combat result matches the pre-refactor baseline.
+  - Manual acceptance should cover opening combat, using representative debug commands, completing one normal combat transition, and confirming no visible behavior changed.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` after the extraction only if the runtime helpers are actually added and validated.

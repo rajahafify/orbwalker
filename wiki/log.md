@@ -1424,3 +1424,13 @@ Append-only history of wiki operations.
 
 - Completed AR-06 combat presentation split. `scripts/combat/combat_resolve_presenter.gd` now owns the board-space resolve replay presentation boundary while `scripts/combat/combat_player_controller.gd` retains resolver simulation, combat math, RunState routing, outcome overlay routing, debug console, and `/skip`. Validation notes were added to `docs/test_plan.md`; manual visual QA remains required for real drag/cascade feel, overlap checks, Android/on-device behavior, and deferred orb texture-map pop-in. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `scripts/combat/combat_resolve_presenter.gd`, `scripts/combat/combat_player_controller.gd`)
 - User manual QA on the installed Android build confirmed AR-06 presentation behavior works. `docs/architecture_review_tasks.md` and `docs/test_plan.md` were updated to record the accepted manual pass and keep broader overlap/pop-in review as non-AR-06 follow-up. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+## [2026-05-03] code-change | AR-09 Stability And Shared UI Utility Cleanup
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_resolve_presenter.gd`, `scripts/core/main_boot.gd`, `scripts/flow/final_run_summary.gd`, `scripts/flow/shop_player.gd`, `scripts/ui/ui_utils.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`
+- Changed:
+  - Added lifecycle guards around combat resolve/turn replay continuation points and bounded the presenter animation drain so invalid scene/board state or stuck animation flags do not resume indefinitely.
+  - Routed the combat wrong-step redirect through `RunState.flow_trace_change_scene(...)`, added Start Run failure recovery, and guarded final-summary `Start New Run` / `Main Menu` actions with disabled buttons while routing.
+  - Added `UiUtils.panel_style(...)` as the shared flow-scene `StyleBoxFlat` helper and migrated shop/final-summary panel styling without changing the previous border/radius/margin mapping.
+- Validation:
+  - `git diff --check`, Godot MCP `view_script` checks, scene instantiate probes for main/combat/final-summary, `UiUtils.panel_style(...)` mapping probe, `play_scene main`, and `get_godot_errors` passed.
+  - User manual sanity QA on 2026-05-04 confirmed Start Run, combat resolve/cascade feel, combat routing, final-summary actions, shop regression, and visible panel styling are all good. Android/on-device behavior, full viewport overlap sweep, and deferred orb texture-map pop-in remain broader manual QA unless retested separately.
