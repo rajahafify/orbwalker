@@ -2,6 +2,27 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-03] code-change | Debug Skip Fight Command
+
+- Source: `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/debug/board_debug_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added `RunState.skip_to_fight(level, fight)` for debug run-flow jumps.
+  - Added `/skip <level> <fight>` to the combat and board-debug consoles; fight `1` and `2` target normal fights, while fight `3` targets the level boss.
+  - Reinitializes combat state and board state after a successful skip so `/skip 3 3` lands on the level 3 boss fight.
+- Validation:
+  - Godot MCP `view_script`, `get_godot_errors`, `play_scene current` for `res://scenes/combat/board_debug.tscn`, and running scene-tree inspection passed.
+  - Direct editor-script access to the running debug node was unavailable, so manual console-entry click-through remains useful.
+
+## [2026-05-03] code-change | Victory Summary Page Polish
+
+- Source: `scripts/flow/run_summary_placeholder.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Reworked the final victory/run-summary page from a narrow placeholder card into a full-screen portrait summary surface.
+  - Added menu-art background, dim scrim, wide gold-framed panel styling, six readable stat cards, equipment/relic sections, and large `Start New Run` / `Main Menu` actions.
+- Validation:
+  - Godot MCP `view_script`, scene instantiate, `play_scene current`, and running scene-tree inspection passed after the summary-page polish.
+  - `get_godot_errors` reported no session runtime errors but retained a stale open-script diagnostic for the already-fixed `TextureRect` stretch enum.
+
 ## [2026-05-03] code-change | Boss Reward Modal Layering Fix
 
 - Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`

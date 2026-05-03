@@ -917,6 +917,8 @@ func _handle_console_command(raw_text: String) -> void:
 			_status_label.text = "Console cleared."
 		"log_level":
 			_handle_log_level_command(parts)
+		"skip":
+			_handle_skip_command(parts)
 		"board":
 			if parts.size() < 2:
 				_command_error("usage: /board print|reroll|seed <number>")
@@ -1116,6 +1118,7 @@ func _print_command_list() -> void:
 	_append_combat_log("/state - Show current run/combat snapshot", true)
 	_append_combat_log("/clear - Clear console log", true)
 	_append_combat_log("/log_level [normal|detailed] - Show or set turn log verbosity", true)
+	_append_combat_log("/skip <level> <fight> - Jump to fight 1, 2, or boss 3 at level", true)
 	_append_combat_log("/board print - Print current board", true)
 	_append_combat_log("/board reroll - Regenerate board with random seed", true)
 	_append_combat_log("/board seed <number> - Regenerate board with fixed seed", true)
@@ -1154,6 +1157,33 @@ func _handle_log_level_command(parts: PackedStringArray) -> void:
 
 	_combat_log_level = requested_level
 	_append_combat_log("Combat log level set to %s." % _combat_log_level)
+
+
+func _handle_skip_command(parts: PackedStringArray) -> void:
+	if parts.size() != 3:
+		_command_error("usage: /skip <level> <fight>")
+		return
+	var level_text := String(parts[1])
+	var fight_text := String(parts[2])
+	if not level_text.is_valid_int() or not fight_text.is_valid_int():
+		_command_error("usage: /skip <level> <fight>")
+		return
+	var level := level_text.to_int()
+	var fight := fight_text.to_int()
+	var result: Dictionary = RunState.skip_to_fight(level, fight)
+	if not bool(result.get("ok", false)):
+		_command_error("skip failed: %s" % String(result.get("reason", "unknown_error")))
+		return
+
+	_active_drag = false
+	_drag_touch_index = -1
+	_drag_path.clear()
+	_last_resolve_result.clear()
+	_initialize_combat_state()
+	_create_new_board()
+	_begin_turn_preview()
+	_status_label.text = "Skipped to %s." % RunState.level_sequence_label()
+	_append_combat_log("Debug skip: jumped to %s." % RunState.level_sequence_label())
 
 
 func _orb_id_from_token(token: String) -> int:

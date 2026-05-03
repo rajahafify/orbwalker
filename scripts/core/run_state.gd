@@ -372,6 +372,32 @@ func current_level_boss_name() -> String:
 	return String(current_level_boss_preview().get("display_name", "Unknown Boss"))
 
 
+func skip_to_fight(level: int, fight: int) -> Dictionary:
+	if level < 1 or level > MAX_DUNGEON_LEVELS:
+		return {"ok": false, "reason": "level_must_be_1_to_%d" % MAX_DUNGEON_LEVELS, "next_scene": SCENE_COMBAT}
+	if fight < 1 or fight > 3:
+		return {"ok": false, "reason": "fight_must_be_1_to_3", "next_scene": SCENE_COMBAT}
+
+	if not run_active:
+		start_new_run()
+	run_active = true
+	run_victory = false
+	_run_summary.clear()
+	_boss_relic_reward_options.clear()
+	_boss_reward_claimed_relic_id = ""
+	dungeon_level = level
+	match fight:
+		1:
+			_step_index = 0
+		2:
+			_step_index = 2
+		3:
+			_step_index = 4
+	current_step_key = LEVEL_SEQUENCE[_step_index]
+	_assign_current_fight()
+	return _transition_result()
+
+
 func current_encounter_snapshot() -> Dictionary:
 	return _current_encounter.duplicate(true)
 
