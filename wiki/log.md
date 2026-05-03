@@ -1279,6 +1279,15 @@ Append-only history of wiki operations.
 - Notes:
   - Godot MCP `view_script` and `get_godot_errors` passed. Android on-device loop timing retest remains required.
 
+## [2026-05-03] config | Android Boot Splash Image
+
+- Source: `project.godot`, `raw/spash.png`, `wiki/setup.md`, `wiki/file-map.md`
+- Changed:
+  - Set the project boot splash image to `res://raw/spash.png` and kept boot splash image display enabled.
+  - Documented the boot splash asset reference in setup and file-map notes.
+- Notes:
+  - The asset currently exists as `raw/spash.png`; no raw asset rename was performed.
+
 ## [2026-05-03] fix | Android Raw WAV Music Payload
 
 - Source: `scripts/core/audio_manager.gd`, `resources/audio/raw_music/`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
