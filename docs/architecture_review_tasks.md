@@ -28,9 +28,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 - Status: `not started`
 - Owner/scope: Shared WAV parsing, frame-count, and loop configuration logic currently duplicated between `scripts/core/audio_manager.gd` and `scripts/core/main_boot.gd`.
-- Progress: Duplication is confirmed; no extraction has been performed.
-- Blockers: Requires audio regression checks for menu, combat, shop, generated SFX, Android/template raw WAV fallback, and manual/on-device listening gaps.
-- Next action: Define the shared utility API and write pre-change audio loading probes before moving any code.
+- Progress: Duplication is confirmed; no extraction has been performed. Handoff instructions are documented in `docs/ar03_audio_utility_handoff.md`.
+- Blockers: Requires audio regression checks for menu, combat, shop, generated SFX, Android/template raw WAV fallback, and manual/on-device listening gaps. AR-02 closed with user-confirmed shop-to-main-menu audio handoff, so preserve that behavior.
+- Next action: Start from `docs/ar03_audio_utility_handoff.md`, define a small shared helper API, write pre-change audio loading probes, then move only generic WAV/imported-stream loading and frame/loop helpers.
 - Validation: Godot MCP audio stream probes pass for menu/combat/shop WAVs; generated `swap` SFX still builds; main and combat scene smokes show the expected music source diagnostics; Android listening remains explicitly marked if not retested.
 - Docs/wiki impact: Update `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, and `wiki/known-issues.md` if ownership changes.
 
