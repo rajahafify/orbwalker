@@ -443,6 +443,9 @@ func mark_fight_victory() -> Dictionary:
 	enemies_defeated += 1
 	if bool(_current_encounter.get("is_boss", false)):
 		bosses_defeated += 1
+		if dungeon_level >= MAX_DUNGEON_LEVELS:
+			_finalize_run(true, "Final boss defeated.")
+			return _transition_result()
 		_prepare_boss_relic_reward_options()
 	_advance_sequence()
 	return _transition_result()

@@ -148,6 +148,16 @@ const BOARD_SURFACE_TOP := 4.0
 const BOARD_SHADOW_OFFSET := Vector2(10, 0)
 const BOARD_SHADOW_EXPAND := Vector2(24, 8)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
+const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(80, 520), Vector2(920, 540))
+const BOSS_REWARD_CARD_GAP := 12.0
+const BOSS_REWARD_ROW_TOP := 176.0
+const BOSS_REWARD_CARD_HEIGHT := 172.0
+const BOSS_REWARD_ICON_SIZE := Vector2(54, 54)
+const BOSS_REWARD_SKIP_BUTTON_SIZE := Vector2(190, 58)
+const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(280, 58)
+const OUTCOME_MODAL_Z_INDEX := 180
+const OUTCOME_SCRIM_Z_INDEX := 170
+const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
 const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
 const HERO_LEVEL_BADGE_RECT := Rect2(Vector2(8, 178), Vector2(60, 40))
@@ -225,6 +235,8 @@ var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _boss_reward_buttons: Array[Button] = []
 var _boss_reward_skip_button: Button
 var _boss_reward_pending := false
+var _boss_reward_overlay_active := false
+var _outcome_scrim: ColorRect
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_combo_running := 0
@@ -254,6 +266,7 @@ func _ready() -> void:
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
 	_ensure_boss_reward_controls()
+	_ensure_outcome_overlay_layer()
 	_adopt_relic_footer_nodes_for_shared_layout()
 	_apply_visual_chrome()
 	_resolver.match_found.connect(_on_resolver_match_found)
@@ -1457,9 +1470,15 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			_show_boss_reward_summary(_build_victory_gold_summary(turn_log))
 			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
 		else:
+			var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+			if next_scene.find("run_summary") >= 0:
+				_append_combat_log("Outcome: Final boss victory. Opening run summary.")
+				_hide_outcome_summary()
+				get_tree().call_deferred("change_scene_to_file", next_scene)
+				return
 			_status_label.text = _build_victory_status(turn_log, transition) + " Press Continue."
 			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
-			_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
+			_pending_next_scene_path = next_scene
 			_show_outcome_summary("Victory", _build_victory_gold_summary(turn_log), true)
 			_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
 		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
@@ -1544,20 +1563,26 @@ func _audio_manager_node() -> Node:
 func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:
 	_outcome_title_label.text = title
 	_outcome_body_label.text = body
+	_boss_reward_pending = false
+	_boss_reward_overlay_active = false
 	_set_boss_reward_controls_visible(false)
 	_next_button.text = button_text
 	_outcome_summary_panel.visible = true
 	_next_button.visible = show_next
 	_next_button.disabled = not show_next
+	_apply_board_panel_layout()
+	_sync_outcome_overlay_visibility()
 
 
 func _hide_outcome_summary() -> void:
 	_outcome_summary_panel.visible = false
 	_set_boss_reward_controls_visible(false)
 	_boss_reward_pending = false
+	_boss_reward_overlay_active = false
 	_next_button.text = "Continue"
 	_next_button.visible = false
 	_next_button.disabled = true
+	_sync_outcome_overlay_visibility()
 
 
 func _ensure_boss_reward_controls() -> void:
@@ -1568,15 +1593,19 @@ func _ensure_boss_reward_controls() -> void:
 		button.name = "BossRewardButton%d" % (index + 1)
 		button.visible = false
 		button.focus_mode = Control.FOCUS_NONE
+		button.z_index = 1
+		button.text = ""
 		button.pressed.connect(_claim_boss_reward_option.bind(index))
 		_outcome_summary_root.add_child(button)
 		_apply_outcome_button_theme(button)
+		_ensure_boss_reward_card_children(button)
 		_boss_reward_buttons.append(button)
 	_boss_reward_skip_button = Button.new()
 	_boss_reward_skip_button.name = "BossRewardSkipButton"
 	_boss_reward_skip_button.text = "Skip Relic"
 	_boss_reward_skip_button.visible = false
 	_boss_reward_skip_button.focus_mode = Control.FOCUS_NONE
+	_boss_reward_skip_button.z_index = 1
 	_boss_reward_skip_button.pressed.connect(_skip_boss_reward_option)
 	_outcome_summary_root.add_child(_boss_reward_skip_button)
 	_apply_outcome_button_theme(_boss_reward_skip_button)
@@ -1587,28 +1616,37 @@ func _show_boss_reward_summary(body: String) -> void:
 	_outcome_body_label.text = "%s\nChoose one boss relic reward." % body
 	_outcome_summary_panel.visible = true
 	_boss_reward_pending = true
+	_boss_reward_overlay_active = true
 	_pending_next_scene_path = ""
 	_next_button.text = "Continue To Shop"
 	_next_button.visible = true
 	_next_button.disabled = true
 	_set_boss_reward_controls_visible(true)
 	_apply_board_panel_layout()
+	_sync_outcome_overlay_visibility()
 	var options: Array = RunState.boss_relic_reward_options_snapshot()
 	for index in _boss_reward_buttons.size():
 		var button := _boss_reward_buttons[index]
 		if index >= options.size():
-			button.text = "No Relic"
+			_set_boss_reward_card_content(button, null, "No Relic", "", "")
 			button.disabled = true
 			continue
 		var option: Dictionary = options[index]
 		var relic_id := String(option.get("relic_id", option.get("id", "")))
 		var content: Dictionary = RunState.ensure_content_registry().get_relic(relic_id)
-		button.text = "%s\n%s\n%s" % [
+		var description := String(content.get("description", ""))
+		_set_boss_reward_card_content(
+			button,
+			_visuals.clean_icon_for_key(String(content.get("icon_key", ""))),
 			String(option.get("display_name", content.get("display_name", "Relic"))),
 			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
-			String(content.get("description", "")),
+			_wrap_text_to_lines(description, 28, 2)
+		)
+		button.tooltip_text = "%s\n%s\n%s" % [
+			String(option.get("display_name", content.get("display_name", "Relic"))),
+			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
+			description,
 		]
-		button.tooltip_text = button.text
 		button.disabled = false
 	if options.is_empty():
 		_outcome_body_label.text = "%s\nNo boss relic options generated. Use Skip Relic to continue." % body
@@ -1628,16 +1666,12 @@ func _claim_boss_reward_option(index: int) -> void:
 	if not bool(result.get("ok", false)):
 		_status_label.text = "Boss relic claim failed: %s" % String(result.get("reason", "unknown"))
 		return
-	var payload: Dictionary = result.get("result", {})
 	var transition: Dictionary = RunState.advance_after_boss_reward()
-	_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
 	_boss_reward_pending = false
-	_set_boss_reward_controls_visible(false)
-	_next_button.disabled = false
-	_outcome_body_label.text = "Claimed relic: %s.\nContinue to shop." % String(payload.get("display_name", "Relic"))
-	_status_label.text = "Boss relic claimed. Continue to shop."
-	_apply_board_panel_layout()
 	_update_hud()
+	_audio_play_sfx("ui_accept")
+	_hide_outcome_summary()
+	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _skip_boss_reward_option() -> void:
@@ -1648,13 +1682,10 @@ func _skip_boss_reward_option() -> void:
 		_status_label.text = "Boss relic skip failed: %s" % String(skip_result.get("reason", "unknown"))
 		return
 	var transition: Dictionary = RunState.advance_after_boss_reward()
-	_pending_next_scene_path = String(transition.get("next_scene", "res://scenes/main.tscn"))
 	_boss_reward_pending = false
-	_set_boss_reward_controls_visible(false)
-	_next_button.disabled = false
-	_outcome_body_label.text = "Boss relic reward skipped.\nContinue to shop."
-	_status_label.text = "Boss relic skipped. Continue to shop."
-	_apply_board_panel_layout()
+	_audio_play_sfx("ui_accept")
+	_hide_outcome_summary()
+	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _set_boss_reward_controls_visible(should_show: bool) -> void:
@@ -1662,6 +1693,36 @@ func _set_boss_reward_controls_visible(should_show: bool) -> void:
 		button.visible = should_show
 	if _boss_reward_skip_button != null:
 		_boss_reward_skip_button.visible = should_show
+
+
+func _ensure_outcome_overlay_layer() -> void:
+	if _outcome_scrim == null:
+		var scrim := ColorRect.new()
+		scrim.name = "OutcomeScrim"
+		scrim.visible = false
+		scrim.color = OUTCOME_BOSS_SCRIM_COLOR
+		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		scrim.z_as_relative = false
+		scrim.z_index = OUTCOME_SCRIM_Z_INDEX
+		_layout_root.add_child(scrim)
+		_outcome_scrim = scrim
+	if _outcome_summary_panel.get_parent() != _layout_root:
+		var current_parent := _outcome_summary_panel.get_parent()
+		if current_parent != null:
+			current_parent.remove_child(_outcome_summary_panel)
+		_layout_root.add_child(_outcome_summary_panel)
+	_outcome_summary_panel.z_as_relative = false
+	_outcome_summary_panel.z_index = OUTCOME_MODAL_Z_INDEX
+	_outcome_summary_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_next_button.z_index = 1
+	_sync_outcome_overlay_visibility()
+
+
+func _sync_outcome_overlay_visibility() -> void:
+	if _outcome_scrim != null:
+		var show_scrim := _outcome_summary_panel.visible and _boss_reward_overlay_active
+		_outcome_scrim.visible = show_scrim
+		_outcome_scrim.mouse_filter = Control.MOUSE_FILTER_STOP if show_scrim else Control.MOUSE_FILTER_IGNORE
 
 
 func _apply_outcome_button_theme(button: Button) -> void:
@@ -3120,9 +3181,22 @@ func _apply_board_panel_layout() -> void:
 	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, BOARD_PANEL_RECT.size.y - shadow_size.y))
 	_board_shadow.position = shadow_position
 	_board_shadow.size = shadow_size
-	_apply_design_rect(_outcome_summary_panel, OUTCOME_SUMMARY_RECT)
+	if _outcome_scrim != null:
+		_outcome_scrim.position = Vector2.ZERO
+		_outcome_scrim.size = _layout_root.size
+	if _boss_reward_overlay_active:
+		_apply_design_rect(_outcome_summary_panel, BOSS_REWARD_SUMMARY_RECT)
+		_layout_boss_reward_summary()
+	else:
+		var standard_rect := Rect2(BOARD_PANEL_RECT.position + OUTCOME_SUMMARY_RECT.position, OUTCOME_SUMMARY_RECT.size)
+		_apply_design_rect(_outcome_summary_panel, standard_rect)
+		_layout_standard_outcome_summary()
+	_sync_outcome_overlay_visibility()
+
+
+func _layout_standard_outcome_summary() -> void:
 	_outcome_summary_root.position = Vector2(40.0, 34.0)
-	_outcome_summary_root.size = OUTCOME_SUMMARY_RECT.size - Vector2(80.0, 68.0)
+	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(80.0, 68.0)
 	_outcome_text_column.position = Vector2.ZERO
 	_outcome_text_column.size = Vector2(_outcome_summary_root.size.x, 168.0)
 	_outcome_title_label.custom_minimum_size = Vector2.ZERO
@@ -3131,14 +3205,143 @@ func _apply_board_panel_layout() -> void:
 	_outcome_title_label.size = Vector2(_outcome_text_column.size.x, 72.0)
 	_outcome_body_label.position = Vector2(0.0, 90.0)
 	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 132.0)
-	for index in _boss_reward_buttons.size():
-		_boss_reward_buttons[index].position = Vector2(18.0 + float(index) * 186.0, 224.0)
-		_boss_reward_buttons[index].size = Vector2(174.0, 116.0)
-	if _boss_reward_skip_button != null:
-		_boss_reward_skip_button.position = Vector2(576.0, 224.0)
-		_boss_reward_skip_button.size = Vector2(130.0, 116.0)
-	_next_button.position = Vector2((_outcome_summary_root.size.x - 220.0) * 0.5, 354.0 if _boss_reward_pending else 236.0)
+	_next_button.position = Vector2((_outcome_summary_root.size.x - 220.0) * 0.5, 236.0)
 	_next_button.size = Vector2(220.0, 64.0)
+
+
+func _layout_boss_reward_summary() -> void:
+	_outcome_summary_root.position = Vector2(44.0, 38.0)
+	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(88.0, 76.0)
+	_outcome_text_column.position = Vector2.ZERO
+	_outcome_text_column.size = Vector2(_outcome_summary_root.size.x, 146.0)
+	_outcome_title_label.custom_minimum_size = Vector2.ZERO
+	_outcome_body_label.custom_minimum_size = Vector2.ZERO
+	_outcome_title_label.position = Vector2.ZERO
+	_outcome_title_label.size = Vector2(_outcome_text_column.size.x, 66.0)
+	_outcome_body_label.position = Vector2(0.0, 76.0)
+	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 70.0)
+	var row_width := _outcome_summary_root.size.x
+	var slot_width := floorf((row_width - (BOSS_REWARD_CARD_GAP * 2.0)) / 3.0)
+	for index in _boss_reward_buttons.size():
+		var x := float(index) * (slot_width + BOSS_REWARD_CARD_GAP)
+		_boss_reward_buttons[index].position = Vector2(x, BOSS_REWARD_ROW_TOP)
+		_boss_reward_buttons[index].size = Vector2(slot_width, BOSS_REWARD_CARD_HEIGHT)
+		_layout_boss_reward_card_children(_boss_reward_buttons[index])
+	if _boss_reward_skip_button != null:
+		_boss_reward_skip_button.size = BOSS_REWARD_SKIP_BUTTON_SIZE
+		_boss_reward_skip_button.position = Vector2(
+			(_outcome_summary_root.size.x - BOSS_REWARD_SKIP_BUTTON_SIZE.x - BOSS_REWARD_NEXT_BUTTON_SIZE.x - 18.0) * 0.5,
+			_outcome_summary_root.size.y - BOSS_REWARD_SKIP_BUTTON_SIZE.y - 6.0
+		)
+	_next_button.size = BOSS_REWARD_NEXT_BUTTON_SIZE
+	_next_button.position = Vector2(
+		_boss_reward_skip_button.position.x + BOSS_REWARD_SKIP_BUTTON_SIZE.x + 18.0 if _boss_reward_skip_button != null else (_outcome_summary_root.size.x - _next_button.size.x) * 0.5,
+		_outcome_summary_root.size.y - _next_button.size.y - 6.0
+	)
+
+
+func _ensure_boss_reward_card_children(button: Button) -> void:
+	if button.get_node_or_null("RelicIcon") != null:
+		return
+	var icon := TextureRect.new()
+	icon.name = "RelicIcon"
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	button.add_child(icon)
+
+	var name_label := Label.new()
+	name_label.name = "RelicName"
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.add_theme_font_size_override("font_size", 13)
+	name_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.58, 1.0))
+	button.add_child(name_label)
+
+	var rarity_label := Label.new()
+	rarity_label.name = "RelicRarity"
+	rarity_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rarity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	rarity_label.add_theme_font_size_override("font_size", 12)
+	rarity_label.add_theme_color_override("font_color", Color(0.92, 0.78, 0.36, 1.0))
+	button.add_child(rarity_label)
+
+	var description_label := Label.new()
+	description_label.name = "RelicDescription"
+	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description_label.add_theme_font_size_override("font_size", 12)
+	description_label.add_theme_color_override("font_color", Color(0.82, 0.79, 0.68, 1.0))
+	button.add_child(description_label)
+
+
+func _layout_boss_reward_card_children(button: Button) -> void:
+	var content_width := maxf(0.0, button.size.x - 24.0)
+	var name_label := button.get_node_or_null("RelicName") as Label
+	if name_label != null:
+		name_label.position = Vector2(12.0, 12.0)
+		name_label.size = Vector2(content_width, 24.0)
+	var rarity_label := button.get_node_or_null("RelicRarity") as Label
+	if rarity_label != null:
+		rarity_label.position = Vector2(12.0, 36.0)
+		rarity_label.size = Vector2(content_width, 20.0)
+	var icon := button.get_node_or_null("RelicIcon") as TextureRect
+	if icon != null:
+		icon.position = Vector2((button.size.x - BOSS_REWARD_ICON_SIZE.x) * 0.5, 58.0)
+		icon.size = BOSS_REWARD_ICON_SIZE
+	var description_label := button.get_node_or_null("RelicDescription") as Label
+	if description_label != null:
+		description_label.position = Vector2(12.0, 116.0)
+		description_label.size = Vector2(content_width, 44.0)
+
+
+func _set_boss_reward_card_content(button: Button, icon_texture: Texture2D, display_name: String, rarity: String, description: String) -> void:
+	button.text = ""
+	button.icon = null
+	_ensure_boss_reward_card_children(button)
+	var icon := button.get_node_or_null("RelicIcon") as TextureRect
+	if icon != null:
+		icon.texture = icon_texture
+		icon.visible = icon_texture != null
+	var name_label := button.get_node_or_null("RelicName") as Label
+	if name_label != null:
+		name_label.text = display_name
+	var rarity_label := button.get_node_or_null("RelicRarity") as Label
+	if rarity_label != null:
+		rarity_label.text = rarity
+	var description_label := button.get_node_or_null("RelicDescription") as Label
+	if description_label != null:
+		description_label.text = description
+	_layout_boss_reward_card_children(button)
+
+
+func _wrap_text_to_lines(text: String, max_chars: int, max_lines: int) -> String:
+	var words := text.strip_edges().split(" ", false)
+	var lines: Array[String] = []
+	var current_line := ""
+	for word in words:
+		var candidate := word if current_line.is_empty() else "%s %s" % [current_line, word]
+		if candidate.length() <= max_chars:
+			current_line = candidate
+			continue
+		if not current_line.is_empty():
+			lines.append(current_line)
+		current_line = word
+		if lines.size() >= max_lines:
+			break
+	if lines.size() < max_lines and not current_line.is_empty():
+		lines.append(current_line)
+	if lines.size() > max_lines:
+		lines.resize(max_lines)
+	var result := "\n".join(lines)
+	if words.size() > 0 and text.length() > result.replace("\n", " ").length():
+		result = result.trim_suffix(".") + "..."
+	return result
 
 
 func _apply_player_panel_layout() -> void:

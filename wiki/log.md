@@ -2,6 +2,19 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-03] code-change | Boss Reward Modal Layering Fix
+
+- Source: `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Reparented the runtime outcome summary and new dim scrim under `CombatLayoutRoot` so boss reward choices layer above the connected player HUD.
+  - Added a compact boss reward modal layout with three wider relic choice cards, dedicated relic image/text nodes, a separate `Skip Relic` action, and wrapped/truncated description text.
+  - Changed relic claim and skip to advance directly to the shop instead of showing a post-selection confirmation card.
+  - Changed final boss victory to skip boss relic selection and route directly to the victory summary.
+  - Preserved the normal victory/defeat outcome card position by applying the old board-relative rect after reparenting.
+- Notes:
+  - Godot MCP `view_script` and `get_godot_errors` passed; previous overlay scene-tree inspection and `git diff --check` passed.
+  - Manual end-to-end boss victory into relic choice into post-boss shop, plus final boss victory into run summary, remains useful for final visual acceptance.
+
 ## [2026-05-02] code-change | Defeat Overlay Run Summary
 
 - Source: `scripts/combat/combat_player_controller.gd`, `scripts/core/run_state.gd`, `scripts/flow/run_summary_placeholder.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
