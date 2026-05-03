@@ -2,7 +2,7 @@
 
 **Summary**: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.
 
-**Sources**: `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
+**Sources**: `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_outcome_overlay.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
 
 **Last updated**: 2026-05-03
 
@@ -24,6 +24,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `BoardState` is a pure data model with deterministic generation, bounds checks, swaps, and match-avoidant starting boards. (source: `scripts/board/board_state.gd`)
 - `BoardView` is a render-and-animation surface. It draws the grid, selected cells, drag path, flashes, and glow overlays, but does not own board rules. (source: `scripts/board/board_view.gd`)
 - `CombatStateMachine` resolves the turn order, applies player effects in the documented sequence, handles block and armor, and records a structured combat log. (source: `scripts/combat/combat_state_machine.gd`)
+- `CombatPlayerController` owns combat scene orchestration, input, resolver replay timing, RunState outcome routing, audio hooks, and debug commands. `CombatOutcomeOverlay` owns only the combat outcome overlay presentation boundary: standard victory/defeat card state, boss reward card controls, scrim layering, card layout/content, and text wrapping. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_outcome_overlay.gd`)
 
 ### Shop and progression
 
@@ -44,6 +45,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `scripts/core/run_state.gd` - run orchestration and scene routing
 - `scripts/content/content_registry.gd` - content data, validation, and pools
 - `scripts/combat/combat_state_machine.gd` - combat turn resolution
+- `scripts/combat/combat_outcome_overlay.gd` - combat outcome and boss reward overlay presentation helper
 - `scripts/shop/shop_service.gd` - shop generation and purchases
 - `scripts/run/player_progression_service.gd` - equip, sell, mastery, consumable, and relic transitions
 - `docs/system_architecture.md` - original architecture target and planned data model

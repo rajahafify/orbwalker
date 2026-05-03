@@ -46,13 +46,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-05: Combat Controller First Split
 
-- Status: `deferred`
-- Owner/scope: First behavior-preserving extraction from `scripts/combat/combat_player_controller.gd`, preferably debug console or outcome/boss reward overlay ownership before presentation timing.
-- Progress: Not started; deferred until stabilization and baseline coverage exist.
-- Blockers: Depends on AR-01 baseline plus low-risk stabilization. Source/runtime code edits should be worker-owned in multi-agent mode.
-- Next action: Select one narrow non-overlapping responsibility and define the new helper/controller boundary without changing combat math or visible resolve order.
-- Validation: Full combat route smoke passes for victory, defeat, boss reward claim/skip, post-boss shop, and final-boss summary; `get_godot_errors` remains clean.
-- Docs/wiki impact: Update `wiki/file-map.md`, `wiki/architecture.md`, and `docs/test_plan.md` if file responsibilities change.
+- Status: `done`
+- Owner/scope: First behavior-preserving extraction from `scripts/combat/combat_player_controller.gd`; `scripts/combat/combat_outcome_overlay.gd` now owns the combat outcome overlay presentation boundary for standard victory/defeat cards, boss reward card controls, scrim layering, and overlay layout.
+- Progress: 2026-05-03 completed the first split. `combat_player_controller.gd` still owns combat math, resolve presentation timing, RunState victory/defeat/boss-reward routing, audio calls, scene transitions, input phase changes, debug console commands, and `/skip`; `CombatOutcomeOverlay` owns only outcome/boss-reward UI state, card content/layout, visibility, and helper text wrapping.
+- Blockers: None for AR-05 completion. Broader combat presentation extraction remains deferred to AR-06 and still needs visual regression checks before touching resolver replay timing.
+- Next action: Move to AR-06 only after choosing a presentation-only boundary that preserves the accepted resolve order.
+- Validation: Godot MCP `view_script` checks passed for `res://scripts/combat/combat_outcome_overlay.gd` and `res://scripts/combat/combat_player_controller.gd`; focused editor-script probes confirmed helper load/methods, `res://scenes/combat/combat_player.tscn` instantiate, outcome node presence, helper boss-reward controls/scrim/layout state, standard summary state, boss reward state, hide state, and text wrapping. Retained AR-01 combat result-envelope probe still matched baseline values. Final `get_godot_errors` reported no session errors. User manual QA confirmed normal victory continue, boss reward claim/skip, defeat Main Menu, final-boss summary, debug console commands, and resolve presentation order remained good.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new helper ownership.
 
 ## AR-06: Combat Presentation Split
 

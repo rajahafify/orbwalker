@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-03 - AR-05 Combat Controller First Split
+
+- Updated [[architecture]] and [[file-map]] for the new `CombatOutcomeOverlay` helper ownership split: outcome overlay presentation moved to `scripts/combat/combat_outcome_overlay.gd`, while `scripts/combat/combat_player_controller.gd` keeps combat orchestration, RunState outcome routing, debug commands, and resolver replay timing. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_outcome_overlay.gd`, `docs/architecture_review_tasks.md`)
+- Recorded AR-05 completion in the architecture review tracker, architecture-maintenance todo list, and test plan with Godot MCP evidence plus user manual QA confirmation. (source: `docs/architecture_review_tasks.md`, `todo.md`, `docs/test_plan.md`)
+
 ## 2026-05-03 - AR-01 Baseline Harness Gaps
 
 - Updated [[known-issues]] with AR-01 baseline gaps for repeated unsourced integer-division reload warnings and the current Godot MCP editor-script limitation around deterministic combat result-envelope probes that touch `RunState`. (source: `docs/test_plan.md`, `docs/architecture_review_tasks.md`, `scripts/combat/combat_state_machine.gd`, `scripts/core/run_state.gd`)
