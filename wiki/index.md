@@ -2,9 +2,9 @@
 
 **Summary**: Entry point for the Orbwalker repo wiki. This maps the current project goal, the main technical pages, and the maintenance pages that should stay current.
 
-**Sources**: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`, `todo.md`, `project.godot`, `scripts/core/run_state.gd`
+**Sources**: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `project.godot`, `scripts/core/run_state.gd`
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-05-03
 
 ---
 
@@ -32,3 +32,4 @@
 
 - [[known-issues]] - Current bugs, risks, and validation gaps
 - [[open-questions]] - Open design and implementation questions
+- `docs/architecture_review_tasks.md` - Architecture review task tracker

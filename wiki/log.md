@@ -2,6 +2,18 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-03] docs | Architecture Review Task Tracking Plan
+
+- Source: `docs/architecture_review_tasks.md`, `todo.md`, `docs/test_plan.md`, `wiki/index.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`
+- Changed:
+  - Created `docs/architecture_review_tasks.md` with eight architecture-review tasks, each tracked with `Status`, `Owner/scope`, `Progress`, `Blockers`, `Next action`, `Validation`, and `Docs/wiki impact`.
+  - Added an `Architecture Maintenance: Review Task Tracking Plan` section in `todo.md` before Milestone 10 and linked the new tracker.
+  - Added a `Regression Harness / Architecture Refactor QA` checklist section in `docs/test_plan.md`.
+  - Linked the architecture review tracker from the wiki index, architecture page, and file map.
+  - Updated `wiki/known-issues.md` with confirmed architecture-review risks and tracker linkage.
+- Validation:
+  - Documentation-only pass; no runtime/Godot validation was executed in this change.
+
 ## [2026-05-03] code-change | Combat And Shop Item Popover Sell
 
 - Source: `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `wiki/features.md`

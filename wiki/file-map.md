@@ -2,9 +2,9 @@
 
 **Summary**: High-level map of the important folders and files in the current Orbwalker checkout.
 
-**Sources**: `project.godot`, `AGENTS.md`, `.codex/config.toml`, `.codex/agents/`, `todo.md`, `docs/system_architecture.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
+**Sources**: `project.godot`, `AGENTS.md`, `.codex/config.toml`, `.codex/agents/`, `todo.md`, `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scenes/main.tscn`, `scenes/combat/board_debug.tscn`, `scenes/combat/combat_player.tscn`, `scenes/board/board_surface.tscn`, `scenes/flow/shop_player.tscn`, `scenes/flow/boss_relic_reward.tscn`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_surface.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/debug/board_debug_controller.gd`, `resources/art/first_pass/`, `resources/content/`, `resources/visual/`
 
-**Last updated**: 2026-05-02
+**Last updated**: 2026-05-03
 
 ---
 
@@ -32,7 +32,7 @@ The repository is a Godot project with scenes, gameplay scripts, first-pass art,
 - `resources/audio/raw_music/` - Non-imported byte-for-byte WAV payload copies (`*.wav.bin`) used by Android/template `AudioManager` loading to decode full uploaded WAV headers/data inside exported packages before falling back to imported resources. (source: `resources/audio/raw_music/`, `scripts/core/audio_manager.gd`)
 - `raw/` - Raw source assets that are not edited by agents unless explicitly requested, currently including MIDI music sources, `GeneralUser GS v1.471.sf2` for music export, and `spash.png`, which is referenced by `project.godot` as the boot splash image. (source: `raw/`, `tools/audio/export_midi_to_wav.py`, `project.godot`)
 - `tools/audio/` - Audio pipeline helpers, including the MIDI-to-WAV renderer that shells out to the local FluidSynth binary, uses the raw SoundFont, verifies WAV headers, and normalizes rendered PCM levels. (source: `tools/audio/export_midi_to_wav.py`)
-- `docs/` - Human-facing design, architecture, and QA docs. (source: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/test_plan.md`)
+- `docs/` - Human-facing design, architecture, QA docs, and architecture-maintenance tracking. `docs/architecture_review_tasks.md` tracks refactor-risk tasks, regression harness work, and current/future architecture alignment before Milestone 10 balance closure. (source: `docs/game_design_document.md`, `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
 - `todo.md` - Milestone and scope tracker for prototype work. (source: `todo.md`)
 - `AGENTS.md` - Operating rules for source/wiki precedence, development workflow, and the project-local multi-agent workflow. (source: `AGENTS.md`)
 - `.codex/` - Project-local Codex configuration, including the default model setting and custom `default`, `explorer`, and `worker` agent definitions. (source: `.codex/config.toml`, `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, `.codex/agents/worker.toml`)

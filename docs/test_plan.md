@@ -460,3 +460,16 @@ Verification notes (2026-05-03):
 - [ ] Leaving and entering shop does not duplicate offers or items.
 - [ ] Victory and defeat cannot both trigger from the same fight.
 - [ ] Debug tools do not appear in player-facing builds unless explicitly enabled.
+
+## Regression Harness / Architecture Refactor QA
+
+- [ ] Baseline route timings are captured for `Start Run -> Combat`, `Combat -> Shop`, and `Shop -> Combat` before architecture refactor work.
+- [ ] Post-change route timings are captured for the same three routes and compared against baseline.
+- [ ] `PackedScene.instantiate()` no longer regresses to multi-second stalls on combat entry.
+- [ ] Deferred orb texture-map path is visually checked for noticeable post-load pop-in on the board.
+- [ ] Shared `PlayerLoadoutHud` behavior is checked in both combat and shop for slot focus, popover ownership, sell flow, and outside-click dismiss.
+- [ ] Run-flow invariants are verified after refactor: no dual victory/defeat, correct boss reward routing, correct post-boss shop routing, and correct final-boss summary routing.
+- [ ] Architecture-model alignment is rechecked: `docs/system_architecture.md`, `wiki/architecture.md`, and live content-loading behavior describe the same source-of-truth model.
+- [ ] Temporary diagnostic instrumentation (if used) is either removed or explicitly documented as still required, with rationale.
+- [ ] `get_godot_errors` is rerun after each architecture-touching batch and any stale diagnostics are cleared or called out.
+- [ ] `docs/architecture_review_tasks.md`, `todo.md`, `wiki/known-issues.md`, and `wiki/log.md` are synchronized with validated outcomes.

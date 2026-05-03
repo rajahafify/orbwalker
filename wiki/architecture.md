@@ -2,9 +2,9 @@
 
 **Summary**: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.
 
-**Sources**: `docs/system_architecture.md`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
+**Sources**: `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scripts/core/run_state.gd`, `scripts/board/board_state.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
 
-**Last updated**: 2026-04-29
+**Last updated**: 2026-05-03
 
 ---
 
@@ -47,6 +47,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `scripts/shop/shop_service.gd` - shop generation and purchases
 - `scripts/run/player_progression_service.gd` - equip, sell, mastery, consumable, and relic transitions
 - `docs/system_architecture.md` - original architecture target and planned data model
+- `docs/architecture_review_tasks.md` - architecture-maintenance task tracker for refactor risks, regression harness work, and current/future architecture alignment
 
 ## Open Questions
 
@@ -58,3 +59,4 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - [[file-map]]
 - [[features]]
 - [[decisions]]
+- [[known-issues]]

@@ -509,6 +509,25 @@ Verification notes (2026-04-27):
   - Armor, stat chip, combat meta, and turn summary rows stay hidden so the simplified HUD does not show empty placeholder bars or clutter.
   - Godot MCP load/instantiate and running scene-tree checks passed for the reference-aligned player-panel structure at the current portrait design size.
 
+## Architecture Maintenance: Review Task Tracking Plan
+
+Status: In progress.
+
+Goal: Track architecture-refactor risks and regression harness follow-up before Milestone 10 balance closure.
+
+Tracker: `docs/architecture_review_tasks.md`
+
+Tasks:
+
+- [ ] AR-01 Baseline regression harness.
+- [ ] AR-02 Low-risk bug fixes.
+- [ ] AR-03 Shared WAV/audio utility extraction.
+- [ ] AR-04 Shop/input safety.
+- [ ] AR-05 Combat controller first split. Deferred until baseline and stabilization work are complete.
+- [ ] AR-06 Combat presentation split. Deferred until the first controller split is validated.
+- [ ] AR-07 RunState/data contract roadmap. Deferred pending `.tres` versus JSON or dictionary-backed content decision.
+- [ ] AR-08 Cleanup/dead-code validation.
+
 ## Milestone 10: Balance Pass And QA
 
 Goal: Stabilize the prototype into a coherent playable vertical slice.
