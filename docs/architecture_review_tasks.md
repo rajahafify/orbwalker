@@ -97,8 +97,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-10: Combat Controller God-Object Refactor
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Reduce `scripts/combat/combat_player_controller.gd` by extracting the lowest-risk remaining responsibilities after AR-09 stability cleanup. First extraction target is debug console ownership plus turn-log formatting, because those areas are large, mostly isolated, and less coupled to combat math or resolve timing than input, layout, VFX, HUD sync, or routing.
+- Progress: 2026-05-04 completed the behavior-preserving extraction. `scripts/combat/combat_debug_console.gd` now owns debug command parsing, help text, log storage/rendering, log-level state, command output coloring, and command dispatch. `scripts/combat/combat_turn_logger.gd` now owns normal/detailed turn-log line generation, state snapshot formatting helpers, intent formatting, and reusable outcome/summary strings. `combat_player_controller.gd` still owns combat state, board mutation, RunState/progression mutations, HUD refresh, `/skip` route/state reset, debug fight win/lose outcome routing, resolve presentation callbacks, input, VFX, layout, and scene transitions.
 - Plan:
   - Add `scripts/combat/combat_debug_console.gd` for debug command parsing, help text, debug output formatting, command dispatch, and `/skip <level> <fight>` handling.
   - Keep privileged gameplay actions owned by `combat_player_controller.gd`. The debug console should call controller-provided callbacks for actions such as skip routing, run-state mutation, combat refresh, and status updates instead of directly owning gameplay state.
@@ -109,9 +110,140 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not change combat math, enemy intent resolution, rewards, shop routing, boss reward flow, accepted resolve animation order, or scene transitions.
   - Do not start content migration or theme-resource extraction in this batch.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP, not headless: `view_script` for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; `get_godot_errors`; instantiate/run `res://scenes/combat/combat_player.tscn`.
-  - Rerun the retained AR-01 combat result-envelope probe to confirm combat result shape is unchanged.
-  - Add focused probes or manual checks confirming representative debug commands still work, including `/skip <level> <fight>`, and turn summary text for a known combat result matches the pre-refactor baseline.
+  - `git status --short --branch` confirmed `codex/ar-10-combat-controller-refactor`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; focused `ResourceLoader.CACHE_MODE_IGNORE` probes loaded all three current scripts; `res://scenes/combat/combat_player.tscn` instantiated with `DebugOverlay`, `CombatLogText`, `ConsoleInput`, `BoardSurface`, and `OutcomeSummaryPanel`; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors after rerun.
+  - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+  - Focused turn-logger probe confirmed the known normal turn summary lines and summary string match the pre-refactor baseline; a broader in-editor console lambda probe returned `<null>` because of MCP tool-script limitations, so representative live debug command click-through remains manual QA.
   - Manual acceptance should cover opening combat, using representative debug commands, completing one normal combat transition, and confirming no visible behavior changed.
 - Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` after the extraction only if the runtime helpers are actually added and validated.
+
+## AR-11: Combat Layout Manager Extraction
+
+- Status: `not started`
+- Owner/scope: Extract combat scene geometry and responsive design-space positioning from `scripts/combat/combat_player_controller.gd` into a focused layout helper, tentatively `scripts/combat/combat_layout_manager.gd`.
+- Plan:
+  - Move layout-only responsibilities such as runtime rect calculation, design-rect application, enemy panel layout, combat strip layout, board panel layout, player panel layout, loadout rail positioning, and debug overlay anchoring behind a helper boundary.
+  - Keep scene node ownership and gameplay state in `combat_player_controller.gd`; the layout helper should receive bound nodes, constants/config, and current viewport/layout state rather than pulling game state directly.
+  - Preserve existing portrait/tall-viewport behavior, board aspect constraints, `PlayerLoadoutHud` layout override behavior, debug overlay anchor behavior, and outcome overlay layout sync.
+  - Do not change visual chrome colors, theme construction, VFX, input handling, resolve presentation, HUD data sync, outcome routing, or combat math in this batch.
+- Out of scope:
+  - Do not redesign the combat screen, resize gameplay zones beyond existing formulas, or combine this with theme-resource extraction.
+  - Do not move `PlayerLoadoutHud` ownership; this AR only moves combat-scene positioning orchestration.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP, not headless: `view_script` for `combat_player_controller.gd` and the new layout helper; focused scene instantiate for `res://scenes/combat/combat_player.tscn`; `play_scene main`; final `get_godot_errors`.
+  - Add a focused editor-script layout probe for representative viewport sizes that confirms key node rects remain equal to the pre-refactor baseline or intentionally documented as unchanged formulas.
+  - Manual visual QA remains required for overlap checks, Android/on-device layout, and rapid-tap feel.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` only after the helper lands and validation is clean.
+
+## AR-12: Combat VFX Manager Extraction
+
+- Status: `not started`
+- Owner/scope: Extract combat VFX spawning and transient replay effect helpers from `scripts/combat/combat_player_controller.gd` into a focused helper, tentatively `scripts/combat/combat_vfx_manager.gd`.
+- Plan:
+  - Move texture-based VFX spawning, replay impact spawning, mastery beam spawning, mastery-card source lookup support, global/local coordinate conversion, fade tween lifecycle, and small visual-effect helper decisions that are not combat math.
+  - Keep `CombatPlayerController` responsible for deciding when effects happen, which `turn_log` values trigger them, and when awaited replay steps continue or abort.
+  - Pass required dependencies explicitly: `VfxLayer`, `VisualRegistry`, `PlayerLoadoutHud`, mastery card root, and timer/tween owner.
+  - Preserve mastery feedback timing, pooled feedback release order, beam sizing, impact sizing, target/source placement, and lifecycle guards.
+- Out of scope:
+  - Do not change combo popup timing, mastery preview math, turn replay order, resolve presentation, VFX art assets, layout, or combat speed behavior.
+  - Do not introduce new effects or change visual readability tuning in this refactor batch.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for the controller and new VFX helper; focused script-load probe; `combat_player.tscn` instantiate; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
+  - Add a focused helper probe that verifies spawned effect nodes parent under `VfxLayer`, fade cleanup is connected, and null/missing texture paths no-op without errors.
+  - Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, and overlap checks.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` after validated extraction.
+
+## AR-13: Board Drag Input Handler Extraction
+
+- Status: `not started`
+- Owner/scope: Extract the board drag/pointer input state machine from `scripts/combat/combat_player_controller.gd` into a helper, tentatively `scripts/combat/board_drag_input_handler.gd` or `scripts/combat/combat_board_input_handler.gd`.
+- Plan:
+  - Move pointer/touch drag bookkeeping, selected cell/path tracking, swap-attempt flow, drag visual clearing, and board input event parsing where it can be separated without changing board state rules.
+  - Keep `combat_player_controller.gd` responsible for input phase ownership, combat resolve kickoff, audio callback decisions, board-state mutation approval, and post-drag orchestration.
+  - Preserve Android touch coordinate behavior through `BoardView.gui_input` local coordinates and avoid reintroducing transform double-application.
+  - Keep `/skip`, debug console, layout, resolve presentation, VFX, HUD sync, and route transitions out of this batch.
+- Out of scope:
+  - Do not change drag movement rules, swap legality, resolver ordering, accepted resolve presentation timing, or combat math.
+  - Do not add gesture features, input buffering, rapid-tap behavior changes, or responsive layout fixes.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for controller and input helper; script-load probe; `combat_player.tscn` instantiate; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
+  - Add focused editor-script probes for helper state transitions where possible: start drag, move to adjacent cell, reject invalid cell, end/cancel drag, and clear visuals without mutating combat math.
+  - Manual QA is mandatory for real mouse drag, touch drag on Android, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` only after the input behavior is validated.
+
+## AR-14: Combat Theme And Chrome Boundary
+
+- Status: `not started`
+- Owner/scope: Reduce visual chrome/theming pressure in `scripts/combat/combat_player_controller.gd` by extracting combat style construction into a focused helper or theme resource boundary.
+- Plan:
+  - First pass should inventory code-built `StyleBoxFlat`, font-size/color overrides, timer styling, panel/frame chrome, and placeholder chrome decisions in the combat controller.
+  - Prefer a low-risk helper such as `scripts/combat/combat_chrome_styler.gd` before introducing `.tres` resources, unless the source inventory shows a resource boundary is clearly safer.
+  - Preserve every existing color, border, radius, margin, font size, and placeholder appearance unless a specific visual bug is identified and accepted.
+  - Keep layout formulas, VFX, input, combat math, resolve presentation, route transitions, and `UiUtils.panel_style(...)` ownership unchanged.
+- Out of scope:
+  - Do not migrate shop/final-summary styles or replace `UiUtils.panel_style(...)`.
+  - Do not redesign the combat UI, generate new art, or broaden into theme-resource cleanup across the project.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for controller and new style helper/resource users; script/resource load probes; `combat_player.tscn` instantiate; `play_scene main`; final `get_godot_errors`.
+  - Add a focused style probe for representative controls that confirms theme overrides match pre-refactor color/font/radius/margin values.
+  - Manual visual QA remains required for real screenshots, overlap checks, Android/on-device appearance, and perceived readability.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` if a durable style boundary is added.
+
+## AR-15: Combat Placeholder Texture Utility
+
+- Status: `not started`
+- Owner/scope: Extract code-generated combat placeholder textures from `scripts/combat/combat_player_controller.gd` into a static utility/helper, tentatively `scripts/combat/combat_placeholder_textures.gd` or a shared UI visual helper if source review shows reuse outside combat.
+- Plan:
+  - Move timer, intent, enemy portrait, and hero portrait placeholder texture creation without changing their pixel shapes, sizes, colors, transparency, or fallback conditions.
+  - Keep `CombatPlayerController` responsible for choosing when placeholders are needed and assigning textures to scene nodes.
+  - Avoid changing `VisualRegistry` asset lookup, generated art assets, deferred orb texture-map behavior, or combat layout.
+- Out of scope:
+  - Do not generate new art, migrate placeholders to files, alter portrait mapping, or change visual registry fallback behavior.
+  - Do not combine with combat theme/chrome extraction unless AR-14 has already established a helper that should clearly own placeholders.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for controller and utility; focused script-load probe; instantiate `combat_player.tscn`; `play_scene main`; final `get_godot_errors`.
+  - Add a focused texture probe confirming placeholder dimensions and key sampled colors/alpha values remain stable.
+  - Manual visual QA remains useful for fallback readability if real assets are unavailable.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/file-map.md`, and `wiki/log.md` if the helper is added.
+
+## AR-16: Combat HUD Sync Boundary Review
+
+- Status: `not started`
+- Owner/scope: Review and reduce remaining HUD data-sync pressure in `scripts/combat/combat_player_controller.gd` after `PlayerLoadoutHud`, AR-10, and any layout/theme extractions are stable.
+- Plan:
+  - Inventory `_sync_*` and `_update_hud()` responsibilities and separate pure data snapshot construction from scene-specific label/bar updates where doing so reduces coupling.
+  - Prefer pushing reusable player-loadout/mastery data binding into `PlayerLoadoutHud` only when it matches that helper's existing ownership; keep combat-only enemy/timer/status labels in the controller or a combat-specific HUD helper.
+  - Preserve shared shop/combat HUD input safety, popover behavior, consumable slot usage, sell-slot callbacks, mastery feedback lanes, and existing player HUD geometry.
+  - Keep RunState routing, outcome overlay, resolve presentation, VFX, input handling, layout formulas, and combat math out of this batch.
+- Out of scope:
+  - Do not redesign HUD layout, move inventory behavior back into combat, or change shop HUD behavior.
+  - Do not change Elemental Mastery timing, feedback pooling, or card rendering.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for touched HUD/controller helpers; `combat_player.tscn` and `shop_player.tscn` instantiate probes if `PlayerLoadoutHud` is touched; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
+  - Add focused probes for player/enemy/timer snapshot application and shared HUD slot selection behavior when relevant.
+  - Manual QA remains required for combat/shop inventory popovers, consumable use, sell flow, mastery feedback, overlap checks, and Android/on-device behavior.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` after validated boundary changes.
+
+## AR-17: Combat Outcome And Transition Boundary Review
+
+- Status: `not started`
+- Owner/scope: Review the remaining scene transition, outcome routing, and debug fight outcome code in `scripts/combat/combat_player_controller.gd` after lower-risk presentation/debug/input extractions are complete.
+- Plan:
+  - Inventory combat-owned outcome paths: normal victory, boss victory reward overlay, final victory summary, defeat summary, debug fight win/lose, next-button routing, route tracing, failed-transition recovery, and `_pending_next_scene_path` ownership.
+  - Identify whether any pure formatting or adapter code can move without weakening the current `RunState` transition contract or `CombatOutcomeOverlay` ownership.
+  - Preserve AR-09 lifecycle guards, traced combat redirect, final-summary routing, defeat routing to final summary in defeat mode, boss reward routing, audio handoff behavior, and `/skip`.
+  - Treat this as a review-first AR; implementation should happen only if the source inventory finds a narrow, behavior-preserving boundary.
+- Out of scope:
+  - Do not change RunState semantics, boss reward step keys, route names, final summary naming, defeat/victory summary content, scene transitions, audio priority, or overlay layout.
+  - Do not merge this with input, VFX, layout, or HUD-sync extraction.
+- Validation:
+  - Run `git status --short --branch` and `git diff --check`.
+  - Use Godot MCP `view_script` for touched controller/helper files; focused RunState route invariant probes; `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn` instantiate probes; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
+  - Manual QA should cover normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior.
+- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, `wiki/known-issues.md`, and `wiki/log.md` if route/outcome ownership changes.

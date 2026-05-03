@@ -1,5 +1,11 @@
 # Wiki Log
 
+## 2026-05-04 - AR-10 Combat Controller God-Object Refactor
+
+- Updated [[architecture]], [[file-map]], and [[features]] for the new combat debug/turn-log helper boundary: `scripts/combat/combat_debug_console.gd` owns command parsing and log rendering, `scripts/combat/combat_turn_logger.gd` owns turn-log and summary text, and `scripts/combat/combat_player_controller.gd` keeps privileged gameplay callbacks, `/skip`, routing, input, layout, and VFX. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_debug_console.gd`, `scripts/combat/combat_turn_logger.gd`)
+- Recorded AR-10 completion in the architecture review tracker and test plan with Godot MCP script-load, scene instantiate, AR-01 result-envelope, turn-logger parity, and main-scene smoke evidence. Manual command click-through and Android/visual QA remain broader acceptance items unless retested separately. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+- Added AR-11 through AR-17 tracker entries for the remaining combat-controller god-object refactor candidates: layout manager, VFX manager, board drag input handler, combat chrome/theme boundary, placeholder texture utility, HUD sync boundary review, and outcome/transition boundary review. (source: `docs/architecture_review_tasks.md`)
+
 ## 2026-05-03 - AR-07 RunState/Data Contract Roadmap
 
 - Updated [[architecture]], [[file-map]], [[known-issues]], [[open-questions]], and [[decisions]] to record dictionary-backed `ContentRegistry` content as the prototype source of truth for this phase, with Resource/JSON migration deferred behind the registry API. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)

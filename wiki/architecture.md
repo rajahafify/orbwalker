@@ -24,7 +24,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `BoardState` is a pure data model with deterministic generation, bounds checks, swaps, and match-avoidant starting boards. (source: `scripts/board/board_state.gd`)
 - `BoardView` is a render-and-animation surface. It draws the grid, selected cells, drag path, flashes, and glow overlays, but does not own board rules. (source: `scripts/board/board_view.gd`)
 - `CombatStateMachine` resolves the turn order, applies player effects in the documented sequence, handles block and armor, and records a structured combat log. (source: `scripts/combat/combat_state_machine.gd`)
-- `CombatPlayerController` owns combat scene orchestration, input, resolver simulation, combat math handoff, RunState outcome routing, audio hooks, debug commands, and `/skip`. `CombatResolvePresenter` owns only the board-space resolve replay presentation boundary: sorted match presentation order, match flash waits, clear/gravity/refill animation timing, visual board commits, clear bursts, combo popup lifecycle, and `combat_speed` waits. `CombatOutcomeOverlay` owns only the combat outcome overlay presentation boundary: standard victory/defeat card state, boss reward card controls, scrim layering, card layout/content, and text wrapping. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_resolve_presenter.gd`, `scripts/combat/combat_outcome_overlay.gd`)
+- `CombatPlayerController` owns combat scene orchestration, input, resolver simulation, combat math handoff, RunState outcome routing, audio hooks, `/skip` route/state reset, privileged debug callbacks, HUD refresh, layout, and VFX. `CombatDebugConsole` owns debug command parsing/dispatch, command help/error text, log-level state, and combat log rendering. `CombatTurnLogger` owns normal/detailed turn-log text, state snapshot formatting helpers, intent text, and reusable outcome/summary strings. `CombatResolvePresenter` owns only the board-space resolve replay presentation boundary: sorted match presentation order, match flash waits, clear/gravity/refill animation timing, visual board commits, clear bursts, combo popup lifecycle, and `combat_speed` waits. `CombatOutcomeOverlay` owns only the combat outcome overlay presentation boundary: standard victory/defeat card state, boss reward card controls, scrim layering, card layout/content, and text wrapping. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_debug_console.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/combat/combat_resolve_presenter.gd`, `scripts/combat/combat_outcome_overlay.gd`)
 
 ### Shop and progression
 
@@ -46,6 +46,8 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `scripts/content/content_registry.gd` - content data, validation, and pools
 - `scripts/combat/combat_state_machine.gd` - combat turn resolution
 - `scripts/combat/combat_resolve_presenter.gd` - board-space resolve replay presentation helper
+- `scripts/combat/combat_debug_console.gd` - combat debug command parser and log renderer
+- `scripts/combat/combat_turn_logger.gd` - combat turn-log and outcome summary formatter
 - `scripts/combat/combat_outcome_overlay.gd` - combat outcome and boss reward overlay presentation helper
 - `scripts/shop/shop_service.gd` - shop generation and purchases
 - `scripts/run/player_progression_service.gd` - equip, sell, mastery, consumable, and relic transitions
