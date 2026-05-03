@@ -1238,3 +1238,21 @@ Append-only history of wiki operations.
   - Ignored generated Android package artifacts such as `*.apk`, `*.aab`, `*.apks`, and `*.idsig`.
 - Notes:
   - Godot MCP `view_script`, `play_scene current` for `res://scenes/combat/combat_player.tscn`, running scene-tree inspection, and `get_godot_errors` passed. A debug APK exported and installed on connected device `b21e3ea8` with `adb install -r`.
+
+## [2026-05-03] fix | Android Board Scaling And Audio Loading
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/core/audio_manager.gd`, `scripts/core/main_boot.gd`, `todo.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Updated combat layout so tall portrait viewports keep width-based scaling, expand the design-space root height, grow the board first, and extend the shared player HUD instead of centering the fixed 1080x1920 root with top/bottom dead space.
+  - Added a `PlayerLoadoutHud` layout override API so combat can move/size `PlayerHudSection` dynamically while shop keeps the default shared HUD layout.
+  - Changed menu/combat/shop music loading to prefer imported `res://` audio streams in template/export builds before direct source-WAV decoding, keeping generated SFX active.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, computed layout probes for 1080x1920/1080x2400/900x1600, `play_scene current`, running scene-tree inspection, imported WAV/SFX probes, and main-menu music smoke passed. A debug Android APK exported and installed on connected device `b21e3ea8` with `adb install -r`; the existing MCP plugin Android `arm64` warning remains. Android on-device visual and listening acceptance remains pending.
+
+## [2026-05-03] config | Android Launcher Icon
+
+- Source: `export_presets.cfg`, `raw/icon.png`, `docs/test_plan.md`
+- Changed:
+  - Pointed Android `launcher_icons/main_192x192` and `launcher_icons/adaptive_foreground_432x432` at `res://raw/icon.png`.
+- Notes:
+  - A debug Android APK exported and installed on connected device `b21e3ea8` with `adb install -r`; the existing MCP plugin Android `arm64` warning remains.

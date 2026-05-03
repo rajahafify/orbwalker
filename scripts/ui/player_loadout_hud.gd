@@ -72,6 +72,7 @@ var _hover_slot_type := ""
 var _hover_slot_index := -1
 var _hover_slot_title := ""
 var _hover_slot_description := ""
+var _layout_override: Dictionary = {}
 
 
 func set_selected_equipment_slot(slot_index: int) -> void:
@@ -88,6 +89,14 @@ func bind_player_hud(nodes: Dictionary) -> void:
 	apply_player_hud_chrome(_hud_nodes)
 
 
+func set_player_hud_layout_override(layout_override: Dictionary) -> void:
+	_layout_override = layout_override.duplicate(true)
+
+
+func clear_player_hud_layout_override() -> void:
+	_layout_override.clear()
+
+
 func load_player_data(player_data: Dictionary) -> void:
 	_player_data = player_data.duplicate(true)
 	_render_player_data()
@@ -100,7 +109,7 @@ func update_player_data(player_data: Dictionary) -> void:
 func update_player_hud_layout() -> void:
 	if _hud_nodes.is_empty():
 		return
-	apply_player_hud_layout(_hud_nodes)
+	apply_player_hud_layout(_hud_nodes, _layout_override)
 	_update_slot_detail_bubble()
 
 
@@ -486,12 +495,12 @@ func apply_loadout_rail_layout(equipment_row: Control, equipment_rect: Rect2, co
 	_apply_rect(consumable_row, consumable_rect)
 
 
-func apply_player_hud_layout(nodes: Dictionary) -> void:
-	_apply_node_rect(nodes, "section", PLAYER_HUD_SECTION_RECT)
-	_apply_node_rect(nodes, "mastery_panel", PLAYER_HUD_MASTERY_PANEL_RECT)
-	_apply_node_rect(nodes, "mastery_title", PLAYER_HUD_MASTERY_TITLE_RECT)
-	_apply_node_rect(nodes, "mastery_cards", PLAYER_HUD_MASTERY_CARDS_RECT)
-	_apply_node_rect(nodes, "footer_panel", PLAYER_HUD_FOOTER_PANEL_RECT)
+func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}) -> void:
+	_apply_node_rect(nodes, "section", _layout_rect(layout_override, "section", PLAYER_HUD_SECTION_RECT))
+	_apply_node_rect(nodes, "mastery_panel", _layout_rect(layout_override, "mastery_panel", PLAYER_HUD_MASTERY_PANEL_RECT))
+	_apply_node_rect(nodes, "mastery_title", _layout_rect(layout_override, "mastery_title", PLAYER_HUD_MASTERY_TITLE_RECT))
+	_apply_node_rect(nodes, "mastery_cards", _layout_rect(layout_override, "mastery_cards", PLAYER_HUD_MASTERY_CARDS_RECT))
+	_apply_node_rect(nodes, "footer_panel", _layout_rect(layout_override, "footer_panel", PLAYER_HUD_FOOTER_PANEL_RECT))
 	apply_player_footer_layout(nodes)
 
 
@@ -543,6 +552,14 @@ func apply_player_footer_layout(nodes: Dictionary) -> void:
 
 func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
 	apply_player_footer_layout(nodes)
+
+
+func _layout_rect(layout_override: Dictionary, key: String, fallback: Rect2) -> Rect2:
+	if layout_override.has(key):
+		var value: Variant = layout_override[key]
+		if value is Rect2:
+			return value
+	return fallback
 
 
 func lookup_content_definition(content_id: String) -> Dictionary:

@@ -207,6 +207,7 @@ Verification notes (2026-04-27):
   - 2026-05-02: Combo counter placement is now fixed to the center of the board stage instead of trying to dodge the matched cells. The combo readout is floating text without panel border/background, and its font/pulse size grows as combo count increases. Godot MCP script/error checks and combat scene smoke passed; manual feel acceptance remains useful.
   - 2026-05-02: Temporary mastery beam visibility was increased for playtesting by widening the replay beam and making it fully opaque.
   - 2026-05-03: Combat startup no longer focuses the hidden debug console `LineEdit`, preventing Android from opening the soft keyboard when entering combat. Godot MCP `view_script`, `play_scene current` for `res://scenes/combat/combat_player.tscn`, running scene-tree inspection, and `get_godot_errors` passed; a rebuilt APK installed successfully with `adb install -r`. Manual on-device launch confirmation remains useful.
+  - 2026-05-03: Combat layout now consumes tall Android portrait height instead of centering a fixed 1080x1920 root. The default 1080x1920 board remains 480x576, while a 1080x2400 layout probe computes an 880x1056 board and extends the shared player HUD to the bottom of the design root. Godot MCP `view_script`, `get_godot_errors`, formula probes for 1080x1920/1080x2400/900x1600, `play_scene current`, and running scene-tree inspection passed; on-device visual acceptance remains pending.
 - [x] Equipment slots are visible.
 - [x] Consumable slots are visible.
 - [x] Relics are visible.
@@ -225,6 +226,7 @@ Verification notes (2026-04-27):
   - 2026-05-02: Main menu music now bypasses Godot's imported WAV resource path and decodes the source signed 16-bit WAV into an in-memory `AudioStreamWAV`, matching the known-audible generated SFX path. The menu retries playback if stopped. Runtime log confirmed playback on the Master bus; manual mix/loop-point review remains pending. User confirmed it is audible, then music volume was lowered to `-12 dB`. The first-input restart workaround was removed because it restarted music when Start Run was clicked.
   - 2026-05-02: Combat/shop music now uses the same source-WAV decode path in `AudioManager`: it opens the absolute project WAV before falling back to Godot's imported resource, restarts the same key if the music player has stopped, and leaves volume at `-12 dB`. Godot MCP confirmed `combat.wav` decodes as stereo 44.1 kHz PCM with 14,012,416 data bytes and loop end 3,503,104, and a direct combat scene smoke printed `AudioManager music playing: key=combat stream=AudioStreamWAV volume_db=-12.0 bus=Master`; manual listening remains the acceptance check.
   - 2026-05-02: Added a short generated `swap` SFX that fires on each valid adjacent combat orb swap during drag. Godot MCP script/error checks passed; manual listening remains the acceptance check.
+  - 2026-05-03: Android/export audio loading now prefers imported `res://` audio streams in template builds before direct PCM source-WAV decoding, avoiding packaged-build dependence on absolute source file paths. Godot MCP confirmed imported combat/menu WAV streams load as `AudioStreamWAV`, generated `swap` SFX still builds, combat music logs from `AudioManager`, and main menu music logs from `MainMenuMusicPlayer`; Android on-device listening remains pending.
 - [ ] UI elements do not overlap on desktop.
 - [ ] UI elements do not overlap on mobile aspect ratios.
 
@@ -295,6 +297,7 @@ Verification notes (2026-04-29, player section cohesion fix pass):
 Verification notes (2026-05-02, connected shared player HUD pass):
 - Promoted `PlayerLoadoutHud` into the canonical combat/shop player HUD layout helper with `apply_player_hud_layout(...)` and `apply_player_hud_chrome(...)`; `apply_player_footer_layout(...)` remains as a compatibility wrapper for footer-only callers.
 - Combat and shop now use one connected `PlayerHudSection` contract at `Rect2(Vector2(0, 1092), Vector2(1080, 828))`, with Elemental Mastery at `Rect2(Vector2(16, 0), Vector2(1048, 172))` and the footer at `Rect2(Vector2(0, 188), Vector2(1080, 640))`.
+- 2026-05-03 update: combat can now override the connected `PlayerHudSection` rect at runtime for tall portrait layouts. Shop keeps the default shared HUD rect.
 - Shared visible HUD content is hero portrait, `HP current / max`, 5 equipment slots, 3 consumable slots, and the Elemental Mastery rail. Shop-specific footer gold, relic rows, sell/reroll controls, and relic offers stay outside the shared HUD; shop gold remains in the top bar.
 - Shop content was compacted above the locked HUD position without changing buy/sell/reroll/continue/booster behavior. The shop action row ends at design-space `y=1076`, leaving a 16px gap before `PlayerHudSection` starts at `y=1092`.
 - Godot MCP checks completed:
@@ -436,6 +439,8 @@ Verification notes (2026-05-03):
 - A debug Android APK was exported to `Orbwalker.apk` and installed on connected device `b21e3ea8` with `adb install -r`; install returned `Success`.
 - Export still reports a warning that `res://addons/gdai-mcp-plugin-godot/gdai_mcp_plugin.gdextension` has no Android `arm64` library. The APK was created anyway, but the editor MCP plugin should remain under review for Android export hygiene.
 - APK/AAB-style package outputs are ignored by `.gitignore` as generated build artifacts.
+- 2026-05-03 follow-up: after Android board-scaling and audio-loading fixes, a debug Android APK exported again to `Orbwalker.apk` and installed on connected device `b21e3ea8`; `adb install -r` returned `Success` and the package is present as `com.example.orbwalker`. The same MCP plugin Android `arm64` warning remains. On-device visual and listening checks are still required.
+- 2026-05-03 follow-up: Android launcher icon fields now use `res://raw/icon.png` for `launcher_icons/main_192x192` and `launcher_icons/adaptive_foreground_432x432` in `export_presets.cfg`. A debug Android APK exported and installed successfully on connected device `b21e3ea8`; the same MCP plugin Android `arm64` warning remains.
 
 ## General Regression Checklist
 

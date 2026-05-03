@@ -186,13 +186,15 @@ func _load_menu_music_stream() -> AudioStream:
 	if not ResourceLoader.exists(MAIN_MENU_MUSIC_PATH):
 		push_warning("Main menu music missing at %s" % MAIN_MENU_MUSIC_PATH)
 		return null
+	if OS.has_feature("template"):
+		var imported_first := _load_imported_audio_stream(MAIN_MENU_MUSIC_PATH)
+		if imported_first != null:
+			return imported_first
 	var stream := _load_pcm16_wav_stream(MAIN_MENU_MUSIC_PATH)
 	if stream != null:
 		return stream
-	var imported_stream: Variant = load(MAIN_MENU_MUSIC_PATH)
-	if imported_stream is AudioStreamWAV:
-		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	if imported_stream is AudioStream:
+	var imported_stream := _load_imported_audio_stream(MAIN_MENU_MUSIC_PATH)
+	if imported_stream != null:
 		return imported_stream
 	push_warning("Main menu music is not a playable AudioStream: %s" % MAIN_MENU_MUSIC_PATH)
 	return null
@@ -243,6 +245,16 @@ func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
 	stream.loop_begin = 0
 	stream.loop_end = int(float(data.size()) / (2.0 * float(channels)))
 	return stream
+
+
+func _load_imported_audio_stream(path: String) -> AudioStream:
+	var imported_stream: Variant = load(path)
+	if imported_stream is AudioStreamWAV:
+		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	elif imported_stream is AudioStream:
+		if imported_stream.has_method("set_loop"):
+			imported_stream.call("set_loop", true)
+	return imported_stream if imported_stream is AudioStream else null
 
 
 func _configure_ui_nodes() -> void:

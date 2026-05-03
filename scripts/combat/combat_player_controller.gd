@@ -145,6 +145,8 @@ const ENEMY_PORTRAIT_SIZE := Vector2(280, 216)
 const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
 const BOARD_SURFACE_SIZE := Vector2(480, 576)
 const BOARD_SURFACE_TOP := 4.0
+const BOARD_SURFACE_SIDE_PADDING := 4.0
+const BOARD_SURFACE_BOTTOM_PADDING := 4.0
 const BOARD_SHADOW_OFFSET := Vector2(10, 0)
 const BOARD_SHADOW_EXPAND := Vector2(24, 8)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
@@ -250,6 +252,11 @@ var _combo_popup_panel: PanelContainer
 var _combo_popup_label: Label
 var _combo_popup_fade_tween: Tween
 var _combat_speed := COMBAT_SPEED_NORMAL
+var _layout_top_bar_rect := TOP_BAR_RECT
+var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
+var _layout_combat_strip_rect := COMBAT_STRIP_RECT
+var _layout_board_panel_rect := BOARD_PANEL_RECT
+var _layout_player_hud_section_rect := Rect2(Vector2(0, 1092), Vector2(1080, 828))
 
 
 func _ready() -> void:
@@ -3173,16 +3180,28 @@ func _apply_combat_layout() -> void:
 	var is_low_vertical := viewport_size.y < 760.0
 	_is_low_vertical_layout = is_low_vertical
 
-	var scale_factor: float = minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	var scaled_size := DESIGN_SIZE * scale_factor
-	_layout_root.position = (viewport_size - scaled_size) * 0.5
-	_layout_root.size = DESIGN_SIZE
+	var design_aspect := DESIGN_SIZE.x / DESIGN_SIZE.y
+	var fits_tall_portrait := aspect <= design_aspect
+	var scale_factor: float
+	if fits_tall_portrait:
+		scale_factor = viewport_size.x / DESIGN_SIZE.x
+		_layout_root.size = Vector2(DESIGN_SIZE.x, viewport_size.y / maxf(0.001, scale_factor))
+		_layout_root.position = Vector2(0.0, 0.0)
+	else:
+		scale_factor = minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+		var scaled_size := DESIGN_SIZE * scale_factor
+		_layout_root.position = (viewport_size - scaled_size) * 0.5
+		_layout_root.size = DESIGN_SIZE
 	_layout_root.scale = Vector2(scale_factor, scale_factor)
+	_update_runtime_layout_rects()
 
-	_apply_design_rect(_top_bar, TOP_BAR_RECT)
-	_apply_design_rect(_enemy_panel, ENEMY_PANEL_RECT)
-	_apply_design_rect(_combat_strip, COMBAT_STRIP_RECT)
-	_apply_design_rect(_board_panel, BOARD_PANEL_RECT)
+	_apply_design_rect(_top_bar, _layout_top_bar_rect)
+	_apply_design_rect(_enemy_panel, _layout_enemy_panel_rect)
+	_apply_design_rect(_combat_strip, _layout_combat_strip_rect)
+	_apply_design_rect(_board_panel, _layout_board_panel_rect)
+	_player_loadout_hud.set_player_hud_layout_override({
+		"section": _layout_player_hud_section_rect,
+	})
 	_player_loadout_hud.update_player_hud_layout()
 	_apply_enemy_panel_layout()
 	_apply_combat_strip_layout()
@@ -3205,7 +3224,7 @@ func _apply_design_rect(control: Control, rect: Rect2) -> void:
 
 func _apply_enemy_panel_layout() -> void:
 	_enemy_panel_root.position = Vector2.ZERO
-	_enemy_panel_root.size = ENEMY_PANEL_RECT.size
+	_enemy_panel_root.size = _layout_enemy_panel_rect.size
 	_apply_design_rect(_intent_row, ENEMY_INTENT_RECT)
 	_apply_design_rect(_enemy_stage, ENEMY_STAGE_RECT)
 	_apply_design_rect(_enemy_hp_row, ENEMY_HP_ROW_RECT)
@@ -3223,8 +3242,8 @@ func _apply_enemy_panel_layout() -> void:
 
 func _apply_combat_strip_layout() -> void:
 	_timer_track.position = Vector2(
-		(COMBAT_STRIP_RECT.size.x - TIMER_TRACK_SIZE.x) * 0.5,
-		(COMBAT_STRIP_RECT.size.y - TIMER_TRACK_SIZE.y) * 0.5
+		(_layout_combat_strip_rect.size.x - TIMER_TRACK_SIZE.x) * 0.5,
+		(_layout_combat_strip_rect.size.y - TIMER_TRACK_SIZE.y) * 0.5
 	)
 	_timer_track.size = TIMER_TRACK_SIZE
 	_timer_icon.custom_minimum_size = TIMER_ICON_SIZE
@@ -3233,16 +3252,22 @@ func _apply_combat_strip_layout() -> void:
 
 func _apply_board_panel_layout() -> void:
 	_board_panel.clip_contents = true
+	var board_aspect := BOARD_SURFACE_SIZE.x / BOARD_SURFACE_SIZE.y
+	var max_board_height := maxf(64.0, _layout_board_panel_rect.size.y - BOARD_SURFACE_TOP - BOARD_SURFACE_BOTTOM_PADDING)
+	var max_board_width := maxf(64.0, _layout_board_panel_rect.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0))
+	var board_height := minf(max_board_height, max_board_width / maxf(0.001, board_aspect))
+	var board_width := board_height * board_aspect
+	var board_surface_size := Vector2(board_width, board_height)
 	_board_surface.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_board_surface.position = Vector2((BOARD_PANEL_RECT.size.x - BOARD_SURFACE_SIZE.x) * 0.5, BOARD_SURFACE_TOP)
-	_board_surface.size = BOARD_SURFACE_SIZE
-	_board_view_control.custom_minimum_size = BOARD_SURFACE_SIZE
+	_board_surface.position = Vector2((_layout_board_panel_rect.size.x - board_surface_size.x) * 0.5, BOARD_SURFACE_TOP)
+	_board_surface.size = board_surface_size
+	_board_view_control.custom_minimum_size = board_surface_size
 	var shadow_position := _board_surface.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
-	var shadow_size := BOARD_SURFACE_SIZE + BOARD_SHADOW_EXPAND
-	shadow_size.x = minf(shadow_size.x, BOARD_PANEL_RECT.size.x)
-	shadow_size.y = minf(shadow_size.y, BOARD_PANEL_RECT.size.y)
-	shadow_position.x = clampf(shadow_position.x, 0.0, maxf(0.0, BOARD_PANEL_RECT.size.x - shadow_size.x))
-	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, BOARD_PANEL_RECT.size.y - shadow_size.y))
+	var shadow_size := board_surface_size + BOARD_SHADOW_EXPAND
+	shadow_size.x = minf(shadow_size.x, _layout_board_panel_rect.size.x)
+	shadow_size.y = minf(shadow_size.y, _layout_board_panel_rect.size.y)
+	shadow_position.x = clampf(shadow_position.x, 0.0, maxf(0.0, _layout_board_panel_rect.size.x - shadow_size.x))
+	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, _layout_board_panel_rect.size.y - shadow_size.y))
 	_board_shadow.position = shadow_position
 	_board_shadow.size = shadow_size
 	if _outcome_scrim != null:
@@ -3252,10 +3277,32 @@ func _apply_board_panel_layout() -> void:
 		_apply_design_rect(_outcome_summary_panel, BOSS_REWARD_SUMMARY_RECT)
 		_layout_boss_reward_summary()
 	else:
-		var standard_rect := Rect2(BOARD_PANEL_RECT.position + OUTCOME_SUMMARY_RECT.position, OUTCOME_SUMMARY_RECT.size)
+		var standard_rect := Rect2(_layout_board_panel_rect.position + OUTCOME_SUMMARY_RECT.position, OUTCOME_SUMMARY_RECT.size)
 		_apply_design_rect(_outcome_summary_panel, standard_rect)
 		_layout_standard_outcome_summary()
 	_sync_outcome_overlay_visibility()
+
+
+func _update_runtime_layout_rects() -> void:
+	_layout_top_bar_rect = TOP_BAR_RECT
+	_layout_enemy_panel_rect = ENEMY_PANEL_RECT
+	_layout_combat_strip_rect = COMBAT_STRIP_RECT
+	_layout_board_panel_rect = BOARD_PANEL_RECT
+	_layout_player_hud_section_rect = Rect2(Vector2(0, 1092), Vector2(1080, 828))
+	var extra_height := maxf(0.0, _layout_root.size.y - DESIGN_SIZE.y)
+	if extra_height <= 0.0:
+		return
+	var board_top := BOARD_PANEL_RECT.position.y
+	var board_gap := 16.0
+	var player_section_base_size := _layout_player_hud_section_rect.size
+	var max_board_width := BOARD_PANEL_RECT.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0)
+	var board_panel_max_height := (max_board_width * (BOARD_SURFACE_SIZE.y / BOARD_SURFACE_SIZE.x)) + BOARD_SURFACE_TOP + BOARD_SURFACE_BOTTOM_PADDING
+	var board_growth_capacity := maxf(0.0, board_panel_max_height - BOARD_PANEL_RECT.size.y)
+	var board_growth := minf(extra_height, board_growth_capacity)
+	var player_growth := extra_height - board_growth
+	_layout_board_panel_rect = Rect2(BOARD_PANEL_RECT.position, Vector2(BOARD_PANEL_RECT.size.x, BOARD_PANEL_RECT.size.y + board_growth))
+	var section_position := Vector2(0.0, board_top + _layout_board_panel_rect.size.y + board_gap)
+	_layout_player_hud_section_rect = Rect2(section_position, Vector2(player_section_base_size.x, player_section_base_size.y + player_growth))
 
 
 func _layout_standard_outcome_summary() -> void:

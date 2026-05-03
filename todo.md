@@ -466,10 +466,12 @@ Tasks:
   - Deliverable: Placeholder sound effects, hit feedback, item purchase feedback, enemy death feedback, and simple transitions.
   - Acceptance: Important actions produce readable response without slowing play.
   - Note: 2026-05-02 added a code-generated placeholder audio manager, scene music contexts, and SFX hooks for menu start, combat drag swaps, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/booster actions. Raw MIDI files now export through FluidSynth and `raw/GeneralUser GS v1.471.sf2` into normalized signed 16-bit WAVs in `resources/audio/music/`, and `AudioManager` prefers those WAV music assets when present. The main menu owns a direct `MainMenuMusicPlayer` for `main-menu.wav`, while `AudioManager` now opens the absolute source WAV for combat/shop music before falling back to Godot imports; both paths decode PCM into memory and play at `-12 dB`. Manual listening, mix, and loop-point review remains needed before marking complete.
+  - Note: 2026-05-03 Android export audio hardening now prefers imported `res://` audio streams in template/export builds before direct source-WAV decoding, while keeping generated SFX active. Godot MCP confirmed imported combat/menu WAV streams load as `AudioStreamWAV`, generated `swap` SFX builds, combat music logs from `AudioManager`, and main menu music logs from `MainMenuMusicPlayer`; Android on-device listening remains needed.
 
 - [~] Validate responsive layout.
   - Deliverable: Desktop and mobile aspect ratio checks for board, combat HUD, shop, and inventories.
   - Acceptance: Text and controls do not overlap on target resolutions.
+  - Note: 2026-05-03 combat now uses tall-portrait design height when the viewport is narrower/taller than 1080x1920, so extra Android height expands the board zone before extending the player HUD. The default 1080x1920 board remains 480x576, while a 1080x2400 probe computes an 880x1056 board with no design-space gap between board/HUD and the bottom of the root. Real Android visual review remains needed before marking mobile overlap complete.
 
 Verification notes (2026-04-27):
 - Promoted combat screen from debug-style readout to Milestone 9 HUD with explicit run progress, turn summary, combo summary, and readability-focused status feedback.

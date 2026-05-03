@@ -133,13 +133,14 @@ func _load_music_stream(key: String) -> AudioStream:
 	var path := String(MUSIC_STREAM_PATHS.get(key, ""))
 	if path == "" or not ResourceLoader.exists(path):
 		return null
+	if OS.has_feature("template"):
+		var imported_first := _load_imported_audio_stream(path)
+		if imported_first != null:
+			return imported_first
 	var stream := _load_pcm16_wav_stream(path)
 	if stream != null:
 		return stream
-	var imported_stream := load(path)
-	if imported_stream is AudioStreamWAV:
-		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	return imported_stream if imported_stream is AudioStream else null
+	return _load_imported_audio_stream(path)
 
 
 func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
@@ -187,6 +188,16 @@ func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
 	stream.loop_begin = 0
 	stream.loop_end = int(float(data.size()) / (2.0 * float(channels)))
 	return stream
+
+
+func _load_imported_audio_stream(path: String) -> AudioStream:
+	var imported_stream: Variant = load(path)
+	if imported_stream is AudioStreamWAV:
+		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	elif imported_stream is AudioStream:
+		if imported_stream.has_method("set_loop"):
+			imported_stream.call("set_loop", true)
+	return imported_stream if imported_stream is AudioStream else null
 
 
 func _stream_for_sfx(key: String) -> AudioStreamWAV:
