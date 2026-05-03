@@ -206,6 +206,7 @@ Verification notes (2026-04-27):
   - 2026-05-02: Same-pass match groups now present sequentially instead of all at once: groups are sorted by top row then left column, and each group flashes, clears, commits visually, and advances `COMBO xN` before the next group starts. Gravity and refill still wait until every group in the pass has cleared, preserving resolver outcome. Godot MCP script/error checks, combat scene smoke, and an editor-script ordering probe passed; manual feel acceptance remains useful for real drag timing.
   - 2026-05-02: Combo counter placement is now fixed to the center of the board stage instead of trying to dodge the matched cells. The combo readout is floating text without panel border/background, and its font/pulse size grows as combo count increases. Godot MCP script/error checks and combat scene smoke passed; manual feel acceptance remains useful.
   - 2026-05-02: Temporary mastery beam visibility was increased for playtesting by widening the replay beam and making it fully opaque.
+  - 2026-05-03: Combat startup no longer focuses the hidden debug console `LineEdit`, preventing Android from opening the soft keyboard when entering combat. Godot MCP `view_script`, `play_scene current` for `res://scenes/combat/combat_player.tscn`, running scene-tree inspection, and `get_godot_errors` passed; a rebuilt APK installed successfully with `adb install -r`. Manual on-device launch confirmation remains useful.
 - [x] Equipment slots are visible.
 - [x] Consumable slots are visible.
 - [x] Relics are visible.
@@ -429,6 +430,12 @@ Verification notes (2026-04-30, character art polish pass):
 - [ ] Player-facing prototype notes are available.
 - [ ] Developer handoff notes are available.
 - [ ] Known limitations are documented.
+
+Verification notes (2026-05-03):
+- Android export now requests portrait orientation through `display/window/handheld/orientation=1` in `project.godot`.
+- A debug Android APK was exported to `Orbwalker.apk` and installed on connected device `b21e3ea8` with `adb install -r`; install returned `Success`.
+- Export still reports a warning that `res://addons/gdai-mcp-plugin-godot/gdai_mcp_plugin.gdextension` has no Android `arm64` library. The APK was created anyway, but the editor MCP plugin should remain under review for Android export hygiene.
+- APK/AAB-style package outputs are ignored by `.gitignore` as generated build artifacts.
 
 ## General Regression Checklist
 

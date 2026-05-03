@@ -1228,3 +1228,13 @@ Append-only history of wiki operations.
   - Reduced combat/shop controllers to data passing plus scene-specific sale handling for equipment and consumables.
 - Notes:
   - Godot MCP `view_script`, `get_godot_errors`, and combat/shop scene instantiate probes passed. Manual active-run click-through remains useful for visual placement and interaction feel.
+
+## [2026-05-03] fix | Android Portrait And Keyboard Startup
+
+- Source: `project.godot`, `scripts/combat/combat_player_controller.gd`, `.gitignore`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added `display/window/handheld/orientation=1` so Android exports request portrait orientation.
+  - Removed startup focus from the hidden combat debug console and release its focus when the debug overlay closes, preventing Android from opening the soft keyboard on combat entry.
+  - Ignored generated Android package artifacts such as `*.apk`, `*.aab`, `*.apks`, and `*.idsig`.
+- Notes:
+  - Godot MCP `view_script`, `play_scene current` for `res://scenes/combat/combat_player.tscn`, running scene-tree inspection, and `get_godot_errors` passed. A debug APK exported and installed on connected device `b21e3ea8` with `adb install -r`.

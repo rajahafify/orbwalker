@@ -3,3 +3,9 @@
 /android/
 .obsidian/
 .memsearch/
+
+# Android export/build artifacts
+*.apk
+*.aab
+*.apks
+*.idsig

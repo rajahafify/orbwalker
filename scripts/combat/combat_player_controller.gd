@@ -287,13 +287,12 @@ func _ready() -> void:
 	_debug_overlay.visible = false
 	if _console_input.visible:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
+		_console_input.release_focus()
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_vfx_layer.visible = true
 	set_process(true)
 	_apply_combat_layout()
 	_begin_turn_preview()
-	if _console_input.visible:
-		_console_input.grab_focus()
 
 
 func _apply_visual_chrome() -> void:
@@ -663,6 +662,8 @@ func _toggle_debug_overlay() -> void:
 	_debug_overlay.visible = not _debug_overlay.visible
 	if _debug_overlay.visible and _console_input.visible:
 		_console_input.grab_focus()
+	else:
+		_console_input.release_focus()
 
 
 func _on_regenerate_button_pressed() -> void:
