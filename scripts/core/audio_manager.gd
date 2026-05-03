@@ -369,8 +369,7 @@ func _on_music_player_finished() -> void:
 
 func audio_diagnostics_opt_in_enabled() -> bool:
 	if not ProjectSettings.has_setting(AUDIO_DIAGNOSTICS_SETTING_PATH):
-		ProjectSettings.set_initial_value(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
-		ProjectSettings.set_setting(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
+		return false
 	var setting_value: Variant = ProjectSettings.get_setting(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
 	if setting_value is bool:
 		return setting_value

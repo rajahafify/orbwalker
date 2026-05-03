@@ -215,6 +215,7 @@ func _start_menu_music() -> void:
 		return
 
 	_menu_music_via_audio_manager = false
+	_stop_shared_audio_manager_music()
 	if _menu_music_player == null:
 		_menu_music_player = AudioStreamPlayer.new()
 		_menu_music_player.name = "MainMenuMusicPlayer"
@@ -240,6 +241,12 @@ func _start_menu_music() -> void:
 			set_process(true)
 	else:
 		set_process(true)
+
+
+func _stop_shared_audio_manager_music() -> void:
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("stop_music"):
+		audio.call("stop_music")
 
 
 func _try_route_menu_music_via_audio_manager() -> bool:
