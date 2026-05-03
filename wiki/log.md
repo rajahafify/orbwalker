@@ -1351,3 +1351,12 @@ Append-only history of wiki operations.
   - `AudioManager.audio_diagnostics_opt_in_enabled()` now returns `false` without querying or registering a missing `debug/audio_diagnostics_enabled` setting, removing the reported nonexistent-setting error.
   - User-confirmed rapid-click QA passed after the handoff fix: returning from shop lands on main menu once, shop music stops, only main-menu music remains audible, and no new diagnostics-setting error was observed.
   - Godot MCP intent snapshot probe, main scene music smoke, audio diagnostic setting probe, transition scene instantiate probe, focused shared-music stop probe, retained AR-01 combat result-envelope probe rerun, and `git diff --check` passed; known unsourced integer-division reload warnings remain.
+
+## [2026-05-03] code-change | AR-03 Shared WAV Audio Utility
+- Source: `scripts/core/audio_stream_loader.gd`, `scripts/core/audio_manager.gd`, `scripts/core/main_boot.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changes:
+  - Added `AudioStreamLoader` as the shared helper for file byte loading, signed PCM16 WAV parsing, imported stream loop setup, WAV loop bounds, and source-frame counts.
+  - Updated `AudioManager` and `main_boot.gd` to call the shared loader instead of carrying duplicate WAV helper implementations.
+  - Preserved generated music/SFX ownership in `AudioManager`, desktop main-menu local playback, shared `AudioManager` stop before desktop menu music, and Android/template menu routing through `AudioManager`.
+  - Godot MCP post-change probes matched baseline menu/combat/shop WAV loop ends and data bytes, confirmed generated `swap` SFX still builds, reran the retained AR-01 combat result-envelope probe, and launched `play_scene main` with no session errors. Android/on-device listening was not retested.
+  - Follow-up user listening found the desktop Start Run music handoff could drop during scene transition. `main_boot.gd` now stops the local menu player and starts shared `AudioManager` combat music before transition; Godot MCP focused handoff probe confirmed shared combat music stays playing before the combat scene starts, and user manual listening confirmation passed after the fix.

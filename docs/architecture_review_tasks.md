@@ -26,13 +26,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-03: Shared WAV/Audio Utility Extraction
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Shared WAV parsing, frame-count, and loop configuration logic currently duplicated between `scripts/core/audio_manager.gd` and `scripts/core/main_boot.gd`.
-- Progress: Duplication is confirmed; no extraction has been performed.
-- Blockers: Requires audio regression checks for menu, combat, shop, generated SFX, Android/template raw WAV fallback, and manual/on-device listening gaps.
-- Next action: Define the shared utility API and write pre-change audio loading probes before moving any code.
-- Validation: Godot MCP audio stream probes pass for menu/combat/shop WAVs; generated `swap` SFX still builds; main and combat scene smokes show the expected music source diagnostics; Android listening remains explicitly marked if not retested.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, and `wiki/known-issues.md` if ownership changes.
+- Progress: 2026-05-03 completed the extraction by adding `scripts/core/audio_stream_loader.gd` as the shared helper for file byte loading, signed PCM16 WAV parsing, imported `AudioStream` loop configuration, WAV loop bounds, and source-header frame counts. `scripts/core/audio_manager.gd` and `scripts/core/main_boot.gd` now call the shared loader instead of carrying duplicate WAV helper implementations. Generated music/SFX remains owned by `AudioManager`, and the AR-02 desktop shop-to-main-menu audio handoff remains unchanged: desktop main menu stops shared `AudioManager` music before local `MainMenuMusicPlayer` playback, while Android/template menu music still routes through `AudioManager`.
+- Blockers: None for AR-03 completion. Android/on-device listening and loop-length acceptance remains manual unless explicitly retested on hardware.
+- Next action: Move to AR-04 shop/input safety or another architecture-review batch.
+- Validation: Pre-change and post-change Godot MCP audio probes matched for menu/combat/shop WAV stream class, volume, data bytes, and loop ends; generated `swap` SFX still builds; the direct main-menu music loader returns the same WAV data and loop end; the focused shared-music stop probe still reports `before_key=shop before_playing=true after_key= after_playing=false`; retained AR-01 combat result-envelope probe still matched baseline; `play_scene main` launched with desktop `MainMenuMusicPlayer` playback and `get_godot_errors` reported no session errors.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new shared audio loader ownership.
 
 ## AR-04: Shop/Input Safety
 
