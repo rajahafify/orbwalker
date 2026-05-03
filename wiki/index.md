@@ -33,4 +33,3 @@
 - [[known-issues]] - Current bugs, risks, and validation gaps
 - [[open-questions]] - Open design and implementation questions
 - `docs/architecture_review_tasks.md` - Architecture review task tracker
-- `docs/ar03_audio_utility_handoff.md` - Next-agent handoff for AR-03 shared WAV/audio utility extraction

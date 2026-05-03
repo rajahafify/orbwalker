@@ -1351,9 +1351,3 @@ Append-only history of wiki operations.
   - `AudioManager.audio_diagnostics_opt_in_enabled()` now returns `false` without querying or registering a missing `debug/audio_diagnostics_enabled` setting, removing the reported nonexistent-setting error.
   - User-confirmed rapid-click QA passed after the handoff fix: returning from shop lands on main menu once, shop music stops, only main-menu music remains audible, and no new diagnostics-setting error was observed.
   - Godot MCP intent snapshot probe, main scene music smoke, audio diagnostic setting probe, transition scene instantiate probe, focused shared-music stop probe, retained AR-01 combat result-envelope probe rerun, and `git diff --check` passed; known unsourced integer-division reload warnings remain.
-
-## [2026-05-03] docs | AR-03 Audio Utility Handoff
-- Source: `docs/ar03_audio_utility_handoff.md`, `docs/architecture_review_tasks.md`, `wiki/index.md`
-- Changes:
-  - Added next-agent instructions for AR-03 shared WAV/audio utility extraction, including scope boundaries, multi-agent ownership, Godot MCP validation steps, and documentation expectations.
-  - Updated the architecture-review tracker to point AR-03 at the handoff and preserve AR-02's confirmed shop-to-main-menu audio behavior as a regression constraint.
