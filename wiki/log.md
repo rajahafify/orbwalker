@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-04 - AR-13 Board Drag Input Handler Extraction
+
+- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/board_drag_input_handler.gd`, which now owns board-local mouse/touch drag event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, move-timer countdown state, drag visual reset/abort, and match-glow refresh. `scripts/combat/combat_player_controller.gd` keeps input phase authority, timer/status presentation, resolve kickoff, combat math, presentation, VFX/layout/HUD, debug callbacks, `/skip`, routing, and scene transitions. (source: `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_player_controller.gd`)
+- Recorded AR-13 completion in the architecture review tracker, todo, and test plan with Godot MCP `view_script`, focused script-load, helper state-transition probes, combat scene instantiate, retained AR-01 result-envelope, main-scene smoke, final no-session-error evidence, Android install verification, and user-confirmed manual QA for real mouse drag, Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy. (source: `docs/architecture_review_tasks.md`, `todo.md`, `docs/test_plan.md`)
+
 ## 2026-05-04 - AR-12 Combat VFX Manager Extraction
 
 - Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_vfx_manager.gd`, which now owns transient combat VFX drawing mechanics: VFX layer binding, texture VFX spawning, replay impacts, mastery beam source lookup, global-to-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup. `scripts/combat/combat_player_controller.gd` keeps turn-log decisions, replay order/waits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions. (source: `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_player_controller.gd`)

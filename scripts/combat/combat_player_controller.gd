@@ -102,6 +102,7 @@ const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_
 const COMBAT_TURN_LOGGER_SCRIPT := preload("res://scripts/combat/combat_turn_logger.gd")
 const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layout_manager.gd")
 const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
+const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -224,12 +225,6 @@ var _enemy_state: EnemyState
 var _progression_state: PlayerProgressionState
 
 var _input_phase: InputPhase = InputPhase.PLAYER_INPUT
-var _active_drag := false
-var _drag_touch_index: int = -1
-var _drag_selected_orb_id: int = -1
-var _drag_current_cell: Vector2i = Vector2i(-1, -1)
-var _drag_path: Array[Vector2i] = []
-var _move_time_left: float = 0.0
 var _external_lock_reason := ""
 var _last_resolve_result: Dictionary = {}
 var _outcome_transition_queued := false
@@ -251,6 +246,7 @@ var _combat_speed := COMBAT_SPEED_NORMAL
 var _resolve_presenter: Variant = null
 var _combat_layout_manager: Variant = null
 var _combat_vfx_manager: Variant = null
+var _board_drag_input_handler: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -295,6 +291,8 @@ func _ready() -> void:
 		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
 	if _combat_vfx_manager == null:
 		_combat_vfx_manager = COMBAT_VFX_MANAGER_SCRIPT.new()
+	if _board_drag_input_handler == null:
+		_board_drag_input_handler = BOARD_DRAG_INPUT_HANDLER_SCRIPT.new()
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
@@ -355,6 +353,7 @@ func _ready() -> void:
 	}, true))
 	_bind_combat_vfx_manager()
 	_bind_combat_layout_manager()
+	_bind_board_drag_input_handler()
 	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
 	RunState.flow_trace_mark("combat_after_chrome", {}, _flow_trace_route_id)
@@ -456,6 +455,49 @@ func _bind_combat_vfx_manager() -> void:
 		"elemental_mastery_cards": _elemental_mastery_cards,
 		"timer_owner": self,
 	})
+
+
+func _bind_board_drag_input_handler() -> void:
+	if _board_drag_input_handler == null:
+		return
+	_board_drag_input_handler.bind(
+		{
+			"board_view": _board_view,
+			"board_state": _board_state,
+		},
+		{
+			"swap_animation_seconds": SWAP_ANIMATION_SECONDS,
+			"swap_sound_callback": Callable(self, "_on_drag_swap_success"),
+			"match_groups_callback": Callable(self, "_drag_match_groups"),
+			"move_timer_seconds_callback": Callable(self, "_drag_move_timer_seconds"),
+		}
+	)
+
+
+func _on_drag_swap_success() -> void:
+	_audio_play_sfx("swap")
+
+
+func _drag_match_groups() -> Array:
+	if _resolver == null or _board_state == null:
+		return []
+	return _resolver.get_match_groups(_board_state)
+
+
+func _drag_move_timer_seconds() -> float:
+	if _player_state == null:
+		return MOVE_TIMER_MAX_SECONDS
+	return _player_state.move_timer_seconds
+
+
+func _drag_active() -> bool:
+	return _board_drag_input_handler != null and bool(_board_drag_input_handler.active_drag())
+
+
+func _drag_move_time_left() -> float:
+	if _board_drag_input_handler == null:
+		return 0.0
+	return float(_board_drag_input_handler.move_time_left())
 
 
 func _apply_visual_chrome() -> void:
@@ -933,7 +975,8 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 	var effects: Array = payload.get("effects", [])
 	var conversion_total := _apply_consumable_effects(effects)
 	_board_view.board_state = _board_state
-	_refresh_drag_match_glow()
+	if _board_drag_input_handler != null:
+		_board_drag_input_handler.refresh_match_glow()
 	_status_label.text = "Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total]
 	_append_combat_log("Consumable used: %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
 	_update_hud()
@@ -1005,60 +1048,51 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
 func _process(delta: float) -> void:
 	if _player_state == null:
 		return
-	if not _active_drag:
+	if _board_drag_input_handler == null:
+		return
+	if not _drag_active():
 		if _input_phase == InputPhase.PLAYER_INPUT:
 			_sync_timer_display(_timer_ready_seconds(), TIMER_STATE_READY)
 		else:
 			_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 		return
 
-	_refresh_drag_match_glow()
-	_move_time_left = maxf(0.0, _move_time_left - delta)
-	_sync_timer_display(_move_time_left, TIMER_STATE_ACTIVE)
-	if _move_time_left <= 0.0:
-		_end_drag(true)
+	var drag_update: Dictionary = _board_drag_input_handler.update(
+		delta,
+		_input_phase == InputPhase.PLAYER_INPUT
+	)
+	_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
+	_handle_drag_input_result(drag_update)
 
 
 func _handle_pointer_input(event: InputEvent) -> bool:
-	if _input_phase != InputPhase.PLAYER_INPUT and not _active_drag:
+	if _board_drag_input_handler == null:
 		return false
-
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			return _start_drag(event.position)
-		if _active_drag:
-			_end_drag(false)
-			return true
-		return false
-
-	if event is InputEventMouseMotion and _active_drag and _drag_touch_index == -1:
-		_update_drag(event.position)
-		return true
-
-	if event is InputEventScreenTouch:
-		var touch_pos: Vector2 = event.position
-		if event.pressed:
-			if _drag_touch_index != -1:
-				return false
-			var started := _start_drag(touch_pos)
-			if started:
-				_drag_touch_index = event.index
-			return started
-		if _active_drag and event.index == _drag_touch_index:
-			_end_drag(false)
-			return true
-
-	if event is InputEventScreenDrag and _active_drag and event.index == _drag_touch_index:
-		var drag_pos: Vector2 = event.position
-		_update_drag(drag_pos)
-		return true
-
-	return false
+	var drag_result: Dictionary = _board_drag_input_handler.handle_pointer_input(
+		event,
+		_input_phase == InputPhase.PLAYER_INPUT
+	)
+	_handle_drag_input_result(drag_result)
+	return bool(drag_result.get("handled", false))
 
 
 func _on_board_view_gui_input(event: InputEvent) -> void:
 	if _handle_pointer_input(event):
 		_board_view.accept_event()
+
+
+func _handle_drag_input_result(result: Dictionary) -> void:
+	if result.is_empty():
+		return
+	var action := String(result.get("action", ""))
+	if action == "start":
+		var selected_orb_id := int(result.get("selected_orb_id", -1))
+		_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
+		_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id)
+		_status_label.modulate = STATUS_COLOR_NEUTRAL
+		return
+	if action == "end":
+		_end_drag(bool(result.get("timed_out", false)))
 
 
 func _create_new_board() -> void:
@@ -1083,9 +1117,12 @@ func _print_board_state() -> void:
 
 
 func _set_board_seed(board_seed: int) -> void:
-	_reset_drag_visuals()
+	if _board_drag_input_handler != null:
+		_board_drag_input_handler.abort()
 	_board_view.clear_animations()
 	_board_state.initialize(board_seed, _settings)
+	if _board_drag_input_handler != null:
+		_board_drag_input_handler.set_board_state(_board_state)
 	_board_view.board_state = _board_state
 	if _combat != null and not _combat.is_fight_over():
 		_set_input_phase(InputPhase.PLAYER_INPUT)
@@ -1151,9 +1188,8 @@ func _console_skip_to_fight(level: int, fight: int) -> Dictionary:
 	var result: Dictionary = RunState.skip_to_fight(level, fight)
 	if not bool(result.get("ok", false)):
 		return result
-	_active_drag = false
-	_drag_touch_index = -1
-	_drag_path.clear()
+	if _board_drag_input_handler != null:
+		_board_drag_input_handler.abort()
 	_last_resolve_result.clear()
 	_initialize_combat_state()
 	_create_new_board()
@@ -1346,62 +1382,10 @@ func _console_fight_lose() -> Dictionary:
 	return {"ok": true}
 
 
-func _start_drag(board_local_position: Vector2) -> bool:
-	if _input_phase != InputPhase.PLAYER_INPUT:
-		return false
-
-	var start_cell := _board_view.board_position_to_cell(board_local_position)
-	if not _board_view.is_cell_valid(start_cell):
-		return false
-
-	_active_drag = true
-	_move_time_left = _player_state.move_timer_seconds
-	_drag_current_cell = start_cell
-	_drag_selected_orb_id = _board_state.get_cell(start_cell.x, start_cell.y)
-	_drag_path.clear()
-	_drag_path.append(start_cell)
-	_board_view.selected_cell = start_cell
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.drag_pointer_position = board_local_position
-	_board_view.drag_orb_id = _drag_selected_orb_id
-	_sync_timer_display(_move_time_left, TIMER_STATE_ACTIVE)
-	_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(_drag_selected_orb_id)
-	_status_label.modulate = STATUS_COLOR_NEUTRAL
-	return true
-
-
-func _update_drag(board_local_position: Vector2) -> void:
-	if not _active_drag:
-		return
-
-	_board_view.drag_pointer_position = board_local_position
-	var target_cell := _board_view.board_position_to_cell(board_local_position)
-	if not _board_view.is_cell_valid(target_cell):
-		return
-	if target_cell == _drag_current_cell:
-		return
-	if not _is_orthogonally_adjacent(_drag_current_cell, target_cell):
-		return
-
-	var from_cell := _drag_current_cell
-	var moving_orb_id := _board_state.get_cell(from_cell.x, from_cell.y)
-	var displaced_orb_id := _board_state.get_cell(target_cell.x, target_cell.y)
-	_board_state.swap_cells(_drag_current_cell.x, _drag_current_cell.y, target_cell.x, target_cell.y)
-	_audio_play_sfx("swap")
-	_drag_current_cell = target_cell
-	_drag_path.append(target_cell)
-	_board_view.animate_swap(from_cell, target_cell, moving_orb_id, displaced_orb_id, SWAP_ANIMATION_SECONDS)
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.selected_cell = _drag_current_cell
-	_board_view.board_state = _board_state
-
-
 func _end_drag(timed_out: bool) -> void:
-	if not _active_drag:
+	if _board_drag_input_handler == null:
 		return
 
-	_active_drag = false
-	_drag_touch_index = -1
 	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 	var move_end_reason := "released"
 	if timed_out:
@@ -1417,7 +1401,7 @@ func _end_drag(timed_out: bool) -> void:
 		"phase=resolve_start move_end_reason=\"%s\" board_seed=%d" % [move_end_reason, _board_state.rng_seed]
 	)
 
-	_reset_drag_visuals()
+	_board_drag_input_handler.reset_visuals()
 	_board_view.clear_animations()
 	_set_input_phase(InputPhase.RESOLVING)
 	_reset_combat_mastery_preview()
@@ -1453,6 +1437,7 @@ func _end_drag(timed_out: bool) -> void:
 		]
 	)
 	_board_state = simulation_board_state
+	_board_drag_input_handler.set_board_state(_board_state)
 	_board_view.board_state = _board_state
 	_resolve_trace(
 		resolve_trace_origin_usec,
@@ -1835,7 +1820,7 @@ func _queue_outcome_transition(scene_path: String) -> void:
 func set_external_input_locked(locked: bool, reason: String = "") -> void:
 	_external_lock_reason = reason
 	if locked:
-		if _active_drag:
+		if _drag_active():
 			_abort_active_drag()
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 	else:
@@ -1917,35 +1902,10 @@ func _timer_ready_seconds() -> float:
 	return _player_state.move_timer_seconds
 
 
-func _reset_drag_visuals() -> void:
-	_drag_selected_orb_id = -1
-	_drag_current_cell = Vector2i(-1, -1)
-	_drag_path.clear()
-	_board_view.clear_match_glow()
-	_board_view.selected_cell = Vector2i(-1, -1)
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.drag_orb_id = -1
-	_board_view.drag_pointer_position = Vector2.ZERO
-
-
-func _is_orthogonally_adjacent(from_cell: Vector2i, to_cell: Vector2i) -> bool:
-	var delta := to_cell - from_cell
-	return abs(delta.x) + abs(delta.y) == 1
-
-
 func _abort_active_drag() -> void:
-	_active_drag = false
-	_drag_touch_index = -1
+	if _board_drag_input_handler != null:
+		_board_drag_input_handler.abort()
 	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
-	_reset_drag_visuals()
-
-
-func _refresh_drag_match_glow() -> void:
-	if not _active_drag:
-		_board_view.clear_match_glow()
-		return
-	var predicted_groups: Array[Dictionary] = _resolver.get_match_groups(_board_state)
-	_board_view.set_live_match_glow(predicted_groups)
 
 
 func _play_resolve_animations(
@@ -2238,9 +2198,9 @@ func _sync_enemy_stage() -> void:
 func _sync_tempo_row() -> void:
 	_phase_label.text = "Turn %d  %s" % [int(_combat.turn_index), _combat.phase_name()]
 	var timer_state := TIMER_STATE_READY if _input_phase == InputPhase.PLAYER_INPUT else TIMER_STATE_LOCKED
-	if _active_drag:
+	if _drag_active():
 		timer_state = TIMER_STATE_ACTIVE
-	_sync_timer_display(_move_time_left if _active_drag else _timer_ready_seconds(), timer_state)
+	_sync_timer_display(_drag_move_time_left() if _drag_active() else _timer_ready_seconds(), timer_state)
 
 
 func _sync_player_strip(progression_snapshot: Dictionary) -> void:
@@ -2462,8 +2422,8 @@ func _apply_combat_layout() -> void:
 	_layout_board_panel_rect = layout_result.get("layout_board_panel_rect", _layout_board_panel_rect)
 	_layout_player_hud_section_rect = layout_result.get("layout_player_hud_section_rect", _layout_player_hud_section_rect)
 	_sync_timer_display(
-		_move_time_left if _active_drag else _timer_ready_seconds(),
-		TIMER_STATE_ACTIVE if _active_drag else TIMER_STATE_READY
+		_drag_move_time_left() if _drag_active() else _timer_ready_seconds(),
+		TIMER_STATE_ACTIVE if _drag_active() else TIMER_STATE_READY
 	)
 
 

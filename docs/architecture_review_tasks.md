@@ -161,8 +161,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-13: Board Drag Input Handler Extraction
 
-- Status: `not started`
-- Owner/scope: Extract the board drag/pointer input state machine from `scripts/combat/combat_player_controller.gd` into a helper, tentatively `scripts/combat/board_drag_input_handler.gd` or `scripts/combat/combat_board_input_handler.gd`.
+- Status: `done`
+- Owner/scope: Extracted the board drag/pointer input state machine from `scripts/combat/combat_player_controller.gd` into `scripts/combat/board_drag_input_handler.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving drag-input extraction. `BoardDragInputHandler` now owns board-local mouse/touch event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, drag timer countdown state, drag visual reset/abort, and live match-glow refresh. `CombatPlayerController` keeps input phase ownership, timer/status rendering, swap SFX policy through a callback, resolve kickoff, visual/simulation board cloning, combat math, resolve presentation, HUD sync, VFX, layout, debug callbacks, `/skip`, outcome routing, and scene transitions.
 - Plan:
   - Move pointer/touch drag bookkeeping, selected cell/path tracking, swap-attempt flow, drag visual clearing, and board input event parsing where it can be separated without changing board state rules.
   - Keep `combat_player_controller.gd` responsible for input phase ownership, combat resolve kickoff, audio callback decisions, board-state mutation approval, and post-drag orchestration.
@@ -172,11 +173,12 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not change drag movement rules, swap legality, resolver ordering, accepted resolve presentation timing, or combat math.
   - Do not add gesture features, input buffering, rapid-tap behavior changes, or responsive layout fixes.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for controller and input helper; script-load probe; `combat_player.tscn` instantiate; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
-  - Add focused editor-script probes for helper state transitions where possible: start drag, move to adjacent cell, reject invalid cell, end/cancel drag, and clear visuals without mutating combat math.
-  - Manual QA is mandatory for real mouse drag, touch drag on Android, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` only after the input behavior is validated.
+  - `git status --short --branch` confirmed `codex/ar-13-board-drag-input-handler`; `git diff --check` passed.
+  - Godot MCP `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/board_drag_input_handler.gd`; focused script-load probe returned controller base `Control` and helper base `RefCounted`.
+  - Focused helper probes confirmed `BoardView` local coordinate round trip for cell `(2, 4)`, valid drag start, adjacent move swap, invalid start rejection, invalid/non-adjacent move rejection without board mutation, release end action, reset visual state, touch start/second-touch rejection/touch-drag/touch-end behavior, and timeout end action.
+  - `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot` and `BoardSurface`; retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - User manual QA confirmed real mouse drag, Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy passed.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new drag-input helper boundary and validation evidence.
 
 ## AR-14: Combat Theme And Chrome Boundary
 

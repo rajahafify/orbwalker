@@ -530,6 +530,7 @@ Tasks:
 - [x] AR-10 Combat controller god-object refactor. Extracted `CombatDebugConsole` and `CombatTurnLogger` while keeping privileged gameplay callbacks, `/skip`, routing, input, layout, VFX timing, and combat state in the controller.
 - [x] AR-11 Combat layout manager extraction. Extracted combat scene geometry and responsive layout ownership into `CombatLayoutManager` while preserving portrait/tall viewport behavior and shared HUD layout overrides.
 - [x] AR-12 Combat VFX manager extraction. Extracted transient combat VFX drawing mechanics into `CombatVfxManager` while keeping replay order, combat math, mastery feedback semantics, routing, input, layout, audio, debug callbacks, and `/skip` in the controller.
+- [x] AR-13 Board drag input handler extraction. Extracted board-local drag/pointer bookkeeping into `BoardDragInputHandler` while preserving `BoardView.gui_input` local-coordinate behavior, current drag rules, swap feel, resolve kickoff, combat math, timing, routing, layout, VFX, audio callback policy, debug callbacks, and `/skip` ownership in the controller.
 
 ## Milestone 10: Balance Pass And QA
 
