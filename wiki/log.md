@@ -1339,3 +1339,11 @@ Append-only history of wiki operations.
   - User route-level validation from the real Start Run button measured combat resource load around `206ms`, instantiate around `1ms`, attach around `83ms`, first usable frame around `300ms`, and deferred orb texture-map completion around `1438ms`.
   - User route-level validation for the sampled Combat -> Shop path measured shop resource load around `52ms`, instantiate around `0ms`, attach around `140ms`, and first usable frame around `245ms`.
   - The deferred orb texture-map pass still costs about `1.1s-1.2s`, so preprocessed orb textures remain a useful follow-up if visual pop-in is noticeable.
+
+## [2026-05-03] fix | AR-02 Low-Risk Audio Polling
+- Source: `scripts/combat/enemy_state.gd`, `scripts/core/main_boot.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changes:
+  - Made `EnemyState.get_current_intent()` return a duplicated intent snapshot before adding the derived `index`, keeping the caller contract unchanged while making the method non-mutating by construction.
+  - Stopped main-menu music retry polling after successful desktop playback or Android/template `AudioManager` routing, while preserving retries when setup fails.
+  - Gated verbose `AudioManager` music diagnostics behind `debug/audio_diagnostics_enabled=false` by default while preserving the detailed diagnostic output when explicitly enabled.
+  - Godot MCP intent snapshot probe, main scene music smoke, audio diagnostic setting probe, retained AR-01 combat result-envelope probe, and `git diff --check` passed; known unsourced integer-division reload warnings remain.

@@ -497,6 +497,24 @@ Verification notes (2026-05-03, AR-01 baseline regression harness):
 Debug harness note:
 - `res://scripts/debug/ar01_combat_result_probe.gd` is a retained AR-01 regression helper. It is inert by default behind `debug/ar01_combat_result_probe_enabled=false`. To rerun it through Godot MCP, load the script with `ResourceLoader.CACHE_MODE_IGNORE`, set the project setting to `true`, call `run_baseline_probe()`, then set the project setting back to `false`.
 
+Verification notes (2026-05-03, AR-02 low-risk intent snapshot fix):
+- `EnemyState.get_current_intent()` now duplicates the current intent before adding the derived `index`, so callers still receive the same intent envelope while the method is explicitly non-mutating by construction.
+- Godot MCP intent snapshot probe passed: stored intent-cycle entries did not gain `index` and did not receive caller-side mutations after `get_current_intent()`.
+- Retained AR-01 combat result-envelope probe still matched the documented baseline: `status=ok`, `phase_before=Player Input`, `phase_after=Intent Preview`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+- `get_godot_errors` still reports the known unsourced `GDScript::reload: Integer division. Decimal part will be discarded.` warnings; no new fatal runtime errors were reported during this probe pass.
+
+Verification notes (2026-05-03, AR-02 main-menu music retry poll fix):
+- Main-menu music startup now stops `_process()` retry polling after successful desktop `MainMenuMusicPlayer` playback or Android/template routing through `AudioManager`, while keeping retry polling enabled if music setup fails.
+- Godot MCP `view_script` and `play_scene main` passed; running scene inspection confirmed `Main` and `MainMenuMusicPlayer`, and node properties confirmed `playing=true`, `volume_db=-12.0`, `bus=Master`, and an `AudioStreamWAV` stream.
+- Retained AR-01 combat result-envelope probe still matched the documented baseline after the main-menu audio change. Android/template routing was not retested on device in this pass.
+- `get_godot_errors` still reports the known unsourced `GDScript::reload: Integer division. Decimal part will be discarded.` warnings; no new fatal runtime errors were reported during this probe pass.
+
+Verification notes (2026-05-03, AR-02 audio diagnostics gate):
+- Verbose `AudioManager` music startup and manual-restart diagnostics are now gated behind `debug/audio_diagnostics_enabled`, defaulting to `false`. Existing diagnostic content is preserved when the setting is enabled.
+- Godot MCP fresh compile probe passed for `res://scripts/core/audio_manager.gd` with `GDScript.reload() == OK`, and a focused setting probe confirmed `false -> disabled`, `true -> enabled`, `"yes" -> enabled`, and `"off" -> disabled`.
+- `play_scene main` still produced successful desktop menu music playback through `MainMenuMusicPlayer`; the default run no longer printed the verbose `AudioManager music:` diagnostic line.
+- Retained AR-01 combat result-envelope probe still matched the documented baseline. `get_godot_errors` still reports the known unsourced integer-division warnings and a stale open-script parse diagnostic from the superseded audio patch; the fresh compile probe verified current `audio_manager.gd` source.
+
 User runtime route timing capture (2026-05-03):
 - `Start Run -> Combat` route `start_run_to_combat_1`: resource load `200ms`; scene instantiate `0ms`; scene attach `84ms`; `combat_first_usable_frame` at `294ms`; deferred `combat_after_texture_map` at `1409ms`.
 - `Combat -> Shop` route `combat_to_shop_2`: resource load `51ms`; scene instantiate `0ms`; scene attach `114ms`; `shop_first_usable_frame` at `218ms`.

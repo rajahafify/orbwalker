@@ -5,6 +5,7 @@ const SAMPLE_RATE := 44100
 const MUSIC_VOLUME_DB := -12.0
 const SFX_VOLUME_DB := -8.0
 const MAX_SFX_PLAYERS := 8
+const AUDIO_DIAGNOSTICS_SETTING_PATH := "debug/audio_diagnostics_enabled"
 const MUSIC_STREAM_PATHS := {
 	"combat": "res://resources/audio/music/combat.wav",
 	"credits": "res://resources/audio/music/credit.wav",
@@ -62,32 +63,33 @@ func play_music(key: String) -> void:
 	_configure_music_playback_for_runtime(key, _music_player.stream)
 	if _music_player.stream != null:
 		_music_player.play()
-		var cache_key := "music:%s" % key
-		var source_path := _music_stream_source_path(key)
-		var source_frame_count := _wav_source_frame_count(source_path)
-		var loop_mode := "n/a"
-		var loop_end := -1
-		var data_bytes := -1
-		if _music_player.stream is AudioStreamWAV:
-			var wav_stream := _music_player.stream as AudioStreamWAV
-			loop_mode = str(wav_stream.loop_mode)
-			loop_end = wav_stream.loop_end
-			data_bytes = wav_stream.data.size()
-		print("AudioManager music: key=%s source=%s android=%s template=%s manual_restart=%s stream=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s playing=%s volume_db=%s bus=%s" % [
-			key,
-			String(_music_stream_sources.get(cache_key, "unknown")),
-			str(OS.has_feature("android")),
-			str(OS.has_feature("template")),
-			str(_manual_music_restart_enabled),
-			_music_player.stream.get_class(),
-			loop_mode,
-			str(loop_end),
-			str(source_frame_count),
-			str(data_bytes),
-			str(_music_player.playing),
-			str(_music_player.volume_db),
-			_music_player.bus,
-		])
+		if audio_diagnostics_opt_in_enabled():
+			var cache_key := "music:%s" % key
+			var source_path := _music_stream_source_path(key)
+			var source_frame_count := _wav_source_frame_count(source_path)
+			var loop_mode := "n/a"
+			var loop_end := -1
+			var data_bytes := -1
+			if _music_player.stream is AudioStreamWAV:
+				var wav_stream := _music_player.stream as AudioStreamWAV
+				loop_mode = str(wav_stream.loop_mode)
+				loop_end = wav_stream.loop_end
+				data_bytes = wav_stream.data.size()
+			print("AudioManager music: key=%s source=%s android=%s template=%s manual_restart=%s stream=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s playing=%s volume_db=%s bus=%s" % [
+				key,
+				String(_music_stream_sources.get(cache_key, "unknown")),
+				str(OS.has_feature("android")),
+				str(OS.has_feature("template")),
+				str(_manual_music_restart_enabled),
+				_music_player.stream.get_class(),
+				loop_mode,
+				str(loop_end),
+				str(source_frame_count),
+				str(data_bytes),
+				str(_music_player.playing),
+				str(_music_player.volume_db),
+				_music_player.bus,
+			])
 
 
 func stop_music() -> void:
@@ -341,27 +343,44 @@ func _on_music_player_finished() -> void:
 		return
 	if _current_music_key == "":
 		return
-	var source_path := _music_stream_source_path(_current_music_key)
-	var source_frame_count := _wav_source_frame_count(source_path)
-	var loop_mode := "n/a"
-	var loop_end := -1
-	var data_bytes := -1
-	if _music_player != null and _music_player.stream is AudioStreamWAV:
-		var wav_stream := _music_player.stream as AudioStreamWAV
-		loop_mode = str(wav_stream.loop_mode)
-		loop_end = wav_stream.loop_end
-		data_bytes = wav_stream.data.size()
-	print("AudioManager music manual restart fired: key=%s source=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s android=%s template=%s" % [
-		_current_music_key,
-		String(_music_stream_sources.get("music:%s" % _current_music_key, "unknown")),
-		loop_mode,
-		str(loop_end),
-		str(source_frame_count),
-		str(data_bytes),
-		str(OS.has_feature("android")),
-		str(OS.has_feature("template")),
-	])
+	if audio_diagnostics_opt_in_enabled():
+		var source_path := _music_stream_source_path(_current_music_key)
+		var source_frame_count := _wav_source_frame_count(source_path)
+		var loop_mode := "n/a"
+		var loop_end := -1
+		var data_bytes := -1
+		if _music_player != null and _music_player.stream is AudioStreamWAV:
+			var wav_stream := _music_player.stream as AudioStreamWAV
+			loop_mode = str(wav_stream.loop_mode)
+			loop_end = wav_stream.loop_end
+			data_bytes = wav_stream.data.size()
+		print("AudioManager music manual restart fired: key=%s source=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s android=%s template=%s" % [
+			_current_music_key,
+			String(_music_stream_sources.get("music:%s" % _current_music_key, "unknown")),
+			loop_mode,
+			str(loop_end),
+			str(source_frame_count),
+			str(data_bytes),
+			str(OS.has_feature("android")),
+			str(OS.has_feature("template")),
+		])
 	play_music(_current_music_key)
+
+
+func audio_diagnostics_opt_in_enabled() -> bool:
+	if not ProjectSettings.has_setting(AUDIO_DIAGNOSTICS_SETTING_PATH):
+		ProjectSettings.set_initial_value(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
+		ProjectSettings.set_setting(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
+	var setting_value: Variant = ProjectSettings.get_setting(AUDIO_DIAGNOSTICS_SETTING_PATH, false)
+	if setting_value is bool:
+		return setting_value
+	if setting_value is int:
+		return setting_value != 0
+	if setting_value is float:
+		return not is_zero_approx(setting_value)
+	if setting_value is String:
+		return ["1", "true", "yes", "on"].has(String(setting_value).strip_edges().to_lower())
+	return false
 
 
 func _stream_for_sfx(key: String) -> AudioStreamWAV:

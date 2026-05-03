@@ -154,12 +154,18 @@ func _process(delta: float) -> void:
 		return
 	_menu_music_retry_time = 0.5
 	if _menu_music_via_audio_manager:
+		set_process(false)
 		return
 	if _menu_music_player == null:
 		_start_menu_music()
 		return
-	if _menu_music_player.stream != null and not _menu_music_player.playing:
+	if _menu_music_player.stream == null:
+		_start_menu_music()
+		return
+	if not _menu_music_player.playing:
 		_menu_music_player.play()
+		if _menu_music_player.playing:
+			set_process(false)
 
 
 func _audio_play_music(key: String) -> void:
@@ -189,15 +195,18 @@ func _audio_manager_node() -> Node:
 
 func _start_menu_music() -> void:
 	if OS.has_feature("android") or OS.has_feature("template"):
-		_menu_music_via_audio_manager = true
+		_menu_music_via_audio_manager = _try_route_menu_music_via_audio_manager()
 		if _menu_music_player != null and _menu_music_player.playing:
 			_menu_music_player.stop()
-		_audio_play_music("menu")
-		print("Main menu music routed via AudioManager: android=%s template=%s volume_db=%s" % [
-			str(OS.has_feature("android")),
-			str(OS.has_feature("template")),
-			str(MAIN_MENU_MUSIC_VOLUME_DB),
-		])
+		if _menu_music_via_audio_manager:
+			set_process(false)
+			print("Main menu music routed via AudioManager: android=%s template=%s volume_db=%s" % [
+				str(OS.has_feature("android")),
+				str(OS.has_feature("template")),
+				str(MAIN_MENU_MUSIC_VOLUME_DB),
+			])
+		else:
+			set_process(true)
 		return
 
 	_menu_music_via_audio_manager = false
@@ -206,18 +215,45 @@ func _start_menu_music() -> void:
 		_menu_music_player.name = "MainMenuMusicPlayer"
 		_menu_music_player.bus = "Master"
 		add_child(_menu_music_player)
+		if not _menu_music_player.finished.is_connected(_on_menu_music_finished):
+			_menu_music_player.finished.connect(_on_menu_music_finished)
 	_menu_music_player.volume_db = MAIN_MENU_MUSIC_VOLUME_DB
 	_menu_music_player.stream = _load_menu_music_stream()
 	if _menu_music_player.stream != null:
 		_menu_music_player.play()
-		print("Main menu music playing: android=%s template=%s stream=%s playing=%s volume_db=%s bus=%s" % [
-			str(OS.has_feature("android")),
-			str(OS.has_feature("template")),
-			_menu_music_player.stream.get_class(),
-			str(_menu_music_player.playing),
-			str(_menu_music_player.volume_db),
-			_menu_music_player.bus,
-		])
+		if _menu_music_player.playing:
+			set_process(false)
+			print("Main menu music playing: android=%s template=%s stream=%s playing=%s volume_db=%s bus=%s" % [
+				str(OS.has_feature("android")),
+				str(OS.has_feature("template")),
+				_menu_music_player.stream.get_class(),
+				str(_menu_music_player.playing),
+				str(_menu_music_player.volume_db),
+				_menu_music_player.bus,
+			])
+		else:
+			set_process(true)
+	else:
+		set_process(true)
+
+
+func _try_route_menu_music_via_audio_manager() -> bool:
+	var audio := _audio_manager_node()
+	if audio == null or not audio.has_method("play_music"):
+		return false
+	audio.call("play_music", "menu")
+	return true
+
+
+func _on_menu_music_finished() -> void:
+	if _menu_music_via_audio_manager:
+		return
+	if _menu_music_player == null or _menu_music_player.stream == null:
+		set_process(true)
+		return
+	_menu_music_player.play()
+	if not _menu_music_player.playing:
+		set_process(true)
 
 
 func _load_menu_music_stream() -> AudioStream:

@@ -55,7 +55,7 @@ func get_current_intent() -> Dictionary:
 			"label": "Idle",
 		}
 	var safe_index := posmod(intent_index, intent_cycle.size())
-	var intent: Dictionary = intent_cycle[safe_index]
+	var intent: Dictionary = intent_cycle[safe_index].duplicate(true)
 	intent["index"] = safe_index
 	return intent
 
