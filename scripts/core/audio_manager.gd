@@ -12,11 +12,19 @@ const MUSIC_STREAM_PATHS := {
 	"melody": "res://resources/audio/music/melody.wav",
 	"shop": "res://resources/audio/music/shop.wav",
 }
+const ANDROID_TEMPLATE_RAW_MUSIC_PATHS := {
+	"combat": "res://resources/audio/raw_music/combat.wav.bin",
+	"menu": "res://resources/audio/raw_music/menu.wav.bin",
+	"shop": "res://resources/audio/raw_music/shop.wav.bin",
+}
 
 var _music_player: AudioStreamPlayer
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _streams: Dictionary = {}
+var _music_stream_sources: Dictionary = {}
+var _music_stream_source_paths: Dictionary = {}
 var _current_music_key := ""
+var _manual_music_restart_enabled := false
 
 
 func _ready() -> void:
@@ -31,6 +39,8 @@ func _ensure_players() -> void:
 	_music_player.bus = "Master"
 	_music_player.volume_db = MUSIC_VOLUME_DB
 	add_child(_music_player)
+	if not _music_player.finished.is_connected(_on_music_player_finished):
+		_music_player.finished.connect(_on_music_player_finished)
 
 	for index in MAX_SFX_PLAYERS:
 		var player := AudioStreamPlayer.new()
@@ -49,11 +59,32 @@ func play_music(key: String) -> void:
 	_current_music_key = key
 	_music_player.volume_db = MUSIC_VOLUME_DB
 	_music_player.stream = _stream_for_music(key)
+	_configure_music_playback_for_runtime(key, _music_player.stream)
 	if _music_player.stream != null:
 		_music_player.play()
-		print("AudioManager music playing: key=%s stream=%s volume_db=%s bus=%s" % [
+		var cache_key := "music:%s" % key
+		var source_path := _music_stream_source_path(key)
+		var source_frame_count := _wav_source_frame_count(source_path)
+		var loop_mode := "n/a"
+		var loop_end := -1
+		var data_bytes := -1
+		if _music_player.stream is AudioStreamWAV:
+			var wav_stream := _music_player.stream as AudioStreamWAV
+			loop_mode = str(wav_stream.loop_mode)
+			loop_end = wav_stream.loop_end
+			data_bytes = wav_stream.data.size()
+		print("AudioManager music: key=%s source=%s android=%s template=%s manual_restart=%s stream=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s playing=%s volume_db=%s bus=%s" % [
 			key,
+			String(_music_stream_sources.get(cache_key, "unknown")),
+			str(OS.has_feature("android")),
+			str(OS.has_feature("template")),
+			str(_manual_music_restart_enabled),
 			_music_player.stream.get_class(),
+			loop_mode,
+			str(loop_end),
+			str(source_frame_count),
+			str(data_bytes),
+			str(_music_player.playing),
 			str(_music_player.volume_db),
 			_music_player.bus,
 		])
@@ -61,6 +92,7 @@ func play_music(key: String) -> void:
 
 func stop_music() -> void:
 	_current_music_key = ""
+	_manual_music_restart_enabled = false
 	if _music_player != null:
 		_music_player.stop()
 
@@ -92,8 +124,42 @@ func _stream_for_music(key: String) -> AudioStream:
 	var music_stream := _load_music_stream(key)
 	if music_stream != null:
 		_streams[cache_key] = music_stream
+		_music_stream_sources[cache_key] = String(music_stream.get_meta("audio_source", "imported_or_pcm_wav"))
+		_music_stream_source_paths[cache_key] = String(music_stream.get_meta("audio_source_path", _music_source_path(key)))
 		return music_stream
 
+	var stream := _make_generated_music_stream(key)
+	_streams[cache_key] = stream
+	_music_stream_sources[cache_key] = "generated_fallback"
+	_music_stream_source_paths[cache_key] = ""
+	return stream
+
+
+func _configure_music_playback_for_runtime(key: String, stream: AudioStream) -> void:
+	_manual_music_restart_enabled = _is_android_or_template_runtime()
+	if stream == null:
+		return
+	var source_path := _music_stream_source_path(key)
+	if stream is AudioStreamWAV:
+		var wav_stream := stream as AudioStreamWAV
+		_configure_wav_loop(wav_stream, source_path, _manual_music_restart_enabled)
+	elif stream.has_method("set_loop"):
+		stream.call("set_loop", not _manual_music_restart_enabled)
+
+
+func _is_android_or_template_runtime() -> bool:
+	return OS.has_feature("android") or OS.has_feature("template")
+
+
+func _music_source_path(key: String) -> String:
+	return String(MUSIC_STREAM_PATHS.get(key, ""))
+
+
+func _music_stream_source_path(key: String) -> String:
+	return String(_music_stream_source_paths.get("music:%s" % key, _music_source_path(key)))
+
+
+func _make_generated_music_stream(key: String) -> AudioStreamWAV:
 	var notes: Array[Dictionary]
 	match key:
 		"menu":
@@ -123,33 +189,35 @@ func _stream_for_music(key: String) -> AudioStream:
 				{"freq": 246.94, "start": 3.1, "duration": 1.1, "volume": 0.13},
 				{"freq": 329.63, "start": 3.8, "duration": 1.2, "volume": 0.11},
 			]
-
-	var stream := _make_poly_stream(notes, 4.8, true)
-	_streams[cache_key] = stream
-	return stream
+	return _make_poly_stream(notes, 4.8, true)
 
 
 func _load_music_stream(key: String) -> AudioStream:
 	var path := String(MUSIC_STREAM_PATHS.get(key, ""))
-	if path == "" or not ResourceLoader.exists(path):
+	if path == "":
 		return null
-	if OS.has_feature("template"):
-		var imported_first := _load_imported_audio_stream(path)
-		if imported_first != null:
-			return imported_first
+	if _is_android_or_template_runtime():
+		var raw_path := String(ANDROID_TEMPLATE_RAW_MUSIC_PATHS.get(key, ""))
+		if raw_path != "":
+			var raw_stream := _load_pcm16_wav_stream(raw_path)
+			if raw_stream != null:
+				raw_stream.set_meta("audio_source", "raw_pcm_wav")
+				raw_stream.set_meta("audio_source_path", raw_path)
+				return raw_stream
 	var stream := _load_pcm16_wav_stream(path)
 	if stream != null:
+		stream.set_meta("audio_source", "imported_or_pcm_wav")
+		stream.set_meta("audio_source_path", path)
 		return stream
-	return _load_imported_audio_stream(path)
+	var imported_stream := _load_imported_audio_stream(path)
+	if imported_stream != null:
+		imported_stream.set_meta("audio_source", "imported_or_pcm_wav")
+		imported_stream.set_meta("audio_source_path", path)
+	return imported_stream
 
 
 func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
-	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.READ)
-	if file == null:
-		file = FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return null
-	var bytes := file.get_buffer(file.get_length())
+	var bytes := _read_file_bytes(path)
 	if bytes.size() < 44:
 		return null
 	if bytes.slice(0, 4).get_string_from_ascii() != "RIFF" or bytes.slice(8, 12).get_string_from_ascii() != "WAVE":
@@ -184,20 +252,116 @@ func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
 	stream.mix_rate = sample_rate
 	stream.stereo = channels == 2
 	stream.data = data
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_begin = 0
-	stream.loop_end = int(float(data.size()) / (2.0 * float(channels)))
+	_configure_wav_loop(stream, path, _is_android_or_template_runtime())
 	return stream
 
 
 func _load_imported_audio_stream(path: String) -> AudioStream:
 	var imported_stream: Variant = load(path)
 	if imported_stream is AudioStreamWAV:
-		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		_configure_wav_loop(imported_stream, path, _is_android_or_template_runtime())
 	elif imported_stream is AudioStream:
 		if imported_stream.has_method("set_loop"):
-			imported_stream.call("set_loop", true)
+			imported_stream.call("set_loop", not _is_android_or_template_runtime())
 	return imported_stream if imported_stream is AudioStream else null
+
+
+func _configure_wav_loop(stream: AudioStreamWAV, source_path: String = "", disable_internal_loop: bool = false) -> void:
+	stream.loop_mode = AudioStreamWAV.LOOP_DISABLED if disable_internal_loop else AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	var frame_count := _wav_frame_count(stream, source_path)
+	if disable_internal_loop:
+		stream.loop_end = 0
+	elif frame_count > 0:
+		stream.loop_end = frame_count
+	elif stream.loop_end <= 0:
+		stream.loop_end = 1
+
+
+func _wav_frame_count(stream: AudioStreamWAV, source_path: String = "") -> int:
+	var source_frame_count := _wav_source_frame_count(source_path)
+	if source_frame_count > 0:
+		return source_frame_count
+	var channels := 2 if stream.stereo else 1
+	if channels <= 0:
+		return 0
+	if stream.data.is_empty():
+		return 0
+	return int(float(stream.data.size()) / (2.0 * float(channels)))
+
+
+func _wav_source_frame_count(path: String) -> int:
+	if path == "":
+		return 0
+	var bytes := _read_file_bytes(path)
+	if bytes.size() < 44:
+		return 0
+	if bytes.slice(0, 4).get_string_from_ascii() != "RIFF" or bytes.slice(8, 12).get_string_from_ascii() != "WAVE":
+		return 0
+
+	var audio_format := 0
+	var channels := 0
+	var bits_per_sample := 0
+	var data_size := 0
+	var offset := 12
+	while offset + 8 <= bytes.size():
+		var chunk_id := bytes.slice(offset, offset + 4).get_string_from_ascii()
+		var chunk_size := bytes.decode_u32(offset + 4)
+		var chunk_start := offset + 8
+		var chunk_end := mini(chunk_start + chunk_size, bytes.size())
+		if chunk_id == "fmt " and chunk_size >= 16:
+			audio_format = bytes.decode_u16(chunk_start)
+			channels = bytes.decode_u16(chunk_start + 2)
+			bits_per_sample = bytes.decode_u16(chunk_start + 14)
+		elif chunk_id == "data":
+			data_size = maxi(0, chunk_end - chunk_start)
+			break
+		offset = chunk_end + int(chunk_size % 2)
+
+	if audio_format != 1 or channels <= 0 or bits_per_sample <= 0 or bits_per_sample % 8 != 0 or data_size <= 0:
+		return 0
+	var bytes_per_frame := int((bits_per_sample / 8) * channels)
+	if bytes_per_frame <= 0:
+		return 0
+	return int(data_size / bytes_per_frame)
+
+
+func _read_file_bytes(path: String) -> PackedByteArray:
+	var empty := PackedByteArray()
+	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.READ)
+	if file == null:
+		file = FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return empty
+	return file.get_buffer(file.get_length())
+
+
+func _on_music_player_finished() -> void:
+	if not _manual_music_restart_enabled:
+		return
+	if _current_music_key == "":
+		return
+	var source_path := _music_stream_source_path(_current_music_key)
+	var source_frame_count := _wav_source_frame_count(source_path)
+	var loop_mode := "n/a"
+	var loop_end := -1
+	var data_bytes := -1
+	if _music_player != null and _music_player.stream is AudioStreamWAV:
+		var wav_stream := _music_player.stream as AudioStreamWAV
+		loop_mode = str(wav_stream.loop_mode)
+		loop_end = wav_stream.loop_end
+		data_bytes = wav_stream.data.size()
+	print("AudioManager music manual restart fired: key=%s source=%s loop_mode=%s loop_end=%s source_frame_count=%s stream_data_bytes=%s android=%s template=%s" % [
+		_current_music_key,
+		String(_music_stream_sources.get("music:%s" % _current_music_key, "unknown")),
+		loop_mode,
+		str(loop_end),
+		str(source_frame_count),
+		str(data_bytes),
+		str(OS.has_feature("android")),
+		str(OS.has_feature("template")),
+	])
+	play_music(_current_music_key)
 
 
 func _stream_for_sfx(key: String) -> AudioStreamWAV:

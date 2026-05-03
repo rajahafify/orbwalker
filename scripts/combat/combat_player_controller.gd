@@ -863,7 +863,7 @@ func _handle_pointer_input(event: InputEvent) -> bool:
 		return true
 
 	if event is InputEventScreenTouch:
-		var touch_pos: Vector2 = _screen_to_board_local(event.position)
+		var touch_pos: Vector2 = event.position
 		if event.pressed:
 			if _drag_touch_index != -1:
 				return false
@@ -876,7 +876,7 @@ func _handle_pointer_input(event: InputEvent) -> bool:
 			return true
 
 	if event is InputEventScreenDrag and _active_drag and event.index == _drag_touch_index:
-		var drag_pos: Vector2 = _screen_to_board_local(event.position)
+		var drag_pos: Vector2 = event.position
 		_update_drag(drag_pos)
 		return true
 
@@ -1932,11 +1932,6 @@ func _abort_active_drag() -> void:
 	_drag_touch_index = -1
 	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 	_reset_drag_visuals()
-
-
-func _screen_to_board_local(screen_position: Vector2) -> Vector2:
-	var inverse_canvas_transform: Transform2D = _board_view.get_global_transform_with_canvas().affine_inverse()
-	return inverse_canvas_transform * screen_position
 
 
 func _refresh_drag_match_glow() -> void:

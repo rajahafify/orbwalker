@@ -99,6 +99,7 @@ var _secondary_button_texture: Texture2D = null
 var _stats_panel_texture: Texture2D = null
 var _menu_music_player: AudioStreamPlayer = null
 var _menu_music_retry_time := 0.0
+var _menu_music_via_audio_manager := false
 
 
 func _ready() -> void:
@@ -133,6 +134,8 @@ func _process(delta: float) -> void:
 	if _menu_music_retry_time > 0.0:
 		return
 	_menu_music_retry_time = 0.5
+	if _menu_music_via_audio_manager:
+		return
 	if _menu_music_player == null:
 		_start_menu_music()
 		return
@@ -166,6 +169,19 @@ func _audio_manager_node() -> Node:
 
 
 func _start_menu_music() -> void:
+	if OS.has_feature("android") or OS.has_feature("template"):
+		_menu_music_via_audio_manager = true
+		if _menu_music_player != null and _menu_music_player.playing:
+			_menu_music_player.stop()
+		_audio_play_music("menu")
+		print("Main menu music routed via AudioManager: android=%s template=%s volume_db=%s" % [
+			str(OS.has_feature("android")),
+			str(OS.has_feature("template")),
+			str(MAIN_MENU_MUSIC_VOLUME_DB),
+		])
+		return
+
+	_menu_music_via_audio_manager = false
 	if _menu_music_player == null:
 		_menu_music_player = AudioStreamPlayer.new()
 		_menu_music_player.name = "MainMenuMusicPlayer"
@@ -175,8 +191,11 @@ func _start_menu_music() -> void:
 	_menu_music_player.stream = _load_menu_music_stream()
 	if _menu_music_player.stream != null:
 		_menu_music_player.play()
-		print("Main menu music playing: stream=%s volume_db=%s bus=%s" % [
+		print("Main menu music playing: android=%s template=%s stream=%s playing=%s volume_db=%s bus=%s" % [
+			str(OS.has_feature("android")),
+			str(OS.has_feature("template")),
 			_menu_music_player.stream.get_class(),
+			str(_menu_music_player.playing),
 			str(_menu_music_player.volume_db),
 			_menu_music_player.bus,
 		])
@@ -186,10 +205,6 @@ func _load_menu_music_stream() -> AudioStream:
 	if not ResourceLoader.exists(MAIN_MENU_MUSIC_PATH):
 		push_warning("Main menu music missing at %s" % MAIN_MENU_MUSIC_PATH)
 		return null
-	if OS.has_feature("template"):
-		var imported_first := _load_imported_audio_stream(MAIN_MENU_MUSIC_PATH)
-		if imported_first != null:
-			return imported_first
 	var stream := _load_pcm16_wav_stream(MAIN_MENU_MUSIC_PATH)
 	if stream != null:
 		return stream
@@ -241,20 +256,81 @@ func _load_pcm16_wav_stream(path: String) -> AudioStreamWAV:
 	stream.mix_rate = sample_rate
 	stream.stereo = channels == 2
 	stream.data = data
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_begin = 0
-	stream.loop_end = int(float(data.size()) / (2.0 * float(channels)))
+	_configure_wav_loop(stream, path)
 	return stream
 
 
 func _load_imported_audio_stream(path: String) -> AudioStream:
 	var imported_stream: Variant = load(path)
 	if imported_stream is AudioStreamWAV:
-		imported_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		_configure_wav_loop(imported_stream, path)
 	elif imported_stream is AudioStream:
 		if imported_stream.has_method("set_loop"):
 			imported_stream.call("set_loop", true)
 	return imported_stream if imported_stream is AudioStream else null
+
+
+func _configure_wav_loop(stream: AudioStreamWAV, source_path: String = "") -> void:
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	var frame_count := _wav_frame_count(stream, source_path)
+	if frame_count > 0:
+		stream.loop_end = frame_count
+	elif stream.loop_end <= 0:
+		stream.loop_end = 1
+
+
+func _wav_frame_count(stream: AudioStreamWAV, source_path: String = "") -> int:
+	var source_frame_count := _wav_source_frame_count(source_path)
+	if source_frame_count > 0:
+		return source_frame_count
+	var channels := 2 if stream.stereo else 1
+	if channels <= 0:
+		return 0
+	if stream.data.is_empty():
+		return 0
+	return int(float(stream.data.size()) / (2.0 * float(channels)))
+
+
+func _wav_source_frame_count(path: String) -> int:
+	if path == "" or not ResourceLoader.exists(path):
+		return 0
+	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.READ)
+	if file == null:
+		file = FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return 0
+	var bytes := file.get_buffer(file.get_length())
+	if bytes.size() < 44:
+		return 0
+	if bytes.slice(0, 4).get_string_from_ascii() != "RIFF" or bytes.slice(8, 12).get_string_from_ascii() != "WAVE":
+		return 0
+
+	var audio_format := 0
+	var channels := 0
+	var bits_per_sample := 0
+	var data_size := 0
+	var offset := 12
+	while offset + 8 <= bytes.size():
+		var chunk_id := bytes.slice(offset, offset + 4).get_string_from_ascii()
+		var chunk_size := bytes.decode_u32(offset + 4)
+		var chunk_start := offset + 8
+		var chunk_end := mini(chunk_start + chunk_size, bytes.size())
+		if chunk_id == "fmt " and chunk_size >= 16:
+			audio_format = bytes.decode_u16(chunk_start)
+			channels = bytes.decode_u16(chunk_start + 2)
+			bits_per_sample = bytes.decode_u16(chunk_start + 14)
+		elif chunk_id == "data":
+			data_size = maxi(0, chunk_end - chunk_start)
+			break
+		offset = chunk_end + int(chunk_size % 2)
+
+	if audio_format != 1 or channels <= 0 or bits_per_sample <= 0 or bits_per_sample % 8 != 0 or data_size <= 0:
+		return 0
+	var bytes_per_frame := int((bits_per_sample / 8) * channels)
+	if bytes_per_frame <= 0:
+		return 0
+	return int(data_size / bytes_per_frame)
 
 
 func _configure_ui_nodes() -> void:

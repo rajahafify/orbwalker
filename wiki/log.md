@@ -1256,3 +1256,36 @@ Append-only history of wiki operations.
   - Pointed Android `launcher_icons/main_192x192` and `launcher_icons/adaptive_foreground_432x432` at `res://raw/icon.png`.
 - Notes:
   - A debug Android APK exported and installed on connected device `b21e3ea8` with `adb install -r`; the existing MCP plugin Android `arm64` warning remains.
+
+## [2026-05-03] fix | Android Touch And Music Regressions
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/core/audio_manager.gd`, `scripts/core/main_boot.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Fixed Android combat board touch selection by using `BoardView.gui_input` local touch positions directly instead of applying a second screen-to-board transform.
+  - Routed Android/template main-menu music through `AudioManager`, restored WAV/imported music as the first choice for Android/template menu/combat/shop, and kept generated music as fallback only.
+  - Configured imported `AudioStreamWAV` loop bounds before playback so exported WAV music can loop with a positive loop end.
+  - Added audio diagnostics that log music source, Android/template flags, stream class, playing state, volume, and bus.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, main scene smoke, and combat scene smoke passed with no session errors. Debug Android APK export succeeded with the existing MCP plugin Android `arm64` warning, but `adb install -r` could not run because no Android device/emulator was connected. Android on-device touch and listening retest remains required.
+
+## [2026-05-03] fix | Android Music Loop Length
+
+- Source: `scripts/core/audio_manager.gd`, `scripts/core/main_boot.gd`, `docs/test_plan.md`
+- Changed:
+  - Changed Android/template WAV loading to try direct PCM decode from the exported `res://resources/audio/music/*.wav` source before imported fallback.
+  - Made imported WAV fallback compute loop end from the source WAV header when possible, avoiding early loops from compressed imported sample payload size.
+  - Disabled internal `AudioStreamWAV` looping on Android/template music playback and added manual restart from `AudioStreamPlayer.finished`.
+  - Expanded Android music diagnostics to include source, manual restart state, loop mode/end, source frame count, and stream data bytes.
+- Notes:
+  - Godot MCP `view_script` and `get_godot_errors` passed. Android on-device loop timing retest remains required.
+
+## [2026-05-03] fix | Android Raw WAV Music Payload
+
+- Source: `scripts/core/audio_manager.gd`, `resources/audio/raw_music/`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added Android/template raw music source mapping in `AudioManager` for menu/combat/shop to prefer `res://resources/audio/raw_music/{menu,combat,shop}.wav.bin` before imported WAV fallback.
+  - Copied full byte-for-byte source WAV payloads from `resources/audio/music/` into `resources/audio/raw_music/` using non-imported `.wav.bin` files so exported packages can decode full WAV header/data.
+  - Added `resources/audio/raw_music/*.wav.bin` to the Android export include filter so these non-imported payloads are packaged in the APK.
+  - Extended music diagnostics to track both source type and source path (`raw_pcm_wav` vs imported fallback) and compute frame counts from the actual selected payload path.
+- Notes:
+  - Godot MCP parse/error checks passed after the fix. Android on-device listening and loop-length confirmation is still pending.
