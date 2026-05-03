@@ -232,8 +232,8 @@ var _combat_log_lines: Array[String] = []
 var _combat_log_command_flags: Array[bool] = []
 var _combat_log_level: String = LOG_LEVEL_NORMAL
 var _consumable_rng := RandomNumberGenerator.new()
-var _visuals = VISUAL_REGISTRY_SCRIPT.new()
-var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+var _visuals: VisualRegistry = null
+var _player_loadout_hud: PlayerLoadoutHud = null
 var _boss_reward_buttons: Array[Button] = []
 var _boss_reward_skip_button: Button
 var _boss_reward_pending := false
@@ -283,18 +283,15 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_ready_start", {}, _flow_trace_route_id)
 	_audio_play_music("combat")
 	RunState.flow_trace_mark("combat_after_music", {}, _flow_trace_route_id)
+	if _visuals == null:
+		_visuals = VISUAL_REGISTRY_SCRIPT.new()
+	if _player_loadout_hud == null:
+		_player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+	_player_loadout_hud.set_visual_registry(_visuals)
 	_consumable_rng.randomize()
 	_background.texture = null
 	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
-	_board_view.set_orb_texture_map({
-		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
-		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
-		OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
-		OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
-		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
-		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
-	})
-	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id)
+	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _flow_trace_route_id)
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
@@ -331,15 +328,27 @@ func _ready() -> void:
 	_begin_turn_preview()
 	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _flow_trace_route_id)
 	call_deferred("_trace_flow_first_usable_frame")
+	call_deferred("_apply_orb_texture_map_deferred")
 
 
 func _trace_flow_first_usable_frame() -> void:
-	await get_tree().process_frame
 	RunState.flow_trace_mark(
 		"combat_first_usable_frame",
 		{"source": "combat_player_controller._ready_deferred"},
 		_flow_trace_route_id
 	)
+
+
+func _apply_orb_texture_map_deferred() -> void:
+	_board_view.set_orb_texture_map({
+		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
+		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
+		OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
+		OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
+		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
+		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
+	})
+	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id)
 
 
 func _apply_visual_chrome() -> void:
@@ -828,9 +837,11 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 		_append_combat_log("Sell failed: no occupied loadout slot selected.")
 		return
 	var item_id := String(slots[slot_index])
-	var content := _player_loadout_hud.lookup_content_definition(item_id)
+	var item_content: Dictionary = {}
+	if _player_loadout_hud != null:
+		item_content = _player_loadout_hud.lookup_content_definition(item_id)
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
-	var display_name := String(content.get("display_name", item_id))
+	var display_name := String(item_content.get("display_name", item_id))
 	if bool(result.get("ok", false)):
 		_status_label.text = "Sold %s for gold. Gold %d." % [display_name, RunState.run_gold]
 		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])

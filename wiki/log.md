@@ -1299,3 +1299,16 @@ Append-only history of wiki operations.
   - Recorded user runtime evidence that `Start Run -> Combat` spends about `2.47s` in `PackedScene.instantiate()` for `res://scenes/combat/combat_player.tscn`.
 - Notes:
   - Godot MCP script/error checks passed during implementation; existing integer-division warnings remain unrelated. Next diagnostic pass should isolate `combat_player.tscn`, `board_surface.tscn`, theme resources, and script initializer instantiation cost before changing transition architecture.
+
+## [2026-05-03] fix | Combat Transition Instantiate Delay
+
+- Source: `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `docs/tmp_transition_delay_handoff.md`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Changed:
+  - Moved `VisualRegistry` texture loading/building from eager `_init()` work to lazy accessor-specific builders.
+  - Let `PlayerLoadoutHud` receive the combat controller's `VisualRegistry` instead of constructing a duplicate registry.
+  - Deferred combat's orb texture-map build until after the first usable frame so the remaining runtime orb cleanup no longer blocks scene entry.
+- Notes:
+  - Godot MCP probes measured `VisualRegistry.new()` around `0.013ms`, `PlayerLoadoutHud.new()` around `0.008ms`, `combat_player.tscn` instantiate around `67ms`, and direct combat first usable frame around `149ms`.
+  - User route-level validation from the real Start Run button measured combat resource load around `206ms`, instantiate around `1ms`, attach around `83ms`, first usable frame around `300ms`, and deferred orb texture-map completion around `1438ms`.
+  - User route-level validation for the sampled Combat -> Shop path measured shop resource load around `52ms`, instantiate around `0ms`, attach around `140ms`, and first usable frame around `245ms`.
+  - The deferred orb texture-map pass still costs about `1.1s-1.2s`, so preprocessed orb textures remain a useful follow-up if visual pop-in is noticeable.

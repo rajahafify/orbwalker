@@ -57,7 +57,7 @@ const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZ
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
 
-var _visuals = VISUAL_REGISTRY_SCRIPT.new()
+var _visuals = null
 var _selected_equipment_slot := -1
 var _selected_consumable_slot := -1
 var _empty_silhouette_cache: Dictionary = {}
@@ -81,6 +81,10 @@ func set_selected_equipment_slot(slot_index: int) -> void:
 
 func set_selected_consumable_slot(slot_index: int) -> void:
 	_selected_consumable_slot = slot_index
+
+
+func set_visual_registry(visuals: VisualRegistry) -> void:
+	_visuals = visuals
 
 
 func bind_player_hud(nodes: Dictionary) -> void:
@@ -154,7 +158,7 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_label
 		if filled:
 			content = lookup_content_definition(id_text)
 			var icon_key := String(content.get("icon_key", ""))
-			icon.texture = _visuals.clean_icon_for_key(icon_key)
+			icon.texture = _visual_registry().clean_icon_for_key(icon_key)
 			icon.tooltip_text = String(content.get("display_name", id_text))
 			slot.tooltip_text = _slot_tooltip(content, id_text)
 			var badge_text := _badge_text_for(label, content)
@@ -258,7 +262,7 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		icon.position = Vector2((MASTERY_SLOT_SIZE.x - MASTERY_ICON_INNER_SIZE.x) * 0.5, (MASTERY_SLOT_SIZE.y - MASTERY_ICON_INNER_SIZE.y) * 0.5)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture = _visuals.mastery_icon(orb_id)
+		icon.texture = _visual_registry().mastery_icon(orb_id)
 		var level := int(mastery_levels.get(orb_id, 0))
 		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
 		if level <= 0:
@@ -324,7 +328,7 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		icon.position = Vector2((COMBAT_MASTERY_CARD_SIZE.x - COMBAT_MASTERY_ICON_SIZE.x) * 0.5, 8.0)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture = _visuals.menu_mastery_icon(orb_id)
+		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
 		icon.tooltip_text = "%s Mastery" % OrbType.display_name(orb_id)
 
 		var name_label := Label.new()
@@ -471,7 +475,7 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 		icon.position = Vector2((RELIC_SLOT_SIZE.x - RELIC_ICON_SIZE.x) * 0.5, (RELIC_SLOT_SIZE.y - RELIC_ICON_SIZE.y) * 0.5)
 		icon.size = RELIC_ICON_SIZE
 		icon.custom_minimum_size = RELIC_ICON_SIZE
-		icon.texture = _visuals.clean_icon_for_key(String(content.get("icon_key", "")))
+		icon.texture = _visual_registry().clean_icon_for_key(String(content.get("icon_key", "")))
 		slot.add_child(icon)
 		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, "relic", index, content, relic_id, true))
 		slot.mouse_exited.connect(_on_slot_mouse_exited)
@@ -1044,6 +1048,12 @@ func _clear_children(node: Node) -> void:
 	for child in node.get_children():
 		node.remove_child(child)
 		child.queue_free()
+
+
+func _visual_registry() -> VisualRegistry:
+	if _visuals == null:
+		_visuals = VISUAL_REGISTRY_SCRIPT.new()
+	return _visuals
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:

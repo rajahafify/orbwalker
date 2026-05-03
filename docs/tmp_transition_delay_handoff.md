@@ -4,9 +4,9 @@ Date: 2026-05-03
 
 ## Current Diagnosis
 
-Temporary FlowTrace instrumentation shows the visible `Start Run -> Combat` stall is dominated by `PackedScene.instantiate()` for `res://scenes/combat/combat_player.tscn`.
+Temporary FlowTrace instrumentation originally showed the visible `Start Run -> Combat` stall was dominated by `PackedScene.instantiate()` for `res://scenes/combat/combat_player.tscn`.
 
-Latest user runtime capture:
+Original user runtime capture before the fix:
 
 - `ResourceLoader.load(res://scenes/combat/combat_player.tscn)`: about `213ms`
 - `PackedScene.instantiate()`: about `2471ms`
@@ -14,7 +14,46 @@ Latest user runtime capture:
 - Combat `_ready()` and first usable frame after attach: about `90ms`
 - Music startup happens after scene entry and costs about `23ms`
 
-Earlier traces showed both `Start Run -> Combat` and `Combat -> Shop` spent roughly `2.3s-2.7s` before the destination root entered the tree. The manual instantiate/attach split has only been captured for `Start Run -> Combat` so far, so do not assume the shop route has the same internal cause until it is split and captured too.
+Follow-up Godot MCP editor probes isolated the instantiate cost to script member construction:
+
+- `res://scenes/board/board_surface.tscn` instantiate: about `0.1ms`
+- `res://resources/visual/first_pass_theme.tres` duplicate: about `0.1ms`
+- `res://scripts/ui/visual_registry.gd.new()`: about `847ms`
+- `res://scripts/ui/player_loadout_hud.gd.new()`: about `833ms`, because it also constructed a `VisualRegistry`
+- `res://scripts/combat/combat_player_controller.gd.new()`: about `1687ms`
+
+The expensive work was `VisualRegistry._init()` eagerly processing the large orb sheet into cleaned runtime orb textures. That happened twice during combat controller construction: once directly in `CombatPlayerController` and once inside `PlayerLoadoutHud`.
+
+Current fix status:
+
+- `VisualRegistry._init()` is now cheap; texture groups are built lazily by accessor.
+- `PlayerLoadoutHud` can receive the combat controller's `VisualRegistry`, avoiding a duplicate registry.
+- `CombatPlayerController` now constructs the registry/HUD in `_ready()` instead of as member initializers.
+- Combat orb texture-map construction is deferred until after `combat_first_usable_frame`, so the expensive one-time orb cleanup no longer blocks the first usable frame.
+
+Latest Godot MCP validation after the fix:
+
+- `VisualRegistry.new()`: about `0.013ms`
+- `PlayerLoadoutHud.new()`: about `0.008ms`
+- `res://scenes/combat/combat_player.tscn` instantiate: about `67ms`
+- Direct `res://scenes/combat/combat_player.tscn` runtime trace: first usable frame around `149ms`; deferred orb texture map finishes around `1355ms`
+
+Latest user route-level capture from the real `Start Run` button after the fix:
+
+- `ResourceLoader.load(res://scenes/combat/combat_player.tscn)`: about `206ms`
+- `PackedScene.instantiate()`: about `1ms`
+- Scene attach/root swap, including combat `_ready()`: about `83ms`
+- `combat_first_usable_frame`: about `300ms` after route start
+- Deferred `combat_after_texture_map`: about `1438ms` after route start, about `1137ms` after first usable frame
+
+Latest user route-level capture for `Combat -> Shop` after the fix:
+
+- `ResourceLoader.load(res://scenes/flow/shop_player.tscn)`: about `52ms`
+- `PackedScene.instantiate()`: about `0ms`
+- Scene attach/root swap, including shop `_ready()`: about `140ms`
+- `shop_first_usable_frame`: about `245ms` after route start
+
+These captures confirm the original `2s+` instantiate-time blocker is resolved for `Start Run -> Combat`, and the sampled `Combat -> Shop` route is not showing the earlier multi-second stall.
 
 ## Instrumentation Added
 
@@ -41,22 +80,17 @@ This is diagnostic instrumentation, not the intended final transition architectu
 
 ## Next Diagnostic Step
 
-Use Godot MCP/editor-side probes, not headless Godot, to isolate which part of `combat_player.tscn` makes instantiation slow.
+Use Godot MCP/editor-side probes, not headless Godot, to decide whether the remaining deferred orb cleanup should be converted into generated/imported orb assets.
 
 Suggested focused probes:
 
-- Instantiate `res://scenes/combat/combat_player.tscn`
-- Instantiate `res://scenes/board/board_surface.tscn`
-- Load or duplicate `res://resources/visual/first_pass_theme.tres`
-- Construct `res://scripts/combat/combat_player_controller.gd` with `.new()`
-- Construct board/presentation helper scripts used by combat startup, especially board view/surface paths
+- If the deferred texture-map hitch is still visible, replace runtime orb-sheet cleanup with preprocessed derived orb textures instead of doing per-pixel cleanup in gameplay
+- If the deferred texture-map hitch is not visible, keep the current lazy/deferred runtime path until broader asset-pipeline cleanup
 
 Interpretation:
 
-- If `combat_player.tscn` is slow but child scenes and scripts are fast, inspect the scene file for heavy node/resource/subresource construction.
-- If `board_surface.tscn` is slow, focus the next fix on board scene construction and board rendering resources.
-- If `combat_player_controller.gd.new()` or helper script construction is slow, inspect script member initializers, preloads, and large default object graphs.
-- If isolated instantiation is fast in probes but slow during route changes, capture a route-level probe around old-scene teardown and editor/runtime scheduling.
+- If combat appears quickly but briefly uses fallback/color orb rendering before art appears, the remaining issue is the deferred orb asset preprocessing.
+- If a later shop route still stalls, split `combat_to_shop` / `shop_to_combat` with the same constructor probes before applying combat-specific fixes there.
 
 ## Reproduction
 
@@ -66,7 +100,7 @@ Interpretation:
 4. For shop routing, win a combat, press Continue, and inspect route `combat_to_shop`.
 5. For shop back to combat, press Continue in shop and inspect route `shop_to_combat`.
 
-The acceptance target for this temporary diagnostic step is a trace that makes the missing `2s+` route time attributable to resource load, packed-scene instantiate, scene attach/swap, or later scene startup.
+The acceptance target for the original temporary diagnostic step was a trace that made the missing `2s+` route time attributable to resource load, packed-scene instantiate, scene attach/swap, or later scene startup. That target has been met and fixed for the sampled `Start Run -> Combat` route.
 
 ## Caveats
 
@@ -74,3 +108,4 @@ The acceptance target for this temporary diagnostic step is a trace that makes t
 - Some non-target redirects still use Godot's standard `change_scene_to_file(...)`.
 - Existing integer-division warnings in Godot output predate this diagnostic work and are not currently tied to the transition stall.
 - Do not optimize audio for this issue unless new traces contradict the current evidence.
+- The deferred orb texture-map pass is still expensive because it keeps the runtime per-pixel cleanup path; a durable polish fix should move that cleanup into the asset pipeline.

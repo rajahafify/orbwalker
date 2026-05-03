@@ -126,6 +126,7 @@ const _STABLE_PLACEHOLDER_ICON_COLORS := {
 
 var _warned_keys: Dictionary = {}
 var _placeholder_cache: Dictionary = {}
+var _enemy_portrait_textures: Dictionary = {}
 var _orb_textures: Dictionary = {}
 var _intent_textures: Dictionary = {}
 var _rarity_textures: Dictionary = {}
@@ -142,43 +143,53 @@ var _hero_portrait: Texture2D
 var _ui_frames: Texture2D
 var _ui_bars: Texture2D
 var _ui_shop_cards: Texture2D
+var _backgrounds_loaded := false
+var _hero_portrait_loaded := false
+var _ui_sheets_loaded := false
+var _orb_textures_built := false
+var _intent_textures_built := false
+var _rarity_textures_built := false
+var _mastery_textures_built := false
+var _icon_textures_built := false
+var _vfx_textures_built := false
 
 
 func _init() -> void:
-	_combat_background = _safe_load_texture(PATH_COMBAT_BACKGROUND, "combat_background")
-	_shop_background = _safe_load_texture(PATH_SHOP_BACKGROUND, "shop_background")
-	_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
-	_ui_frames = _safe_load_texture(PATH_UI_FRAME_SHEET, "ui_frame_sheet")
-	_ui_bars = _safe_load_texture(PATH_UI_BAR_SHEET, "ui_bar_sheet")
-	_ui_shop_cards = _safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
-	_build_orb_textures()
-	_build_intent_textures()
-	_build_rarity_textures()
-	_build_mastery_textures()
-	_build_icon_textures()
-	_build_vfx_textures()
+	pass
 
 
 func combat_background() -> Texture2D:
+	_ensure_background_textures()
 	return _combat_background if _combat_background != null else placeholder_texture("combat_background")
 
 
 func shop_background() -> Texture2D:
+	_ensure_background_textures()
 	return _shop_background if _shop_background != null else placeholder_texture("shop_background")
 
 
 func enemy_portrait(enemy_id: String) -> Texture2D:
 	var normalized_id := enemy_id.strip_edges().to_lower()
+	if _enemy_portrait_textures.has(normalized_id):
+		return _enemy_portrait_textures[normalized_id]
 	var path := String(_ENEMY_PORTRAIT_PATHS.get(normalized_id, ""))
 	if path == "":
 		_warn_missing("enemy_id:%s" % normalized_id)
 		var fallback := String(_ENEMY_PORTRAIT_PATHS.get("cavern_striker", ""))
-		return _safe_load_texture(fallback, "enemy_fallback")
+		var fallback_texture := _safe_load_texture(fallback, "enemy_fallback")
+		if fallback_texture != null:
+			_enemy_portrait_textures[normalized_id] = fallback_texture
+			return fallback_texture
+		return placeholder_texture("enemy_portrait")
 	var loaded := _safe_load_texture(path, "enemy:%s" % normalized_id)
-	return loaded if loaded != null else placeholder_texture("enemy_portrait")
+	if loaded != null:
+		_enemy_portrait_textures[normalized_id] = loaded
+		return loaded
+	return placeholder_texture("enemy_portrait")
 
 
 func hero_portrait() -> Texture2D:
+	_ensure_hero_portrait()
 	if _hero_portrait != null:
 		return _hero_portrait
 	var fallback := placeholder_texture("hero_portrait_missing", Color(0.10, 0.16, 0.24, 1.0), Vector2i(192, 192))
@@ -186,6 +197,7 @@ func hero_portrait() -> Texture2D:
 
 
 func orb_texture(orb_id: int) -> Texture2D:
+	_ensure_orb_textures()
 	return _orb_textures.get(orb_id, placeholder_texture("orb_missing"))
 
 
@@ -202,6 +214,7 @@ func intent_badge(intent_type: int) -> Texture2D:
 		var hud_badge := clean_hud_texture(hud_key)
 		if hud_badge != null:
 			return hud_badge
+	_ensure_intent_textures()
 	var index := int(_INTENT_INDEX_BY_TYPE.get(intent_type, -1))
 	if index < 0:
 		_warn_missing("intent_type:%d" % intent_type)
@@ -221,10 +234,12 @@ func rarity_badge(rarity: String) -> Texture2D:
 	if index < 0:
 		_warn_missing("rarity:%s" % rarity)
 		return placeholder_texture("rarity_missing")
+	_ensure_rarity_textures()
 	return _rarity_textures.get(index, placeholder_texture("rarity_missing"))
 
 
 func mastery_icon(orb_id: int) -> Texture2D:
+	_ensure_mastery_textures()
 	return _mastery_textures.get(orb_id, placeholder_texture("mastery_missing"))
 
 
@@ -329,6 +344,7 @@ func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Textu
 			_warn_missing("icon_key:%s" % icon_key)
 			return placeholder_texture("icon_missing")
 		return null
+	_ensure_icon_textures()
 	var fallback_texture: Texture2D = _icon_textures.get(index, null)
 	if fallback_texture != null and not _looks_like_checkerboard_texture(fallback_texture):
 		return fallback_texture
@@ -338,14 +354,17 @@ func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Textu
 
 
 func ui_frame_sheet() -> Texture2D:
+	_ensure_ui_sheets()
 	return _ui_frames if _ui_frames != null else placeholder_texture("ui_frames")
 
 
 func ui_bar_sheet() -> Texture2D:
+	_ensure_ui_sheets()
 	return _ui_bars if _ui_bars != null else placeholder_texture("ui_bars")
 
 
 func ui_shop_card_sheet() -> Texture2D:
+	_ensure_ui_sheets()
 	return _ui_shop_cards if _ui_shop_cards != null else placeholder_texture("ui_shop_cards")
 
 
@@ -386,6 +405,7 @@ func clean_chrome_texture(key: String) -> Texture2D:
 
 
 func vfx_texture(effect_name: String) -> Texture2D:
+	_ensure_vfx_textures()
 	var key := effect_name.to_lower()
 	return _vfx_textures.get(key, placeholder_texture("vfx_missing"))
 
@@ -398,6 +418,72 @@ func placeholder_texture(key: String, color: Color = Color(0.32, 0.32, 0.36, 1.0
 	var texture := ImageTexture.create_from_image(image)
 	_placeholder_cache[key] = texture
 	return texture
+
+
+func _ensure_background_textures() -> void:
+	if _backgrounds_loaded:
+		return
+	_backgrounds_loaded = true
+	_combat_background = _safe_load_texture(PATH_COMBAT_BACKGROUND, "combat_background")
+	_shop_background = _safe_load_texture(PATH_SHOP_BACKGROUND, "shop_background")
+
+
+func _ensure_hero_portrait() -> void:
+	if _hero_portrait_loaded:
+		return
+	_hero_portrait_loaded = true
+	_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
+
+
+func _ensure_ui_sheets() -> void:
+	if _ui_sheets_loaded:
+		return
+	_ui_sheets_loaded = true
+	_ui_frames = _safe_load_texture(PATH_UI_FRAME_SHEET, "ui_frame_sheet")
+	_ui_bars = _safe_load_texture(PATH_UI_BAR_SHEET, "ui_bar_sheet")
+	_ui_shop_cards = _safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
+
+
+func _ensure_orb_textures() -> void:
+	if _orb_textures_built:
+		return
+	_orb_textures_built = true
+	_build_orb_textures()
+
+
+func _ensure_intent_textures() -> void:
+	if _intent_textures_built:
+		return
+	_intent_textures_built = true
+	_build_intent_textures()
+
+
+func _ensure_rarity_textures() -> void:
+	if _rarity_textures_built:
+		return
+	_rarity_textures_built = true
+	_build_rarity_textures()
+
+
+func _ensure_mastery_textures() -> void:
+	if _mastery_textures_built:
+		return
+	_mastery_textures_built = true
+	_build_mastery_textures()
+
+
+func _ensure_icon_textures() -> void:
+	if _icon_textures_built:
+		return
+	_icon_textures_built = true
+	_build_icon_textures()
+
+
+func _ensure_vfx_textures() -> void:
+	if _vfx_textures_built:
+		return
+	_vfx_textures_built = true
+	_build_vfx_textures()
 
 
 func _build_orb_textures() -> void:
