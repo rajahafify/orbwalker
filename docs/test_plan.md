@@ -515,6 +515,13 @@ Verification notes (2026-05-03, AR-02 audio diagnostics gate):
 - `play_scene main` still produced successful desktop menu music playback through `MainMenuMusicPlayer`; the default run no longer printed the verbose `AudioManager music:` diagnostic line.
 - Retained AR-01 combat result-envelope probe still matched the documented baseline. `get_godot_errors` still reports the known unsourced integer-division warnings and a stale open-script parse diagnostic from the superseded audio patch; the fresh compile probe verified current `audio_manager.gd` source.
 
+Verification notes (2026-05-03, AR-02 transition guard completion):
+- Run-flow entry/exit buttons now use local duplicate-transition guards for Start Run, player-shop Continue/Menu, legacy boss-reward Skip/Continue, and legacy shop Skip/Next/Menu. Guarded controls are disabled while routing is in progress, and player-shop plus legacy reward/shop advance handlers now surface failed `RunState` transition reasons instead of changing scenes anyway.
+- Godot MCP `view_script` checks passed for `res://scripts/core/main_boot.gd`, `res://scripts/flow/shop_player.gd`, `res://scripts/flow/boss_relic_reward.gd`, and `res://scripts/flow/shop_placeholder.gd`.
+- Godot MCP scene instantiate probe passed for `res://scenes/main.tscn`, `res://scenes/flow/shop_player.tscn`, `res://scenes/flow/boss_relic_reward.tscn`, and `res://scenes/flow/shop_placeholder.tscn`; `get_godot_errors` reported no session errors after the script and instantiate checks.
+- `play_scene main` launched the main scene and `get_scene_tree` confirmed `/root/Main`; the retained AR-01 combat result-envelope probe still matched the documented baseline with `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, and `next_phase_name=Intent Preview`.
+- Manual rapid-click QA for the guarded buttons remains useful. After the main-scene smoke, `get_godot_errors` again reported the known unsourced integer-division reload warnings.
+
 User runtime route timing capture (2026-05-03):
 - `Start Run -> Combat` route `start_run_to_combat_1`: resource load `200ms`; scene instantiate `0ms`; scene attach `84ms`; `combat_first_usable_frame` at `294ms`; deferred `combat_after_texture_map` at `1409ms`.
 - `Combat -> Shop` route `combat_to_shop_2`: resource load `51ms`; scene instantiate `0ms`; scene attach `114ms`; `shop_first_usable_frame` at `218ms`.

@@ -100,6 +100,7 @@ var _stats_panel_texture: Texture2D = null
 var _menu_music_player: AudioStreamPlayer = null
 var _menu_music_retry_time := 0.0
 var _menu_music_via_audio_manager := false
+var _start_run_transitioning := false
 
 
 func _ready() -> void:
@@ -124,6 +125,10 @@ func _on_viewport_size_changed() -> void:
 
 
 func _on_start_fight_button_pressed() -> void:
+	if _start_run_transitioning:
+		return
+	_start_run_transitioning = true
+	_start_run_button.disabled = true
 	_audio_play_sfx("ui_accept")
 	var route_id := RunState.flow_trace_begin(
 		"start_run_to_combat",

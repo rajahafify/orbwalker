@@ -24,6 +24,11 @@ extends Control
 	%BoosterOptionButton3,
 ]
 @onready var _sell_slot_spin_box: SpinBox = %SellSlotSpinBox
+@onready var _skip_shop_button: Button = %SkipShopButton
+@onready var _next_fight_button: Button = %NextFightButton
+@onready var _main_menu_button: Button = %MainMenuButton
+
+var _is_transitioning := false
 
 
 func _ready() -> void:
@@ -189,17 +194,54 @@ func _on_booster_option_button_3_pressed() -> void:
 
 
 func _on_skip_shop_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	var transition: Dictionary = RunState.advance_after_shop(true)
+	if not bool(transition.get("ok", false)):
+		_summary_label.text = "Skip shop failed: %s" % String(transition.get("reason", "unknown"))
+		_end_transition_lock()
+		return
 	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_next_fight_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	var transition: Dictionary = RunState.advance_after_shop(false)
+	if not bool(transition.get("ok", false)):
+		_summary_label.text = "Next fight failed: %s" % String(transition.get("reason", "unknown"))
+		_end_transition_lock()
+		return
 	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_main_menu_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+
+func _begin_transition_lock() -> void:
+	_is_transitioning = true
+	if _skip_shop_button != null:
+		_skip_shop_button.disabled = true
+	if _next_fight_button != null:
+		_next_fight_button.disabled = true
+	if _main_menu_button != null:
+		_main_menu_button.disabled = true
+
+
+func _end_transition_lock() -> void:
+	_is_transitioning = false
+	if _skip_shop_button != null:
+		_skip_shop_button.disabled = false
+	if _next_fight_button != null:
+		_next_fight_button.disabled = false
+	if _main_menu_button != null:
+		_main_menu_button.disabled = false
 
 
 func _result_message(action: String, result: Dictionary) -> String:

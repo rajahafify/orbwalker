@@ -86,6 +86,7 @@ var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _selected_equipment_slot := -1
 var _selected_consumable_slot := -1
 var _flow_trace_route_id := ""
+var _is_transitioning := false
 
 
 func _enter_tree() -> void:
@@ -609,6 +610,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_continue_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	_clear_inventory_focus()
 	RunState.flow_trace_mark(
 		"shop_continue_button_pressed",
@@ -627,6 +631,10 @@ func _on_continue_button_pressed() -> void:
 		_flow_trace_route_id,
 		next_scene
 	)
+	if not bool(transition.get("ok", false)):
+		_set_status("Continue failed: %s" % String(transition.get("reason", "unknown")), false)
+		_end_transition_lock()
+		return
 	var route_id := _flow_trace_route_id
 	if next_scene.find("combat_player.tscn") >= 0:
 		route_id = RunState.flow_trace_begin(
@@ -649,6 +657,9 @@ func _on_continue_button_pressed() -> void:
 
 
 func _on_main_menu_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	_clear_inventory_focus()
 	RunState.flow_trace_mark(
 		"shop_main_menu_button_pressed",
@@ -681,6 +692,22 @@ func _set_status(message: String, positive: bool) -> void:
 		return
 	_summary_label.text = message
 	_summary_label.add_theme_color_override("font_color", POSITIVE_COLOR if positive else NEGATIVE_COLOR)
+
+
+func _begin_transition_lock() -> void:
+	_is_transitioning = true
+	if _continue_button != null:
+		_continue_button.disabled = true
+	if _main_menu_button != null:
+		_main_menu_button.disabled = true
+
+
+func _end_transition_lock() -> void:
+	_is_transitioning = false
+	if _continue_button != null:
+		_continue_button.disabled = false
+	if _main_menu_button != null:
+		_main_menu_button.disabled = false
 
 
 func _selected_slot_kind(progression_snapshot: Dictionary) -> String:

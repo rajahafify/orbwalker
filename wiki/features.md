@@ -25,6 +25,7 @@ The project already covers the early prototype loop: board generation, drag move
 
 - The run is a 3-level prototype with enemy, shop, boss, boss-reward, and advance steps. The normal player-facing boss reward step is presented inside the combat victory overlay, then continues to the post-boss shop. (source: `todo.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`)
 - Boss preview, boss relic reward, victory, and defeat flow are implemented in the run path. The old boss relic reward scene remains a legacy/debug fallback, while the combat overlay owns normal boss relic selection and skip. Run summaries track total gold earned, monsters defeated, and bosses defeated separately. (source: `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/boss_relic_reward.gd`)
+- Run-flow entry and shop/reward exits include local duplicate-transition guards for Start Run, player-shop Continue/Menu, legacy boss-reward Skip/Continue, and legacy shop Skip/Next/Menu. Player-shop and legacy reward/shop advance actions check failed `RunState` transition results before changing scenes, so invalid duplicate activations report a reason instead of routing to the main menu. (source: `scripts/core/main_boot.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_placeholder.gd`)
 
 ### Shop and progression
 

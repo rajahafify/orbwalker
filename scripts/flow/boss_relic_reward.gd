@@ -16,9 +16,11 @@ const RARITY_COLORS := {
 	%OptionButton2,
 	%OptionButton3,
 ]
+@onready var _skip_button: Button = %SkipButton
 @onready var _continue_button: Button = %ContinueButton
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
+var _is_transitioning := false
 
 func _ready() -> void:
 	if not RunState.run_active:
@@ -102,13 +104,43 @@ func _on_option_button_3_pressed() -> void:
 
 
 func _on_skip_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	var transition: Dictionary = RunState.advance_after_boss_reward()
+	if not bool(transition.get("ok", false)):
+		_summary_label.text = "Cannot continue: %s" % String(transition.get("reason", "unknown"))
+		_end_transition_lock()
+		return
 	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
 
 
 func _on_continue_button_pressed() -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
 	var transition: Dictionary = RunState.advance_after_boss_reward()
+	if not bool(transition.get("ok", false)):
+		_summary_label.text = "Cannot continue: %s" % String(transition.get("reason", "unknown"))
+		_end_transition_lock()
+		return
 	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
+
+
+func _begin_transition_lock() -> void:
+	_is_transitioning = true
+	if _skip_button != null:
+		_skip_button.disabled = true
+	if _continue_button != null:
+		_continue_button.disabled = true
+
+
+func _end_transition_lock() -> void:
+	_is_transitioning = false
+	if _skip_button != null:
+		_skip_button.disabled = false
+	if _continue_button != null:
+		_continue_button.disabled = false
 
 
 func _apply_button_chrome() -> void:

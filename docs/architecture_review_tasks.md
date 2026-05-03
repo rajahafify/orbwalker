@@ -16,13 +16,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-02: Low-Risk Bug Fixes
 
-- Status: `in progress`
+- Status: `done`
 - Owner/scope: Small confirmed issues such as `EnemyState.get_current_intent()` mutation, main-menu music polling after success, noisy audio diagnostics, and await/transition guards.
-- Progress: 2026-05-03 first narrow patch made `EnemyState.get_current_intent()` return a duplicated intent snapshot before adding the derived `index`, keeping the caller contract unchanged while making the read API non-mutating by construction. Godot MCP probing found Godot 4.6.2 did not reproduce stored intent-cycle mutation before the patch, so this was treated as a defensive clarity fix rather than a confirmed live behavior regression. Second narrow patch stopped the main-menu music retry poll after successful desktop playback or Android/template `AudioManager` routing while preserving retry behavior for failed setup. Third narrow patch gated verbose `AudioManager` music diagnostics behind `debug/audio_diagnostics_enabled=false` by default.
-- Blockers: Depends on AR-01 baseline so small fixes can be regression-checked.
-- Next action: Pick the next confirmed AR-02 issue, likely one focused await/transition guard, and keep the patch small.
-- Validation: Intent snapshot probe passed; main scene smoke confirmed desktop `MainMenuMusicPlayer` playback; focused audio setting probe confirmed diagnostics are opt-in; retained AR-01 combat result-envelope probe still matched the documented baseline. `get_godot_errors` still reports the known unsourced integer-division reload warnings and a stale open-script parse diagnostic from the superseded audio patch; fresh `GDScript.reload()` of `audio_manager.gd` returns `OK`.
-- Docs/wiki impact: Update `docs/test_plan.md` verification notes and `wiki/known-issues.md` only when a durable risk is resolved or newly discovered.
+- Progress: 2026-05-03 completed the low-risk batch. `EnemyState.get_current_intent()` returns a duplicated intent snapshot before adding the derived `index`, keeping the caller contract unchanged while making the read API non-mutating by construction. The main-menu music retry poll stops after successful desktop playback or Android/template `AudioManager` routing while preserving retry behavior for failed setup. Verbose `AudioManager` music diagnostics are gated behind `debug/audio_diagnostics_enabled=false` by default. Run-flow entry/exit controls now have local duplicate-transition guards for Start Run, player-shop Continue/Menu, legacy boss-reward Skip/Continue, and legacy shop Skip/Next/Menu; player-shop and legacy reward/shop advance actions now check failed `RunState` transition results before routing.
+- Blockers: None for AR-02 completion. Known unsourced Godot integer-division reload warnings remain tracked outside this low-risk batch.
+- Next action: Move to AR-03 shared WAV/audio utility extraction or AR-04 shop/input safety after choosing the next architecture-review batch.
+- Validation: Intent snapshot probe passed; main scene smoke confirmed desktop `MainMenuMusicPlayer` playback; focused audio setting probe confirmed diagnostics are opt-in; transition scene instantiate probes passed for `res://scenes/main.tscn`, `res://scenes/flow/shop_player.tscn`, `res://scenes/flow/boss_relic_reward.tscn`, and `res://scenes/flow/shop_placeholder.tscn`; retained AR-01 combat result-envelope probe still matched the documented baseline. Fresh `get_godot_errors` returned no session errors after script/instantiate checks; after main scene smoke it still reported the known unsourced integer-division reload warnings.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` updated for the completed AR-02 batch.
 
 ## AR-03: Shared WAV/Audio Utility Extraction
 
