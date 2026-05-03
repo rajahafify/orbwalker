@@ -1215,11 +1215,11 @@ func _handle_console_command(raw_text: String) -> void:
 				"lose":
 					var lose_transition: Dictionary = RunState.mark_player_defeated("Debug command.")
 					_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-					_pending_next_scene_path = String(lose_transition.get("next_scene", "res://scenes/main.tscn"))
+					_pending_next_scene_path = String(lose_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY))
 					_update_hud()
-					_show_outcome_summary("Defeat", _build_run_outcome_summary("Debug command."), true, "Main Menu")
-					_status_label.text = "Debug defeat queued. Main Menu available."
-					_append_combat_log("Fight lose queued. Press Main Menu.")
+					_show_outcome_summary("Defeat", _build_run_outcome_summary("Debug command."), true, "Run Summary")
+					_status_label.text = "Debug defeat queued. Run Summary available."
+					_append_combat_log("Fight lose queued. Press Run Summary.")
 				_:
 					_command_error("unknown /fight subcommand: %s" % fight_sub)
 		_:
@@ -1678,15 +1678,15 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		var defeat_cause := _build_defeat_cause(turn_log)
 		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_status_label.text = _build_defeat_status(turn_log) + " Main Menu available."
+		_status_label.text = _build_defeat_status(turn_log) + " Run Summary available."
 		_append_turn_log(turn_log)
-		_append_combat_log("Outcome: Defeat. Waiting for Main Menu button.")
-		_pending_next_scene_path = String(defeat_transition.get("next_scene", "res://scenes/main.tscn"))
-		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Main Menu")
-		_turn_summary_label.text = "Turn Summary: Defeat. Main Menu available."
+		_append_combat_log("Outcome: Defeat. Waiting for Run Summary button.")
+		_pending_next_scene_path = String(defeat_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY))
+		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Run Summary")
+		_turn_summary_label.text = "Turn Summary: Defeat. Run Summary available."
 		RunState.flow_trace_mark(
 			"combat_continue_available",
-			{"button_text": "Main Menu"},
+			{"button_text": "Run Summary"},
 			_flow_trace_route_id,
 			_pending_next_scene_path
 		)
@@ -2203,11 +2203,11 @@ func _build_victory_status(turn_log: Dictionary, transition: Dictionary) -> Stri
 	var next_label := "Next scene"
 	if next_scene.find("shop") >= 0:
 		next_label = "shop"
-	elif next_scene.find("boss_relic_reward") >= 0:
+	elif String(transition.get("step", "")) == "boss_relic_reward":
 		next_label = "boss relic reward"
 	elif next_scene.find("run_summary") >= 0:
 		next_label = "run summary"
-	elif next_scene.find("board_debug") >= 0:
+	elif next_scene.find("combat_player") >= 0:
 		next_label = "next fight"
 	return "Victory. Enemy defeated before intent (%s). Continue to %s." % [
 		"skipped" if bool(turn_log.enemy_intent_skipped) else "resolved",

@@ -76,10 +76,10 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-08: Cleanup/Dead-Code Validation
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Confirmed-unused symbols and stale placeholder/fallback surfaces such as `base_orb_values`, `PLAYER_EFFECT_ORDER`, summary helpers, and legacy placeholder scenes.
-- Progress: Candidates are identified, but no removal is tracked here.
-- Blockers: Requires reference checks and scene validation before deletion. Legacy/debug fallback usage must be confirmed before removing placeholder scenes.
-- Next action: Run reference searches and scene-route checks for one cleanup candidate at a time.
-- Validation: No references remain; relevant scenes instantiate/run; `get_godot_errors` stays clean; docs/wiki no longer point to removed fallback surfaces.
-- Docs/wiki impact: Update `todo.md`, `docs/test_plan.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md` when cleanup changes durable project knowledge.
+- Progress: 2026-05-03 completed cleanup in two passes. First removed `PlayerState.base_orb_values`, the unused `CombatStateMachine.PLAYER_EFFECT_ORDER` constant, and unused legacy string-format helpers. Follow-up cleanup renamed the final victory surface from `run_summary_placeholder` to `final_run_summary`, removed the legacy boss relic reward scene/script after boss rewards moved fully into the combat victory overlay, removed the legacy shop placeholder scene/script, and removed the board-debug scene/controller. Boss reward data APIs and the `boss_relic_reward` run step key remain because the combat overlay still uses them.
+- Blockers: None for this cleanup batch. Historical validation notes still mention deleted debug/fallback surfaces as past evidence, but current validation should use `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, `final_run_summary.tscn`, and focused editor-script probes.
+- Next action: Move to the next architecture-review batch. If a replacement board-debug workflow is needed later, implement it as a new scoped debug tooling task rather than reviving the deleted scene.
+- Validation: Godot MCP `view_script` passed for touched scripts; `get_godot_errors` reported no session errors; retained AR-01 combat result-envelope probe still matched baseline; RunState route probes preserved combat/shop/boss-reward/final-victory route shapes with final victory routing to `res://scenes/flow/final_run_summary.tscn`; defeat now also routes to `res://scenes/flow/final_run_summary.tscn` in defeat mode while reset/no-summary inactive state still routes to main; main, combat, shop, and final summary scenes instantiate/run as validation surfaces; deleted-scene reference searches are clean; `git diff --check` passed.
+- Docs/wiki impact: `AGENTS.md`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`, `wiki/setup.md`, and `wiki/log.md` updated for the completed cleanup and new validation surfaces.

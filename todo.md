@@ -491,7 +491,7 @@ Verification notes (2026-04-27):
   - Added player-facing scene routes:
 	- Combat: `res://scenes/combat/combat_player.tscn` (controller: `res://scripts/combat/combat_player_controller.gd`)
 	- Shop: `res://scenes/flow/shop_player.tscn` (controller: `res://scripts/flow/shop_player.gd`)
-  - `RunState` transition constants now route fights and shops to the player-facing scenes while preserving `res://scenes/combat/board_debug.tscn` via explicit main-menu debug entry.
+  - `RunState` transition constants route fights and shops to the player-facing scenes.
   - `BoardView` now supports orb atlas rendering (`orb_id -> Texture2D`) with color fallback and preserves selection/path/flash/glow/fall/refill behavior.
   - First-pass art assets were reorganized under `res://resources/art/first_pass/{backgrounds,enemies,sheets,ui,vfx}` with per-class mipmap policy in `.import` files (`backgrounds/enemies: true`, UI sheets: false).
   - Added lightweight VFX hooks driven by combat events:
@@ -502,7 +502,6 @@ Verification notes (2026-04-27):
   - Godot MCP validation passed for scene instantiate and runtime smoke on:
 	- `res://scenes/combat/combat_player.tscn`
 	- `res://scenes/flow/shop_player.tscn`
-	- `res://scenes/combat/board_debug.tscn`
 	- `res://scenes/main.tscn`
 - Reference player-panel revamp added for `res://scenes/combat/combat_player.tscn`:
   - Rebuilt the bottom player HUD into a reference-style hero portrait card, primary HP bar, compact equipment/consumable rails, and bottom mastery strip.
@@ -526,7 +525,7 @@ Tasks:
 - [x] AR-05 Combat controller first split.
 - [x] AR-06 Combat presentation split.
 - [x] AR-07 RunState/data contract roadmap. Prototype content source of truth is dictionary-backed `ContentRegistry` data for this phase; `.tres` or JSON migration is deferred behind the registry API.
-- [ ] AR-08 Cleanup/dead-code validation.
+- [x] AR-08 Cleanup/dead-code validation. Removed confirmed-unused code symbols/helpers, renamed the final victory summary to `final_run_summary`, removed the legacy boss relic reward scene, removed the legacy shop placeholder scene, and removed the board-debug scene/controller. Current validation now uses player-facing scenes plus focused Godot MCP probes instead of the deleted debug/fallback surfaces.
 
 ## Milestone 10: Balance Pass And QA
 

@@ -105,9 +105,11 @@ Use `godot-mcp` for Godot tasks. Do not use headless Godot.
 
 Preferred validation surfaces and tools:
 
-- `res://scenes/combat/board_debug.tscn` - main board/combat validation surface.
 - `res://scenes/main.tscn` - startup/main-menu flow.
 - `res://scenes/combat/combat_player.tscn` - player-facing combat scene.
+- `res://scenes/flow/shop_player.tscn` - player-facing shop flow.
+- `res://scenes/flow/final_run_summary.tscn` - final victory summary flow.
+- Focused `execute_editor_script` probes for board resolver, combat envelope, RunState routing, and content contracts.
 - `get_project_info`
 - `get_godot_errors`
 - `play_scene`
@@ -120,6 +122,7 @@ Validation rules:
 
 - If `get_godot_errors` looks stale, reload or inspect the relevant script/scene and rerun the check.
 - Prefer small typed `execute_editor_script` probes over large ad hoc scripts.
+- `res://scenes/combat/board_debug.tscn` has been removed; do not use it as a validation surface.
 - If MCP tools are unavailable, state that clearly and record what was not tested.
 - Do not claim runtime validation happened unless it actually ran.
 

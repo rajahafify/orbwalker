@@ -13,15 +13,6 @@ var current_hp: int = DEFAULT_MAX_HP
 var armor: int = 0
 var gold: int = 0
 
-var base_orb_values := {
-	OrbType.Id.FIRE: 1,
-	OrbType.Id.ICE: 1,
-	OrbType.Id.EARTH: 1,
-	OrbType.Id.HEART: 1,
-	OrbType.Id.ARMOR: 1,
-	OrbType.Id.GOLD: 1,
-}
-
 var equipment_slots: int = DEFAULT_EQUIPMENT_SLOTS
 var consumable_slots: int = DEFAULT_CONSUMABLE_SLOTS
 var move_timer_seconds: float = DEFAULT_MOVE_TIMER_SECONDS

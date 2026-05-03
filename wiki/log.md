@@ -1350,6 +1350,44 @@ Append-only history of wiki operations.
   - User route-level validation for the sampled Combat -> Shop path measured shop resource load around `52ms`, instantiate around `0ms`, attach around `140ms`, and first usable frame around `245ms`.
   - The deferred orb texture-map pass still costs about `1.1s-1.2s`, so preprocessed orb textures remain a useful follow-up if visual pop-in is noticeable.
 
+## [2026-05-03] code-change | Defeat Final Summary Route
+
+- Source: `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `docs/architecture_review_tasks.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Changed finalized defeat routing to open `res://scenes/flow/final_run_summary.tscn` in defeat mode instead of returning directly to main menu.
+  - Kept reset/no-summary inactive `RunState` routing pointed at `res://scenes/main.tscn`.
+  - Updated normal and debug defeat outcome overlays to show `Run Summary` as the handoff action.
+- Validation:
+  - Godot MCP route probe confirmed reset inactive, new run, and finalized defeat routes; scene instantiate passed for main, combat, shop, and final summary.
+  - Retained AR-01 combat result-envelope probe still matched baseline, `play_scene main` launched with no session errors, and `git diff --check` passed.
+
+## [2026-05-03] code-change | AR-08 Fallback Scene Retirement
+
+- Source: `AGENTS.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `scenes/flow/final_run_summary.tscn`, `scripts/flow/final_run_summary.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`, `wiki/setup.md`
+- Changed:
+  - Renamed the final victory summary surface from `run_summary_placeholder` to `final_run_summary`.
+  - Removed the old boss relic reward scene/script now that boss relic choices live in the combat victory overlay.
+  - Removed the old shop placeholder scene/script.
+  - Removed the board-debug scene/controller and updated current validation guidance to use player-facing scenes plus focused Godot MCP probes.
+- Validation:
+  - Godot MCP script checks, route probes, scene instantiate checks, main-scene smoke, deleted-reference searches, and `git diff --check` passed.
+- Notes:
+  - Historical validation entries in this log may still mention deleted debug/fallback surfaces as past evidence.
+
+## [2026-05-03] code-change | AR-08 Cleanup And Dead-Code Validation
+
+- Source: `scripts/combat/player_state.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/flow/run_summary_placeholder.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/file-map.md`, `wiki/known-issues.md`
+- Changed:
+  - Removed confirmed-unused `PlayerState.base_orb_values`.
+  - Removed confirmed-unused `CombatStateMachine.PLAYER_EFFECT_ORDER`.
+  - Removed unused legacy run-summary formatting helpers `_format_summary()`, `_format_slots()`, and `_format_ids()`.
+  - Recorded that `run_summary_placeholder.tscn`, `boss_relic_reward.tscn`, and `shop_placeholder.tscn` are retained route/fallback surfaces, not AR-08 deletion targets.
+- Validation:
+  - PowerShell source/scene reference checks found no remaining references to the removed symbols.
+  - Godot MCP `view_script`, retained AR-01 result-envelope probe, RunState route probes, scene instantiate probes, `play_scene main`, `get_godot_errors`, and `git diff --check` passed.
+- Notes:
+  - Manual visual QA for drag/cascade feel, overlap checks, Android/on-device behavior, and deferred orb texture-map pop-in remains outside this cleanup pass.
+
 ## [2026-05-03] fix | AR-02 Low-Risk Fixes
 - Source: `scripts/combat/enemy_state.gd`, `scripts/core/main_boot.gd`, `scripts/core/audio_manager.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_placeholder.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
 - Changes:

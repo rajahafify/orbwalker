@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/flow/run_summary_placeholder.gd" id="1_0"]
+[ext_resource type="Script" path="res://scripts/flow/final_run_summary.gd" id="1_0"]
 
-[node name="RunSummaryPlaceholder" type="Control"]
+[node name="FinalRunSummary" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +29,7 @@ theme_override_constants/separation = 10
 [node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Run Summary"
+text = "Final Run Summary"
 horizontal_alignment = 1
 
 [node name="SummaryLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]

@@ -9,8 +9,7 @@ const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
 const SCENE_MAIN := "res://scenes/main.tscn"
 const SCENE_COMBAT := "res://scenes/combat/combat_player.tscn"
 const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
-const SCENE_BOSS_RELIC_REWARD := "res://scenes/flow/boss_relic_reward.tscn"
-const SCENE_RUN_SUMMARY := "res://scenes/flow/run_summary_placeholder.tscn"
+const SCENE_RUN_SUMMARY := "res://scenes/flow/final_run_summary.tscn"
 const MAX_DUNGEON_LEVELS := 3
 const FLOW_TRACE_ENABLED := true
 const LEVEL_SEQUENCE: Array[String] = [
@@ -241,7 +240,6 @@ func run_contract_snapshot() -> Dictionary:
 			"SCENE_MAIN": SCENE_MAIN,
 			"SCENE_COMBAT": SCENE_COMBAT,
 			"SCENE_SHOP": SCENE_SHOP,
-			"SCENE_BOSS_RELIC_REWARD": SCENE_BOSS_RELIC_REWARD,
 			"SCENE_RUN_SUMMARY": SCENE_RUN_SUMMARY,
 		},
 		"level_sequence": LEVEL_SEQUENCE.duplicate(),
@@ -681,9 +679,9 @@ func _transition_result() -> Dictionary:
 
 func next_scene_path() -> String:
 	if not run_active:
-		if not run_victory:
-			return SCENE_MAIN
-		return SCENE_RUN_SUMMARY
+		if not _run_summary.is_empty():
+			return SCENE_RUN_SUMMARY
+		return SCENE_MAIN
 	if is_current_step_fight():
 		return SCENE_COMBAT
 	if is_current_step_shop():
@@ -998,10 +996,6 @@ func _flow_trace_mark_internal(route_id: String, step: String, details: Dictiona
 			details_text,
 		]
 	)
-
-
-func legacy_boss_reward_scene_path() -> String:
-	return SCENE_BOSS_RELIC_REWARD
 
 
 func _step_display_name(step: String) -> String:

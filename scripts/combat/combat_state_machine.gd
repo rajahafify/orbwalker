@@ -1,15 +1,6 @@
 extends RefCounted
 class_name CombatStateMachine
 
-const PLAYER_EFFECT_ORDER := [
-	OrbType.Id.HEART,
-	OrbType.Id.ARMOR,
-	OrbType.Id.FIRE,
-	OrbType.Id.ICE,
-	OrbType.Id.EARTH,
-	OrbType.Id.GOLD,
-]
-
 enum Phase {
 	INTENT_PREVIEW,
 	PLAYER_INPUT,
