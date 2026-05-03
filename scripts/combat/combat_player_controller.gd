@@ -100,6 +100,7 @@ const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outc
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_TURN_LOGGER_SCRIPT := preload("res://scripts/combat/combat_turn_logger.gd")
+const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layout_manager.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -247,6 +248,7 @@ var _combat_mastery_feedback_token := 0
 var _combat_mastery_preview_totals: Dictionary = {}
 var _combat_speed := COMBAT_SPEED_NORMAL
 var _resolve_presenter: Variant = null
+var _combat_layout_manager: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -347,6 +349,7 @@ func _ready() -> void:
 		"popover_parent": _layout_root,
 		"popover_z_index": 210,
 	}, true))
+	_bind_combat_layout_manager()
 	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
 	RunState.flow_trace_mark("combat_after_chrome", {}, _flow_trace_route_id)
@@ -396,6 +399,46 @@ func _apply_orb_texture_map_deferred() -> void:
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
 	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id)
+
+
+func _bind_combat_layout_manager() -> void:
+	if _combat_layout_manager == null:
+		_combat_layout_manager = COMBAT_LAYOUT_MANAGER_SCRIPT.new()
+	_combat_layout_manager.bind({
+		"layout_root": _layout_root,
+		"top_bar": _top_bar,
+		"enemy_panel": _enemy_panel,
+		"enemy_panel_root": _enemy_panel_root,
+		"intent_row": _intent_row,
+		"enemy_stage": _enemy_stage,
+		"enemy_hp_row": _enemy_hp_row,
+		"intent_badge": _intent_badge,
+		"enemy_portrait": _enemy_portrait,
+		"enemy_hp_bar": _enemy_hp_bar,
+		"enemy_label": _enemy_label,
+		"combat_strip": _combat_strip,
+		"timer_track": _timer_track,
+		"timer_icon": _timer_icon,
+		"board_panel": _board_panel,
+		"board_surface": _board_surface,
+		"board_view_control": _board_view_control,
+		"board_shadow": _board_shadow,
+		"player_loadout_hud": _player_loadout_hud,
+		"equipment_icons": _equipment_icons,
+		"consumable_icons": _consumable_icons,
+		"stat_chip_row": _stat_chip_row,
+		"combat_meta_row": _combat_meta_row,
+		"turn_summary_label": _turn_summary_label,
+		"mastery_root": _mastery_root,
+		"hero_level_badge": _hero_level_badge,
+		"player_armor_bar": _player_armor_bar,
+		"player_armor_label": _player_armor_label,
+		"mastery_strip": _mastery_strip,
+		"player_portrait": _player_portrait,
+		"relic_row": _relic_row,
+		"debug_overlay": _debug_overlay,
+		"outcome_overlay": _outcome_overlay,
+	})
 
 
 func _apply_visual_chrome() -> void:
@@ -1629,7 +1672,7 @@ func _show_outcome_summary(title: String, body: String, show_next: bool, button_
 	if _outcome_overlay == null:
 		return
 	_outcome_overlay.show_summary(title, body, show_next, button_text)
-	_apply_board_panel_layout()
+	_apply_combat_layout()
 
 
 func _hide_outcome_summary() -> void:
@@ -1649,7 +1692,7 @@ func _show_boss_reward_summary(body: String) -> void:
 		return
 	_outcome_overlay.show_boss_reward(body)
 	_pending_next_scene_path = ""
-	_apply_board_panel_layout()
+	_apply_combat_layout()
 	var options: Array = RunState.boss_relic_reward_options_snapshot()
 	var boss_reward_buttons := _outcome_overlay.boss_reward_buttons()
 	for index in boss_reward_buttons.size():
@@ -2490,144 +2533,21 @@ func _on_viewport_size_changed() -> void:
 
 
 func _apply_combat_layout() -> void:
-	var viewport_size := get_viewport_rect().size
-	if viewport_size.y <= 0.0:
+	if _combat_layout_manager == null:
 		return
-	var aspect := viewport_size.x / viewport_size.y
-	var is_compact := aspect < 0.85
-	var is_low_vertical := viewport_size.y < 760.0
-	_is_low_vertical_layout = is_low_vertical
-
-	var design_aspect := DESIGN_SIZE.x / DESIGN_SIZE.y
-	var fits_tall_portrait := aspect <= design_aspect
-	var scale_factor: float
-	if fits_tall_portrait:
-		scale_factor = viewport_size.x / DESIGN_SIZE.x
-		_layout_root.size = Vector2(DESIGN_SIZE.x, viewport_size.y / maxf(0.001, scale_factor))
-		_layout_root.position = Vector2(0.0, 0.0)
-	else:
-		scale_factor = minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-		var scaled_size := DESIGN_SIZE * scale_factor
-		_layout_root.position = (viewport_size - scaled_size) * 0.5
-		_layout_root.size = DESIGN_SIZE
-	_layout_root.scale = Vector2(scale_factor, scale_factor)
-	_update_runtime_layout_rects()
-
-	_apply_design_rect(_top_bar, _layout_top_bar_rect)
-	_apply_design_rect(_enemy_panel, _layout_enemy_panel_rect)
-	_apply_design_rect(_combat_strip, _layout_combat_strip_rect)
-	_apply_design_rect(_board_panel, _layout_board_panel_rect)
-	_player_loadout_hud.set_player_hud_layout_override({
-		"section": _layout_player_hud_section_rect,
-	})
-	_player_loadout_hud.update_player_hud_layout()
-	_apply_enemy_panel_layout()
-	_apply_combat_strip_layout()
-	_apply_board_panel_layout()
-	_apply_player_panel_layout()
-
-	if is_low_vertical:
-		_mastery_strip.visible = false
-		_relic_row.visible = false
-	_debug_overlay.anchor_left = 0.08 if is_compact else 0.58
-	_debug_overlay.anchor_top = 0.05
-	_debug_overlay.anchor_right = 0.985
-	_debug_overlay.anchor_bottom = 0.97
-
-
-func _apply_design_rect(control: Control, rect: Rect2) -> void:
-	control.position = rect.position
-	control.size = rect.size
-
-
-func _apply_enemy_panel_layout() -> void:
-	_enemy_panel_root.position = Vector2.ZERO
-	_enemy_panel_root.size = _layout_enemy_panel_rect.size
-	_apply_design_rect(_intent_row, ENEMY_INTENT_RECT)
-	_apply_design_rect(_enemy_stage, ENEMY_STAGE_RECT)
-	_apply_design_rect(_enemy_hp_row, ENEMY_HP_ROW_RECT)
-	_intent_badge.custom_minimum_size = Vector2(56, 56)
-	_enemy_portrait.size = ENEMY_PORTRAIT_SIZE
-	_enemy_portrait.position = Vector2(
-		(ENEMY_STAGE_RECT.size.x - ENEMY_PORTRAIT_SIZE.x) * 0.5,
-		ENEMY_STAGE_RECT.size.y - ENEMY_PORTRAIT_SIZE.y
-	)
-	_enemy_hp_bar.size = ENEMY_HP_BAR_SIZE
-	_enemy_hp_bar.position = Vector2((ENEMY_HP_ROW_RECT.size.x - ENEMY_HP_BAR_SIZE.x) * 0.5, 0.0)
-	_enemy_label.position = Vector2(0.0, 22.0)
-	_enemy_label.size = Vector2(ENEMY_HP_ROW_RECT.size.x, 28.0)
-
-
-func _apply_combat_strip_layout() -> void:
-	_timer_track.position = Vector2(
-		(_layout_combat_strip_rect.size.x - TIMER_TRACK_SIZE.x) * 0.5,
-		(_layout_combat_strip_rect.size.y - TIMER_TRACK_SIZE.y) * 0.5
-	)
-	_timer_track.size = TIMER_TRACK_SIZE
-	_timer_icon.custom_minimum_size = TIMER_ICON_SIZE
-	_sync_timer_display(_move_time_left if _active_drag else _timer_ready_seconds(), TIMER_STATE_ACTIVE if _active_drag else TIMER_STATE_READY)
-
-
-func _apply_board_panel_layout() -> void:
-	_board_panel.clip_contents = true
-	var board_aspect := BOARD_SURFACE_SIZE.x / BOARD_SURFACE_SIZE.y
-	var max_board_height := maxf(64.0, _layout_board_panel_rect.size.y - BOARD_SURFACE_TOP - BOARD_SURFACE_BOTTOM_PADDING)
-	var max_board_width := maxf(64.0, _layout_board_panel_rect.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0))
-	var board_height := minf(max_board_height, max_board_width / maxf(0.001, board_aspect))
-	var board_width := board_height * board_aspect
-	var board_surface_size := Vector2(board_width, board_height)
-	_board_surface.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_board_surface.position = Vector2((_layout_board_panel_rect.size.x - board_surface_size.x) * 0.5, BOARD_SURFACE_TOP)
-	_board_surface.size = board_surface_size
-	_board_view_control.custom_minimum_size = board_surface_size
-	var shadow_position := _board_surface.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
-	var shadow_size := board_surface_size + BOARD_SHADOW_EXPAND
-	shadow_size.x = minf(shadow_size.x, _layout_board_panel_rect.size.x)
-	shadow_size.y = minf(shadow_size.y, _layout_board_panel_rect.size.y)
-	shadow_position.x = clampf(shadow_position.x, 0.0, maxf(0.0, _layout_board_panel_rect.size.x - shadow_size.x))
-	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, _layout_board_panel_rect.size.y - shadow_size.y))
-	_board_shadow.position = shadow_position
-	_board_shadow.size = shadow_size
-	if _outcome_overlay != null:
-		_outcome_overlay.sync_layout(_layout_board_panel_rect)
-
-
-func _update_runtime_layout_rects() -> void:
-	_layout_top_bar_rect = TOP_BAR_RECT
-	_layout_enemy_panel_rect = ENEMY_PANEL_RECT
-	_layout_combat_strip_rect = COMBAT_STRIP_RECT
-	_layout_board_panel_rect = BOARD_PANEL_RECT
-	_layout_player_hud_section_rect = Rect2(Vector2(0, 1092), Vector2(1080, 828))
-	var extra_height := maxf(0.0, _layout_root.size.y - DESIGN_SIZE.y)
-	if extra_height <= 0.0:
+	var layout_result = _combat_layout_manager.apply_layout(get_viewport_rect().size)
+	if not bool(layout_result.get("applied", false)):
 		return
-	var board_top := BOARD_PANEL_RECT.position.y
-	var board_gap := 16.0
-	var player_section_base_size := _layout_player_hud_section_rect.size
-	var max_board_width := BOARD_PANEL_RECT.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0)
-	var board_panel_max_height := (max_board_width * (BOARD_SURFACE_SIZE.y / BOARD_SURFACE_SIZE.x)) + BOARD_SURFACE_TOP + BOARD_SURFACE_BOTTOM_PADDING
-	var board_growth_capacity := maxf(0.0, board_panel_max_height - BOARD_PANEL_RECT.size.y)
-	var board_growth := minf(extra_height, board_growth_capacity)
-	var player_growth := extra_height - board_growth
-	_layout_board_panel_rect = Rect2(BOARD_PANEL_RECT.position, Vector2(BOARD_PANEL_RECT.size.x, BOARD_PANEL_RECT.size.y + board_growth))
-	var section_position := Vector2(0.0, board_top + _layout_board_panel_rect.size.y + board_gap)
-	_layout_player_hud_section_rect = Rect2(section_position, Vector2(player_section_base_size.x, player_section_base_size.y + player_growth))
-
-
-func _apply_player_panel_layout() -> void:
-	_apply_design_rect(_stat_chip_row, PLAYER_STAT_CHIP_RECT)
-	_apply_design_rect(_combat_meta_row, PLAYER_META_RECT)
-	_apply_design_rect(_turn_summary_label, PLAYER_SUMMARY_RECT)
-	_mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	_hero_level_badge.visible = false
-	_player_armor_bar.visible = false
-	_player_armor_label.visible = false
-	_stat_chip_row.visible = false
-	_combat_meta_row.visible = false
-	_turn_summary_label.visible = false
-	_mastery_strip.visible = false
-	_apply_loadout_rail_layout()
-	_player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
+	_is_low_vertical_layout = bool(layout_result.get("is_low_vertical_layout", false))
+	_layout_top_bar_rect = layout_result.get("layout_top_bar_rect", _layout_top_bar_rect)
+	_layout_enemy_panel_rect = layout_result.get("layout_enemy_panel_rect", _layout_enemy_panel_rect)
+	_layout_combat_strip_rect = layout_result.get("layout_combat_strip_rect", _layout_combat_strip_rect)
+	_layout_board_panel_rect = layout_result.get("layout_board_panel_rect", _layout_board_panel_rect)
+	_layout_player_hud_section_rect = layout_result.get("layout_player_hud_section_rect", _layout_player_hud_section_rect)
+	_sync_timer_display(
+		_move_time_left if _active_drag else _timer_ready_seconds(),
+		TIMER_STATE_ACTIVE if _active_drag else TIMER_STATE_READY
+	)
 
 
 func _apply_combat_mastery_panel_layout() -> void:
@@ -2687,6 +2607,9 @@ func _adopt_relic_footer_nodes_for_shared_layout() -> void:
 
 
 func _apply_loadout_rail_layout() -> void:
+	if _combat_layout_manager != null:
+		_combat_layout_manager.apply_loadout_rail_layout()
+		return
 	_player_loadout_hud.apply_loadout_rail_layout(_equipment_icons, EQUIPMENT_RAIL_RECT, _consumable_icons, CONSUMABLE_RAIL_RECT)
 
 

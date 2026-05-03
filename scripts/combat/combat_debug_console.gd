@@ -522,24 +522,33 @@ func _orb_id_from_token(token: String) -> int:
 
 
 func _set_status_text(message: String) -> void:
-	var callback := _callbacks.get("set_status_text", Callable())
-	if callback is Callable and (callback as Callable).is_valid():
-		(callback as Callable).call(message)
+	var callback: Callable = _get_callback("set_status_text")
+	if callback.is_valid():
+		callback.call(message)
 
 
 func _callback_dict(name: String, args: Array = []) -> Dictionary:
-	var callback := _callbacks.get(name, Callable())
-	if callback is Callable and (callback as Callable).is_valid():
-		var result: Variant = (callback as Callable).callv(args)
+	var callback: Callable = _get_callback(name)
+	if callback.is_valid():
+		var result: Variant = callback.callv(args)
 		if result is Dictionary:
 			return result
 	return {}
 
 
 func _callback_array(name: String, args: Array = []) -> Array:
-	var callback := _callbacks.get(name, Callable())
-	if callback is Callable and (callback as Callable).is_valid():
-		var result: Variant = (callback as Callable).callv(args)
+	var callback: Callable = _get_callback(name)
+	if callback.is_valid():
+		var result: Variant = callback.callv(args)
 		if result is Array:
 			return result
 	return []
+
+
+func _get_callback(name: String) -> Callable:
+	if not _callbacks.has(name):
+		return Callable()
+	var raw_callback: Variant = _callbacks[name]
+	if raw_callback is Callable:
+		return raw_callback as Callable
+	return Callable()

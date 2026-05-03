@@ -119,22 +119,21 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-11: Combat Layout Manager Extraction
 
-- Status: `not started`
-- Owner/scope: Extract combat scene geometry and responsive design-space positioning from `scripts/combat/combat_player_controller.gd` into a focused layout helper, tentatively `scripts/combat/combat_layout_manager.gd`.
-- Plan:
-  - Move layout-only responsibilities such as runtime rect calculation, design-rect application, enemy panel layout, combat strip layout, board panel layout, player panel layout, loadout rail positioning, and debug overlay anchoring behind a helper boundary.
-  - Keep scene node ownership and gameplay state in `combat_player_controller.gd`; the layout helper should receive bound nodes, constants/config, and current viewport/layout state rather than pulling game state directly.
-  - Preserve existing portrait/tall-viewport behavior, board aspect constraints, `PlayerLoadoutHud` layout override behavior, debug overlay anchor behavior, and outcome overlay layout sync.
-  - Do not change visual chrome colors, theme construction, VFX, input handling, resolve presentation, HUD data sync, outcome routing, or combat math in this batch.
+- Status: `done`
+- Owner/scope: Extracted combat scene geometry and responsive design-space positioning from `scripts/combat/combat_player_controller.gd` into `scripts/combat/combat_layout_manager.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving layout extraction. `CombatLayoutManager` now owns viewport/design-root scaling, runtime zone rect calculation, design-rect application, enemy panel positioning, combat strip timer geometry, board panel aspect/shadow geometry, player panel legacy visibility/layout, loadout rail positioning, debug overlay anchoring, `PlayerLoadoutHud` section override dispatch, and outcome overlay board-rect sync. `combat_player_controller.gd` keeps scene node ownership, gameplay state, timer state decisions, input, resolver/presenter orchestration, VFX, HUD data refresh, audio, `/skip`, debug command callbacks, outcome routing, and scene transitions.
 - Out of scope:
   - Do not redesign the combat screen, resize gameplay zones beyond existing formulas, or combine this with theme-resource extraction.
   - Do not move `PlayerLoadoutHud` ownership; this AR only moves combat-scene positioning orchestration.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP, not headless: `view_script` for `combat_player_controller.gd` and the new layout helper; focused scene instantiate for `res://scenes/combat/combat_player.tscn`; `play_scene main`; final `get_godot_errors`.
-  - Add a focused editor-script layout probe for representative viewport sizes that confirms key node rects remain equal to the pre-refactor baseline or intentionally documented as unchanged formulas.
-  - Manual visual QA remains required for overlap checks, Android/on-device layout, and rapid-tap feel.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` only after the helper lands and validation is clean.
+  - `git status --short --branch` confirmed `codex/ar-11-combat-layout-manager`; `git diff --check` passed.
+  - Godot MCP `view_script` passed for `res://scripts/combat/combat_player_controller.gd`, `res://scripts/combat/combat_layout_manager.gd`, and `res://scripts/ui/player_loadout_hud.gd`; focused script reload returned `reload=0 base=RefCounted new=true` for the layout helper.
+  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `CombatLayoutRoot`, `BoardPanel`, `BoardSurface`, `PlayerHudSection`, `DebugOverlay`, and `OutcomeSummaryPanel`.
+  - Focused layout probe preserved key formulas: `1080x1920` board `480x576`, `1080x2400` board `880x1056`, tall board panel `1048x1064`, wide viewport root centering/scale, and compact/right-side debug overlay anchoring.
+  - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+  - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - Manual visual QA remains required for overlap checks, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new layout helper boundary and validation evidence.
 
 ## AR-12: Combat VFX Manager Extraction
 

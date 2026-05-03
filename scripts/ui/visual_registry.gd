@@ -9,6 +9,7 @@ const PATH_RARITY_SHEET := "res://resources/art/first_pass/sheets/rarity_badge_s
 const PATH_MASTERY_SHEET := "res://resources/art/first_pass/sheets/mastery_icon_set_v1.png"
 const PATH_ITEM_SHEET := "res://resources/art/first_pass/sheets/item_icon_seed_set_v1.png"
 const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
+const PATH_DERIVED_ORB_DIR := "res://resources/art/first_pass/derived/orbs"
 const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
 const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
 const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
@@ -117,6 +118,14 @@ const _MASTERY_ICON_BY_ORB_ID := {
 	OrbType.Id.HEART: "mastery_heart",
 	OrbType.Id.ARMOR: "mastery_armor",
 	OrbType.Id.GOLD: "mastery_gold",
+}
+const _DERIVED_ORB_FILENAME_BY_ID := {
+	OrbType.Id.FIRE: "orb_fire_clean.png",
+	OrbType.Id.ICE: "orb_ice_clean.png",
+	OrbType.Id.EARTH: "orb_earth_clean.png",
+	OrbType.Id.HEART: "orb_heart_clean.png",
+	OrbType.Id.ARMOR: "orb_armor_clean.png",
+	OrbType.Id.GOLD: "orb_gold_clean.png",
 }
 
 const _STABLE_PLACEHOLDER_ICON_COLORS := {
@@ -487,6 +496,8 @@ func _ensure_vfx_textures() -> void:
 
 
 func _build_orb_textures() -> void:
+	if _try_build_derived_orb_textures():
+		return
 	var sheet := _safe_load_texture(PATH_ORB_SHEET, "orb_sheet")
 	if sheet == null:
 		return
@@ -503,6 +514,24 @@ func _build_orb_textures() -> void:
 	for index in orb_count:
 		var region := Rect2(slice_width * index, 0.0, slice_width, float(sheet.get_height()))
 		_orb_textures[orb_ids[index]] = _processed_orb_region(sheet, region)
+
+
+func _try_build_derived_orb_textures() -> bool:
+	var loaded_orbs: Dictionary = {}
+	for orb_id in _DERIVED_ORB_FILENAME_BY_ID.keys():
+		var file_name := String(_DERIVED_ORB_FILENAME_BY_ID[orb_id])
+		if file_name == "":
+			return false
+		var path := "%s/%s" % [PATH_DERIVED_ORB_DIR, file_name]
+		var texture := _safe_load_texture(path, "derived_orb:%s" % file_name)
+		if texture == null:
+			return false
+		loaded_orbs[orb_id] = texture
+	if loaded_orbs.size() != _DERIVED_ORB_FILENAME_BY_ID.size():
+		return false
+	for orb_id in loaded_orbs.keys():
+		_orb_textures[orb_id] = loaded_orbs[orb_id]
+	return true
 
 
 func _build_intent_textures() -> void:

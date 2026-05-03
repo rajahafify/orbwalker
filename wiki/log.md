@@ -1,5 +1,15 @@
 # Wiki Log
 
+## 2026-05-04 - Start Run Orb Texture Startup Fix
+
+- Added generated clean combat orb textures under `resources/art/first_pass/derived/orbs/` and updated `VisualRegistry` to load those textures before falling back to runtime orb-sheet cleanup. (source: `scripts/ui/visual_registry.gd`, `resources/art/first_pass/derived/orbs/`)
+- Recorded follow-up timing evidence: focused warm-cache `orb_texture()` probes measured about `12ms`, and live `Start Run -> Combat` tracing measured `combat_first_usable_frame` at `314ms` with `combat_after_texture_map` at `325ms`, replacing the old sampled `1.1s-1.2s` deferred cleanup delay. Manual visual pop-in and Android/on-device feel remain QA items. (source: `docs/test_plan.md`, `wiki/known-issues.md`)
+
+## 2026-05-04 - AR-11 Combat Layout Manager Extraction
+
+- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_layout_manager.gd`, which now owns combat scene geometry, responsive design-space scaling, board/player HUD layout rects, debug overlay anchors, and outcome overlay layout sync while `combat_player_controller.gd` keeps gameplay state, input, VFX, HUD data, routing, and timer state decisions. (source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_player_controller.gd`)
+- Recorded AR-11 completion in the architecture review tracker and test plan with Godot MCP script-load, scene instantiate, layout parity, retained AR-01 result-envelope, main-scene smoke, and final no-session-error evidence. Manual visual overlap, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel remain broader QA gaps unless retested separately. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+
 ## 2026-05-04 - AR-10 Combat Controller God-Object Refactor
 
 - Updated [[architecture]], [[file-map]], and [[features]] for the new combat debug/turn-log helper boundary: `scripts/combat/combat_debug_console.gd` owns command parsing and log rendering, `scripts/combat/combat_turn_logger.gd` owns turn-log and summary text, and `scripts/combat/combat_player_controller.gd` keeps privileged gameplay callbacks, `/skip`, routing, input, layout, and VFX. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_debug_console.gd`, `scripts/combat/combat_turn_logger.gd`)
