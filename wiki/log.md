@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-04 - AR-12 Combat VFX Manager Extraction
+
+- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_vfx_manager.gd`, which now owns transient combat VFX drawing mechanics: VFX layer binding, texture VFX spawning, replay impacts, mastery beam source lookup, global-to-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup. `scripts/combat/combat_player_controller.gd` keeps turn-log decisions, replay order/waits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions. (source: `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_player_controller.gd`)
+- Recorded AR-12 completion in the architecture review tracker and test plan with Godot MCP `view_script`, helper reload/instantiate, focused VFX spawn, combat scene instantiate, retained AR-01 result-envelope, main-scene smoke, and final no-session-error evidence. Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, overlap checks, drag/cascade feel, orb texture pop-in, and rapid-tap feel. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+
 ## 2026-05-04 - Start Run Orb Texture Startup Fix
 
 - Added generated clean combat orb textures under `resources/art/first_pass/derived/orbs/` and updated `VisualRegistry` to load those textures before falling back to runtime orb-sheet cleanup. (source: `scripts/ui/visual_registry.gd`, `resources/art/first_pass/derived/orbs/`)

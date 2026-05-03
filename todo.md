@@ -526,6 +526,10 @@ Tasks:
 - [x] AR-06 Combat presentation split.
 - [x] AR-07 RunState/data contract roadmap. Prototype content source of truth is dictionary-backed `ContentRegistry` data for this phase; `.tres` or JSON migration is deferred behind the registry API.
 - [x] AR-08 Cleanup/dead-code validation. Removed confirmed-unused code symbols/helpers, renamed the final victory summary to `final_run_summary`, removed the legacy boss relic reward scene, removed the legacy shop placeholder scene, and removed the board-debug scene/controller. Current validation now uses player-facing scenes plus focused Godot MCP probes instead of the deleted debug/fallback surfaces.
+- [x] AR-09 Stability and shared UI utility cleanup. Added lifecycle guards, bounded resolve animation drain, traced combat redirect, Start Run failure recovery, final-summary transition guards, and shared `UiUtils.panel_style(...)` ownership.
+- [x] AR-10 Combat controller god-object refactor. Extracted `CombatDebugConsole` and `CombatTurnLogger` while keeping privileged gameplay callbacks, `/skip`, routing, input, layout, VFX timing, and combat state in the controller.
+- [x] AR-11 Combat layout manager extraction. Extracted combat scene geometry and responsive layout ownership into `CombatLayoutManager` while preserving portrait/tall viewport behavior and shared HUD layout overrides.
+- [x] AR-12 Combat VFX manager extraction. Extracted transient combat VFX drawing mechanics into `CombatVfxManager` while keeping replay order, combat math, mastery feedback semantics, routing, input, layout, audio, debug callbacks, and `/skip` in the controller.
 
 ## Milestone 10: Balance Pass And QA
 

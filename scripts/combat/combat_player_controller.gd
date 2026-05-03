@@ -101,6 +101,7 @@ const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_re
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_TURN_LOGGER_SCRIPT := preload("res://scripts/combat/combat_turn_logger.gd")
 const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layout_manager.gd")
+const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -249,6 +250,7 @@ var _combat_mastery_preview_totals: Dictionary = {}
 var _combat_speed := COMBAT_SPEED_NORMAL
 var _resolve_presenter: Variant = null
 var _combat_layout_manager: Variant = null
+var _combat_vfx_manager: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -291,6 +293,8 @@ func _ready() -> void:
 		_turn_logger = COMBAT_TURN_LOGGER_SCRIPT.new()
 	if _debug_console == null:
 		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
+	if _combat_vfx_manager == null:
+		_combat_vfx_manager = COMBAT_VFX_MANAGER_SCRIPT.new()
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
@@ -349,6 +353,7 @@ func _ready() -> void:
 		"popover_parent": _layout_root,
 		"popover_z_index": 210,
 	}, true))
+	_bind_combat_vfx_manager()
 	_bind_combat_layout_manager()
 	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
@@ -438,6 +443,18 @@ func _bind_combat_layout_manager() -> void:
 		"relic_row": _relic_row,
 		"debug_overlay": _debug_overlay,
 		"outcome_overlay": _outcome_overlay,
+	})
+
+
+func _bind_combat_vfx_manager() -> void:
+	if _combat_vfx_manager == null:
+		return
+	_combat_vfx_manager.bind({
+		"vfx_layer": _vfx_layer,
+		"visual_registry": _visuals,
+		"player_loadout_hud": _player_loadout_hud,
+		"elemental_mastery_cards": _elemental_mastery_cards,
+		"timer_owner": self,
 	})
 
 
@@ -2354,44 +2371,26 @@ func _emit_turn_feedback_vfx(_turn_log: Dictionary) -> void:
 
 
 func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
-	var tex := _visuals.vfx_texture(effect_name)
-	if tex == null:
+	if _combat_vfx_manager == null:
 		return
-	_spawn_vfx_texture(tex, global_center, draw_size, lifetime, modulate_color)
+	_combat_vfx_manager.spawn_vfx(effect_name, global_center, draw_size, lifetime, modulate_color)
 
 
 func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
-	if texture == null:
+	if _combat_vfx_manager == null:
 		return
-	var sprite := TextureRect.new()
-	sprite.texture = texture
-	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	sprite.custom_minimum_size = draw_size
-	sprite.size = draw_size
-	sprite.modulate = modulate_color
-	_vfx_layer.add_child(sprite)
-	var local_center: Vector2 = _vfx_layer.get_global_transform_with_canvas().affine_inverse() * global_center
-	sprite.position = local_center - draw_size * 0.5
-	var tween := create_tween()
-	tween.tween_property(sprite, "modulate:a", 0.0, maxf(0.08, lifetime))
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(sprite):
-			sprite.queue_free()
-	)
+	_combat_vfx_manager.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
 
 
 func _spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float) -> void:
-	if global_center == Vector2.ZERO:
+	if _combat_vfx_manager == null:
 		return
-	var impact_texture := _visuals.mastery_impact_texture(impact_kind)
-	if impact_texture == null:
-		impact_texture = _visuals.vfx_texture("orb_clear")
-	_spawn_vfx_texture(impact_texture, global_center, draw_size, lifetime, Color(1.0, 1.0, 1.0, 0.92))
+	_combat_vfx_manager.spawn_replay_impact(global_center, impact_kind, draw_size, lifetime)
 
 
 func _mastery_impact_kind(orb_id: int) -> String:
+	if _combat_vfx_manager != null:
+		return String(_combat_vfx_manager.mastery_impact_kind(orb_id))
 	match orb_id:
 		OrbType.Id.HEART:
 			return "heart"
@@ -2414,29 +2413,9 @@ func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
 	return selected_orb
 
 
-func _mastery_card_source(orb_id: int) -> Control:
-	var elemental_mastery_cards := _elemental_mastery_cards
-	if _player_loadout_hud == null or elemental_mastery_cards == null:
-		return null
-
-	var card := _player_loadout_hud.get_combat_mastery_card(elemental_mastery_cards, orb_id)
-	if card == null:
-		var fallback_name := "CombatMasteryCard%d" % orb_id
-		card = elemental_mastery_cards.get_node_or_null(fallback_name) as Control
-	if card == null:
-		return null
-
-	var slot := card.get_node_or_null("CardPanel") as Control
-	if slot == null:
-		return card
-	var icon := slot.get_node_or_null("MasteryIcon")
-	if icon == null and card.get_node_or_null("MasteryIconSlot") is Control:
-		slot = card.get_node_or_null("MasteryIconSlot") as Control
-		icon = slot.get_node_or_null("MasteryIcon")
-	return icon if icon is Control else slot
-
-
 func _control_global_center(control: Control, vertical_bias: float = 0.5) -> Vector2:
+	if _combat_vfx_manager != null:
+		return _combat_vfx_manager.control_global_center(control, vertical_bias)
 	if control == null:
 		return Vector2.ZERO
 	var rect := control.get_global_rect()
@@ -2449,71 +2428,9 @@ func _control_global_center(control: Control, vertical_bias: float = 0.5) -> Vec
 
 
 func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
-	var source: Control = null
-	var target_global: Vector2 = Vector2.ZERO
-	var orb_id: int = OrbType.Id.FIRE
-	var beam_lifetime: float = lifetime
-
-	if source_orb_or_node is int:
-		orb_id = int(source_orb_or_node)
-		source = _mastery_card_source(orb_id)
-		if source == null:
-			return
-		target_global = target_or_start
-		if orb_or_target is Vector2:
-			target_global = orb_or_target
-		elif orb_or_target is float:
-			beam_lifetime = float(orb_or_target)
-	elif source_orb_or_node is Control:
-		source = source_orb_or_node
-		if orb_or_target is int:
-			orb_id = int(orb_or_target)
-		elif orb_or_target is float:
-			beam_lifetime = float(orb_or_target)
-		target_global = target_or_start
-	else:
+	if _combat_vfx_manager == null:
 		return
-
-	if source == null or target_global == Vector2.ZERO:
-		return
-
-	if _vfx_layer == null or source == null:
-		return
-	var source_point := _control_global_center(source, 0.5)
-	if source_point == Vector2.ZERO:
-		return
-	var beam_texture := _visuals.mastery_beam_texture(orb_id)
-	if beam_texture == null:
-		return
-
-	var inverse_canvas_transform: Transform2D = _vfx_layer.get_global_transform_with_canvas().affine_inverse()
-	var source_local: Vector2 = inverse_canvas_transform * source_point
-	var target_local: Vector2 = inverse_canvas_transform * target_global
-	var delta: Vector2 = target_local - source_local
-	var distance: float = delta.length()
-	if distance <= 1.0:
-		return
-
-	var beam := TextureRect.new()
-	beam.texture = beam_texture
-	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	beam.stretch_mode = TextureRect.STRETCH_SCALE
-	var beam_thickness := 28.0
-	beam.size = Vector2(distance, beam_thickness)
-	beam.pivot_offset = Vector2(0.0, beam_thickness * 0.5)
-	beam.position = source_local - Vector2(0.0, beam_thickness * 0.5)
-	beam.rotation = delta.angle()
-	beam.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	beam.z_index = 92
-	_vfx_layer.add_child(beam)
-
-	var fade_tween := create_tween()
-	fade_tween.tween_property(beam, "modulate:a", 0.0, maxf(0.08, beam_lifetime))
-	fade_tween.finished.connect(func() -> void:
-		if is_instance_valid(beam):
-			beam.queue_free()
-	)
+	_combat_vfx_manager.spawn_mastery_beam(source_orb_or_node, target_or_start, orb_or_target, lifetime)
 
 
 func _on_resolver_match_found(groups: Array) -> void:

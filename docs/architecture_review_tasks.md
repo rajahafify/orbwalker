@@ -137,8 +137,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-12: Combat VFX Manager Extraction
 
-- Status: `not started`
-- Owner/scope: Extract combat VFX spawning and transient replay effect helpers from `scripts/combat/combat_player_controller.gd` into a focused helper, tentatively `scripts/combat/combat_vfx_manager.gd`.
+- Status: `done`
+- Owner/scope: Extracted combat VFX spawning and transient replay effect helpers from `scripts/combat/combat_player_controller.gd` into `scripts/combat/combat_vfx_manager.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving VFX extraction. `CombatVfxManager` now owns VFX layer binding, texture VFX spawning, replay impact texture lookup/fallback, mastery beam source lookup, global-to-VFX-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup through the controller-owned tween owner. `CombatPlayerController` keeps turn-log decisions, replay order, awaits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions.
 - Plan:
   - Move texture-based VFX spawning, replay impact spawning, mastery beam spawning, mastery-card source lookup support, global/local coordinate conversion, fade tween lifecycle, and small visual-effect helper decisions that are not combat math.
   - Keep `CombatPlayerController` responsible for deciding when effects happen, which `turn_log` values trigger them, and when awaited replay steps continue or abort.
@@ -148,11 +149,15 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not change combo popup timing, mastery preview math, turn replay order, resolve presentation, VFX art assets, layout, or combat speed behavior.
   - Do not introduce new effects or change visual readability tuning in this refactor batch.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for the controller and new VFX helper; focused script-load probe; `combat_player.tscn` instantiate; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
-  - Add a focused helper probe that verifies spawned effect nodes parent under `VfxLayer`, fade cleanup is connected, and null/missing texture paths no-op without errors.
+  - `git status --short --branch` confirmed `codex/ar-12-combat-vfx-manager`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/combat_vfx_manager.gd`.
+  - Focused helper reload/instantiate probe returned `reload=0 base=RefCounted new=true`.
+  - Focused VFX helper probe confirmed a null texture no-op kept `VfxLayer` at `0` children, a spawned texture parented one `TextureRect` under `VfxLayer`, and preserved size plus alpha modulation.
+  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `VfxLayer`, `ElementalMasteryCards`, `EnemyPortrait`, `PlayerPortrait`, and `BoardSurface`.
+  - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+  - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, and overlap checks.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` after validated extraction.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new VFX helper boundary and validation evidence.
 
 ## AR-13: Board Drag Input Handler Extraction
 
