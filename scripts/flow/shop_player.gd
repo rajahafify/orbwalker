@@ -87,6 +87,7 @@ var _selected_equipment_slot := -1
 var _selected_consumable_slot := -1
 var _flow_trace_route_id := ""
 var _is_transitioning := false
+var _shop_action_guard_frame := -1
 
 
 func _enter_tree() -> void:
@@ -452,6 +453,8 @@ func _render_booster_overlay(pending_options: Array) -> void:
 
 
 func _buy_offer_at(index: int) -> void:
+	if not _try_begin_shop_action():
+		return
 	_clear_inventory_focus()
 	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
 	var item_offers: Array = shop_snapshot.get("item_offers", [])
@@ -465,6 +468,8 @@ func _buy_offer_at(index: int) -> void:
 
 
 func _buy_relic_offer() -> void:
+	if not _try_begin_shop_action():
+		return
 	_clear_inventory_focus()
 	var relic_offer: Dictionary = RunState.ensure_shop_state().relic_offer
 	if relic_offer.is_empty():
@@ -476,6 +481,8 @@ func _buy_relic_offer() -> void:
 
 
 func _on_reroll_button_pressed() -> void:
+	if not _try_begin_shop_action():
+		return
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.reroll_shop_items()
 	_play_shop_result_sfx(result, "ui_accept")
@@ -484,6 +491,8 @@ func _on_reroll_button_pressed() -> void:
 
 
 func _on_sell_equipment_button_pressed() -> void:
+	if not _try_begin_shop_action():
+		return
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var selected_kind := _selected_slot_kind(progression_snapshot)
 	if selected_kind == "":
@@ -503,6 +512,8 @@ func _on_sell_equipment_button_pressed() -> void:
 
 
 func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
+	if not _try_begin_shop_action():
+		return
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
 	_play_shop_result_sfx(result, "gold")
 	var action := "Sell equipment slot %d" % slot_index if slot_type == "equipment" else "Sell consumable slot %d" % slot_index
@@ -515,6 +526,8 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 
 
 func _choose_booster_option(index: int) -> void:
+	if not _try_begin_shop_action():
+		return
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.choose_booster_option(index)
 	_play_shop_result_sfx(result, "purchase")
@@ -526,6 +539,8 @@ func _choose_booster_option(index: int) -> void:
 
 
 func _skip_pending_booster() -> void:
+	if not _try_begin_shop_action():
+		return
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.discard_pending_booster_options()
 	_play_shop_result_sfx(result, "ui_cancel")
@@ -601,12 +616,23 @@ func _clear_inventory_focus() -> void:
 	_player_loadout_hud.hide_slot_detail_popover()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _try_begin_shop_action() -> bool:
+	var frame := Engine.get_process_frames()
+	if _shop_action_guard_frame == frame:
+		return false
+	_shop_action_guard_frame = frame
+	return true
+
+
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position):
-			_selected_equipment_slot = -1
-			_selected_consumable_slot = -1
-			get_viewport().set_input_as_handled()
+			_clear_inventory_focus()
+			_refresh_ui()
+	elif event is InputEventScreenTouch and event.pressed:
+		if _player_loadout_hud.handle_global_click((event as InputEventScreenTouch).position):
+			_clear_inventory_focus()
+			_refresh_ui()
 
 
 func _on_continue_button_pressed() -> void:

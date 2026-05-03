@@ -21,6 +21,9 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 - The checked sources do not define a separate CLI build or test script. Validation in this repo is currently documented as manual QA plus Godot MCP/editor-script checks. (needs verification)
 - AR-01 combat result-envelope regression can be rerun with `res://scripts/debug/ar01_combat_result_probe.gd`. It is disabled by default behind project setting `debug/ar01_combat_result_probe_enabled=false`; enable it only for the probe call, then turn it back off. (source: `scripts/debug/ar01_combat_result_probe.gd`, `docs/test_plan.md`)
 - MIDI music sources can be rendered to Godot-ready WAV files with `python tools/audio/export_midi_to_wav.py`. The script defaults to the local FluidSynth binary at `C:\Users\Home\Downloads\orbwalker\fluidsynth-v2.5.4-win10-x64-cpp11\fluidsynth-v2.5.4-win10-x64-cpp11\bin\fluidsynth.exe` and `raw/GeneralUser GS v1.471.sf2`; override either path with `--fluidsynth` or `--soundfont`. (source: `tools/audio/export_midi_to_wav.py`, `raw/`)
+- Android debug export currently uses the Godot 4.6.2 console executable and the `Android` export preset:
+  - `& 'C:\Users\Home\Desktop\Godot\Godot_v4.6.2-stable_win64_console.exe' --path 'D:\godot\matchatro' --export-debug Android 'D:\godot\matchatro\Orbwalker.apk'`
+  - On this Windows checkout, the command has repeatedly written a valid `Orbwalker.apk` and then failed to terminate cleanly, leaving a `Godot_v4.6.2-stable_win64_console.exe` process plus a Java/Gradle child. Treat this as an export-tool shutdown issue, not proof that the APK failed. Check `Orbwalker.apk` `LastWriteTime`/size, install with `adb install -r D:\godot\matchatro\Orbwalker.apk`, then stop only the stuck console exporter and Java child if needed. Leave the main Godot editor process running. (source: `export_presets.cfg`, `docs/test_plan.md`)
 
 ## Important Files
 
@@ -34,10 +37,12 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 - `docs/test_plan.md` - manual QA checklist
 - `docs/system_architecture.md` - architecture and setup context
 - `tools/audio/export_midi_to_wav.py` - MIDI-to-WAV export helper for music assets
+- `export_presets.cfg` - Android export preset for `Orbwalker.apk`
 
 ## Open Questions
 
 - Whether a repo-local scripted build or test command should be added later. (needs verification)
+- Whether the Godot Android CLI export hang is caused by the Gradle build process, the enabled editor MCP plugin Android export warning, or Godot 4.6.2 console shutdown on Windows. (needs verification)
 
 ## Related Pages
 

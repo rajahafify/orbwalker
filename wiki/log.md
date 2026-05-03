@@ -1360,3 +1360,15 @@ Append-only history of wiki operations.
   - Preserved generated music/SFX ownership in `AudioManager`, desktop main-menu local playback, shared `AudioManager` stop before desktop menu music, and Android/template menu routing through `AudioManager`.
   - Godot MCP post-change probes matched baseline menu/combat/shop WAV loop ends and data bytes, confirmed generated `swap` SFX still builds, reran the retained AR-01 combat result-envelope probe, and launched `play_scene main` with no session errors. Android/on-device listening was not retested.
   - Follow-up user listening found the desktop Start Run music handoff could drop during scene transition. `main_boot.gd` now stops the local menu player and starts shared `AudioManager` combat music before transition; Godot MCP focused handoff probe confirmed shared combat music stays playing before the combat scene starts, and user manual listening confirmation passed after the fix.
+
+## [2026-05-03] code-change | AR-04 Shop Input Safety
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/flow/shop_player.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changes:
+  - Made shared HUD hover preview-only so equipment and consumable selection is committed by slot press instead of mouse hover.
+  - Gated HUD Sell to the selected hovered equipment or consumable slot so moving the pointer over another slot cannot arm a sale.
+  - Added same-frame guards around player-shop buy, relic buy, reroll, sell, booster pick, and booster skip handlers to prevent duplicate transaction execution from repeated activation in one input frame.
+  - Routed shop touch outside-dismissal through the same `PlayerLoadoutHud.handle_global_click(...)` path as mouse outside clicks.
+  - Godot MCP `view_script`, focused HUD selection/sell/outside-click probes, same-frame shop action guard probe, shop scene instantiate probe, and final `get_godot_errors` passed. Android/on-device touch acceptance and live visual click-through remain manual QA.
+  - Manual QA found real shop outside-dismissal still failed on PC and Android because handled UI events did not reach `_unhandled_input`; shop dismissal now runs from `_input` without marking the event handled so normal shop controls still receive clicks/taps. Godot MCP source-shape, scene instantiate, and error checks passed after the follow-up.
+  - Manual QA then found the popover closed but selected slot chrome stayed active. The outside-dismiss path now clears inventory focus and refreshes the shop UI for mouse/touch dismissal so selection clears visually as well as logically. Godot MCP `view_script` and `get_godot_errors` passed after the follow-up, and user manual QA confirmed the fix on PC and Android.
+  - Android CLI export repeatedly wrote a valid `Orbwalker.apk` but hung before process exit, leaving a Godot console process and Java/Gradle child. The updated APK installed successfully with `adb install -r`, and the export hang/workaround is now documented in `wiki/setup.md`, `wiki/known-issues.md`, and `docs/test_plan.md`.

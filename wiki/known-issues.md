@@ -14,7 +14,7 @@ The prototype is functional, but several QA items remain unchecked and a few imp
 
 ## Details
 
-- Touch input selection still needs explicit validation on device. The QA checklist keeps this item unchecked. (source: `docs/test_plan.md`)
+- General combat touch input selection still needs explicit validation on device. Shop HUD touch outside-dismissal was manually retested and confirmed during AR-04 after routing touch events through the shared HUD focus handler and refreshing selection state. (source: `docs/test_plan.md`, `scripts/flow/shop_player.gd`, `scripts/ui/player_loadout_hud.gd`)
 - Board lock behavior during resolution and transitions still needs full end-to-end validation. (source: `docs/test_plan.md`)
 - Desktop and mobile overlap checks for the UI remain open in the QA checklist. (source: `docs/test_plan.md`)
 - Merchant Compass free-first-reroll behavior is still unchecked in the QA plan, and `scripts/shop/shop_service.gd` does not currently implement a special free reroll path. (source: `docs/test_plan.md`, `scripts/shop/shop_service.gd`)
@@ -25,6 +25,7 @@ The prototype is functional, but several QA items remain unchecked and a few imp
 - Shared HUD API drift risk remains while combat and shop both evolve against `PlayerLoadoutHud`. (source: `docs/architecture_review_tasks.md`)
 - Temporary diagnostics need explicit retirement criteria so they do not become accidental permanent architecture. (source: `docs/architecture_review_tasks.md`)
 - AR-01 baseline capture found repeated unsourced Godot `GDScript::reload: Integer division. Decimal part will be discarded.` warnings after scene smokes. They are non-fatal in the captured session, but should be localized or cleared before architecture-touching batches rely on `get_godot_errors` as a clean regression gate. (source: `docs/test_plan.md`)
+- Android CLI export on this Windows checkout can hang after writing a valid `Orbwalker.apk`, leaving `Godot_v4.6.2-stable_win64_console.exe` and Java/Gradle processes alive. The observed workaround is to verify the APK timestamp/size, run `adb install -r D:\godot\matchatro\Orbwalker.apk`, then stop the stuck console exporter and Java child. Root cause is not confirmed; candidates include Gradle shutdown, the Godot 4.6.2 console exporter, or the enabled MCP editor plugin Android export warning. (source: `wiki/setup.md`, `docs/test_plan.md`)
 - Balance tuning is still open for orb spawn rates, prices, enemy stats, boss stats, and item strength. (source: `todo.md`, `docs/game_design_document.md`)
 
 ## Important Files
@@ -35,6 +36,7 @@ The prototype is functional, but several QA items remain unchecked and a few imp
 - `scripts/content/content_registry.gd` - current content model
 - `docs/system_architecture.md` - planned content model
 - `docs/tmp_transition_delay_handoff.md` - temporary transition-stall diagnostic handoff
+- `export_presets.cfg` - Android APK export preset
 
 ## Open Questions
 

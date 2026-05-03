@@ -705,12 +705,6 @@ func _on_slot_mouse_entered(slot: Control, slot_type: String, slot_index: int, c
 	if filled:
 		title = String(content.get("display_name", fallback_id))
 		description = String(content.get("description", ""))
-		if slot_type == "equipment":
-			_selected_equipment_slot = slot_index
-			_selected_consumable_slot = -1
-		elif slot_type == "consumable":
-			_selected_consumable_slot = slot_index
-			_selected_equipment_slot = -1
 	slot_hover_started.emit(slot_type, slot_index, title, description, slot.get_global_rect())
 	_set_slot_popover_content(slot_type, slot_index, title, description, slot.get_global_rect())
 
@@ -896,7 +890,13 @@ func _slot_popover_shows_sell_action() -> bool:
 		return false
 	if _hover_slot_title == "":
 		return false
-	return not _hover_slot_title.begins_with("Empty ")
+	if _hover_slot_title.begins_with("Empty "):
+		return false
+	var selected_kind := _selected_slot_kind()
+	if selected_kind == "":
+		return false
+	var selected_slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	return selected_kind == _hover_slot_type and selected_slot_index == _hover_slot_index
 
 
 func _selected_slot_sell_text() -> String:

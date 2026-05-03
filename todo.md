@@ -520,9 +520,9 @@ Tracker: `docs/architecture_review_tasks.md`
 Tasks:
 
 - [x] AR-01 Baseline regression harness.
-- [ ] AR-02 Low-risk bug fixes.
-- [ ] AR-03 Shared WAV/audio utility extraction.
-- [ ] AR-04 Shop/input safety.
+- [x] AR-02 Low-risk bug fixes.
+- [x] AR-03 Shared WAV/audio utility extraction.
+- [x] AR-04 Shop/input safety.
 - [ ] AR-05 Combat controller first split. Deferred until baseline and stabilization work are complete.
 - [ ] AR-06 Combat presentation split. Deferred until the first controller split is validated.
 - [ ] AR-07 RunState/data contract roadmap. Deferred pending `.tres` versus JSON or dictionary-backed content decision.

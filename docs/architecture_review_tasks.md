@@ -36,13 +36,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-04: Shop/Input Safety
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: `scripts/flow/shop_player.gd`, `scripts/shop/shop_service.gd`, and shared `scripts/ui/player_loadout_hud.gd` interaction behavior.
-- Progress: Risks are identified: duplicate transaction taps and hover/click/touch selection conflation need focused validation.
-- Blockers: Needs shop/player HUD interaction probes and, for touch acceptance, on-device validation.
-- Next action: Add a focused regression checklist for buy/reroll/sell/booster actions and shared HUD slot selection before implementation.
-- Validation: Shop actions produce one result per press; buy/reroll/sell/booster paths remain usable; equipment/consumable slot selection survives hover exit and works with click/touch semantics; outside-click dismissal still works.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/features.md`, and `wiki/known-issues.md` when behavior or validation status changes.
+- Progress: 2026-05-03 completed the shop/input safety batch. `PlayerLoadoutHud` hover now previews item details without mutating committed equipment or consumable selection; Sell is shown only when the hovered equipment/consumable slot matches the clicked selected slot. `shop_player.gd` now routes touch outside-dismissal through the same shared HUD focus handler as mouse clicks and adds a same-frame action guard around buy, relic buy, reroll, sell, booster pick, and booster skip handlers so one input frame cannot execute duplicate shop transactions. Manual QA then found the first outside-dismiss route still failed on PC and Android because handled UI events did not reach `_unhandled_input`; the shop now performs the dismissal check in `_input` without marking the event handled. A second manual follow-up found the popover closed but selected chrome stayed active; outside-dismiss now clears inventory focus and refreshes the shop UI so slot selection re-renders cleared.
+- Blockers: None for the AR-04 code batch. Live visual overlap checks, texture-map pop-in, and Android listening remain manual QA unless explicitly retested.
+- Next action: Move to the next selected architecture-review batch after any desired manual shop/touch QA.
+- Validation: Godot MCP `view_script` checks passed for `res://scripts/ui/player_loadout_hud.gd` and `res://scripts/flow/shop_player.gd`; focused editor-script probes confirmed hover preserves committed selection through hover enter/exit, click selection still commits, Sell appears only for the selected hovered slot, outside-click focus dismissal clears selection, same-frame shop action calls are guarded, and `res://scenes/flow/shop_player.tscn` instantiates. Follow-up source-shape and scene instantiate probes passed after moving outside-dismissal to `_input`; `view_script` and `get_godot_errors` passed after the focus-clear/refresh follow-up. Final `get_godot_errors` reported no session errors. User manual QA confirmed the outside-dismissal and visual deselection fixes on PC and Android.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the completed AR-04 batch.
 
 ## AR-05: Combat Controller First Split
 
