@@ -33,8 +33,8 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 
 ### Content and validation
 
-- `ContentRegistry` currently stores content as nested dictionaries and validates required fields and effect hooks. It also builds shop pools and pricing snapshots. (source: `scripts/content/content_registry.gd`)
-- This differs from the planned Resource-based content model described in `docs/system_architecture.md`. The design doc still reflects the intended target, but the live code is dictionary-backed today. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
+- `ContentRegistry` currently stores content as nested dictionaries and validates required fields and effect hooks. It also builds shop pools and pricing snapshots. `content_contract_snapshot()` records the current collection fields, validation owner, shop pool/pricing owner, and future migration boundary. Single-item getters and list APIs return duplicated dictionaries so callers cannot mutate the registry index by accident. (source: `scripts/content/content_registry.gd`)
+- Dictionary-backed `ContentRegistry` content is the prototype source of truth for this phase. The older Resource-based architecture direction is now documented as future migration work that should stay behind the `ContentRegistry` read API instead of changing combat, shop, progression, HUD, or debug callers directly. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
 
 ### Visual routing
 
@@ -54,7 +54,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 
 ## Open Questions
 
-- Whether the content model should remain dictionary-backed or move to Resource classes later. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
+- Whether a later content migration should use Resource classes, JSON, or another external data source. The current prototype remains dictionary-backed behind `ContentRegistry`. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
 
 ## Related Pages
 

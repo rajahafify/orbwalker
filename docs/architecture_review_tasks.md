@@ -66,13 +66,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-07: RunState/Data Contract Roadmap
 
-- Status: `deferred`
+- Status: `done`
 - Owner/scope: `scripts/core/run_state.gd`, `scripts/content/content_registry.gd`, `docs/system_architecture.md`, and future content data format.
-- Progress: Dictionary-backed live content and Resource-based architecture docs are confirmed to diverge.
-- Blockers: Needs a design decision on `.tres` versus JSON or an explicit decision to keep dictionary-backed content for the prototype.
-- Next action: Choose and document the content source-of-truth direction, then plan a compatibility layer that keeps `ContentRegistry` as the read API during migration.
-- Validation: Runtime content loading, `docs/system_architecture.md`, `wiki/architecture.md`, and `wiki/file-map.md` all describe the same current/future split; shop/content probes still pass.
-- Docs/wiki impact: Update `docs/system_architecture.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md`.
+- Progress: 2026-05-03 completed the AR-07 roadmap pass. The prototype source of truth is now documented as dictionary-backed `ContentRegistry` content for this phase, with Resource or JSON migration deferred behind the existing registry read API. `ContentRegistry.content_contract_snapshot()` records current collection fields, validation ownership, shop pool/pricing ownership, and the future migration boundary. `RunState.run_contract_snapshot()` records run-owned persistence/routing fields, scene route constants, level sequence, public transition/action APIs, and the content dependency boundary. Single-item content getters now return duplicated dictionaries like list APIs, so caller mutation cannot alter the registry index.
+- Blockers: None for AR-07 completion. Actual `.tres`, JSON, or external content migration is intentionally deferred to a future scoped task.
+- Next action: Move to AR-08 cleanup/dead-code validation only when ready, keeping cleanup separate from content migration.
+- Validation: Godot MCP `view_script` checks passed for `res://scripts/core/run_state.gd` and `res://scripts/content/content_registry.gd`; focused content contract probe confirmed validation `[]`, expected content counts, contract snapshots, and non-mutating single-item getters; RunState route invariant probe preserved AR-01 route shapes; retained AR-01 combat result-envelope probe still matched baseline; scene instantiate checks passed for main, combat, board-debug, and shop; final `get_godot_errors` reported no session errors; `git diff --check` passed.
+- Docs/wiki impact: `docs/system_architecture.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the AR-07 contract boundary.
 
 ## AR-08: Cleanup/Dead-Code Validation
 

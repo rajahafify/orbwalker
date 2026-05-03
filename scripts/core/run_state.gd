@@ -220,6 +220,55 @@ func player_state_content_errors() -> Array[Dictionary]:
 	return _player_state_content_errors.duplicate(true)
 
 
+func run_contract_snapshot() -> Dictionary:
+	var snapshot := {
+		"run_state_owned_fields": [
+			"run_active",
+			"run_victory",
+			"run_gold",
+			"dungeon_level",
+			"current_step_key",
+			"enemies_defeated",
+			"bosses_defeated",
+			"total_gold_earned",
+			"_relic_offer_ids_by_level",
+			"_current_encounter",
+			"_boss_relic_reward_options",
+			"_boss_reward_claimed_relic_id",
+			"_run_summary",
+		],
+		"scene_route_constants": {
+			"SCENE_MAIN": SCENE_MAIN,
+			"SCENE_COMBAT": SCENE_COMBAT,
+			"SCENE_SHOP": SCENE_SHOP,
+			"SCENE_BOSS_RELIC_REWARD": SCENE_BOSS_RELIC_REWARD,
+			"SCENE_RUN_SUMMARY": SCENE_RUN_SUMMARY,
+		},
+		"level_sequence": LEVEL_SEQUENCE.duplicate(),
+		"public_transition_action_api": [
+			"start_new_run",
+			"skip_to_fight",
+			"mark_fight_victory",
+			"mark_player_defeated",
+			"advance_after_shop",
+			"advance_after_boss_reward",
+			"claim_boss_relic_reward",
+			"skip_boss_relic_reward",
+			"next_scene_path",
+			"run_summary_snapshot",
+		],
+		"content_dependency": {
+			"content_registry_owner": "ContentRegistry",
+			"content_registry_provider": "ensure_content_registry",
+			"content_validation_method": "validate_player_state_content",
+			"combat_modifier_content_access": ["current_combat_modifiers", "ensure_content_registry"],
+			"shop_content_access": ["open_shop_for_current_level", "reroll_shop_items", "buy_shop_offer"],
+		},
+		"compatibility_note": "AR-07 contract snapshot only; no routing, transition, resolver, summary, or presentation behavior changes.",
+	}
+	return snapshot.duplicate(true)
+
+
 func progression_snapshot() -> Dictionary:
 	return ensure_player_progression_state().to_snapshot()
 

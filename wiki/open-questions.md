@@ -19,7 +19,7 @@ These are the questions the project still needs to answer during balance, QA, or
 - Should Merchant Compass make the first reroll free, and if so, where should that rule live? (source: `docs/game_design_document.md`, `docs/test_plan.md`, `scripts/shop/shop_service.gd`)
 - Should the movement timer stay at 5 seconds after mobile testing? (source: `docs/game_design_document.md`, `docs/system_architecture.md`)
 - Should L and T matches ever grant a bonus beyond the matched orb count? (source: `docs/game_design_document.md`, `docs/system_architecture.md`)
-- Should the content model stay dictionary-backed for the prototype or migrate to Resource classes later? (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
+- Which external content data source, if any, should replace dictionary-backed prototype content after the current phase: Resource classes, JSON, or another format? (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
 - Which remaining QA items from `docs/test_plan.md` should block the first playable milestone? (source: `docs/test_plan.md`)
 
 ## Important Files
@@ -35,4 +35,3 @@ These are the questions the project still needs to answer during balance, QA, or
 - [[decisions]]
 - [[known-issues]]
 - [[architecture]]
-

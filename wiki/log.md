@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-03 - AR-07 RunState/Data Contract Roadmap
+
+- Updated [[architecture]], [[file-map]], [[known-issues]], [[open-questions]], and [[decisions]] to record dictionary-backed `ContentRegistry` content as the prototype source of truth for this phase, with Resource/JSON migration deferred behind the registry API. (source: `docs/system_architecture.md`, `scripts/content/content_registry.gd`)
+- Recorded AR-07 completion in the architecture review tracker, architecture-maintenance todo list, and test plan. `RunState.run_contract_snapshot()` and `ContentRegistry.content_contract_snapshot()` now document the live compatibility contracts, and `ContentRegistry` single-item getters return duplicated dictionaries to prevent caller mutation of the registry index. (source: `scripts/core/run_state.gd`, `scripts/content/content_registry.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+
 ## 2026-05-03 - AR-05 Combat Controller First Split
 
 - Updated [[architecture]] and [[file-map]] for the new `CombatOutcomeOverlay` helper ownership split: outcome overlay presentation moved to `scripts/combat/combat_outcome_overlay.gd`, while `scripts/combat/combat_player_controller.gd` keeps combat orchestration, RunState outcome routing, debug commands, and resolver replay timing. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_outcome_overlay.gd`, `docs/architecture_review_tasks.md`)

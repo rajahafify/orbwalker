@@ -525,7 +525,7 @@ Tasks:
 - [x] AR-04 Shop/input safety.
 - [x] AR-05 Combat controller first split.
 - [x] AR-06 Combat presentation split.
-- [ ] AR-07 RunState/data contract roadmap. Deferred pending `.tres` versus JSON or dictionary-backed content decision.
+- [x] AR-07 RunState/data contract roadmap. Prototype content source of truth is dictionary-backed `ContentRegistry` data for this phase; `.tres` or JSON migration is deferred behind the registry API.
 - [ ] AR-08 Cleanup/dead-code validation.
 
 ## Milestone 10: Balance Pass And QA

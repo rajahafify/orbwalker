@@ -103,17 +103,11 @@ Ownership intent:
 
 ## Content Data Format Decision
 
-Use Godot `Resource`-based content data for the prototype.
+The live prototype currently uses dictionary-backed default content inside `ContentRegistry` as the runtime source of truth. `ContentRegistry` is the compatibility API for content reads, validation, shop pools, shop pricing, and future migration work. Callers should use registry methods such as `get_equipment()`, `list_equipment()`, `shop_item_pool()`, `shop_relic_pool()`, `shop_pricing_config()`, and `content_contract_snapshot()` instead of reading a concrete storage backend directly. (source: `scripts/content/content_registry.gd`)
 
-Reasoning:
+Godot `Resource`-based content remains a possible later data-source migration, not the current prototype source of truth. A later migration should keep `ContentRegistry` as the read API and adapt data loading behind it so combat, progression, shop, HUD, and debug callers keep the same dictionary-shaped contracts. JSON-backed content would need the same compatibility boundary.
 
-- Godot resources are editor-friendly.
-- They can be referenced directly by scenes and registries.
-- They support typed exported fields.
-- They can later be validated at startup.
-- They keep content data separate from scene UI.
-
-Recommended content resources:
+Deferred Resource-backed content candidates:
 
 - `EquipmentData`
 - `MasteryCardData`
@@ -189,7 +183,7 @@ Planned runtime models:
   - Owns active shop inventory: random item slots, booster offers, relic offer, reroll count, pricing snapshot, buy/sell availability, and shop exit state.
 
 - `ContentRegistry`
-  - Owns loaded content pools and validation results. Other systems request content by ID, type, rarity, tag, category, or unlock state.
+  - Owns dictionary-backed default content, loaded content pools, validation results, shop pool snapshots, and shop pricing configuration. Other systems request content by ID, type, rarity, tag, category, or unlock state through registry methods, which return duplicated dictionaries for caller safety. `content_contract_snapshot()` records the current collection schema and migration boundary. (source: `scripts/content/content_registry.gd`)
 
 Scene ownership principle:
 
@@ -272,6 +266,7 @@ Timing rules:
 - Combat should consume match results and produce structured combat logs.
 - Shop generation should use seeded RNG and content pools.
 - Content should be loaded through a registry and validated before run start.
+- Content callers should depend on `ContentRegistry` read APIs, not on whether content is backed by dictionaries, Resources, JSON, or another later data source.
 - Balance values should live in data where practical.
 - Debug tools should be available early, but isolated from player-facing flow.
 

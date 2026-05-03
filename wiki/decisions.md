@@ -26,15 +26,15 @@ This page records decisions that are already reflected in the code or explicitly
 
 **Sources**: `project.godot`, `scripts/core/run_state.gd`, `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_player.gd`
 
-### 2026-04-28 - Keep The Current Dictionary-Backed Content Registry
+### 2026-05-03 - Keep The Current Dictionary-Backed Content Registry For The Prototype
 
-**Decision**: The live prototype uses dictionary-backed content data inside `ContentRegistry` instead of the Resource-based content classes described in the architecture draft.
+**Decision**: The live prototype uses dictionary-backed content data inside `ContentRegistry` as the source of truth for this phase instead of migrating now to Resource or JSON-backed content.
 
 **Reason**: The codebase already relies on dictionary content for validation, shop pools, and progression transitions, and the current prototype is moving faster with that simpler representation.
 
 **Alternatives considered**: Migrate now to Resource subclasses for equipment, mastery, consumables, relics, enemies, and bosses.
 
-**Consequences**: The current implementation is less editor-native than the planned model, but it is consistent across combat, shop, and progression code. A later migration would need a compatibility pass.
+**Consequences**: The current implementation is less editor-native than a Resource-backed model, but it is consistent across combat, shop, progression, HUD, and debug code. A later migration should keep `ContentRegistry` as the read API and adapt the backing data source behind it. AR-07 added `content_contract_snapshot()` and duplicated single-item getter returns to make that boundary explicit.
 
 **Sources**: `docs/system_architecture.md`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_service.gd`
 
