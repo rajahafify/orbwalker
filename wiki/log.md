@@ -1289,3 +1289,13 @@ Append-only history of wiki operations.
   - Extended music diagnostics to track both source type and source path (`raw_pcm_wav` vs imported fallback) and compute frame counts from the actual selected payload path.
 - Notes:
   - Godot MCP parse/error checks passed after the fix. Android on-device listening and loop-length confirmation is still pending.
+
+## [2026-05-03] diagnostic | Run Transition FlowTrace
+
+- Source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `docs/tmp_transition_delay_handoff.md`, `wiki/known-issues.md`
+- Changed:
+  - Added temporary FlowTrace timing for Start Run, combat, and shop run-flow scene transitions.
+  - Split traced transition timing into resource load, packed-scene instantiation, scene attach, destination scene startup, and first usable frame markers.
+  - Recorded user runtime evidence that `Start Run -> Combat` spends about `2.47s` in `PackedScene.instantiate()` for `res://scenes/combat/combat_player.tscn`.
+- Notes:
+  - Godot MCP script/error checks passed during implementation; existing integer-division warnings remain unrelated. Next diagnostic pass should isolate `combat_player.tscn`, `board_surface.tscn`, theme resources, and script initializer instantiation cost before changing transition architecture.

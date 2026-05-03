@@ -85,34 +85,91 @@ var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
 var _selected_equipment_slot := -1
 var _selected_consumable_slot := -1
+var _flow_trace_route_id := ""
+
+
+func _enter_tree() -> void:
+	_flow_trace_route_id = RunState.flow_trace_active_route_id()
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_begin(
+			"shop_scene_load",
+			"res://scenes/flow/shop_player.tscn",
+			{"source": "shop_player._enter_tree"}
+		)
+	RunState.flow_trace_mark("shop_enter_tree", {}, _flow_trace_route_id)
 
 
 func _ready() -> void:
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_active_route_id()
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_begin(
+			"shop_scene_load",
+			"res://scenes/flow/shop_player.tscn",
+			{"source": "shop_player._ready"}
+		)
+	RunState.flow_trace_mark("shop_ready_start", {}, _flow_trace_route_id)
 	_audio_play_music("shop")
+	RunState.flow_trace_mark("shop_after_music", {}, _flow_trace_route_id)
 	_background.texture = _visuals.shop_background()
 	_backdrop_tint.color = Color(0.0, 0.0, 0.0, 0.33)
+	RunState.flow_trace_mark("shop_after_background", {}, _flow_trace_route_id)
 	_create_ui()
+	RunState.flow_trace_mark("shop_after_create_ui", {}, _flow_trace_route_id)
 	_player_loadout_hud.bind_player_hud(_shop_player_hud_nodes().merged({
 		"popover_parent": _hud_overlay,
 		"popover_z_index": 51,
 	}, true))
+	RunState.flow_trace_mark("shop_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
+	RunState.flow_trace_mark("shop_after_chrome", {}, _flow_trace_route_id)
 	_connect_signals()
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_apply_shop_layout()
+	RunState.flow_trace_mark("shop_after_layout", {}, _flow_trace_route_id)
 
 	if not RunState.run_active:
 		_title_label.text = "Shop"
 		_set_status("No active run. Returning to main menu.", false)
+		RunState.flow_trace_mark(
+			"shop_ready_redirect_before_change_scene",
+			{"source": "no_active_run"},
+			_flow_trace_route_id,
+			"res://scenes/main.tscn"
+		)
 		get_tree().call_deferred("change_scene_to_file", "res://scenes/main.tscn")
 		return
 	if not RunState.is_current_step_shop():
-		get_tree().call_deferred("change_scene_to_file", RunState.next_scene_path())
+		var redirect_scene := RunState.next_scene_path()
+		RunState.flow_trace_mark(
+			"shop_ready_redirect_before_change_scene",
+			{"source": "wrong_step"},
+			_flow_trace_route_id,
+			redirect_scene
+		)
+		get_tree().call_deferred("change_scene_to_file", redirect_scene)
 		return
 
+	RunState.flow_trace_mark("shop_before_open_shop", {}, _flow_trace_route_id)
 	var open_result: Dictionary = RunState.open_shop_for_current_level()
+	RunState.flow_trace_mark(
+		"shop_after_open_shop",
+		{"ok": bool(open_result.get("ok", false))},
+		_flow_trace_route_id
+	)
 	_set_status("Shop opened. Buy, reroll, sell, or continue." if bool(open_result.get("ok", false)) else "Failed to open shop: %s" % String(open_result.get("reason", "unknown")), bool(open_result.get("ok", false)))
 	_refresh_ui()
+	RunState.flow_trace_mark("shop_after_refresh_ui", {}, _flow_trace_route_id)
+	call_deferred("_trace_flow_first_usable_frame")
+
+
+func _trace_flow_first_usable_frame() -> void:
+	await get_tree().process_frame
+	RunState.flow_trace_mark(
+		"shop_first_usable_frame",
+		{"source": "shop_player._ready_deferred"},
+		_flow_trace_route_id
+	)
 
 
 func _create_ui() -> void:
@@ -553,13 +610,64 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_continue_button_pressed() -> void:
 	_clear_inventory_focus()
+	RunState.flow_trace_mark(
+		"shop_continue_button_pressed",
+		{"button_text": _continue_button.text},
+		_flow_trace_route_id
+	)
+	RunState.flow_trace_mark("shop_before_advance_after_shop", {}, _flow_trace_route_id)
 	var transition: Dictionary = RunState.advance_after_shop(false)
-	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	RunState.flow_trace_mark(
+		"shop_after_advance_after_shop",
+		{
+			"ok": bool(transition.get("ok", false)),
+			"step": String(transition.get("step", "")),
+		},
+		_flow_trace_route_id,
+		next_scene
+	)
+	var route_id := _flow_trace_route_id
+	if next_scene.find("combat_player.tscn") >= 0:
+		route_id = RunState.flow_trace_begin(
+			"shop_to_combat",
+			next_scene,
+			{"source": "shop_continue_button"}
+		)
+	RunState.flow_trace_mark(
+		"shop_before_change_scene_to_file",
+		{"source": "shop_continue_button"},
+		route_id,
+		next_scene
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		next_scene,
+		route_id,
+		"shop_continue_button"
+	)
 
 
 func _on_main_menu_button_pressed() -> void:
 	_clear_inventory_focus()
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	RunState.flow_trace_mark(
+		"shop_main_menu_button_pressed",
+		{"button_text": _main_menu_button.text},
+		_flow_trace_route_id,
+		"res://scenes/main.tscn"
+	)
+	RunState.flow_trace_mark(
+		"shop_before_change_scene_to_file_main_menu",
+		{"source": "shop_main_menu_button"},
+		_flow_trace_route_id,
+		"res://scenes/main.tscn"
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		"res://scenes/main.tscn",
+		_flow_trace_route_id,
+		"shop_main_menu_button"
+	)
 
 
 func _result_message(action: String, result: Dictionary) -> String:

@@ -257,10 +257,32 @@ var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
 var _layout_player_hud_section_rect := Rect2(Vector2(0, 1092), Vector2(1080, 828))
+var _flow_trace_route_id := ""
+
+
+func _enter_tree() -> void:
+	_flow_trace_route_id = RunState.flow_trace_active_route_id()
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_begin(
+			"combat_scene_load",
+			"res://scenes/combat/combat_player.tscn",
+			{"source": "combat_player_controller._enter_tree"}
+		)
+	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id)
 
 
 func _ready() -> void:
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_active_route_id()
+	if _flow_trace_route_id == "":
+		_flow_trace_route_id = RunState.flow_trace_begin(
+			"combat_scene_load",
+			"res://scenes/combat/combat_player.tscn",
+			{"source": "combat_player_controller._ready"}
+		)
+	RunState.flow_trace_mark("combat_ready_start", {}, _flow_trace_route_id)
 	_audio_play_music("combat")
+	RunState.flow_trace_mark("combat_after_music", {}, _flow_trace_route_id)
 	_consumable_rng.randomize()
 	_background.texture = null
 	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
@@ -272,14 +294,18 @@ func _ready() -> void:
 		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
+	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id)
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
+	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
 	_adopt_relic_footer_nodes_for_shared_layout()
 	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
 		"popover_parent": _layout_root,
 		"popover_z_index": 210,
 	}, true))
+	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
+	RunState.flow_trace_mark("combat_after_chrome", {}, _flow_trace_route_id)
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
 	_resolver.gravity_applied.connect(_on_resolver_gravity_applied)
@@ -289,7 +315,9 @@ func _ready() -> void:
 	_player_loadout_hud.consumable_slot_selected.connect(_try_use_consumable_slot)
 	_player_loadout_hud.sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
 	_initialize_combat_state()
+	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id)
 	_create_new_board()
+	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id)
 	_board_view.gui_input.connect(_on_board_view_gui_input)
 	_debug_overlay.visible = false
 	if _console_input.visible:
@@ -299,7 +327,19 @@ func _ready() -> void:
 	_vfx_layer.visible = true
 	set_process(true)
 	_apply_combat_layout()
+	RunState.flow_trace_mark("combat_after_layout", {}, _flow_trace_route_id)
 	_begin_turn_preview()
+	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _flow_trace_route_id)
+	call_deferred("_trace_flow_first_usable_frame")
+
+
+func _trace_flow_first_usable_frame() -> void:
+	await get_tree().process_frame
+	RunState.flow_trace_mark(
+		"combat_first_usable_frame",
+		{"source": "combat_player_controller._ready_deferred"},
+		_flow_trace_route_id
+	)
 
 
 func _apply_visual_chrome() -> void:
@@ -559,6 +599,11 @@ func _apply_loadout_group_theme() -> void:
 
 func _initialize_combat_state() -> void:
 	if not RunState.run_active:
+		RunState.flow_trace_mark(
+			"combat_initialize_no_active_run_starting_new",
+			{},
+			_flow_trace_route_id
+		)
 		RunState.start_new_run()
 	if RunState.is_current_step_boss_reward():
 		_player_state = RunState.ensure_player_state()
@@ -575,10 +620,17 @@ func _initialize_combat_state() -> void:
 		_show_boss_reward_summary("Boss defeated.")
 		_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
 		_status_label.modulate = STATUS_COLOR_WARNING
+		RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _flow_trace_route_id)
 		return
 	if not RunState.is_current_step_fight():
 		var redirect_scene := RunState.next_scene_path()
 		if redirect_scene != "":
+			RunState.flow_trace_mark(
+				"combat_initialize_redirect_before_change_scene",
+				{"source": "_initialize_combat_state"},
+				_flow_trace_route_id,
+				redirect_scene
+			)
 			get_tree().call_deferred("change_scene_to_file", redirect_scene)
 		return
 
@@ -1529,11 +1581,38 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
 	_update_hud()
 	_sync_combat_mastery_preview_totals()
+	RunState.flow_trace_mark(
+		"combat_before_replay_turn_resolution_from_log",
+		{
+			"total_combos": int(resolve_result.get("total_combos", 0)),
+			"enemy_damage_taken": int(turn_log.get("enemy_damage_taken", 0)),
+		},
+		_flow_trace_route_id
+	)
 	await _replay_turn_resolution_from_log(turn_log)
+	RunState.flow_trace_mark(
+		"combat_after_replay_turn_resolution_from_log",
+		{
+			"healed": int(turn_log.get("healed", 0)),
+			"armor_gained": int(turn_log.get("armor_gained", 0)),
+			"gold_gained": int(turn_log.get("gold_gained", 0)),
+		},
+		_flow_trace_route_id
+	)
 
 	if _combat.phase == COMBAT_PHASE_VICTORY:
 		_audio_play_sfx("victory")
+		RunState.flow_trace_mark("combat_before_mark_fight_victory", {}, _flow_trace_route_id)
 		var transition: Dictionary = RunState.mark_fight_victory()
+		RunState.flow_trace_mark(
+			"combat_after_mark_fight_victory",
+			{
+				"next_scene": String(transition.get("next_scene", "")),
+				"step": String(transition.get("step", "")),
+			},
+			_flow_trace_route_id,
+			String(transition.get("next_scene", ""))
+		)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 		_append_turn_log(turn_log)
 		if RunState.is_current_step_boss_reward():
@@ -1542,18 +1621,37 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
 			_show_boss_reward_summary(_build_victory_gold_summary(turn_log))
 			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
+			RunState.flow_trace_mark("combat_boss_reward_available", {}, _flow_trace_route_id)
 		else:
 			var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
 			if next_scene.find("run_summary") >= 0:
 				_append_combat_log("Outcome: Final boss victory. Opening run summary.")
 				_hide_outcome_summary()
-				get_tree().call_deferred("change_scene_to_file", next_scene)
+				RunState.flow_trace_mark(
+					"combat_before_final_summary_change_scene",
+					{},
+					_flow_trace_route_id,
+					next_scene
+				)
+				RunState.call_deferred(
+					"flow_trace_change_scene",
+					get_tree(),
+					next_scene,
+					_flow_trace_route_id,
+					"combat_final_summary_auto"
+				)
 				return
 			_status_label.text = _build_victory_status(turn_log, transition) + " Press Continue."
 			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
 			_pending_next_scene_path = next_scene
 			_show_outcome_summary("Victory", _build_victory_gold_summary(turn_log), true)
 			_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
+			RunState.flow_trace_mark(
+				"combat_continue_available",
+				{"button_text": "Continue"},
+				_flow_trace_route_id,
+				next_scene
+			)
 		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
 		return
 
@@ -1568,6 +1666,12 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_pending_next_scene_path = String(defeat_transition.get("next_scene", "res://scenes/main.tscn"))
 		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Main Menu")
 		_turn_summary_label.text = "Turn Summary: Defeat. Main Menu available."
+		RunState.flow_trace_mark(
+			"combat_continue_available",
+			{"button_text": "Main Menu"},
+			_flow_trace_route_id,
+			_pending_next_scene_path
+		)
 		_pulse_label(_turn_summary_label, STATUS_COLOR_NEGATIVE)
 		return
 
@@ -1587,11 +1691,35 @@ func _on_next_button_pressed() -> void:
 		return
 	if _pending_next_scene_path == "":
 		return
+	RunState.flow_trace_mark(
+		"combat_next_button_pressed",
+		{"button_text": _next_button.text},
+		_flow_trace_route_id,
+		_pending_next_scene_path
+	)
 	_audio_play_sfx("ui_accept")
 	var target_scene := _pending_next_scene_path
 	_pending_next_scene_path = ""
 	_hide_outcome_summary()
-	get_tree().change_scene_to_file(target_scene)
+	var transition_route_id := _flow_trace_route_id
+	if target_scene.find("shop_player.tscn") >= 0:
+		transition_route_id = RunState.flow_trace_begin(
+			"combat_to_shop",
+			target_scene,
+			{"source": "combat_next_button"}
+		)
+	RunState.flow_trace_mark(
+		"combat_before_change_scene_to_file",
+		{"source": "combat_next_button"},
+		transition_route_id,
+		target_scene
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		target_scene,
+		transition_route_id,
+		"combat_next_button"
+	)
 
 
 func _play_turn_result_sfx(turn_log: Dictionary) -> void:
@@ -1744,7 +1872,29 @@ func _claim_boss_reward_option(index: int) -> void:
 	_update_hud()
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
-	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	var route_id := _flow_trace_route_id
+	if next_scene.find("shop_player.tscn") >= 0:
+		route_id = RunState.flow_trace_begin(
+			"combat_to_shop",
+			next_scene,
+			{
+				"source": "boss_reward_claim",
+				"option_index": index,
+			}
+		)
+	RunState.flow_trace_mark(
+		"combat_before_change_scene_to_file_boss_reward_claim",
+		{"source": "boss_reward_claim"},
+		route_id,
+		next_scene
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		next_scene,
+		route_id,
+		"boss_reward_claim"
+	)
 
 
 func _skip_boss_reward_option() -> void:
@@ -1758,7 +1908,26 @@ func _skip_boss_reward_option() -> void:
 	_boss_reward_pending = false
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
-	get_tree().change_scene_to_file(String(transition.get("next_scene", "res://scenes/main.tscn")))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	var route_id := _flow_trace_route_id
+	if next_scene.find("shop_player.tscn") >= 0:
+		route_id = RunState.flow_trace_begin(
+			"combat_to_shop",
+			next_scene,
+			{"source": "boss_reward_skip"}
+		)
+	RunState.flow_trace_mark(
+		"combat_before_change_scene_to_file_boss_reward_skip",
+		{"source": "boss_reward_skip"},
+		route_id,
+		next_scene
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		next_scene,
+		route_id,
+		"boss_reward_skip"
+	)
 
 
 func _set_boss_reward_controls_visible(should_show: bool) -> void:

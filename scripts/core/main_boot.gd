@@ -125,8 +125,27 @@ func _on_viewport_size_changed() -> void:
 
 func _on_start_fight_button_pressed() -> void:
 	_audio_play_sfx("ui_accept")
+	var route_id := RunState.flow_trace_begin(
+		"start_run_to_combat",
+		"res://scenes/combat/combat_player.tscn",
+		{"source": "main_boot.start_button"}
+	)
+	RunState.flow_trace_mark("before_start_new_run", {}, route_id)
 	RunState.start_new_run()
-	get_tree().change_scene_to_file(RunState.next_scene_path())
+	RunState.flow_trace_mark("after_start_new_run", {}, route_id)
+	var next_scene := RunState.next_scene_path()
+	RunState.flow_trace_mark(
+		"before_change_scene_to_file",
+		{"source": "main_boot.start_button"},
+		route_id,
+		next_scene
+	)
+	RunState.flow_trace_change_scene(
+		get_tree(),
+		next_scene,
+		route_id,
+		"main_boot.start_button"
+	)
 
 
 func _process(delta: float) -> void:

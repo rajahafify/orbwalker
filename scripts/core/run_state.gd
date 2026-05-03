@@ -12,6 +12,7 @@ const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
 const SCENE_BOSS_RELIC_REWARD := "res://scenes/flow/boss_relic_reward.tscn"
 const SCENE_RUN_SUMMARY := "res://scenes/flow/run_summary_placeholder.tscn"
 const MAX_DUNGEON_LEVELS := 3
+const FLOW_TRACE_ENABLED := true
 const LEVEL_SEQUENCE: Array[String] = [
 	"enemy_1",
 	"shop",
@@ -45,6 +46,9 @@ var _boss_relic_reward_options: Array[Dictionary] = []
 var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
+var _flow_trace_routes: Dictionary = {}
+var _flow_trace_route_serial: int = 0
+var _flow_trace_active_route_id: String = ""
 
 var _normal_encounters_by_level := {
 	1: [
@@ -638,6 +642,313 @@ func next_scene_path() -> String:
 	if is_current_step_boss_reward():
 		return SCENE_COMBAT
 	return SCENE_MAIN
+
+
+func flow_trace_begin(route_name: String, target_scene: String, details: Dictionary = {}) -> String:
+	if not FLOW_TRACE_ENABLED:
+		return ""
+	_flow_trace_route_serial += 1
+	var route_id := "%s_%d" % [route_name, _flow_trace_route_serial]
+	var now := Time.get_ticks_usec()
+	_flow_trace_routes[route_id] = {
+		"route_name": route_name,
+		"target_scene": target_scene,
+		"start_usec": now,
+		"last_usec": now,
+	}
+	_flow_trace_active_route_id = route_id
+	_flow_trace_mark_internal(route_id, "route_begin", details, target_scene)
+	return route_id
+
+
+func flow_trace_mark(step: String, details: Dictionary = {}, route_id: String = "", target_scene_override: String = "") -> void:
+	if not FLOW_TRACE_ENABLED:
+		return
+	var resolved_route_id := route_id
+	if resolved_route_id == "":
+		resolved_route_id = _flow_trace_active_route_id
+	if resolved_route_id == "":
+		return
+	_flow_trace_mark_internal(resolved_route_id, step, details, target_scene_override)
+
+
+func flow_trace_change_scene(
+	tree: SceneTree,
+	target_scene: String,
+	route_id: String = "",
+	source: String = "",
+	before_step: String = ""
+) -> int:
+	var resolved_route_id := route_id
+	if resolved_route_id == "":
+		resolved_route_id = flow_trace_active_route_id()
+
+	if before_step != "":
+		var before_details := {}
+		if source != "":
+			before_details["source"] = source
+		flow_trace_mark(before_step, before_details, resolved_route_id, target_scene)
+
+	var transition_details := {}
+	if source != "":
+		transition_details["source"] = source
+	flow_trace_mark("transition_manual_start", transition_details, resolved_route_id, target_scene)
+	flow_trace_mark("before_resource_load", transition_details, resolved_route_id, target_scene)
+
+	if target_scene.strip_edges() == "":
+		flow_trace_mark(
+			"after_resource_load",
+			{
+				"ok": false,
+				"load_ms": 0,
+				"error": "target_scene_empty",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		return ERR_CANT_OPEN
+
+	var load_start_usec := Time.get_ticks_usec()
+	var loaded_resource: Resource = ResourceLoader.load(target_scene)
+	var load_ms := int((Time.get_ticks_usec() - load_start_usec) / 1000.0)
+	if loaded_resource == null:
+		flow_trace_mark(
+			"after_resource_load",
+			{
+				"ok": false,
+				"load_ms": load_ms,
+				"error": "resource_load_failed",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		return ERR_CANT_OPEN
+	if not (loaded_resource is PackedScene):
+		flow_trace_mark(
+			"after_resource_load",
+			{
+				"ok": false,
+				"load_ms": load_ms,
+				"resource_type": loaded_resource.get_class(),
+				"error": "resource_not_packed_scene",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		return ERR_INVALID_DATA
+
+	var packed_scene := loaded_resource as PackedScene
+	flow_trace_mark(
+		"after_resource_load",
+		{
+			"ok": true,
+			"load_ms": load_ms,
+			"resource_type": packed_scene.get_class(),
+		},
+		resolved_route_id,
+		target_scene
+	)
+	flow_trace_mark("before_scene_instantiate", transition_details, resolved_route_id, target_scene)
+
+	var instantiate_start_usec := Time.get_ticks_usec()
+	var instantiated_scene = packed_scene.instantiate()
+	var instantiate_ms := int((Time.get_ticks_usec() - instantiate_start_usec) / 1000.0)
+	if instantiated_scene == null:
+		flow_trace_mark(
+			"after_scene_instantiate",
+			{
+				"ok": false,
+				"instantiate_ms": instantiate_ms,
+				"error": "instantiate_returned_null",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		push_error("[FlowTrace] flow_trace_change_scene instantiate failed for %s (null)" % target_scene)
+		return ERR_CANT_CREATE
+	if not (instantiated_scene is Node):
+		flow_trace_mark(
+			"after_scene_instantiate",
+			{
+				"ok": false,
+				"instantiate_ms": instantiate_ms,
+				"node_type": instantiated_scene.get_class(),
+				"error": "instantiate_not_node",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		push_error(
+			"[FlowTrace] flow_trace_change_scene instantiate returned non-Node for %s: %s"
+			% [target_scene, instantiated_scene.get_class()]
+		)
+		return ERR_CANT_CREATE
+
+	var new_scene := instantiated_scene as Node
+	flow_trace_mark(
+		"after_scene_instantiate",
+		{
+			"ok": true,
+			"instantiate_ms": instantiate_ms,
+			"node_type": new_scene.get_class(),
+			"node_name": new_scene.name,
+		},
+		resolved_route_id,
+		target_scene
+	)
+
+	var old_scene: Node = null
+	var old_scene_name := ""
+	var old_scene_path := ""
+	if tree != null:
+		old_scene = tree.current_scene
+	if old_scene != null and is_instance_valid(old_scene):
+		old_scene_name = old_scene.name
+		if old_scene.is_inside_tree():
+			old_scene_path = String(old_scene.get_path())
+
+	flow_trace_mark(
+		"before_scene_attach",
+		{
+			"source": source,
+			"old_scene_name": old_scene_name,
+			"old_scene_path": old_scene_path,
+		},
+		resolved_route_id,
+		target_scene
+	)
+
+	if tree == null:
+		flow_trace_mark(
+			"after_scene_attach",
+			{
+				"ok": false,
+				"error_code": ERR_UNAVAILABLE,
+				"attach_ms": 0,
+				"error": "scene_tree_null",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		new_scene.free()
+		push_error("[FlowTrace] flow_trace_change_scene failed: SceneTree is null for %s" % target_scene)
+		return ERR_UNAVAILABLE
+
+	var tree_root := tree.root
+	if tree_root == null:
+		flow_trace_mark(
+			"after_scene_attach",
+			{
+				"ok": false,
+				"error_code": ERR_UNAVAILABLE,
+				"attach_ms": 0,
+				"error": "scene_tree_root_null",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		new_scene.free()
+		push_error("[FlowTrace] flow_trace_change_scene failed: SceneTree root is null for %s" % target_scene)
+		return ERR_UNAVAILABLE
+
+	var attach_start_usec := Time.get_ticks_usec()
+	tree_root.add_child(new_scene)
+	tree.current_scene = new_scene
+	var attach_ms := int((Time.get_ticks_usec() - attach_start_usec) / 1000.0)
+	if tree.current_scene != new_scene:
+		flow_trace_mark(
+			"after_scene_attach",
+			{
+				"ok": false,
+				"error_code": ERR_CANT_CREATE,
+				"attach_ms": attach_ms,
+				"error": "current_scene_not_updated",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		if is_instance_valid(new_scene):
+			new_scene.queue_free()
+		push_error("[FlowTrace] flow_trace_change_scene failed: current_scene assignment failed for %s" % target_scene)
+		return ERR_CANT_CREATE
+
+	var new_scene_path := ""
+	if new_scene.is_inside_tree():
+		new_scene_path = String(new_scene.get_path())
+	flow_trace_mark(
+		"after_scene_attach",
+		{
+			"ok": true,
+			"error_code": OK,
+			"attach_ms": attach_ms,
+			"old_scene_name": old_scene_name,
+			"old_scene_path": old_scene_path,
+			"new_scene_name": new_scene.name,
+			"new_scene_path": new_scene_path,
+		},
+		resolved_route_id,
+		target_scene
+	)
+
+	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
+		flow_trace_mark(
+			"before_old_scene_free",
+			{
+				"old_scene_name": old_scene_name,
+				"old_scene_path": old_scene_path,
+			},
+			resolved_route_id,
+			target_scene
+		)
+		old_scene.queue_free()
+
+	return OK
+
+
+func flow_trace_active_route_id() -> String:
+	return _flow_trace_active_route_id
+
+
+func _flow_trace_mark_internal(route_id: String, step: String, details: Dictionary, target_scene_override: String) -> void:
+	var route_data: Dictionary = _flow_trace_routes.get(route_id, {})
+	if route_data.is_empty():
+		var now_missing := Time.get_ticks_usec()
+		route_data = {
+			"route_name": "unknown",
+			"target_scene": target_scene_override,
+			"start_usec": now_missing,
+			"last_usec": now_missing,
+		}
+	var now := Time.get_ticks_usec()
+	var start_usec := int(route_data.get("start_usec", now))
+	var last_usec := int(route_data.get("last_usec", start_usec))
+	var target_scene := String(route_data.get("target_scene", ""))
+	if target_scene_override != "":
+		target_scene = target_scene_override
+	var elapsed_ms := int((now - start_usec) / 1000.0)
+	var delta_ms := int((now - last_usec) / 1000.0)
+	route_data["last_usec"] = now
+	route_data["target_scene"] = target_scene
+	_flow_trace_routes[route_id] = route_data
+
+	var details_text := ""
+	if not details.is_empty():
+		details_text = " details=%s" % str(details)
+	print(
+		"[FlowTrace] route_id=%s route=%s target_scene=%s elapsed_ms=%d delta_ms=%d step=%s dungeon_level=%d run_active=%s current_step=%s%s"
+		% [
+			route_id,
+			String(route_data.get("route_name", "unknown")),
+			target_scene,
+			elapsed_ms,
+			delta_ms,
+			step,
+			dungeon_level,
+			str(run_active),
+			current_step_key,
+			details_text,
+		]
+	)
 
 
 func legacy_boss_reward_scene_path() -> String:
