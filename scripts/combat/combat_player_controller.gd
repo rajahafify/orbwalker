@@ -97,6 +97,7 @@ const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outcome_overlay.gd")
+const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -238,17 +239,13 @@ var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
 var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
-var _resolve_combo_running := 0
 var _resolve_trace_origin_usec := 0
 var _resolve_trace_active := false
 var _resolve_trace_pass_index := -1
 var _combat_mastery_feedback_token := 0
 var _combat_mastery_preview_totals: Dictionary = {}
-var _match_clear_burst_texture: Texture2D
-var _combo_popup_panel: PanelContainer
-var _combo_popup_label: Label
-var _combo_popup_fade_tween: Tween
 var _combat_speed := COMBAT_SPEED_NORMAL
+var _resolve_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -288,6 +285,17 @@ func _ready() -> void:
 	if _outcome_overlay == null:
 		_outcome_overlay = COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
 	_bind_outcome_overlay()
+	if _resolve_presenter == null:
+		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
+	_resolve_presenter.bind({
+		"board_surface": _board_surface,
+		"board_view": _board_view,
+		"board_panel": _board_panel,
+		"timer_owner": self,
+		"spawn_vfx_texture_callback": Callable(self, "_spawn_vfx_texture"),
+		"combo_sound_callback": Callable(self, "_on_presenter_combo_sound"),
+	})
+	_resolve_presenter.set_combat_speed(_combat_speed)
 	_consumable_rng.randomize()
 	_background.texture = null
 	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
@@ -1545,7 +1553,6 @@ func _end_drag(timed_out: bool) -> void:
 	_reset_drag_visuals()
 	_board_view.clear_animations()
 	_set_input_phase(InputPhase.RESOLVING)
-	_resolve_combo_running = 0
 	_reset_combat_mastery_preview()
 	var visual_board_state: BoardState = _board_state.clone()
 	var simulation_board_state: BoardState = _board_state.clone()
@@ -2069,250 +2076,55 @@ func _play_resolve_animations(
 	visual_board_state: BoardState = null,
 	resolve_trace_origin_usec: int = 0
 ) -> void:
-	if result.total_combos <= 0:
+	if result.total_combos <= 0 or _resolve_presenter == null:
 		return
-
-	var pass_results: Array = result.get("passes", [])
-	for pass_index in range(pass_results.size()):
-		var pass_result: Dictionary = pass_results[pass_index]
-		_resolve_trace_pass_index = pass_index
-		var presented_groups := _sorted_match_groups_for_presentation(pass_result.get("groups", []))
-		var group_count := presented_groups.size()
-		var fall_count := Array(pass_result.get("fall_moves", [])).size()
-		var refill_count := Array(pass_result.get("refill_spawns", [])).size()
-		var step_index := int(pass_result.get("step_index", pass_index))
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=pass_start step_index=%d groups=%d fall=%d refill=%d" % [
-				pass_index,
-				step_index,
-				group_count,
-				fall_count,
-				refill_count,
-			]
-		)
-		await _play_match_groups_for_pass(
-			presented_groups,
-			visual_board_state,
-			resolve_trace_origin_usec,
-			pass_index
-		)
-		await _wait_combat_speed(CASCADE_PASS_HOLD_SECONDS)
-
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=gravity_start moves=%d gravity_ms=%d" % [
-				pass_index,
-				fall_count,
-				int(round(_combat_speed_duration(GRAVITY_ANIMATION_SECONDS) * 1000.0)),
-			]
-		)
-		var gravity_animation_seconds := _combat_speed_duration(GRAVITY_ANIMATION_SECONDS)
-		_board_view.animate_fall_moves(pass_result.fall_moves, gravity_animation_seconds)
-		await _wait_combat_speed(GRAVITY_ANIMATION_SECONDS)
-		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=gravity_visual_commit moves=%d" % [pass_index, fall_count]
-		)
-
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=refill_start spawns=%d refill_ms=%d" % [
-				pass_index,
-				refill_count,
-				int(round(_combat_speed_duration(REFILL_ANIMATION_SECONDS) * 1000.0)),
-			]
-		)
-		var refill_animation_seconds := _combat_speed_duration(REFILL_ANIMATION_SECONDS)
-		_board_view.animate_refill_spawns(pass_result.refill_spawns, refill_animation_seconds)
-		await _wait_combat_speed(REFILL_ANIMATION_SECONDS)
-		_apply_visual_refill_spawns(visual_board_state, pass_result.refill_spawns)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=refill_visual_commit spawns=%d" % [pass_index, refill_count]
-		)
-		await _wait_combat_speed(CASCADE_PASS_HOLD_SECONDS)
-		_resolve_trace(resolve_trace_origin_usec, "pass=%d phase=pass_complete" % pass_index)
-
-	_resolve_trace_pass_index = -1
-	_resolve_trace(resolve_trace_origin_usec, "phase=animations_drain_start")
-	while _board_view.has_active_animations():
-		await get_tree().create_timer(0.02).timeout
-	_finish_combo_popup()
-	_resolve_trace(resolve_trace_origin_usec, "phase=animations_drain_complete")
-
-
-func _trigger_match_feedback(groups: Array, flash_seconds: float) -> void:
-	_board_view.flash_match_groups(groups, flash_seconds)
-	if flash_seconds <= 0.01:
-		await get_tree().process_frame
-		return
-	await get_tree().create_timer(flash_seconds).timeout
-
-
-func _play_match_groups_for_pass(
-	groups: Array,
-	visual_board_state: BoardState,
-	resolve_trace_origin_usec: int,
-	pass_index: int
-) -> void:
-	for group_index in range(groups.size()):
-		var typed_group: Dictionary = groups[group_index]
-		var one_group: Array[Dictionary] = [typed_group]
-		var match_flash_seconds := _combat_speed_duration(MATCH_FLASH_SECONDS)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_start group_index=%d flash_ms=%d" % [
-				pass_index,
-				group_index,
-				int(round(match_flash_seconds * 1000.0)),
-			]
-		)
-		await _trigger_match_feedback(one_group, match_flash_seconds)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_end group_index=%d" % [pass_index, group_index]
-		)
-
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=clear_start group_index=%d clear_ms=%d" % [
-				pass_index,
-				group_index,
-				int(round(_combat_speed_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
-			]
-		)
-		_spawn_match_clear_bursts(one_group)
-		var clear_animation_seconds := _combat_speed_duration(CLEAR_ANIMATION_SECONDS)
-		_board_view.animate_clear_groups(one_group, clear_animation_seconds)
-		await _wait_combat_speed(CLEAR_ANIMATION_SECONDS)
-		_apply_visual_clear_groups(visual_board_state, one_group)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=clear_visual_commit group_index=%d" % [pass_index, group_index]
-		)
-
-		_resolve_combo_running += 1
-		var orb_id := int(typed_group.get("orb_id", -1))
-		var orb_symbol := "?"
-		var orb_name := "unknown"
-		if OrbType.is_valid_id(orb_id):
-			orb_symbol = OrbType.debug_symbol(orb_id)
-			orb_name = OrbType.display_name(orb_id)
-		var cell_count := Array(typed_group.get("cells", [])).size()
-		var preview_amount := _preview_match_feedback_value(typed_group, _resolve_combo_running)
-		_resolve_trace(
-			resolve_trace_origin_usec,
-			"pass=%d phase=combo_tick group_index=%d combo_value=%d orb=%s orb_name=\"%s\" cells=%d preview=%d" % [
-				pass_index,
-				group_index,
-				_resolve_combo_running,
-				orb_symbol,
-				orb_name,
-				cell_count,
-				preview_amount,
-			]
-		)
-		_update_combo_feedback(typed_group, _resolve_combo_running)
-		await _wait_combat_speed(COMBO_COUNT_STEP_SECONDS)
-
-
-func _sorted_match_groups_for_presentation(groups: Array) -> Array:
-	var sorted_groups := groups.duplicate()
-	sorted_groups.sort_custom(_compare_match_groups_for_presentation)
-	return sorted_groups
-
-
-func _compare_match_groups_for_presentation(left: Dictionary, right: Dictionary) -> bool:
-	var left_anchor := _match_group_anchor(left)
-	var right_anchor := _match_group_anchor(right)
-	if left_anchor.y == right_anchor.y:
-		return left_anchor.x < right_anchor.x
-	return left_anchor.y < right_anchor.y
-
-
-func _match_group_anchor(group: Dictionary) -> Vector2i:
-	var cells: Array = group.get("cells", [])
-	if cells.is_empty():
-		return Vector2i(BoardState.COLUMN_COUNT, BoardState.ROW_COUNT)
-
-	var min_row := BoardState.ROW_COUNT
-	var min_column := BoardState.COLUMN_COUNT
-	for cell in cells:
-		var typed_cell: Vector2i = cell
-		if typed_cell.y < min_row:
-			min_row = typed_cell.y
-			min_column = typed_cell.x
-		elif typed_cell.y == min_row:
-			min_column = mini(min_column, typed_cell.x)
-	return Vector2i(min_column, min_row)
-
-
-func _update_combo_feedback(group: Dictionary, combo_value: int) -> void:
-	_spawn_combo_floating_text(group, combo_value)
-	_trigger_match_mastery_feedback(group, combo_value)
+	await _resolve_presenter.play_resolve_animations(
+		result,
+		visual_board_state,
+		resolve_trace_origin_usec,
+		{
+			"trace_callback": Callable(self, "_resolve_trace"),
+			"combo_preview_callback": Callable(self, "_on_resolve_presenter_combo_preview"),
+			"combo_feedback_callback": Callable(self, "_on_resolve_presenter_combo_feedback"),
+			"set_pass_index_callback": Callable(self, "_on_resolve_presenter_pass_index"),
+		}
+	)
 
 
 func _trigger_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	_show_match_mastery_feedback(group, combo_value)
 
 
-func _apply_visual_clear_groups(visual_board_state: BoardState, groups: Array) -> void:
-	if visual_board_state == null:
-		return
-	for group in groups:
-		for cell in group.cells:
-			var typed_cell: Vector2i = cell
-			visual_board_state.clear_cell(typed_cell.x, typed_cell.y)
-	_board_view.queue_redraw()
+func _on_resolve_presenter_combo_preview(group: Dictionary, combo_value: int) -> int:
+	return _preview_match_feedback_value(group, combo_value)
 
 
-func _apply_visual_fall_moves(visual_board_state: BoardState, fall_moves: Array) -> void:
-	if visual_board_state == null:
-		return
-	for move in fall_moves:
-		var from_cell: Vector2i = move.from
-		visual_board_state.clear_cell(from_cell.x, from_cell.y)
-	for move in fall_moves:
-		var to_cell: Vector2i = move.to
-		var orb_id := int(move.orb_id)
-		if OrbType.is_valid_id(orb_id):
-			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
-	_board_view.queue_redraw()
+func _on_resolve_presenter_combo_feedback(group: Dictionary, combo_value: int) -> void:
+	_trigger_match_mastery_feedback(group, combo_value)
 
 
-func _apply_visual_refill_spawns(visual_board_state: BoardState, refill_spawns: Array) -> void:
-	if visual_board_state == null:
-		return
-	for spawn in refill_spawns:
-		var to_cell: Vector2i = spawn.to
-		var orb_id := int(spawn.orb_id)
-		if OrbType.is_valid_id(orb_id):
-			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
-	_board_view.queue_redraw()
+func _on_resolve_presenter_pass_index(pass_index: int) -> void:
+	_resolve_trace_pass_index = pass_index
+
+
+func _on_presenter_combo_sound() -> void:
+	_audio_play_sfx("combo")
 
 
 func _combat_speed_duration(base_seconds: float) -> float:
-	match _combat_speed:
-		COMBAT_SPEED_INSTANT:
-			return 0.01
-		COMBAT_SPEED_FAST:
-			return base_seconds * 0.55
-		COMBAT_SPEED_NORMAL:
-			return base_seconds
-		COMBAT_SPEED_SLOW:
-			return base_seconds * 2.35
-		_:
-			return base_seconds
+	if _resolve_presenter != null:
+		return _resolve_presenter.combat_speed_duration(base_seconds)
+	return base_seconds
 
 
 func _wait_combat_speed(base_seconds: float) -> void:
-	var wait_seconds := _combat_speed_duration(base_seconds)
-	if wait_seconds <= 0.01:
+	if _resolve_presenter != null:
+		await _resolve_presenter.wait_combat_speed(base_seconds)
+		return
+	if base_seconds <= 0.01:
 		await get_tree().process_frame
 		return
-	await get_tree().create_timer(wait_seconds).timeout
+	await get_tree().create_timer(base_seconds).timeout
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
@@ -3148,134 +2960,6 @@ func _on_resolver_match_found(groups: Array) -> void:
 	_audio_play_sfx("match")
 	_status_label.text = "Matches found: %d group(s)." % groups.size()
 	_status_label.modulate = STATUS_COLOR_WARNING
-
-
-func _spawn_match_clear_bursts(groups: Array) -> void:
-	for raw_group in groups:
-		var group: Dictionary = raw_group
-		var cells: Array = group.get("cells", [])
-		var matched_count: int = cells.size()
-		var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
-		var burst_size := Vector2(60.0, 60.0)
-		if matched_count >= 5:
-			burst_size = Vector2(78.0, 78.0)
-		elif matched_count >= 4:
-			burst_size = Vector2(68.0, 68.0)
-		for raw_cell in cells:
-			var cell: Vector2i = raw_cell
-			if not _board_view.is_cell_valid(cell):
-				continue
-			var board_center: Vector2 = _board_view.get_cell_center(cell)
-			var global_center: Vector2 = _board_view.get_global_transform_with_canvas() * board_center
-			_spawn_match_clear_burst(global_center, burst_size, orb_id)
-
-
-func _spawn_match_clear_burst(global_center: Vector2, draw_size: Vector2, orb_id: int) -> void:
-	var burst_texture := _match_clear_burst()
-	var orb_tint := OrbType.color(orb_id)
-	orb_tint = orb_tint.lerp(Color.WHITE, 0.42)
-	orb_tint.a = 0.72
-	_spawn_vfx_texture(burst_texture, global_center, draw_size, 0.22, orb_tint)
-
-
-func _match_clear_burst() -> Texture2D:
-	if _match_clear_burst_texture != null:
-		return _match_clear_burst_texture
-	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
-	image.fill(Color(1.0, 1.0, 1.0, 0.0))
-	var center := Vector2(47.5, 47.5)
-	for y in 96:
-		for x in 96:
-			var point := Vector2(float(x), float(y))
-			var offset := point - center
-			var distance := offset.length()
-			var radial_alpha: float = clampf(1.0 - distance / 44.0, 0.0, 1.0)
-			var ring_alpha: float = maxf(0.0, 1.0 - absf(distance - 24.0) / 7.0) * 0.38
-			var axis_alpha: float = 0.0
-			if absf(offset.x) < 2.0 or absf(offset.y) < 2.0:
-				axis_alpha = clampf(1.0 - distance / 43.0, 0.0, 1.0) * 0.74
-			if absf(absf(offset.x) - absf(offset.y)) < 1.7:
-				axis_alpha = maxf(axis_alpha, clampf(1.0 - distance / 39.0, 0.0, 1.0) * 0.44)
-			var alpha: float = maxf(radial_alpha * radial_alpha * 0.34, maxf(ring_alpha, axis_alpha))
-			if alpha > 0.01:
-				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
-	_match_clear_burst_texture = ImageTexture.create_from_image(image)
-	return _match_clear_burst_texture
-
-
-func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
-	var cells: Array = group.get("cells", [])
-	if cells.is_empty():
-		return
-	var combo_text := "COMBO x%d" % combo_value
-	_audio_play_sfx("combo")
-	var font_size := mini(COMBO_POPUP_MAX_FONT_SIZE, COMBO_POPUP_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 6)
-
-	var combo_panel := _ensure_combo_popup_panel()
-	combo_panel.position = _center_combo_popup_position()
-	combo_panel.modulate.a = 1.0
-	_combo_popup_label.text = combo_text
-	_combo_popup_label.add_theme_font_size_override("font_size", font_size)
-	_combo_popup_label.size = COMBO_POPUP_SIZE
-	if _combo_popup_fade_tween != null and _combo_popup_fade_tween.is_valid():
-		_combo_popup_fade_tween.kill()
-
-	combo_panel.pivot_offset = combo_panel.size * 0.5
-	combo_panel.scale = Vector2(1.0, 1.0)
-	var pulse_scale := 1.0 + minf(0.22, float(combo_value) * 0.018)
-	var pop_tween := create_tween()
-	pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07)
-	pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10)
-
-
-func _ensure_combo_popup_panel() -> PanelContainer:
-	if is_instance_valid(_combo_popup_panel):
-		return _combo_popup_panel
-	var combo_panel := PanelContainer.new()
-	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	combo_panel.size = COMBO_POPUP_SIZE
-	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
-	combo_panel.z_index = 80
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	panel_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
-	panel_style.set_border_width_all(0)
-	combo_panel.add_theme_stylebox_override("panel", panel_style)
-
-	var combo_label := Label.new()
-	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	combo_label.add_theme_font_size_override("font_size", COMBO_POPUP_BASE_FONT_SIZE)
-	combo_label.add_theme_constant_override("outline_size", 7)
-	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.00, 0.96))
-	combo_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.28, 1.0))
-	combo_label.position = Vector2.ZERO
-	combo_label.size = COMBO_POPUP_SIZE
-	combo_panel.add_child(combo_label)
-	_board_panel.add_child(combo_panel)
-	_combo_popup_panel = combo_panel
-	_combo_popup_label = combo_label
-	return combo_panel
-
-
-func _finish_combo_popup() -> void:
-	if not is_instance_valid(_combo_popup_panel):
-		return
-	var combo_panel := _combo_popup_panel
-	_combo_popup_fade_tween = create_tween()
-	_combo_popup_fade_tween.tween_interval(0.18)
-	_combo_popup_fade_tween.tween_property(combo_panel, "modulate:a", 0.0, 0.36)
-	_combo_popup_fade_tween.finished.connect(func() -> void:
-		if is_instance_valid(combo_panel):
-			combo_panel.queue_free()
-		_combo_popup_panel = null
-		_combo_popup_label = null
-	)
-
-
-func _center_combo_popup_position() -> Vector2:
-	return _board_surface.position + (_board_surface.size - COMBO_POPUP_SIZE) * 0.5
 
 
 func _pulse_label(target: Label, tint: Color) -> void:

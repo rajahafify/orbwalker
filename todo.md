@@ -524,7 +524,7 @@ Tasks:
 - [x] AR-03 Shared WAV/audio utility extraction.
 - [x] AR-04 Shop/input safety.
 - [x] AR-05 Combat controller first split.
-- [ ] AR-06 Combat presentation split. Deferred until the first controller split is validated.
+- [x] AR-06 Combat presentation split.
 - [ ] AR-07 RunState/data contract roadmap. Deferred pending `.tres` versus JSON or dictionary-backed content decision.
 - [ ] AR-08 Cleanup/dead-code validation.
 

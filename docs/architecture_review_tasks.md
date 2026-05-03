@@ -56,13 +56,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-06: Combat Presentation Split
 
-- Status: `deferred`
-- Owner/scope: Resolve animation and presentation helpers currently concentrated in `scripts/combat/combat_player_controller.gd`.
-- Progress: Not started; deferred until the first controller split proves the extraction pattern.
-- Blockers: Depends on AR-05 and visual regression checks. Must preserve accepted presentation order.
-- Next action: Inventory presentation-only helpers and define a boundary that keeps resolver math untouched.
-- Validation: Visible order remains `drag finish -> match flash -> clear animation -> COMBO x1 / mastery preview -> gravity -> refill`; cascade combo/mastery feedback remains stable; scene smoke and focused replay probes pass.
-- Docs/wiki impact: Update `wiki/features.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `docs/test_plan.md` if ownership changes.
+- Status: `done`
+- Owner/scope: `scripts/combat/combat_resolve_presenter.gd` now owns the board-space resolve replay presentation boundary: match-group presentation sorting, match flash waits, clear/gravity/refill animation timing, visual board commits, clear burst spawning, combo popup lifecycle, and `combat_speed` duration/wait behavior. `scripts/combat/combat_player_controller.gd` still owns drag/input lifecycle, resolver simulation, combat math, mastery preview value calculation and HUD feedback decisions, RunState routing, outcome overlay routing, audio routing callbacks, scene transitions, debug console, and `/skip`.
+- Progress: 2026-05-03 completed the presentation split with a callback boundary from the controller into `CombatResolvePresenter`. The accepted visible ordering is preserved by keeping the replay sequence as match flash, clear animation, visual clear commit, `combo_tick` trace, combo popup/mastery preview, gravity animation/commit, refill animation/commit. AR-08 cleanup candidates were left untouched.
+- Blockers: None for the AR-06 code batch. Manual visual QA on Android passed for the AR-06 combat presentation checks; broader desktop/mobile overlap and deferred orb texture-map pop-in review remain useful outside this batch.
+- Next action: Move to AR-07 or another selected architecture-review batch.
+- Validation: Godot MCP `view_script` checks passed for `res://scripts/combat/combat_resolve_presenter.gd` and `res://scripts/combat/combat_player_controller.gd`; `res://scenes/combat/combat_player.tscn` instantiated with board and outcome nodes; retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched successfully with no runtime errors; final `get_godot_errors` reported no session errors. A first attempt at a focused async presenter-order editor probe hit an MCP tool-script parse limitation before execution. User manual QA on the installed Android build confirmed AR-06 presentation behavior works.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/features.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new helper ownership.
 
 ## AR-07: RunState/Data Contract Roadmap
 
