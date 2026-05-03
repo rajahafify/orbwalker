@@ -519,7 +519,7 @@ Tracker: `docs/architecture_review_tasks.md`
 
 Tasks:
 
-- [ ] AR-01 Baseline regression harness.
+- [x] AR-01 Baseline regression harness.
 - [ ] AR-02 Low-risk bug fixes.
 - [ ] AR-03 Shared WAV/audio utility extraction.
 - [ ] AR-04 Shop/input safety.

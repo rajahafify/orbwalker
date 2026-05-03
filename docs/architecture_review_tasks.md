@@ -6,13 +6,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-01: Baseline Regression Harness
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Regression checklist and Godot MCP probe workflow for board resolver, combat state machine, shop service, RunState routing, audio loading, and shared HUD selection.
-- Progress: No baseline has been captured in this tracker yet.
-- Blockers: Needs a current static/Godot MCP baseline before any behavior-preserving refactor starts.
-- Next action: Capture `git status --short --branch`, `git diff --check`, `get_project_info`, `get_godot_errors`, key scene smokes, and focused probe outputs as the baseline evidence.
+- Progress: 2026-05-03 baseline evidence captured in `docs/test_plan.md` for branch/worktree state, `git diff --check`, `get_project_info`, `get_godot_errors`, main/combat/board-debug/shop scene smokes, user runtime route timings for `Start Run -> Combat`, `Combat -> Shop`, and `Shop -> Combat`, board resolver known cases, combat state machine result envelope, shop service buy/reroll/sell/booster basics, RunState route invariants, audio stream loading, and minimal `PlayerLoadoutHud` selection/popover behavior.
+- Blockers: None for AR-01 baseline capture. Remaining manual QA items such as texture-map visual pop-in, live HUD sell flow, overlap checks, and integer-division warning cleanup stay tracked outside AR-01 completion.
+- Next action: Use the retained AR-01 harness as the pre-refactor comparison point for AR-02 and later architecture-touching batches.
 - Validation: Static checks pass; Godot MCP checks cover `res://scenes/main.tscn`, `res://scenes/combat/combat_player.tscn`, `res://scenes/combat/board_debug.tscn`, and `res://scenes/flow/shop_player.tscn`; focused probes record expected result envelopes for deterministic systems.
-- Docs/wiki impact: Update `docs/test_plan.md` with dated baseline results and mirror durable gaps in `wiki/known-issues.md`.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/file-map.md`, `wiki/setup.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the retained feature-flagged AR-01 probe and captured baseline.
 
 ## AR-02: Low-Risk Bug Fixes
 

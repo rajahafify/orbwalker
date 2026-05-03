@@ -473,3 +473,31 @@ Verification notes (2026-05-03):
 - [ ] Temporary diagnostic instrumentation (if used) is either removed or explicitly documented as still required, with rationale.
 - [ ] `get_godot_errors` is rerun after each architecture-touching batch and any stale diagnostics are cleared or called out.
 - [ ] `docs/architecture_review_tasks.md`, `todo.md`, `wiki/known-issues.md`, and `wiki/log.md` are synchronized with validated outcomes.
+
+Verification notes (2026-05-03, AR-01 baseline regression harness):
+- Branch/worktree baseline captured on `codex/ar-01-baseline-regression-harness`; `git status --short --branch` reported only `## codex/ar-01-baseline-regression-harness` before documentation edits, and `git diff --check` reported no whitespace errors.
+- Godot MCP `get_project_info` passed: Godot `4.6.2-stable`, current project name `Orbwalker`, main scene `res://scenes/main.tscn`, autoloads `GDAIMCPRuntime`, `RunState`, and `AudioManager`.
+- Initial Godot MCP `get_godot_errors` reported no session errors. After scene smokes, diagnostics reported repeated unsourced `GDScript::reload: Integer division. Decimal part will be discarded.` warnings; no fatal runtime errors were reported.
+- Scene smoke baseline:
+  - `res://scenes/main.tscn` via `play_scene main` launched and running tree contained `Main`, `AudioManager`, `RunState`, `LogoTexture`, `MenuButtonColumn`, `ElementRow`, `StatsPanel`, `FooterActions`, and `MainMenuMusicPlayer`; menu music log reported `AudioStreamWAV`, playing `true`, volume `-12 dB`.
+  - `res://scenes/combat/combat_player.tscn` via `open_scene` + `play_scene current` launched with `CombatPlayer`, `CombatLayoutRoot`, `DebugOverlay`, and `VfxLayer`. FlowTrace baseline included `combat_first_usable_frame` at about `159ms` and deferred `combat_after_texture_map` at about `1297ms`.
+  - `res://scenes/combat/board_debug.tscn` via `open_scene` + `play_scene current` launched with `BoardDebug` and its `MarginContainer`.
+  - `res://scenes/flow/shop_player.tscn` via `open_scene` + `play_scene current` initialized shop scene code and music, then redirected to `res://scenes/main.tscn` because `RunState.run_active=false`; FlowTrace logged `shop_ready_redirect_before_change_scene` with details `{ "source": "no_active_run" }`.
+- Focused editor-script probes:
+  - Board resolver known cases passed through `BoardResolverTestRunner.run_all()`: `passed=true`, `total=8`, `failed=0`, `failures=[]`. The runner emitted expected `max_steps=1 before stabilizing` warnings for single-pass cases.
+  - Combat state machine result-envelope baseline passed through `res://scripts/debug/ar01_combat_result_probe.gd` with feature flag `debug/ar01_combat_result_probe_enabled=true`: `status=ok`, `phase_before=Player Input`, `phase_after=Intent Preview`, `turn_log_has_expected_keys=true`, `missing_turn_log_keys=[]`, `combo_count=3`, `combo_count_with_bonus=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, `player_start={hp=40,max_hp=50,armor=0,gold=0}`, `player_end={hp=42,max_hp=50,armor=0,gold=2}`, `enemy_start.hp=50`, `enemy_end.hp=31`, and `next_phase_name=Intent Preview`.
+  - Combat result-envelope feature flag disabled baseline passed: `debug/ar01_combat_result_probe_enabled=false` returns `status=disabled` without running the deterministic combat probe.
+  - Shop service buy/reroll/sell/booster basics passed using a local `run_state.gd` instance: `open_ok=true`, `buy_any_ok=true`, `equipment_buy_ok=true`, `reroll_ok=true`, `sell_ok=true`, `booster_buy_ok=true`, `choose_booster_ok=true`, `gold_after=975`.
+  - RunState route invariants passed using a local `run_state.gd` instance: new run routes to combat; first fight victory routes to shop; shop advance routes to combat; boss victory routes through combat overlay reward; reward skip routes back to combat; final boss victory routes to `res://scenes/flow/run_summary_placeholder.tscn` with `run_active=false` and `run_victory=true`; defeat routes to `res://scenes/main.tscn` with `run_active=false` and `run_victory=false`.
+  - Audio stream loading passed using a local `audio_manager.gd` node: `menu`, `combat`, and `shop` all played `AudioStreamWAV` streams at `-12 dB` with loop mode `1`; loop ends were `3223040`, `3503104`, and `1797120` respectively.
+  - `PlayerLoadoutHud` selection/popover basics passed a minimal editor probe: `populate_icon_row(...)` created two equipment slots, `EquipmentSlot0` existed, and `handle_global_click(Vector2(9999, 9999))` dismissed selected inventory focus.
+- Untested AR-01 scope:
+  - Deferred orb texture-map visual pop-in, shared HUD sell flow in live combat/shop scenes, and manual desktop/mobile visual overlap remain manual QA items.
+
+Debug harness note:
+- `res://scripts/debug/ar01_combat_result_probe.gd` is a retained AR-01 regression helper. It is inert by default behind `debug/ar01_combat_result_probe_enabled=false`. To rerun it through Godot MCP, load the script with `ResourceLoader.CACHE_MODE_IGNORE`, set the project setting to `true`, call `run_baseline_probe()`, then set the project setting back to `false`.
+
+User runtime route timing capture (2026-05-03):
+- `Start Run -> Combat` route `start_run_to_combat_1`: resource load `200ms`; scene instantiate `0ms`; scene attach `84ms`; `combat_first_usable_frame` at `294ms`; deferred `combat_after_texture_map` at `1409ms`.
+- `Combat -> Shop` route `combat_to_shop_2`: resource load `51ms`; scene instantiate `0ms`; scene attach `114ms`; `shop_first_usable_frame` at `218ms`.
+- `Shop -> Combat` route `shop_to_combat_3`: resource load `2ms`; scene instantiate `0ms`; scene attach `72ms`; `combat_first_usable_frame` at `78ms`; deferred `combat_after_texture_map` at `1206ms`.

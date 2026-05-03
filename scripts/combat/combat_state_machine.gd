@@ -26,6 +26,8 @@ var enemy: EnemyState
 var phase: Phase = Phase.INTENT_PREVIEW
 var turn_index: int = 1
 var last_turn_log: Dictionary = {}
+var _debug_hooks: Dictionary = {}
+var _debug_local_gold: int = 0
 
 
 func start_fight(player_state: PlayerState, enemy_state: EnemyState) -> void:
@@ -66,13 +68,23 @@ func begin_player_input() -> void:
 		phase = Phase.PLAYER_INPUT
 
 
+func set_debug_hooks(hooks: Dictionary) -> void:
+	_debug_hooks = hooks
+	_debug_local_gold = int(_debug_hooks.get("initial_gold", 0))
+
+
+func clear_debug_hooks() -> void:
+	_debug_hooks = {}
+	_debug_local_gold = 0
+
+
 func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 	phase = Phase.MATCH_RESOLUTION
 	var resolved_turn_index := turn_index
 	var player_start_snapshot := _build_player_snapshot()
 	var enemy_start_snapshot := _build_enemy_snapshot()
 
-	var combat_modifiers: Dictionary = RunState.current_combat_modifiers()
+	var combat_modifiers: Dictionary = _resolve_combat_modifiers()
 	var orb_bonus_by_id: Dictionary = combat_modifiers.get("orb_bonus_by_id", {})
 	var combo_flat_bonus := int(combat_modifiers.get("combo_flat_bonus", 0))
 	var combo_multiplier_mult := float(combat_modifiers.get("combo_multiplier_mult", 1.0))
@@ -114,8 +126,8 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 	var healed := player.heal(heal_amount)
 	var added_armor := player.add_temporary_armor(armor_gain)
 	if gold_gain > 0:
-		RunState.add_gold(gold_gain)
-	player.gold = RunState.run_gold
+		_apply_gold_gain(gold_gain)
+	player.gold = _resolve_run_gold()
 
 	var block_resolution: Dictionary = enemy.consume_block_vs_player_damage(total_elemental_damage)
 	var enemy_damage_dealt := enemy.apply_damage(int(block_resolution.get("final_damage", 0)))
@@ -203,7 +215,7 @@ func is_fight_over() -> bool:
 
 func _scaled_orb_total(orb_count: int, orb_id: int, combo_multiplier: float, orb_bonus_by_id: Dictionary) -> Dictionary:
 	var count := maxi(0, orb_count)
-	var orb_value := player.orb_value(orb_id) + int(orb_bonus_by_id.get(orb_id, 0))
+	var orb_value := _resolve_orb_value(orb_id) + int(orb_bonus_by_id.get(orb_id, 0))
 	orb_value = maxi(0, orb_value)
 	var base_damage := count * orb_value
 	var total_damage := int(round(base_damage * combo_multiplier))
@@ -211,6 +223,46 @@ func _scaled_orb_total(orb_count: int, orb_id: int, combo_multiplier: float, orb
 		"base": base_damage,
 		"total": maxi(0, total_damage),
 	}
+
+
+func _resolve_orb_value(orb_id: int) -> int:
+	var fixed_orb_value = _debug_hooks.get("fixed_orb_value", null)
+	if fixed_orb_value != null:
+		return maxi(0, int(fixed_orb_value))
+	var orb_values_by_id: Dictionary = _debug_hooks.get("orb_values_by_id", {})
+	if orb_values_by_id.has(orb_id):
+		return maxi(0, int(orb_values_by_id.get(orb_id, 0)))
+	return player.orb_value(orb_id)
+
+
+func _resolve_combat_modifiers() -> Dictionary:
+	var debug_modifiers: Dictionary = _debug_hooks.get("combat_modifiers", {})
+	if not debug_modifiers.is_empty():
+		return debug_modifiers.duplicate(true)
+	var modifiers_callable: Callable = _debug_hooks.get("combat_modifiers_callable", Callable())
+	if modifiers_callable.is_valid():
+		return Dictionary(modifiers_callable.call())
+	return RunState.current_combat_modifiers()
+
+
+func _apply_gold_gain(gold_gain: int) -> void:
+	if bool(_debug_hooks.get("use_local_gold", false)):
+		_debug_local_gold += maxi(0, gold_gain)
+		return
+	var apply_gold_callable: Callable = _debug_hooks.get("apply_gold_callable", Callable())
+	if apply_gold_callable.is_valid():
+		apply_gold_callable.call(gold_gain)
+		return
+	RunState.add_gold(gold_gain)
+
+
+func _resolve_run_gold() -> int:
+	if bool(_debug_hooks.get("use_local_gold", false)):
+		return _debug_local_gold
+	var run_gold_callable: Callable = _debug_hooks.get("run_gold_callable", Callable())
+	if run_gold_callable.is_valid():
+		return int(run_gold_callable.call())
+	return int(RunState.run_gold)
 
 
 func _build_player_snapshot() -> Dictionary:

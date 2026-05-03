@@ -1,5 +1,11 @@
 # Wiki Log
 
+## 2026-05-03 - AR-01 Baseline Harness Gaps
+
+- Updated [[known-issues]] with AR-01 baseline gaps for repeated unsourced integer-division reload warnings and the current Godot MCP editor-script limitation around deterministic combat result-envelope probes that touch `RunState`. (source: `docs/test_plan.md`, `docs/architecture_review_tasks.md`, `scripts/combat/combat_state_machine.gd`, `scripts/core/run_state.gd`)
+- Added user-captured AR-01 route timing baselines for `Start Run -> Combat`, `Combat -> Shop`, and `Shop -> Combat`; the remaining route performance risk is deferred combat texture-map completion after first usable frame. (source: `docs/test_plan.md`, `wiki/known-issues.md`)
+- Added retained feature-flagged AR-01 combat result-envelope probe documentation and closed the earlier result-envelope blocker after Godot MCP returned `status=ok`. (source: `scripts/debug/ar01_combat_result_probe.gd`, `scripts/combat/combat_state_machine.gd`, `docs/test_plan.md`, `docs/architecture_review_tasks.md`)
+
 Append-only history of wiki operations.
 
 ## [2026-05-03] docs | Architecture Review Task Tracking Plan
