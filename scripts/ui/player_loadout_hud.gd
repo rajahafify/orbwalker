@@ -3,6 +3,7 @@ class_name PlayerLoadoutHud
 
 signal equipment_slot_selected(slot_index: int)
 signal consumable_slot_selected(slot_index: int)
+signal sell_slot_requested(slot_type: String, slot_index: int)
 signal slot_hover_started(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2)
 signal slot_hover_ended()
 
@@ -54,11 +55,23 @@ const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
+const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _selected_equipment_slot := -1
 var _selected_consumable_slot := -1
 var _empty_silhouette_cache: Dictionary = {}
+var _hud_nodes: Dictionary = {}
+var _player_data: Dictionary = {}
+var _slot_detail_bubble: Panel
+var _slot_detail_title: Label
+var _slot_detail_description: Label
+var _slot_detail_sell_button: Button
+var _hover_slot_global_rect := Rect2()
+var _hover_slot_type := ""
+var _hover_slot_index := -1
+var _hover_slot_title := ""
+var _hover_slot_description := ""
 
 
 func set_selected_equipment_slot(slot_index: int) -> void:
@@ -67,6 +80,39 @@ func set_selected_equipment_slot(slot_index: int) -> void:
 
 func set_selected_consumable_slot(slot_index: int) -> void:
 	_selected_consumable_slot = slot_index
+
+
+func bind_player_hud(nodes: Dictionary) -> void:
+	_hud_nodes = nodes
+	_ensure_slot_detail_popover()
+	apply_player_hud_chrome(_hud_nodes)
+
+
+func load_player_data(player_data: Dictionary) -> void:
+	_player_data = player_data.duplicate(true)
+	_render_player_data()
+
+
+func update_player_data(player_data: Dictionary) -> void:
+	load_player_data(player_data)
+
+
+func update_player_hud_layout() -> void:
+	if _hud_nodes.is_empty():
+		return
+	apply_player_hud_layout(_hud_nodes)
+	_update_slot_detail_bubble()
+
+
+func handle_global_click(global_point: Vector2) -> bool:
+	if not _has_inventory_focus():
+		return false
+	if _is_inside_inventory_focus_area(global_point):
+		return false
+	hide_slot_detail_popover()
+	_selected_equipment_slot = -1
+	_selected_consumable_slot = -1
+	return true
 
 
 func populate_loadout_slot_row(row: Control, ids: Array, label: String, slot_count: int, selectable_label: String = "") -> void:
@@ -116,6 +162,68 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_label
 		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, label, index, content, id_text, filled))
 		slot.mouse_exited.connect(_on_slot_mouse_exited)
 		row.add_child(slot)
+
+
+func _render_player_data() -> void:
+	if _hud_nodes.is_empty():
+		return
+	var player_state = _player_data.get("player_state", null)
+	var progression_snapshot: Dictionary = _player_data.get("progression", {})
+	var hero_portrait: Texture2D = _player_data.get("hero_portrait", null)
+	var max_visible_relics := int(_player_data.get("max_visible_relics", 2))
+	var selectable_equipment := bool(_player_data.get("selectable_equipment", true))
+	var selectable_consumables := bool(_player_data.get("selectable_consumables", true))
+
+	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
+	var hp_label := _hud_nodes.get("hp_label") as Label
+	if player_state != null:
+		var current_hp := int(player_state.current_hp)
+		var max_hp := int(player_state.max_hp)
+		if hp_bar != null:
+			hp_bar.max_value = float(maxi(1, max_hp))
+			hp_bar.value = float(maxi(0, current_hp))
+		if hp_label != null:
+			hp_label.text = "HP %d / %d" % [current_hp, max_hp]
+
+	var hero := _hud_nodes.get("hero_portrait") as TextureRect
+	if hero != null and hero_portrait != null:
+		hero.texture = hero_portrait
+
+	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
+	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
+	_selected_equipment_slot = _validated_slot_index(_selected_equipment_slot, equipment_slots)
+	_selected_consumable_slot = _validated_slot_index(_selected_consumable_slot, consumable_slots)
+
+	var equipment_row := _hud_nodes.get("equipment_icons") as Control
+	if equipment_row != null:
+		populate_loadout_slot_row(equipment_row, equipment_slots, "equipment", 5, "equipment" if selectable_equipment else "")
+	var consumable_row := _hud_nodes.get("consumable_icons") as Control
+	if consumable_row != null:
+		populate_loadout_slot_row(consumable_row, consumable_slots, "consumable", 3, "consumable" if selectable_consumables else "")
+	var relic_row := _hud_nodes.get("relic_icons") as Control
+	if relic_row != null:
+		populate_relic_row(relic_row, Array(progression_snapshot.get("relic_ids", [])), max_visible_relics)
+	var mastery_cards := _hud_nodes.get("mastery_cards") as Control
+	if mastery_cards != null:
+		populate_combat_mastery_panel(mastery_cards, Dictionary(progression_snapshot.get("mastery_levels", {})))
+	_suppress_native_slot_tooltips()
+	_update_selected_slot_popover()
+
+
+func _validated_slot_index(slot_index: int, slots: Array) -> int:
+	if slot_index < 0 or slot_index >= slots.size():
+		return -1
+	return slot_index if String(slots[slot_index]) != "" else -1
+
+
+func _suppress_native_slot_tooltips() -> void:
+	for key in ["equipment_icons", "consumable_icons", "relic_icons"]:
+		var row := _hud_nodes.get(key) as Control
+		if row == null:
+			continue
+		for child in row.get_children():
+			if child is Control:
+				(child as Control).tooltip_text = ""
 
 
 func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
@@ -400,6 +508,7 @@ func apply_player_hud_chrome(nodes: Dictionary) -> void:
 	_apply_hud_label_style(nodes.get("equipment_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
 	_apply_hud_label_style(nodes.get("consumable_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
 	_apply_hud_label_style(nodes.get("relic_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
+	_apply_slot_detail_popover_chrome()
 
 
 func apply_player_footer_layout(nodes: Dictionary) -> void:
@@ -557,12 +666,14 @@ func _on_equipment_slot_pressed(index: int) -> void:
 	_selected_equipment_slot = index
 	_selected_consumable_slot = -1
 	equipment_slot_selected.emit(index)
+	_update_selected_slot_popover()
 
 
 func _on_consumable_slot_pressed(index: int) -> void:
 	_selected_consumable_slot = index
 	_selected_equipment_slot = -1
 	consumable_slot_selected.emit(index)
+	_update_selected_slot_popover()
 
 
 func _on_slot_mouse_entered(slot: Control, slot_type: String, slot_index: int, content: Dictionary, fallback_id: String, filled: bool) -> void:
@@ -573,11 +684,24 @@ func _on_slot_mouse_entered(slot: Control, slot_type: String, slot_index: int, c
 	if filled:
 		title = String(content.get("display_name", fallback_id))
 		description = String(content.get("description", ""))
+		if slot_type == "equipment":
+			_selected_equipment_slot = slot_index
+			_selected_consumable_slot = -1
+		elif slot_type == "consumable":
+			_selected_consumable_slot = slot_index
+			_selected_equipment_slot = -1
 	slot_hover_started.emit(slot_type, slot_index, title, description, slot.get_global_rect())
+	_set_slot_popover_content(slot_type, slot_index, title, description, slot.get_global_rect())
 
 
 func _on_slot_mouse_exited() -> void:
 	slot_hover_ended.emit()
+	_hover_slot_global_rect = Rect2()
+	_hover_slot_type = ""
+	_hover_slot_index = -1
+	_hover_slot_title = ""
+	_hover_slot_description = ""
+	_update_selected_slot_popover()
 
 
 func _make_badge_label(text: String, slot_size: Vector2) -> Label:
@@ -594,6 +718,228 @@ func _make_badge_label(text: String, slot_size: Vector2) -> Label:
 	amount_label.size = slot_size
 	amount_label.anchors_preset = Control.PRESET_FULL_RECT
 	return amount_label
+
+
+func _ensure_slot_detail_popover() -> void:
+	if _slot_detail_bubble != null:
+		return
+	var parent := _hud_nodes.get("popover_parent", null) as Control
+	if parent == null:
+		parent = _hud_nodes.get("section", null) as Control
+	if parent == null:
+		return
+	_slot_detail_bubble = Panel.new()
+	_slot_detail_bubble.name = "SlotDetailBubble"
+	_slot_detail_bubble.visible = false
+	_slot_detail_bubble.z_index = int(_hud_nodes.get("popover_z_index", 210))
+	_slot_detail_bubble.mouse_filter = Control.MOUSE_FILTER_STOP
+	parent.add_child(_slot_detail_bubble)
+
+	_slot_detail_title = Label.new()
+	_slot_detail_title.name = "SlotDetailTitle"
+	_slot_detail_title.clip_text = true
+	_slot_detail_bubble.add_child(_slot_detail_title)
+
+	_slot_detail_description = Label.new()
+	_slot_detail_description.name = "SlotDetailDescription"
+	_slot_detail_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_slot_detail_description.clip_text = true
+	_slot_detail_bubble.add_child(_slot_detail_description)
+
+	_slot_detail_sell_button = Button.new()
+	_slot_detail_sell_button.name = "SlotDetailSellButton"
+	_slot_detail_sell_button.text = "Sell"
+	_slot_detail_sell_button.visible = false
+	_slot_detail_sell_button.pressed.connect(_on_slot_detail_sell_pressed)
+	_slot_detail_bubble.add_child(_slot_detail_sell_button)
+
+
+func _apply_slot_detail_popover_chrome() -> void:
+	if _slot_detail_bubble == null:
+		return
+	var bubble_style := StyleBoxFlat.new()
+	bubble_style.bg_color = Color(0.03, 0.04, 0.05, 0.98)
+	bubble_style.border_color = Color(0.68, 0.49, 0.23, 0.98)
+	bubble_style.set_border_width_all(2)
+	bubble_style.set_corner_radius_all(8)
+	_slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
+	_apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 20)
+	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 15)
+	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_slot_detail_sell_button.add_theme_font_size_override("font_size", 23)
+	_slot_detail_sell_button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78, 1.0))
+	var normal := _button_stylebox(Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0))
+	var hover := _button_stylebox(Color(0.28, 0.18, 0.09, 0.98), Color(0.76, 0.59, 0.34, 1.0))
+	_slot_detail_sell_button.add_theme_stylebox_override("normal", normal)
+	_slot_detail_sell_button.add_theme_stylebox_override("hover", hover)
+	_slot_detail_sell_button.add_theme_stylebox_override("pressed", hover)
+
+
+func _button_stylebox(bg_color: Color, border_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_color = border_color
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	return style
+
+
+func _set_slot_popover_content(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2) -> void:
+	if _slot_detail_bubble == null:
+		return
+	_hover_slot_global_rect = slot_global_rect
+	_hover_slot_type = slot_type
+	_hover_slot_index = slot_index
+	_hover_slot_title = title
+	_hover_slot_description = description
+	_slot_detail_title.text = title
+	_slot_detail_description.text = description
+	_slot_detail_description.visible = description != ""
+	_slot_detail_bubble.visible = title != ""
+	_update_slot_detail_bubble()
+
+
+func _update_selected_slot_popover() -> void:
+	if _hover_slot_type != "":
+		return
+	var selected_kind := _selected_slot_kind()
+	if selected_kind == "":
+		hide_slot_detail_popover()
+		return
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	var row := _hud_nodes.get("equipment_icons") as Control
+	if selected_kind == "consumable":
+		row = _hud_nodes.get("consumable_icons") as Control
+	var slot := row.get_node_or_null("%sSlot%d" % [selected_kind.capitalize(), slot_index]) as Control if row != null else null
+	if slot == null:
+		return
+	var item_id := _slot_content_id(selected_kind, slot_index)
+	var content := lookup_content_definition(item_id)
+	_set_slot_popover_content(selected_kind, slot_index, String(content.get("display_name", item_id)), String(content.get("description", "")), slot.get_global_rect())
+
+
+func hide_slot_detail_popover() -> void:
+	if _slot_detail_bubble == null:
+		return
+	_hover_slot_global_rect = Rect2()
+	_hover_slot_type = ""
+	_hover_slot_index = -1
+	_hover_slot_title = ""
+	_hover_slot_description = ""
+	_slot_detail_bubble.visible = false
+
+
+func _update_slot_detail_bubble() -> void:
+	if _slot_detail_bubble == null or not _slot_detail_bubble.visible:
+		return
+	var has_description := _slot_detail_description.text != ""
+	var show_sell_action := _slot_popover_shows_sell_action()
+	var bubble_height := 70.0
+	if has_description:
+		bubble_height = 104.0
+	if show_sell_action:
+		bubble_height += 74.0
+	var bubble_size := Vector2(SLOT_DETAIL_BUBBLE_WIDTH, bubble_height)
+	var parent := _slot_detail_bubble.get_parent() as Control
+	var parent_size := COMBAT_PLAYER_PANEL_SIZE
+	var slot_top_left: Vector2 = _hover_slot_global_rect.position
+	var slot_size: Vector2 = _hover_slot_global_rect.size
+	if parent != null:
+		parent_size = parent.size
+		var transform_inverse := parent.get_global_transform_with_canvas().affine_inverse()
+		slot_top_left = transform_inverse * _hover_slot_global_rect.position
+		var slot_bottom_right: Vector2 = transform_inverse * (_hover_slot_global_rect.position + _hover_slot_global_rect.size)
+		slot_size = slot_bottom_right - slot_top_left
+	var local_x: float = slot_top_left.x + (slot_size.x - bubble_size.x) * 0.5
+	local_x = clampf(local_x, 0.0, maxf(0.0, parent_size.x - bubble_size.x))
+	var local_y: float = slot_top_left.y - bubble_size.y - 12.0
+	if local_y < 0.0:
+		local_y = slot_top_left.y + slot_size.y + 12.0
+	_slot_detail_bubble.position = Vector2(local_x, local_y)
+	_slot_detail_bubble.size = bubble_size
+	_apply_rect(_slot_detail_title, Rect2(Vector2(12.0, 8.0), Vector2(bubble_size.x - 24.0, 26.0)))
+	if has_description:
+		_apply_rect(_slot_detail_description, Rect2(Vector2(12.0, 36.0), Vector2(bubble_size.x - 24.0, 36.0)))
+	var sell_button_y := 38.0 if not has_description else 78.0
+	_slot_detail_sell_button.visible = show_sell_action
+	_slot_detail_sell_button.disabled = _selected_slot_kind() == ""
+	_slot_detail_sell_button.text = "Sell\n%s" % _selected_slot_sell_text()
+	_apply_rect(_slot_detail_sell_button, Rect2(Vector2(12.0, sell_button_y), Vector2(bubble_size.x - 24.0, 62.0)))
+
+
+func _slot_popover_shows_sell_action() -> bool:
+	if _hover_slot_type != "equipment" and _hover_slot_type != "consumable":
+		return false
+	if _hover_slot_title == "":
+		return false
+	return not _hover_slot_title.begins_with("Empty ")
+
+
+func _selected_slot_sell_text() -> String:
+	var selected_kind := _selected_slot_kind()
+	if selected_kind == "":
+		return "Select slot"
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	var item_id := _slot_content_id(selected_kind, slot_index)
+	var content := lookup_content_definition(item_id)
+	return "+%d gold" % int(content.get("sell_value", content.get("base_price", 0)))
+
+
+func _selected_slot_kind() -> String:
+	if _slot_content_id("equipment", _selected_equipment_slot) != "":
+		return "equipment"
+	if _slot_content_id("consumable", _selected_consumable_slot) != "":
+		return "consumable"
+	return ""
+
+
+func _slot_content_id(slot_type: String, slot_index: int) -> String:
+	var progression_snapshot: Dictionary = _player_data.get("progression", {})
+	var slots: Array = progression_snapshot.get("equipment_slots", []) if slot_type == "equipment" else progression_snapshot.get("consumable_slots", [])
+	if slot_index < 0 or slot_index >= slots.size():
+		return ""
+	return String(slots[slot_index])
+
+
+func _on_slot_detail_sell_pressed() -> void:
+	var selected_kind := _selected_slot_kind()
+	if selected_kind == "":
+		return
+	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
+	sell_slot_requested.emit(selected_kind, slot_index)
+
+
+func _has_inventory_focus() -> bool:
+	return _selected_equipment_slot >= 0 or _selected_consumable_slot >= 0 or (_slot_detail_bubble != null and _slot_detail_bubble.visible)
+
+
+func _is_inside_inventory_focus_area(global_point: Vector2) -> bool:
+	if _control_contains_point(_slot_detail_bubble, global_point):
+		return true
+	if _control_contains_point(_slot_detail_sell_button, global_point):
+		return true
+	for key in ["equipment_icons", "consumable_icons", "relic_icons"]:
+		if _point_hits_control_children(_hud_nodes.get(key) as Control, global_point):
+			return true
+	return false
+
+
+func _point_hits_control_children(root: Control, global_point: Vector2) -> bool:
+	if root == null:
+		return false
+	for child in root.get_children():
+		if child is Control and _control_contains_point(child as Control, global_point):
+			return true
+	return false
+
+
+func _control_contains_point(control: Control, global_point: Vector2) -> bool:
+	if control == null or not control.is_visible_in_tree():
+		return false
+	return control.get_global_rect().has_point(global_point)
 
 
 func _badge_text_for(label: String, content: Dictionary) -> String:

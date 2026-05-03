@@ -302,9 +302,13 @@ func _apply_booster_option_to_slot(run_state: Node, content, option: Dictionary,
 
 
 func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
+	var owned_relic_ids := _owned_relic_ids(run_state)
 	var relic_id: String = run_state.relic_offer_id_for_level(level)
+	if relic_id != "" and owned_relic_ids.has(relic_id):
+		relic_id = ""
+		run_state.set_relic_offer_id_for_level(level, "")
 	if relic_id == "":
-		var relic_pool: Array = content.shop_relic_pool(level)
+		var relic_pool: Array = _available_relic_pool(run_state, content, level)
 		if relic_pool.is_empty():
 			return {}
 		var chosen: Dictionary = relic_pool[_rng.randi_range(0, relic_pool.size() - 1)]
@@ -320,6 +324,17 @@ func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
 		level,
 		run_state.ensure_shop_state().next_offer_id("relic")
 	)
+
+
+func _available_relic_pool(run_state: Node, content, level: int) -> Array:
+	var owned_relic_ids := _owned_relic_ids(run_state)
+	var pool: Array = []
+	for relic_data in content.shop_relic_pool(level):
+		var relic_id := String(Dictionary(relic_data).get("id", ""))
+		if relic_id == "" or owned_relic_ids.has(relic_id):
+			continue
+		pool.append(relic_data)
+	return pool
 
 
 func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictionary]:
@@ -402,6 +417,16 @@ func _equipped_equipment_ids(run_state: Node) -> Dictionary:
 		if item_id != "":
 			equipped_ids[item_id] = true
 	return equipped_ids
+
+
+func _owned_relic_ids(run_state: Node) -> Dictionary:
+	var owned_ids := {}
+	var progression_state = run_state.ensure_player_progression_state()
+	for raw_id in progression_state.relic_ids:
+		var relic_id := String(raw_id)
+		if relic_id != "":
+			owned_ids[relic_id] = true
+	return owned_ids
 
 
 func _offer_from_content(content, entry_type: String, data: Dictionary, level: int, offer_id: String) -> Dictionary:

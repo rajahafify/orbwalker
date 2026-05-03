@@ -2,6 +2,28 @@
 
 Append-only history of wiki operations.
 
+## [2026-05-03] code-change | Combat And Shop Item Popover Sell
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added shop-style item description popovers to combat loadout slots using the shared `PlayerLoadoutHud` hover signals.
+  - Added combat sell support for hovered equipment and consumable slots, allowing in-fight sell decisions.
+  - Updated shop hover behavior so a filled equipment or consumable slot is selected by the same popover interaction, making the visible Sell action usable without a separate sell row.
+- Validation:
+  - Godot MCP `view_script` and `get_godot_errors` reported no session errors.
+  - Active-run visual click-through remains useful to confirm final popover placement and input feel.
+
+## [2026-05-03] code-change | Consumable Slot Use And Relic Offer Filtering
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/shop/shop_service.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Wired combat HUD consumable slot clicks to the existing consumable-use flow with the clicked slot index, while preserving the first-slot debug hotkey path.
+  - Changed shop relic offer generation to filter out relics already owned by the player.
+  - Invalidates a cached per-level relic offer if that relic is now owned before generating a replacement.
+- Validation:
+  - Godot MCP `view_script`, focused helper probes, and `get_godot_errors` reported no session errors.
+  - Direct autoload editor-script probes returned `<null>` in this MCP session, so active-run manual click-through remains useful for final acceptance.
+
 ## [2026-05-03] code-change | Debug Skip Fight Command
 
 - Source: `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/debug/board_debug_controller.gd`, `docs/test_plan.md`, `wiki/features.md`
@@ -1195,3 +1217,14 @@ Append-only history of wiki operations.
   - Played the `swap` SFX after each valid adjacent combat orb swap during drag movement.
 - Notes:
   - The hook is on the actual `_board_state.swap_cells(...)` path, so invalid moves and stationary pointer movement do not play the sound. Manual listening remains the final acceptance check.
+
+## [2026-05-03] code-change | Player HUD API Ownership
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Promoted `PlayerLoadoutHud` from shared layout helper to the shared player-HUD owner for combat and shop.
+  - Added `bind_player_hud(...)`, `load_player_data(...)`, `update_player_data(...)`, `update_player_hud_layout()`, `handle_global_click(...)`, and `sell_slot_requested` as the HUD-facing API.
+  - Moved item detail popover ownership, slot selection, outside-click focus clearing, and sell button presentation into `PlayerLoadoutHud`.
+  - Reduced combat/shop controllers to data passing plus scene-specific sale handling for equipment and consumables.
+- Notes:
+  - Godot MCP `view_script`, `get_godot_errors`, and combat/shop scene instantiate probes passed. Manual active-run click-through remains useful for visual placement and interaction feel.

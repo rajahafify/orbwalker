@@ -268,6 +268,10 @@ func _ready() -> void:
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
 	_adopt_relic_footer_nodes_for_shared_layout()
+	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
+		"popover_parent": _layout_root,
+		"popover_z_index": 210,
+	}, true))
 	_apply_visual_chrome()
 	_resolver.match_found.connect(_on_resolver_match_found)
 	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
@@ -275,6 +279,8 @@ func _ready() -> void:
 	_resolver.refill_applied.connect(_on_resolver_refill_applied)
 	_resolver.cascade_step_complete.connect(_on_resolver_cascade_step_complete)
 	_resolver.resolve_complete.connect(_on_resolver_complete)
+	_player_loadout_hud.consumable_slot_selected.connect(_try_use_consumable_slot)
+	_player_loadout_hud.sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
 	_initialize_combat_state()
 	_create_new_board()
 	_board_view.gui_input.connect(_on_board_view_gui_input)
@@ -644,6 +650,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_C:
 			_try_use_first_consumable()
 			get_viewport().set_input_as_handled()
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position):
+			get_viewport().set_input_as_handled()
 
 
 func _on_debug_toggle_button_pressed() -> void:
@@ -719,6 +728,10 @@ func _on_add_test_consumable_button_pressed() -> void:
 
 
 func _try_use_first_consumable() -> void:
+	_try_use_consumable_slot(0)
+
+
+func _try_use_consumable_slot(slot_index: int) -> void:
 	if _combat == null or _combat.is_fight_over():
 		return
 	if _input_phase != InputPhase.PLAYER_INPUT:
@@ -728,7 +741,7 @@ func _try_use_first_consumable() -> void:
 	var progression_state: Variant = RunState.ensure_player_progression_state()
 	var progression_service: Variant = RunState.ensure_player_progression_service()
 	var content: Variant = RunState.ensure_content_registry()
-	var use_result: Dictionary = progression_service.use_consumable(progression_state, 0, content)
+	var use_result: Dictionary = progression_service.use_consumable(progression_state, slot_index, content)
 	if not bool(use_result.get("ok", false)):
 		var reason := String(use_result.get("reason", "unknown_error"))
 		_status_label.text = "Use consumable failed: %s" % reason
@@ -742,8 +755,30 @@ func _try_use_first_consumable() -> void:
 	var conversion_total := _apply_consumable_effects(effects)
 	_board_view.board_state = _board_state
 	_refresh_drag_match_glow()
-	_status_label.text = "Used %s. Converted %d orbs." % [consumable_id, conversion_total]
-	_append_combat_log("Consumable used: %s. Converted %d orbs." % [consumable_id, conversion_total])
+	_status_label.text = "Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total]
+	_append_combat_log("Consumable used: %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
+	_update_hud()
+
+
+func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	var slots: Array = progression_snapshot.get("equipment_slots", []) if slot_type == "equipment" else progression_snapshot.get("consumable_slots", [])
+	if slot_index < 0 or slot_index >= slots.size() or String(slots[slot_index]) == "":
+		_status_label.text = "Sell failed: select an occupied equipment or consumable slot first."
+		_append_combat_log("Sell failed: no occupied loadout slot selected.")
+		return
+	var item_id := String(slots[slot_index])
+	var content := _player_loadout_hud.lookup_content_definition(item_id)
+	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
+	var display_name := String(content.get("display_name", item_id))
+	if bool(result.get("ok", false)):
+		_status_label.text = "Sold %s for gold. Gold %d." % [display_name, RunState.run_gold]
+		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])
+		_player_loadout_hud.hide_slot_detail_popover()
+	else:
+		var reason := String(result.get("reason", "unknown_error"))
+		_status_label.text = "Sell failed: %s" % reason
+		_append_combat_log("Sell %s failed: %s" % [display_name, reason])
 	_update_hud()
 
 
@@ -2802,16 +2837,14 @@ func _format_mastery_line(levels: Dictionary) -> String:
 
 
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
-	var equipment_slots: Array = progression_snapshot.get("equipment_slots", [])
-	var consumable_slots: Array = progression_snapshot.get("consumable_slots", [])
-	var relic_ids: Array = progression_snapshot.get("relic_ids", [])
-	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
-
-	_player_loadout_hud.populate_loadout_slot_row(_equipment_icons, equipment_slots, "equipment", 5)
-	_player_loadout_hud.populate_loadout_slot_row(_consumable_icons, consumable_slots, "consumable", 3)
-	_player_loadout_hud.populate_relic_row(_relic_icons, relic_ids, 2)
-	if _elemental_mastery_cards != null:
-		_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
+	_player_loadout_hud.update_player_data({
+		"player_state": _player_state,
+		"progression": progression_snapshot,
+		"hero_portrait": _visuals.hero_portrait(),
+		"max_visible_relics": 2,
+		"selectable_equipment": true,
+		"selectable_consumables": true,
+	})
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
 
@@ -3149,7 +3182,7 @@ func _apply_combat_layout() -> void:
 	_apply_design_rect(_enemy_panel, ENEMY_PANEL_RECT)
 	_apply_design_rect(_combat_strip, COMBAT_STRIP_RECT)
 	_apply_design_rect(_board_panel, BOARD_PANEL_RECT)
-	_player_loadout_hud.apply_player_hud_layout(_combat_player_hud_nodes())
+	_player_loadout_hud.update_player_hud_layout()
 	_apply_enemy_panel_layout()
 	_apply_combat_strip_layout()
 	_apply_board_panel_layout()
