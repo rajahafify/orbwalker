@@ -109,11 +109,11 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-05: Elemental And Resource VFX Tier Hooks
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Add a data-driven or helper-driven tier selection layer for Fire, Ice, Earth, Heart, Armor, and Gold result VFX.
-- Progress: Not started.
-- Blockers: CFR-02 and CFR-03 should land first unless the worker implements this as a thin hook with placeholder visuals.
-- Next action: Add temporary value thresholds for visual tiers, with thresholds isolated for later balance tuning.
+- Progress: Completed on `codex/cfr-05-vfx-tier-hooks`: `CombatVfxManager` now owns temporary per-kind thresholds for Fire, Ice, Earth, Heart, Armor, and Gold replay impacts, returns four positive VFX tiers, and scales existing/fallback impact size, lifetime, alpha, brightness, result-label font size, label outline, and label container size by tier. `CombatPlayerController` passes existing `turn_log` replay values into the impact and positive result-label helpers, without changing combat math, match resolver behavior, RunState routing, board resolve order, result label text, SFX timing, staged HUD stepping, mastery feedback release, or `combat_speed` modes.
+- Blockers: None.
+- Next action: Start CFR-06 or CFR-07 from this branch after branching as needed.
 - Initial tier concept:
   - Tier 1: low value, small projectile/pop.
   - Tier 2: medium value, larger projectile/impact.
@@ -128,8 +128,8 @@ The first implementation should prioritize readable result numbers and timing ov
   - Each orb type can choose a VFX family and tier without changing combat math.
   - Thresholds are easy to tune later.
   - Missing art falls back to readable generated or existing VFX instead of failing silently.
-- Validation: Focused helper probe for tier selection and at least one manual visual combat check.
-- Docs/wiki impact: Record threshold ownership and fallback behavior in `wiki/features.md` or `wiki/file-map.md` if new files are added.
+- Validation: `git diff --check` passed. Godot MCP reached Godot 4.6.2, opened `combat_vfx_manager.gd`, `combat_player_controller.gd`, and `visual_registry.gd`, confirmed four-tier threshold boundaries for Fire/Ice/Earth/Heart/Armor/Gold with a focused `CombatVfxManager` helper probe, instantiated `res://scenes/combat/combat_player.tscn` and confirmed `VfxLayer`, `ElementalMasteryCards`, enemy portrait, player portrait, and board surface exist, spawned tiered replay impacts for all six kinds through the existing `VfxLayer` fallback path, confirmed lowered threshold mapping, confirmed tiered positive label font sizing, and launched `play_scene current`. User visual QA passed on 2026-05-04 after increasing tier scales to `1.0`, `1.5`, `2.0`, `3.0`, lowering early-run thresholds, and scaling positive result labels by tier. The first helper probe hit a stale cached script and returned a missing-method error before rerunning with `ResourceLoader.CACHE_MODE_IGNORE`; the final `get_godot_errors` read still reports the two known stale CFR-02 enum reload diagnostics.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` were updated with threshold ownership, fallback behavior, validation, and user QA acceptance.
 
 ## CFR-06: Enemy Attack Feedback
 

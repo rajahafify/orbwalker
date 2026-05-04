@@ -1864,9 +1864,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
-			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
+			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime, fire_damage)
 			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52))
+			_spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52), fire_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1874,9 +1874,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_stage_hud_enemy_damage_step(fire_damage)
 			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
-			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
+			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime, ice_damage)
 			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52))
+			_spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52), ice_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1884,9 +1884,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_stage_hud_enemy_damage_step(ice_damage)
 			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
-			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
+			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime, earth_damage)
 			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52))
+			_spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52), earth_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1895,9 +1895,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
+		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
 		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
-		_spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52))
+		_spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
 		_play_mastery_effect_sfx("damage")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1912,9 +1912,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if heart_heal > 0:
 		var staged_hp_before_heal := int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
-		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
+		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime, heart_heal)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
-		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46))
+		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46), heart_heal)
 		_play_mastery_effect_sfx("heal")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1924,9 +1924,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if armor_gain > 0:
 		var staged_armor_before_gain := int(_staged_hud_values.get("player_armor", int(_player_state.armor)))
-		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
+		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime, armor_gain)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
-		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46))
+		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46), armor_gain)
 		_play_mastery_effect_sfx("armor")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1936,9 +1936,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if gold_gain > 0:
 		var staged_gold_before_gain := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
-		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
+		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
-		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46))
+		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
 		_play_mastery_effect_sfx("gold")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -2272,10 +2272,10 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	_stage_hud_player_final()
 
 
-func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO) -> void:
+func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO, result_amount: int = 0) -> void:
 	if _combat_vfx_manager == null:
 		return
-	_combat_vfx_manager.spawn_result_label(text, global_center, kind, lifetime, offset)
+	_combat_vfx_manager.spawn_result_label(text, global_center, kind, lifetime, offset, result_amount)
 
 
 func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
@@ -2290,10 +2290,10 @@ func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: V
 	_combat_vfx_manager.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
 
 
-func _spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float) -> void:
+func _spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
 	if _combat_vfx_manager == null:
 		return
-	_combat_vfx_manager.spawn_replay_impact(global_center, impact_kind, draw_size, lifetime)
+	_combat_vfx_manager.spawn_replay_impact(global_center, impact_kind, draw_size, lifetime, result_amount)
 
 
 func _mastery_impact_kind(orb_id: int) -> String:

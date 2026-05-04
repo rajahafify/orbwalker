@@ -7,6 +7,20 @@ var _player_loadout_hud: Variant
 var _elemental_mastery_cards: Control
 var _timer_owner: Node
 
+const RESULT_VFX_TIER_THRESHOLDS := {
+	"fire": [6, 10, 16],
+	"ice": [6, 10, 16],
+	"earth": [6, 10, 16],
+	"heart": [4, 8, 12],
+	"armor": [4, 8, 12],
+	"gold": [3, 6, 10],
+}
+const RESULT_VFX_DEFAULT_THRESHOLDS := [6, 10, 16]
+const RESULT_VFX_TIER_SIZE_SCALES := [1.0, 1.5, 2.0, 3.0]
+const RESULT_VFX_TIER_LIFETIME_SCALES := [1.0, 1.07, 1.14, 1.22]
+const RESULT_VFX_TIER_ALPHA := [0.84, 0.91, 0.97, 1.0]
+const RESULT_VFX_TIER_BRIGHTNESS := [1.0, 1.07, 1.14, 1.22]
+
 
 func bind(dependencies: Dictionary) -> void:
 	_vfx_layer = dependencies.get("vfx_layer") as Control
@@ -42,31 +56,72 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 	_tween_fade_cleanup(sprite, lifetime)
 
 
-func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float) -> void:
+func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
 	if global_center == Vector2.ZERO or _visual_registry == null:
 		return
 	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
 	if impact_texture == null:
 		impact_texture = _visual_registry.vfx_texture("orb_clear")
-	spawn_vfx_texture(impact_texture, global_center, draw_size, lifetime, Color(1.0, 1.0, 1.0, 0.92))
+	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime)
+	var profile_size: Vector2 = profile.get("draw_size", draw_size)
+	var profile_lifetime := float(profile.get("lifetime", lifetime))
+	var profile_color: Color = profile.get("modulate_color", Color(1.0, 1.0, 1.0, 0.92))
+	spawn_vfx_texture(impact_texture, global_center, profile_size, profile_lifetime, profile_color)
 
 
-func spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO) -> Label:
+func replay_result_impact_profile(impact_kind: String, result_amount: int, base_draw_size: Vector2, base_lifetime: float) -> Dictionary:
+	var tier := replay_result_vfx_tier(impact_kind, result_amount)
+	var tier_index := _result_vfx_tier_index(tier)
+	var size_scale: float = RESULT_VFX_TIER_SIZE_SCALES[tier_index]
+	var lifetime_scale: float = RESULT_VFX_TIER_LIFETIME_SCALES[tier_index]
+	return {
+		"tier": tier,
+		"tier_index": tier_index,
+		"draw_size": base_draw_size * size_scale,
+		"lifetime": base_lifetime * lifetime_scale,
+		"modulate_color": _result_impact_modulate_color(impact_kind, tier),
+	}
+
+
+func replay_result_vfx_tier(impact_kind: String, result_amount: int) -> int:
+	if result_amount <= 0:
+		return 0
+	var clean_kind := _result_vfx_kind_key(impact_kind)
+	var thresholds: Array = RESULT_VFX_TIER_THRESHOLDS.get(clean_kind, RESULT_VFX_DEFAULT_THRESHOLDS)
+	var medium_threshold := int(thresholds[0]) if thresholds.size() > 0 else int(RESULT_VFX_DEFAULT_THRESHOLDS[0])
+	var high_threshold := int(thresholds[1]) if thresholds.size() > 1 else int(RESULT_VFX_DEFAULT_THRESHOLDS[1])
+	var signature_threshold := int(thresholds[2]) if thresholds.size() > 2 else int(RESULT_VFX_DEFAULT_THRESHOLDS[2])
+	if result_amount >= signature_threshold:
+		return 4
+	if result_amount >= high_threshold:
+		return 3
+	if result_amount >= medium_threshold:
+		return 2
+	return 1
+
+
+func result_vfx_size_scale(impact_kind: String, result_amount: int) -> float:
+	var tier := replay_result_vfx_tier(impact_kind, result_amount)
+	return RESULT_VFX_TIER_SIZE_SCALES[_result_vfx_tier_index(tier)]
+
+
+func spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO, result_amount: int = 0) -> Label:
 	if text.strip_edges() == "" or global_center == Vector2.ZERO:
 		return null
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return null
+	var label_scale := result_vfx_size_scale(kind, result_amount)
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
-	label.add_theme_font_size_override("font_size", 42)
+	label.add_theme_font_size_override("font_size", int(round(42.0 * label_scale)))
 	label.add_theme_color_override("font_color", _result_label_color(kind))
 	label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.03, 0.95))
-	label.add_theme_constant_override("outline_size", 8)
-	label.custom_minimum_size = Vector2(240, 70)
+	label.add_theme_constant_override("outline_size", int(round(8.0 * label_scale)))
+	label.custom_minimum_size = Vector2(240, 70) * label_scale
 	label.size = label.custom_minimum_size
 	label.pivot_offset = label.size * 0.5
 	label.z_index = 130
@@ -85,6 +140,50 @@ func mastery_impact_kind(orb_id: int) -> String:
 			return "gold"
 		_:
 			return "fire"
+
+
+func _result_impact_modulate_color(impact_kind: String, tier: int) -> Color:
+	var clean_kind := _result_vfx_kind_key(impact_kind)
+	var base := Color(1.0, 1.0, 1.0, 1.0)
+	match clean_kind:
+		"fire":
+			base = Color(1.0, 0.66, 0.42, 1.0)
+		"ice":
+			base = Color(0.68, 0.92, 1.0, 1.0)
+		"earth":
+			base = Color(0.72, 0.94, 0.58, 1.0)
+		"heart":
+			base = Color(0.72, 1.0, 0.78, 1.0)
+		"armor":
+			base = Color(0.82, 0.92, 1.0, 1.0)
+		"gold":
+			base = Color(1.0, 0.92, 0.5, 1.0)
+	var tier_index := _result_vfx_tier_index(tier)
+	var alpha: float = RESULT_VFX_TIER_ALPHA[tier_index]
+	var brightness: float = RESULT_VFX_TIER_BRIGHTNESS[tier_index]
+	return Color(
+		clampf(base.r * brightness, 0.0, 1.0),
+		clampf(base.g * brightness, 0.0, 1.0),
+		clampf(base.b * brightness, 0.0, 1.0),
+		alpha
+	)
+
+
+func _result_vfx_tier_index(tier: int) -> int:
+	if tier <= 0:
+		return 0
+	return clampi(tier - 1, 0, RESULT_VFX_TIER_SIZE_SCALES.size() - 1)
+
+
+func _result_vfx_kind_key(impact_kind: String) -> String:
+	var clean_kind := impact_kind.strip_edges().to_lower()
+	if clean_kind == "heal":
+		return "heart"
+	if clean_kind == "block":
+		return "armor"
+	if clean_kind == "damage":
+		return "fire"
+	return clean_kind
 
 
 func control_global_center(control: Control, vertical_bias: float = 0.5) -> Vector2:

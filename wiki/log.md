@@ -1538,3 +1538,15 @@ Append-only history of wiki operations.
   - Kept source launch visual-only and preserved the existing enemy attack hit SFX lane.
 - Notes:
   - Godot MCP script reload, SFX stream probe, source-timing probe, `play_scene current`, and `get_godot_errors` checks passed. User visual/listening QA passed on 2026-05-04. The only reported session errors were the known stale CFR-02 enum reload diagnostics.
+
+## [2026-05-04] code-change | CFR-05 VFX Tier Hooks
+
+- Source: `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_player_controller.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added `CombatVfxManager`-owned temporary thresholds for Fire, Ice, Earth, Heart, Armor, and Gold replay impacts.
+  - Added four positive presentation-only VFX tiers that scale existing/fallback impact size, lifetime, alpha, brightness, positive result-label font size, label outline, and label container size.
+  - Routed existing `turn_log` replay values from `CombatPlayerController` into the tiered impact and positive-label helpers without changing combat math, replay order, label text, SFX timing, staged HUD stepping, or `combat_speed`.
+  - Increased visible tier scale to `1.0`, `1.5`, `2.0`, `3.0` and lowered early-run thresholds after visual feedback showed the first pass was too subtle.
+- Notes:
+  - Godot MCP script checks, focused tier-boundary probe, lowered-threshold probe, positive-label font-tier probe, combat scene-node probe, all-six-kind tiered impact spawn probe, `play_scene current`, and `git diff --check` passed.
+  - User visual QA passed on 2026-05-04. The first helper probe hit a stale cached script before passing with `ResourceLoader.CACHE_MODE_IGNORE`; final `get_godot_errors` still reported the known stale CFR-02 enum reload diagnostics.
