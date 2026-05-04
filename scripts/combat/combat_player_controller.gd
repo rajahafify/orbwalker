@@ -239,6 +239,7 @@ var _enemy_block_preview_fill: ColorRect = null
 var _enemy_block_preview_pulse_tween: Tween = null
 var _enemy_block_intent_preview: Dictionary = {}
 var _enemy_intent_entries: Array[Dictionary] = []
+var _hovered_board_orb_id := -1
 
 
 func _enter_tree() -> void:
@@ -362,6 +363,7 @@ func _ready() -> void:
 	_create_new_board()
 	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id)
 	_board_view.gui_input.connect(_on_board_view_gui_input)
+	_board_view.mouse_exited.connect(_on_board_view_mouse_exited)
 	_debug_overlay.visible = false
 	if _console_input.visible:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
@@ -375,6 +377,10 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _flow_trace_route_id)
 	call_deferred("_trace_flow_first_usable_frame")
 	call_deferred("_apply_orb_texture_map_deferred")
+
+
+func _exit_tree() -> void:
+	_clear_combat_mastery_hover_state()
 
 
 func _trace_flow_first_usable_frame() -> void:
@@ -657,6 +663,7 @@ func _begin_turn_preview() -> void:
 	]
 	_status_label.modulate = STATUS_COLOR_NEUTRAL
 	_update_hud()
+	_clear_combat_mastery_hover_state()
 	_append_combat_log(
 		"Turn %d intent: %s." % [
 			_combat.turn_index,
@@ -891,8 +898,82 @@ func _handle_pointer_input(event: InputEvent) -> bool:
 
 
 func _on_board_view_gui_input(event: InputEvent) -> void:
+	_update_board_orb_hover_from_gui_input(event)
 	if _handle_pointer_input(event):
 		_board_view.accept_event()
+
+
+func _on_board_view_mouse_exited() -> void:
+	_set_hovered_board_orb_id(-1)
+
+
+func _update_board_orb_hover_from_gui_input(event: InputEvent) -> void:
+	if _input_phase != InputPhase.PLAYER_INPUT:
+		_set_hovered_board_orb_id(-1)
+		return
+	if _drag_active():
+		_set_hovered_board_orb_id(-1)
+		return
+	if _board_view == null or _board_state == null:
+		_set_hovered_board_orb_id(-1)
+		return
+	if event is InputEventMouseMotion:
+		var motion_event := event as InputEventMouseMotion
+		var orb_id := _board_view.get_orb_id_at_position(motion_event.position)
+		if _is_hoverable_combat_orb(orb_id):
+			_set_hovered_board_orb_id(orb_id)
+			return
+		_set_hovered_board_orb_id(-1)
+		return
+	if event is InputEventMouseButton:
+		var button_event := event as InputEventMouseButton
+		if not button_event.pressed:
+			var button_orb_id := _board_view.get_orb_id_at_position(button_event.position)
+			if _is_hoverable_combat_orb(button_orb_id):
+				_set_hovered_board_orb_id(button_orb_id)
+				return
+	_set_hovered_board_orb_id(-1)
+
+
+func _set_hovered_board_orb_id(orb_id: int) -> void:
+	var normalized_orb_id := orb_id if _is_hoverable_combat_orb(orb_id) else -1
+	if _hovered_board_orb_id == normalized_orb_id:
+		return
+	_hovered_board_orb_id = normalized_orb_id
+	if _player_loadout_hud == null:
+		return
+	if _hovered_board_orb_id < 0:
+		_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
+		return
+	_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, _hovered_board_orb_id)
+
+
+func _is_hoverable_combat_orb(orb_id: int) -> bool:
+	if not OrbType.is_valid_id(orb_id):
+		return false
+	return orb_id in [
+		OrbType.Id.FIRE,
+		OrbType.Id.ICE,
+		OrbType.Id.EARTH,
+		OrbType.Id.HEART,
+		OrbType.Id.ARMOR,
+		OrbType.Id.GOLD,
+	]
+
+
+func _clear_combat_mastery_hover_state() -> void:
+	_hovered_board_orb_id = -1
+	if _player_loadout_hud == null:
+		return
+	_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
+
+
+func _build_combat_mastery_hover_payload(progression_snapshot: Dictionary) -> Dictionary:
+	return {
+		"orb_values_by_id": _orb_values_by_id(),
+		"mastery_levels": Dictionary(progression_snapshot.get("mastery_levels", {})),
+		"combat_modifiers": RunState.current_combat_modifiers(),
+	}
 
 
 func _handle_drag_input_result(result: Dictionary) -> void:
@@ -900,6 +981,7 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		return
 	var action := String(result.get("action", ""))
 	if action == "start":
+		_clear_combat_mastery_hover_state()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
 		_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id)
@@ -1631,6 +1713,8 @@ func set_external_input_locked(locked: bool, reason: String = "") -> void:
 
 func _set_input_phase(phase: InputPhase) -> void:
 	_input_phase = phase
+	if _input_phase != InputPhase.PLAYER_INPUT:
+		_clear_combat_mastery_hover_state()
 
 	match _input_phase:
 		InputPhase.PLAYER_INPUT:
@@ -2692,6 +2776,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"display_values": player_display_values,
 		"intent_damage_preview": intent_preview,
 		"combat_mastery_feedback_totals": _combat_mastery_preview_totals.duplicate(true),
+		"combat_mastery_hover_payload": _build_combat_mastery_hover_payload(progression_snapshot),
 	})
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")

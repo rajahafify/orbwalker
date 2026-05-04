@@ -313,6 +313,19 @@ func board_position_to_cell(board_local_position: Vector2) -> Vector2i:
 	return Vector2i(column, row)
 
 
+func get_orb_id_at_position(board_local_position: Vector2) -> int:
+	var cell := board_position_to_cell(board_local_position)
+	return get_orb_id_at_cell(cell)
+
+
+func get_orb_id_at_cell(cell: Vector2i) -> int:
+	if board_state == null:
+		return -1
+	if not is_cell_valid(cell):
+		return -1
+	return int(board_state.get_cell(cell.x, cell.y))
+
+
 func is_cell_valid(cell: Vector2i) -> bool:
 	return _is_cell_index_valid(cell.x, cell.y)
 

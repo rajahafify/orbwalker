@@ -1558,3 +1558,23 @@ Append-only history of wiki operations.
 - Notes:
   - Godot MCP script checks, focused tier-boundary probe, lowered-threshold probe, positive-label font-tier probe, combat scene-node probe, all-six-kind tiered impact spawn probe, `play_scene current`, and `git diff --check` passed.
   - User visual QA passed on 2026-05-04. The first helper probe hit a stale cached script before passing with `ResourceLoader.CACHE_MODE_IGNORE`; final `get_godot_errors` still reported the known stale CFR-02 enum reload diagnostics.
+
+## [2026-05-05] code-change | CFR-09 Pre-Drag Mastery Hover Readability
+
+- Source: `scripts/board/board_view.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added board-local orb lookup helpers and presentation-only pre-drag hover forwarding from board orbs to the matching Elemental Mastery card.
+  - Added separate hover-only mastery-card highlight nodes and a compact card detail panel with mastery level, base effect, per-orb value, modifier source names, and an explicit no-modifier empty state.
+  - Kept hover state separate from active combat mastery replay feedback and cleared hover-only state on drag start, phase/turn changes, board mouse exit, and combat scene exit.
+- Validation:
+  - `git diff --check`, Godot MCP `get_project_info`, `view_script` checks, script load/scene instantiate probe, board orb lookup/highlight probe, hover-clear and replay-feedback preservation probe, card detail show/hide and content probes, and `play_scene current` passed.
+  - Manual visual QA remains pending for all six real orb/card hover paths and overlap/readability. The final `get_godot_errors` read still reported the known stale CFR-02 enum reload diagnostics.
+
+## [2026-05-05] code-change | CFR-09 Mastery Modifier Source Hover
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Hovering an Elemental Mastery card now lights equipment and relic tokens whose current modifier source affects that mastery/orb type.
+  - The source highlight reuses the mastery detail source filtering, stays presentation-only, and clears on card hover exit or broader mastery-hover UI clears.
+- Validation:
+  - Godot MCP `view_script` and a focused hover-source probe passed after forcing the editor resource filesystem to rescan the externally edited HUD script. The probe confirmed Fire card hover lights only the matching equipment source, Gold card hover lights only the matching relic source, and hover exit clears both.
