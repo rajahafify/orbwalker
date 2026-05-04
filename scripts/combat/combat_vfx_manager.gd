@@ -20,6 +20,9 @@ const RESULT_VFX_TIER_SIZE_SCALES := [1.0, 1.5, 2.0, 3.0]
 const RESULT_VFX_TIER_LIFETIME_SCALES := [1.0, 1.07, 1.14, 1.22]
 const RESULT_VFX_TIER_ALPHA := [0.84, 0.91, 0.97, 1.0]
 const RESULT_VFX_TIER_BRIGHTNESS := [1.0, 1.07, 1.14, 1.22]
+const ENEMY_ATTACK_CUE_SIZE := Vector2(88, 88)
+const ENEMY_ATTACK_BOLT_SIZE := Vector2(44, 44)
+const ENEMY_ATTACK_BEAM_THICKNESS := 10.0
 
 
 func bind(dependencies: Dictionary) -> void:
@@ -130,6 +133,65 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	label.position = local_center - label.size * 0.5
 	_tween_result_label_cleanup(label, lifetime)
 	return label
+
+
+func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> void:
+	if source_global == Vector2.ZERO:
+		return
+	var cue := _spawn_enemy_attack_pulse(source_global, ENEMY_ATTACK_CUE_SIZE, Color(1.0, 0.45, 0.38, 0.30), Color(1.0, 0.58, 0.42, 0.95), 7, 114)
+	if cue == null:
+		return
+	var duration := maxf(0.08, lifetime)
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		cue.queue_free()
+		return
+	var tween := _timer_owner.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(cue, "scale", Vector2(1.18, 1.18), duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.tween_property(cue, "modulate:a", 0.0, duration).set_delay(duration * 0.22)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(cue):
+			cue.queue_free()
+	)
+
+
+func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, lifetime: float = 0.28) -> void:
+	if source_global == Vector2.ZERO or target_global == Vector2.ZERO:
+		return
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	var source_local := _global_to_vfx_local(source_global)
+	var target_local := _global_to_vfx_local(target_global)
+	var delta := target_local - source_local
+	var distance := delta.length()
+	if distance <= 1.0:
+		return
+	var beam := ColorRect.new()
+	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	beam.color = Color(1.0, 0.56, 0.46, 0.62)
+	beam.size = Vector2(distance, ENEMY_ATTACK_BEAM_THICKNESS)
+	beam.pivot_offset = Vector2(0.0, ENEMY_ATTACK_BEAM_THICKNESS * 0.5)
+	beam.position = source_local - Vector2(0.0, ENEMY_ATTACK_BEAM_THICKNESS * 0.5)
+	beam.rotation = delta.angle()
+	beam.z_index = 112
+	_vfx_layer.add_child(beam)
+	_tween_fade_cleanup(beam, lifetime)
+
+	var bolt := _spawn_enemy_attack_pulse(source_global, ENEMY_ATTACK_BOLT_SIZE, Color(1.0, 0.52, 0.42, 0.88), Color(1.0, 0.78, 0.72, 1.0), 4, 116)
+	if bolt == null:
+		return
+	var bolt_end := target_local - bolt.size * 0.5
+	_tween_move_fade_cleanup(bolt, bolt_end, lifetime)
+
+
+func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
+	spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
+	_spawn_enemy_attack_pulse(target_global, Vector2(72, 72), Color(0.74, 0.9, 1.0, 0.36), Color(0.86, 0.95, 1.0, 0.94), 6, 118)
+
+
+func spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float = 0.32, hp_damage: int = 0) -> void:
+	spawn_replay_impact(target_global, "damage", Vector2(90, 90), lifetime, hp_damage)
+	_spawn_enemy_attack_pulse(target_global, Vector2(76, 76), Color(1.0, 0.38, 0.32, 0.34), Color(1.0, 0.58, 0.48, 0.96), 6, 118)
 
 
 func mastery_impact_kind(orb_id: int) -> String:
@@ -342,6 +404,33 @@ func _result_label_color(kind: String) -> Color:
 			return Color(1.0, 1.0, 1.0, 1.0)
 
 
+func _spawn_enemy_attack_pulse(global_center: Vector2, pulse_size: Vector2, fill: Color, border: Color, border_width: int, z_index: int) -> Panel:
+	if global_center == Vector2.ZERO:
+		return null
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return null
+	var pulse := Panel.new()
+	pulse.name = "EnemyAttackPulse"
+	pulse.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	pulse.size = pulse_size
+	pulse.pivot_offset = pulse.size * 0.5
+	pulse.position = _global_to_vfx_local(global_center) - pulse.size * 0.5
+	pulse.z_index = z_index
+	pulse.modulate = Color(1.0, 1.0, 1.0, 0.94)
+	pulse.add_theme_stylebox_override("panel", _pulse_stylebox(fill, border, border_width))
+	_vfx_layer.add_child(pulse)
+	return pulse
+
+
+func _pulse_stylebox(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(maxi(1, border_width))
+	style.set_corner_radius_all(999)
+	return style
+
+
 func _tween_result_label_cleanup(label: Label, lifetime: float) -> void:
 	if label == null:
 		return
@@ -356,6 +445,23 @@ func _tween_result_label_cleanup(label: Label, lifetime: float) -> void:
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(label):
 			label.queue_free()
+	)
+
+
+func _tween_move_fade_cleanup(control: Control, target_position: Vector2, lifetime: float) -> void:
+	if control == null:
+		return
+	var duration := maxf(0.08, lifetime)
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		control.queue_free()
+		return
+	var tween := _timer_owner.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(control, "position", target_position, duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_IN as Tween.EaseType)
+	tween.tween_property(control, "modulate:a", 0.0, duration).set_delay(duration * 0.42)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(control):
+			control.queue_free()
 	)
 
 

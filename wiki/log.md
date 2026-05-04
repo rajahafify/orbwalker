@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-04 - CFR-06 Enemy Attack Feedback
+
+- Updated [[features]] for CFR-06 enemy attack feedback: enemy attacks now get a generic cue/travel visual from the enemy portrait, armor-block impacts for `blocked_by_armor`, HP hit impacts for `hp_damage`, and partial-block timing that steps visible armor before the HP damage read. The replay still reads existing `turn_log.enemy_attack_resolution` values and preserves combat math, resolver behavior, RunState routing, board order, `combat_speed`, blocked label text, and enemy attack SFX ownership. User visual QA passed on 2026-05-04 for fully blocked, partially blocked, and unblocked enemy attacks. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+
 ## 2026-05-04 - CFR-04 Mastery Activation Readability
 
 - Updated [[features]] for CFR-04 mastery activation readability: combat mastery cards now keep pooled contribution text but add fixed-size value-scaled activation glow/frame pulses, and mastery beams add a small source pulse at the active card so the player can read the card as the source. The change is presentation-only and preserves combat math, resolver behavior, RunState routing, board order, result labels, and `combat_speed`. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)

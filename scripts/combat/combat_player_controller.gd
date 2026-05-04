@@ -2144,6 +2144,14 @@ func _stage_hud_player_armor(value: int) -> void:
 	_stage_hud_values({"player_armor": maxi(0, value)})
 
 
+func _stage_hud_player_block_step(blocked_by_armor: int) -> void:
+	if blocked_by_armor <= 0:
+		return
+	var staged_armor := maxi(0, int(_staged_hud_values.get("player_armor", int(_player_state.armor if _player_state != null else 0))))
+	var consumed_armor := mini(blocked_by_armor, staged_armor)
+	_stage_hud_player_armor(staged_armor - consumed_armor)
+
+
 func _stage_hud_gold(value: int) -> void:
 	_stage_hud_values({"player_gold": maxi(0, value)})
 
@@ -2263,13 +2271,51 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	var hp_damage := int(enemy_attack.get("hp_damage", 0))
 	if blocked_by_armor <= 0 and hp_damage <= 0:
 		return
+	var enemy_source := _control_global_center(_enemy_portrait, 0.56)
+	var player_impact_target := _control_global_center(_player_portrait, 0.58)
+	if player_impact_target == Vector2.ZERO:
+		player_impact_target = player_target
+	var cue_lifetime := _combat_speed_duration(0.24)
+	var travel_lifetime := _combat_speed_duration(0.28)
+	var impact_lifetime := _combat_speed_duration(0.34)
+	_spawn_enemy_attack_cue(enemy_source, player_impact_target, cue_lifetime, travel_lifetime)
 	if blocked_by_armor > 0:
+		_spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
 		var block_text := "-%d Damage Blocked" % blocked_by_armor
 		_spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
+		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
+		_stage_hud_player_block_step(blocked_by_armor)
+		if hp_damage <= 0:
+			_stage_hud_player_final()
+			return
 	if hp_damage > 0:
+		_spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
 		_spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
-	await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+		if not _can_continue_after_async_wait():
+			return
 	_stage_hud_player_final()
+
+
+func _spawn_enemy_attack_cue(source_global: Vector2, target_global: Vector2, cue_lifetime: float, travel_lifetime: float) -> void:
+	if _combat_vfx_manager == null:
+		return
+	_combat_vfx_manager.spawn_enemy_attack_cue(source_global, cue_lifetime)
+	_combat_vfx_manager.spawn_enemy_attack_travel(source_global, target_global, travel_lifetime)
+
+
+func _spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float, blocked_amount: int) -> void:
+	if _combat_vfx_manager == null:
+		return
+	_combat_vfx_manager.spawn_enemy_attack_block_impact(target_global, lifetime, blocked_amount)
+
+
+func _spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float, hp_damage: int) -> void:
+	if _combat_vfx_manager == null:
+		return
+	_combat_vfx_manager.spawn_enemy_attack_hit_impact(target_global, lifetime, hp_damage)
 
 
 func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO, result_amount: int = 0) -> void:

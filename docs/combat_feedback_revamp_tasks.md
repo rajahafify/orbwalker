@@ -133,18 +133,18 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-06: Enemy Attack Feedback
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Add readable enemy-turn feedback for fully blocked attacks, partially blocked attacks, and HP damage.
-- Progress: Not started.
+- Progress: Completed on `codex/cfr-06-enemy-attack-feedback`: enemy attack replay now adds a generic enemy cue/travel visual before the player impact, shows a shield/block impact for armor-blocked damage, shows a hit impact for HP damage, and sequences partial blocks as block feedback first, visible armor step second, then HP hit feedback and final HP/armor HUD sync. The change reads only existing `turn_log.enemy_attack_resolution` values and stays presentation-only; combat math, match resolver behavior, RunState routing, board resolve order, player-effect replay staging, `combat_speed` modes, blocked result-label text, and enemy attack SFX ownership were not changed.
 - Blockers: CFR-02 result labels should exist first.
-- Next action: Inspect enemy intent replay and turn-log values, then add block/hit result presentation without changing enemy math.
+- Next action: Start CFR-07 readability QA from CFR-02 through CFR-06 implementation state.
 - Acceptance:
   - Fully blocked attack shows shield/block feedback and no HP damage read.
   - Partially blocked attack shows armor impact plus remaining HP damage.
   - Unblocked HP damage shows player hit feedback and damage number.
   - Enemy-specific VFX hooks are possible, but generic enemy attack feedback is enough for first pass.
-- Validation: Focused combat state probe for blocked/partial/unblocked outcomes plus manual visual QA.
-- Docs/wiki impact: Update `docs/test_plan.md` for enemy attack visual acceptance.
+- Validation: `git diff --check` passed. Godot MCP reached Godot 4.6.2, loaded `combat_player_controller.gd` and `combat_vfx_manager.gd`, instantiated `res://scenes/combat/combat_player.tscn` and confirmed `VfxLayer`, enemy portrait, player portrait, player HP label, and player armor label exist, spawned the new enemy attack cue/travel/block/hit VFX plus block and HP labels on a temporary `VfxLayer`, confirmed focused combat-state payloads for fully blocked (`incoming=8`, `blocked_by_armor=8`, `hp_damage=0`), partial (`incoming=8`, `blocked_by_armor=3`, `hp_damage=5`), and unblocked (`incoming=8`, `blocked_by_armor=0`, `hp_damage=8`) attacks, and launched `play_scene current`. User visual QA passed on 2026-05-04 for fully blocked, partially blocked, and unblocked enemy attacks. The final `get_godot_errors` read still reports the two known stale CFR-02 enum reload diagnostics.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` were updated with CFR-06 behavior and validation state.
 
 ## CFR-07: Feedback Readability QA Pass
 
