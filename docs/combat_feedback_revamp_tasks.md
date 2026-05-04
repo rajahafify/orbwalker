@@ -72,9 +72,9 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-03: Source-To-Target Timing Order
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Ensure combat result feedback appears in a readable order after match clear and before/with the corresponding HUD value change.
-- Progress: Not started.
+- Progress: Implemented on `codex/cfr-03-feedback-timing`: combat turn replay now captures pre-turn visible HUD values before combat resolution, keeps those staged values visible while VFX/result labels play, and advances enemy HP/block, player HP/armor, and gold after their matching result label timing point. Enemy HP/block now steps after each elemental damage label instead of waiting for all damage labels to finish, and blocked damage labels use `-N Damage Blocked` for both enemy block and player armor block. The actual combat state still resolves once through `CombatStateMachine`; staged values are presentation-only and cleared before the final HUD refresh.
 - Blockers: CFR-02 should exist first, or this task must include a minimal result-number implementation.
 - Next action: Preserve the accepted resolve order while adding result-number timing:
   - match flash,
@@ -89,8 +89,8 @@ The first implementation should prioritize readable result numbers and timing ov
   - HUD HP/armor/gold/enemy HP changes do not visually jump before the related impact/result read.
   - Existing `combat_speed` modes still work; `instant` may compress or skip animation waits but must not break final state.
   - Existing top-to-bottom same-pass match ordering is preserved.
-- Validation: Godot MCP parse/errors and a focused presentation-order probe if practical. Manual drag/cascade visual QA remains required.
-- Docs/wiki impact: Update `docs/test_plan.md` with timing acceptance evidence.
+- Validation: `git diff --check` passed. Godot MCP on 2026-05-04 reached Godot 4.6.2, loaded `combat_player_controller.gd`, `player_loadout_hud.gd`, and `combat_vfx_manager.gd`, instantiated `res://scenes/combat/combat_player.tscn` with `VfxLayer`, and launched `play_scene current` successfully. A focused async staged-HUD probe was attempted but rejected by the MCP wrapper because tool-script `run()` cannot be a coroutine; the non-async script-load/scene probe passed. `get_godot_errors` still reports the two known enum reload diagnostics from the earlier CFR-02 helper version, but the new `_staged_hud_values` warning disappeared after replaying the scene. User manual QA passed on 2026-05-04 after the follow-up change: enemy HP/block steps after each Fire/Ice/Earth result label, and both enemy block and player armor block labels read as `-N Damage Blocked`.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` were updated with CFR-03 behavior, validation, and user QA acceptance.
 
 ## CFR-04: Mastery Activation And Character Improvement Readability
 

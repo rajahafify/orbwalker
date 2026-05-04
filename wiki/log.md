@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-04 - CFR-03 Combat Feedback Timing
+
+- Updated [[features]] for CFR-03 source-to-target feedback timing: combat turn replay now keeps pre-turn HUD values staged while result labels and VFX play, advances visible enemy HP/block step-by-step after each elemental damage label, and advances player HP/armor and gold after the related result label. Blocked damage labels now use `-N Damage Blocked` for both enemy block and player armor block. Runtime combat math and final state remain owned by `CombatStateMachine`; the staged values are presentation-only in `CombatPlayerController` and the shared HUD HP display override. User manual timing/readability QA passed on 2026-05-04, so CFR-03 is closed in the tracker. (source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/combat_feedback_revamp_tasks.md`)
+
 ## 2026-05-04 - Combat Feedback Revamp Tracker
 
 - Created `docs/combat_feedback_revamp_tasks.md` to break the combat feedback UI revamp into CFR-01 through CFR-07: baseline event inventory, floating result numbers, source-to-target timing, mastery activation readability, tiered elemental/resource VFX hooks, enemy attack feedback, and readability QA. (source: `docs/combat_feedback_revamp_tasks.md`)

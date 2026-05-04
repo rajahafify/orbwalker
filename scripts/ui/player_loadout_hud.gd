@@ -188,11 +188,12 @@ func _render_player_data() -> void:
 	var max_visible_relics := int(_player_data.get("max_visible_relics", 2))
 	var selectable_equipment := bool(_player_data.get("selectable_equipment", true))
 	var selectable_consumables := bool(_player_data.get("selectable_consumables", true))
+	var display_values: Dictionary = _player_data.get("display_values", {})
 
 	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
 	var hp_label := _hud_nodes.get("hp_label") as Label
 	if player_state != null:
-		var current_hp := int(player_state.current_hp)
+		var current_hp := int(display_values.get("current_hp", int(player_state.current_hp)))
 		var max_hp := int(player_state.max_hp)
 		if hp_bar != null:
 			hp_bar.max_value = float(maxi(1, max_hp))

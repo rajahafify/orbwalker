@@ -216,6 +216,7 @@ var _resolve_trace_pass_index := -1
 var _combat_mastery_feedback_token := 0
 var _combat_mastery_preview_totals: Dictionary = {}
 var _combat_speed := COMBAT_SPEED_NORMAL
+var _staged_hud_values: Dictionary = {}
 var _resolve_presenter: Variant = null
 var _combat_layout_manager: Variant = null
 var _combat_vfx_manager: Variant = null
@@ -1254,8 +1255,8 @@ func _end_drag(timed_out: bool) -> void:
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	if _combat == null:
 		return
+	_staged_hud_values = _capture_hud_stage_values()
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
-	_update_hud()
 	_sync_combat_mastery_preview_totals()
 	RunState.flow_trace_mark(
 		"combat_before_replay_turn_resolution_from_log",
@@ -1267,7 +1268,10 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	)
 	await _replay_turn_resolution_from_log(turn_log)
 	if not _can_continue_after_async_wait():
+		_staged_hud_values.clear()
 		return
+	_staged_hud_values.clear()
+	_update_hud()
 	RunState.flow_trace_mark(
 		"combat_after_replay_turn_resolution_from_log",
 		{
@@ -1862,6 +1866,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
+			_stage_hud_enemy_damage_step(fire_damage)
 			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
 			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
@@ -1870,6 +1875,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
+			_stage_hud_enemy_damage_step(ice_damage)
 			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
 			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
@@ -1878,6 +1884,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
+			_stage_hud_enemy_damage_step(earth_damage)
 			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
@@ -1887,35 +1894,45 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
+		_stage_hud_enemy_result()
 		_release_combat_mastery_feedback(impact_orb)
+	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
+		_stage_hud_enemy_result()
 	if enemy_blocked > 0:
-		_spawn_result_label("Blocked %d" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
+		_spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
+		_stage_hud_enemy_result()
 
 	if heart_heal > 0:
+		var staged_hp_before_heal := int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
 		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
 		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
+		_stage_hud_player_hp(staged_hp_before_heal + heart_heal)
 		_release_combat_mastery_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
+		var staged_armor_before_gain := int(_staged_hud_values.get("player_armor", int(_player_state.armor)))
 		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
 		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
+		_stage_hud_player_armor(staged_armor_before_gain + armor_gain)
 		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
+		var staged_gold_before_gain := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
 		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
+		_stage_hud_gold(staged_gold_before_gain + gold_gain)
 		_release_combat_mastery_feedback(OrbType.Id.GOLD)
 	await _release_remaining_combat_mastery_feedback()
 	if not _can_continue_after_async_wait():
@@ -1973,23 +1990,28 @@ func _build_hud_snapshot() -> Dictionary:
 	var enemy_texture: Texture2D = null
 	if _visuals != null:
 		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	var player_gold := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
+	var enemy_hp := int(_staged_hud_values.get("enemy_hp", int(_enemy_state.current_hp)))
+	var enemy_turn_block := int(_staged_hud_values.get("enemy_turn_block", int(_enemy_state.current_turn_block)))
+	var player_hp := int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
+	var player_armor := int(_staged_hud_values.get("player_armor", int(_player_state.armor)))
 	return _hud_snapshot_builder.build_snapshot(
 		{
 			"run_label": RunState.level_sequence_label(),
-			"player_gold": int(_player_state.gold),
+			"player_gold": player_gold,
 			"enemy_display_name": _enemy_state.display_name,
-			"enemy_hp": int(_enemy_state.current_hp),
+			"enemy_hp": enemy_hp,
 			"enemy_max_hp": int(_enemy_state.max_hp),
-			"enemy_turn_block": int(_enemy_state.current_turn_block),
+			"enemy_turn_block": enemy_turn_block,
 			"enemy_intent_text": _format_intent_compact(intent),
 			"enemy_texture": enemy_texture,
 			"combat_turn_index": int(_combat.turn_index),
 			"combat_phase_name": _combat.phase_name(),
 			"timer_state": timer_state,
 			"timer_seconds": timer_seconds,
-			"player_hp": int(_player_state.current_hp),
+			"player_hp": player_hp,
 			"player_max_hp": int(_player_state.max_hp),
-			"player_armor": int(_player_state.armor),
+			"player_armor": player_armor,
 			"fire_orb_value": int(_player_state.orb_value(OrbType.Id.FIRE)),
 			"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
 			"heart_mastery_level": int(mastery_levels.get(OrbType.Id.HEART, 0)),
@@ -2057,6 +2079,71 @@ func _sync_player_strip(snapshot: Dictionary) -> void:
 func _sync_debug_overlay(snapshot: Dictionary) -> void:
 	_status_label.text = String(snapshot.get("status_text", ""))
 	_enemy_debug_label.text = String(snapshot.get("enemy_text", ""))
+
+
+func _capture_hud_stage_values() -> Dictionary:
+	if _player_state == null or _enemy_state == null:
+		return {}
+	return {
+		"player_gold": int(_player_state.gold),
+		"enemy_hp": int(_enemy_state.current_hp),
+		"enemy_turn_block": int(_enemy_state.current_turn_block),
+		"player_hp": int(_player_state.current_hp),
+		"player_armor": int(_player_state.armor),
+	}
+
+
+func _stage_hud_values(values: Dictionary) -> void:
+	if _staged_hud_values.is_empty():
+		return
+	for key in values.keys():
+		_staged_hud_values[key] = int(values[key])
+	_update_hud()
+
+
+func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
+	if _enemy_state == null or raw_damage <= 0:
+		return
+	var staged_block := maxi(0, int(_staged_hud_values.get("enemy_turn_block", int(_enemy_state.current_turn_block))))
+	var staged_hp := maxi(0, int(_staged_hud_values.get("enemy_hp", int(_enemy_state.current_hp))))
+	var blocked := mini(staged_block, raw_damage)
+	var hp_damage := maxi(0, raw_damage - blocked)
+	_stage_hud_values({
+		"enemy_turn_block": staged_block - blocked,
+		"enemy_hp": maxi(0, staged_hp - hp_damage),
+	})
+
+
+func _stage_hud_enemy_result() -> void:
+	if _enemy_state == null:
+		return
+	_stage_hud_values({
+		"enemy_hp": int(_enemy_state.current_hp),
+		"enemy_turn_block": int(_enemy_state.current_turn_block),
+	})
+
+
+func _stage_hud_player_hp(value: int) -> void:
+	if _player_state == null:
+		return
+	_stage_hud_values({"player_hp": clampi(value, 0, int(_player_state.max_hp))})
+
+
+func _stage_hud_player_armor(value: int) -> void:
+	_stage_hud_values({"player_armor": maxi(0, value)})
+
+
+func _stage_hud_gold(value: int) -> void:
+	_stage_hud_values({"player_gold": maxi(0, value)})
+
+
+func _stage_hud_player_final() -> void:
+	if _player_state == null:
+		return
+	_stage_hud_values({
+		"player_hp": int(_player_state.current_hp),
+		"player_armor": int(_player_state.armor),
+	})
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -2133,6 +2220,9 @@ func debug_console_log(message: String) -> void:
 
 
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
+	var player_display_values := {}
+	if not _staged_hud_values.is_empty():
+		player_display_values["current_hp"] = int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
 	_player_loadout_hud.update_player_data({
 		"player_state": _player_state,
 		"progression": progression_snapshot,
@@ -2140,6 +2230,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"max_visible_relics": 2,
 		"selectable_equipment": true,
 		"selectable_consumables": true,
+		"display_values": player_display_values,
 	})
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
@@ -2161,11 +2252,12 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	if blocked_by_armor <= 0 and hp_damage <= 0:
 		return
 	if blocked_by_armor > 0:
-		var block_text := "Blocked" if hp_damage <= 0 else "Blocked %d" % blocked_by_armor
+		var block_text := "-%d Damage Blocked" % blocked_by_armor
 		_spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
 	if hp_damage > 0:
 		_spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
 	await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+	_stage_hud_player_final()
 
 
 func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO) -> void:
