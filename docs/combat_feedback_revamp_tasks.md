@@ -55,11 +55,11 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-02: Floating Result Number System
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Add reusable combat floating result text/bubble presentation for enemy damage, healing, armor gain, gold gain, blocked damage, and player HP damage.
-- Progress: Not started.
-- Blockers: Depends on CFR-01 value/source inventory.
-- Next action: Implement a small reusable presenter or VFX-manager method that can spawn readable result labels at board/enemy/player/HUD anchor positions without changing combat math.
+- Progress: Completed on `codex/cfr-02-result-numbers`: `CombatVfxManager.spawn_result_label(...)` creates transient outlined result labels on `VfxLayer`, and combat turn replay now reads existing `turn_log` values for elemental damage, blocked enemy damage, healing, armor gain, gold gain, blocked enemy attacks, and player HP damage. HUD refresh timing remains unchanged for CFR-03.
+- Blockers: None for CFR-02 closure. The last `get_godot_errors` call still retained two enum reload diagnostics from the earlier failed helper version after the enum casts were applied and the script was reloaded; focused probes and user visual QA passed, so treat this as stale session state unless it reappears after an editor restart.
+- Next action: Start CFR-03 from the existing result-label system and focus on source-to-target timing / HUD update ordering.
 - Acceptance:
   - Fire/Ice/Earth/Earth-style elemental damage can show numeric damage near the enemy impact.
   - Heart match results can show `+N HP` near the player/HUD.
@@ -67,8 +67,8 @@ The first implementation should prioritize readable result numbers and timing ov
   - Gold match results can show `+N Gold` near the gold counter or top HUD.
   - Enemy attacks can show `Blocked`, `0`, or HP damage near the player depending on outcome.
   - Text remains readable on portrait mobile and does not overlap permanently with the board, enemy HP, mastery cards, or player HUD.
-- Validation: Godot MCP scene instantiate and focused script probes for result label spawn/cleanup. Manual visual QA is required for real combat readability.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` after implementation.
+- Validation: `git diff --check` passed. Godot MCP rerun on 2026-05-04 reached Godot 4.6.2, opened `combat_player_controller.gd` and `combat_vfx_manager.gd`, instantiated `res://scenes/combat/combat_player.tscn` with `VfxLayer`, spawned all eight result-label kinds through `CombatVfxManager.spawn_result_label(...)`, and launched `play_scene current`. The first runtime smoke found enum reload diagnostics in the new label helper; enum casts were added for label/sprite/beam assignments and the focused spawn probe passed afterward. The user manually validated the full CFR-02 visual QA matrix on 2026-05-04: elemental damage, Heart healing, Armor gain, Gold gain, player damage blocked by enemy, enemy attack blocked by armor, enemy HP damage, label cleanup/no permanent overlap, and `combat_speed` normal/instant behavior all passed. The final `get_godot_errors` read still retained the earlier enum diagnostics, so rerun after editor restart if they reappear.
+- Docs/wiki impact: `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` were updated with CFR-02 implementation state, Godot MCP evidence, user visual QA acceptance, and the stale final-error-note caveat.
 
 ## CFR-03: Source-To-Target Timing Order
 

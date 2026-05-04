@@ -30,9 +30,9 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 		return
 	var sprite := TextureRect.new()
 	sprite.texture = texture
-	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 	sprite.custom_minimum_size = draw_size
 	sprite.size = draw_size
 	sprite.modulate = modulate_color
@@ -49,6 +49,32 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 	if impact_texture == null:
 		impact_texture = _visual_registry.vfx_texture("orb_clear")
 	spawn_vfx_texture(impact_texture, global_center, draw_size, lifetime, Color(1.0, 1.0, 1.0, 0.92))
+
+
+func spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO) -> Label:
+	if text.strip_edges() == "" or global_center == Vector2.ZERO:
+		return null
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return null
+	var label := Label.new()
+	label.text = text
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
+	label.add_theme_font_size_override("font_size", 42)
+	label.add_theme_color_override("font_color", _result_label_color(kind))
+	label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.03, 0.95))
+	label.add_theme_constant_override("outline_size", 8)
+	label.custom_minimum_size = Vector2(240, 70)
+	label.size = label.custom_minimum_size
+	label.pivot_offset = label.size * 0.5
+	label.z_index = 130
+	_vfx_layer.add_child(label)
+	var local_center := _global_to_vfx_local(global_center) + offset
+	label.position = local_center - label.size * 0.5
+	_tween_result_label_cleanup(label, lifetime)
+	return label
 
 
 func mastery_impact_kind(orb_id: int) -> String:
@@ -118,9 +144,9 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 
 	var beam := TextureRect.new()
 	beam.texture = beam_texture
-	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	beam.stretch_mode = TextureRect.STRETCH_SCALE
+	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	beam.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 	var beam_thickness := 28.0
 	beam.size = Vector2(distance, beam_thickness)
 	beam.pivot_offset = Vector2(0.0, beam_thickness * 0.5)
@@ -157,6 +183,43 @@ func _global_to_vfx_local(global_position: Vector2) -> Vector2:
 		return global_position
 	var inverse_canvas := _vfx_layer.get_global_transform_with_canvas().affine_inverse()
 	return inverse_canvas * global_position
+
+
+func _result_label_color(kind: String) -> Color:
+	match kind:
+		"fire":
+			return Color(1.0, 0.37, 0.16, 1.0)
+		"ice":
+			return Color(0.46, 0.85, 1.0, 1.0)
+		"earth":
+			return Color(0.68, 0.95, 0.42, 1.0)
+		"heal":
+			return Color(0.44, 1.0, 0.58, 1.0)
+		"armor", "block":
+			return Color(0.78, 0.9, 1.0, 1.0)
+		"gold":
+			return Color(1.0, 0.83, 0.2, 1.0)
+		"damage":
+			return Color(1.0, 0.22, 0.22, 1.0)
+		_:
+			return Color(1.0, 1.0, 1.0, 1.0)
+
+
+func _tween_result_label_cleanup(label: Label, lifetime: float) -> void:
+	if label == null:
+		return
+	var duration := maxf(0.12, lifetime)
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		label.queue_free()
+		return
+	var tween := _timer_owner.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 54.0, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 0.0, duration).set_delay(duration * 0.36)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(label):
+			label.queue_free()
+	)
 
 
 func _tween_fade_cleanup(control: Control, lifetime: float) -> void:

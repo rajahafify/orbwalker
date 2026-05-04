@@ -1837,6 +1837,7 @@ func _build_defeat_cause(turn_log: Dictionary) -> String:
 
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
+	var enemy_blocked := int(turn_log.get("enemy_blocked", 0))
 	var fire_damage := int(turn_log.get("fire_damage", 0))
 	var ice_damage := int(turn_log.get("ice_damage", 0))
 	var earth_damage := int(turn_log.get("earth_damage", 0))
@@ -1851,11 +1852,13 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var damage_lifetime := _combat_speed_duration(0.42)
 	var player_lifetime := _combat_speed_duration(0.45)
 	var gold_lifetime := _combat_speed_duration(0.55)
+	var label_lifetime := _combat_speed_duration(0.72)
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
 			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
+			_spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52))
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1863,6 +1866,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if ice_damage > 0:
 			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
+			_spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52))
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1870,6 +1874,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if earth_damage > 0:
 			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
+			_spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52))
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1878,14 +1883,18 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
 		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
 		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
+		_spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
 		_release_combat_mastery_feedback(impact_orb)
+	if enemy_blocked > 0:
+		_spawn_result_label("Blocked %d" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
 
 	if heart_heal > 0:
 		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
+		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1894,6 +1903,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if armor_gain > 0:
 		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
+		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1902,11 +1912,15 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if gold_gain > 0:
 		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
+		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
 		_release_combat_mastery_feedback(OrbType.Id.GOLD)
 	await _release_remaining_combat_mastery_feedback()
+	if not _can_continue_after_async_wait():
+		return
+	await _replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
 	if not _can_continue_after_async_wait():
 		return
 	await _wait_combat_speed(TURN_REPLAY_FINAL_HOLD_SECONDS)
@@ -2138,6 +2152,28 @@ func _emit_turn_feedback_vfx(_turn_log: Dictionary) -> void:
 	pass
 
 
+func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
+	if bool(turn_log.get("enemy_intent_skipped", false)):
+		return
+	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
+	var blocked_by_armor := int(enemy_attack.get("blocked_by_armor", 0))
+	var hp_damage := int(enemy_attack.get("hp_damage", 0))
+	if blocked_by_armor <= 0 and hp_damage <= 0:
+		return
+	if blocked_by_armor > 0:
+		var block_text := "Blocked" if hp_damage <= 0 else "Blocked %d" % blocked_by_armor
+		_spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
+	if hp_damage > 0:
+		_spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
+	await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+
+
+func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO) -> void:
+	if _combat_vfx_manager == null:
+		return
+	_combat_vfx_manager.spawn_result_label(text, global_center, kind, lifetime, offset)
+
+
 func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
 	if _combat_vfx_manager == null:
 		return
@@ -2164,6 +2200,16 @@ func _mastery_impact_kind(orb_id: int) -> String:
 			return "heart"
 		OrbType.Id.GOLD:
 			return "gold"
+		_:
+			return "fire"
+
+
+func _result_label_kind_for_orb(orb_id: int) -> String:
+	match orb_id:
+		OrbType.Id.ICE:
+			return "ice"
+		OrbType.Id.EARTH:
+			return "earth"
 		_:
 			return "fire"
 
