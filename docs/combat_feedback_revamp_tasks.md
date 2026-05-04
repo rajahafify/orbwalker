@@ -94,17 +94,17 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-04: Mastery Activation And Character Improvement Readability
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Make Elemental Mastery cards visibly act as the source of character improvement and per-turn contribution.
-- Progress: Not started.
+- Progress: Completed on `codex/cfr-04-mastery-effect-readability`: combat mastery cards now add fixed-size activation glow/frame layers behind the existing card text, scale activation intensity from the pooled contribution value, and pulse briefly when `set_combat_mastery_feedback(...)` raises a card's visible contribution. Mastery beams still originate from the active card/icon, and `CombatVfxManager` now adds a stronger source pulse when the beam fires so the player can read the card as the source. A follow-up after screenshot QA carries active pooled feedback totals through HUD rebuilds, so card lights do not clear as a group during staged HUD updates and still release through the per-card replay timing. Mastery Effect SFX now plays at each replay impact/result moment for damage, heal, armor, and gold, reusing existing placeholder `hit`, `heal`, `armor`, and `gold` sounds without adding source-launch audio. This is presentation-only; combat math, match resolver behavior, RunState routing, turn-log payloads, result label text, enemy HP/block stepping, board resolve order, and `combat_speed` modes were not changed.
 - Blockers: CFR-01 source inventory; coordinate with existing pooled mastery feedback and release behavior.
-- Next action: Improve mastery activation glow/pulse intensity by contribution value, keep pooled `+N DAMAGE`, `+N HEAL`, `+N ARMOR`, or `+N GOLD` text readable through the whole cascade, and connect mastery activation to travel VFX origins when possible.
+- Next action: Start CFR-05 or run CFR-07 readability QA after CFR-05/CFR-06 are implemented.
 - Acceptance:
   - Matching an element clearly activates that element's mastery card.
   - Higher-value contributions have stronger but non-obstructive glow/pulse intensity.
   - Pooled mastery feedback does not disappear and reappear mid-replay.
   - The player can tell which element or stat improved during the turn.
-- Validation: Godot MCP script checks and manual visual QA on at least one elemental damage match and one Heart/Armor/Gold match.
+- Validation: `git diff --check` passed. Godot MCP reached Godot 4.6.2, opened `player_loadout_hud.gd`, `combat_vfx_manager.gd`, `combat_player_controller.gd`, and `audio_manager.gd`, reloaded edited/related scripts with `reload=0`, instantiated `res://scenes/combat/combat_player.tscn` and confirmed `ElementalMasteryCards`, `VfxLayer`, enemy portrait, player portrait, and board surface exist, probed Fire/Heart/Armor/Gold low/high/reset feedback states, confirmed mastery source pulse and beam spawning through `CombatVfxManager`, and launched `play_scene current`. Follow-up probes confirmed active Fire/Ice/Gold cards survive a mastery panel rebuild and clearing Fire leaves Ice/Gold active, source pulse and beam nodes still spawn together, existing placeholder SFX streams resolve for `hit`, `heal`, `armor`, and `gold`, and Mastery Effect SFX calls live in replay timing rather than the end-of-turn result batch. User visual/listening QA passed on 2026-05-04. The final `get_godot_errors` read still reports the two known enum reload diagnostics from the earlier CFR-02 helper version; the new ternary warning from the first CFR-04 smoke cleared after the helper fix and reload.
 - Docs/wiki impact: Update `wiki/features.md` and `docs/test_plan.md` if mastery feedback behavior changes.
 
 ## CFR-05: Elemental And Resource VFX Tier Hooks

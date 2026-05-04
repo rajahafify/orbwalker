@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-04 - CFR-04 Mastery Activation Readability
+
+- Updated [[features]] for CFR-04 mastery activation readability: combat mastery cards now keep pooled contribution text but add fixed-size value-scaled activation glow/frame pulses, and mastery beams add a small source pulse at the active card so the player can read the card as the source. The change is presentation-only and preserves combat math, resolver behavior, RunState routing, board order, result labels, and `combat_speed`. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+
 ## 2026-05-04 - CFR-03 Combat Feedback Timing
 
 - Updated [[features]] for CFR-03 source-to-target feedback timing: combat turn replay now keeps pre-turn HUD values staged while result labels and VFX play, advances visible enemy HP/block step-by-step after each elemental damage label, and advances player HP/armor and gold after the related result label. Blocked damage labels now use `-N Damage Blocked` for both enemy block and player armor block. Runtime combat math and final state remain owned by `CombatStateMachine`; the staged values are presentation-only in `CombatPlayerController` and the shared HUD HP display override. User manual timing/readability QA passed on 2026-05-04, so CFR-03 is closed in the tracker. (source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/combat_feedback_revamp_tasks.md`)
@@ -1516,3 +1520,21 @@ Append-only history of wiki operations.
 - Post-closeout review added two transition failure-path follow-ups to [[known-issues]] and the AR-18 tracker context: final-summary `Start New Run` should not leave `RunState` reset if the combat scene transition fails, and Start Run failure recovery should restore menu audio if the transition fails after switching to combat music. These are documented as failure-path issues, not accepted normal-route blockers. (source: `scripts/flow/final_run_summary.gd`, `scripts/core/main_boot.gd`, `docs/architecture_review_tasks.md`)
 - Documented the AR closeout god-object status for `combat_player_controller.gd`: the controller is down from the pre-AR estimate of about 3357 lines to 2432 lines, with the original leaf helper targets extracted and the remaining risk framed as coordinator-scale combat flow, HUD application, and turn orchestration boundaries. Updated [[architecture]], [[file-map]], [[known-issues]], and the AR-18 tracker context. (source: `docs/architecture_review_tasks.md`, `scripts/combat/combat_player_controller.gd`)
 - CFR-02 implementation added floating combat result labels for turn-log-sourced enemy damage, healing, armor gain, gold gain, enemy block, enemy attack block, and player HP damage. The label system lives in `CombatVfxManager` on the existing `VfxLayer`, while replay timing stays in `CombatPlayerController`; a Godot MCP rerun reached the editor, loaded the edited scripts, instantiated combat with `VfxLayer`, spawned all eight label kinds in a focused probe, and launched `play_scene current`. User manual QA passed the full CFR-02 visual matrix on 2026-05-04, so CFR-02 is closed; the final `get_godot_errors` call still retained earlier enum reload diagnostics from before the casts were fixed and should be treated as stale unless they reappear after editor restart. Updated [[features]]. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+## [2026-05-04] code-change | CFR-04 Mastery Feedback Release Follow-Up
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Preserved active combat mastery feedback totals through shared HUD rebuilds so staged replay HUD updates do not clear every lit mastery card at once.
+  - Strengthened the mastery beam source pulse at the card/icon so the beam origin is easier to read during replay.
+- Notes:
+  - Godot MCP script reload, combat scene instantiate, focused active-card rebuild/release probe, source pulse/beam probe, `play_scene current`, and `get_godot_errors` checks passed. The only reported session errors were the known stale CFR-02 enum reload diagnostics.
+
+## [2026-05-04] code-change | CFR-04 Mastery Effect SFX
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/core/audio_manager.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Added impact-timed Mastery Effect SFX for replayed damage, heal, armor, and gold effects using the existing placeholder `hit`, `heal`, `armor`, and `gold` sounds.
+  - Removed mastery damage/heal/armor/gold playback from the post-replay turn result SFX batch so replay effects do not double-trigger sounds.
+  - Kept source launch visual-only and preserved the existing enemy attack hit SFX lane.
+- Notes:
+  - Godot MCP script reload, SFX stream probe, source-timing probe, `play_scene current`, and `get_godot_errors` checks passed. User visual/listening QA passed on 2026-05-04. The only reported session errors were the known stale CFR-02 enum reload diagnostics.

@@ -21,6 +21,9 @@ const MASTERY_CELL_GAP := 24.0
 const COMBAT_MASTERY_CARD_SIZE := Vector2(132, 104)
 const COMBAT_MASTERY_CARD_GAP := 14.0
 const COMBAT_MASTERY_ICON_SIZE := Vector2(46, 46)
+const COMBAT_MASTERY_ACTIVATION_BASE_ALPHA := 0.14
+const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
+const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
 const COMBAT_MASTERY_ORDER: Array[int] = [
 	OrbType.Id.FIRE,
 	OrbType.Id.ICE,
@@ -221,7 +224,11 @@ func _render_player_data() -> void:
 		populate_relic_row(relic_row, Array(progression_snapshot.get("relic_ids", [])), max_visible_relics)
 	var mastery_cards := _hud_nodes.get("mastery_cards") as Control
 	if mastery_cards != null:
-		populate_combat_mastery_panel(mastery_cards, Dictionary(progression_snapshot.get("mastery_levels", {})))
+		populate_combat_mastery_panel(
+			mastery_cards,
+			Dictionary(progression_snapshot.get("mastery_levels", {})),
+			Dictionary(_player_data.get("combat_mastery_feedback_totals", {}))
+		)
 	_suppress_native_slot_tooltips()
 	_update_selected_slot_popover()
 
@@ -324,6 +331,15 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
 
+		var activation_glow := ColorRect.new()
+		activation_glow.name = "ActivationGlow"
+		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		activation_glow.position = Vector2(8.0, 6.0)
+		activation_glow.size = Vector2(116.0, 92.0)
+		var activation_accent := OrbType.color(orb_id)
+		activation_glow.color = Color(activation_accent.r, activation_accent.g, activation_accent.b, 0.0)
+		activation_glow.visible = false
+
 		var icon := TextureRect.new()
 		icon.name = "MasteryIcon"
 		icon.custom_minimum_size = COMBAT_MASTERY_ICON_SIZE
@@ -376,12 +392,22 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 			feedback_label.visible = false
 			feedback_label.modulate = Color(1.0, 1.0, 1.0, 0.38)
 
+		var activation_frame := Panel.new()
+		activation_frame.name = "ActivationFrame"
+		activation_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		activation_frame.position = Vector2.ZERO
+		activation_frame.size = COMBAT_MASTERY_CARD_SIZE
+		activation_frame.visible = false
+
+		panel.add_child(activation_glow)
 		panel.add_child(icon)
 		panel.add_child(name_label)
 		panel.add_child(level_label)
 		panel.add_child(feedback_label)
+		panel.add_child(activation_frame)
 		card.add_child(panel)
 		row.add_child(card)
+		_apply_combat_mastery_activation(card, orb_id, feedback_value, false)
 
 
 func clear_combat_mastery_feedback(row: Control) -> void:
@@ -405,6 +431,7 @@ func set_combat_mastery_feedback(row: Control, orb_id: int, feedback_value: int)
 	feedback_label.text = feedback_text
 	feedback_label.visible = feedback_text != ""
 	feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
+	_apply_combat_mastery_activation(card, orb_id, feedback_value, true)
 
 
 func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
@@ -429,17 +456,84 @@ func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
 	return "+%d %s" % [value, feedback_kind]
 
 
-func _combat_mastery_card_stylebox(orb_id: int) -> StyleBoxFlat:
+func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	var accent := OrbType.color(orb_id)
 	style.bg_color = Color(0.035, 0.055, 0.08, 0.96)
-	style.border_color = Color(accent.r, accent.g, accent.b, 0.58)
-	style.set_border_width_all(1)
+	var border_alpha := 0.58 + 0.08 * float(maxi(0, activation_tier))
+	style.border_color = Color(accent.r, accent.g, accent.b, clampf(border_alpha, 0.0, 0.92))
+	style.set_border_width_all(1 + mini(2, maxi(0, activation_tier - 1)))
 	style.set_corner_radius_all(4)
 	style.content_margin_left = 4.0
 	style.content_margin_right = 4.0
 	style.content_margin_top = 4.0
 	style.content_margin_bottom = 4.0
+	return style
+
+
+func _apply_combat_mastery_activation(card: Control, orb_id: int, feedback_value: int, animate: bool) -> void:
+	if card == null:
+		return
+	var panel := card.get_node_or_null("CardPanel") as Control
+	if panel == null:
+		return
+	var glow := panel.get_node_or_null("ActivationGlow") as ColorRect
+	var frame := panel.get_node_or_null("ActivationFrame") as Panel
+	var active := feedback_value > 0
+	var tier := _combat_mastery_activation_tier(feedback_value)
+	var accent := OrbType.color(orb_id)
+	panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id, tier))
+	if glow != null:
+		glow.color = Color(accent.r, accent.g, accent.b, _combat_mastery_activation_alpha(tier) if active else 0.0)
+		glow.visible = active
+		glow.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if frame != null:
+		frame.add_theme_stylebox_override("panel", _combat_mastery_activation_frame_stylebox(orb_id, tier))
+		frame.visible = active
+		frame.modulate = Color(1.0, 1.0, 1.0, 0.82 if active else 0.0)
+	if active and animate:
+		_pulse_combat_mastery_activation(glow, frame, tier)
+
+
+func _combat_mastery_activation_tier(feedback_value: int) -> int:
+	if feedback_value <= 0:
+		return 0
+	return clampi(int(ceil(float(feedback_value) / 5.0)), 1, 4)
+
+
+func _combat_mastery_activation_alpha(tier: int) -> float:
+	if tier <= 0:
+		return 0.0
+	return clampf(COMBAT_MASTERY_ACTIVATION_BASE_ALPHA + COMBAT_MASTERY_ACTIVATION_ALPHA_STEP * float(tier - 1), 0.0, 0.42)
+
+
+func _pulse_combat_mastery_activation(glow: ColorRect, frame: Panel, tier: int) -> void:
+	var target: Control = glow
+	if target == null:
+		target = frame
+	if target == null or tier <= 0 or target.get_tree() == null:
+		return
+	var pulse_alpha := 0.16 + 0.05 * float(tier)
+	var tween := target.create_tween()
+	tween.set_parallel(true)
+	if glow != null:
+		var original_glow_alpha := glow.modulate.a
+		tween.tween_property(glow, "modulate:a", minf(1.0, original_glow_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+		tween.tween_property(glow, "modulate:a", original_glow_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+	if frame != null:
+		var original_frame_alpha := frame.modulate.a
+		tween.tween_property(frame, "modulate:a", minf(1.0, original_frame_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+		tween.tween_property(frame, "modulate:a", original_frame_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+
+
+func _combat_mastery_activation_frame_stylebox(orb_id: int, tier: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	var accent := OrbType.color(orb_id)
+	var strength := 0.42 + 0.10 * float(maxi(1, tier))
+	style.bg_color = Color(accent.r, accent.g, accent.b, 0.0)
+	style.border_color = Color(accent.r, accent.g, accent.b, clampf(strength, 0.0, 0.88))
+	style.set_border_width_all(1 + mini(2, maxi(0, tier - 1)))
+	style.set_corner_radius_all(4)
 	return style
 
 

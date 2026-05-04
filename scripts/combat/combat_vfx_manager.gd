@@ -141,6 +141,7 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 	var distance := delta.length()
 	if distance <= 1.0:
 		return
+	_spawn_mastery_source_pulse(source_local, orb_id, beam_lifetime)
 
 	var beam := TextureRect.new()
 	beam.texture = beam_texture
@@ -156,6 +157,43 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 	beam.z_index = 92
 	_vfx_layer.add_child(beam)
 	_tween_fade_cleanup(beam, beam_lifetime)
+
+
+func _spawn_mastery_source_pulse(source_local: Vector2, orb_id: int, lifetime: float) -> void:
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	var accent := OrbType.color(orb_id)
+	var pulse := Panel.new()
+	pulse.name = "MasterySourcePulse"
+	pulse.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	pulse.size = Vector2(96, 96)
+	pulse.pivot_offset = pulse.size * 0.5
+	pulse.position = source_local - pulse.size * 0.5
+	pulse.z_index = 126
+	pulse.modulate = Color(1.0, 1.0, 1.0, 0.92)
+	pulse.add_theme_stylebox_override("panel", _mastery_source_pulse_stylebox(accent))
+	_vfx_layer.add_child(pulse)
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		pulse.queue_free()
+		return
+	var duration := maxf(0.12, lifetime)
+	var tween := _timer_owner.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(pulse, "scale", Vector2(1.55, 1.55), duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(pulse, "modulate:a", 0.0, duration).set_delay(duration * 0.20)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(pulse):
+			pulse.queue_free()
+	)
+
+
+func _mastery_source_pulse_stylebox(accent: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(accent.r, accent.g, accent.b, 0.28)
+	style.border_color = Color(accent.r, accent.g, accent.b, 0.95)
+	style.set_border_width_all(8)
+	style.set_corner_radius_all(14)
+	return style
 
 
 func _mastery_card_source(orb_id: int) -> Control:

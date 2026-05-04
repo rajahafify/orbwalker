@@ -1392,17 +1392,21 @@ func _on_next_button_pressed() -> void:
 
 
 func _play_turn_result_sfx(turn_log: Dictionary) -> void:
-	if int(turn_log.get("enemy_damage_taken", 0)) > 0:
-		_audio_play_sfx("hit")
-	if int(turn_log.get("healed", 0)) > 0:
-		_audio_play_sfx("heal")
-	if int(turn_log.get("armor_gained", 0)) > 0:
-		_audio_play_sfx("armor")
-	if int(turn_log.get("gold_gained", 0)) > 0:
-		_audio_play_sfx("gold")
 	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
 	if int(enemy_attack.get("hp_damage", 0)) > 0:
 		_audio_play_sfx("hit")
+
+
+func _play_mastery_effect_sfx(effect_kind: String) -> void:
+	match effect_kind:
+		"damage":
+			_audio_play_sfx("hit")
+		"heal":
+			_audio_play_sfx("heal")
+		"armor":
+			_audio_play_sfx("armor")
+		"gold":
+			_audio_play_sfx("gold")
 
 
 func _audio_play_music(key: String) -> void:
@@ -1863,6 +1867,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
 			_spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52))
+			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1872,6 +1877,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
 			_spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52))
+			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1881,6 +1887,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime)
 			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
 			_spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52))
+			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1891,6 +1898,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime)
 		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
 		_spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52))
+		_play_mastery_effect_sfx("damage")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1907,6 +1915,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
 		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46))
+		_play_mastery_effect_sfx("heal")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1918,6 +1927,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime)
 		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
 		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46))
+		_play_mastery_effect_sfx("armor")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1929,6 +1939,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime)
 		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46))
+		_play_mastery_effect_sfx("gold")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -2231,6 +2242,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"selectable_equipment": true,
 		"selectable_consumables": true,
 		"display_values": player_display_values,
+		"combat_mastery_feedback_totals": _combat_mastery_preview_totals.duplicate(true),
 	})
 	_apply_loadout_rail_layout()
 	call_deferred("_apply_loadout_rail_layout")
