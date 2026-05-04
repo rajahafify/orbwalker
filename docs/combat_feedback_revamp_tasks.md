@@ -148,9 +148,9 @@ The first implementation should prioritize readable result numbers and timing ov
 
 ## CFR-07: Feedback Readability QA Pass
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Validate combat feedback readability across common result types and viewport constraints.
-- Progress: Not started.
+- Progress: Completed on 2026-05-04. Automated Godot MCP validation passed, then user manual visual QA passed for elemental damage, Heart heal, Armor gain, Gold gain, enemy fully blocked attack, enemy HP damage, cascade with multiple groups, and `combat_speed` normal/instant readability.
 - Blockers: CFR-02 through CFR-06 implementation state.
 - Next action: Run Godot MCP checks and manual visual QA for a small matrix:
   - elemental damage,
@@ -165,7 +165,7 @@ The first implementation should prioritize readable result numbers and timing ov
   - The player can identify the source and amount for each major combat result without reading the debug log.
   - Feedback does not permanently obscure board input, enemy HP, mastery cards, or player HUD.
   - No new Godot errors are reported after scene smokes.
-- Validation: Godot MCP `get_project_info`, `get_godot_errors`, `play_scene`/scene instantiate for `res://scenes/combat/combat_player.tscn`, focused probes as needed, and manual visual QA notes.
+- Validation: Godot MCP `get_project_info`, `view_script` for `combat_player_controller.gd` and `combat_vfx_manager.gd`, `get_godot_errors`, `play_scene current`, combat scene instantiate for `res://scenes/combat/combat_player.tscn`, focused `CombatVfxManager.spawn_result_label(...)`/enemy attack VFX helper spawn probe, focused `CombatResolvePresenter` `combat_speed` timing probe, deterministic multi-group cascade resolver probe, and user manual visual QA passed on 2026-05-04 for the full CFR-07 matrix. The 2026-05-04 final `get_godot_errors` read still reports the two known stale CFR-02 enum reload diagnostics and no new runtime errors from the fresh scene smoke.
 - Docs/wiki impact: Update this tracker, `docs/test_plan.md`, `todo.md` if Milestone 9 task status changes, `wiki/features.md`, and `wiki/log.md`.
 
 ## Guardrails
