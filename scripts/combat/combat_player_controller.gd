@@ -182,6 +182,9 @@ const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
 const TURN_REPLAY_STEP_SECONDS := 0.34
 const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
+const ENEMY_BLOCK_PREVIEW_HEIGHT := 8.0
+const ENEMY_BLOCK_PREVIEW_GAP := 4.0
+const ENEMY_BLOCK_PREVIEW_PULSE_SECONDS := 0.30
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -228,6 +231,11 @@ var _layout_combat_strip_rect := COMBAT_STRIP_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
 var _layout_player_hud_section_rect := Rect2(Vector2(0, 1092), Vector2(1080, 828))
 var _flow_trace_route_id := ""
+var _intent_preview_emphasis_tween: Tween = null
+var _enemy_block_preview_button: Button = null
+var _enemy_block_preview_fill: ColorRect = null
+var _enemy_block_preview_pulse_tween: Tween = null
+var _enemy_block_intent_preview: Dictionary = {}
 
 
 func _enter_tree() -> void:
@@ -322,6 +330,7 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _flow_trace_route_id)
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
+	_ensure_enemy_block_preview_nodes()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
 	_adopt_relic_footer_nodes_for_shared_layout()
 	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
@@ -342,6 +351,8 @@ func _ready() -> void:
 	_resolver.resolve_complete.connect(_on_resolver_complete)
 	_player_loadout_hud.consumable_slot_selected.connect(_try_use_consumable_slot)
 	_player_loadout_hud.sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
+	_player_loadout_hud.intent_preview_hovered.connect(_on_intent_damage_preview_hovered)
+	_player_loadout_hud.intent_preview_hover_ended.connect(_on_intent_damage_preview_hover_ended)
 	_initialize_combat_state()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id)
 	_create_new_board()
@@ -2004,6 +2015,9 @@ func _build_hud_snapshot() -> Dictionary:
 	var player_gold := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
 	var enemy_hp := int(_staged_hud_values.get("enemy_hp", int(_enemy_state.current_hp)))
 	var enemy_turn_block := int(_staged_hud_values.get("enemy_turn_block", int(_enemy_state.current_turn_block)))
+	var enemy_intent_preview: Dictionary = {}
+	if _should_show_intent_damage_preview():
+		enemy_intent_preview = _enemy_intent_preview_data(intent, enemy_hp, int(_enemy_state.max_hp))
 	var player_hp := int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
 	var player_armor := int(_staged_hud_values.get("player_armor", int(_player_state.armor)))
 	return _hud_snapshot_builder.build_snapshot(
@@ -2015,6 +2029,7 @@ func _build_hud_snapshot() -> Dictionary:
 			"enemy_max_hp": int(_enemy_state.max_hp),
 			"enemy_turn_block": enemy_turn_block,
 			"enemy_intent_text": _format_intent_compact(intent),
+			"enemy_intent_preview": enemy_intent_preview,
 			"enemy_texture": enemy_texture,
 			"combat_turn_index": int(_combat.turn_index),
 			"combat_phase_name": _combat.phase_name(),
@@ -2057,6 +2072,7 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
 	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
 	_enemy_label.text = String(snapshot.get("enemy_text", ""))
+	_sync_enemy_block_intent_preview(Dictionary(snapshot.get("enemy_intent_preview", {})))
 
 
 func _sync_tempo_row(snapshot: Dictionary) -> void:
@@ -2165,6 +2181,227 @@ func _stage_hud_player_final() -> void:
 	})
 
 
+func _should_show_intent_damage_preview() -> bool:
+	if _combat == null or _enemy_state == null:
+		return false
+	if _input_phase != InputPhase.PLAYER_INPUT:
+		return false
+	if _outcome_transition_queued:
+		return false
+	if _combat.is_fight_over():
+		return false
+	return true
+
+
+func _intent_damage_preview_data(intent: Dictionary, player_hp: int, player_armor: int) -> Dictionary:
+	if intent.is_empty():
+		return {}
+	var attack := maxi(0, int(intent.get("attack", 0)))
+	if attack <= 0:
+		return {}
+	var visible_hp := maxi(0, player_hp)
+	if visible_hp <= 0:
+		return {}
+	var visible_armor := maxi(0, player_armor)
+	var blocked := mini(attack, visible_armor)
+	var hp_loss := mini(visible_hp, maxi(0, attack - blocked))
+	if blocked <= 0 and hp_loss <= 0:
+		return {}
+	return {
+		"attack": attack,
+		"blocked": blocked,
+		"hp_loss": hp_loss,
+		"current_hp": visible_hp,
+		"current_armor": visible_armor,
+		"fully_blocked": hp_loss <= 0 and blocked > 0,
+	}
+
+
+func _enemy_intent_preview_data(intent: Dictionary, enemy_hp: int, enemy_max_hp: int) -> Dictionary:
+	if intent.is_empty():
+		return {}
+	var block := maxi(0, int(intent.get("block", 0)))
+	if block <= 0:
+		return {}
+	var max_hp := maxi(1, enemy_max_hp)
+	return {
+		"block": block,
+		"current_hp": maxi(0, enemy_hp),
+		"max_hp": max_hp,
+		"entries": [
+			{
+				"kind": "block",
+				"amount": block,
+				"scale_max": max_hp,
+			},
+		],
+	}
+
+
+func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
+	if not _should_show_intent_damage_preview():
+		return
+	var attack := maxi(0, int(preview.get("attack", 0)))
+	var blocked := maxi(0, int(preview.get("blocked", 0)))
+	var hp_loss := maxi(0, int(preview.get("hp_loss", 0)))
+	if attack <= 0:
+		return
+	_status_label.text = "%s | Incoming %d (Block %d, HP Loss %d)." % [
+		RunState.level_sequence_label(),
+		attack,
+		blocked,
+		hp_loss,
+	]
+	_status_label.modulate = STATUS_COLOR_WARNING
+	if _enemy_state != null:
+		var intent := _enemy_state.get_current_intent()
+		if not intent.is_empty():
+			_turn_summary_label.text = _format_intent(intent)
+	_start_enemy_intent_hover_emphasis()
+
+
+func _on_enemy_block_preview_hovered() -> void:
+	if not _should_show_intent_damage_preview():
+		return
+	if _enemy_block_intent_preview.is_empty():
+		return
+	var block := maxi(0, int(_enemy_block_intent_preview.get("block", 0)))
+	if block <= 0:
+		return
+	_status_label.text = "%s | Enemy will gain %d block." % [
+		RunState.level_sequence_label(),
+		block,
+	]
+	_status_label.modulate = STATUS_COLOR_WARNING
+	if _enemy_state != null:
+		var intent := _enemy_state.get_current_intent()
+		if not intent.is_empty():
+			_turn_summary_label.text = _format_intent(intent)
+	_start_enemy_intent_hover_emphasis()
+
+
+func _on_intent_damage_preview_hover_ended() -> void:
+	_stop_enemy_intent_hover_emphasis()
+
+
+func _start_enemy_intent_hover_emphasis() -> void:
+	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
+		_intent_preview_emphasis_tween.kill()
+	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_intent_label.scale = Vector2.ONE
+	_intent_badge.scale = Vector2.ONE
+	_intent_preview_emphasis_tween = create_tween()
+	_intent_preview_emphasis_tween.set_parallel(true)
+	_intent_preview_emphasis_tween.set_loops()
+	_intent_preview_emphasis_tween.tween_property(_intent_row, "modulate", Color(1.0, 0.30, 0.24, 1.0), 0.12)
+	_intent_preview_emphasis_tween.tween_property(_intent_row, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.16).set_delay(0.12)
+	_intent_preview_emphasis_tween.tween_property(_intent_label, "scale", Vector2(1.22, 1.22), 0.12)
+	_intent_preview_emphasis_tween.tween_property(_intent_label, "scale", Vector2.ONE, 0.18).set_delay(0.12)
+	_intent_preview_emphasis_tween.tween_property(_intent_badge, "scale", Vector2(1.28, 1.28), 0.12)
+	_intent_preview_emphasis_tween.tween_property(_intent_badge, "scale", Vector2.ONE, 0.18).set_delay(0.12)
+
+
+func _stop_enemy_intent_hover_emphasis() -> void:
+	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
+		_intent_preview_emphasis_tween.kill()
+	_intent_preview_emphasis_tween = null
+	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_intent_label.scale = Vector2.ONE
+	_intent_badge.scale = Vector2.ONE
+
+
+func _ensure_enemy_block_preview_nodes() -> void:
+	if _enemy_hp_row == null:
+		return
+	if _enemy_block_preview_button == null or not is_instance_valid(_enemy_block_preview_button):
+		_enemy_block_preview_button = Button.new()
+		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
+		_enemy_block_preview_button.text = ""
+		_enemy_block_preview_button.focus_mode = Control.FOCUS_NONE
+		_enemy_block_preview_button.visible = false
+		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		var clear_style := StyleBoxEmpty.new()
+		_enemy_block_preview_button.add_theme_stylebox_override("normal", clear_style)
+		_enemy_block_preview_button.add_theme_stylebox_override("hover", clear_style)
+		_enemy_block_preview_button.add_theme_stylebox_override("pressed", clear_style)
+		_enemy_block_preview_button.add_theme_stylebox_override("focus", clear_style)
+		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_hovered)
+		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
+	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
+		var existing_parent := _enemy_block_preview_button.get_parent()
+		if existing_parent != null:
+			existing_parent.remove_child(_enemy_block_preview_button)
+		_enemy_hp_row.add_child(_enemy_block_preview_button)
+	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
+		_enemy_block_preview_fill = ColorRect.new()
+		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
+		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 1.0)
+		_enemy_block_preview_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_fill.visible = false
+	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
+		var existing_fill_parent := _enemy_block_preview_fill.get_parent()
+		if existing_fill_parent != null:
+			existing_fill_parent.remove_child(_enemy_block_preview_fill)
+		_enemy_block_preview_button.add_child(_enemy_block_preview_fill)
+
+
+func _sync_enemy_block_intent_preview(preview: Dictionary) -> void:
+	_enemy_block_intent_preview = preview.duplicate(true)
+	_layout_enemy_block_intent_preview()
+
+
+func _layout_enemy_block_intent_preview() -> void:
+	_ensure_enemy_block_preview_nodes()
+	if _enemy_block_preview_button != null and is_instance_valid(_enemy_block_preview_button):
+		_enemy_block_preview_button.visible = false
+		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
+		_enemy_block_preview_fill.visible = false
+	_stop_enemy_block_preview_pulse()
+	if _enemy_block_intent_preview.is_empty():
+		return
+	if _enemy_hp_bar == null or _enemy_block_preview_button == null or _enemy_block_preview_fill == null:
+		return
+	var block := maxi(0, int(_enemy_block_intent_preview.get("block", 0)))
+	var max_hp := maxi(1, int(_enemy_block_intent_preview.get("max_hp", int(_enemy_hp_bar.max_value))))
+	if block <= 0:
+		return
+	var bar_width := maxf(0.0, _enemy_hp_bar.size.x)
+	if bar_width <= 0.0:
+		return
+	var preview_width := bar_width * clampf(float(block) / float(max_hp), 0.0, 1.0)
+	if preview_width <= 0.0:
+		return
+	_enemy_block_preview_button.position = _enemy_hp_bar.position + Vector2(0.0, -ENEMY_BLOCK_PREVIEW_HEIGHT - ENEMY_BLOCK_PREVIEW_GAP)
+	_enemy_block_preview_button.size = Vector2(preview_width, ENEMY_BLOCK_PREVIEW_HEIGHT)
+	_enemy_block_preview_button.visible = true
+	_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	_enemy_block_preview_fill.position = Vector2.ZERO
+	_enemy_block_preview_fill.size = _enemy_block_preview_button.size
+	_enemy_block_preview_fill.visible = true
+	_start_enemy_block_preview_pulse()
+
+
+func _start_enemy_block_preview_pulse() -> void:
+	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
+		return
+	_stop_enemy_block_preview_pulse()
+	_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_enemy_block_preview_pulse_tween = _enemy_block_preview_fill.create_tween()
+	_enemy_block_preview_pulse_tween.set_loops()
+	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 0.0, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
+	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 1.0, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
+
+
+func _stop_enemy_block_preview_pulse() -> void:
+	if _enemy_block_preview_pulse_tween != null and is_instance_valid(_enemy_block_preview_pulse_tween):
+		_enemy_block_preview_pulse_tween.kill()
+	_enemy_block_preview_pulse_tween = null
+	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
+		_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
 func _format_intent(intent: Dictionary) -> String:
 	if _turn_logger != null:
 		return _turn_logger.format_intent(intent)
@@ -2240,8 +2477,19 @@ func debug_console_log(message: String) -> void:
 
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	var player_display_values := {}
+	var visible_player_hp := int(_player_state.current_hp)
+	var visible_player_armor := int(_player_state.armor)
 	if not _staged_hud_values.is_empty():
-		player_display_values["current_hp"] = int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
+		visible_player_hp = int(_staged_hud_values.get("player_hp", visible_player_hp))
+		visible_player_armor = int(_staged_hud_values.get("player_armor", visible_player_armor))
+	player_display_values["current_hp"] = visible_player_hp
+	var intent_preview: Dictionary = {}
+	if _should_show_intent_damage_preview():
+		intent_preview = _intent_damage_preview_data(
+			_enemy_state.get_current_intent(),
+			visible_player_hp,
+			visible_player_armor
+		)
 	_player_loadout_hud.update_player_data({
 		"player_state": _player_state,
 		"progression": progression_snapshot,
@@ -2250,6 +2498,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"selectable_equipment": true,
 		"selectable_consumables": true,
 		"display_values": player_display_values,
+		"intent_damage_preview": intent_preview,
 		"combat_mastery_feedback_totals": _combat_mastery_preview_totals.duplicate(true),
 	})
 	_apply_loadout_rail_layout()
@@ -2429,6 +2678,7 @@ func _apply_combat_layout() -> void:
 		_drag_move_time_left() if _drag_active() else _timer_ready_seconds(),
 		TIMER_STATE_ACTIVE if _drag_active() else TIMER_STATE_READY
 	)
+	_layout_enemy_block_intent_preview()
 
 
 func _apply_combat_mastery_panel_layout() -> void:

@@ -8,6 +8,8 @@ signal consumable_slot_selected(slot_index: int)
 signal sell_slot_requested(slot_type: String, slot_index: int)
 signal slot_hover_started(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2)
 signal slot_hover_ended()
+signal intent_preview_hovered(preview: Dictionary)
+signal intent_preview_hover_ended()
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
@@ -61,6 +63,9 @@ const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
+const INTENT_PREVIEW_MIN_SEGMENT_WIDTH := 6.0
+const INTENT_PREVIEW_PULSE_SECONDS := 0.26
+const ARMOR_PREVIEW_PULSE_SECONDS := 0.42
 
 var _visuals = null
 var _selected_equipment_slot := -1
@@ -78,6 +83,13 @@ var _hover_slot_index := -1
 var _hover_slot_title := ""
 var _hover_slot_description := ""
 var _layout_override: Dictionary = {}
+var _intent_damage_preview: Dictionary = {}
+var _intent_hp_danger_button: Button
+var _intent_hp_danger_empty: ColorRect
+var _intent_hp_danger_fill: ColorRect
+var _intent_armor_risk_rect: ColorRect
+var _intent_hp_danger_pulse_tween: Tween
+var _intent_armor_risk_tween: Tween
 
 
 func set_selected_equipment_slot(slot_index: int) -> void:
@@ -95,7 +107,9 @@ func set_visual_registry(visuals: VisualRegistry) -> void:
 func bind_player_hud(nodes: Dictionary) -> void:
 	_hud_nodes = nodes
 	_ensure_slot_detail_popover()
+	_ensure_intent_damage_preview_nodes()
 	apply_player_hud_chrome(_hud_nodes)
+	_layout_intent_damage_preview()
 
 
 func set_player_hud_layout_override(layout_override: Dictionary) -> void:
@@ -120,6 +134,7 @@ func update_player_hud_layout() -> void:
 		return
 	apply_player_hud_layout(_hud_nodes, _layout_override)
 	_update_slot_detail_bubble()
+	_layout_intent_damage_preview()
 
 
 func handle_global_click(global_point: Vector2) -> bool:
@@ -203,6 +218,7 @@ func _render_player_data() -> void:
 			hp_bar.value = float(maxi(0, current_hp))
 		if hp_label != null:
 			hp_label.text = "HP %d / %d" % [current_hp, max_hp]
+	_sync_intent_damage_preview(Dictionary(_player_data.get("intent_damage_preview", {})))
 
 	var hero := _hud_nodes.get("hero_portrait") as TextureRect
 	if hero != null and hero_portrait != null:
@@ -746,6 +762,176 @@ func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_constant_override("outline_size", 1)
 	label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
+
+
+func _sync_intent_damage_preview(preview: Dictionary) -> void:
+	_intent_damage_preview = preview.duplicate(true)
+	_ensure_intent_damage_preview_nodes()
+	_layout_intent_damage_preview()
+
+
+func _ensure_intent_damage_preview_nodes() -> void:
+	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
+	if hp_bar != null:
+		if _intent_hp_danger_button == null or not is_instance_valid(_intent_hp_danger_button):
+			_intent_hp_danger_button = Button.new()
+			_intent_hp_danger_button.name = "HpDangerPreviewButton"
+			_intent_hp_danger_button.text = ""
+			_intent_hp_danger_button.focus_mode = Control.FOCUS_NONE
+			_intent_hp_danger_button.visible = false
+			_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_hp_danger_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			var clear_style := StyleBoxEmpty.new()
+			_intent_hp_danger_button.add_theme_stylebox_override("normal", clear_style)
+			_intent_hp_danger_button.add_theme_stylebox_override("hover", clear_style)
+			_intent_hp_danger_button.add_theme_stylebox_override("pressed", clear_style)
+			_intent_hp_danger_button.add_theme_stylebox_override("focus", clear_style)
+			_intent_hp_danger_button.mouse_entered.connect(_on_intent_damage_preview_hovered)
+			_intent_hp_danger_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
+		if _intent_hp_danger_button.get_parent() != hp_bar:
+			var existing_parent := _intent_hp_danger_button.get_parent()
+			if existing_parent != null:
+				existing_parent.remove_child(_intent_hp_danger_button)
+			hp_bar.add_child(_intent_hp_danger_button)
+		if _intent_hp_danger_empty == null or not is_instance_valid(_intent_hp_danger_empty):
+			_intent_hp_danger_empty = ColorRect.new()
+			_intent_hp_danger_empty.name = "HpDangerPreviewEmpty"
+			_intent_hp_danger_empty.color = Color(0.04, 0.07, 0.10, 1.0)
+			_intent_hp_danger_empty.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_hp_danger_empty.visible = false
+		if _intent_hp_danger_empty.get_parent() != _intent_hp_danger_button:
+			var existing_empty_parent := _intent_hp_danger_empty.get_parent()
+			if existing_empty_parent != null:
+				existing_empty_parent.remove_child(_intent_hp_danger_empty)
+			_intent_hp_danger_button.add_child(_intent_hp_danger_empty)
+		if _intent_hp_danger_fill == null or not is_instance_valid(_intent_hp_danger_fill):
+			_intent_hp_danger_fill = ColorRect.new()
+			_intent_hp_danger_fill.name = "HpDangerPreviewFill"
+			_intent_hp_danger_fill.color = Color(1.0, 0.02, 0.02, 1.0)
+			_intent_hp_danger_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_hp_danger_fill.visible = false
+		if _intent_hp_danger_fill.get_parent() != _intent_hp_danger_button:
+			var existing_fill_parent := _intent_hp_danger_fill.get_parent()
+			if existing_fill_parent != null:
+				existing_fill_parent.remove_child(_intent_hp_danger_fill)
+			_intent_hp_danger_button.add_child(_intent_hp_danger_fill)
+
+	var armor_target := _hud_nodes.get("armor_badge") as Control
+	if armor_target == null:
+		armor_target = _hud_nodes.get("armor_bar") as Control
+	if armor_target != null:
+		if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
+			_intent_armor_risk_rect = ColorRect.new()
+			_intent_armor_risk_rect.name = "ArmorRiskPreviewPulse"
+			_intent_armor_risk_rect.color = Color(1.0, 0.84, 0.36, 0.0)
+			_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_armor_risk_rect.visible = false
+		if _intent_armor_risk_rect.get_parent() != armor_target:
+			var existing_armor_parent := _intent_armor_risk_rect.get_parent()
+			if existing_armor_parent != null:
+				existing_armor_parent.remove_child(_intent_armor_risk_rect)
+			armor_target.add_child(_intent_armor_risk_rect)
+		_apply_rect(_intent_armor_risk_rect, Rect2(Vector2.ZERO, armor_target.size))
+
+
+func _layout_intent_damage_preview() -> void:
+	if _intent_hp_danger_button != null and is_instance_valid(_intent_hp_danger_button):
+		_intent_hp_danger_button.visible = false
+		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
+		_intent_hp_danger_fill.visible = false
+	if _intent_hp_danger_empty != null and is_instance_valid(_intent_hp_danger_empty):
+		_intent_hp_danger_empty.visible = false
+	_stop_intent_hp_danger_pulse()
+	_set_armor_risk_highlight(false)
+	if _intent_damage_preview.is_empty():
+		return
+	var hp_loss := maxi(0, int(_intent_damage_preview.get("hp_loss", 0)))
+	var fully_blocked := bool(_intent_damage_preview.get("fully_blocked", false))
+	if hp_loss > 0:
+		var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
+		if hp_bar == null or _intent_hp_danger_button == null or _intent_hp_danger_empty == null or _intent_hp_danger_fill == null:
+			return
+		var bar_width := maxf(0.0, hp_bar.size.x)
+		var bar_height := maxf(0.0, hp_bar.size.y)
+		if bar_width <= 0.0 or bar_height <= 0.0:
+			return
+		var max_hp := maxf(1.0, hp_bar.max_value)
+		var current_hp := float(maxi(0, int(_intent_damage_preview.get("current_hp", int(round(hp_bar.value))))))
+		var fill_width := bar_width * clampf(current_hp / max_hp, 0.0, 1.0)
+		var segment_width := bar_width * clampf(float(hp_loss) / max_hp, 0.0, 1.0)
+		segment_width = clampf(segment_width, 0.0, fill_width)
+		if segment_width > 0.0:
+			segment_width = maxf(segment_width, INTENT_PREVIEW_MIN_SEGMENT_WIDTH)
+			segment_width = minf(segment_width, fill_width)
+		if segment_width <= 0.0:
+			return
+		var segment_x := maxf(0.0, fill_width - segment_width)
+		_intent_hp_danger_button.position = Vector2(segment_x, 0.0)
+		_intent_hp_danger_button.size = Vector2(segment_width, bar_height)
+		_intent_hp_danger_button.visible = true
+		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		_intent_hp_danger_empty.visible = true
+		_intent_hp_danger_empty.position = Vector2.ZERO
+		_intent_hp_danger_empty.size = _intent_hp_danger_button.size
+		_intent_hp_danger_fill.visible = true
+		_intent_hp_danger_fill.position = Vector2.ZERO
+		_intent_hp_danger_fill.size = _intent_hp_danger_button.size
+		_start_intent_hp_danger_pulse()
+		return
+	if fully_blocked:
+		_set_armor_risk_highlight(true)
+
+
+func _start_intent_hp_danger_pulse() -> void:
+	if _intent_hp_danger_fill == null or not is_instance_valid(_intent_hp_danger_fill):
+		return
+	_stop_intent_hp_danger_pulse()
+	_intent_hp_danger_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_intent_hp_danger_pulse_tween = _intent_hp_danger_fill.create_tween()
+	_intent_hp_danger_pulse_tween.set_loops()
+	_intent_hp_danger_pulse_tween.tween_property(_intent_hp_danger_fill, "modulate:a", 0.0, INTENT_PREVIEW_PULSE_SECONDS)
+	_intent_hp_danger_pulse_tween.tween_property(_intent_hp_danger_fill, "modulate:a", 1.0, INTENT_PREVIEW_PULSE_SECONDS)
+
+
+func _stop_intent_hp_danger_pulse() -> void:
+	if _intent_hp_danger_pulse_tween != null and is_instance_valid(_intent_hp_danger_pulse_tween):
+		_intent_hp_danger_pulse_tween.kill()
+	_intent_hp_danger_pulse_tween = null
+	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
+		_intent_hp_danger_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
+func _set_armor_risk_highlight(enabled: bool) -> void:
+	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
+		return
+	_intent_armor_risk_rect.visible = enabled
+	if enabled:
+		_intent_armor_risk_rect.position = Vector2.ZERO
+		var parent := _intent_armor_risk_rect.get_parent() as Control
+		if parent != null:
+			_intent_armor_risk_rect.size = parent.size
+		if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
+			_intent_armor_risk_tween.kill()
+		_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.78)
+		_intent_armor_risk_tween = _intent_armor_risk_rect.create_tween()
+		_intent_armor_risk_tween.set_loops()
+		_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.26, ARMOR_PREVIEW_PULSE_SECONDS)
+		_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.78, ARMOR_PREVIEW_PULSE_SECONDS)
+		return
+	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
+		_intent_armor_risk_tween.kill()
+	_intent_armor_risk_tween = null
+
+
+func _on_intent_damage_preview_hovered() -> void:
+	if _intent_damage_preview.is_empty():
+		return
+	intent_preview_hovered.emit(_intent_damage_preview.duplicate(true))
+
+
+func _on_intent_damage_preview_hover_ended() -> void:
+	intent_preview_hover_ended.emit()
 
 
 func _make_slot(index: int, filled: bool, slot_label: String, selectable_label: String = "") -> Control:

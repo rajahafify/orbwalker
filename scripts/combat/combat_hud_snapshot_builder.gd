@@ -9,6 +9,7 @@ func build_snapshot(data: Dictionary) -> Dictionary:
 	var enemy_max_hp := maxi(1, int(data.get("enemy_max_hp", 1)))
 	var enemy_turn_block := int(data.get("enemy_turn_block", 0))
 	var enemy_intent_text := String(data.get("enemy_intent_text", ""))
+	var enemy_intent_preview: Dictionary = data.get("enemy_intent_preview", {})
 	var enemy_texture = data.get("enemy_texture", null)
 	var combat_turn_index := int(data.get("combat_turn_index", 0))
 	var combat_phase_name := String(data.get("combat_phase_name", "N/A"))
@@ -40,6 +41,7 @@ func build_snapshot(data: Dictionary) -> Dictionary:
 				enemy_max_hp,
 				enemy_turn_block,
 			],
+			"enemy_intent_preview": enemy_intent_preview,
 		},
 		"tempo_row": {
 			"phase_text": "Turn %d  %s" % [combat_turn_index, combat_phase_name],
