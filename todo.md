@@ -537,51 +537,73 @@ Tasks:
 - [x] AR-17 Combat outcome and transition boundary review. Source review found a narrow behavior-preserving transition glue boundary inside `combat_player_controller.gd`; `_trace_and_change_scene_to_target(...)` now owns duplicated combat outcome trace/change-scene calls for standard Continue, boss reward claim, and boss reward skip while `RunState` keeps route semantics and `CombatOutcomeOverlay` keeps presentation. Automated Godot MCP validation passed, and user manual QA found no issues or errors.
 - [x] AR-18 Architecture review closeout before Milestone 10. Audited the final AR tracker state, current validation surfaces, deleted historical debug/fallback scenes, retained diagnostics, docs/wiki consistency, route/content/scene contracts, and remaining non-AR QA gaps. AR-01 through AR-17 are closed; remaining work moves to Milestone 10 balance/QA or later scoped cleanup.
 
-## Milestone 10: Balance Pass And QA
+## Milestone 10: Short-Term Playtest Balance Pass
 
-Goal: Stabilize the prototype into a coherent playable vertical slice.
+Status: Not started.
 
-Primary deliverable: A balanced prototype where level 1 enemies are killable in roughly 3 turns by expert play, shops are useful, bosses test builds, and the run can be won or lost fairly.
+Goal: Make the current run loop easier to playtest before adding meta progression.
+
+Primary deliverable: A temporary balance layer where gold income, shop access, damage, enemy survivability, and debug levers let the team repeatedly test items, boosters, relics, and builds without pretending the economy is final.
+
+Scope note: This milestone is a playtest-enabling pass, not the final balance pass. Meta progression will change power curves, unlock pacing, and economy pressure, so deep final tuning should happen after meta progression exists.
 
 Tasks:
 
-- [ ] Tune board spawn weights.
-  - Deliverable: Spawn table for all orb types and a selected prototype gold spawn rate.
-  - Acceptance: Gold feels meaningful and rare without starving the economy.
+- [ ] Add or expose playtest balance levers.
+  - Deliverable: Configurable values for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test settings.
+  - Acceptance: Designers can make item and shop testing easier without rewriting core systems.
 
-- [ ] Tune starting stats.
-  - Deliverable: Final prototype values for max HP, base orb values, move timer, slots, and initial gold if any.
-  - Acceptance: Starting state matches the GDD unless playtesting justifies a documented change.
+- [ ] Tune early gold access.
+  - Deliverable: Temporary prototype settings for gold orb value/spawn rate, starting gold, fight rewards, shop prices, or booster affordability.
+  - Acceptance: After the first enemy, a normal playtest run can usually buy at least one item, booster, consumable, or useful shop option.
 
-- [ ] Tune normal enemy stats.
-  - Deliverable: HP, damage, block, and moveset values for each dungeon level.
-  - Acceptance: Level 1 normal enemies are killable in about 3 turns by expert play while still threatening mistakes.
+- [ ] Tune early combat survivability.
+  - Deliverable: Temporary level 1-2 enemy HP, damage, block, and player starting-stat adjustments.
+  - Acceptance: Runs survive long enough to reach multiple shops and test build decisions, while mistakes can still matter.
 
-- [ ] Tune boss stats.
-  - Deliverable: HP, damage, block, special rules, and scaling values for each prototype boss.
-  - Acceptance: Bosses act as distinct checks rather than larger normal enemies.
+- [ ] Tune item and relic test access.
+  - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and boosters practical to inspect during repeated runs.
+  - Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.
 
-- [ ] Tune shop prices and reroll costs.
-  - Deliverable: Price table by rarity and dungeon level.
-  - Acceptance: The player regularly makes tradeoffs between equipment, boosters, mastery, consumables, relics, and rerolls.
+- [ ] Record first-pass balance assumptions.
+  - Deliverable: Short notes in `docs/test_plan.md` or relevant wiki pages describing temporary balance values, what they are meant to test, and what is intentionally not final.
+  - Acceptance: Future meta progression work can distinguish test scaffolding from accepted design.
 
-- [ ] Tune equipment and relic strength.
-  - Deliverable: First balance pass on all implemented effects.
-  - Acceptance: No single common item trivializes the run, and relics feel run-changing.
+- [ ] Run focused playtest loops.
+  - Deliverable: Recorded notes from repeated level 1 and early-run playtests covering gold earned, shop purchases, deaths, item access, and major blockers.
+  - Acceptance: The team has enough evidence to start meta progression on a playable baseline.
 
-- [ ] Run rules QA.
-  - Deliverable: Checklist results for board generation, movement, matching, cascades, combat order, armor expiration, enemy block, death prevention, shop, boosters, and boss rewards.
-  - Acceptance: Core GDD rules behave correctly across repeated runs.
+## Milestone 11: Meta Progression Foundation
 
-- [ ] Run content QA.
-  - Deliverable: Checklist results for every equipment item, mastery card, consumable, relic, enemy, boss, and booster pool.
-  - Acceptance: Every content item can appear, be used or bought, and resolve its effect without errors.
+Status: Not started.
 
-- [ ] Playtest full runs.
-  - Deliverable: At least 10 recorded prototype runs with notes for death point, build choices, gold earned, bosses faced, and major balance issues.
-  - Acceptance: The team has enough data to decide whether the vertical slice is fun, readable, and worth expanding.
+Goal: Add a mastery/meta layer that gives long-term structure to repeated runs after the core loop is easier to playtest.
 
-## Milestone 11: First Playable Build
+Primary deliverable: A first meta progression system that can support equipment unlocks, mastery growth, or other persistent goals without hiding core-loop balance problems.
+
+Tasks:
+
+- [ ] Define meta progression scope.
+  - Deliverable: Selected first meta system, such as equipment unlocks, mastery progression, account upgrades, hero growth, or content pool expansion.
+  - Acceptance: The system has a clear player-facing purpose and does not duplicate existing run-only mastery cards.
+
+- [ ] Define persistence model.
+  - Deliverable: Runtime state shape for meta progress, unlock flags, earned currency or XP, and reset/new-run behavior.
+  - Acceptance: Meta data can persist across runs separately from temporary `RunState` data.
+
+- [ ] Implement first unlock/progression loop.
+  - Deliverable: A small playable vertical slice where completing fights, bosses, runs, or challenges advances meta progress and changes future run options.
+  - Acceptance: The player has a reason to start another run beyond one-run victory or defeat.
+
+- [ ] Connect meta progression to content access.
+  - Deliverable: Equipment, relic, mastery, consumable, hero, or dungeon content can be gated or expanded by meta state.
+  - Acceptance: Unlocks affect future runs in an understandable way without breaking current shop/combat flows.
+
+- [ ] Validate meta progression with the temporary balance layer.
+  - Deliverable: Playtest notes showing how meta progress changes run difficulty, item access, and economy pressure.
+  - Acceptance: Remaining balance work is documented as post-meta tuning rather than mixed with initial system implementation.
+
+## Milestone 12: First Playable Build
 
 Goal: Package and document the first playable prototype.
 

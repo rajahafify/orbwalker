@@ -426,19 +426,29 @@ Verification notes (2026-04-30, character art polish pass):
   - interactive progression to first boss in runtime combat (to observe live swap from normal-enemy portrait to boss portrait during real run advancement),
   - interactive shop-step runtime check to confirm footer hero portrait visually matches combat portrait in the same run session.
 
-## Milestone 10: Balance And Regression
+## Milestone 10: Short-Term Playtest Balance Pass
 
-- [ ] Level 1 normal enemies are killable in roughly 3 turns by expert play.
-- [ ] Mistakes are punished without feeling immediately fatal.
-- [ ] Bosses feel like distinct checks.
-- [ ] Gold income supports meaningful shop decisions.
-- [ ] Shop prices create tradeoffs between equipment, mastery, consumables, boosters, relics, and rerolls.
-- [ ] No single common equipment item trivializes the run.
-- [ ] Relics feel stronger and broader than equipment.
-- [ ] At least 10 full prototype runs are recorded with notes.
-- [ ] Major balance issues are logged with reproduction notes.
+- [ ] Playtest balance levers exist for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test values.
+- [ ] Early gold access lets a normal playtest run usually buy at least one item, booster, consumable, or useful shop option after the first enemy.
+- [ ] Early combat survivability lets runs reach multiple shops and build decisions without removing all threat.
+- [ ] Equipment, mastery cards, consumables, relics, and boosters can be exercised without many economy-starved runs.
+- [ ] Temporary balance assumptions are documented separately from final economy/design decisions.
+- [ ] Focused level 1 and early-run playtest loops record gold earned, shop purchases, deaths, item access, and major blockers.
 
-## Milestone 11: First Playable Build
+Verification notes (2026-05-05):
+- Milestone 10 was narrowed from broad final balance/regression into a short-term playtest balance pass before meta progression. This pass should make item/shop/content testing practical; it should not be treated as final economy balance.
+- Meta progression moved into Milestone 11 because unlocks, mastery growth, or other persistent systems will change power curves and economy pressure.
+- No runtime validation was run for this planning update.
+
+## Milestone 11: Meta Progression Foundation
+
+- [ ] Meta progression scope is selected.
+- [ ] Meta progress persists separately from temporary run state.
+- [ ] Completing fights, bosses, runs, or challenges can advance a first progression loop.
+- [ ] Meta state can unlock or expand future run options.
+- [ ] Playtest notes capture how meta progression changes difficulty, item access, and economy pressure.
+
+## Milestone 12: First Playable Build
 
 - [ ] Exported build launches.
 - [ ] A new run can be started without debug tools.

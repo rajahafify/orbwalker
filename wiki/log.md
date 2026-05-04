@@ -1578,3 +1578,13 @@ Append-only history of wiki operations.
   - The source highlight reuses the mastery detail source filtering, stays presentation-only, and clears on card hover exit or broader mastery-hover UI clears.
 - Validation:
   - Godot MCP `view_script` and a focused hover-source probe passed after forcing the editor resource filesystem to rescan the externally edited HUD script. The probe confirmed Fire card hover lights only the matching equipment source, Gold card hover lights only the matching relic source, and hover exit clears both.
+
+## [2026-05-05] docs-change | Milestone 10 Playtest Balance Scope
+
+- Source: `todo.md`, `docs/test_plan.md`, `wiki/index.md`
+- Changed:
+  - Narrowed Milestone 10 to a short-term playtest balance pass focused on gold access, shop affordability, early survivability, content test access, and balance levers.
+  - Added Milestone 11 as the meta progression foundation before the first playable build, with persistence and unlock/access scope.
+  - Shifted first playable build packaging to Milestone 12.
+- Notes:
+  - This was a planning/documentation update only; no runtime validation was run.
