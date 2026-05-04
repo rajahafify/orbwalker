@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-04 - AR-18 Architecture Review Closeout
+
+- Closed the architecture-review tracker before Milestone 10 by adding AR-18, confirming AR-01 through AR-17 are documented, separating historical deleted-scene evidence from current validation surfaces, and classifying remaining work as Milestone 10 QA or later scoped cleanup. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`)
+- Updated [[known-issues]] and [[index]] to narrow resolved AR route/touch gaps, document retained FlowTrace/ResolveTrace/AR-01 diagnostics as intentional QA tools, and point the current project focus at Milestone 10 balance and QA. (source: `wiki/known-issues.md`, `wiki/index.md`)
+
 ## 2026-05-04 - AR-13 Board Drag Input Handler Extraction
 
 - Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/board_drag_input_handler.gd`, which now owns board-local mouse/touch drag event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, move-timer countdown state, drag visual reset/abort, and match-glow refresh. `scripts/combat/combat_player_controller.gd` keeps input phase authority, timer/status presentation, resolve kickoff, combat math, presentation, VFX/layout/HUD, debug callbacks, `/skip`, routing, and scene transitions. (source: `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_player_controller.gd`)

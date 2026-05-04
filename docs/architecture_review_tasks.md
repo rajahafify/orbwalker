@@ -131,7 +131,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `CombatLayoutRoot`, `BoardPanel`, `BoardSurface`, `PlayerHudSection`, `DebugOverlay`, and `OutcomeSummaryPanel`.
   - Focused layout probe preserved key formulas: `1080x1920` board `480x576`, `1080x2400` board `880x1056`, tall board panel `1048x1064`, wide viewport root centering/scale, and compact/right-side debug overlay anchoring.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
-  - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - `play_scene main` launched with desktop menu WAV playback and clean recent runtime output. Final `get_godot_errors` still carried two stale enum diagnostics from an earlier failed MCP editor-script probe; focused `view_script` refreshes for `run_state.gd` and `ar01_combat_result_probe.gd` passed, and no project runtime error appeared in the rerun log.
   - Manual visual QA remains required for overlap checks, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel.
 - Docs/wiki impact: `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new layout helper boundary and validation evidence.
 
@@ -267,3 +267,21 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - User manual QA passed with no issues and no errors after checking normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior.
 - Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the narrowed combat outcome transition glue boundary.
+
+## AR-18: Architecture Review Closeout Before Milestone 10
+
+- Status: `done`
+- Owner/scope: Final architecture-review closeout audit before Milestone 10 balance work. Scope is limited to tracker/docs/wiki consistency, remaining AR validation gaps, obsolete temporary diagnostics, deleted validation surfaces, and current source contract checks. No gameplay/runtime behavior changes were made.
+- Progress: 2026-05-04 added the final closeout entry after confirming no AR-18 entry existed. The audit found that AR-01 through AR-17 are complete and documented; historical dated notes still mention deleted surfaces such as `board_debug.tscn`, `boss_relic_reward.tscn`, `shop_placeholder.tscn`, and `run_summary_placeholder.tscn`, but AR-08 and later notes already define the current player-facing validation surfaces. Current architecture handoff to Milestone 10 is `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, `final_run_summary.tscn`, retained AR-01 combat result-envelope probes, RunState route probes, and content/scene contract probes.
+- Closeout classification:
+  - Covered by AR evidence: baseline and post-change route timing capture, combat instantiate stall regression, shared HUD combat/shop behavior, RunState route invariants, dictionary-backed `ContentRegistry` alignment, per-batch `get_godot_errors`, and tracker/wiki synchronization through AR-18.
+  - Still open for Milestone 10 or later QA: board pop-in/perceived transition feel on target hardware, full desktop/mobile overlap sweep, seeded full-run reproducibility, Merchant Compass free-first-reroll behavior, economy/balance tuning, Android audio loop-length listening, and first-playable run/content QA.
+  - Retained intentionally for QA: `RunState` FlowTrace logs, combat `ResolveTrace` logs, and the feature-flagged `scripts/debug/ar01_combat_result_probe.gd`; these are documented diagnostics for Milestone 10 QA rather than accidental architecture ownership boundaries.
+- Blockers: None for closing the AR tracker. Remaining items are Milestone 10 balance/QA or future scoped cleanup, not AR closeout blockers.
+- Validation:
+  - `git status --short --branch` confirmed `codex/ar-18-architecture-review-closeout`; `git diff --check` passed before and after documentation edits.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd`, `res://scripts/core/run_state.gd`, and `res://scripts/debug/ar01_combat_result_probe.gd`.
+  - Focused route/content/scene closeout probes confirmed current scenes exist, deleted debug/fallback scenes are absent, `RunState` route constants point to combat/shop/final summary, route invariants preserve normal victory to shop, shop advance to combat, boss reward in combat, boss reward skip to shop, final victory to final summary, and defeat to final summary, and `ContentRegistry.validate_player_state_content()` returns no errors.
+  - Retained AR-01 combat result-envelope probe still matched baseline values.
+  - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/index.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the closeout and Milestone 10 handoff.
