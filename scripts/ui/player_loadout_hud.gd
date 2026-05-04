@@ -9,6 +9,7 @@ signal sell_slot_requested(slot_type: String, slot_index: int)
 signal slot_hover_started(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2)
 signal slot_hover_ended()
 signal intent_preview_hovered(preview: Dictionary)
+signal intent_block_preview_hovered(preview: Dictionary)
 signal intent_preview_hover_ended()
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
@@ -64,8 +65,8 @@ const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZ
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
 const INTENT_PREVIEW_MIN_SEGMENT_WIDTH := 6.0
-const INTENT_PREVIEW_PULSE_SECONDS := 0.26
-const ARMOR_PREVIEW_PULSE_SECONDS := 0.42
+const INTENT_PREVIEW_PULSE_SECONDS := 0.52
+const ARMOR_PREVIEW_PULSE_SECONDS := 0.84
 
 var _visuals = null
 var _selected_equipment_slot := -1
@@ -84,6 +85,7 @@ var _hover_slot_title := ""
 var _hover_slot_description := ""
 var _layout_override: Dictionary = {}
 var _intent_damage_preview: Dictionary = {}
+var _player_armor_overshield_rect: ColorRect
 var _intent_hp_danger_button: Button
 var _intent_hp_danger_empty: ColorRect
 var _intent_hp_danger_fill: ColorRect
@@ -134,6 +136,7 @@ func update_player_hud_layout() -> void:
 		return
 	apply_player_hud_layout(_hud_nodes, _layout_override)
 	_update_slot_detail_bubble()
+	_layout_player_armor_overshield(_current_visible_armor())
 	_layout_intent_damage_preview()
 
 
@@ -210,14 +213,17 @@ func _render_player_data() -> void:
 
 	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
 	var hp_label := _hud_nodes.get("hp_label") as Label
+	var current_armor := int(display_values.get("current_armor", 0))
 	if player_state != null:
 		var current_hp := int(display_values.get("current_hp", int(player_state.current_hp)))
 		var max_hp := int(player_state.max_hp)
+		current_armor = int(display_values.get("current_armor", int(player_state.armor)))
 		if hp_bar != null:
 			hp_bar.max_value = float(maxi(1, max_hp))
 			hp_bar.value = float(maxi(0, current_hp))
 		if hp_label != null:
 			hp_label.text = "HP %d / %d" % [current_hp, max_hp]
+	_layout_player_armor_overshield(maxi(0, current_armor))
 	_sync_intent_damage_preview(Dictionary(_player_data.get("intent_damage_preview", {})))
 
 	var hero := _hud_nodes.get("hero_portrait") as TextureRect
@@ -767,12 +773,34 @@ func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
 func _sync_intent_damage_preview(preview: Dictionary) -> void:
 	_intent_damage_preview = preview.duplicate(true)
 	_ensure_intent_damage_preview_nodes()
+	_layout_player_armor_overshield(_current_visible_armor())
 	_layout_intent_damage_preview()
+
+
+func _current_visible_armor() -> int:
+	var display_values: Dictionary = _player_data.get("display_values", {})
+	if display_values.has("current_armor"):
+		return maxi(0, int(display_values.get("current_armor", 0)))
+	var player_state = _player_data.get("player_state", null)
+	if player_state != null:
+		return maxi(0, int(player_state.armor))
+	return 0
 
 
 func _ensure_intent_damage_preview_nodes() -> void:
 	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
 	if hp_bar != null:
+		if _player_armor_overshield_rect == null or not is_instance_valid(_player_armor_overshield_rect):
+			_player_armor_overshield_rect = ColorRect.new()
+			_player_armor_overshield_rect.name = "PlayerArmorOvershieldFill"
+			_player_armor_overshield_rect.color = Color(0.86, 0.90, 0.94, 0.46)
+			_player_armor_overshield_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_player_armor_overshield_rect.visible = false
+		if _player_armor_overshield_rect.get_parent() != hp_bar:
+			var existing_overshield_parent := _player_armor_overshield_rect.get_parent()
+			if existing_overshield_parent != null:
+				existing_overshield_parent.remove_child(_player_armor_overshield_rect)
+			hp_bar.add_child(_player_armor_overshield_rect)
 		if _intent_hp_danger_button == null or not is_instance_valid(_intent_hp_danger_button):
 			_intent_hp_danger_button = Button.new()
 			_intent_hp_danger_button.name = "HpDangerPreviewButton"
@@ -816,22 +844,42 @@ func _ensure_intent_damage_preview_nodes() -> void:
 				existing_fill_parent.remove_child(_intent_hp_danger_fill)
 			_intent_hp_danger_button.add_child(_intent_hp_danger_fill)
 
-	var armor_target := _hud_nodes.get("armor_badge") as Control
-	if armor_target == null:
-		armor_target = _hud_nodes.get("armor_bar") as Control
-	if armor_target != null:
+	if hp_bar != null:
 		if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
 			_intent_armor_risk_rect = ColorRect.new()
-			_intent_armor_risk_rect.name = "ArmorRiskPreviewPulse"
-			_intent_armor_risk_rect.color = Color(1.0, 0.84, 0.36, 0.0)
+			_intent_armor_risk_rect.name = "PlayerBlockIntentPreviewFill"
+			_intent_armor_risk_rect.color = Color(0.86, 0.90, 0.94, 0.68)
 			_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_intent_armor_risk_rect.visible = false
-		if _intent_armor_risk_rect.get_parent() != armor_target:
+			_intent_armor_risk_rect.mouse_entered.connect(_on_intent_block_preview_hovered)
+			_intent_armor_risk_rect.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
+		if _intent_armor_risk_rect.get_parent() != hp_bar:
 			var existing_armor_parent := _intent_armor_risk_rect.get_parent()
 			if existing_armor_parent != null:
 				existing_armor_parent.remove_child(_intent_armor_risk_rect)
-			armor_target.add_child(_intent_armor_risk_rect)
-		_apply_rect(_intent_armor_risk_rect, Rect2(Vector2.ZERO, armor_target.size))
+			hp_bar.add_child(_intent_armor_risk_rect)
+
+
+func _layout_player_armor_overshield(armor: int) -> void:
+	if _player_armor_overshield_rect == null or not is_instance_valid(_player_armor_overshield_rect):
+		return
+	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
+	if hp_bar == null:
+		return
+	_player_armor_overshield_rect.visible = false
+	if armor <= 0:
+		return
+	var bar_width := maxf(0.0, hp_bar.size.x)
+	var bar_height := maxf(0.0, hp_bar.size.y)
+	var max_hp := maxf(1.0, hp_bar.max_value)
+	if bar_width <= 0.0 or bar_height <= 0.0:
+		return
+	var overshield_width := bar_width * clampf(float(armor) / max_hp, 0.0, 1.0)
+	if overshield_width <= 0.0:
+		return
+	_player_armor_overshield_rect.position = Vector2.ZERO
+	_player_armor_overshield_rect.size = Vector2(overshield_width, bar_height)
+	_player_armor_overshield_rect.visible = true
 
 
 func _layout_intent_damage_preview() -> void:
@@ -847,7 +895,10 @@ func _layout_intent_damage_preview() -> void:
 	if _intent_damage_preview.is_empty():
 		return
 	var hp_loss := maxi(0, int(_intent_damage_preview.get("hp_loss", 0)))
+	var blocked := maxi(0, int(_intent_damage_preview.get("blocked", 0)))
 	var fully_blocked := bool(_intent_damage_preview.get("fully_blocked", false))
+	if blocked > 0:
+		_layout_player_block_intent_preview(blocked)
 	if hp_loss > 0:
 		var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
 		if hp_bar == null or _intent_hp_danger_button == null or _intent_hp_danger_empty == null or _intent_hp_danger_fill == null:
@@ -880,7 +931,27 @@ func _layout_intent_damage_preview() -> void:
 		_start_intent_hp_danger_pulse()
 		return
 	if fully_blocked:
-		_set_armor_risk_highlight(true)
+		return
+
+
+func _layout_player_block_intent_preview(blocked: int) -> void:
+	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
+		return
+	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
+	if hp_bar == null:
+		return
+	var bar_width := maxf(0.0, hp_bar.size.x)
+	var max_hp := maxf(1.0, hp_bar.max_value)
+	if bar_width <= 0.0 or blocked <= 0:
+		return
+	var preview_width := bar_width * clampf(float(blocked) / max_hp, 0.0, 1.0)
+	if preview_width <= 0.0:
+		return
+	_intent_armor_risk_rect.visible = true
+	_intent_armor_risk_rect.position = Vector2.ZERO
+	_intent_armor_risk_rect.size = Vector2(preview_width, hp_bar.size.y)
+	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+	_start_player_block_intent_preview_pulse()
 
 
 func _start_intent_hp_danger_pulse() -> void:
@@ -906,28 +977,37 @@ func _set_armor_risk_highlight(enabled: bool) -> void:
 	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
 		return
 	_intent_armor_risk_rect.visible = enabled
+	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
 	if enabled:
-		_intent_armor_risk_rect.position = Vector2.ZERO
-		var parent := _intent_armor_risk_rect.get_parent() as Control
-		if parent != null:
-			_intent_armor_risk_rect.size = parent.size
-		if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
-			_intent_armor_risk_tween.kill()
-		_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.78)
-		_intent_armor_risk_tween = _intent_armor_risk_rect.create_tween()
-		_intent_armor_risk_tween.set_loops()
-		_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.26, ARMOR_PREVIEW_PULSE_SECONDS)
-		_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.78, ARMOR_PREVIEW_PULSE_SECONDS)
+		_start_player_block_intent_preview_pulse()
 		return
 	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
 		_intent_armor_risk_tween.kill()
 	_intent_armor_risk_tween = null
 
 
+func _start_player_block_intent_preview_pulse() -> void:
+	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
+		return
+	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
+		_intent_armor_risk_tween.kill()
+	_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	_intent_armor_risk_tween = _intent_armor_risk_rect.create_tween()
+	_intent_armor_risk_tween.set_loops()
+	_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.22, ARMOR_PREVIEW_PULSE_SECONDS)
+	_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.68, ARMOR_PREVIEW_PULSE_SECONDS)
+
+
 func _on_intent_damage_preview_hovered() -> void:
 	if _intent_damage_preview.is_empty():
 		return
 	intent_preview_hovered.emit(_intent_damage_preview.duplicate(true))
+
+
+func _on_intent_block_preview_hovered() -> void:
+	if _intent_damage_preview.is_empty():
+		return
+	intent_block_preview_hovered.emit(_intent_damage_preview.duplicate(true))
 
 
 func _on_intent_damage_preview_hover_ended() -> void:

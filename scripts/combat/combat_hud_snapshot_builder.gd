@@ -55,7 +55,7 @@ func build_snapshot(data: Dictionary) -> Dictionary:
 			"player_armor_max": maxi(30, player_armor + 10),
 			"player_armor_value": player_armor,
 			"player_armor_text": "%d / %d" % [player_armor, maxi(30, player_armor + 10)],
-			"armor_badge_visible": player_armor > 0,
+			"armor_badge_visible": false,
 			"armor_badge_text": "BLOCK +%d" % player_armor,
 			"attack_stat_text": "ATK  %d" % fire_orb_value,
 			"armor_stat_text": "ARM  %d" % armor_orb_value,

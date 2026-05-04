@@ -182,9 +182,9 @@ const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
 const TURN_REPLAY_STEP_SECONDS := 0.34
 const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
-const ENEMY_BLOCK_PREVIEW_HEIGHT := 8.0
-const ENEMY_BLOCK_PREVIEW_GAP := 4.0
-const ENEMY_BLOCK_PREVIEW_PULSE_SECONDS := 0.30
+const ENEMY_BLOCK_PREVIEW_PULSE_SECONDS := 0.60
+const INTENT_BUBBLE_SIZE := Vector2(128.0, 52.0)
+const INTENT_BUBBLE_GAP := 10.0
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -232,10 +232,13 @@ var _layout_board_panel_rect := BOARD_PANEL_RECT
 var _layout_player_hud_section_rect := Rect2(Vector2(0, 1092), Vector2(1080, 828))
 var _flow_trace_route_id := ""
 var _intent_preview_emphasis_tween: Tween = null
-var _enemy_block_preview_button: Button = null
+var _intent_bubble_tweens: Array[Tween] = []
+var _intent_entry_buttons: Array[Button] = []
+var _enemy_block_preview_button: Control = null
 var _enemy_block_preview_fill: ColorRect = null
 var _enemy_block_preview_pulse_tween: Tween = null
 var _enemy_block_intent_preview: Dictionary = {}
+var _enemy_intent_entries: Array[Dictionary] = []
 
 
 func _enter_tree() -> void:
@@ -352,6 +355,7 @@ func _ready() -> void:
 	_player_loadout_hud.consumable_slot_selected.connect(_try_use_consumable_slot)
 	_player_loadout_hud.sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
 	_player_loadout_hud.intent_preview_hovered.connect(_on_intent_damage_preview_hovered)
+	_player_loadout_hud.intent_block_preview_hovered.connect(_on_intent_block_preview_hovered)
 	_player_loadout_hud.intent_preview_hover_ended.connect(_on_intent_damage_preview_hover_ended)
 	_initialize_combat_state()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id)
@@ -2062,10 +2066,10 @@ func _sync_top_hud(snapshot: Dictionary) -> void:
 
 
 func _sync_enemy_stage(snapshot: Dictionary) -> void:
-	_intent_label.text = String(snapshot.get("intent_text", ""))
-	if _intent_badge.texture == null:
-		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
-	_intent_badge.visible = true
+	_intent_label.text = ""
+	_intent_label.visible = false
+	_intent_badge.visible = false
+	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
 	var enemy_texture: Texture2D = snapshot.get("enemy_texture", null)
 	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.visible = true
@@ -2090,7 +2094,7 @@ func _sync_player_strip(snapshot: Dictionary) -> void:
 	_player_armor_bar.max_value = float(maxi(1, int(snapshot.get("player_armor_max", 1))))
 	_player_armor_bar.value = float(maxi(0, int(snapshot.get("player_armor_value", 0))))
 	_player_armor_label.text = String(snapshot.get("player_armor_text", "0 / 0"))
-	_armor_badge.visible = bool(snapshot.get("armor_badge_visible", false))
+	_armor_badge.visible = false
 	_armor_badge_label.text = String(snapshot.get("armor_badge_text", ""))
 	_attack_stat_label.text = String(snapshot.get("attack_stat_text", ""))
 	_armor_stat_label.text = String(snapshot.get("armor_stat_text", ""))
@@ -2196,15 +2200,24 @@ func _should_show_intent_damage_preview() -> bool:
 func _intent_damage_preview_data(intent: Dictionary, player_hp: int, player_armor: int) -> Dictionary:
 	if intent.is_empty():
 		return {}
-	var attack := maxi(0, int(intent.get("attack", 0)))
-	if attack <= 0:
+	var attack_entries := _intent_entries_for_kind(intent, "attack")
+	if attack_entries.is_empty():
 		return {}
 	var visible_hp := maxi(0, player_hp)
 	if visible_hp <= 0:
 		return {}
 	var visible_armor := maxi(0, player_armor)
-	var blocked := mini(attack, visible_armor)
-	var hp_loss := mini(visible_hp, maxi(0, attack - blocked))
+	var attack := 0
+	var blocked := 0
+	var hp_loss := 0
+	for entry in attack_entries:
+		var amount := maxi(0, int(entry.get("amount", 0)))
+		if amount <= 0:
+			continue
+		attack += amount
+		var entry_blocked := mini(amount, visible_armor - blocked)
+		blocked += maxi(0, entry_blocked)
+		hp_loss = mini(visible_hp, hp_loss + maxi(0, amount - entry_blocked))
 	if blocked <= 0 and hp_loss <= 0:
 		return {}
 	return {
@@ -2220,22 +2233,73 @@ func _intent_damage_preview_data(intent: Dictionary, player_hp: int, player_armo
 func _enemy_intent_preview_data(intent: Dictionary, enemy_hp: int, enemy_max_hp: int) -> Dictionary:
 	if intent.is_empty():
 		return {}
-	var block := maxi(0, int(intent.get("block", 0)))
-	if block <= 0:
+	var entries := _intent_entries_data(intent)
+	if entries.is_empty():
 		return {}
 	var max_hp := maxi(1, enemy_max_hp)
+	var block := 0
+	for entry in entries:
+		if String(entry.get("kind", "")) == "block":
+			block += maxi(0, int(entry.get("amount", 0)))
 	return {
 		"block": block,
 		"current_hp": maxi(0, enemy_hp),
 		"max_hp": max_hp,
-		"entries": [
-			{
-				"kind": "block",
-				"amount": block,
-				"scale_max": max_hp,
-			},
-		],
+		"entries": entries,
 	}
+
+
+func _intent_entries_data(intent: Dictionary) -> Array[Dictionary]:
+	var raw_entries: Array = []
+	if intent.has("entries") and intent.get("entries") is Array:
+		raw_entries = intent.get("entries")
+	elif intent.has("intents") and intent.get("intents") is Array:
+		raw_entries = intent.get("intents")
+	var entries: Array[Dictionary] = []
+	for raw in raw_entries:
+		if not (raw is Dictionary):
+			continue
+		var raw_entry := raw as Dictionary
+		var kind := String(raw_entry.get("kind", raw_entry.get("type", ""))).to_lower()
+		var amount := maxi(0, int(raw_entry.get("amount", raw_entry.get(kind, 0))))
+		if kind == "attack" and amount <= 0:
+			amount = maxi(0, int(raw_entry.get("damage", raw_entry.get("attack", 0))))
+		if kind == "block" and amount <= 0:
+			amount = maxi(0, int(raw_entry.get("block", 0)))
+		if amount <= 0 or (kind != "attack" and kind != "block"):
+			continue
+		entries.append({
+			"id": String(raw_entry.get("id", "%s_%d" % [kind, entries.size()])),
+			"kind": kind,
+			"amount": amount,
+			"label": String(raw_entry.get("label", _intent_entry_label(kind, amount))),
+		})
+	if entries.is_empty():
+		var attack := maxi(0, int(intent.get("attack", 0)))
+		if attack > 0:
+			entries.append({"id": "attack_0", "kind": "attack", "amount": attack, "label": _intent_entry_label("attack", attack)})
+		var block := maxi(0, int(intent.get("block", 0)))
+		if block > 0:
+			entries.append({"id": "block_%d" % entries.size(), "kind": "block", "amount": block, "label": _intent_entry_label("block", block)})
+	return entries
+
+
+func _intent_entries_for_kind(intent: Dictionary, kind: String) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for entry in _intent_entries_data(intent):
+		if String(entry.get("kind", "")) == kind:
+			entries.append(entry)
+	return entries
+
+
+func _intent_entry_label(kind: String, amount: int) -> String:
+	match kind:
+		"attack":
+			return "Attack %d" % amount
+		"block":
+			return "Block %d" % amount
+		_:
+			return "%s %d" % [kind.capitalize(), amount]
 
 
 func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
@@ -2257,7 +2321,25 @@ func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
 			_turn_summary_label.text = _format_intent(intent)
-	_start_enemy_intent_hover_emphasis()
+	_start_enemy_intent_hover_emphasis("attack")
+
+
+func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
+	if not _should_show_intent_damage_preview():
+		return
+	var blocked := maxi(0, int(preview.get("blocked", 0)))
+	if blocked <= 0:
+		return
+	_status_label.text = "%s | Incoming attack blocked by %d armor." % [
+		RunState.level_sequence_label(),
+		blocked,
+	]
+	_status_label.modulate = STATUS_COLOR_WARNING
+	if _enemy_state != null:
+		var intent := _enemy_state.get_current_intent()
+		if not intent.is_empty():
+			_turn_summary_label.text = _format_intent(intent)
+	_start_enemy_intent_hover_emphasis("block")
 
 
 func _on_enemy_block_preview_hovered() -> void:
@@ -2277,55 +2359,164 @@ func _on_enemy_block_preview_hovered() -> void:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
 			_turn_summary_label.text = _format_intent(intent)
-	_start_enemy_intent_hover_emphasis()
+	_start_enemy_intent_hover_emphasis("block")
 
 
 func _on_intent_damage_preview_hover_ended() -> void:
 	_stop_enemy_intent_hover_emphasis()
 
 
-func _start_enemy_intent_hover_emphasis() -> void:
+func _start_enemy_intent_hover_emphasis(kind: String) -> void:
 	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
 		_intent_preview_emphasis_tween.kill()
-	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_intent_label.scale = Vector2.ONE
-	_intent_badge.scale = Vector2.ONE
+	for tween in _intent_bubble_tweens:
+		if tween != null and is_instance_valid(tween):
+			tween.kill()
+	_intent_bubble_tweens.clear()
+	_reset_enemy_intent_emphasis()
+	var targets := _intent_bubble_targets(kind)
+	if targets.is_empty():
+		return
 	_intent_preview_emphasis_tween = create_tween()
 	_intent_preview_emphasis_tween.set_parallel(true)
 	_intent_preview_emphasis_tween.set_loops()
-	_intent_preview_emphasis_tween.tween_property(_intent_row, "modulate", Color(1.0, 0.30, 0.24, 1.0), 0.12)
-	_intent_preview_emphasis_tween.tween_property(_intent_row, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.16).set_delay(0.12)
-	_intent_preview_emphasis_tween.tween_property(_intent_label, "scale", Vector2(1.22, 1.22), 0.12)
-	_intent_preview_emphasis_tween.tween_property(_intent_label, "scale", Vector2.ONE, 0.18).set_delay(0.12)
-	_intent_preview_emphasis_tween.tween_property(_intent_badge, "scale", Vector2(1.28, 1.28), 0.12)
-	_intent_preview_emphasis_tween.tween_property(_intent_badge, "scale", Vector2.ONE, 0.18).set_delay(0.12)
+	var tint := Color(1.0, 0.30, 0.24, 1.0) if kind == "attack" else Color(0.86, 0.92, 1.0, 1.0)
+	for target in targets:
+		if target == null or not is_instance_valid(target):
+			continue
+		_intent_preview_emphasis_tween.tween_property(target, "modulate", tint, 0.24)
+		_intent_preview_emphasis_tween.tween_property(target, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.32).set_delay(0.24)
+		_intent_preview_emphasis_tween.tween_property(target, "scale", Vector2(1.22, 1.22), 0.24)
+		_intent_preview_emphasis_tween.tween_property(target, "scale", Vector2.ONE, 0.36).set_delay(0.24)
 
 
 func _stop_enemy_intent_hover_emphasis() -> void:
 	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
 		_intent_preview_emphasis_tween.kill()
 	_intent_preview_emphasis_tween = null
+	_reset_enemy_intent_emphasis()
+
+
+func _reset_enemy_intent_emphasis() -> void:
 	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	_intent_label.scale = Vector2.ONE
 	_intent_badge.scale = Vector2.ONE
+	_intent_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_intent_badge.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	for button in _intent_entry_buttons:
+		if button == null or not is_instance_valid(button):
+			continue
+		button.scale = Vector2.ONE
+		button.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
+func _intent_bubble_targets(kind: String) -> Array[Control]:
+	var targets: Array[Control] = []
+	for button in _intent_entry_buttons:
+		if button == null or not is_instance_valid(button):
+			continue
+		if String(button.get_meta("intent_kind", "")) == kind:
+			targets.append(button)
+	return targets
+
+
+func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
+	_enemy_intent_entries.clear()
+	if preview.has("entries") and preview.get("entries") is Array:
+		for raw in Array(preview.get("entries", [])):
+			if raw is Dictionary:
+				_enemy_intent_entries.append((raw as Dictionary).duplicate(true))
+	_clear_enemy_intent_bubbles()
+	if _intent_row == null:
+		return
+	var has_entries := not _enemy_intent_entries.is_empty()
+	_intent_badge.visible = false
+	_intent_label.visible = false
+	if not has_entries:
+		return
+	var index := 0
+	for entry in _enemy_intent_entries:
+		var button := _make_intent_entry_button(entry, index)
+		_intent_row.add_child(button)
+		_intent_entry_buttons.append(button)
+		index += 1
+
+
+func _clear_enemy_intent_bubbles() -> void:
+	for tween in _intent_bubble_tweens:
+		if tween != null and is_instance_valid(tween):
+			tween.kill()
+	_intent_bubble_tweens.clear()
+	for button in _intent_entry_buttons:
+		if button != null and is_instance_valid(button):
+			button.queue_free()
+	_intent_entry_buttons.clear()
+
+
+func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
+	var button := Button.new()
+	var kind := String(entry.get("kind", ""))
+	var amount := maxi(0, int(entry.get("amount", 0)))
+	button.name = "EnemyIntent%s%d" % [kind.capitalize(), index]
+	button.text = String(entry.get("label", _intent_entry_label(kind, amount)))
+	button.custom_minimum_size = INTENT_BUBBLE_SIZE
+	button.size = INTENT_BUBBLE_SIZE
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
+	button.set_meta("intent_kind", kind)
+	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0, 1.0))
+	button.add_theme_stylebox_override("normal", _intent_bubble_stylebox(kind, false))
+	button.add_theme_stylebox_override("hover", _intent_bubble_stylebox(kind, true))
+	button.add_theme_stylebox_override("pressed", _intent_bubble_stylebox(kind, true))
+	button.mouse_entered.connect(_on_enemy_intent_bubble_hovered.bind(kind, entry.duplicate(true)))
+	button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
+	return button
+
+
+func _intent_bubble_stylebox(kind: String, hover: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	var bg := Color(0.12, 0.04, 0.04, 0.94) if kind == "attack" else Color(0.10, 0.13, 0.16, 0.90)
+	var border := Color(1.0, 0.22, 0.20, 1.0) if kind == "attack" else Color(0.72, 0.82, 0.92, 0.95)
+	if hover:
+		bg = bg.lightened(0.08)
+	style.bg_color = bg
+	style.border_color = border
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 10.0
+	style.content_margin_right = 10.0
+	style.content_margin_top = 4.0
+	style.content_margin_bottom = 4.0
+	return style
+
+
+func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
+	if not _should_show_intent_damage_preview():
+		return
+	var amount := maxi(0, int(entry.get("amount", 0)))
+	if amount <= 0:
+		return
+	if kind == "attack":
+		_status_label.text = "%s | Enemy intent: Attack %d." % [RunState.level_sequence_label(), amount]
+	elif kind == "block":
+		_status_label.text = "%s | Enemy intent: Block %d." % [RunState.level_sequence_label(), amount]
+	else:
+		_status_label.text = "%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))]
+	_status_label.modulate = STATUS_COLOR_WARNING
+	_start_enemy_intent_hover_emphasis(kind)
 
 
 func _ensure_enemy_block_preview_nodes() -> void:
 	if _enemy_hp_row == null:
 		return
 	if _enemy_block_preview_button == null or not is_instance_valid(_enemy_block_preview_button):
-		_enemy_block_preview_button = Button.new()
+		_enemy_block_preview_button = Control.new()
 		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
-		_enemy_block_preview_button.text = ""
-		_enemy_block_preview_button.focus_mode = Control.FOCUS_NONE
 		_enemy_block_preview_button.visible = false
 		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		var clear_style := StyleBoxEmpty.new()
-		_enemy_block_preview_button.add_theme_stylebox_override("normal", clear_style)
-		_enemy_block_preview_button.add_theme_stylebox_override("hover", clear_style)
-		_enemy_block_preview_button.add_theme_stylebox_override("pressed", clear_style)
-		_enemy_block_preview_button.add_theme_stylebox_override("focus", clear_style)
 		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_hovered)
 		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
 	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
@@ -2336,7 +2527,7 @@ func _ensure_enemy_block_preview_nodes() -> void:
 	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
 		_enemy_block_preview_fill = ColorRect.new()
 		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
-		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 1.0)
+		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 0.68)
 		_enemy_block_preview_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_enemy_block_preview_fill.visible = false
 	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
@@ -2373,8 +2564,8 @@ func _layout_enemy_block_intent_preview() -> void:
 	var preview_width := bar_width * clampf(float(block) / float(max_hp), 0.0, 1.0)
 	if preview_width <= 0.0:
 		return
-	_enemy_block_preview_button.position = _enemy_hp_bar.position + Vector2(0.0, -ENEMY_BLOCK_PREVIEW_HEIGHT - ENEMY_BLOCK_PREVIEW_GAP)
-	_enemy_block_preview_button.size = Vector2(preview_width, ENEMY_BLOCK_PREVIEW_HEIGHT)
+	_enemy_block_preview_button.position = _enemy_hp_bar.position
+	_enemy_block_preview_button.size = Vector2(preview_width, _enemy_hp_bar.size.y)
 	_enemy_block_preview_button.visible = true
 	_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	_enemy_block_preview_fill.position = Vector2.ZERO
@@ -2387,11 +2578,11 @@ func _start_enemy_block_preview_pulse() -> void:
 	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
 		return
 	_stop_enemy_block_preview_pulse()
-	_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	_enemy_block_preview_pulse_tween = _enemy_block_preview_fill.create_tween()
 	_enemy_block_preview_pulse_tween.set_loops()
-	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 0.0, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
-	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 1.0, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
+	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 0.22, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
+	_enemy_block_preview_pulse_tween.tween_property(_enemy_block_preview_fill, "modulate:a", 0.68, ENEMY_BLOCK_PREVIEW_PULSE_SECONDS)
 
 
 func _stop_enemy_block_preview_pulse() -> void:
@@ -2399,7 +2590,7 @@ func _stop_enemy_block_preview_pulse() -> void:
 		_enemy_block_preview_pulse_tween.kill()
 	_enemy_block_preview_pulse_tween = null
 	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
-		_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 0.68)
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -2483,6 +2674,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		visible_player_hp = int(_staged_hud_values.get("player_hp", visible_player_hp))
 		visible_player_armor = int(_staged_hud_values.get("player_armor", visible_player_armor))
 	player_display_values["current_hp"] = visible_player_hp
+	player_display_values["current_armor"] = visible_player_armor
 	var intent_preview: Dictionary = {}
 	if _should_show_intent_damage_preview():
 		intent_preview = _intent_damage_preview_data(
@@ -2748,9 +2940,8 @@ func _ensure_placeholder_visuals() -> void:
 	if _timer_icon.texture == null:
 		_timer_icon.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_timer_placeholder_texture()
 	_timer_icon.visible = true
-	if _intent_badge.texture == null:
-		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
-	_intent_badge.visible = true
+	_intent_badge.visible = false
+	_intent_label.visible = false
 	var enemy_texture: Texture2D = null
 	if _enemy_state != null:
 		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
