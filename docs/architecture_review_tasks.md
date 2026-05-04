@@ -226,8 +226,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-16: Combat HUD Sync Boundary Review
 
-- Status: `not started`
-- Owner/scope: Review and reduce remaining HUD data-sync pressure in `scripts/combat/combat_player_controller.gd` after `PlayerLoadoutHud`, AR-10, and any layout/theme extractions are stable.
+- Status: `done`
+- Owner/scope: Reviewed and reduced remaining HUD data-sync pressure in `scripts/combat/combat_player_controller.gd` after `PlayerLoadoutHud`, AR-10, and the layout/theme/placeholder extractions were stable. `scripts/combat/combat_hud_snapshot_builder.gd` now owns side-effect-free combat HUD snapshot dictionary construction; `CombatPlayerController` still owns scene-node application for top HUD, enemy stage, timer/tempo, player vitals/stat labels, debug overlay, `PlayerLoadoutHud` payload dispatch, placeholder fallback decisions, and loadout rail layout refresh.
+- Progress: 2026-05-04 completed the narrow data-boundary extraction. `_update_hud()` now builds one combat HUD snapshot and applies it through the existing `_sync_*` scene update methods. The new helper returns `top_hud`, `enemy_stage`, `tempo_row`, `player_strip`, and `debug_overlay` dictionaries from controller-provided player/enemy/combat/progression/timer data. No `PlayerLoadoutHud` source was changed, so shop HUD behavior, inventory selection/popovers, consumable use signals, sell flow, mastery card rendering, and layout override behavior remain under the existing shared HUD boundary.
 - Plan:
   - Inventory `_sync_*` and `_update_hud()` responsibilities and separate pure data snapshot construction from scene-specific label/bar updates where doing so reduces coupling.
   - Prefer pushing reusable player-loadout/mastery data binding into `PlayerLoadoutHud` only when it matches that helper's existing ownership; keep combat-only enemy/timer/status labels in the controller or a combat-specific HUD helper.
@@ -237,11 +238,13 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not redesign HUD layout, move inventory behavior back into combat, or change shop HUD behavior.
   - Do not change Elemental Mastery timing, feedback pooling, or card rendering.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for touched HUD/controller helpers; `combat_player.tscn` and `shop_player.tscn` instantiate probes if `PlayerLoadoutHud` is touched; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
-  - Add focused probes for player/enemy/timer snapshot application and shared HUD slot selection behavior when relevant.
-  - Manual QA remains required for combat/shop inventory popovers, consumable use, sell flow, mastery feedback, overlap checks, and Android/on-device behavior.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` after validated boundary changes.
+  - `git status --short --branch` confirmed `codex/ar-16-combat-hud-sync-boundary`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/combat_hud_snapshot_builder.gd`.
+  - Focused HUD snapshot probe returned helper base `RefCounted`, controller base `Control`, instantiated `res://scenes/combat/combat_player.tscn` and `res://scenes/flow/shop_player.tscn`, and confirmed representative top HUD, enemy, timer, player vitals/stat, truncated turn-summary, and debug snapshot strings.
+  - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+  - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - User manual QA passed after the HUD snapshot boundary extraction, covering the AR-16 acceptance surface for combat/shop HUD behavior.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the completed HUD snapshot boundary.
 
 ## AR-17: Combat Outcome And Transition Boundary Review
 

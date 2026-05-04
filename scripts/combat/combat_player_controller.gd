@@ -105,6 +105,7 @@ const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome
 const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
 const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
+const COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_builder.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -249,6 +250,7 @@ var _resolve_presenter: Variant = null
 var _combat_layout_manager: Variant = null
 var _combat_vfx_manager: Variant = null
 var _board_drag_input_handler: Variant = null
+var _hud_snapshot_builder: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -295,6 +297,8 @@ func _ready() -> void:
 		_combat_vfx_manager = COMBAT_VFX_MANAGER_SCRIPT.new()
 	if _board_drag_input_handler == null:
 		_board_drag_input_handler = BOARD_DRAG_INPUT_HANDLER_SCRIPT.new()
+	if _hud_snapshot_builder == null:
+		_hud_snapshot_builder = COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT.new()
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
@@ -1985,78 +1989,107 @@ func _update_hud() -> void:
 	if _player_state == null or _enemy_state == null or _combat == null:
 		return
 
+	if _hud_snapshot_builder == null:
+		_hud_snapshot_builder = COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT.new()
+	var hud_snapshot: Dictionary = _build_hud_snapshot()
+	_apply_hud_snapshot(hud_snapshot)
+
+
+func _build_hud_snapshot() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	_sync_top_hud()
-	_sync_enemy_stage()
-	_sync_tempo_row()
-	_sync_player_strip(progression_snapshot)
-	_sync_debug_overlay()
-
-
-func _sync_top_hud() -> void:
-	_title_label.text = RunState.level_sequence_label().replace(" | ", "  |  ")
-	_hint_label.text = "Gold %d" % _player_state.gold
-
-
-func _sync_enemy_stage() -> void:
+	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
 	var intent := _enemy_state.get_current_intent()
-	_intent_label.text = _format_intent_compact(intent)
-	if _intent_badge.texture == null:
-		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
-	_intent_badge.visible = true
-	var enemy_texture := _visuals.enemy_portrait(_enemy_state.enemy_id)
-	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.visible = true
-	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
-	_enemy_hp_bar.value = float(_enemy_state.current_hp)
-	_enemy_label.text = "%s HP %d/%d  Block %d" % [
-		_enemy_state.display_name,
-		_enemy_state.current_hp,
-		_enemy_state.max_hp,
-		_enemy_state.current_turn_block,
-	]
-
-
-func _sync_tempo_row() -> void:
-	_phase_label.text = "Turn %d  %s" % [int(_combat.turn_index), _combat.phase_name()]
 	var timer_state := TIMER_STATE_READY if _input_phase == InputPhase.PLAYER_INPUT else TIMER_STATE_LOCKED
 	if _drag_active():
 		timer_state = TIMER_STATE_ACTIVE
-	_sync_timer_display(_drag_move_time_left() if _drag_active() else _timer_ready_seconds(), timer_state)
+	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
+	var enemy_texture: Texture2D = null
+	if _visuals != null:
+		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	return _hud_snapshot_builder.build_snapshot(
+		{
+			"run_label": RunState.level_sequence_label(),
+			"player_gold": int(_player_state.gold),
+			"enemy_display_name": _enemy_state.display_name,
+			"enemy_hp": int(_enemy_state.current_hp),
+			"enemy_max_hp": int(_enemy_state.max_hp),
+			"enemy_turn_block": int(_enemy_state.current_turn_block),
+			"enemy_intent_text": _format_intent_compact(intent),
+			"enemy_texture": enemy_texture,
+			"combat_turn_index": int(_combat.turn_index),
+			"combat_phase_name": _combat.phase_name(),
+			"timer_state": timer_state,
+			"timer_seconds": timer_seconds,
+			"player_hp": int(_player_state.current_hp),
+			"player_max_hp": int(_player_state.max_hp),
+			"player_armor": int(_player_state.armor),
+			"fire_orb_value": int(_player_state.orb_value(OrbType.Id.FIRE)),
+			"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
+			"heart_mastery_level": int(mastery_levels.get(OrbType.Id.HEART, 0)),
+			"gold_mastery_level": int(mastery_levels.get(OrbType.Id.GOLD, 0)),
+			"turn_summary_text": _turn_summary_label.text,
+			"progression_snapshot": progression_snapshot,
+		}
+	)
 
 
-func _sync_player_strip(progression_snapshot: Dictionary) -> void:
-	_player_label.text = "HP %d / %d" % [
-		_player_state.current_hp,
-		_player_state.max_hp,
-	]
-	_player_hp_bar.max_value = float(maxi(1, _player_state.max_hp))
-	_player_hp_bar.value = float(_player_state.current_hp)
-	_player_armor_bar.max_value = float(maxi(30, _player_state.armor + 10))
-	_player_armor_bar.value = float(maxi(0, _player_state.armor))
-	_player_armor_label.text = "%d / %d" % [maxi(0, _player_state.armor), int(_player_armor_bar.max_value)]
-	var armor_value := maxi(0, _player_state.armor)
-	_armor_badge.visible = armor_value > 0
-	_armor_badge_label.text = "BLOCK +%d" % armor_value
-	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
-	_attack_stat_label.text = "ATK  %d" % _player_state.orb_value(OrbType.Id.FIRE)
-	_armor_stat_label.text = "ARM  %d" % _player_state.orb_value(OrbType.Id.ARMOR)
-	_heart_stat_label.text = "HEART  %d%%" % (int(mastery_levels.get(OrbType.Id.HEART, 0)) * 5)
-	_gold_stat_label.text = "GOLD  %d%%" % (int(mastery_levels.get(OrbType.Id.GOLD, 0)) * 5)
-	_run_progress_label.text = ""
-	_phase_label.text = ""
-	_turn_summary_label.text = _turn_summary_label.text.substr(0, mini(70, _turn_summary_label.text.length()))
+func _apply_hud_snapshot(hud_snapshot: Dictionary) -> void:
+	_sync_top_hud(hud_snapshot.get("top_hud", {}))
+	_sync_enemy_stage(hud_snapshot.get("enemy_stage", {}))
+	_sync_tempo_row(hud_snapshot.get("tempo_row", {}))
+	_sync_player_strip(hud_snapshot.get("player_strip", {}))
+	_sync_debug_overlay(hud_snapshot.get("debug_overlay", {}))
+
+
+func _sync_top_hud(snapshot: Dictionary) -> void:
+	_title_label.text = String(snapshot.get("title_text", ""))
+	_hint_label.text = String(snapshot.get("hint_text", ""))
+
+
+func _sync_enemy_stage(snapshot: Dictionary) -> void:
+	_intent_label.text = String(snapshot.get("intent_text", ""))
+	if _intent_badge.texture == null:
+		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
+	_intent_badge.visible = true
+	var enemy_texture: Texture2D = snapshot.get("enemy_texture", null)
+	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_enemy_portrait.visible = true
+	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
+	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
+	_enemy_label.text = String(snapshot.get("enemy_text", ""))
+
+
+func _sync_tempo_row(snapshot: Dictionary) -> void:
+	_phase_label.text = String(snapshot.get("phase_text", ""))
+	_sync_timer_display(
+		float(snapshot.get("timer_seconds", 0.0)),
+		String(snapshot.get("timer_state", TIMER_STATE_READY))
+	)
+
+
+func _sync_player_strip(snapshot: Dictionary) -> void:
+	_player_label.text = String(snapshot.get("player_text", ""))
+	_player_hp_bar.max_value = float(maxi(1, int(snapshot.get("player_hp_max", 1))))
+	_player_hp_bar.value = float(int(snapshot.get("player_hp_value", 0)))
+	_player_armor_bar.max_value = float(maxi(1, int(snapshot.get("player_armor_max", 1))))
+	_player_armor_bar.value = float(maxi(0, int(snapshot.get("player_armor_value", 0))))
+	_player_armor_label.text = String(snapshot.get("player_armor_text", "0 / 0"))
+	_armor_badge.visible = bool(snapshot.get("armor_badge_visible", false))
+	_armor_badge_label.text = String(snapshot.get("armor_badge_text", ""))
+	_attack_stat_label.text = String(snapshot.get("attack_stat_text", ""))
+	_armor_stat_label.text = String(snapshot.get("armor_stat_text", ""))
+	_heart_stat_label.text = String(snapshot.get("heart_stat_text", ""))
+	_gold_stat_label.text = String(snapshot.get("gold_stat_text", ""))
+	_run_progress_label.text = String(snapshot.get("run_progress_text", ""))
+	_phase_label.text = String(snapshot.get("phase_text", ""))
+	_turn_summary_label.text = String(snapshot.get("turn_summary_text", ""))
+	var progression_snapshot: Dictionary = snapshot.get("progression_snapshot", {})
 	_refresh_build_icon_rows(progression_snapshot)
 
 
-func _sync_debug_overlay() -> void:
-	_status_label.text = "%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index]
-	_enemy_debug_label.text = "%s HP %d/%d Block %d" % [
-		_enemy_state.display_name,
-		_enemy_state.current_hp,
-		_enemy_state.max_hp,
-		_enemy_state.current_turn_block,
-	]
+func _sync_debug_overlay(snapshot: Dictionary) -> void:
+	_status_label.text = String(snapshot.get("status_text", ""))
+	_enemy_debug_label.text = String(snapshot.get("enemy_text", ""))
 
 
 func _format_intent(intent: Dictionary) -> String:

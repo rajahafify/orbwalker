@@ -1480,3 +1480,13 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check`, Godot MCP `view_script` checks, focused texture dimension/color/alpha probe, focused script-load and combat scene instantiate probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
   - A separate async scene-ready texture-assignment probe hit an MCP tool-script parse limitation before execution; user manual QA passed after the helper extraction.
+
+## [2026-05-04] code-change | AR-16 Combat HUD Sync Boundary
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_hud_snapshot_builder.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`
+- Changed:
+  - Added `CombatHudSnapshotBuilder` as the side-effect-free combat HUD snapshot dictionary helper for top HUD, enemy stage, timer/tempo row, player strip, and debug overlay data.
+  - Kept `CombatPlayerController` responsible for applying snapshots to scene labels/bars/nodes, dispatching `PlayerLoadoutHud` payloads, loadout rail layout refresh, placeholder fallback assignment, combat-only enemy/timer/status behavior, debug callbacks, routing, and `/skip`.
+- Validation:
+  - `git diff --check`, Godot MCP `get_project_info`, `view_script` checks, focused HUD snapshot and combat/shop instantiate probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
+  - User manual QA passed after the HUD snapshot boundary extraction, covering the AR-16 combat/shop HUD acceptance surface.
