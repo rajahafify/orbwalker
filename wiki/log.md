@@ -1460,3 +1460,13 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check`, Godot MCP `view_script` checks, scene instantiate probes for main/combat/final-summary, `UiUtils.panel_style(...)` mapping probe, `play_scene main`, and `get_godot_errors` passed.
   - User manual sanity QA on 2026-05-04 confirmed Start Run, combat resolve/cascade feel, combat routing, final-summary actions, shop regression, and visible panel styling are all good. Android/on-device behavior, full viewport overlap sweep, and deferred orb texture-map pop-in remain broader manual QA unless retested separately.
+
+## [2026-05-04] code-change | AR-14 Combat Theme And Chrome Boundary
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_chrome_styler.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`
+- Changed:
+  - Added `CombatChromeStyler` as the combat code-built chrome/style helper for shared frame styleboxes, progress bars, label font/color overrides, timer-track/readability styling, button chrome, board/outcome panel chrome, stat chips, debug overlay font sizing, shared player-HUD chrome dispatch, and debug zone-guide chrome.
+  - Kept `CombatPlayerController` responsible for scene node ownership, `_apply_visual_chrome()` orchestration, timer runtime text/fill/color math, placeholder texture creation/assignment, layout, VFX, input, combat math, resolve presentation, route transitions, debug callbacks, `/skip`, and `UiUtils.panel_style(...)` non-combat ownership.
+- Validation:
+  - `git diff --check`, Godot MCP `view_script` checks, focused script-load checks, combat scene instantiate probe, representative style-value probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
+  - User manual QA passed after the helper extraction.

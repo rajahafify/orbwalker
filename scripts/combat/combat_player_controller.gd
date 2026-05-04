@@ -101,6 +101,7 @@ const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_re
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_TURN_LOGGER_SCRIPT := preload("res://scripts/combat/combat_turn_logger.gd")
 const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layout_manager.gd")
+const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
 const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
@@ -501,256 +502,76 @@ func _drag_move_time_left() -> float:
 
 
 func _apply_visual_chrome() -> void:
-	# Keep chrome code-driven to avoid any baked checkerboard artifacts from generated sheets.
-	_board_view.cell_frame_texture = null
-	_board_view.cell_spacing = 4.0
-	_board_view.board_padding = 8.0
-	_board_view.orb_scale_in_cell = 0.92
-	_board_view.cell_background = Color(0.07, 0.09, 0.12, 0.96)
-	_board_view.board_background = Color(0.03, 0.04, 0.06, 0.96)
-
-	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
-	frame_style.border_color = Color(0.18, 0.24, 0.31, 0.90)
-	frame_style.set_border_width_all(1)
-	frame_style.set_corner_radius_all(4)
-	frame_style.content_margin_left = 8.0
-	frame_style.content_margin_right = 8.0
-	frame_style.content_margin_top = 6.0
-	frame_style.content_margin_bottom = 6.0
-
-	_top_bar.add_theme_stylebox_override("panel", frame_style)
-	_enemy_panel.add_theme_stylebox_override("panel", frame_style)
-	_combat_strip.add_theme_stylebox_override("panel", frame_style)
-	_board_frame.add_theme_stylebox_override("panel", frame_style)
-	_debug_overlay.add_theme_stylebox_override("panel", frame_style)
-	_combat_log_frame.add_theme_stylebox_override("panel", frame_style)
-
-	_apply_progressbar_flat_style(_enemy_hp_bar, Color(0.70, 0.12, 0.13, 1.0))
-	_apply_progressbar_flat_style(_player_hp_bar, Color(0.78, 0.16, 0.17, 1.0))
-	_apply_progressbar_flat_style(_player_armor_bar, Color(0.16, 0.50, 0.86, 1.0))
-
-	var ui_text_color := Color(0.95, 0.96, 0.98, 1.0)
-	for label in [_title_label, _hint_label, _timer_label, _run_progress_label, _phase_label, _turn_summary_label, _player_label, _player_armor_label, _attack_stat_label, _armor_stat_label, _heart_stat_label, _gold_stat_label, _enemy_label, _intent_label]:
-		label.add_theme_color_override("font_color", ui_text_color)
-	_title_label.add_theme_font_size_override("font_size", FONT_SIZE_TITLE)
-	_hint_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_intent_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_enemy_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_timer_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_player_label.add_theme_font_size_override("font_size", 24)
-	_player_armor_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	for stat_label in [_attack_stat_label, _armor_stat_label, _heart_stat_label, _gold_stat_label]:
-		stat_label.add_theme_font_size_override("font_size", FONT_SIZE_VALUE)
-	_run_progress_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
-	_phase_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
-	_turn_summary_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
-	for row_label in [_equipment_row_label, _consumable_row_label, _relic_row_label, _mastery_row_label]:
-		row_label.add_theme_color_override("font_color", Color(0.67, 0.73, 0.80, 1.0))
-		row_label.add_theme_font_size_override("font_size", FONT_SIZE_ROW_LABEL)
-	_armor_badge_label.add_theme_font_size_override("font_size", 16)
-	_armor_badge_label.add_theme_color_override("font_color", Color(0.88, 0.95, 1.0, 1.0))
-	_armor_badge_label.add_theme_constant_override("outline_size", 2)
-	_armor_badge_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.94))
-	_phase_label.add_theme_color_override("font_color", Color(0.70, 0.78, 0.86, 1.0))
-	_run_progress_label.add_theme_color_override("font_color", Color(0.82, 0.90, 0.98, 1.0))
-	_player_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.92, 1.0))
-	_player_armor_label.add_theme_color_override("font_color", Color(0.82, 0.94, 1.0, 1.0))
-	_timer_label.add_theme_color_override("font_color", Color(0.85, 0.93, 1.0, 1.0))
-	_timer_state_label.add_theme_color_override("font_color", Color(0.73, 0.84, 0.92, 1.0))
-	_timer_state_label.add_theme_font_size_override("font_size", FONT_SIZE_META)
-	_apply_timer_label_readability(_timer_label)
-	_apply_timer_label_readability(_timer_state_label)
-	_apply_button_theme()
-	_apply_timer_track_theme()
-	_apply_loadout_group_theme()
-	_player_loadout_hud.apply_player_hud_chrome(_combat_player_hud_nodes())
-	_apply_board_focus_theme()
-	_apply_debug_overlay_theme()
-	_apply_stat_chip_theme()
+	COMBAT_CHROME_STYLER_SCRIPT.apply_visual_chrome(
+		{
+			"board_view": _board_view,
+			"top_bar": _top_bar,
+			"enemy_panel": _enemy_panel,
+			"combat_strip": _combat_strip,
+			"board_frame": _board_frame,
+			"debug_overlay": _debug_overlay,
+			"combat_log_frame": _combat_log_frame,
+			"enemy_hp_bar": _enemy_hp_bar,
+			"player_hp_bar": _player_hp_bar,
+			"player_armor_bar": _player_armor_bar,
+			"title_label": _title_label,
+			"hint_label": _hint_label,
+			"timer_label": _timer_label,
+			"run_progress_label": _run_progress_label,
+			"phase_label": _phase_label,
+			"turn_summary_label": _turn_summary_label,
+			"player_label": _player_label,
+			"player_armor_label": _player_armor_label,
+			"attack_stat_label": _attack_stat_label,
+			"armor_stat_label": _armor_stat_label,
+			"heart_stat_label": _heart_stat_label,
+			"gold_stat_label": _gold_stat_label,
+			"enemy_label": _enemy_label,
+			"intent_label": _intent_label,
+			"equipment_row_label": _equipment_row_label,
+			"consumable_row_label": _consumable_row_label,
+			"relic_row_label": _relic_row_label,
+			"mastery_row_label": _mastery_row_label,
+			"armor_badge_label": _armor_badge_label,
+			"timer_state_label": _timer_state_label,
+			"back_button": _back_button,
+			"debug_toggle_button": _debug_toggle_button,
+			"settings_button": _settings_button,
+			"next_button": _next_button,
+			"timer_track": _timer_track,
+			"loadout_frame": _loadout_frame,
+			"mastery_strip": _mastery_strip,
+			"hero_card": _hero_card,
+			"vitals_frame": _vitals_frame,
+			"hero_level_badge": _hero_level_badge,
+			"armor_badge": _armor_badge,
+			"board_shadow": _board_shadow,
+			"outcome_summary_panel": _outcome_summary_panel,
+			"outcome_title_label": _outcome_title_label,
+			"outcome_body_label": _outcome_body_label,
+			"status_label": _status_label,
+			"enemy_debug_label": _enemy_debug_label,
+			"combat_log_text": _combat_log_text,
+			"debug_console": _debug_console,
+			"player_loadout_hud": _player_loadout_hud,
+			"player_hud_nodes": _combat_player_hud_nodes(),
+		},
+		{
+			"font_size_title": FONT_SIZE_TITLE,
+			"font_size_value": FONT_SIZE_VALUE,
+			"font_size_meta": FONT_SIZE_META,
+			"font_size_row_label": FONT_SIZE_ROW_LABEL,
+			"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
+			"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
+			"debug_input_height": DEBUG_INPUT_HEIGHT,
+		}
+	)
 
 	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	_ensure_placeholder_visuals()
 	_apply_zone_guides()
 	_title_label.text = RunState.level_sequence_label()
 	_hint_label.text = "Gold 0"
-
-
-func _apply_board_focus_theme() -> void:
-	var shadow_style := StyleBoxFlat.new()
-	shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.24)
-	shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
-	shadow_style.set_corner_radius_all(12)
-	_board_shadow.add_theme_stylebox_override("panel", shadow_style)
-
-	var summary_style := StyleBoxFlat.new()
-	summary_style.bg_color = Color(0.03, 0.06, 0.10, 0.97)
-	summary_style.border_color = Color(0.26, 0.34, 0.44, 0.96)
-	summary_style.set_border_width_all(2)
-	summary_style.set_corner_radius_all(12)
-	summary_style.content_margin_left = 40.0
-	summary_style.content_margin_right = 40.0
-	summary_style.content_margin_top = 34.0
-	summary_style.content_margin_bottom = 34.0
-	_outcome_summary_panel.add_theme_stylebox_override("panel", summary_style)
-
-	_outcome_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_outcome_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_outcome_title_label.add_theme_font_size_override("font_size", 46)
-	_outcome_title_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
-	_outcome_title_label.add_theme_constant_override("outline_size", 3)
-	_outcome_title_label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.92))
-	_outcome_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_outcome_body_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_outcome_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_outcome_body_label.clip_text = true
-	_outcome_body_label.custom_minimum_size = Vector2.ZERO
-	_outcome_body_label.add_theme_font_size_override("font_size", 24)
-	_outcome_body_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
-	_next_button.text = "Continue"
-	_next_button.add_theme_font_size_override("font_size", 22)
-
-
-func _apply_debug_overlay_theme() -> void:
-	_status_label.add_theme_font_size_override("font_size", DEBUG_TEXT_FONT_SIZE)
-	_enemy_debug_label.add_theme_font_size_override("font_size", DEBUG_TEXT_FONT_SIZE)
-	_combat_log_text.add_theme_font_size_override("normal_font_size", DEBUG_TEXT_FONT_SIZE)
-	_combat_log_text.add_theme_font_size_override("bold_font_size", DEBUG_TEXT_FONT_SIZE)
-	_combat_log_text.add_theme_font_size_override("italics_font_size", DEBUG_TEXT_FONT_SIZE)
-	_combat_log_text.add_theme_font_size_override("bold_italics_font_size", DEBUG_TEXT_FONT_SIZE)
-	_combat_log_text.add_theme_font_size_override("mono_font_size", DEBUG_TEXT_FONT_SIZE)
-	if _debug_console != null:
-		_debug_console.apply_theme(DEBUG_INPUT_FONT_SIZE, DEBUG_INPUT_HEIGHT)
-
-
-func _apply_stat_chip_theme() -> void:
-	for stat_label in [_attack_stat_label, _armor_stat_label, _heart_stat_label, _gold_stat_label]:
-		var chip_style := StyleBoxFlat.new()
-		chip_style.bg_color = Color(0.04, 0.07, 0.10, 0.92)
-		chip_style.border_color = Color(0.20, 0.27, 0.35, 0.95)
-		chip_style.set_border_width_all(1)
-		chip_style.set_corner_radius_all(4)
-		chip_style.content_margin_left = 8.0
-		chip_style.content_margin_right = 8.0
-		chip_style.content_margin_top = 4.0
-		chip_style.content_margin_bottom = 4.0
-		stat_label.add_theme_stylebox_override("normal", chip_style)
-		stat_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.85))
-		stat_label.add_theme_constant_override("shadow_offset_x", 1)
-		stat_label.add_theme_constant_override("shadow_offset_y", 2)
-
-
-func _stylebox_from_texture(texture: Texture2D, left: int, right: int, top: int, bottom: int) -> StyleBoxTexture:
-	var style := StyleBoxTexture.new()
-	style.texture = texture
-	style.texture_margin_left = left
-	style.texture_margin_right = right
-	style.texture_margin_top = top
-	style.texture_margin_bottom = bottom
-	style.content_margin_left = 12.0
-	style.content_margin_right = 12.0
-	style.content_margin_top = 10.0
-	style.content_margin_bottom = 10.0
-	return style
-
-
-func _apply_progressbar_style(bar: ProgressBar, frame_texture: Texture2D, fill_texture: Texture2D) -> void:
-	if frame_texture != null:
-		bar.add_theme_stylebox_override("background", _stylebox_from_texture(frame_texture, 12, 12, 7, 7))
-	if fill_texture != null:
-		bar.add_theme_stylebox_override("fill", _stylebox_from_texture(fill_texture, 12, 12, 7, 7))
-
-
-func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
-	bg.set_corner_radius_all(4)
-	bg.set_border_width_all(1)
-	bg.border_color = Color(0.18, 0.25, 0.34, 0.85)
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = fill_color
-	fill.set_corner_radius_all(4)
-	bar.add_theme_stylebox_override("background", bg)
-	bar.add_theme_stylebox_override("fill", fill)
-
-
-func _apply_button_theme() -> void:
-	for button in [_back_button, _debug_toggle_button, _settings_button, _next_button]:
-		button.add_theme_color_override("font_color", Color(0.84, 0.89, 0.94, 1.0))
-		button.add_theme_font_size_override("font_size", 18)
-		var style_normal := StyleBoxFlat.new()
-		style_normal.bg_color = Color(0.04, 0.07, 0.10, 0.84)
-		style_normal.border_color = Color(0.22, 0.30, 0.39, 0.92)
-		style_normal.set_border_width_all(1)
-		style_normal.set_corner_radius_all(4)
-		style_normal.content_margin_left = 8.0
-		style_normal.content_margin_right = 8.0
-		style_normal.content_margin_top = 4.0
-		style_normal.content_margin_bottom = 4.0
-		button.add_theme_stylebox_override("normal", style_normal)
-		var style_hover := style_normal.duplicate()
-		style_hover.bg_color = Color(0.08, 0.12, 0.17, 0.94)
-		button.add_theme_stylebox_override("hover", style_hover)
-		button.add_theme_stylebox_override("pressed", style_hover)
-
-
-func _apply_timer_track_theme() -> void:
-	var timer_style := StyleBoxFlat.new()
-	timer_style.bg_color = Color(0.035, 0.075, 0.11, 0.94)
-	timer_style.border_color = Color(0.20, 0.30, 0.40, 0.90)
-	timer_style.set_border_width_all(1)
-	timer_style.set_corner_radius_all(4)
-	var frame := _timer_track.get_node_or_null("TimerTrackFrame")
-	if frame is Panel:
-		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
-
-
-func _apply_timer_label_readability(label: Label) -> void:
-	label.add_theme_color_override("font_shadow_color", Color(0.01, 0.02, 0.03, 0.95))
-	label.add_theme_constant_override("shadow_offset_x", 1)
-	label.add_theme_constant_override("shadow_offset_y", 2)
-	label.add_theme_constant_override("outline_size", 2)
-	label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.80))
-
-
-func _apply_loadout_group_theme() -> void:
-	var inner_panel_style := StyleBoxFlat.new()
-	inner_panel_style.bg_color = Color(0.05, 0.08, 0.12, 0.98)
-	inner_panel_style.border_color = Color(0.18, 0.24, 0.31, 0.95)
-	inner_panel_style.set_border_width_all(1)
-	inner_panel_style.set_corner_radius_all(4)
-	inner_panel_style.content_margin_left = 8.0
-	inner_panel_style.content_margin_right = 8.0
-	inner_panel_style.content_margin_top = 6.0
-	inner_panel_style.content_margin_bottom = 6.0
-	_loadout_frame.add_theme_stylebox_override("panel", inner_panel_style)
-	_mastery_strip.add_theme_stylebox_override("panel", inner_panel_style)
-	_hero_card.add_theme_stylebox_override("panel", inner_panel_style)
-
-	var vitals_frame_style := StyleBoxFlat.new()
-	vitals_frame_style.bg_color = Color(0.04, 0.08, 0.13, 0.98)
-	vitals_frame_style.border_color = Color(0.18, 0.25, 0.34, 0.96)
-	vitals_frame_style.set_border_width_all(1)
-	vitals_frame_style.set_corner_radius_all(4)
-	_vitals_frame.add_theme_stylebox_override("panel", vitals_frame_style)
-
-	var badge_style := StyleBoxFlat.new()
-	badge_style.bg_color = Color(0.08, 0.09, 0.12, 0.98)
-	badge_style.border_color = Color(0.24, 0.32, 0.42, 1.0)
-	badge_style.set_border_width_all(1)
-	badge_style.set_corner_radius_all(6)
-	_hero_level_badge.visible = false
-
-	var armor_badge_style := StyleBoxFlat.new()
-	armor_badge_style.bg_color = Color(0.08, 0.19, 0.31, 0.98)
-	armor_badge_style.border_color = Color(0.40, 0.70, 0.96, 0.96)
-	armor_badge_style.set_border_width_all(1)
-	armor_badge_style.set_corner_radius_all(6)
-	armor_badge_style.content_margin_left = 8.0
-	armor_badge_style.content_margin_right = 8.0
-	armor_badge_style.content_margin_top = 2.0
-	armor_badge_style.content_margin_bottom = 2.0
-	_armor_badge.add_theme_stylebox_override("panel", armor_badge_style)
 
 
 func _initialize_combat_state() -> void:
@@ -2577,50 +2398,7 @@ func _apply_zone_guides() -> void:
 
 
 func _set_zone_guide(zone: Control, label_text: String) -> void:
-	if zone == null:
-		return
-	if _zone_guides_enabled:
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.03, 0.06, 0.10, 0.94)
-		style.border_color = Color(0.90, 0.72, 0.28, 0.95)
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(6)
-		if zone is PanelContainer:
-			(zone as PanelContainer).add_theme_stylebox_override("panel", style)
-		else:
-			var frame := zone.get_node_or_null("ZoneGuideFrame")
-			if frame == null:
-				frame = Panel.new()
-				frame.name = "ZoneGuideFrame"
-				frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				frame.anchors_preset = Control.PRESET_FULL_RECT
-				zone.add_child(frame)
-			(frame as Panel).add_theme_stylebox_override("panel", style)
-		var guide := zone.get_node_or_null("ZoneGuideLabel")
-		if guide == null:
-			guide = Label.new()
-			guide.name = "ZoneGuideLabel"
-			guide.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			guide.position = Vector2(6, 4)
-			zone.add_child(guide)
-		(guide as Label).text = label_text
-		(guide as Label).add_theme_color_override("font_color", Color(0.95, 0.80, 0.30, 1.0))
-		(guide as Label).add_theme_font_size_override("font_size", 12)
-	else:
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
-		style.border_color = Color(0.18, 0.24, 0.31, 0.90)
-		style.set_border_width_all(1)
-		style.set_corner_radius_all(4)
-		if zone is PanelContainer:
-			(zone as PanelContainer).add_theme_stylebox_override("panel", style)
-		else:
-			var frame := zone.get_node_or_null("ZoneGuideFrame")
-			if frame != null:
-				frame.queue_free()
-		var guide := zone.get_node_or_null("ZoneGuideLabel")
-		if guide != null:
-			guide.queue_free()
+	COMBAT_CHROME_STYLER_SCRIPT.apply_zone_guide(zone, label_text, _zone_guides_enabled)
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:

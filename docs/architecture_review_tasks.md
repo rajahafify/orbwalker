@@ -182,22 +182,25 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-14: Combat Theme And Chrome Boundary
 
-- Status: `not started`
-- Owner/scope: Reduce visual chrome/theming pressure in `scripts/combat/combat_player_controller.gd` by extracting combat style construction into a focused helper or theme resource boundary.
+- Status: `done`
+- Owner/scope: Extracted combat style/chrome construction from `scripts/combat/combat_player_controller.gd` into `scripts/combat/combat_chrome_styler.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving chrome boundary. `CombatChromeStyler` now owns code-built combat panel/frame styleboxes, progress-bar style construction, label font/color overrides, timer-track and timer-label readability styling, button chrome, board/outcome panel chrome, stat-chip chrome, debug overlay font sizing, shared player-HUD chrome dispatch, and debug zone-guide chrome. `CombatPlayerController` keeps scene node ownership, `_apply_visual_chrome()` orchestration, timer runtime text/fill/color math, placeholder texture creation/assignment, layout, VFX, input, combat math, resolve presentation, route transitions, debug callbacks, `/skip`, and `UiUtils.panel_style(...)` stays untouched.
 - Plan:
-  - First pass should inventory code-built `StyleBoxFlat`, font-size/color overrides, timer styling, panel/frame chrome, and placeholder chrome decisions in the combat controller.
-  - Prefer a low-risk helper such as `scripts/combat/combat_chrome_styler.gd` before introducing `.tres` resources, unless the source inventory shows a resource boundary is clearly safer.
-  - Preserve every existing color, border, radius, margin, font size, and placeholder appearance unless a specific visual bug is identified and accepted.
-  - Keep layout formulas, VFX, input, combat math, resolve presentation, route transitions, and `UiUtils.panel_style(...)` ownership unchanged.
+  - The source inventory found a low-risk helper boundary rather than a `.tres` resource migration.
+  - Placeholder texture builders were left in `CombatPlayerController` for AR-15.
+  - Existing color, border, radius, margin, font size, timer behavior, and placeholder appearance were preserved.
+  - Layout formulas, VFX, input, combat math, resolve presentation, route transitions, and `UiUtils.panel_style(...)` ownership were unchanged.
 - Out of scope:
   - Do not migrate shop/final-summary styles or replace `UiUtils.panel_style(...)`.
   - Do not redesign the combat UI, generate new art, or broaden into theme-resource cleanup across the project.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for controller and new style helper/resource users; script/resource load probes; `combat_player.tscn` instantiate; `play_scene main`; final `get_godot_errors`.
-  - Add a focused style probe for representative controls that confirms theme overrides match pre-refactor color/font/radius/margin values.
-  - Manual visual QA remains required for real screenshots, overlap checks, Android/on-device appearance, and perceived readability.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` if a durable style boundary is added.
+  - `git status --short --branch` confirmed `codex/ar-14-combat-theme-chrome-boundary`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd` and `combat_chrome_styler.gd`.
+  - Focused script-load probe returned controller base `Control`, helper reload `0`, and helper base `RefCounted`; `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot`, `BoardSurface`, `TimerTrack`, and `OutcomeSummaryPanel`.
+  - Focused style probe confirmed representative pre-refactor values: shared frame bg `(0.025, 0.045, 0.07, 0.94)`, border `(0.18, 0.24, 0.31, 0.9)`, border width `1`, radius `4`, margins `8/6`; timer track bg `(0.035, 0.075, 0.11, 0.94)`, border `(0.2, 0.3, 0.4, 0.9)`, border width `1`, radius `4`; timer font `18`, timer-state font `15`, outline `2`, shadow x `1`; enemy HP fill `(0.7, 0.12, 0.13, 1.0)`.
+  - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - User manual QA passed after the helper extraction.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new chrome helper boundary and validation evidence.
 
 ## AR-15: Combat Placeholder Texture Utility
 
