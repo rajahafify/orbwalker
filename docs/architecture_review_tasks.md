@@ -204,21 +204,25 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-15: Combat Placeholder Texture Utility
 
-- Status: `not started`
-- Owner/scope: Extract code-generated combat placeholder textures from `scripts/combat/combat_player_controller.gd` into a static utility/helper, tentatively `scripts/combat/combat_placeholder_textures.gd` or a shared UI visual helper if source review shows reuse outside combat.
+- Status: `done`
+- Owner/scope: Extracted code-generated combat placeholder texture builders from `scripts/combat/combat_player_controller.gd` into `scripts/combat/combat_placeholder_textures.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving placeholder utility extraction. `CombatPlaceholderTextures` now owns only the code-generated timer, intent, enemy portrait, and hero portrait placeholder `ImageTexture` builders. `CombatPlayerController` keeps the fallback decisions, `VisualRegistry` lookup calls, node assignment, visibility toggles, timer runtime behavior, portrait refresh timing, layout, chrome styling, combat math, resolve presentation, routing, debug callbacks, and `/skip`.
 - Plan:
-  - Move timer, intent, enemy portrait, and hero portrait placeholder texture creation without changing their pixel shapes, sizes, colors, transparency, or fallback conditions.
+  - Moved timer, intent, enemy portrait, and hero portrait placeholder texture creation without changing their pixel shapes, sizes, colors, transparency, or fallback conditions.
   - Keep `CombatPlayerController` responsible for choosing when placeholders are needed and assigning textures to scene nodes.
   - Avoid changing `VisualRegistry` asset lookup, generated art assets, deferred orb texture-map behavior, or combat layout.
 - Out of scope:
   - Do not generate new art, migrate placeholders to files, alter portrait mapping, or change visual registry fallback behavior.
   - Do not combine with combat theme/chrome extraction unless AR-14 has already established a helper that should clearly own placeholders.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for controller and utility; focused script-load probe; instantiate `combat_player.tscn`; `play_scene main`; final `get_godot_errors`.
-  - Add a focused texture probe confirming placeholder dimensions and key sampled colors/alpha values remain stable.
-  - Manual visual QA remains useful for fallback readability if real assets are unavailable.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/file-map.md`, and `wiki/log.md` if the helper is added.
+  - `git status --short --branch` confirmed `codex/ar-15-combat-placeholder-texture-utility`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/combat_placeholder_textures.gd`.
+  - Focused texture probe confirmed timer `96x96`, intent `96x96`, enemy `260x230`, and hero `192x192` placeholders plus representative sampled colors/alpha matched the pre-refactor source values.
+  - Focused script-load and scene instantiate probe loaded the controller as `Control`, the helper as `RefCounted`, instantiated `res://scenes/combat/combat_player.tscn`, and confirmed `TimerIcon`, `IntentBadge`, `EnemyPortrait`, `PlayerPortrait`, and `BoardSurface` nodes exist.
+  - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - A separate async scene-ready texture-assignment probe hit an MCP tool-script parse limitation before execution, so runtime ready-time placeholder assignment remains covered by existing controller fallback code paths plus main-scene smoke rather than that specific probe.
+  - User manual QA passed after the helper extraction.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new helper ownership.
 
 ## AR-16: Combat HUD Sync Boundary Review
 

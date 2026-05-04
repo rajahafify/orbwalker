@@ -532,6 +532,7 @@ Tasks:
 - [x] AR-12 Combat VFX manager extraction. Extracted transient combat VFX drawing mechanics into `CombatVfxManager` while keeping replay order, combat math, mastery feedback semantics, routing, input, layout, audio, debug callbacks, and `/skip` in the controller.
 - [x] AR-13 Board drag input handler extraction. Extracted board-local drag/pointer bookkeeping into `BoardDragInputHandler` while preserving `BoardView.gui_input` local-coordinate behavior, current drag rules, swap feel, resolve kickoff, combat math, timing, routing, layout, VFX, audio callback policy, debug callbacks, and `/skip` ownership in the controller.
 - [x] AR-14 Combat theme and chrome boundary. Extracted combat style/chrome construction into `CombatChromeStyler` while preserving existing colors, borders, radii, margins, font sizes, timer runtime behavior, placeholders, layout formulas, input, VFX, combat math, resolve presentation, route transitions, `UiUtils.panel_style(...)`, and `/skip` ownership.
+- [x] AR-15 Combat placeholder texture utility. Extracted timer, intent, enemy portrait, and hero portrait code-generated placeholder texture builders into `CombatPlaceholderTextures` while preserving dimensions, colors, alpha, fill rectangles, fallback decisions, VisualRegistry lookup behavior, assignment timing, layout, chrome, combat math, route transitions, and `/skip` ownership.
 
 ## Milestone 10: Balance Pass And QA
 

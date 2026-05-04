@@ -1470,3 +1470,13 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check`, Godot MCP `view_script` checks, focused script-load checks, combat scene instantiate probe, representative style-value probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
   - User manual QA passed after the helper extraction.
+
+## [2026-05-04] code-change | AR-15 Combat Placeholder Texture Utility
+
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_placeholder_textures.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`
+- Changed:
+  - Added `CombatPlaceholderTextures` as the focused combat helper for code-generated timer, intent, enemy portrait, and hero portrait placeholder textures.
+  - Kept `CombatPlayerController` responsible for placeholder fallback decisions, `VisualRegistry` lookups, scene-node texture assignment, visibility toggles, timer runtime behavior, layout, chrome styling, combat math, route transitions, debug callbacks, and `/skip`.
+- Validation:
+  - `git diff --check`, Godot MCP `view_script` checks, focused texture dimension/color/alpha probe, focused script-load and combat scene instantiate probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
+  - A separate async scene-ready texture-assignment probe hit an MCP tool-script parse limitation before execution; user manual QA passed after the helper extraction.

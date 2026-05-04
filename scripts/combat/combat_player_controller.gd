@@ -104,6 +104,7 @@ const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layou
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
 const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
+const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -2001,10 +2002,10 @@ func _sync_enemy_stage() -> void:
 	var intent := _enemy_state.get_current_intent()
 	_intent_label.text = _format_intent_compact(intent)
 	if _intent_badge.texture == null:
-		_intent_badge.texture = _make_intent_placeholder_texture()
+		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
 	_intent_badge.visible = true
 	var enemy_texture := _visuals.enemy_portrait(_enemy_state.enemy_id)
-	_enemy_portrait.texture = enemy_texture if enemy_texture != null else _make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.visible = true
 	_enemy_hp_bar.max_value = float(maxi(1, _enemy_state.max_hp))
 	_enemy_hp_bar.value = float(_enemy_state.current_hp)
@@ -2313,21 +2314,21 @@ func _apply_loadout_rail_layout() -> void:
 
 func _ensure_placeholder_visuals() -> void:
 	if _timer_icon.texture == null:
-		_timer_icon.texture = _make_timer_placeholder_texture()
+		_timer_icon.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_timer_placeholder_texture()
 	_timer_icon.visible = true
 	if _intent_badge.texture == null:
-		_intent_badge.texture = _make_intent_placeholder_texture()
+		_intent_badge.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_intent_placeholder_texture()
 	_intent_badge.visible = true
 	var enemy_texture: Texture2D = null
 	if _enemy_state != null:
 		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
 	if enemy_texture == null:
-		enemy_texture = _make_enemy_placeholder_texture()
+		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_texture
 	_enemy_portrait.visible = true
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
-		hero_texture = _make_hero_placeholder_texture()
+		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
 	_player_portrait.texture = hero_texture
 	_player_portrait.visible = true
 
@@ -2337,56 +2338,12 @@ func _refresh_character_portraits() -> void:
 	if _enemy_state != null:
 		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
 	if enemy_texture == null:
-		enemy_texture = _make_enemy_placeholder_texture()
+		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_texture
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
-		hero_texture = _make_hero_placeholder_texture()
+		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
 	_player_portrait.texture = hero_texture
-
-
-func _make_timer_placeholder_texture() -> Texture2D:
-	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.04, 0.10, 0.16, 0.0))
-	image.fill_rect(Rect2i(28, 14, 40, 12), Color(0.78, 0.88, 0.98, 1.0))
-	image.fill_rect(Rect2i(28, 70, 40, 12), Color(0.78, 0.88, 0.98, 1.0))
-	image.fill_rect(Rect2i(34, 24, 28, 14), Color(0.78, 0.88, 0.98, 1.0))
-	image.fill_rect(Rect2i(34, 58, 28, 14), Color(0.78, 0.88, 0.98, 1.0))
-	image.fill_rect(Rect2i(38, 38, 20, 20), Color(0.44, 0.74, 1.0, 0.95))
-	return ImageTexture.create_from_image(image)
-
-
-func _make_intent_placeholder_texture() -> Texture2D:
-	var image := Image.create(96, 96, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.06, 0.08, 0.11, 0.95))
-	image.fill_rect(Rect2i(4, 4, 88, 88), Color(0.15, 0.10, 0.08, 1.0))
-	image.fill_rect(Rect2i(8, 8, 80, 80), Color(0.45, 0.12, 0.10, 1.0))
-	image.fill_rect(Rect2i(44, 18, 8, 60), Color(0.92, 0.86, 0.72, 1.0))
-	image.fill_rect(Rect2i(26, 48, 44, 8), Color(0.92, 0.86, 0.72, 1.0))
-	return ImageTexture.create_from_image(image)
-
-
-func _make_enemy_placeholder_texture() -> Texture2D:
-	var image := Image.create(260, 230, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.05, 0.08, 0.11, 0.94))
-	image.fill_rect(Rect2i(4, 4, 252, 222), Color(0.48, 0.38, 0.18, 0.95))
-	image.fill_rect(Rect2i(8, 8, 244, 214), Color(0.09, 0.13, 0.17, 0.98))
-	image.fill_rect(Rect2i(98, 28, 64, 58), Color(0.19, 0.24, 0.29, 1.0))
-	image.fill_rect(Rect2i(72, 92, 116, 106), Color(0.16, 0.21, 0.27, 1.0))
-	image.fill_rect(Rect2i(42, 122, 50, 74), Color(0.13, 0.18, 0.24, 1.0))
-	image.fill_rect(Rect2i(168, 122, 50, 74), Color(0.13, 0.18, 0.24, 1.0))
-	return ImageTexture.create_from_image(image)
-
-
-func _make_hero_placeholder_texture() -> Texture2D:
-	var image := Image.create(192, 192, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.05, 0.07, 0.10, 0.96))
-	image.fill_rect(Rect2i(4, 4, 184, 184), Color(0.50, 0.38, 0.18, 0.95))
-	image.fill_rect(Rect2i(8, 8, 176, 176), Color(0.11, 0.13, 0.17, 0.98))
-	image.fill_rect(Rect2i(66, 34, 60, 58), Color(0.20, 0.23, 0.28, 1.0))
-	image.fill_rect(Rect2i(44, 104, 104, 58), Color(0.16, 0.19, 0.25, 1.0))
-	image.fill_rect(Rect2i(134, 120, 28, 42), Color(0.16, 0.27, 0.42, 1.0))
-	return ImageTexture.create_from_image(image)
 
 
 func _apply_zone_guides() -> void:
