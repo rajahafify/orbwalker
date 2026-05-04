@@ -18,6 +18,7 @@ var consumable_slots: int = DEFAULT_CONSUMABLE_SLOTS
 var move_timer_seconds: float = DEFAULT_MOVE_TIMER_SECONDS
 var increase_combo_modifier: int = DEFAULT_INCREASE_COMBO_MODIFIER
 var more_combo_modifier: float = DEFAULT_MORE_COMBO_MODIFIER
+var _mastery_level_provider: Callable
 
 
 func reset_for_new_run() -> void:
@@ -80,9 +81,13 @@ func orb_value(orb_id: int) -> int:
 	if not OrbType.is_valid_id(orb_id):
 		return 0
 	var mastery_bonus := 0
-	if RunState != null and RunState.player_progression_state != null:
-		mastery_bonus = int(RunState.player_progression_state.mastery_level(orb_id))
+	if _mastery_level_provider.is_valid():
+		mastery_bonus = int(_mastery_level_provider.call(orb_id))
 	return mastery_bonus + 1
+
+
+func set_mastery_level_provider(provider: Callable) -> void:
+	_mastery_level_provider = provider
 
 
 func combo_multiplier(combo_count: int) -> float:

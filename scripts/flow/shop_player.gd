@@ -3,6 +3,7 @@ extends Control
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
+const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 
 const DESIGN_SIZE := Vector2(1080, 1920)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 86))
@@ -569,16 +570,7 @@ func _audio_play_sfx(key: String) -> void:
 
 
 func _audio_manager_node() -> Node:
-	var audio := get_node_or_null("/root/AudioManager")
-	if audio != null:
-		return audio
-	var script: GDScript = load("res://scripts/core/audio_manager.gd")
-	if script == null:
-		return null
-	audio = script.new()
-	audio.name = "AudioManager"
-	get_tree().root.add_child(audio)
-	return audio
+	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(get_tree())
 
 
 func _select_equipment_slot(index: int) -> void:
@@ -675,12 +667,15 @@ func _on_continue_button_pressed() -> void:
 		route_id,
 		next_scene
 	)
-	RunState.flow_trace_change_scene(
+	var scene_change_result := RunState.flow_trace_change_scene(
 		get_tree(),
 		next_scene,
 		route_id,
 		"shop_continue_button"
 	)
+	if scene_change_result != OK:
+		_set_status("Continue failed: %s" % _scene_change_failure_reason(scene_change_result), false)
+		_end_transition_lock()
 
 
 func _on_main_menu_button_pressed() -> void:
@@ -700,12 +695,15 @@ func _on_main_menu_button_pressed() -> void:
 		_flow_trace_route_id,
 		"res://scenes/main.tscn"
 	)
-	RunState.flow_trace_change_scene(
+	var scene_change_result := RunState.flow_trace_change_scene(
 		get_tree(),
 		"res://scenes/main.tscn",
 		_flow_trace_route_id,
 		"shop_main_menu_button"
 	)
+	if scene_change_result != OK:
+		_set_status("Main menu failed: %s" % _scene_change_failure_reason(scene_change_result), false)
+		_end_transition_lock()
 
 
 func _result_message(action: String, result: Dictionary) -> String:
@@ -735,6 +733,13 @@ func _end_transition_lock() -> void:
 		_continue_button.disabled = false
 	if _main_menu_button != null:
 		_main_menu_button.disabled = false
+
+
+func _scene_change_failure_reason(result: Variant) -> String:
+	if result is Dictionary:
+		var typed_result := result as Dictionary
+		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
+	return "error_code_%d" % int(result)
 
 
 func _selected_slot_kind(progression_snapshot: Dictionary) -> String:
@@ -1019,6 +1024,4 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 
 
 func _clear_children(node: Node) -> void:
-	for child in node.get_children():
-		node.remove_child(child)
-		child.queue_free()
+	UI_UTILS.clear_children(node)

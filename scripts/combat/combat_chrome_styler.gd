@@ -194,7 +194,6 @@ static func apply_board_focus_theme(board_shadow: Variant, outcome_summary_panel
 		outcome_body_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
 
 	if next_button != null:
-		next_button.text = "Continue"
 		next_button.add_theme_font_size_override("font_size", 22)
 
 

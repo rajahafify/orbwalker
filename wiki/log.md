@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-04 - Post-Review Safety Cleanup
+
+- Added post-review safety notes for shop traced scene-change failure unlocks, stale-reference guards in combat drag/layout helpers, explicit `PlayerState` mastery-provider binding, detailed armor-log formula correction, shared lazy `AudioManagerResolver`, and `UiUtils.clear_children(...)`. (source: `scripts/flow/shop_player.gd`, `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/core/audio_manager_resolver.gd`, `scripts/ui/ui_utils.gd`)
+- Updated [[features]], [[file-map]], and [[known-issues]] to record the new helper ownership and the resolved shop transition-lock failure path. (source: `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`)
+
 ## 2026-05-04 - AR-18 Architecture Review Closeout
 
 - Closed the architecture-review tracker before Milestone 10 by adding AR-18, confirming AR-01 through AR-17 are documented, separating historical deleted-scene evidence from current validation surfaces, and classifying remaining work as Milestone 10 QA or later scoped cleanup. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`)

@@ -1,6 +1,8 @@
 extends RefCounted
 class_name PlayerLoadoutHud
 
+const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
+
 signal equipment_slot_selected(slot_index: int)
 signal consumable_slot_selected(slot_index: int)
 signal sell_slot_requested(slot_type: String, slot_index: int)
@@ -1045,9 +1047,7 @@ func _empty_slot_silhouette(label: String) -> Texture2D:
 
 
 func _clear_children(node: Node) -> void:
-	for child in node.get_children():
-		node.remove_child(child)
-		child.queue_free()
+	UI_UTILS.clear_children(node)
 
 
 func _visual_registry() -> VisualRegistry:

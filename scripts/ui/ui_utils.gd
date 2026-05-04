@@ -19,3 +19,11 @@ static func panel_style(
 	style.content_margin_right = margins.z
 	style.content_margin_bottom = margins.w
 	return style
+
+
+static func clear_children(node: Node) -> void:
+	if node == null:
+		return
+	for child in node.get_children():
+		node.remove_child(child)
+		child.queue_free()

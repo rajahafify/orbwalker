@@ -1,6 +1,8 @@
 extends Control
 
 const AudioStreamLoader = preload("res://scripts/core/audio_stream_loader.gd")
+const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
+const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const MENU_ASSET_MAP_PATH := "res://resources/visual/first_pass_asset_map.json"
@@ -211,16 +213,7 @@ func _audio_play_sfx(key: String) -> void:
 
 
 func _audio_manager_node() -> Node:
-	var audio := get_node_or_null("/root/AudioManager")
-	if audio != null:
-		return audio
-	var script: GDScript = load("res://scripts/core/audio_manager.gd")
-	if script == null:
-		return null
-	audio = script.new()
-	audio.name = "AudioManager"
-	get_tree().root.add_child(audio)
-	return audio
+	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(get_tree())
 
 
 func _start_menu_music() -> void:
@@ -659,16 +652,7 @@ func _make_texture_style(
 
 
 func _make_panel_style(fill: Color, border: Color, border_width: int, corner_radius: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = fill
-	style.border_color = border
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(corner_radius)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	return style
+	return UI_UTILS.panel_style(fill, border, border_width, corner_radius, Vector4(8, 6, 8, 6))
 
 
 func _load_asset_map() -> Dictionary:

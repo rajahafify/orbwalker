@@ -298,6 +298,8 @@ func _build_turn_log_detailed_lines(turn_log: Dictionary, context: Dictionary) -
 	var heart_base := int(turn_log.get("heart_base", 0))
 	var armor_base := int(turn_log.get("armor_base", 0))
 	var gold_base := int(turn_log.get("gold_base", 0))
+	var total_armor_gain := int(turn_log.get("armor_gained", 0))
+	var armor_from_matches := maxi(0, total_armor_gain - prep_armor_added)
 	var heal_formula_total := heart_base + (flat_heal_bonus if heart_base > 0 else 0)
 	var gold_formula_total := gold_base + (flat_gold_bonus if gold_base > 0 else 0)
 	lines.append(
@@ -319,10 +321,10 @@ func _build_turn_log_detailed_lines(turn_log: Dictionary, context: Dictionary) -
 			armor_base,
 			armor_base,
 			damage_combo_multiplier,
-			int(turn_log.get("armor_gained", 0)),
-			int(turn_log.get("armor_gained", 0)),
+			armor_from_matches,
+			armor_from_matches,
 			prep_armor_added,
-			int(turn_log.get("armor_gained", 0)) + prep_armor_added,
+			total_armor_gain,
 		]
 	)
 	lines.append(

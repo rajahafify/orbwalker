@@ -42,7 +42,7 @@ func bind(nodes) -> void:
 func apply_layout(viewport_size):
 	if viewport_size.y <= 0.0:
 		return {"applied": false}
-	var layout_root = _nodes.get("layout_root")
+	var layout_root := _control("layout_root")
 	if layout_root == null:
 		return {"applied": false}
 
@@ -65,10 +65,10 @@ func apply_layout(viewport_size):
 
 	_update_runtime_layout_rects(layout_root.size)
 
-	_apply_design_rect(_nodes.get("top_bar"), _layout_top_bar_rect)
-	_apply_design_rect(_nodes.get("enemy_panel"), _layout_enemy_panel_rect)
-	_apply_design_rect(_nodes.get("combat_strip"), _layout_combat_strip_rect)
-	_apply_design_rect(_nodes.get("board_panel"), _layout_board_panel_rect)
+	_apply_design_rect(_control("top_bar"), _layout_top_bar_rect)
+	_apply_design_rect(_control("enemy_panel"), _layout_enemy_panel_rect)
+	_apply_design_rect(_control("combat_strip"), _layout_combat_strip_rect)
+	_apply_design_rect(_control("board_panel"), _layout_board_panel_rect)
 	_apply_player_hud_override()
 	_apply_enemy_panel_layout()
 	_apply_combat_strip_layout()
@@ -76,14 +76,14 @@ func apply_layout(viewport_size):
 	_apply_player_panel_layout()
 
 	if is_low_vertical:
-		var mastery_strip = _nodes.get("mastery_strip")
+		var mastery_strip := _canvas_item("mastery_strip")
 		if mastery_strip != null:
 			mastery_strip.visible = false
-		var relic_row = _nodes.get("relic_row")
+		var relic_row := _canvas_item("relic_row")
 		if relic_row != null:
 			relic_row.visible = false
 
-	var debug_overlay = _nodes.get("debug_overlay")
+	var debug_overlay := _control("debug_overlay")
 	if debug_overlay != null:
 		debug_overlay.anchor_left = 0.08 if is_compact else 0.58
 		debug_overlay.anchor_top = 0.05
@@ -102,9 +102,9 @@ func apply_layout(viewport_size):
 
 
 func apply_loadout_rail_layout() -> void:
-	var player_loadout_hud = _nodes.get("player_loadout_hud")
-	var equipment_icons = _nodes.get("equipment_icons")
-	var consumable_icons = _nodes.get("consumable_icons")
+	var player_loadout_hud = _node("player_loadout_hud")
+	var equipment_icons := _control("equipment_icons")
+	var consumable_icons := _control("consumable_icons")
 	if player_loadout_hud == null or equipment_icons == null or consumable_icons == null:
 		return
 	player_loadout_hud.apply_loadout_rail_layout(
@@ -124,7 +124,7 @@ func _reset_runtime_layout_rects() -> void:
 
 
 func _apply_player_hud_override() -> void:
-	var player_loadout_hud = _nodes.get("player_loadout_hud")
+	var player_loadout_hud = _node("player_loadout_hud")
 	if player_loadout_hud == null:
 		return
 	player_loadout_hud.set_player_hud_layout_override({
@@ -141,51 +141,51 @@ func _apply_design_rect(control: Control, rect: Rect2) -> void:
 
 
 func _apply_enemy_panel_layout() -> void:
-	var enemy_panel_root = _nodes.get("enemy_panel_root")
+	var enemy_panel_root := _control("enemy_panel_root")
 	if enemy_panel_root != null:
 		enemy_panel_root.position = Vector2.ZERO
 		enemy_panel_root.size = _layout_enemy_panel_rect.size
-	_apply_design_rect(_nodes.get("intent_row"), ENEMY_INTENT_RECT)
-	_apply_design_rect(_nodes.get("enemy_stage"), ENEMY_STAGE_RECT)
-	_apply_design_rect(_nodes.get("enemy_hp_row"), ENEMY_HP_ROW_RECT)
-	var intent_badge = _nodes.get("intent_badge")
+	_apply_design_rect(_control("intent_row"), ENEMY_INTENT_RECT)
+	_apply_design_rect(_control("enemy_stage"), ENEMY_STAGE_RECT)
+	_apply_design_rect(_control("enemy_hp_row"), ENEMY_HP_ROW_RECT)
+	var intent_badge := _control("intent_badge")
 	if intent_badge != null:
 		intent_badge.custom_minimum_size = Vector2(56, 56)
-	var enemy_portrait = _nodes.get("enemy_portrait")
+	var enemy_portrait := _control("enemy_portrait")
 	if enemy_portrait != null:
 		enemy_portrait.size = ENEMY_PORTRAIT_SIZE
 		enemy_portrait.position = Vector2(
 			(ENEMY_STAGE_RECT.size.x - ENEMY_PORTRAIT_SIZE.x) * 0.5,
 			ENEMY_STAGE_RECT.size.y - ENEMY_PORTRAIT_SIZE.y
 		)
-	var enemy_hp_bar = _nodes.get("enemy_hp_bar")
+	var enemy_hp_bar := _control("enemy_hp_bar")
 	if enemy_hp_bar != null:
 		enemy_hp_bar.size = ENEMY_HP_BAR_SIZE
 		enemy_hp_bar.position = Vector2((ENEMY_HP_ROW_RECT.size.x - ENEMY_HP_BAR_SIZE.x) * 0.5, 0.0)
-	var enemy_label = _nodes.get("enemy_label")
+	var enemy_label := _control("enemy_label")
 	if enemy_label != null:
 		enemy_label.position = Vector2(0.0, 22.0)
 		enemy_label.size = Vector2(ENEMY_HP_ROW_RECT.size.x, 28.0)
 
 
 func _apply_combat_strip_layout() -> void:
-	var timer_track = _nodes.get("timer_track")
+	var timer_track := _control("timer_track")
 	if timer_track != null:
 		timer_track.position = Vector2(
 			(_layout_combat_strip_rect.size.x - TIMER_TRACK_SIZE.x) * 0.5,
 			(_layout_combat_strip_rect.size.y - TIMER_TRACK_SIZE.y) * 0.5
 		)
 		timer_track.size = TIMER_TRACK_SIZE
-	var timer_icon = _nodes.get("timer_icon")
+	var timer_icon := _control("timer_icon")
 	if timer_icon != null:
 		timer_icon.custom_minimum_size = TIMER_ICON_SIZE
 
 
 func _apply_board_panel_layout() -> void:
-	var board_panel = _nodes.get("board_panel")
-	var board_surface = _nodes.get("board_surface")
-	var board_view_control = _nodes.get("board_view_control")
-	var board_shadow = _nodes.get("board_shadow")
+	var board_panel := _control("board_panel")
+	var board_surface := _control("board_surface")
+	var board_view_control := _control("board_view_control")
+	var board_shadow := _control("board_shadow")
 	if board_panel == null or board_surface == null or board_view_control == null or board_shadow == null:
 		return
 	board_panel.clip_contents = true
@@ -207,7 +207,7 @@ func _apply_board_panel_layout() -> void:
 	shadow_position.y = clampf(shadow_position.y, 0.0, maxf(0.0, _layout_board_panel_rect.size.y - shadow_size.y))
 	board_shadow.position = shadow_position
 	board_shadow.size = shadow_size
-	var outcome_overlay = _nodes.get("outcome_overlay")
+	var outcome_overlay = _node("outcome_overlay")
 	if outcome_overlay != null:
 		outcome_overlay.sync_layout(_layout_board_panel_rect)
 
@@ -234,34 +234,61 @@ func _update_runtime_layout_rects(layout_root_size: Vector2) -> void:
 
 
 func _apply_player_panel_layout() -> void:
-	_apply_design_rect(_nodes.get("stat_chip_row"), PLAYER_STAT_CHIP_RECT)
-	_apply_design_rect(_nodes.get("combat_meta_row"), PLAYER_META_RECT)
-	_apply_design_rect(_nodes.get("turn_summary_label"), PLAYER_SUMMARY_RECT)
-	var mastery_root = _nodes.get("mastery_root")
+	_apply_design_rect(_control("stat_chip_row"), PLAYER_STAT_CHIP_RECT)
+	_apply_design_rect(_control("combat_meta_row"), PLAYER_META_RECT)
+	_apply_design_rect(_control("turn_summary_label"), PLAYER_SUMMARY_RECT)
+	var mastery_root := _control("mastery_root")
 	if mastery_root != null:
 		mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	var hero_level_badge = _nodes.get("hero_level_badge")
+	var hero_level_badge := _canvas_item("hero_level_badge")
 	if hero_level_badge != null:
 		hero_level_badge.visible = false
-	var player_armor_bar = _nodes.get("player_armor_bar")
+	var player_armor_bar := _canvas_item("player_armor_bar")
 	if player_armor_bar != null:
 		player_armor_bar.visible = false
-	var player_armor_label = _nodes.get("player_armor_label")
+	var player_armor_label := _canvas_item("player_armor_label")
 	if player_armor_label != null:
 		player_armor_label.visible = false
-	var stat_chip_row = _nodes.get("stat_chip_row")
+	var stat_chip_row := _canvas_item("stat_chip_row")
 	if stat_chip_row != null:
 		stat_chip_row.visible = false
-	var combat_meta_row = _nodes.get("combat_meta_row")
+	var combat_meta_row := _canvas_item("combat_meta_row")
 	if combat_meta_row != null:
 		combat_meta_row.visible = false
-	var turn_summary_label = _nodes.get("turn_summary_label")
+	var turn_summary_label := _canvas_item("turn_summary_label")
 	if turn_summary_label != null:
 		turn_summary_label.visible = false
-	var mastery_strip = _nodes.get("mastery_strip")
+	var mastery_strip := _canvas_item("mastery_strip")
 	if mastery_strip != null:
 		mastery_strip.visible = false
 	apply_loadout_rail_layout()
-	var player_portrait = _nodes.get("player_portrait")
+	var player_portrait := _control("player_portrait")
 	if player_portrait != null:
 		player_portrait.custom_minimum_size = PLAYER_PORTRAIT_SIZE
+
+
+func _node(key: String) -> Variant:
+	var value: Variant = _nodes.get(key, null)
+	if value == null:
+		return null
+	if not is_instance_valid(value):
+		return null
+	return value
+
+
+func _control(key: String) -> Control:
+	var value: Variant = _nodes.get(key, null)
+	if value == null or not is_instance_valid(value):
+		return null
+	if value is Control:
+		return value as Control
+	return null
+
+
+func _canvas_item(key: String) -> CanvasItem:
+	var value: Variant = _nodes.get(key, null)
+	if value == null or not is_instance_valid(value):
+		return null
+	if value is CanvasItem:
+		return value as CanvasItem
+	return null

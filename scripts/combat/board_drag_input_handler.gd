@@ -81,7 +81,7 @@ func reset_visuals() -> void:
 	_drag_selected_orb_id = -1
 	_drag_current_cell = Vector2i(-1, -1)
 	_drag_path.clear()
-	if _board_view == null:
+	if not _has_valid_board_view():
 		return
 	_board_view.clear_match_glow()
 	_board_view.selected_cell = Vector2i(-1, -1)
@@ -99,7 +99,7 @@ func abort() -> void:
 
 func refresh_match_glow() -> void:
 	if not _active_drag:
-		if _board_view != null:
+		if _has_valid_board_view():
 			_board_view.clear_match_glow()
 		return
 	_refresh_drag_match_glow()
@@ -116,7 +116,7 @@ func move_time_left() -> float:
 func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictionary:
 	if not input_enabled:
 		return {"handled": false, "action": ACTION_NONE}
-	if _board_view == null or _board_state == null:
+	if not _has_valid_board_view() or _board_state == null:
 		return {"handled": false, "action": ACTION_NONE}
 
 	var start_cell := _board_view.board_position_to_cell(board_local_position)
@@ -142,7 +142,7 @@ func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictiona
 
 
 func _update_drag(board_local_position: Vector2) -> void:
-	if not _active_drag or _board_view == null or _board_state == null:
+	if not _active_drag or not _has_valid_board_view() or _board_state == null:
 		return
 
 	_board_view.drag_pointer_position = board_local_position
@@ -190,7 +190,7 @@ func _is_orthogonally_adjacent(from_cell: Vector2i, to_cell: Vector2i) -> bool:
 
 
 func _refresh_drag_match_glow() -> void:
-	if _board_view == null:
+	if not _has_valid_board_view():
 		return
 	if _match_groups_callback.is_valid():
 		var groups: Variant = _match_groups_callback.call()
@@ -198,3 +198,7 @@ func _refresh_drag_match_glow() -> void:
 			_board_view.set_live_match_glow(groups)
 			return
 	_board_view.clear_match_glow()
+
+
+func _has_valid_board_view() -> bool:
+	return _board_view != null and is_instance_valid(_board_view)

@@ -106,6 +106,7 @@ const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_mana
 const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_builder.gd")
+const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -143,22 +144,10 @@ const SLOT_SIZE := Vector2(88, 88)
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
-const ROOT_RECT := Rect2(Vector2(16, 0), Vector2(1048, 1920))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 70), Vector2(1048, 340))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 424), Vector2(1048, 56))
 const BOARD_PANEL_RECT := Rect2(Vector2(16, 492), Vector2(1048, 584))
-const ENEMY_INTENT_RECT := Rect2(Vector2(296, 16), Vector2(456, 60))
-const ENEMY_STAGE_RECT := Rect2(Vector2(0, 70), Vector2(1048, 216))
-const ENEMY_HP_ROW_RECT := Rect2(Vector2(0, 286), Vector2(1048, 52))
-const ENEMY_PORTRAIT_SIZE := Vector2(280, 216)
-const ENEMY_HP_BAR_SIZE := Vector2(620, 22)
-const BOARD_SURFACE_SIZE := Vector2(480, 576)
-const BOARD_SURFACE_TOP := 4.0
-const BOARD_SURFACE_SIDE_PADDING := 4.0
-const BOARD_SURFACE_BOTTOM_PADDING := 4.0
-const BOARD_SHADOW_OFFSET := Vector2(10, 0)
-const BOARD_SHADOW_EXPAND := Vector2(24, 8)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
 const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(80, 520), Vector2(920, 540))
 const BOSS_REWARD_CARD_GAP := 12.0
@@ -170,29 +159,10 @@ const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(280, 58)
 const OUTCOME_MODAL_Z_INDEX := 180
 const OUTCOME_SCRIM_Z_INDEX := 170
 const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
-const HERO_CARD_RECT := Rect2(Vector2(30, 18), Vector2(220, 226))
-const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 194))
-const HERO_LEVEL_BADGE_RECT := Rect2(Vector2(8, 178), Vector2(60, 40))
-const VITALS_PANEL_RECT := Rect2(Vector2(272, 26), Vector2(714, 176))
-const VITALS_FRAME_RECT := Rect2(Vector2(0, 0), Vector2(714, 176))
-const PLAYER_HP_BAR_RECT := Rect2(Vector2(18, 52), Vector2(678, 54))
-const PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(18, 112), Vector2(434, 34))
-const ARMOR_BADGE_RECT := Rect2(Vector2(474, 112), Vector2(222, 34))
-const PLAYER_STAT_CHIP_RECT := Rect2(Vector2(222, 110), Vector2(552, 42))
-const PLAYER_META_RECT := Rect2(Vector2(230, 190), Vector2(740, 32))
-const PLAYER_SUMMARY_RECT := Rect2(Vector2(230, 224), Vector2(740, 28))
-const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 248), Vector2(996, 150))
-const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 404), Vector2(996, 50))
-const PLAYER_RELIC_RECT := Rect2(Vector2(230, 224), Vector2(740, 38))
-const PLAYER_PORTRAIT_SIZE := Vector2(188, 194)
-const COMBAT_STRIP_INSET := 12.0
 const TIMER_TRACK_SIZE := Vector2(720, 36)
 const TIMER_TRACK_PADDING := 5.0
-const TIMER_ICON_SIZE := Vector2(34, 34)
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
 const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
-const EQUIPMENT_LABEL_RECT := Rect2(Vector2(118, 108), Vector2(296, 22))
-const CONSUMABLE_LABEL_RECT := Rect2(Vector2(514, 108), Vector2(288, 22))
 const FONT_SIZE_TITLE := 20
 const FONT_SIZE_VALUE := 18
 const FONT_SIZE_META := 15
@@ -590,6 +560,7 @@ func _initialize_combat_state() -> void:
 	if RunState.is_current_step_boss_reward():
 		_player_state = RunState.ensure_player_state()
 		_progression_state = RunState.ensure_player_progression_state()
+		_player_state.set_mastery_level_provider(Callable(_progression_state, "mastery_level"))
 		var preview: Dictionary = RunState.current_level_boss_preview()
 		_enemy_state = ENEMY_STATE_SCRIPT.new()
 		_enemy_state.configure_from_blueprint(preview)
@@ -625,6 +596,7 @@ func _initialize_combat_state() -> void:
 
 	_player_state = RunState.ensure_player_state()
 	_progression_state = RunState.ensure_player_progression_state()
+	_player_state.set_mastery_level_provider(Callable(_progression_state, "mastery_level"))
 	var encounter: Dictionary = RunState.current_encounter_snapshot()
 	_enemy_state = ENEMY_STATE_SCRIPT.new()
 	_enemy_state.configure_from_blueprint(encounter)
@@ -1442,16 +1414,7 @@ func _audio_play_sfx(key: String) -> void:
 
 
 func _audio_manager_node() -> Node:
-	var audio := get_node_or_null("/root/AudioManager")
-	if audio != null:
-		return audio
-	var script: GDScript = load("res://scripts/core/audio_manager.gd")
-	if script == null:
-		return null
-	audio = script.new()
-	audio.name = "AudioManager"
-	get_tree().root.add_child(audio)
-	return audio
+	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(get_tree())
 
 
 func _bind_outcome_overlay() -> void:
