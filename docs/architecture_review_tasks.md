@@ -248,8 +248,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ## AR-17: Combat Outcome And Transition Boundary Review
 
-- Status: `not started`
-- Owner/scope: Review the remaining scene transition, outcome routing, and debug fight outcome code in `scripts/combat/combat_player_controller.gd` after lower-risk presentation/debug/input extractions are complete.
+- Status: `done`
+- Owner/scope: Review the remaining scene transition, outcome routing, and debug fight outcome code in `scripts/combat/combat_player_controller.gd` after lower-risk presentation/debug/input extractions are complete. A narrow behavior-preserving transition glue boundary now lives in `_trace_and_change_scene_to_target(...)`, which centralizes the duplicated combat outcome trace/scene-change call used by the standard Next button, boss reward claim, and boss reward skip paths. `RunState` still owns transition semantics, boss reward state, route constants, final summary routing, and run summaries; `CombatOutcomeOverlay` still owns only outcome/boss-reward presentation.
+- Progress: 2026-05-04 source review found a small duplicated route-tracing boundary rather than a new helper file. `_on_next_button_pressed()`, `_claim_boss_reward_option()`, and `_skip_boss_reward_option()` now call `_trace_and_change_scene_to_target(...)` with the same target scenes, route names, trace step names, source strings, and boss-claim `option_index` trace payload as before. Final boss auto-summary routing remains deferred as before. Debug fight win/lose still only prepare pending outcome paths and are intentionally unchanged.
 - Plan:
   - Inventory combat-owned outcome paths: normal victory, boss victory reward overlay, final victory summary, defeat summary, debug fight win/lose, next-button routing, route tracing, failed-transition recovery, and `_pending_next_scene_path` ownership.
   - Identify whether any pure formatting or adapter code can move without weakening the current `RunState` transition contract or `CombatOutcomeOverlay` ownership.
@@ -259,7 +260,10 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not change RunState semantics, boss reward step keys, route names, final summary naming, defeat/victory summary content, scene transitions, audio priority, or overlay layout.
   - Do not merge this with input, VFX, layout, or HUD-sync extraction.
 - Validation:
-  - Run `git status --short --branch` and `git diff --check`.
-  - Use Godot MCP `view_script` for touched controller/helper files; focused RunState route invariant probes; `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn` instantiate probes; retained AR-01 combat result-envelope probe; `play_scene main`; final `get_godot_errors`.
-  - Manual QA should cover normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior.
-- Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, `wiki/known-issues.md`, and `wiki/log.md` if route/outcome ownership changes.
+  - `git status --short --branch` confirmed `codex/ar-17-combat-outcome-transition-boundary`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd`.
+  - Focused RunState route invariant probe preserved normal fight victory to shop, shop advance to combat, boss victory to combat-hosted boss reward, boss reward skip to shop, final boss victory to `res://scenes/flow/final_run_summary.tscn`, and defeat to `res://scenes/flow/final_run_summary.tscn`.
+  - Focused scene instantiate probe passed for `res://scenes/combat/combat_player.tscn`, `res://scenes/flow/shop_player.tscn`, and `res://scenes/flow/final_run_summary.tscn`.
+  - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - User manual QA passed with no issues and no errors after checking normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior.
+- Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the narrowed combat outcome transition glue boundary.

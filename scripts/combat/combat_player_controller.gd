@@ -1407,24 +1407,11 @@ func _on_next_button_pressed() -> void:
 	var target_scene := _pending_next_scene_path
 	_pending_next_scene_path = ""
 	_hide_outcome_summary()
-	var transition_route_id := _flow_trace_route_id
-	if target_scene.find("shop_player.tscn") >= 0:
-		transition_route_id = RunState.flow_trace_begin(
-			"combat_to_shop",
-			target_scene,
-			{"source": "combat_next_button"}
-		)
-	RunState.flow_trace_mark(
-		"combat_before_change_scene_to_file",
-		{"source": "combat_next_button"},
-		transition_route_id,
-		target_scene
-	)
-	RunState.flow_trace_change_scene(
-		get_tree(),
+	_trace_and_change_scene_to_target(
 		target_scene,
-		transition_route_id,
-		"combat_next_button"
+		_flow_trace_route_id,
+		"combat_next_button",
+		"combat_before_change_scene_to_file"
 	)
 
 
@@ -1571,27 +1558,12 @@ func _claim_boss_reward_option(index: int) -> void:
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
 	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
-	var route_id := _flow_trace_route_id
-	if next_scene.find("shop_player.tscn") >= 0:
-		route_id = RunState.flow_trace_begin(
-			"combat_to_shop",
-			next_scene,
-			{
-				"source": "boss_reward_claim",
-				"option_index": index,
-			}
-		)
-	RunState.flow_trace_mark(
-		"combat_before_change_scene_to_file_boss_reward_claim",
-		{"source": "boss_reward_claim"},
-		route_id,
-		next_scene
-	)
-	RunState.flow_trace_change_scene(
-		get_tree(),
+	_trace_and_change_scene_to_target(
 		next_scene,
-		route_id,
-		"boss_reward_claim"
+		_flow_trace_route_id,
+		"boss_reward_claim",
+		"combat_before_change_scene_to_file_boss_reward_claim",
+		{"option_index": index}
 	)
 
 
@@ -1607,24 +1579,42 @@ func _skip_boss_reward_option() -> void:
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
 	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
-	var route_id := _flow_trace_route_id
-	if next_scene.find("shop_player.tscn") >= 0:
-		route_id = RunState.flow_trace_begin(
+	_trace_and_change_scene_to_target(
+		next_scene,
+		_flow_trace_route_id,
+		"boss_reward_skip",
+		"combat_before_change_scene_to_file_boss_reward_skip"
+	)
+
+
+func _trace_and_change_scene_to_target(
+	target_scene: String,
+	current_route_id: String,
+	source: String,
+	before_change_step: String,
+	begin_payload_extra: Dictionary = {}
+) -> void:
+	var transition_route_id := current_route_id
+	if target_scene.find("shop_player.tscn") >= 0:
+		var begin_payload := {"source": source}
+		for key in begin_payload_extra.keys():
+			begin_payload[key] = begin_payload_extra[key]
+		transition_route_id = RunState.flow_trace_begin(
 			"combat_to_shop",
-			next_scene,
-			{"source": "boss_reward_skip"}
+			target_scene,
+			begin_payload
 		)
 	RunState.flow_trace_mark(
-		"combat_before_change_scene_to_file_boss_reward_skip",
-		{"source": "boss_reward_skip"},
-		route_id,
-		next_scene
+		before_change_step,
+		{"source": source},
+		transition_route_id,
+		target_scene
 	)
 	RunState.flow_trace_change_scene(
 		get_tree(),
-		next_scene,
-		route_id,
-		"boss_reward_skip"
+		target_scene,
+		transition_route_id,
+		source
 	)
 
 

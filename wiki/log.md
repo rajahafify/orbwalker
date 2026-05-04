@@ -1490,3 +1490,7 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check`, Godot MCP `get_project_info`, `view_script` checks, focused HUD snapshot and combat/shop instantiate probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
   - User manual QA passed after the HUD snapshot boundary extraction, covering the AR-16 combat/shop HUD acceptance surface.
+
+## 2026-05-04
+
+- AR-17 combat outcome transition boundary review found a narrow behavior-preserving helper inside `scripts/combat/combat_player_controller.gd`: `_trace_and_change_scene_to_target(...)` now owns duplicated combat outcome trace/change-scene glue for standard Continue, boss reward claim, and boss reward skip. `RunState` still owns route semantics and summaries, and `CombatOutcomeOverlay` still owns presentation. Automated Godot MCP validation passed, and user manual QA found no issues or errors across the outcome-route checklist. Updated [[architecture]], [[file-map]], and [[features]]. (source: `scripts/combat/combat_player_controller.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
