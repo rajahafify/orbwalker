@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-04 - Combat Feedback Revamp Tracker
+
+- Created `docs/combat_feedback_revamp_tasks.md` to break the combat feedback UI revamp into CFR-01 through CFR-07: baseline event inventory, floating result numbers, source-to-target timing, mastery activation readability, tiered elemental/resource VFX hooks, enemy attack feedback, and readability QA. (source: `docs/combat_feedback_revamp_tasks.md`)
+- Linked the tracker from [[index]] so the next agent has a durable entry point for the Milestone 9 feedback-readability work. (source: `wiki/index.md`)
+
 ## 2026-05-04 - Post-Review Safety Cleanup
 
 - Added post-review safety notes for shop traced scene-change failure unlocks, stale-reference guards in combat drag/layout helpers, explicit `PlayerState` mastery-provider binding, detailed armor-log formula correction, shared lazy `AudioManagerResolver`, and `UiUtils.clear_children(...)`. (source: `scripts/flow/shop_player.gd`, `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/core/audio_manager_resolver.gd`, `scripts/ui/ui_utils.gd`)

@@ -23,6 +23,7 @@
 
 - [[features]] - Implemented gameplay, UI, and content features
 - [[milestone-9-combat-ui-replication-plan]] - Approved combat UI replication plan for Milestone 9 close-match pass
+- `docs/combat_feedback_revamp_tasks.md` - Combat feedback readability revamp tracker for result numbers, source-to-target timing, mastery activation, and enemy attack feedback
 
 ## Decisions
 
