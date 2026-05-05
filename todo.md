@@ -575,9 +575,10 @@ Tasks:
   - Deliverable: Temporary level 1-2 enemy HP, damage, block, and player starting-stat adjustments.
   - Acceptance: Runs survive long enough to reach multiple shops and test build decisions, while mistakes can still matter.
 
-- [ ] Tune item and relic test access.
+- [x] Tune item and relic test access.
   - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and boosters practical to inspect during repeated runs.
   - Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.
+  - Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one booster when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second booster unless needed. The first level-1 shop now guarantees affordable damage equipment (`Shortsword`) instead of `Coin Purse`; `Shortsword` price is `10`. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.
 
 - [ ] Record first-pass balance assumptions.
   - Deliverable: Short notes in `docs/test_plan.md` or relevant wiki pages describing temporary balance values, what they are meant to test, and what is intentionally not final.

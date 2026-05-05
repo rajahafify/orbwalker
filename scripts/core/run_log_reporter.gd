@@ -103,13 +103,38 @@ func _payload_summary(event_name: String, payload: Dictionary) -> String:
 				int(payload.get("gold_gained", 0)),
 				int(payload.get("damage_to_player", 0)),
 			]
+		"shop_open":
+			var shop_ordinal := int(payload.get("shop_ordinal", 0))
+			var shop: Dictionary = payload.get("shop", {})
+			var prefix := "shop_open"
+			if shop_ordinal > 0:
+				prefix = "shop_open#%d" % shop_ordinal
+			return "%s %s" % [prefix, _shop_snapshot_summary(shop)]
 		"shop_action":
 			var result: Dictionary = payload.get("result", {})
-			return "action=%s ok=%s reason=%s" % [
-				String(payload.get("action", "")),
-				"true" if bool(result.get("ok", false)) else "false",
-				String(result.get("reason", "")),
-			]
+			var details: Dictionary = payload.get("details", {})
+			var line_parts: Array[String] = []
+			line_parts.append("action=%s" % String(payload.get("action", "")))
+			line_parts.append("ok=%s" % ("true" if bool(result.get("ok", false)) else "false"))
+			var reason := String(result.get("reason", ""))
+			if reason != "":
+				line_parts.append("reason=%s" % reason)
+			line_parts.append("gold=%d->%d" % [
+				int(payload.get("gold_before", int(result.get("gold", 0)))),
+				int(payload.get("gold_after", int(result.get("gold", 0)))),
+			])
+			var details_summary := _shop_action_details_summary(details)
+			if details_summary != "":
+				line_parts.append(details_summary)
+			line_parts.append("before{%s}" % _shop_snapshot_summary(payload.get("shop_before", {})))
+			line_parts.append("after{%s}" % _shop_snapshot_summary(payload.get("shop_after", {})))
+			return " | ".join(line_parts)
+		"shop_leave":
+			var leave_parts: Array[String] = []
+			leave_parts.append("skipped=%s" % ("true" if bool(payload.get("mark_skipped", false)) else "false"))
+			leave_parts.append("before{%s}" % _shop_snapshot_summary(payload.get("shop_before", {})))
+			leave_parts.append("after{%s}" % _shop_snapshot_summary(payload.get("shop_after", {})))
+			return " | ".join(leave_parts)
 		"boss_reward_choice":
 			return "relic=%s option=%d" % [
 				String(payload.get("display_name", payload.get("relic_id", ""))),
@@ -124,3 +149,118 @@ func _payload_summary(event_name: String, payload: Dictionary) -> String:
 			if payload.is_empty():
 				return ""
 			return JSON.stringify(payload)
+
+
+func _shop_action_details_summary(details: Dictionary) -> String:
+	if details.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var selected_offer: Dictionary = details.get("selected_offer", {})
+	if not selected_offer.is_empty():
+		parts.append("selected=%s" % _shop_offer_summary(selected_offer, bool(selected_offer.get("owned", false))))
+	var selected_option: Dictionary = details.get("selected_booster_option", {})
+	if not selected_option.is_empty():
+		parts.append("selected_booster=%s" % _booster_option_summary(selected_option))
+	var granted: Dictionary = details.get("granted", {})
+	if not granted.is_empty():
+		parts.append("granted=%s" % _booster_option_summary(granted))
+	var purchased_offer: Dictionary = details.get("purchased_offer", {})
+	if not purchased_offer.is_empty():
+		parts.append("purchased=%s" % _shop_offer_summary(purchased_offer, bool(purchased_offer.get("owned", false))))
+	var replacement: Dictionary = details.get("replacement", {})
+	if not replacement.is_empty():
+		parts.append("replacement=%s" % JSON.stringify(replacement))
+	if bool(details.get("discarded", false)):
+		parts.append("discarded=true")
+	return " ".join(parts)
+
+
+func _shop_snapshot_summary(shop: Dictionary) -> String:
+	if shop.is_empty():
+		return "n/a"
+	var parts: Array[String] = []
+	var offers: Array = shop.get("item_offers", [])
+	parts.append("items=%s" % _shop_offer_list_summary(offers))
+	parts.append("types=%s" % _dict_count_summary(shop.get("item_type_counts", {})))
+	var relic_offer: Dictionary = shop.get("relic_offer", {})
+	if relic_offer.is_empty():
+		parts.append("relic=none")
+	else:
+		parts.append("relic=%s" % _shop_offer_summary(relic_offer, bool(relic_offer.get("owned", false))))
+	parts.append("reroll=%d@$%d afford=%s" % [
+		int(shop.get("reroll_count", 0)),
+		int(shop.get("reroll_cost", 0)),
+		"yes" if bool(shop.get("can_afford_reroll", false)) else "no",
+	])
+	var pending_count := int(shop.get("pending_booster_option_count", 0))
+	parts.append("booster_opts=%d" % pending_count)
+	if pending_count > 0:
+		parts.append("booster_list=%s" % _booster_option_list_summary(shop.get("pending_booster_options", [])))
+	return "; ".join(parts)
+
+
+func _shop_offer_list_summary(offers: Array) -> String:
+	if offers.is_empty():
+		return "none"
+	var parts: Array[String] = []
+	var limit := mini(offers.size(), 4)
+	for idx in range(limit):
+		parts.append(_shop_offer_summary(Dictionary(offers[idx])))
+	if offers.size() > limit:
+		parts.append("+%d more" % (offers.size() - limit))
+	return ", ".join(parts)
+
+
+func _booster_option_list_summary(options: Array) -> String:
+	if options.is_empty():
+		return "none"
+	var parts: Array[String] = []
+	var limit := mini(options.size(), 4)
+	for idx in range(limit):
+		parts.append(_booster_option_summary(Dictionary(options[idx])))
+	if options.size() > limit:
+		parts.append("+%d more" % (options.size() - limit))
+	return ", ".join(parts)
+
+
+func _shop_offer_summary(offer: Dictionary, include_owned: bool = false) -> String:
+	if offer.is_empty():
+		return "none"
+	var sold_out := bool(offer.get("sold_out", false))
+	var available := bool(offer.get("available", not sold_out))
+	var state := "sold" if sold_out else ("open" if available else "closed")
+	var id_label := String(offer.get("content_id", ""))
+	if id_label == "":
+		id_label = String(offer.get("offer_id", ""))
+	var suffix := ""
+	if include_owned:
+		suffix = " owned=%s" % ("yes" if bool(offer.get("owned", false)) else "no")
+	return "%s/%s $%d %s afford=%s%s" % [
+		id_label,
+		String(offer.get("type", "")),
+		int(offer.get("price", 0)),
+		state,
+		"yes" if bool(offer.get("can_afford", false)) else "no",
+		suffix,
+	]
+
+
+func _booster_option_summary(option: Dictionary) -> String:
+	if option.is_empty():
+		return "none"
+	var content_id := String(option.get("content_id", ""))
+	if content_id == "":
+		content_id = String(option.get("display_name", ""))
+	return "%s/%s" % [content_id, String(option.get("type", ""))]
+
+
+func _dict_count_summary(raw_counts: Dictionary) -> String:
+	if raw_counts.is_empty():
+		return "none"
+	var keys: Array = raw_counts.keys()
+	keys.sort()
+	var entries: Array[String] = []
+	for raw_key in keys:
+		var key := String(raw_key)
+		entries.append("%s:%d" % [key, int(raw_counts.get(raw_key, 0))])
+	return "{%s}" % ", ".join(entries)

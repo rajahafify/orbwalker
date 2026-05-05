@@ -417,44 +417,56 @@ func open_shop_for_current_level() -> Dictionary:
 		{
 			"result": _run_log_result_brief(result),
 			"dungeon_level": dungeon_level,
-			"item_offer_count": Array(shop_snapshot.get("item_offers", [])).size(),
-			"has_relic_offer": not Dictionary(shop_snapshot.get("relic_offer", {})).is_empty(),
+			"shop_ordinal": _run_log_next_shop_ordinal(),
+			"shop": _run_log_sanitize_shop_snapshot(shop_snapshot, run_gold),
 		}
 	)
 	return result
 
 
 func reroll_shop_items() -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().reroll_shop_items(self)
-	_run_log_shop_action("reroll", result)
+	_run_log_shop_action("reroll", result, {}, shop_before, gold_before)
 	return result
 
 
 func buy_shop_offer(offer_id: String) -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().buy_offer(self, offer_id)
-	_run_log_shop_action("buy_offer", result, {"offer_id": offer_id})
+	_run_log_shop_action("buy_offer", result, {"offer_id": offer_id}, shop_before, gold_before)
 	return result
 
 
 func sell_equipped_item(slot_index: int) -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().sell_equipped_item(self, slot_index)
-	_run_log_shop_action("sell_equipment", result, {"slot_index": slot_index})
+	_run_log_shop_action("sell_equipment", result, {"slot_index": slot_index}, shop_before, gold_before)
 	return result
 
 
 func sell_consumable_item(slot_index: int) -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().sell_consumable_item(self, slot_index)
-	_run_log_shop_action("sell_consumable", result, {"slot_index": slot_index})
+	_run_log_shop_action("sell_consumable", result, {"slot_index": slot_index}, shop_before, gold_before)
 	return result
 
 
 func choose_booster_option(option_index: int) -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().choose_booster_option(self, option_index)
-	_run_log_shop_action("choose_booster", result, {"option_index": option_index})
+	_run_log_shop_action("choose_booster", result, {"option_index": option_index}, shop_before, gold_before)
 	return result
 
 
 func replace_pending_booster_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().replace_pending_booster_option(self, option_index, slot_index, sell_replaced)
 	_run_log_shop_action(
 		"replace_booster_option",
@@ -463,14 +475,18 @@ func replace_pending_booster_option(option_index: int, slot_index: int, sell_rep
 			"option_index": option_index,
 			"slot_index": slot_index,
 			"sell_replaced": sell_replaced,
-		}
+		},
+		shop_before,
+		gold_before
 	)
 	return result
 
 
 func discard_pending_booster_options() -> Dictionary:
+	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
+	var gold_before := run_gold
 	var result: Dictionary = ensure_shop_service().discard_pending_booster_options(self)
-	_run_log_shop_action("skip_booster", result)
+	_run_log_shop_action("skip_booster", result, {}, shop_before, gold_before)
 	return result
 
 
@@ -692,11 +708,14 @@ func mark_player_defeated(cause: String) -> Dictionary:
 
 
 func advance_after_shop(mark_skipped: bool) -> Dictionary:
+	var shop_before_close: Dictionary = ensure_shop_state().to_snapshot()
 	close_shop(mark_skipped)
 	_run_log_append(
 		"shop_leave",
 		{
 			"mark_skipped": mark_skipped,
+			"shop_before": _run_log_sanitize_shop_snapshot(shop_before_close, run_gold),
+			"shop_after": _run_log_sanitize_shop_snapshot(ensure_shop_state().to_snapshot(), run_gold),
 		}
 	)
 	if not run_active:
@@ -1056,13 +1075,187 @@ func _run_log_result_brief(result: Dictionary) -> Dictionary:
 	}
 
 
-func _run_log_shop_action(action: String, result: Dictionary, request: Dictionary = {}) -> void:
+func _run_log_shop_action(
+	action: String,
+	result: Dictionary,
+	request: Dictionary = {},
+	shop_before_snapshot: Dictionary = {},
+	gold_before: int = -1
+) -> void:
+	if gold_before < 0:
+		gold_before = run_gold
+	var raw_before: Dictionary = shop_before_snapshot.duplicate(true)
+	if raw_before.is_empty():
+		raw_before = ensure_shop_state().to_snapshot()
+	var raw_after: Dictionary = Dictionary(result.get("shop", {})).duplicate(true)
+	if raw_after.is_empty():
+		raw_after = ensure_shop_state().to_snapshot()
+	var gold_after := int(result.get("gold", run_gold))
+	var action_details := _run_log_shop_action_details(action, request, result, raw_before, gold_before)
 	var payload := {
 		"action": action,
 		"request": request.duplicate(true),
 		"result": _run_log_result_brief(result),
+		"gold_before": gold_before,
+		"gold_after": gold_after,
+		"shop_before": _run_log_sanitize_shop_snapshot(raw_before, gold_before),
+		"shop_after": _run_log_sanitize_shop_snapshot(raw_after, gold_after),
 	}
+	if not action_details.is_empty():
+		payload["details"] = action_details
 	_run_log_append("shop_action", payload)
+
+
+func _run_log_shop_action_details(
+	action: String,
+	request: Dictionary,
+	result: Dictionary,
+	shop_before_snapshot: Dictionary,
+	gold_before: int
+) -> Dictionary:
+	var details := {}
+	var selected_offer := _run_log_find_selected_offer(request, shop_before_snapshot, gold_before)
+	if not selected_offer.is_empty():
+		details["selected_offer"] = selected_offer
+	var selected_option := _run_log_find_selected_booster_option(request, shop_before_snapshot)
+	if not selected_option.is_empty():
+		details["selected_booster_option"] = selected_option
+
+	var result_payload: Dictionary = Dictionary(result.get("result", {}))
+	var granted := _run_log_sanitize_booster_option(Dictionary(result_payload.get("granted", {})))
+	if not granted.is_empty():
+		details["granted"] = granted
+	var replacement: Dictionary = Dictionary(result_payload.get("replacement", {}))
+	if not replacement.is_empty():
+		details["replacement"] = replacement.duplicate(true)
+	if bool(result_payload.get("discarded", false)):
+		details["discarded"] = true
+
+	if action == "buy_offer" and bool(result.get("ok", false)) and not selected_offer.is_empty():
+		details["purchased_offer"] = selected_offer
+	return details
+
+
+func _run_log_find_selected_offer(request: Dictionary, shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
+	var offer_id := String(request.get("offer_id", ""))
+	if offer_id == "":
+		return {}
+	for raw_offer in Array(shop_snapshot.get("item_offers", [])):
+		var offer: Dictionary = Dictionary(raw_offer)
+		if String(offer.get("offer_id", "")) == offer_id:
+			return _run_log_sanitize_shop_offer(offer, gold_value)
+	var relic_offer := Dictionary(shop_snapshot.get("relic_offer", {}))
+	if String(relic_offer.get("offer_id", "")) == offer_id:
+		return _run_log_sanitize_shop_relic_offer(relic_offer, gold_value)
+	return {}
+
+
+func _run_log_find_selected_booster_option(request: Dictionary, shop_snapshot: Dictionary) -> Dictionary:
+	if not request.has("option_index"):
+		return {}
+	var option_index := int(request.get("option_index", -1))
+	var options: Array = Array(shop_snapshot.get("pending_booster_options", []))
+	if option_index < 0 or option_index >= options.size():
+		return {}
+	return _run_log_sanitize_booster_option(Dictionary(options[option_index]), option_index)
+
+
+func _run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
+	var item_offers: Array[Dictionary] = []
+	var item_type_counts := {}
+	var has_booster_offer := false
+	for raw_offer in Array(shop_snapshot.get("item_offers", [])):
+		var offer := _run_log_sanitize_shop_offer(Dictionary(raw_offer), gold_value)
+		if offer.is_empty():
+			continue
+		item_offers.append(offer)
+		var offer_type := String(offer.get("type", ""))
+		item_type_counts[offer_type] = int(item_type_counts.get(offer_type, 0)) + 1
+		if offer_type == "booster":
+			has_booster_offer = true
+
+	var relic_offer := _run_log_sanitize_shop_relic_offer(Dictionary(shop_snapshot.get("relic_offer", {})), gold_value)
+	var booster_options: Array[Dictionary] = []
+	var option_index := 0
+	for raw_option in Array(shop_snapshot.get("pending_booster_options", [])):
+		booster_options.append(_run_log_sanitize_booster_option(Dictionary(raw_option), option_index))
+		option_index += 1
+
+	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
+	return {
+		"active": bool(shop_snapshot.get("active", false)),
+		"dungeon_level": int(shop_snapshot.get("dungeon_level", dungeon_level)),
+		"item_offers": item_offers,
+		"item_type_counts": item_type_counts,
+		"has_booster_offer": has_booster_offer,
+		"has_relic_offer": not relic_offer.is_empty(),
+		"relic_offer": relic_offer,
+		"reroll_count": int(shop_snapshot.get("reroll_count", 0)),
+		"reroll_cost": reroll_cost,
+		"can_afford_reroll": gold_value >= reroll_cost,
+		"pending_booster_option_count": booster_options.size(),
+		"pending_booster_options": booster_options,
+		"pending_booster_offer_id": String(shop_snapshot.get("pending_booster_offer_id", "")),
+		"skipped": bool(shop_snapshot.get("skipped", false)),
+	}
+
+
+func _run_log_sanitize_shop_offer(offer: Dictionary, gold_value: int) -> Dictionary:
+	if offer.is_empty():
+		return {}
+	var price := int(offer.get("price", 0))
+	var sold_out := bool(offer.get("sold_out", false))
+	var available := bool(offer.get("available", not sold_out))
+	return {
+		"offer_id": String(offer.get("offer_id", "")),
+		"content_id": String(offer.get("content_id", "")),
+		"display_name": String(offer.get("display_name", "")),
+		"type": String(offer.get("type", "")),
+		"rarity": String(offer.get("rarity", "")),
+		"price": price,
+		"available": available,
+		"sold_out": sold_out,
+		"can_afford": gold_value >= price,
+	}
+
+
+func _run_log_sanitize_shop_relic_offer(offer: Dictionary, gold_value: int) -> Dictionary:
+	if offer.is_empty():
+		return {}
+	var relic_offer := _run_log_sanitize_shop_offer(offer, gold_value)
+	var relic_id := String(relic_offer.get("content_id", ""))
+	relic_offer["owned"] = _run_log_owned_relic_ids().has(relic_id)
+	return relic_offer
+
+
+func _run_log_sanitize_booster_option(option: Dictionary, option_index: int = -1) -> Dictionary:
+	if option.is_empty():
+		return {}
+	var out := {
+		"type": String(option.get("type", "")),
+		"content_id": String(option.get("content_id", "")),
+		"display_name": String(option.get("display_name", "")),
+	}
+	if option_index >= 0:
+		out["option_index"] = option_index
+	return out
+
+
+func _run_log_owned_relic_ids() -> Dictionary:
+	var owned_ids := {}
+	for raw_id in ensure_player_progression_state().relic_ids:
+		var relic_id := String(raw_id)
+		if relic_id != "":
+			owned_ids[relic_id] = true
+	return owned_ids
+
+
+func _run_log_next_shop_ordinal() -> int:
+	var count := 0
+	for entry in _run_log_events:
+		if String(entry.get("event", "")) == "shop_open":
+			count += 1
+	return count + 1
 
 
 func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "", extra: Dictionary = {}) -> Dictionary:

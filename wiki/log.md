@@ -1742,3 +1742,14 @@ Append-only history of wiki operations.
 - Evidence:
   - Run `run_1777968781_770133_2026-05-05t16_13_01` died at retuned Vault Executioner on turn `4`.
   - Run `run_1777969048_434533_2026-05-05t16_17_28` won, but retuned Dungeon 3 lasted `6`, `3`, and `4` turns with real HP damage taken.
+
+## [2026-05-05] code-change | M10-06 Shop Access Run Log Detail
+
+- Source: `scripts/core/run_state.gd`, `scripts/core/run_log_reporter.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Expanded passive Run Log shop payloads with bounded offer snapshots for item and relic stock, including content ids, names, types, rarity, prices, affordability, available/sold-out state, booster presence, type counts, reroll state, and pending booster options.
+  - Added shop action gold before/after, selected offer or booster option details, granted booster content, and shop before/after snapshots.
+  - Added shop leave before/after snapshots so a bought same-level relic remains visible as sold out in exported logs.
+  - Updated text and Markdown Run Log summaries so shop details are readable without manually parsing JSON.
+- Validation:
+  - Godot MCP `get_project_info`, `view_script`, focused first-shop/action/relic Run Log probes, `get_godot_errors`, and `git diff --check` ran. The final focused probes confirmed `shortsword`, booster, selected offer, text summary, and sold-out owned relic evidence in the log payloads; `get_godot_errors` still retained stale diagnostics from failed ad hoc probes.

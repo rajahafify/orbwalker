@@ -155,12 +155,12 @@ Validation evidence:
 
 ## M10-06: Item, Relic, Booster Access Pass
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Make implemented content practical to inspect during repeated runs.
 - Deliverable: Temporary access improvements through economy, offer pools, debug commands, or test-only run setup.
-- Progress: Not started.
-- Blockers: M10-04 and M10-05 should make normal access easier before adding broader debug/test scaffolding.
-- Next action: Use Run Logs and shop/content probes to find which content categories remain hard to inspect.
+- Progress: Completed a scoped shop-access rebalance after review found the content categories needed a clearer prototype shape. Normal shop item offers now guarantee at least one booster when boosters are available, bias the remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second booster unless no non-booster option remains. The first level-1 shop now guarantees affordable damage equipment via `Shortsword` instead of `Coin Purse`; `Shortsword` price was reduced from `12` to the `10` gold first-fight floor. Shop relic offers now persist as one relic per dungeon level: later same-level shops show the bought relic as sold out instead of rolling a replacement, while the next dungeon level rolls a new relic offer.
+- Blockers: None for M10-06. Merchant Compass free-first-reroll behavior remains explicitly deferred; reroll still uses the existing paid reroll path.
+- Next action: Start M10-07 and close out Milestone 10 with focused playtest comparison notes, while keeping deeper rebalance and meta-progression content access for Milestone 11 or later.
 - Acceptance:
   - Equipment, mastery cards, consumables, relics, and boosters can all be exercised without many failed economy-starved runs.
   - Any debug/test shortcut is clearly marked as playtest scaffolding.
@@ -169,6 +169,22 @@ Validation evidence:
   - Godot MCP shop/service probes for offer pools and affordability.
   - Manual or Run Log evidence showing each content category was reached.
 - Docs/wiki impact: Record access assumptions and any deferred content-access risks in `docs/test_plan.md` or wiki as appropriate.
+
+Validation evidence:
+
+- `git status --short --branch` confirmed work on `codex/milestone-10`.
+- Explorer read-only pass found current shop pools include equipment, consumables, mastery cards, and boosters; booster prices are `9` and `10`; shop relic offers filter owned relics; boss rewards offer unowned relics first; and Merchant Compass free-first-reroll is still not implemented/deferred. Follow-up design review changed M10-06 from evidence-only into a scoped offer-mix and relic-persistence rebalance.
+- Tuned Run Log comparison showed content access across recent M10-05 accepted runs. `run_1777962841_273458_2026-05-05t14_34_01` opened five shops, bought five equipment items, bought one booster, claimed one mastery-card booster option, bought another mastery card, chose `Stalwart Mantle`, and ended with `7` gold. `run_1777969048_434533_2026-05-05t16_17_28` was a full victory with eight shop opens, eleven successful buys, two booster actions, two boss reward events, `241` total gold earned, and `15` final gold. Recent tuned logs also included consumable purchases, so consumable access is present but should remain a closeout observation item because it appears less frequently than equipment/mastery access.
+- Focused Godot MCP shop/access probe before the rebalance confirmed content counts of `25` equipment, `6` consumables, `6` mastery cards, `2` boosters, and `5` relics. It also showed the old first-shop guarantee was `equipment:coin_purse`, and boosters appeared in only `12` of `60` first-shop samples.
+- Post-rebalance Godot MCP composition probe over `240` generated shops confirmed booster guarantee and softer offer weighting: `240` booster slots, `387` equipment slots, `74` mastery-card slots, and `19` consumable slots; all sampled shops had a booster, no duplicate offers appeared, and equipment remained the dominant non-booster category.
+- Focused Godot MCP first-shop probe confirmed the first shop at `10` gold now includes `shortsword`, a booster, and no `coin_purse` guarantee; `Shortsword` is the intended affordable first damage item.
+- Focused Godot MCP booster probe bought a `10`-gold `fire_booster` and produced three non-relic options: `fire_scroll` consumable, `ruby_brooch` equipment, and `fire_mastery` mastery card.
+- Focused Godot MCP relic filter probe pre-owned `deep_pockets`, then opened a shop and confirmed the shop relic offer was a different relic (`crown_of_chains`), preserving owned-relic filtering.
+- Focused Godot MCP relic persistence probe bought the level relic, reopened later same-level shops, and confirmed the same relic id stayed visible as `sold_out=true`; after level advance, the next level generated a different unsold relic offer.
+- Focused Godot MCP full-slot probe confirmed booster option choice fails explicitly with `equipment_slots_full` or `consumable_slots_full` when those inventories are full, while `replace_pending_booster_option(...)` succeeds for both equipment and consumable replacement paths.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main.tscn` as the main scene. `view_script` passed for `shop_service.gd` and `content_registry.gd`. `git diff --check` passed. `get_godot_errors` retained two stale enum reload diagnostics from older sessions and failed ad hoc probe attempts; the final focused M10-06 probes executed successfully.
+- Follow-up Run Log observability patch improved future M10-06 evidence capture without changing shop behavior. `shop_open` now exports sanitized item offer, relic offer, type-count, booster-presence, reroll, and pending-booster details; `shop_action` exports gold before/after plus selected/purchased/granted details and shop before/after snapshots; `shop_leave` keeps a final before/after shop snapshot so sold-out relic state is visible in exported logs.
+- Focused Godot MCP Run Log probes confirmed first-shop exports include `shortsword`, a booster, and relic fields; booster buy actions include selected offer and shop before/after details; text reports summarize shop data; and a bought same-level relic logs as `sold_out=true`, `available=false`, and `owned=true` in the next same-level shop.
 
 ## M10-07: Focused Playtest Loop And Closeout
 

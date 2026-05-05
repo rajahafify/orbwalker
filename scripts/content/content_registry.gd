@@ -270,7 +270,7 @@ func _build_default_content() -> Dictionary:
 				"Shortsword",
 				"common",
 				OrbType.Id.FIRE,
-				12,
+				10,
 				"Deal +2 flat elemental damage each turn.",
 				"equipment_shortsword",
 				{"flat_damage_bonus": 2}

@@ -88,7 +88,7 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 			return _result(shop, run_state.run_gold, false, String(relic_apply.get("reason", "offer_apply_failed")))
 		shop.relic_offer["sold_out"] = true
 		shop.relic_offer["available"] = false
-		run_state.set_relic_offer_id_for_level(shop.dungeon_level, "")
+		run_state.set_relic_offer_id_for_level(shop.dungeon_level, String(shop.relic_offer.get("content_id", "")))
 		return _result(shop, run_state.run_gold, true, "", {
 			"offer_id": offer_id,
 			"type": ITEM_TYPE_RELIC,
@@ -304,7 +304,10 @@ func _apply_booster_option_to_slot(run_state: Node, content, option: Dictionary,
 func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
 	var owned_relic_ids := _owned_relic_ids(run_state)
 	var relic_id: String = run_state.relic_offer_id_for_level(level)
+	var cached_offer_owned := false
 	if relic_id != "" and owned_relic_ids.has(relic_id):
+		cached_offer_owned = true
+	if relic_id != "" and content.get_relic(relic_id).is_empty():
 		relic_id = ""
 		run_state.set_relic_offer_id_for_level(level, "")
 	if relic_id == "":
@@ -314,16 +317,21 @@ func _resolve_relic_offer(run_state: Node, content, level: int) -> Dictionary:
 		var chosen: Dictionary = relic_pool[_rng.randi_range(0, relic_pool.size() - 1)]
 		relic_id = String(chosen.get("id", ""))
 		run_state.set_relic_offer_id_for_level(level, relic_id)
+		cached_offer_owned = false
 	var relic_data: Dictionary = content.get_relic(relic_id)
 	if relic_data.is_empty():
 		return {}
-	return _offer_from_content(
+	var offer := _offer_from_content(
 		content,
 		ITEM_TYPE_RELIC,
 		relic_data,
 		level,
 		run_state.ensure_shop_state().next_offer_id("relic")
 	)
+	if cached_offer_owned:
+		offer["sold_out"] = true
+		offer["available"] = false
+	return offer
 
 
 func _available_relic_pool(run_state: Node, content, level: int) -> Array:
@@ -351,7 +359,25 @@ func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictio
 	if not guaranteed_entry.is_empty():
 		selected_entries.append(guaranteed_entry)
 		pool = _pool_without_entry(pool, guaranteed_entry)
-	selected_entries.append_array(_pick_random_entries(pool, 3 - selected_entries.size()))
+	if selected_entries.size() < 3 and _entries_include_type(pool, ITEM_TYPE_BOOSTER) and not _entries_include_type(selected_entries, ITEM_TYPE_BOOSTER):
+		var guaranteed_booster := _pick_random_entry_of_type(pool, ITEM_TYPE_BOOSTER)
+		if not guaranteed_booster.is_empty():
+			selected_entries.append(guaranteed_booster)
+			pool = _pool_without_entry(pool, guaranteed_booster)
+	while selected_entries.size() < 3:
+		var has_booster_selected := _entries_include_type(selected_entries, ITEM_TYPE_BOOSTER)
+		var allow_booster := not has_booster_selected or not _entries_include_non_booster(pool)
+		var weighted_entry := _pick_weighted_entry(
+			pool,
+			_count_entries_of_type(selected_entries, ITEM_TYPE_CONSUMABLE) < 1,
+			allow_booster
+		)
+		if weighted_entry.is_empty():
+			break
+		selected_entries.append(weighted_entry)
+		pool = _pool_without_entry(pool, weighted_entry)
+	if selected_entries.size() < 3:
+		selected_entries.append_array(_pick_random_entries(pool, 3 - selected_entries.size()))
 	var offers: Array[Dictionary] = []
 	for entry in selected_entries:
 		var entry_type := String(entry.get("type", ""))
@@ -379,16 +405,21 @@ func _first_shop_guarantee_entry(run_state: Node, content, level: int, pool: Arr
 	var target_price := 10
 	if run_state.has_method("prototype_fight_gold_reward_for"):
 		target_price = int(run_state.prototype_fight_gold_reward_for(level, "enemy_1"))
-	var preferred := [
-		{"type": ITEM_TYPE_EQUIPMENT, "id": "coin_purse"},
-		{"type": ITEM_TYPE_BOOSTER, "id": "fire_booster"},
-	]
-	for preferred_entry in preferred:
-		var match := _matching_pool_entry_with_price(content, preferred_entry, level, target_price, pool)
-		if not match.is_empty():
-			return match
+	var preferred_shortsword := _matching_pool_entry_with_price(
+		content,
+		{"type": ITEM_TYPE_EQUIPMENT, "id": "shortsword"},
+		level,
+		target_price,
+		pool
+	)
+	if not preferred_shortsword.is_empty() and _entry_is_damage_equipment(content, preferred_shortsword):
+		return preferred_shortsword
+	var fallback_damage := _first_affordable_damage_equipment(content, level, target_price, pool)
+	if not fallback_damage.is_empty():
+		return fallback_damage
 	for entry in pool:
-		if _entry_offer_price(content, entry, level) == target_price:
+		var entry_price := _entry_offer_price(content, entry, level)
+		if entry_price > 0 and entry_price <= target_price:
 			return entry.duplicate(true)
 	return {}
 
@@ -422,6 +453,123 @@ func _pool_without_entry(pool: Array[Dictionary], entry_to_remove: Dictionary) -
 			continue
 		filtered.append(entry)
 	return filtered
+
+
+func _entries_include_type(entries: Array, target_type: String) -> bool:
+	for raw_entry in entries:
+		var entry: Dictionary = Dictionary(raw_entry)
+		if String(entry.get("type", "")) == target_type:
+			return true
+	return false
+
+
+func _entries_include_non_booster(entries: Array) -> bool:
+	for raw_entry in entries:
+		var entry: Dictionary = Dictionary(raw_entry)
+		if String(entry.get("type", "")) != ITEM_TYPE_BOOSTER:
+			return true
+	return false
+
+
+func _count_entries_of_type(entries: Array, target_type: String) -> int:
+	var count := 0
+	for raw_entry in entries:
+		var entry: Dictionary = Dictionary(raw_entry)
+		if String(entry.get("type", "")) == target_type:
+			count += 1
+	return count
+
+
+func _pick_random_entry_of_type(pool: Array[Dictionary], target_type: String) -> Dictionary:
+	var candidates: Array = []
+	for entry in pool:
+		if String(entry.get("type", "")) != target_type:
+			continue
+		candidates.append(entry)
+	if candidates.is_empty():
+		return {}
+	return Dictionary(candidates[_rng.randi_range(0, candidates.size() - 1)]).duplicate(true)
+
+
+func _pick_weighted_entry(pool: Array[Dictionary], allow_consumable: bool, allow_booster: bool = true) -> Dictionary:
+	var weighted_candidates: Array = []
+	var total_weight := 0
+	for entry in pool:
+		var entry_type := String(entry.get("type", ""))
+		if entry_type == ITEM_TYPE_CONSUMABLE and not allow_consumable:
+			continue
+		if entry_type == ITEM_TYPE_BOOSTER and not allow_booster:
+			continue
+		var weight := _entry_type_weight(entry_type)
+		if weight <= 0:
+			continue
+		total_weight += weight
+		weighted_candidates.append({
+			"entry": entry,
+			"weight": weight,
+		})
+	if total_weight <= 0:
+		return {}
+	var roll := _rng.randi_range(1, total_weight)
+	var cumulative := 0
+	for candidate in weighted_candidates:
+		cumulative += int(candidate.get("weight", 0))
+		if roll <= cumulative:
+			return Dictionary(candidate.get("entry", {})).duplicate(true)
+	return {}
+
+
+func _entry_type_weight(entry_type: String) -> int:
+	match entry_type:
+		ITEM_TYPE_EQUIPMENT:
+			return 6
+		ITEM_TYPE_MASTERY_CARD:
+			return 3
+		ITEM_TYPE_CONSUMABLE:
+			return 1
+		ITEM_TYPE_BOOSTER:
+			return 1
+		_:
+			return 1
+
+
+func _first_affordable_damage_equipment(content, level: int, max_price: int, pool: Array[Dictionary]) -> Dictionary:
+	var best_entry: Dictionary = {}
+	var best_price := 2147483647
+	for entry in pool:
+		if String(entry.get("type", "")) != ITEM_TYPE_EQUIPMENT:
+			continue
+		if not _entry_is_damage_equipment(content, entry):
+			continue
+		var price := _entry_offer_price(content, entry, level)
+		if price <= 0 or price > max_price:
+			continue
+		if price < best_price:
+			best_price = price
+			best_entry = entry.duplicate(true)
+	return best_entry
+
+
+func _entry_is_damage_equipment(content, entry: Dictionary) -> bool:
+	if String(entry.get("type", "")) != ITEM_TYPE_EQUIPMENT:
+		return false
+	var item_id := String(entry.get("id", ""))
+	if item_id == "":
+		return false
+	var equipment_data: Dictionary = content.get_equipment(item_id)
+	if equipment_data.is_empty():
+		return false
+	var modifiers: Dictionary = equipment_data.get("combat_modifiers", {})
+	if int(modifiers.get("flat_damage_bonus", 0)) > 0:
+		return true
+	var orb_bonus: Dictionary = modifiers.get("orb_bonus_by_id", {})
+	for raw_key in orb_bonus.keys():
+		var orb_id := int(raw_key)
+		if orb_id != OrbType.Id.FIRE and orb_id != OrbType.Id.ICE and orb_id != OrbType.Id.EARTH:
+			continue
+		if int(orb_bonus.get(raw_key, 0)) > 0:
+			return true
+	return false
 
 
 func _generate_booster_options(run_state: Node, content, booster_data: Dictionary) -> Array[Dictionary]:
