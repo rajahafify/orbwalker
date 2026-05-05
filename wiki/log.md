@@ -1629,3 +1629,14 @@ Append-only history of wiki operations.
   - Kept M10-02 baseline capture unstarted so M10-01 remains the active focus.
 - Validation:
   - `git diff --check` passed.
+
+## [2026-05-05] docs-change | M10-02 Untuned Baseline Runs
+
+- Source: `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/known-issues.md`, `logs/`
+- Changed:
+  - Marked M10-02 done after verifying 3 human-played untuned Run Logs with matching JSON, Markdown, and text exports.
+  - Recorded baseline outcomes: high-skill defeat at level 2 boss, intentional new-player simulation defeat in level 1 fight 1, and a third defeat at level 3 enemy 1.
+  - Documented mixed blocker categories before tuning: first-shop affordability, first-fight survivability/combat effectiveness, and level 2-3 enemy pressure.
+  - Updated the next action to M10-03 prototype balance levers before direct economy or survivability tuning.
+- Validation:
+  - `git status --short --branch`, local Run Log inspection, `git diff --check`, Godot MCP `get_project_info`, and `get_godot_errors` were run. No automated probe runs were counted as baseline evidence.

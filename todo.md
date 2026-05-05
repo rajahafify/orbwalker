@@ -556,7 +556,12 @@ Tasks:
 - [x] Add run-log baseline evidence capture.
   - Deliverable: Passive Run Log with opt-in JSON/text/Markdown file generation under gitignored `logs/` plus an inventory of active balance data owners.
   - Acceptance: M10-01 identifies orb weights, run gold, combat formulas, shop pricing, active encounter stats, debug commands, and current validation surfaces before tuning. Runtime logging records run, fight, turn, shop, boss reward, and run-end events without changing combat math, shop behavior, route semantics, balance values, or presentation timing.
-  - Note: 2026-05-05 M10-01 added `RunState.run_log_snapshot()`, `run_log_export_json(...)`, `run_log_export_text()`, `run_log_export_markdown()`, and a main-menu `Generate Log` toggle for per-run export to `logs/` on run end. Focused Godot MCP probes verified representative events and generated files; normal untuned baseline playthroughs remain M10-02.
+  - Note: 2026-05-05 M10-01 added `RunState.run_log_snapshot()`, `run_log_export_json(...)`, `run_log_export_text()`, `run_log_export_markdown()`, and a main-menu `Generate Log` toggle for per-run export to `logs/` on run end. Focused Godot MCP probes verified representative events and generated files; normal untuned baseline playthroughs were completed in M10-02.
+
+- [x] Capture untuned baseline runs.
+  - Deliverable: At least 3 human-played untuned Run Logs from normal `Start Run` playthroughs, not automated probes, `/skip`, forced outcomes, debug-command runs, or simulated editor runs.
+  - Acceptance: M10-02 records level/fight reach, turns per fight, gold, shop access, purchases, deaths, item/relic access, and blocker categories before any balance tuning.
+  - Note: 2026-05-05 M10-02 verified 3 human-played baseline logs. The runs covered a high-skill defeat at level 2 boss, an intentional new-player simulation defeat in level 1 fight 1, and a third defeat at level 3 enemy 1. Current blockers are mixed: first-shop affordability, first-fight survivability/combat effectiveness, and level 2-3 enemy pressure.
 
 - [ ] Add or expose playtest balance levers.
   - Deliverable: Configurable values for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test settings.

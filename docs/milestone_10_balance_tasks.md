@@ -58,18 +58,18 @@ Validation evidence:
 
 ## M10-02: Untuned Baseline Runs
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Capture current balance before any tuning.
 - Deliverable: At least 3 exported baseline Run Logs from normal early runs, plus a short blocker summary.
-- Progress: Not started.
-- Blockers: M10-01 should provide exportable logs first.
-- Next action: Run normal early playthroughs with current values and summarize the evidence before changing balance values.
+- Progress: Verified 3 human-played untuned Run Logs under `logs/` with matching JSON/Markdown/text exports. `run_1777938769_177353_2026-05-05t07_52_49` is annotated in `wiki/log-notes.md` as a high-skill player run; it reached level 2 boss, cleared 5 normal enemies and 1 boss, opened 5 shops, bought 1 equipment and 1 mastery card, then died to Burning Knight after 38 total turns and 35 gold gained. `run_1777940350_422781_2026-05-05t08_19_10` is annotated as an intentional new-player simulation; it died in level 1 fight 1 after 12 turns with 10 gold gained and no shop access. `run_1777941462_641881_2026-05-05t08_37_42` reached level 3 enemy 1, cleared 6 normal enemies and 2 bosses, opened 6 shops, bought 1 consumable and 1 equipment, then died to Vault Executioner after 30 total turns and 30 gold gained. These are human-played baseline logs, not automated probes.
+- Blockers: None for baseline capture. The evidence remains small, so tuning should avoid overfitting to one skilled run or one new-player simulation.
+- Next action: Start M10-03 and add the prototype balance lever layer without tuning values directly from these logs yet.
 - Acceptance:
   - Baseline records level 1 fight/shop outcomes and reaches as far as current balance naturally allows.
   - Notes identify whether the main blocker is gold starvation, enemy damage, enemy HP, shop prices, item access, or usability.
   - No balance values are changed in this task.
 - Validation:
-  - Exported Run Logs exist locally.
+  - Exported Run Logs exist locally; current count is 3 of 3 required human-played logs.
   - `docs/test_plan.md` records the baseline summary without marking tuning tasks complete.
 - Docs/wiki impact: Update `docs/test_plan.md` with baseline evidence. Wiki updates are only needed if durable workflow knowledge changes.
 
