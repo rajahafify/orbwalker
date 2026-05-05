@@ -1711,3 +1711,34 @@ Append-only history of wiki operations.
   - Preserved level 3 encounter stat signatures and M10-04 fight rewards `10/12/14`.
 - Validation:
   - Godot MCP `view_script`, focused stat/identity probe with `ResourceLoader.CACHE_MODE_IGNORE`, `get_godot_errors`, and `git diff --check` passed. A normal `load(...)` probe observed stale cached script values before the cache-ignore rerun confirmed the current source.
+
+## [2026-05-05] qa-evidence | M10-05 One-Combo Run
+
+- Source: `logs/run_1777966488_296058_2026-05-05t15_34_48.json`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Observed:
+  - One-combo-focused run cleared L1 enemy 1 in `12` turns and L1 enemy 2 in `9` turns.
+  - The run died to Iron Gate on boss turn `17`, with Iron Gate still at `67/85 HP`.
+  - The player accepted this as the intended target: one-combo play can clear the two Dungeon 1 normal fights, but the Dungeon 1 boss can defeat a player who does not improve damage output.
+- Notes:
+  - No runtime values changed for this evidence update.
+
+## [2026-05-05] code-change | M10-05 Dungeon 3 Damage Check
+
+- Source: `scripts/core/run_state.gd`, `logs/run_1777967813_853019_2026-05-05t15_56_53.json`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Raised temporary level 3 normal HP/damage levers to `2.2/1.20`.
+  - Raised temporary level 3 boss HP/damage levers to `2.60/1.30`.
+  - Preserved Dungeon 1, Dungeon 2, combat math, RunState routing, passive Run Log behavior, and M10-04 fight-gold/shop rules.
+- Evidence:
+  - The high-effort run cleared Vault Executioner in `2` turns, Goldbound Keeper in `1` turn, and Prism Warden in `1` turn with `0` HP loss across Dungeon 3, so the last dungeon was too weak.
+  - Godot MCP `get_project_info` and focused editor-script source probe confirmed the current temporary lever values. A follow-up tuned run should verify whether Dungeon 3 now holds up as the late damage check.
+
+## [2026-05-05] decision | M10-05 Early Balance Accepted For Now
+
+- Source: `logs/run_1777968781_770133_2026-05-05t16_13_01.json`, `logs/run_1777969048_434533_2026-05-05t16_17_28.json`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Decided:
+  - Keep the current M10-05 early-balance values as acceptable prototype scaffolding.
+  - Defer deeper combat rebalance until after Milestone 11 meta progression changes the player power curve.
+- Evidence:
+  - Run `run_1777968781_770133_2026-05-05t16_13_01` died at retuned Vault Executioner on turn `4`.
+  - Run `run_1777969048_434533_2026-05-05t16_17_28` won, but retuned Dungeon 3 lasted `6`, `3`, and `4` turns with real HP damage taken.

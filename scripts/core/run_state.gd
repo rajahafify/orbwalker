@@ -36,10 +36,10 @@ const PROTOTYPE_BALANCE_DEFAULTS := {
 	"level_2_normal_damage_multiplier": 1.00,
 	"level_2_boss_hp_multiplier": 1.0,
 	"level_2_boss_damage_multiplier": 1.10,
-	"level_3_normal_hp_multiplier": 1.0,
-	"level_3_normal_damage_multiplier": 1.0,
-	"level_3_boss_hp_multiplier": 1.0,
-	"level_3_boss_damage_multiplier": 1.0,
+	"level_3_normal_hp_multiplier": 2.2,
+	"level_3_normal_damage_multiplier": 1.20,
+	"level_3_boss_hp_multiplier": 2.60,
+	"level_3_boss_damage_multiplier": 1.30,
 }
 const LEVEL_SEQUENCE: Array[String] = [
 	"enemy_1",
