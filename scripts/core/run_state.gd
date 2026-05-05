@@ -23,6 +23,9 @@ const PROTOTYPE_BALANCE_DEFAULTS := {
 	"gold_orb_spawn_weight_multiplier": 1.0,
 	"shop_price_multiplier": 1.0,
 	"reroll_cost_multiplier": 1.0,
+	"level_1_fight_gold_reward": 10,
+	"level_2_fight_gold_reward": 12,
+	"level_3_fight_gold_reward": 14,
 	"enemy_hp_multiplier": 1.0,
 	"enemy_damage_multiplier": 1.0,
 }
@@ -293,6 +296,8 @@ func run_contract_snapshot() -> Dictionary:
 			"prototype_balance_levers_snapshot",
 			"set_prototype_balance_levers",
 			"reset_prototype_balance_levers",
+			"prototype_fight_gold_reward_for",
+			"current_shop_ordinal_in_level",
 		],
 		"content_dependency": {
 			"content_registry_owner": "ContentRegistry",
@@ -324,6 +329,12 @@ func set_prototype_balance_levers(levers: Dictionary) -> Dictionary:
 
 func reset_prototype_balance_levers() -> Dictionary:
 	return set_prototype_balance_levers(PROTOTYPE_BALANCE_DEFAULTS)
+
+
+func prototype_fight_gold_reward_for(level: int, _step_key: String = "") -> int:
+	var clamped_level := clampi(level, 1, MAX_DUNGEON_LEVELS)
+	var key := "level_%d_fight_gold_reward" % clamped_level
+	return maxi(0, int(_prototype_balance_levers.get(key, PROTOTYPE_BALANCE_DEFAULTS.get(key, 0))))
 
 
 func progression_snapshot() -> Dictionary:
@@ -507,6 +518,16 @@ func is_current_step_shop() -> bool:
 	return current_step_key == "shop"
 
 
+func current_shop_ordinal_in_level() -> int:
+	if not is_current_step_shop():
+		return 0
+	var ordinal := 0
+	for index in range(_step_index + 1):
+		if String(LEVEL_SEQUENCE[index]) == "shop":
+			ordinal += 1
+	return ordinal
+
+
 func is_current_step_boss_reward() -> bool:
 	return current_step_key == "boss_relic_reward"
 
@@ -635,17 +656,20 @@ func mark_fight_victory() -> Dictionary:
 		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
 	if not is_current_step_fight():
 		return {"ok": false, "reason": "not_fight_step", "next_scene": SCENE_MAIN}
-	_run_log_append("fight_end", _run_log_capture_fight_outcome_payload("victory"))
+	var base_gold_reward := add_gold(prototype_fight_gold_reward_for(dungeon_level, current_step_key))
+	_run_log_append("fight_end", _run_log_capture_fight_outcome_payload("victory", "", {
+		"base_gold_reward": base_gold_reward,
+	}))
 
 	enemies_defeated += 1
 	if bool(_current_encounter.get("is_boss", false)):
 		bosses_defeated += 1
 		if dungeon_level >= MAX_DUNGEON_LEVELS:
 			_finalize_run(true, "Final boss defeated.")
-			return _transition_result()
+			return _transition_result({"base_gold_reward": base_gold_reward})
 		_prepare_boss_relic_reward_options()
 	_advance_sequence()
-	return _transition_result()
+	return _transition_result({"base_gold_reward": base_gold_reward})
 
 
 func mark_player_defeated(cause: String) -> Dictionary:
@@ -1029,7 +1053,7 @@ func _run_log_shop_action(action: String, result: Dictionary, request: Dictionar
 	_run_log_append("shop_action", payload)
 
 
-func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "") -> Dictionary:
+func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "", extra: Dictionary = {}) -> Dictionary:
 	var payload := {
 		"outcome": outcome,
 		"dungeon_level": dungeon_level,
@@ -1041,17 +1065,22 @@ func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "")
 	}
 	if cause != "":
 		payload["cause"] = cause
+	for key in extra.keys():
+		payload[key] = extra[key]
 	return payload
 
 
-func _transition_result() -> Dictionary:
-	return {
+func _transition_result(extra: Dictionary = {}) -> Dictionary:
+	var result := {
 		"ok": true,
 		"reason": "",
 		"next_scene": next_scene_path(),
 		"step": current_step_key,
 		"dungeon_level": dungeon_level,
 	}
+	for key in extra.keys():
+		result[key] = extra[key]
+	return result
 
 
 func next_scene_path() -> String:
@@ -1403,7 +1432,7 @@ func _normalized_prototype_balance_levers(levers: Dictionary) -> Dictionary:
 		if not levers.has(key):
 			continue
 		match key:
-			"starting_gold":
+			"starting_gold", "level_1_fight_gold_reward", "level_2_fight_gold_reward", "level_3_fight_gold_reward":
 				normalized[key] = maxi(0, int(levers.get(key, normalized[key])))
 			_:
 				normalized[key] = maxf(0.0, float(levers.get(key, normalized[key])))

@@ -1405,7 +1405,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			_pending_next_scene_path = ""
 			_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
 			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
-			_show_boss_reward_summary(_turn_logger.build_victory_gold_summary(turn_log))
+			_show_boss_reward_summary(_turn_logger.build_victory_gold_summary(turn_log, transition))
 			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
 			RunState.flow_trace_mark("combat_boss_reward_available", {}, _flow_trace_route_id)
 		else:
@@ -1430,7 +1430,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			_status_label.text = _turn_logger.build_victory_status(turn_log, transition) + " Press Continue."
 			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
 			_pending_next_scene_path = next_scene
-			_show_outcome_summary("Victory", _turn_logger.build_victory_gold_summary(turn_log), true)
+			_show_outcome_summary("Victory", _turn_logger.build_victory_gold_summary(turn_log, transition), true)
 			_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
 			RunState.flow_trace_mark(
 				"combat_continue_available",
@@ -1931,8 +1931,8 @@ func _build_victory_status(turn_log: Dictionary, transition: Dictionary) -> Stri
 	return _turn_logger.build_victory_status(turn_log, transition)
 
 
-func _build_victory_gold_summary(turn_log: Dictionary) -> String:
-	return _turn_logger.build_victory_gold_summary(turn_log)
+func _build_victory_gold_summary(turn_log: Dictionary, transition: Dictionary = {}) -> String:
+	return _turn_logger.build_victory_gold_summary(turn_log, transition)
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:

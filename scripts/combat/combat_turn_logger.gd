@@ -52,8 +52,17 @@ func build_victory_status(turn_log: Dictionary, transition: Dictionary) -> Strin
 	]
 
 
-func build_victory_gold_summary(turn_log: Dictionary) -> String:
-	return "GOLD GAINED +%d" % int(turn_log.get("gold_gained", 0))
+func build_victory_gold_summary(turn_log: Dictionary, transition: Dictionary = {}) -> String:
+	var matched_gold := maxi(0, int(turn_log.get("gold_gained", 0)))
+	var base_gold := maxi(0, int(transition.get("base_gold_reward", 0)))
+	var total_gold := base_gold + matched_gold
+	if base_gold > 0:
+		return "GOLD GAINED +%d\nDefeat enemy: %d gold\nBonus gold: %d gold" % [
+			total_gold,
+			base_gold,
+			matched_gold,
+		]
+	return "GOLD GAINED +%d" % total_gold
 
 
 func build_run_outcome_summary(run_summary: Dictionary, max_dungeon_levels: int, fallback_cause: String = "") -> String:

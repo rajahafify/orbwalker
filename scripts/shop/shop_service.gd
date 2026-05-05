@@ -346,7 +346,12 @@ func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictio
 		if entry_type == ITEM_TYPE_EQUIPMENT and equipped_ids.has(content_id):
 			continue
 		pool.append(entry)
-	var selected_entries := _pick_random_entries(pool, 3)
+	var selected_entries: Array = []
+	var guaranteed_entry := _first_shop_guarantee_entry(run_state, content, level, pool)
+	if not guaranteed_entry.is_empty():
+		selected_entries.append(guaranteed_entry)
+		pool = _pool_without_entry(pool, guaranteed_entry)
+	selected_entries.append_array(_pick_random_entries(pool, 3 - selected_entries.size()))
 	var offers: Array[Dictionary] = []
 	for entry in selected_entries:
 		var entry_type := String(entry.get("type", ""))
@@ -364,6 +369,59 @@ func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictio
 			)
 		)
 	return offers
+
+
+func _first_shop_guarantee_entry(run_state: Node, content, level: int, pool: Array[Dictionary]) -> Dictionary:
+	if level != 1:
+		return {}
+	if not run_state.has_method("current_shop_ordinal_in_level") or int(run_state.current_shop_ordinal_in_level()) != 1:
+		return {}
+	var target_price := 10
+	if run_state.has_method("prototype_fight_gold_reward_for"):
+		target_price = int(run_state.prototype_fight_gold_reward_for(level, "enemy_1"))
+	var preferred := [
+		{"type": ITEM_TYPE_EQUIPMENT, "id": "coin_purse"},
+		{"type": ITEM_TYPE_BOOSTER, "id": "fire_booster"},
+	]
+	for preferred_entry in preferred:
+		var match := _matching_pool_entry_with_price(content, preferred_entry, level, target_price, pool)
+		if not match.is_empty():
+			return match
+	for entry in pool:
+		if _entry_offer_price(content, entry, level) == target_price:
+			return entry.duplicate(true)
+	return {}
+
+
+func _matching_pool_entry_with_price(content, candidate: Dictionary, level: int, target_price: int, pool: Array[Dictionary]) -> Dictionary:
+	for entry in pool:
+		if String(entry.get("type", "")) != String(candidate.get("type", "")):
+			continue
+		if String(entry.get("id", "")) != String(candidate.get("id", "")):
+			continue
+		if _entry_offer_price(content, entry, level) == target_price:
+			return entry.duplicate(true)
+	return {}
+
+
+func _entry_offer_price(content, entry: Dictionary, level: int) -> int:
+	var entry_type := String(entry.get("type", ""))
+	var content_id := String(entry.get("id", ""))
+	var content_data := _content_by_type(content, entry_type, content_id)
+	if content_data.is_empty():
+		return -1
+	return _compute_offer_price(content_data, String(content_data.get("rarity", "common")), level, _pricing(content))
+
+
+func _pool_without_entry(pool: Array[Dictionary], entry_to_remove: Dictionary) -> Array[Dictionary]:
+	var filtered: Array[Dictionary] = []
+	var remove_type := String(entry_to_remove.get("type", ""))
+	var remove_id := String(entry_to_remove.get("id", ""))
+	for entry in pool:
+		if String(entry.get("type", "")) == remove_type and String(entry.get("id", "")) == remove_id:
+			continue
+		filtered.append(entry)
+	return filtered
 
 
 func _generate_booster_options(run_state: Node, content, booster_data: Dictionary) -> Array[Dictionary]:

@@ -432,10 +432,10 @@ Tracker: `docs/milestone_10_balance_tasks.md`
 
 - [x] M10-01 Run Log and balance-source inventory are available before tuning.
 - [x] Playtest balance levers exist for gold access, starting gold, shop affordability/reroll cost, and enemy HP/damage scaling.
-- [ ] Early gold access lets a normal playtest run usually buy at least one item, booster, consumable, or useful shop option after the first enemy.
+- [x] Early gold access lets a normal playtest run usually buy at least one item, booster, consumable, or useful shop option after the first enemy.
 - [ ] Early combat survivability lets runs reach multiple shops and build decisions without removing all threat.
 - [ ] Equipment, mastery cards, consumables, relics, and boosters can be exercised without many economy-starved runs.
-- [ ] Temporary balance assumptions are documented separately from final economy/design decisions.
+- [x] Temporary balance assumptions are documented separately from final economy/design decisions.
 - [ ] Focused level 1 and early-run playtest loops record gold earned, shop purchases, deaths, item access, and major blockers.
 - [x] M10-02 untuned baseline includes at least 3 human-played normal runs exported from the main-menu `Generate Log` flow.
 
@@ -468,6 +468,14 @@ Verification notes (2026-05-05, M10-03 prototype balance levers):
 - Ownership remains unchanged for active sources: `RunState` owns starting/run gold and active encounter HP/intent snapshots; `BoardGenerationSettings` owns base orb spawn weights and reads the temporary gold-weight multiplier; `ContentRegistry` owns dictionary-backed shop pricing config; `ShopService` applies offer and reroll prices. The layer does not tune values yet and does not change combat math, resolver rules, shop transaction semantics, RunState routing, Run Log behavior, or combat presentation timing.
 - Debug/test access was not expanded in M10-03 because the baseline evidence first needs economy and survivability levers, while existing combat debug commands still cover forced gold/content/run setup for later M10-06 content-access investigation.
 - Validation performed: `git status --short --branch`; Godot MCP `get_project_info`; `view_script` for `run_state.gd`, `content_registry.gd`, `shop_service.gd`, and `board_generation_settings.gd`; focused script-load probe for touched runtime scripts; focused default/override lever probe; `get_godot_errors`; `git diff --check`. The focused lever probe confirmed default parity and override effects: default starting gold `0`, first enemy HP `76`, first attack `12`, gold normalized weight about `0.08257`, base price `10`, and reroll cost `1`; override values changed those to starting gold `7`, first enemy HP `38`, first attack `24`, gold normalized weight about `0.15254`, base price `5`, and reroll cost `3`.
+
+Verification notes (2026-05-05, M10-04 early economy tuning):
+- M10-04 was retuned from random early gold access to fixed fight base rewards plus matched-gold upside. Temporary prototype defaults are now `starting_gold = 0`, neutral Gold spawn/shop/reroll multipliers at `1.0`, `level_1_fight_gold_reward = 10`, `level_2_fight_gold_reward = 12`, and `level_3_fight_gold_reward = 14`. Enemy HP and damage multipliers remain `1.0` for M10-05.
+- Baseline comparison: M10-02 first shops opened with `3` gold in the high-skill run and `0` gold in the third baseline run; the new-player simulation died before shop access with `10` earned gold. The fixed reward model raises the first-shop floor to `10` after the first enemy, and matched Gold orbs become extra buying power for more or rarer offers.
+- Victory overlay behavior now reports total fight gold as base plus matched gold. A focused Godot MCP probe confirmed a first fight with `+3` matched gold returns `base_gold_reward = 10`, leaves the run with `13` gold, records `base_gold_reward = 10` in the fight-end Run Log payload, and formats the popup body as `GOLD GAINED +13`, `Defeat enemy: 10 gold`, and `Bonus gold: 3 gold`.
+- Shop affordability probes confirmed a no-matched-gold first victory leaves `10` gold and the first level-1 shop guarantees an exact 10-gold `equipment:coin_purse` offer, so at least one useful common option is affordable. Other item slots remain random; relics remain outside first-fight base reward reach.
+- These values are temporary M10 playtest scaffolding, not final balance. They do not change combat math, resolver rules, shop transaction semantics, RunState routing, Run Log behavior, enemy survivability, or combat presentation timing.
+- Validation performed: `git status --short --branch`; Godot MCP `get_project_info`; `view_script` for `run_state.gd`, `shop_service.gd`, `combat_turn_logger.gd`, and `combat_player_controller.gd`; focused script reload checks; focused reward/popup/shop affordability probes; `get_godot_errors`; `git diff --check`. Manual human playthrough with the tuned values remains useful before M10 closeout.
 
 ## Milestone 11: Meta Progression Foundation
 

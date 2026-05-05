@@ -1650,3 +1650,33 @@ Append-only history of wiki operations.
   - Deferred new debug/test access levers because existing debug commands cover forced setup and M10-02 evidence first needs economy/survivability tuning surfaces.
 - Validation:
   - `git status --short --branch`, Godot MCP `get_project_info`, `view_script` checks, focused script-load checks, focused default/override lever probe, `get_godot_errors`, and `git diff --check` passed. The lever probe confirmed default parity and override effects for starting gold, enemy HP, enemy attack, gold normalized weight, shop price, and reroll cost.
+
+## [2026-05-05] code-change | M10-04 Early Economy Tuning
+
+- Source: `scripts/core/run_state.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Superseded an initial random-access economy pass before commit; the durable M10-04 direction became fixed fight base rewards plus matched-gold upside instead of boosted starting gold, Gold orb access, or discounted shop/reroll pricing.
+  - Left enemy HP and damage multipliers at `1.0` for M10-05.
+  - Recorded that the values are M10 playtest scaffolding, not final economy balance.
+- Validation:
+  - Superseded before final validation; see the later M10-04 fixed fight gold reward entry for committed validation evidence.
+
+## [2026-05-05] docs-change | Victory Gold Overlay Bug
+
+- Source: `wiki/known-issues.md`, user screenshot
+- Changed:
+  - Logged a screenshot-reported combat victory overlay bug where `GOLD GAINED +0` displayed even though the player expected `3` gold earned.
+  - Marked the overlay feedback as unreliable for M10 playtest interpretation until investigated.
+- Notes:
+  - Documentation only; no runtime code, tuning values, or tracker status changed.
+
+## [2026-05-05] code-change | M10-04 Fixed Fight Gold Reward
+
+- Source: `scripts/core/run_state.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/shop/shop_service.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Shifted M10-04 early economy tuning from random-access boosts to fixed fight base rewards through the prototype balance lever surface.
+  - Set new-run gold to `0`, kept Gold spawn/shop/reroll multipliers neutral, and added level 1/2/3 fight base rewards of `10/12/14`.
+  - Updated the combat victory popup to show total fight gold as base plus matched gold, and guaranteed one exact 10-gold offer in the first level-1 shop.
+  - Left enemy HP/damage at `1.0` for M10-05.
+- Validation:
+  - Godot MCP `get_project_info`, `view_script`, focused script reload checks, and focused reward/popup/shop affordability probes passed. `get_godot_errors` still included pre-existing stale enum diagnostics in the session log, but touched script reloads returned `0`.

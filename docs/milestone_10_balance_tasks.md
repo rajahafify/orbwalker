@@ -99,12 +99,12 @@ Validation evidence:
 
 ## M10-04: Early Economy Tuning
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Tune gold income and shop affordability for repeated playtesting.
 - Deliverable: Temporary values for starting gold, gold orb spawn/value, fight rewards if added, shop prices, booster prices, and reroll cost.
-- Progress: Not started.
-- Blockers: M10-03 should provide the tuning surface unless the task explicitly records why direct data tuning is safer.
-- Next action: Tune against M10-02 baseline logs and compare post-change logs.
+- Progress: Retuned M10-04 away from random early gold and into fixed fight base rewards through the M10-03 lever surface: `starting_gold = 0`, `gold_orb_spawn_weight_multiplier = 1.0`, `shop_price_multiplier = 1.0`, `reroll_cost_multiplier = 1.0`, `level_1_fight_gold_reward = 10`, `level_2_fight_gold_reward = 12`, and `level_3_fight_gold_reward = 14`. Victory now grants the base fight reward in `RunState.mark_fight_victory()` after matched gold has already been applied by combat, and the post-match victory popup displays total fight gold as base plus matched gold. The first level-1 shop guarantees one exact 10-gold item offer while keeping the other item slots random. Enemy HP and damage multipliers remain `1.0` for M10-05. Combat math, resolver rules, shop transaction semantics, RunState routing, Run Log behavior, and combat presentation timing were not changed.
+- Blockers: None known. These values are temporary playtest scaffolding and a playtest economy rule, not final economy balance.
+- Next action: Start M10-05 and tune early combat survivability separately against the M10-02/M10-04 evidence.
 - Acceptance:
   - After the first enemy, a normal playtest run can usually buy at least one meaningful shop option.
   - Boosters and consumables become practical to inspect without debug-only setup.
@@ -113,6 +113,15 @@ Validation evidence:
   - Godot MCP affordability probes for level 1-3 shops.
   - At least 2 Run Log comparisons against the M10-02 baseline.
 - Docs/wiki impact: Record temporary economy assumptions in `docs/test_plan.md`; update wiki if balance workflow or ownership changes.
+
+Validation evidence:
+
+- `git status --short --branch` confirmed work on `codex/milestone-10`.
+- M10-02 comparison baseline: first shops opened with `3` gold in the high-skill baseline, no shop in the new-player simulation, and `0` gold in the third baseline; later level 1 shops opened with `13`, `25`, `3`, and `10` gold depending on run quality and purchases.
+- Focused Godot MCP lever probes confirmed the fixed reward defaults apply through the M10-03 surface: new runs start with `0` gold, level rewards are `10/12/14`, Gold orb spawn weight and shop/reroll multipliers are back to neutral `1.0`, and enemy HP/damage remain `1.0`.
+- Focused victory/shop probes confirmed a first fight with `+3` matched gold returns `base_gold_reward = 10`, leaves the run with `13` gold, records `base_gold_reward = 10` in the Run Log fight-end payload, and formats the popup body as `GOLD GAINED +13`, `Defeat enemy: 10 gold`, and `Bonus gold: 3 gold`.
+- Focused shop affordability probes confirmed a no-matched-gold first victory leaves `10` gold, opens the first level-1 shop, and guarantees an exact 10-gold `equipment:coin_purse` offer so at least one useful common option is affordable.
+- Godot MCP `get_project_info`, script checks, focused reward/popup/shop probes, and current `get_godot_errors` check passed with only pre-existing stale enum diagnostics plus failed ad hoc probe attempts in the session log; the final focused probes executed successfully and touched script reload checks returned `0`. `git diff --check` passed.
 
 ## M10-05: Early Combat Survivability Tuning
 
