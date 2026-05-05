@@ -67,7 +67,6 @@ text = "Continue"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-disabled = true
 text = "Collection"
 
 [node name="SettingsButton" type="Button" parent="MenuButtonColumn"]
@@ -267,7 +266,6 @@ theme_override_constants/separation = 10
 [node name="ProfileButton" type="Button" parent="FooterActions"]
 layout_mode = 2
 size_flags_horizontal = 3
-disabled = true
 text = "Profile"
 
 [node name="AchievementsButton" type="Button" parent="FooterActions"]
@@ -295,5 +293,80 @@ horizontal_alignment = 1
 autowrap_mode = 3
 text = "Main menu ready."
 
+[node name="ProfileOverlay" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ProfileScrim" type="ColorRect" parent="ProfileOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.018, 0.014, 0.62)
+
+[node name="ProfileCenter" type="CenterContainer" parent="ProfileOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ProfilePanel" type="PanelContainer" parent="ProfileOverlay/ProfileCenter"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ProfileBox" type="VBoxContainer" parent="ProfileOverlay/ProfileCenter/ProfilePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ProfileTitleLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Profile"
+horizontal_alignment = 1
+
+[node name="ProfileNameLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Default Profile"
+horizontal_alignment = 1
+
+[node name="ProfileScoreLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Total Score: 0"
+horizontal_alignment = 1
+
+[node name="ProfileActionRow" type="HBoxContainer" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ResetProfileButton" type="Button" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset Profile"
+
+[node name="CloseProfileButton" type="Button" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Close"
+
 [connection signal="pressed" from="MenuButtonColumn/StartRunButton" to="." method="_on_start_fight_button_pressed"]
+[connection signal="pressed" from="MenuButtonColumn/CollectionButton" to="." method="_on_collection_button_pressed"]
 [connection signal="toggled" from="MenuButtonColumn/GenerateLogToggle" to="." method="_on_generate_log_toggle_toggled"]
+[connection signal="pressed" from="FooterActions/ProfileButton" to="." method="_on_profile_button_pressed"]
+[connection signal="pressed" from="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow/ResetProfileButton" to="." method="_on_reset_profile_button_pressed"]
+[connection signal="pressed" from="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow/CloseProfileButton" to="." method="_on_close_profile_button_pressed"]

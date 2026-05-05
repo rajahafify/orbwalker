@@ -15,6 +15,7 @@ const FALLBACK_BUTTON_SECONDARY_PATH := "res://resources/art/first_pass/menu/mai
 const FALLBACK_STATS_PANEL_PATH := "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png"
 const MAIN_MENU_MUSIC_PATH := "res://resources/audio/music/main-menu.wav"
 const MAIN_MENU_MUSIC_VOLUME_DB := -12.0
+const COLLECTION_SCENE_PATH := "res://scenes/flow/collection.tscn"
 
 const ELEMENT_KEYS: Array[String] = ["fire", "ice", "earth", "heart", "armor", "gold"]
 const ELEMENT_ICON_FALLBACK_PATHS: Array[String] = [
@@ -59,6 +60,13 @@ const FOOTER_ICON_FALLBACK_PATHS: Array[String] = [
 @onready var _footer_settings_button: Button = $FooterActions/FooterSettingsButton
 @onready var _version_label: Label = %VersionLabel
 @onready var _status_label: Label = %StatusLabel
+@onready var _profile_overlay: Control = %ProfileOverlay
+@onready var _profile_panel: PanelContainer = %ProfilePanel
+@onready var _profile_title_label: Label = %ProfileTitleLabel
+@onready var _profile_name_label: Label = %ProfileNameLabel
+@onready var _profile_score_label: Label = %ProfileScoreLabel
+@onready var _reset_profile_button: Button = %ResetProfileButton
+@onready var _close_profile_button: Button = %CloseProfileButton
 
 @onready var _element_icons: Array = [
 	$ElementRow/FireCell/FireIcon,
@@ -106,6 +114,7 @@ var _menu_music_player: AudioStreamPlayer = null
 var _menu_music_retry_time := 0.0
 var _menu_music_via_audio_manager := false
 var _start_run_transitioning := false
+var _collection_transitioning := false
 
 
 func _ready() -> void:
@@ -169,6 +178,65 @@ func _on_start_fight_button_pressed() -> void:
 	push_error("Start Run transition failed: %s -> %s (%s)" % [route_id, next_scene, failure_reason])
 
 
+func _on_collection_button_pressed() -> void:
+	if _collection_transitioning:
+		return
+	_collection_transitioning = true
+	_collection_button.disabled = true
+	_audio_play_sfx("ui_accept")
+	var route_id := RunState.flow_trace_begin(
+		"main_menu_to_collection",
+		COLLECTION_SCENE_PATH,
+		{"source": "main_boot.collection_button"}
+	)
+	RunState.flow_trace_mark(
+		"before_change_scene_to_file",
+		{"source": "main_boot.collection_button"},
+		route_id,
+		COLLECTION_SCENE_PATH
+	)
+	var transition_result: Variant = RunState.flow_trace_change_scene(
+		get_tree(),
+		COLLECTION_SCENE_PATH,
+		route_id,
+		"main_boot.collection_button"
+	)
+	if _scene_change_succeeded(transition_result):
+		return
+	_collection_transitioning = false
+	_collection_button.disabled = false
+	var failure_reason := _scene_change_failure_reason(transition_result)
+	_status_label.text = "Collection failed: %s" % failure_reason
+	_status_label.visible = true
+	push_error("Collection transition failed: %s -> %s (%s)" % [route_id, COLLECTION_SCENE_PATH, failure_reason])
+
+
+func _on_profile_button_pressed() -> void:
+	_audio_play_sfx("ui_accept")
+	_refresh_profile_overlay()
+	_profile_overlay.visible = true
+
+
+func _on_close_profile_button_pressed() -> void:
+	_audio_play_sfx("ui_accept")
+	_profile_overlay.visible = false
+
+
+func _on_reset_profile_button_pressed() -> void:
+	_reset_profile_button.disabled = true
+	var reset_result: Variant = _reset_profile()
+	if not _result_ok(reset_result):
+		_status_label.text = "Reset Profile failed: %s" % _result_failure_reason(reset_result)
+		_status_label.visible = true
+		_reset_profile_button.disabled = false
+		return
+	_audio_play_sfx("ui_accept")
+	_refresh_profile_overlay()
+	_status_label.text = "Profile reset."
+	_status_label.visible = true
+	_reset_profile_button.disabled = false
+
+
 func _scene_change_succeeded(result: Variant) -> bool:
 	if result is Dictionary:
 		return bool((result as Dictionary).get("ok", false))
@@ -180,6 +248,53 @@ func _scene_change_failure_reason(result: Variant) -> String:
 		var typed_result := result as Dictionary
 		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
 	return "error_code_%d" % int(result)
+
+
+func _result_ok(result: Variant) -> bool:
+	if result is Dictionary:
+		return bool((result as Dictionary).get("ok", false))
+	if result is bool:
+		return bool(result)
+	if result is int:
+		return int(result) == OK
+	return false
+
+
+func _result_failure_reason(result: Variant) -> String:
+	if result is Dictionary:
+		var typed_result := result as Dictionary
+		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
+	if result is int:
+		return "error_code_%d" % int(result)
+	return "unknown"
+
+
+func _reset_profile() -> Variant:
+	for method_name in ["reset_profile", "create_default_profile"]:
+		if RunState.has_method(method_name):
+			return RunState.call(method_name)
+	return {
+		"ok": false,
+		"reason": "missing_reset_profile_api",
+	}
+
+
+func _profile_snapshot() -> Dictionary:
+	for method_name in ["profile_snapshot", "player_profile_snapshot", "meta_profile_snapshot"]:
+		if RunState.has_method(method_name):
+			var result: Variant = RunState.call(method_name)
+			if result is Dictionary:
+				return (result as Dictionary).duplicate(true)
+	return {}
+
+
+func _refresh_profile_overlay() -> void:
+	var snapshot: Dictionary = _profile_snapshot()
+	var profile_name := String(snapshot.get("display_name", snapshot.get("profile_name", "Default Profile"))).strip_edges()
+	if profile_name == "":
+		profile_name = "Default Profile"
+	_profile_name_label.text = profile_name
+	_profile_score_label.text = "Total Score: %d" % maxi(0, int(snapshot.get("total_score", 0)))
 
 
 func _process(delta: float) -> void:
@@ -403,10 +518,10 @@ func _apply_static_text() -> void:
 	_status_label.text = "Main menu runtime surface."
 	_status_label.visible = false
 	_continue_button.disabled = true
-	_collection_button.disabled = true
+	_collection_button.disabled = false
 	_settings_button.disabled = true
 	_quit_button.disabled = true
-	_profile_button.disabled = true
+	_profile_button.disabled = false
 	_achievements_button.disabled = true
 	_footer_settings_button.disabled = true
 
@@ -435,12 +550,13 @@ func _apply_chrome_styles() -> void:
 	_apply_menu_button_style(_start_run_button, _primary_button_texture, true, false)
 	_apply_menu_button_style(_generate_log_toggle, _secondary_button_texture, false, false)
 	_apply_menu_button_style(_continue_button, _secondary_button_texture, false, true)
-	_apply_menu_button_style(_collection_button, _secondary_button_texture, false, true)
+	_apply_menu_button_style(_collection_button, _secondary_button_texture, false, false)
 	_apply_menu_button_style(_settings_button, _secondary_button_texture, false, true)
 	_apply_menu_button_style(_quit_button, _secondary_button_texture, false, true)
 	_apply_footer_button_style(_profile_button, _secondary_button_texture)
 	_apply_footer_button_style(_achievements_button, _secondary_button_texture)
 	_apply_footer_button_style(_footer_settings_button, _secondary_button_texture)
+	_apply_profile_overlay_style()
 
 	_set_label_style(_version_label, Color(0.86, 0.73, 0.46, 0.96), Color(0.05, 0.06, 0.10, 0.95), 2)
 	_set_label_style(_status_label, Color(0.86, 0.73, 0.46, 0.88), Color(0.05, 0.06, 0.10, 0.95), 2)
@@ -516,6 +632,13 @@ func _layout_ui() -> void:
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.expand_icon = false
 
+	_profile_panel.custom_minimum_size = Vector2(
+		clampf(viewport_size.x * 0.78, 520.0, 760.0),
+		clampf(viewport_size.y * 0.22, 330.0, 460.0)
+	)
+	_reset_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
+	_close_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
+
 	_apply_font_sizes(viewport_size)
 
 
@@ -545,6 +668,11 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 			stat_value.add_theme_font_size_override("font_size", stat_value_size)
 	for button in [_profile_button, _achievements_button, _footer_settings_button]:
 		button.add_theme_font_size_override("font_size", footer_size)
+	_profile_title_label.add_theme_font_size_override("font_size", maxi(32, int(round(52.0 * scale_factor))))
+	_profile_name_label.add_theme_font_size_override("font_size", maxi(24, int(round(34.0 * scale_factor))))
+	_profile_score_label.add_theme_font_size_override("font_size", maxi(22, int(round(30.0 * scale_factor))))
+	_reset_profile_button.add_theme_font_size_override("font_size", maxi(18, int(round(28.0 * scale_factor))))
+	_close_profile_button.add_theme_font_size_override("font_size", maxi(18, int(round(28.0 * scale_factor))))
 	_version_label.add_theme_font_size_override("font_size", version_size)
 	_status_label.add_theme_font_size_override("font_size", status_size)
 
@@ -641,6 +769,20 @@ func _apply_footer_button_style(button: Button, texture: Texture2D) -> void:
 	button.add_theme_color_override("icon_disabled_color", Color(0.72, 0.72, 0.72, 0.62))
 	button.add_theme_constant_override("outline_size", 2)
 	button.add_theme_constant_override("h_separation", 12)
+
+
+func _apply_profile_overlay_style() -> void:
+	_profile_panel.add_theme_stylebox_override(
+		"panel",
+		UI_UTILS.panel_style(Color(0.07, 0.055, 0.045, 0.96), Color(0.86, 0.63, 0.24, 1.0), 3, 18, Vector4(28, 24, 28, 24))
+	)
+	for label_node in [_profile_title_label, _profile_name_label, _profile_score_label]:
+		var label := label_node as Label
+		if label != null:
+			_set_label_style(label, Color(0.95, 0.88, 0.72, 1.0), Color(0.04, 0.03, 0.02, 0.96), 2)
+	_set_label_style(_profile_title_label, Color(1.0, 0.78, 0.30, 1.0), Color(0.04, 0.03, 0.02, 0.96), 3)
+	_apply_menu_button_style(_reset_profile_button, _secondary_button_texture, false, false)
+	_apply_menu_button_style(_close_profile_button, _secondary_button_texture, false, false)
 
 
 func _set_label_style(label: Label, color: Color, outline_color: Color, outline_size: int) -> void:

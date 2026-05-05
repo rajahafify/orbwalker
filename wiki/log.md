@@ -1766,3 +1766,49 @@ Append-only history of wiki operations.
   - Tuned evidence includes one Dungeon 3 defeat, one full victory, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reaching L3 enemy 2 after first-shop affordability, booster buys, equipment buys, and two boss relic rewards.
 - Validation:
   - Godot MCP `get_project_info`, focused scene instantiate smoke for main/combat/shop/final summary, `play_scene main`, final `get_godot_errors`, local Run Log comparison, and `git diff --check` passed for the closeout documentation update.
+
+## [2026-05-05] code-change | M11 Equipment Achievement Progression
+
+- Source: `scripts/core/run_state.gd`, `scripts/run/meta_profile_state.gd`, `scripts/content/content_registry.gd`, `scripts/run/player_progression_service.gd`, `scripts/shop/shop_service.gd`, `scripts/core/main_boot.gd`, `scripts/flow/collection.gd`, `scripts/ui/achievement_toast.gd`, `scripts/flow/final_run_summary.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added persistent Total Score and equipment unlock state through `MetaProfileState`, saved separately from per-run `RunState`.
+  - Added Run Score tracking for non-sell gold sources and idempotent run-end banking into Total Score.
+  - Replaced the active M11 equipment set with 5 families and Common/Uncommon/Rare variants, with Common default-unlocked and adjacent unlock costs of `100` and `300`.
+  - Gated shop and booster equipment pools by unlocked variants while allowing lower unlocked rarities to keep rolling, and blocked equipping duplicate equipment families.
+  - Enabled the main-menu Collection route, added the Collection scene, and added reusable bottom-right equipment unlock achievement toasts for victory unlocks and Score claims.
+- Validation:
+  - Godot MCP `get_project_info`, `view_script`, focused editor-script probes with `EditorFileSystem.scan()` and cache-ignore resource loads, `play_scene main`, `stop_running_scene`, final `get_godot_errors`, and `git diff --check` ran.
+  - Focused probe confirmed 15 equipment variants, 5 families with 3 tiers each, content validation, family duplicate rejection, non-sell Run Score filtering, Common default unlocks, locked variant exclusion from shop pools, idempotent score banking, and scene instantiation for `main.tscn`, `collection.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`.
+  - Manual QA remains pending for full-run Score visibility, victory unlock toast visibility, Collection claim interaction, and unlocked variant appearance in later shops.
+
+## [2026-05-05] code-change | Default Player Profile
+
+- Source: `scripts/core/run_state.gd`, `scripts/run/player_profile_state.gd`, `scripts/run/meta_profile_state.gd`, `scripts/flow/collection.gd`, `scenes/flow/collection.tscn`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Added `PlayerProfileState` as the persistent default profile container for Milestone 11 meta progression.
+  - `RunState` now saves the profile to `user://matchatro_profile.cfg`, migrates the previous flat `user://matchatro_meta_profile.cfg` shape into the default profile when needed, and keeps existing meta-profile APIs as compatibility wrappers.
+  - Collection shows `Profile: Default Profile` and adds a `Reset Profile` action that resets profile/meta progression and recreates the default profile.
+- Validation:
+  - Godot MCP `get_project_info`, `view_script` for `player_profile_state.gd`, `run_state.gd`, and `collection.gd`, and focused editor-script profile probes ran.
+  - Focused probe confirmed in-memory default profile creation, Total Score/unlocked-equipment save-load roundtrip, and Collection scene nodes for `ProfileLabel` and `ResetProfileButton`.
+
+## [2026-05-05] code-change | Main Menu Profile Management
+
+- Source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `scenes/flow/collection.tscn`, `scripts/flow/collection.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/file-map.md`
+- Changed:
+  - Moved profile management from Collection to the main-menu `Profile` footer button.
+  - Added a main-menu Profile overlay showing the default profile name, Total Score, `Reset Profile`, and `Close`.
+  - Removed profile label/reset controls from Collection so Collection only handles equipment rarity progression and Score claims.
+- Validation:
+  - Godot MCP `view_script` for `main_boot.gd` and `collection.gd` ran.
+  - Focused scene probe confirmed `main.tscn` has `ProfileOverlay` and `ResetProfileButton`, and `collection.tscn` no longer has `ResetProfileButton`.
+  - User QA passed for the profile-management move.
+
+## [2026-05-05] milestone | M11 Manual QA Passed
+
+- Source: `todo.md`, `docs/test_plan.md`, `wiki/log.md`
+- Changed:
+  - Marked Milestone 11 complete after user QA passed.
+  - Recorded that follow-up fixes covered final-summary parser warnings, defeat unlock-toast leakage, and moving profile reset to the main-menu Profile overlay.
+- Validation:
+  - User QA passed.

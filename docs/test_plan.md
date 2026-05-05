@@ -513,11 +513,20 @@ Verification notes (2026-05-05, M10-07 focused playtest closeout):
 
 ## Milestone 11: Meta Progression Foundation
 
-- [ ] Meta progression scope is selected.
-- [ ] Meta progress persists separately from temporary run state.
-- [ ] Completing fights, bosses, runs, or challenges can advance a first progression loop.
-- [ ] Meta state can unlock or expand future run options.
-- [ ] Playtest notes capture how meta progression changes difficulty, item access, and economy pressure.
+- [x] Meta progression scope is selected.
+- [x] Meta progress persists separately from temporary run state.
+- [x] Completing fights, bosses, runs, or challenges can advance a first progression loop.
+- [x] Meta state can unlock or expand future run options.
+- [x] Playtest notes capture how meta progression changes difficulty, item access, and economy pressure.
+
+Verification notes (2026-05-05, M11 code-complete pass):
+- Implemented equipment achievement progression for 5 families with Common, Uncommon, and Rare variants. Common variants are default-unlocked; Uncommon and Rare unlock by adjacent victory achievement or Total Score claim.
+- Run Score starts at `0`, increases from non-sell gold gains, does not decrease when spending, excludes sell/refund sources, and banks into persistent Total Score on run end.
+- Added `PlayerProfileState` as the persistent default-profile container for meta progression. `Default Profile` exists automatically, stores Total Score/equipment unlock meta data, migrates the previous flat meta profile save, and can be reset from the main-menu Profile overlay.
+- Godot MCP validation ran with `get_project_info`, `view_script`, focused editor-script probes, `play_scene main`, `stop_running_scene`, and final `get_godot_errors`.
+- Focused probe confirmed 15 equipment variants, 5 families with 3 tiers each, content validation, family duplicate rejection, non-sell Run Score filtering, Common default unlocks, locked variant exclusion from shop pools, idempotent score banking, and scene instantiation for `main.tscn`, `collection.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`.
+- Focused profile probe confirmed in-memory default profile creation, Total Score/unlocked-equipment save-load roundtrip, main-menu `ProfileOverlay` and `ResetProfileButton` nodes, and removal of profile reset controls from Collection.
+- Manual QA passed for the M11 equipment/profile progression slice after follow-up fixes: Run Score/Total Score profile behavior, final summary victory/defeat routing, achievement toast behavior, Collection claims, and main-menu Profile reset placement were accepted by the user on 2026-05-05.
 
 ## Milestone 12: First Playable Build
 

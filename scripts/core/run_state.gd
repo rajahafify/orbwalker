@@ -3,6 +3,8 @@ extends Node
 const PLAYER_STATE_SCRIPT := preload("res://scripts/combat/player_state.gd")
 const PLAYER_PROGRESSION_STATE_SCRIPT := preload("res://scripts/run/player_progression_state.gd")
 const PLAYER_PROGRESSION_SERVICE_SCRIPT := preload("res://scripts/run/player_progression_service.gd")
+const PLAYER_PROFILE_STATE_SCRIPT := preload("res://scripts/run/player_profile_state.gd")
+const META_PROFILE_STATE_SCRIPT := preload("res://scripts/run/meta_profile_state.gd")
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
 const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
@@ -11,6 +13,10 @@ const RUN_LOG_EXPORT_DIR := "res://logs"
 const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
 const USER_SETTINGS_SECTION := "run_log"
 const USER_SETTINGS_GENERATE_LOG_KEY := "generate_log"
+const PROFILE_PATH := "user://matchatro_profile.cfg"
+const PROFILE_SECTION := "profile"
+const META_PROFILE_PATH := "user://matchatro_meta_profile.cfg"
+const META_PROFILE_SECTION := "meta_profile"
 const SCENE_MAIN := "res://scenes/main.tscn"
 const SCENE_COMBAT := "res://scenes/combat/combat_player.tscn"
 const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
@@ -58,7 +64,11 @@ var player_progression_service
 var content_registry
 var shop_state
 var shop_service
+var player_profile_state
+var meta_profile_state
 var run_gold: int = 0
+var run_score: int = 0
+var _run_score_banked: bool = false
 var dungeon_level: int = 1
 var _relic_offer_ids_by_level: Dictionary = {}
 var _player_state_content_errors: Array[Dictionary] = []
@@ -210,6 +220,8 @@ func _ready() -> void:
 	ensure_shop_service()
 	_reward_rng.randomize()
 	load_user_settings()
+	_load_meta_profile()
+	_sync_meta_profile_default_unlocks()
 	_sync_player_gold_from_run()
 	validate_player_state_content()
 	reset_run()
@@ -253,6 +265,19 @@ func ensure_shop_service():
 	return shop_service
 
 
+func ensure_player_profile_state() -> PlayerProfileState:
+	if player_profile_state == null:
+		player_profile_state = PLAYER_PROFILE_STATE_SCRIPT.new()
+		meta_profile_state = player_profile_state.meta_profile
+	return player_profile_state
+
+
+func ensure_meta_profile_state() -> MetaProfileState:
+	var profile: PlayerProfileState = ensure_player_profile_state()
+	meta_profile_state = profile.meta_profile
+	return profile.meta_profile
+
+
 func validate_player_state_content() -> Array[Dictionary]:
 	_player_state_content_errors = ensure_content_registry().validate_player_state_content()
 	return _player_state_content_errors.duplicate(true)
@@ -268,6 +293,7 @@ func run_contract_snapshot() -> Dictionary:
 			"run_active",
 			"run_victory",
 			"run_gold",
+			"run_score",
 			"dungeon_level",
 			"current_step_key",
 			"enemies_defeated",
@@ -310,6 +336,15 @@ func run_contract_snapshot() -> Dictionary:
 			"reset_prototype_balance_levers",
 			"prototype_fight_gold_reward_for",
 			"current_shop_ordinal_in_level",
+			"profile_snapshot",
+			"reset_profile",
+			"create_default_profile",
+			"meta_profile_snapshot",
+			"is_equipment_unlocked",
+			"unlock_equipment",
+			"claim_equipment_unlock",
+			"consume_recent_equipment_unlocks",
+			"add_total_score",
 		],
 		"content_dependency": {
 			"content_registry_owner": "ContentRegistry",
@@ -353,6 +388,107 @@ func progression_snapshot() -> Dictionary:
 	return ensure_player_progression_state().to_snapshot()
 
 
+func profile_snapshot() -> Dictionary:
+	return ensure_player_profile_state().to_snapshot()
+
+
+func meta_profile_snapshot() -> Dictionary:
+	return ensure_meta_profile_state().to_snapshot()
+
+
+func reset_profile() -> Dictionary:
+	var profile: PlayerProfileState = ensure_player_profile_state()
+	profile.reset_to_default()
+	meta_profile_state = profile.meta_profile
+	_sync_meta_profile_default_unlocks()
+	_save_profile()
+	reset_run()
+	return {
+		"ok": true,
+		"reason": "",
+		"profile": profile_snapshot(),
+		"meta_profile": meta_profile_snapshot(),
+	}
+
+
+func create_default_profile() -> Dictionary:
+	return reset_profile()
+
+
+func is_equipment_unlocked(item_id: String) -> bool:
+	if item_id == "":
+		return false
+	return ensure_meta_profile_state().is_equipment_unlocked(item_id)
+
+
+func unlock_equipment(item_id: String, source: String) -> Dictionary:
+	var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
+	if item_id == "":
+		return {"ok": false, "reason": "invalid_item_id"}
+	if equipment.is_empty():
+		return {"ok": false, "reason": "unknown_equipment_id"}
+	if is_equipment_unlocked(item_id):
+		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
+	if not ensure_meta_profile_state().unlock_equipment(item_id):
+		return {"ok": false, "reason": "unlock_failed", "meta_profile": meta_profile_snapshot()}
+
+	var unlock_payload := {
+		"item_id": item_id,
+		"display_name": String(equipment.get("display_name", item_id)),
+		"family_id": String(equipment.get("family_id", "")),
+		"rarity": String(equipment.get("rarity", "common")),
+		"rarity_color": String(equipment.get("rarity_color", "white")),
+		"source": source,
+		"unlock_cost": int(equipment.get("unlock_cost", 0)),
+	}
+	if source == "victory":
+		ensure_meta_profile_state().add_recent_equipment_unlock(unlock_payload)
+	_save_meta_profile()
+	return {
+		"ok": true,
+		"reason": "",
+		"unlock": unlock_payload,
+		"meta_profile": meta_profile_snapshot(),
+	}
+
+
+func claim_equipment_unlock(item_id: String) -> Dictionary:
+	var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
+	if item_id == "":
+		return {"ok": false, "reason": "invalid_item_id"}
+	if equipment.is_empty():
+		return {"ok": false, "reason": "unknown_equipment_id"}
+	if is_equipment_unlocked(item_id):
+		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
+
+	var unlock_cost := maxi(0, int(equipment.get("unlock_cost", 0)))
+	if not _can_claim_equipment_unlock(equipment):
+		return {"ok": false, "reason": "unlock_prerequisite_not_met", "meta_profile": meta_profile_snapshot()}
+	if not ensure_meta_profile_state().spend_total_score(unlock_cost):
+		return {"ok": false, "reason": "insufficient_total_score", "meta_profile": meta_profile_snapshot()}
+
+	var unlock_result := unlock_equipment(item_id, "score_claim")
+	if not bool(unlock_result.get("ok", false)):
+		ensure_meta_profile_state().add_total_score(unlock_cost)
+		_save_meta_profile()
+		return unlock_result
+	unlock_result["score_spent"] = unlock_cost
+	return unlock_result
+
+
+func consume_recent_equipment_unlocks() -> Array[Dictionary]:
+	var unlocks: Array[Dictionary] = ensure_meta_profile_state().consume_recent_equipment_unlocks()
+	_save_meta_profile()
+	return unlocks
+
+
+func add_total_score(amount: int) -> int:
+	var added: int = ensure_meta_profile_state().add_total_score(amount)
+	if added > 0:
+		_save_meta_profile()
+	return added
+
+
 func current_combat_modifiers() -> Dictionary:
 	var modifiers := {
 		"orb_bonus_by_id": {},
@@ -386,11 +522,13 @@ func set_gold(amount: int) -> void:
 	_sync_player_gold_from_run()
 
 
-func add_gold(amount: int) -> int:
+func add_gold(amount: int, source: String = "combat_gain") -> int:
 	if amount <= 0:
 		return 0
 	run_gold += amount
 	total_gold_earned += amount
+	if _gold_source_counts_for_run_score(source):
+		run_score += amount
 	_sync_player_gold_from_run()
 	return amount
 
@@ -504,7 +642,10 @@ func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
 
 func reset_run() -> void:
 	ensure_player_state().reset_for_new_run()
+	_sync_meta_profile_default_unlocks()
 	run_gold = maxi(0, int(_prototype_balance_levers.get("starting_gold", 0)))
+	run_score = 0
+	_run_score_banked = false
 	ensure_player_state().gold = run_gold
 	dungeon_level = 1
 	_relic_offer_ids_by_level.clear()
@@ -684,7 +825,10 @@ func mark_fight_victory() -> Dictionary:
 		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
 	if not is_current_step_fight():
 		return {"ok": false, "reason": "not_fight_step", "next_scene": SCENE_MAIN}
-	var base_gold_reward := add_gold(prototype_fight_gold_reward_for(dungeon_level, current_step_key))
+	var base_gold_reward := add_gold(
+		prototype_fight_gold_reward_for(dungeon_level, current_step_key),
+		"fight_base_reward"
+	)
 	_run_log_append("fight_end", _run_log_capture_fight_outcome_payload("victory", "", {
 		"base_gold_reward": base_gold_reward,
 	}))
@@ -728,6 +872,7 @@ func advance_after_shop(mark_skipped: bool) -> Dictionary:
 
 func run_summary_snapshot() -> Dictionary:
 	if _run_summary.is_empty():
+		var meta_snapshot := meta_profile_snapshot()
 		return {
 			"victory": false,
 			"level_reached": dungeon_level,
@@ -736,6 +881,8 @@ func run_summary_snapshot() -> Dictionary:
 			"bosses_defeated": bosses_defeated,
 			"gold_earned": total_gold_earned,
 			"final_gold": run_gold,
+			"run_score": run_score,
+			"total_score": int(meta_snapshot.get("total_score", 0)),
 			"cause": "Run not finished.",
 			"equipment_slots": progression_snapshot().get("equipment_slots", []),
 			"relic_ids": progression_snapshot().get("relic_ids", []),
@@ -754,6 +901,7 @@ func run_log_snapshot() -> Dictionary:
 		"dungeon_level": dungeon_level,
 		"current_step_key": current_step_key,
 		"run_gold": run_gold,
+		"run_score": run_score,
 		"enemies_defeated": enemies_defeated,
 		"bosses_defeated": bosses_defeated,
 		"generate_log_files_enabled": _generate_run_log_files,
@@ -809,6 +957,44 @@ func load_user_settings() -> void:
 		))
 	else:
 		_generate_run_log_files = false
+
+
+func _load_meta_profile() -> void:
+	_load_profile()
+
+
+func _load_profile() -> void:
+	var profile: PlayerProfileState = ensure_player_profile_state()
+	var config := ConfigFile.new()
+	var error := config.load(PROFILE_PATH)
+	if error == OK:
+		profile.load_from_config(config, PROFILE_SECTION)
+		meta_profile_state = profile.meta_profile
+		return
+	var legacy_config := ConfigFile.new()
+	var legacy_error := legacy_config.load(META_PROFILE_PATH)
+	if legacy_error == OK:
+		profile.reset_to_default()
+		profile.meta_profile.load_from_config(legacy_config, META_PROFILE_SECTION)
+		profile.mark_updated()
+		meta_profile_state = profile.meta_profile
+		_save_profile()
+		return
+	profile.reset_to_default()
+	meta_profile_state = profile.meta_profile
+	_save_profile()
+
+
+func _save_meta_profile() -> void:
+	_save_profile()
+
+
+func _save_profile() -> void:
+	var config := ConfigFile.new()
+	ensure_player_profile_state().save_to_config(config, PROFILE_SECTION)
+	var error := config.save(PROFILE_PATH)
+	if error != OK:
+		push_warning("Failed to save player profile at %s: %d" % [PROFILE_PATH, error])
 
 
 func log_turn_result(turn_log: Dictionary, context: Dictionary = {}) -> void:
@@ -923,12 +1109,19 @@ func _finalize_run(victory: bool, cause: String) -> void:
 	run_victory = victory
 	var level_reached := dungeon_level
 	var levels_cleared := dungeon_level - 1
+	var victory_unlocks: Array[Dictionary] = []
 	if victory:
 		levels_cleared = MAX_DUNGEON_LEVELS
 		level_reached = MAX_DUNGEON_LEVELS
+		victory_unlocks = _grant_victory_equipment_unlocks()
 	elif is_current_step_fight():
 		levels_cleared = dungeon_level - 1
 
+	var score_added := 0
+	if not _run_score_banked:
+		score_added = add_total_score(run_score)
+		_run_score_banked = true
+	var meta_snapshot := meta_profile_snapshot()
 	var progression := progression_snapshot()
 	_run_summary = {
 		"victory": victory,
@@ -938,6 +1131,10 @@ func _finalize_run(victory: bool, cause: String) -> void:
 		"bosses_defeated": bosses_defeated,
 		"gold_earned": total_gold_earned,
 		"final_gold": run_gold,
+		"run_score": run_score,
+		"score_added_to_total": score_added,
+		"total_score": int(meta_snapshot.get("total_score", 0)),
+		"victory_equipment_unlocks": victory_unlocks,
 		"cause": cause,
 		"equipment_slots": progression.get("equipment_slots", []),
 		"relic_ids": progression.get("relic_ids", []),
@@ -978,6 +1175,7 @@ func _run_log_append(event_type: String, payload: Dictionary) -> void:
 			"dungeon_level": dungeon_level,
 			"step_key": current_step_key,
 			"run_gold": run_gold,
+			"run_score": run_score,
 			"run_active": run_active,
 			"payload": payload.duplicate(true),
 		}
@@ -1300,6 +1498,66 @@ func next_scene_path() -> String:
 	if is_current_step_boss_reward():
 		return SCENE_COMBAT
 	return SCENE_MAIN
+
+
+func _gold_source_counts_for_run_score(source: String) -> bool:
+	return source != "sell_refund" and source != "shop_refund" and source != "replacement_sell_refund"
+
+
+func _sync_meta_profile_default_unlocks() -> void:
+	var common_item_ids: Array[String] = []
+	for equipment in ensure_content_registry().list_equipment():
+		var data := Dictionary(equipment)
+		if String(data.get("rarity", "")) != "common":
+			continue
+		var item_id := String(data.get("id", ""))
+		if item_id != "":
+			common_item_ids.append(item_id)
+	if ensure_meta_profile_state().mark_default_unlocked(common_item_ids):
+		_save_meta_profile()
+
+
+func _can_claim_equipment_unlock(equipment: Dictionary) -> bool:
+	var rarity := String(equipment.get("rarity", "common"))
+	if rarity == "common":
+		return true
+	var previous_tier_item_id := _previous_tier_item_id(String(equipment.get("id", "")))
+	if previous_tier_item_id == "":
+		return false
+	return is_equipment_unlocked(previous_tier_item_id)
+
+
+func _previous_tier_item_id(target_item_id: String) -> String:
+	if target_item_id == "":
+		return ""
+	for raw_equipment in ensure_content_registry().list_equipment():
+		var equipment := Dictionary(raw_equipment)
+		if String(equipment.get("next_tier_item_id", "")) == target_item_id:
+			return String(equipment.get("id", ""))
+	return ""
+
+
+func _grant_victory_equipment_unlocks() -> Array[Dictionary]:
+	var unlocks: Array[Dictionary] = []
+	var progression = ensure_player_progression_state()
+	for slot_index in range(progression.equipped_item_ids.size()):
+		var item_id := String(progression.equipped_item_ids[slot_index])
+		if item_id == "":
+			continue
+		var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
+		if equipment.is_empty():
+			continue
+		var next_tier_item_id := String(equipment.get("next_tier_item_id", ""))
+		if next_tier_item_id == "" or is_equipment_unlocked(next_tier_item_id):
+			continue
+		var unlock_result := unlock_equipment(next_tier_item_id, "victory")
+		if not bool(unlock_result.get("ok", false)):
+			continue
+		var unlock_payload := Dictionary(unlock_result.get("unlock", {}))
+		unlock_payload["source_item_id"] = item_id
+		unlock_payload["slot_index"] = slot_index
+		unlocks.append(unlock_payload)
+	return unlocks
 
 
 func flow_trace_begin(route_name: String, target_scene: String, details: Dictionary = {}) -> String:

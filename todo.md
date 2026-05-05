@@ -595,7 +595,7 @@ Tasks:
 
 ## Milestone 11: Meta Progression Foundation
 
-Status: Not started.
+Status: Complete; manual QA passed.
 
 Goal: Add a mastery/meta layer that gives long-term structure to repeated runs after the core loop is easier to playtest.
 
@@ -603,25 +603,30 @@ Primary deliverable: A first meta progression system that can support equipment 
 
 Tasks:
 
-- [ ] Define meta progression scope.
+- [x] Define meta progression scope.
   - Deliverable: Selected first meta system, such as equipment unlocks, mastery progression, account upgrades, hero growth, or content pool expansion.
   - Acceptance: The system has a clear player-facing purpose and does not duplicate existing run-only mastery cards.
+  - Note: Milestone 11 uses equipment achievement progression. Run Score banks into persistent Total Score, and 5 equipment families unlock Common -> Uncommon -> Rare by victory achievement or adjacent Score claim.
 
-- [ ] Define persistence model.
+- [x] Define persistence model.
   - Deliverable: Runtime state shape for meta progress, unlock flags, earned currency or XP, and reset/new-run behavior.
   - Acceptance: Meta data can persist across runs separately from temporary `RunState` data.
+  - Note: `PlayerProfileState` owns the default profile and contains `MetaProfileState`, which persists Total Score, unlocked equipment ids, and recent unlock toast payloads separately from per-run `RunState`. The main-menu Profile overlay can reset the profile back to a new default profile.
 
-- [ ] Implement first unlock/progression loop.
+- [x] Implement first unlock/progression loop.
   - Deliverable: A small playable vertical slice where completing fights, bosses, runs, or challenges advances meta progress and changes future run options.
   - Acceptance: The player has a reason to start another run beyond one-run victory or defeat.
+  - Note: Victory with a Common or Uncommon equipped unlocks that family's next tier; Run Score is added to Total Score on run end.
 
-- [ ] Connect meta progression to content access.
+- [x] Connect meta progression to content access.
   - Deliverable: Equipment, relic, mastery, consumable, hero, or dungeon content can be gated or expanded by meta state.
   - Acceptance: Unlocks affect future runs in an understandable way without breaking current shop/combat flows.
+  - Note: Locked equipment variants are filtered from shop and booster pools; lower unlocked rarities can still roll, and only one equipment item per family can be equipped.
 
-- [ ] Validate meta progression with the temporary balance layer.
+- [x] Validate meta progression with the temporary balance layer.
   - Deliverable: Playtest notes showing how meta progress changes run difficulty, item access, and economy pressure.
   - Acceptance: Remaining balance work is documented as post-meta tuning rather than mixed with initial system implementation.
+  - Note: 2026-05-05 Godot MCP focused probes passed for content contracts, score source filtering, default unlocks, profile container save-load, main-menu Profile reset controls, shop gating, family duplicate prevention, idempotent score banking, scene instantiation, and `play_scene main`; user QA passed after follow-up fixes to final summary parser warnings, defeat unlock-toast leakage, and Profile reset placement.
 
 ## Milestone 12: First Playable Build
 

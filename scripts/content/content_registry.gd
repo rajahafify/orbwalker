@@ -85,11 +85,11 @@ func list_bosses() -> Array[Dictionary]:
 	return _collection_index_values(BOSSES)
 
 
-func shop_item_pool(dungeon_level: int) -> Array[Dictionary]:
+func shop_item_pool(dungeon_level: int, run_state: Variant = null) -> Array[Dictionary]:
 	var level := maxi(1, dungeon_level)
 	var pool: Array[Dictionary] = []
 	for item in list_equipment():
-		if _is_level_allowed(item, level):
+		if _is_level_allowed(item, level) and _is_equipment_available_for_run(item, run_state):
 			pool.append({"type": "equipment", "id": String(item.get("id", ""))})
 	for item in list_consumables():
 		if _is_level_allowed(item, level):
@@ -101,6 +101,17 @@ func shop_item_pool(dungeon_level: int) -> Array[Dictionary]:
 		if _is_level_allowed(item, level):
 			pool.append({"type": "booster", "id": String(item.get("id", ""))})
 	return pool
+
+
+func _is_equipment_available_for_run(item: Dictionary, run_state: Variant) -> bool:
+	var item_id := String(item.get("id", ""))
+	if item_id == "":
+		return false
+	if run_state == null:
+		return true
+	if not run_state.has_method("is_equipment_unlocked"):
+		return true
+	return bool(run_state.is_equipment_unlocked(item_id))
 
 
 func shop_relic_pool(dungeon_level: int) -> Array[Dictionary]:
@@ -142,7 +153,18 @@ func content_contract_snapshot() -> Dictionary:
 		"collections": {
 			EQUIPMENT: {
 				"required_fields": ["id", "display_name", "description", "icon_key", "effects"],
-				"common_optional_fields": ["rarity", "target_orb_id", "base_price", "min_level", "max_level", "combat_modifiers"],
+				"common_optional_fields": [
+					"rarity",
+					"rarity_color",
+					"family_id",
+					"next_tier_item_id",
+					"unlock_cost",
+					"target_orb_id",
+					"base_price",
+					"min_level",
+					"max_level",
+					"combat_modifiers",
+				],
 			},
 			CONSUMABLES: {
 				"required_fields": ["id", "display_name", "description", "icon_key", "effects"],
@@ -267,285 +289,222 @@ func _build_default_content() -> Dictionary:
 		EQUIPMENT: [
 			_make_equipment(
 				"shortsword",
-				"Shortsword",
+				"Iron Shortsword",
 				"common",
+				"white",
+				"shortsword",
 				OrbType.Id.FIRE,
 				10,
 				"Deal +2 flat elemental damage each turn.",
 				"equipment_shortsword",
-				{"flat_damage_bonus": 2}
+				{"flat_damage_bonus": 2},
+				"shortsword_knight",
+				0
 			),
 			_make_equipment(
 				"buckler",
-				"Buckler",
+				"Wooden Buckler",
 				"common",
+				"white",
+				"buckler",
 				OrbType.Id.ARMOR,
 				11,
 				"Gain +2 armor at turn start.",
 				"equipment_buckler",
-				{"start_turn_armor": 2}
+				{"start_turn_armor": 2},
+				"buckler_iron",
+				0
 			),
 			_make_equipment(
 				"coin_purse",
-				"Coin Purse",
+				"Worn Coin Purse",
 				"common",
+				"white",
+				"coin_purse",
 				OrbType.Id.GOLD,
 				10,
 				"Gain +1 bonus gold when gold orbs resolve.",
 				"equipment_coin_purse",
-				{"flat_gold_bonus": 1}
+				{"flat_gold_bonus": 1},
+				"coin_purse_merchant",
+				0
 			),
 			_make_equipment(
 				"healing_charm",
-				"Healing Charm",
+				"Linen Healing Charm",
 				"common",
+				"white",
+				"healing_charm",
 				OrbType.Id.HEART,
 				11,
 				"Gain +2 bonus healing when heart orbs resolve.",
 				"equipment_healing_charm",
-				{"flat_heal_bonus": 2}
-			),
-			_make_equipment(
-				"ember_ring",
-				"Ember Ring",
-				"common",
-				OrbType.Id.FIRE,
-				12,
-				"Fire orb value +1.",
-				"equipment_ember_ring",
-				{"orb_bonus_by_id": {OrbType.Id.FIRE: 1}}
-			),
-			_make_equipment(
-				"frost_ring",
-				"Frost Ring",
-				"common",
-				OrbType.Id.ICE,
-				12,
-				"Ice orb value +1.",
-				"equipment_frost_ring",
-				{"orb_bonus_by_id": {OrbType.Id.ICE: 1}}
-			),
-			_make_equipment(
-				"stone_ring",
-				"Stone Ring",
-				"common",
-				OrbType.Id.EARTH,
-				12,
-				"Earth orb value +1.",
-				"equipment_stone_ring",
-				{"orb_bonus_by_id": {OrbType.Id.EARTH: 1}}
+				{"flat_heal_bonus": 2},
+				"healing_charm_blessed",
+				0
 			),
 			_make_equipment(
 				"leather_gloves",
 				"Leather Gloves",
 				"common",
+				"white",
+				"leather_gloves",
 				-1,
 				11,
 				"Combo count is treated as +1 for damage scaling.",
 				"equipment_leather_gloves",
-				{"combo_flat_bonus": 1}
+				{"combo_flat_bonus": 1},
+				"leather_gloves_duelist",
+				0
 			),
 			_make_equipment(
-				"iron_helm",
-				"Iron Helm",
-				"common",
-				OrbType.Id.ARMOR,
-				12,
-				"Gain +3 armor at turn start.",
-				"equipment_iron_helm",
-				{"start_turn_armor": 3}
-			),
-			_make_equipment(
-				"combo_lens",
-				"Combo Lens",
-				"common",
-				-1,
-				13,
-				"Combo multiplier x1.10.",
-				"equipment_combo_lens",
-				{"combo_multiplier_mult": 1.10}
-			),
-			_make_equipment(
-				"twin_blades",
-				"Twin Blades",
+				"shortsword_knight",
+				"Knight Shortsword",
 				"uncommon",
+				"blue",
+				"shortsword",
 				OrbType.Id.FIRE,
 				18,
 				"Deal +4 flat elemental damage each turn.",
 				"equipment_twin_blades",
 				{"flat_damage_bonus": 4},
+				"shortsword_royal",
+				100,
 				2
 			),
 			_make_equipment(
-				"war_banner",
-				"War Banner",
+				"buckler_iron",
+				"Iron Buckler",
 				"uncommon",
-				-1,
-				18,
-				"Combo count is treated as +2 for damage scaling.",
-				"equipment_war_banner",
-				{"combo_flat_bonus": 2},
-				2
-			),
-			_make_equipment(
-				"tower_shield",
-				"Tower Shield",
-				"uncommon",
+				"blue",
+				"buckler",
 				OrbType.Id.ARMOR,
 				19,
-				"Gain +5 armor at turn start.",
+				"Gain +4 armor at turn start.",
 				"equipment_tower_shield",
-				{"start_turn_armor": 5},
+				{"start_turn_armor": 4},
+				"buckler_guardian",
+				100,
 				2
 			),
 			_make_equipment(
-				"merchant_scales",
-				"Merchant Scales",
+				"coin_purse_merchant",
+				"Merchant Coin Purse",
 				"uncommon",
+				"blue",
+				"coin_purse",
 				OrbType.Id.GOLD,
 				17,
 				"Gain +2 bonus gold when gold orbs resolve.",
 				"equipment_merchant_scales",
 				{"flat_gold_bonus": 2},
+				"coin_purse_noble",
+				100,
 				2
 			),
 			_make_equipment(
-				"battle_drum",
-				"Battle Drum",
+				"healing_charm_blessed",
+				"Blessed Healing Charm",
 				"uncommon",
-				-1,
-				18,
-				"Combo multiplier x1.20.",
-				"equipment_battle_drum",
-				{"combo_multiplier_mult": 1.20},
-				2
-			),
-			_make_equipment(
-				"earthbreaker_maul",
-				"Earthbreaker Maul",
-				"uncommon",
-				OrbType.Id.EARTH,
-				19,
-				"Earth orb value +2.",
-				"equipment_earthbreaker_maul",
-				{"orb_bonus_by_id": {OrbType.Id.EARTH: 2}},
-				2
-			),
-			_make_equipment(
-				"hearth_amulet",
-				"Hearth Amulet",
-				"uncommon",
+				"blue",
+				"healing_charm",
 				OrbType.Id.HEART,
 				17,
 				"Gain +4 bonus healing when heart orbs resolve.",
 				"equipment_hearth_amulet",
 				{"flat_heal_bonus": 4},
+				"healing_charm_saint",
+				100,
 				2
 			),
 			_make_equipment(
-				"alchemist_gloves",
-				"Alchemist Gloves",
+				"leather_gloves_duelist",
+				"Duelist Gloves",
 				"uncommon",
-				OrbType.Id.GOLD,
-				17,
-				"Gold orb value +1 and +1 bonus gold on resolve.",
-				"equipment_alchemist_gloves",
-				{
-					"orb_bonus_by_id": {OrbType.Id.GOLD: 1},
-					"flat_gold_bonus": 1,
-				},
-				2
-			),
-			_make_equipment(
-				"training_manual",
-				"Training Manual",
-				"uncommon",
+				"blue",
+				"leather_gloves",
 				-1,
 				18,
-				"Fire, Ice, and Earth orb values +1.",
-				"equipment_training_manual",
-				{
-					"orb_bonus_by_id": {
-						OrbType.Id.FIRE: 1,
-						OrbType.Id.ICE: 1,
-						OrbType.Id.EARTH: 1,
-					},
-				},
+				"Combo count is treated as +2 for damage scaling.",
+				"equipment_war_banner",
+				{"combo_flat_bonus": 2},
+				"leather_gloves_blademaster",
+				100,
 				2
 			),
 			_make_equipment(
-				"mirror_charm",
-				"Mirror Charm",
-				"uncommon",
-				-1,
-				19,
-				"Combo count +1 and combo multiplier x1.15.",
-				"equipment_mirror_charm",
-				{
-					"combo_flat_bonus": 1,
-					"combo_multiplier_mult": 1.15,
-				},
-				2
-			),
-			_make_equipment(
-				"ruby_brooch",
-				"Ruby Brooch",
+				"shortsword_royal",
+				"Royal Shortsword",
 				"rare",
+				"purple",
+				"shortsword",
 				OrbType.Id.FIRE,
 				27,
-				"Fire orb value +3.",
+				"Deal +6 flat elemental damage each turn.",
 				"equipment_ruby_brooch",
-				{"orb_bonus_by_id": {OrbType.Id.FIRE: 3}},
+				{"flat_damage_bonus": 6},
+				"",
+				300,
 				3
 			),
 			_make_equipment(
-				"sapphire_brooch",
-				"Sapphire Brooch",
+				"buckler_guardian",
+				"Guardian Buckler",
 				"rare",
-				OrbType.Id.ICE,
-				27,
-				"Ice orb value +3.",
-				"equipment_sapphire_brooch",
-				{"orb_bonus_by_id": {OrbType.Id.ICE: 3}},
-				3
-			),
-			_make_equipment(
-				"emerald_brooch",
-				"Emerald Brooch",
-				"rare",
-				OrbType.Id.EARTH,
-				27,
-				"Earth orb value +3.",
-				"equipment_emerald_brooch",
-				{"orb_bonus_by_id": {OrbType.Id.EARTH: 3}},
-				3
-			),
-			_make_equipment(
-				"royal_seal",
-				"Royal Seal",
-				"rare",
-				-1,
-				28,
-				"Combo count +2 and combo multiplier x1.25.",
-				"equipment_royal_seal",
-				{
-					"combo_flat_bonus": 2,
-					"combo_multiplier_mult": 1.25,
-				},
-				3
-			),
-			_make_equipment(
-				"champion_plate",
-				"Champion Plate",
-				"rare",
+				"purple",
+				"buckler",
 				OrbType.Id.ARMOR,
 				29,
-				"Gain +8 armor at turn start and +3 bonus healing on heart matches.",
+				"Gain +6 armor at turn start.",
 				"equipment_champion_plate",
-				{
-					"start_turn_armor": 8,
-					"flat_heal_bonus": 3,
-				},
+				{"start_turn_armor": 6},
+				"",
+				300,
+				3
+			),
+			_make_equipment(
+				"coin_purse_noble",
+				"Noble Coin Purse",
+				"rare",
+				"purple",
+				"coin_purse",
+				OrbType.Id.GOLD,
+				27,
+				"Gain +3 bonus gold when gold orbs resolve.",
+				"equipment_royal_seal",
+				{"flat_gold_bonus": 3},
+				"",
+				300,
+				3
+			),
+			_make_equipment(
+				"healing_charm_saint",
+				"Saint's Healing Charm",
+				"rare",
+				"purple",
+				"healing_charm",
+				OrbType.Id.HEART,
+				27,
+				"Gain +6 bonus healing when heart orbs resolve.",
+				"equipment_mirror_charm",
+				{"flat_heal_bonus": 6},
+				"",
+				300,
+				3
+			),
+			_make_equipment(
+				"leather_gloves_blademaster",
+				"Blademaster Gloves",
+				"rare",
+				"purple",
+				"leather_gloves",
+				-1,
+				28,
+				"Combo count is treated as +3 for damage scaling.",
+				"equipment_battle_drum",
+				{"combo_flat_bonus": 3},
+				"",
+				300,
 				3
 			),
 		],
@@ -729,11 +688,15 @@ func _make_equipment(
 	item_id: String,
 	display_name: String,
 	rarity: String,
+	rarity_color: String,
+	family_id: String,
 	target_orb_id: int,
 	base_price: int,
 	description: String,
 	icon_key: String,
 	combat_modifiers: Dictionary,
+	next_tier_item_id: String = "",
+	unlock_cost: int = 0,
 	min_level: int = 1
 ) -> Dictionary:
 	return {
@@ -742,6 +705,10 @@ func _make_equipment(
 		"description": description,
 		"icon_key": icon_key,
 		"rarity": rarity,
+		"rarity_color": rarity_color,
+		"family_id": family_id,
+		"next_tier_item_id": next_tier_item_id,
+		"unlock_cost": maxi(0, unlock_cost),
 		"target_orb_id": target_orb_id,
 		"base_price": base_price,
 		"sell_value": base_price,

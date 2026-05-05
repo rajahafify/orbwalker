@@ -9,6 +9,7 @@ const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 @onready var _content_box: VBoxContainer = $CenterContainer/PanelContainer/VBoxContainer
 @onready var _new_run_button: Button = $CenterContainer/PanelContainer/VBoxContainer/NewRunButton
 @onready var _main_menu_button: Button = $CenterContainer/PanelContainer/VBoxContainer/MainMenuButton
+@onready var _achievement_toast: Control = %AchievementToast
 
 const BACKGROUND_PATH := "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
 
@@ -30,6 +31,10 @@ func _ready() -> void:
 	var victory := bool(summary.get("victory", false))
 	_apply_static_layout()
 	_apply_summary(summary, victory)
+	if victory:
+		_consume_recent_unlocks_for_toast()
+	else:
+		_discard_recent_unlocks()
 
 
 func _on_main_menu_button_pressed() -> void:
@@ -90,8 +95,8 @@ func _apply_static_layout() -> void:
 	var background := TextureRect.new()
 	background.name = "SummaryBackground"
 	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 	background.texture = load(BACKGROUND_PATH)
 	background.modulate = Color(0.52, 0.48, 0.42, 1.0)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -123,7 +128,7 @@ func _apply_static_layout() -> void:
 	_summary_label.add_theme_font_size_override("font_size", 28)
 	_summary_label.add_theme_color_override("font_color", COLOR_MUTED)
 	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 
 	_style_action_button(_new_run_button, true)
 	_style_action_button(_main_menu_button, false)
@@ -211,7 +216,7 @@ func _make_loadout_section(title: String, values: Array[String]) -> PanelContain
 	body.text = "\n".join(values)
 	body.add_theme_font_size_override("font_size", 28)
 	body.add_theme_color_override("font_color", COLOR_TEXT)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 	box.add_child(body)
 	return panel
 
@@ -266,3 +271,46 @@ func _make_spacer(height: int) -> Control:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(1, height)
 	return spacer
+
+
+func _consume_recent_unlocks_for_toast() -> void:
+	if _achievement_toast == null:
+		return
+	var entries: Array[Dictionary] = _normalize_unlock_entries(_consume_recent_unlock_payload())
+	if entries.is_empty():
+		return
+	if _achievement_toast.has_method("enqueue_unlock_entries"):
+		_achievement_toast.call("enqueue_unlock_entries", entries)
+		return
+	if _achievement_toast.has_method("enqueue_unlock"):
+		for entry in entries:
+			var display_name := String(entry.get("display_name", entry.get("item_name", entry.get("item_id", "Unknown Item"))))
+			_achievement_toast.call("enqueue_unlock", display_name)
+
+
+func _consume_recent_unlock_payload() -> Variant:
+	for method_name in ["consume_recent_equipment_unlocks", "consume_recent_unlocks", "consume_recent_meta_unlocks"]:
+		if RunState.has_method(method_name):
+			return RunState.call(method_name)
+	return []
+
+
+func _discard_recent_unlocks() -> void:
+	_consume_recent_unlock_payload()
+
+
+func _normalize_unlock_entries(payload: Variant) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if payload is Array:
+		for entry in payload as Array:
+			if entry is Dictionary:
+				out.append((entry as Dictionary).duplicate(true))
+			elif entry is String:
+				out.append({"item_id": String(entry), "display_name": _title_case_id(String(entry))})
+		return out
+	if payload is Dictionary:
+		var typed_payload := payload as Dictionary
+		for key in ["unlocks", "recent_unlocks", "recent_equipment_unlocks"]:
+			if typed_payload.has(key):
+				return _normalize_unlock_entries(typed_payload.get(key, []))
+	return out

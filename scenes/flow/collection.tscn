@@ -1,0 +1,127 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/flow/collection.gd" id="1_collection"]
+[ext_resource type="Script" path="res://scripts/ui/achievement_toast.gd" id="2_toast"]
+
+[node name="Collection" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_collection")
+
+[node name="BackgroundTexture" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 6
+
+[node name="OverlayTint" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.03, 0.05, 0.46)
+
+[node name="MainMargin" type="MarginContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 42.0
+offset_top = 44.0
+offset_right = -42.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="MainMargin/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Collection"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="MainMargin/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Total Score: 0"
+horizontal_alignment = 1
+
+[node name="FamiliesScroll" type="ScrollContainer" parent="MainMargin/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="FamiliesVBox" type="VBoxContainer" parent="MainMargin/ContentVBox/FamiliesScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="FooterRow" type="HBoxContainer" parent="MainMargin/ContentVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackButton" type="Button" parent="MainMargin/ContentVBox/FooterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+text = "Main Menu"
+
+[node name="StatusLabel" type="Label" parent="MainMargin/ContentVBox/FooterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="AchievementToast" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_toast")
+
+[node name="ToastPanel" type="PanelContainer" parent="AchievementToast"]
+layout_mode = 0
+visible = false
+
+[node name="ToastBody" type="VBoxContainer" parent="AchievementToast/ToastPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="AchievementToast/ToastPanel/ToastBody"]
+layout_mode = 2
+text = "Achievement Unlocked"
+
+[node name="MessageLabel" type="Label" parent="AchievementToast/ToastPanel/ToastBody"]
+layout_mode = 2
+text = "Item unlocked"
+autowrap_mode = 3
+
+[connection signal="pressed" from="MainMargin/ContentVBox/FooterRow/BackButton" to="." method="_on_back_button_pressed"]

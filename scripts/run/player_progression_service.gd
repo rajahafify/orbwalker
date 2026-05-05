@@ -10,6 +10,9 @@ func equip_item(state: PlayerProgressionState, item_id: String, content: Content
 		return _error(state, "unknown_equipment_id")
 	if state.equipped_item_ids.has(item_id):
 		return _error(state, "equipment_already_equipped")
+	var family_id := _equipment_family_id(item_data)
+	if family_id != "" and _has_conflicting_equipment_family(state, content, family_id, -1):
+		return _error(state, "equipment_family_already_equipped")
 
 	var slot_index := _find_empty_slot(state.equipped_item_ids)
 	if slot_index < 0:
@@ -34,6 +37,9 @@ func replace_equipment(state: PlayerProgressionState, slot_index: int, item_id: 
 		return _error(state, "unknown_equipment_id")
 	if state.equipped_item_ids.has(item_id):
 		return _error(state, "equipment_already_equipped")
+	var family_id := _equipment_family_id(item_data)
+	if family_id != "" and _has_conflicting_equipment_family(state, content, family_id, validated_index):
+		return _error(state, "equipment_family_already_equipped")
 
 	var replaced_item_id := String(state.equipped_item_ids[validated_index])
 	if replaced_item_id == "":
@@ -216,6 +222,28 @@ func _add_effects_to_hooks(active_effects: Dictionary, source_id: String, source
 		var effect_with_source := effect.duplicate(true)
 		effect_with_source["source_id"] = source_id
 		active_effects[hook_name].append(effect_with_source)
+
+
+func _equipment_family_id(item_data: Dictionary) -> String:
+	return String(item_data.get("family_id", "")).strip_edges()
+
+
+func _has_conflicting_equipment_family(
+	state: PlayerProgressionState,
+	content: ContentRegistry,
+	family_id: String,
+	allowed_slot_index: int
+) -> bool:
+	for index in range(state.equipped_item_ids.size()):
+		if index == allowed_slot_index:
+			continue
+		var equipped_item_id := String(state.equipped_item_ids[index])
+		if equipped_item_id == "":
+			continue
+		var equipped_data := content.get_equipment(equipped_item_id)
+		if _equipment_family_id(equipped_data) == family_id:
+			return true
+	return false
 
 
 func _find_empty_slot(slots: Array[String]) -> int:

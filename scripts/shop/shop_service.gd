@@ -67,7 +67,7 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 			return _result(shop, run_state.run_gold, false, "insufficient_gold")
 		var apply_result := _apply_offer(run_state, content, shop, item_offer)
 		if not bool(apply_result.get("ok", false)):
-			run_state.add_gold(int(item_offer.get("price", 0)))
+			run_state.add_gold(int(item_offer.get("price", 0)), "shop_refund")
 			return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "offer_apply_failed")))
 
 		item_offer["sold_out"] = true
@@ -84,7 +84,7 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 			return _result(shop, run_state.run_gold, false, "insufficient_gold")
 		var relic_apply := _apply_offer(run_state, content, shop, shop.relic_offer)
 		if not bool(relic_apply.get("ok", false)):
-			run_state.add_gold(int(shop.relic_offer.get("price", 0)))
+			run_state.add_gold(int(shop.relic_offer.get("price", 0)), "shop_refund")
 			return _result(shop, run_state.run_gold, false, String(relic_apply.get("reason", "offer_apply_failed")))
 		shop.relic_offer["sold_out"] = true
 		shop.relic_offer["available"] = false
@@ -109,7 +109,7 @@ func sell_equipped_item(run_state: Node, slot_index: int) -> Dictionary:
 			"gold": run_state.run_gold,
 		}
 	var gold_gained := int(sell_result.get("result", {}).get("gold_gained", 0))
-	run_state.add_gold(gold_gained)
+	run_state.add_gold(gold_gained, "sell_refund")
 	return {
 		"ok": true,
 		"reason": "",
@@ -130,7 +130,7 @@ func sell_consumable_item(run_state: Node, slot_index: int) -> Dictionary:
 			"gold": run_state.run_gold,
 		}
 	var gold_gained := int(sell_result.get("result", {}).get("gold_gained", 0))
-	run_state.add_gold(gold_gained)
+	run_state.add_gold(gold_gained, "sell_refund")
 	return {
 		"ok": true,
 		"reason": "",
@@ -275,7 +275,7 @@ func _apply_booster_option_to_slot(run_state: Node, content, option: Dictionary,
 			if sell_replaced and replaced_item_id != "":
 				var replaced_data: Dictionary = content.get_equipment(replaced_item_id)
 				var gold_gained := maxi(0, int(replaced_data.get("sell_value", replaced_data.get("base_price", 0))))
-				run_state.add_gold(gold_gained)
+				run_state.add_gold(gold_gained, "replacement_sell_refund")
 				payload["gold_gained"] = gold_gained
 			return {
 				"ok": true,
@@ -348,7 +348,7 @@ func _available_relic_pool(run_state: Node, content, level: int) -> Array:
 func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictionary]:
 	var pool: Array[Dictionary] = []
 	var equipped_ids := _equipped_equipment_ids(run_state)
-	for entry in content.shop_item_pool(level):
+	for entry in content.shop_item_pool(level, run_state):
 		var entry_type := String(entry.get("type", ""))
 		var content_id := String(entry.get("id", ""))
 		if entry_type == ITEM_TYPE_EQUIPMENT and equipped_ids.has(content_id):
@@ -581,6 +581,8 @@ func _generate_booster_options(run_state: Node, content, booster_data: Dictionar
 	for item in content.list_equipment():
 		var item_id := String(item.get("id", ""))
 		if item_id == "" or equipped_ids.has(item_id):
+			continue
+		if run_state.has_method("is_equipment_unlocked") and not bool(run_state.is_equipment_unlocked(item_id)):
 			continue
 		if target_orb_id >= 0 and int(item.get("target_orb_id", -1)) != target_orb_id:
 			continue
