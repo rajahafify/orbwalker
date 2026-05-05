@@ -23,10 +23,10 @@ const MASTERY_CELL_WIDTH := 92.0
 const MASTERY_CELL_GAP := 24.0
 const COMBAT_MASTERY_CARD_SIZE := Vector2(170, 102)
 const COMBAT_MASTERY_CARD_GAP := 2.0
-const COMBAT_MASTERY_ICON_SIZE := Vector2(72, 72)
+const COMBAT_MASTERY_ICON_SIZE := Vector2(82, 82)
 const COMBAT_MASTERY_COMPACT_CARD_SIZE := Vector2(102, 76)
 const COMBAT_MASTERY_COMPACT_CARD_GAP := 2.0
-const COMBAT_MASTERY_COMPACT_ICON_SIZE := Vector2(48, 48)
+const COMBAT_MASTERY_COMPACT_ICON_SIZE := Vector2(58, 58)
 const COMBAT_MASTERY_ACTIVATION_BASE_ALPHA := 0.14
 const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
 const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
@@ -45,8 +45,6 @@ const COMBAT_MASTERY_ORDER: Array[int] = [
 const RELIC_SLOT_SIZE := Vector2(64, 64)
 const RELIC_ICON_SIZE := Vector2(54, 54)
 const RELIC_SLOT_GAP := 10.0
-const EMPTY_RELIC_PLACEHOLDER_MIN := 5
-const EMPTY_RELIC_PLACEHOLDER_MAX := 6
 const PLAYER_HUD_SECTION_RECT := Rect2(Vector2(0, 1428), Vector2(1080, 492))
 const PLAYER_HUD_MASTERY_PANEL_RECT := Rect2(Vector2(16, 0), Vector2(1048, 160))
 const PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 6), Vector2(1048, 50))
@@ -64,11 +62,11 @@ const ARMOR_BADGE_RECT := Rect2(Vector2(474, 112), Vector2(222, 34))
 const PLAYER_LOADOUT_RECT := Rect2(Vector2(42, 258), Vector2(996, 228))
 const PLAYER_MASTERY_RECT := Rect2(Vector2(42, 404), Vector2(996, 50))
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 130), Vector2(526, 94))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(556, 130), Vector2(314, 94))
+const CONSUMABLE_RAIL_RECT := Rect2(Vector2(660, 130), Vector2(314, 94))
 const VITALS_RELIC_ICONS_RECT := Rect2(Vector2(308, 132), Vector2(390, 58))
 const RELIC_LABEL_RECT := Rect2(Vector2(308, 104), Vector2(390, 24))
 const EQUIPMENT_LABEL_RECT := Rect2(Vector2(22, 102), Vector2(526, 22))
-const CONSUMABLE_LABEL_RECT := Rect2(Vector2(556, 102), Vector2(314, 22))
+const CONSUMABLE_LABEL_RECT := Rect2(Vector2(660, 102), Vector2(314, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
@@ -81,9 +79,9 @@ const COMPACT_PLAYER_ARMOR_BAR_RECT := Rect2(Vector2.ZERO, Vector2.ZERO)
 const COMPACT_ARMOR_BADGE_RECT := Rect2(Vector2.ZERO, Vector2.ZERO)
 const COMPACT_PLAYER_LOADOUT_RECT := Rect2(Vector2(16, 168), Vector2(1048, 156))
 const COMPACT_EQUIPMENT_LABEL_RECT := Rect2(Vector2(20, 4), Vector2(540, 24))
-const COMPACT_CONSUMABLE_LABEL_RECT := Rect2(Vector2(596, 4), Vector2(314, 24))
+const COMPACT_CONSUMABLE_LABEL_RECT := Rect2(Vector2(714, 4), Vector2(314, 24))
 const COMPACT_EQUIPMENT_RAIL_RECT := Rect2(Vector2(20, 34), Vector2(540, 106))
-const COMPACT_CONSUMABLE_RAIL_RECT := Rect2(Vector2(596, 34), Vector2(314, 106))
+const COMPACT_CONSUMABLE_RAIL_RECT := Rect2(Vector2(714, 34), Vector2(314, 106))
 const COMPACT_RELIC_LABEL_RECT := Rect2(Vector2(20, 101), Vector2(98, 24))
 const COMPACT_VITALS_RELIC_ICONS_RECT := Rect2(Vector2(126, 82), Vector2(402, 64))
 const COMPACT_PLAYER_MASTERY_RECT := Rect2(Vector2(16, 286), Vector2(1048, 44))
@@ -92,7 +90,7 @@ const COMPACT_MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(100, 44))
 const COMPACT_MASTERY_ICONS_RECT := Rect2(Vector2(116, 0), Vector2(724, MASTERY_SLOT_SIZE.y))
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
-const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(320.0, 156.0)
+const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(960.0, 468.0)
 const INTENT_PREVIEW_MIN_SEGMENT_WIDTH := 6.0
 const INTENT_PREVIEW_PULSE_SECONDS := 0.52
 const ARMOR_PREVIEW_PULSE_SECONDS := 0.84
@@ -374,7 +372,7 @@ func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
 	return null
 
 
-func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
+func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
 	_clear_children(row)
 	var compact_mode := row.size.y > 0.0 and row.size.y <= 90.0
 	var card_size := COMBAT_MASTERY_COMPACT_CARD_SIZE if compact_mode else COMBAT_MASTERY_CARD_SIZE
@@ -386,7 +384,6 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 	var start_x := maxf(0.0, (row_width - total_cards_width) * 0.5)
 	for index in range(COMBAT_MASTERY_ORDER.size()):
 		var orb_id: int = COMBAT_MASTERY_ORDER[index]
-		var level := int(mastery_levels.get(orb_id, 0))
 		var feedback_value := int(feedback_totals.get(orb_id, 0))
 
 		var card := Control.new()
@@ -430,37 +427,11 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
-		icon.tooltip_text = "%s Mastery" % OrbType.display_name(orb_id)
-
-		var name_label := Label.new()
-		name_label.name = "MasteryLabel"
-		name_label.text = OrbType.display_name(orb_id)
-		name_label.position = Vector2(4.0, 42.0 if compact_mode else 58.0)
-		name_label.size = Vector2(card_size.x - 8.0, 14.0 if compact_mode else 20.0)
-		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		name_label.add_theme_font_size_override("font_size", 11 if compact_mode else 17)
-		name_label.add_theme_color_override("font_color", Color(0.88, 0.92, 0.96, 1.0))
-		name_label.add_theme_constant_override("outline_size", 1)
-		name_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
-		name_label.visible = not compact_mode
-
-		var level_label := Label.new()
-		level_label.name = "MasteryLevel"
-		level_label.text = "L%d" % level if compact_mode else "Lv %d" % level
-		level_label.position = Vector2(3.0, 48.0 if compact_mode else 78.0)
-		level_label.size = Vector2(card_size.x - 6.0, 18.0 if compact_mode else 24.0)
-		level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		level_label.add_theme_font_size_override("font_size", 14 if compact_mode else 18)
-		level_label.add_theme_color_override("font_color", Color(0.80, 0.86, 0.93, 1.0))
-		level_label.add_theme_constant_override("outline_size", 1)
-		level_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
-		level_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 		var feedback_label := Label.new()
 		feedback_label.name = "MasteryFeedback"
 		feedback_label.text = _combat_mastery_feedback_text_for_display(orb_id, feedback_value, compact_mode)
-		feedback_label.position = Vector2(2.0, 58.0 if compact_mode else 88.0)
+		feedback_label.position = Vector2(2.0, 58.0 if compact_mode else 82.0)
 		feedback_label.size = Vector2(card_size.x - 4.0, 16.0 if compact_mode else 14.0)
 		feedback_label.add_theme_font_size_override("font_size", 12 if compact_mode else 15)
 		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.58, 0.90))
@@ -500,8 +471,6 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		panel.add_child(card_background)
 		panel.add_child(activation_glow)
 		panel.add_child(icon)
-		panel.add_child(name_label)
-		panel.add_child(level_label)
 		panel.add_child(feedback_label)
 		panel.add_child(activation_frame)
 		panel.add_child(hover_highlight)
@@ -608,13 +577,21 @@ func _combat_mastery_feedback_text_for_display(orb_id: int, value: int, compact_
 func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	var accent := OrbType.color(orb_id)
-	style.bg_color = Color(0.02, 0.04, 0.06, 0.08)
-	var border_alpha := 0.16 + 0.10 * float(maxi(0, activation_tier))
-	style.border_color = Color(accent.r, accent.g, accent.b, clampf(border_alpha, 0.0, 0.64))
-	style.set_border_width_all(1)
+	style.bg_color = Color(0.02, 0.05, 0.07, 0.70)
+	var border_alpha := 0.42 + 0.10 * float(maxi(0, activation_tier))
+	style.border_color = Color(accent.r, accent.g, accent.b, clampf(border_alpha, 0.0, 0.86))
+	style.border_blend = true
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 1
+	style.border_width_bottom = 1
 	if activation_tier >= 2:
-		style.set_border_width_all(2)
-	style.set_corner_radius_all(3)
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+	style.set_corner_radius_all(4)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.42)
+	style.shadow_size = 3
+	style.shadow_offset = Vector2(1.0, 2.0)
 	style.content_margin_left = 4.0
 	style.content_margin_right = 4.0
 	style.content_margin_top = 3.0
@@ -796,13 +773,13 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	_apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 18)
+	_apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
 	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 14)
+	_apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
 	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 14)
+	_apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
 	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 13)
+	_apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
 	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
@@ -856,10 +833,10 @@ func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
 		local_y = anchor_rect.end.y + 10.0
 	_mastery_detail_bubble.position = Vector2(local_x, local_y)
 
-	_apply_rect(_mastery_detail_title, Rect2(Vector2(10.0, 8.0), Vector2(bubble_size.x - 20.0, 24.0)))
-	_apply_rect(_mastery_detail_effect, Rect2(Vector2(10.0, 34.0), Vector2(bubble_size.x - 20.0, 22.0)))
-	_apply_rect(_mastery_detail_value, Rect2(Vector2(10.0, 58.0), Vector2(bubble_size.x - 20.0, 22.0)))
-	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(10.0, 82.0), Vector2(bubble_size.x - 20.0, bubble_size.y - 92.0)))
+	_apply_rect(_mastery_detail_title, Rect2(Vector2(24.0, 20.0), Vector2(bubble_size.x - 48.0, 52.0)))
+	_apply_rect(_mastery_detail_effect, Rect2(Vector2(24.0, 88.0), Vector2(bubble_size.x - 48.0, 46.0)))
+	_apply_rect(_mastery_detail_value, Rect2(Vector2(24.0, 146.0), Vector2(bubble_size.x - 48.0, 46.0)))
+	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(24.0, 208.0), Vector2(bubble_size.x - 48.0, bubble_size.y - 232.0)))
 
 
 func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
@@ -1074,31 +1051,7 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 
 
 func _populate_empty_relic_placeholders(row: Control) -> void:
-	var row_width := row.size.x if row.size.x > 0.0 else COMPACT_VITALS_RELIC_ICONS_RECT.size.x
-	var slots_by_width := int(floor((row_width + RELIC_SLOT_GAP) / (RELIC_SLOT_SIZE.x + RELIC_SLOT_GAP)))
-	var placeholder_count := clampi(slots_by_width, EMPTY_RELIC_PLACEHOLDER_MIN, EMPTY_RELIC_PLACEHOLDER_MAX)
-	for index in range(placeholder_count):
-		var slot := PanelContainer.new()
-		slot.name = "RelicPlaceholder%d" % index
-		slot.custom_minimum_size = RELIC_SLOT_SIZE
-		slot.size = RELIC_SLOT_SIZE
-		var slot_y := maxf(0.0, (row.size.y - RELIC_SLOT_SIZE.y) * 0.5)
-		slot.position = Vector2(float(index) * (RELIC_SLOT_SIZE.x + RELIC_SLOT_GAP), slot_y)
-		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		slot.add_theme_stylebox_override("panel", _slot_stylebox(false, true))
-
-		var icon := TextureRect.new()
-		icon.name = "RelicPlaceholderIcon"
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon.position = Vector2((RELIC_SLOT_SIZE.x - RELIC_ICON_SIZE.x) * 0.5, (RELIC_SLOT_SIZE.y - RELIC_ICON_SIZE.y) * 0.5)
-		icon.size = RELIC_ICON_SIZE
-		icon.custom_minimum_size = RELIC_ICON_SIZE
-		icon.texture = _empty_slot_silhouette("relic")
-		icon.modulate = Color(0.86, 0.90, 0.98, 0.34)
-		slot.add_child(icon)
-		row.add_child(slot)
+	row.tooltip_text = "No relics"
 
 
 func apply_loadout_rail_layout(equipment_row: Control, equipment_rect: Rect2, consumable_row: Control, consumable_rect: Rect2) -> void:

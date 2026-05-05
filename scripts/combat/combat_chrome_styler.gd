@@ -22,7 +22,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 
 	var board_view: Variant = nodes.get("board_view", null)
 	if board_view != null:
-		board_view.cell_frame_texture = _resolve_visual_texture(visuals, "combat_slot_frame_texture", [true])
+		board_view.cell_frame_texture = null
 		board_view.cell_spacing = 5.0
 		board_view.board_padding = 10.0
 		board_view.orb_scale_in_cell = 0.90

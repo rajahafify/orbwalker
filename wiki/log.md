@@ -1919,3 +1919,55 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check` passed, runtime searches found no active `EnemySpriteView` / `EnemyAnimatedSprite` / spritesheet lookup references, and Godot MCP `play_scene current` launched `res://scenes/combat/combat_player.tscn`.
   - Running scene-tree inspection confirmed `EnemyStageBackdrop` plus visible `EnemyPortrait`, no animated enemy nodes, hidden intent prose, and compact intent bubble visibility. Screenshot review scored the final static enemy image pass 9/10. `get_godot_errors` retained the same two stale enum reload diagnostics.
+
+## [2026-05-06] code-change | M12 Board Cell Border Reduction
+
+- Source: `scripts/combat/combat_chrome_styler.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Removed the repeated ornate slot-frame texture from individual combat board cells so each orb no longer sits inside its own decorative border.
+  - Preserved the outer board frame, dark cell bed, orb textures, board size, combat math, resolver behavior, routing, drag coordinates, combat speed, replay timing, and SFX.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script`, `play_scene current`, running screenshot capture, and `get_godot_errors` review completed. The screenshot showed the per-cell ornate borders removed; `get_godot_errors` retained the same two stale enum reload diagnostics.
+
+## [2026-05-06] code-change | M12 Empty Relic Placeholder Cleanup
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Removed empty bordered relic placeholder boxes when the player owns no relics.
+  - Kept the `RELICS` label, owned relic icon rendering, relic overflow behavior, combat math, routing, drag coordinates, and timing unchanged.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded `player_loadout_hud.gd`; cache-ignore relic-row probe returned `empty_children=0` and `filled_children=1`; `play_scene current` and running screenshot capture confirmed the empty relic boxes are gone.
+
+## [2026-05-06] code-change | M12 Consumable Rail Right Alignment
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_layout_manager.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Moved the combat consumable slots and label to the right edge of the bottom loadout strip.
+  - Preserved equipment slots, slot rendering, combat math, routing, drag coordinates, combat speed, replay timing, and SFX.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded the touched scripts; cache-ignore layout probe returned `overlap_count=0`, readability `true`, equipment rail at `x=36`, and consumable rail at `x=730`; `play_scene current` and screenshot capture confirmed the right-aligned consumable group.
+
+## [2026-05-06] code-change | M12 Mastery Box Borders
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Reverted the outer combat `MASTERY` panel border.
+  - Added subtle per-card 3D/beveled border and shadow styling to each mastery box.
+  - Preserved combat math, routing, drag coordinates, combat speed, replay timing, and SFX.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded `player_loadout_hud.gd`; cache-ignore style probe confirmed the mastery panel is empty-styled and cards carry border/shadow styling; `play_scene current`, screenshot capture, and `get_godot_errors` review completed.
+
+## [2026-05-06] code-change | M12 Mastery Label And Detail Readability
+
+- Source: `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Changed:
+  - Removed visible name/level text from compact combat mastery cards so the row is icon-only.
+  - Suppressed the native mastery icon tooltip text that duplicated `Fire Mastery` style hover labels.
+  - Enlarged the mastery detail popover to `960 x 468` and increased title/effect/value/modifier font sizes for readability.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded `player_loadout_hud.gd`; cache-ignore probe confirmed six cards, no `MasteryLabel` or `MasteryLevel` nodes, empty icon tooltip text, and the enlarged detail bubble size; `play_scene current`, screenshot capture, and `get_godot_errors` review completed.
