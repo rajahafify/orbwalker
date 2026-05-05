@@ -161,9 +161,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	_set_label_font_size(nodes.get("enemy_name_label", null), 38)
 	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 28)
 	_set_label_font_size(nodes.get("enemy_label", null), font_size_value)
-	_set_label_font_size(nodes.get("primary_intent_title_label", null), 26)
-	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 56)
-	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 20)
+	_set_label_font_size(nodes.get("primary_intent_title_label", null), 24)
+	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 52)
+	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 18)
 	_set_label_font_size(nodes.get("timer_label", null), 34)
 	_set_label_font_size(nodes.get("player_label", null), 26)
 	_set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
@@ -228,7 +228,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if intent_badge != null:
 		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		intent_badge.custom_minimum_size = Vector2(124, 124)
+		intent_badge.custom_minimum_size = Vector2(112, 112)
 	var primary_intent_detail: Label = nodes.get("primary_intent_detail_label", null) as Label
 	if primary_intent_detail != null:
 		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
