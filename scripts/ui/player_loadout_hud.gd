@@ -399,6 +399,16 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
 
+		var card_background := TextureRect.new()
+		card_background.name = "CardTexture"
+		card_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card_background.position = Vector2.ZERO
+		card_background.size = card_size
+		card_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		card_background.stretch_mode = TextureRect.STRETCH_SCALE
+		card_background.texture = _visual_registry().mastery_card_texture(orb_id)
+		card_background.modulate = Color(1.0, 1.0, 1.0, 0.96)
+
 		var activation_glow := ColorRect.new()
 		activation_glow.name = "ActivationGlow"
 		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -483,6 +493,7 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		hover_frame.size = card_size
 		hover_frame.visible = false
 
+		panel.add_child(card_background)
 		panel.add_child(activation_glow)
 		panel.add_child(icon)
 		panel.add_child(name_label)
@@ -593,7 +604,7 @@ func _combat_mastery_feedback_text_for_display(orb_id: int, value: int, compact_
 func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	var accent := OrbType.color(orb_id)
-	style.bg_color = Color(0.035, 0.055, 0.08, 0.96)
+	style.bg_color = Color(0.02, 0.03, 0.05, 0.20)
 	var border_alpha := 0.58 + 0.08 * float(maxi(0, activation_tier))
 	style.border_color = Color(accent.r, accent.g, accent.b, clampf(border_alpha, 0.0, 0.92))
 	style.set_border_width_all(1 + mini(2, maxi(0, activation_tier - 1)))
@@ -1068,12 +1079,38 @@ func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}
 
 
 func apply_player_hud_chrome(nodes: Dictionary) -> void:
-	_apply_node_stylebox(nodes, "section", _hud_section_stylebox())
-	_apply_node_stylebox(nodes, "mastery_panel", StyleBoxEmpty.new())
-	_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
+	var section_texture := _visual_registry().combat_player_hud_rail_texture()
+	var mastery_rail_texture := _visual_registry().combat_mastery_rail_frame_texture()
+	var loadout_rail_texture := _visual_registry().combat_loadout_rail_texture()
+	var vitals_frame_texture := _visual_registry().combat_player_vitals_frame_texture()
+	var equipment_rail_texture := _visual_registry().combat_equipment_rail_frame_texture()
+	var consumable_rail_texture := _visual_registry().combat_consumables_rail_frame_texture()
+	var block_badge_texture := _visual_registry().combat_block_badge_texture()
+	if section_texture != null:
+		_apply_node_stylebox(nodes, "section", _texture_stylebox(section_texture, 26, 26, 26, 26, 10.0))
+		_apply_node_stylebox(nodes, "footer_panel", _texture_stylebox(section_texture, 24, 24, 24, 24, 10.0))
+	else:
+		_apply_node_stylebox(nodes, "section", _hud_section_stylebox())
+		_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
+	if mastery_rail_texture != null:
+		_apply_node_stylebox(nodes, "mastery_panel", _texture_stylebox(mastery_rail_texture, 16, 16, 16, 16, 8.0))
+	else:
+		_apply_node_stylebox(nodes, "mastery_panel", StyleBoxEmpty.new())
+	if loadout_rail_texture != null:
+		_apply_node_stylebox(nodes, "loadout_frame", _texture_stylebox(loadout_rail_texture, 18, 18, 18, 18, 8.0))
+	else:
+		_apply_node_stylebox(nodes, "loadout_frame", _hud_inner_panel_stylebox())
 	_apply_node_stylebox(nodes, "hero_card", _hud_inner_panel_stylebox())
-	_apply_node_stylebox(nodes, "vitals_frame", _hud_vitals_stylebox())
-	_apply_node_stylebox(nodes, "loadout_frame", _hud_inner_panel_stylebox())
+	if vitals_frame_texture != null:
+		_apply_node_stylebox(nodes, "vitals_frame", _texture_stylebox(vitals_frame_texture, 16, 16, 16, 16, 8.0))
+	else:
+		_apply_node_stylebox(nodes, "vitals_frame", _hud_vitals_stylebox())
+	if block_badge_texture != null:
+		_apply_node_stylebox(nodes, "armor_badge", _texture_stylebox(block_badge_texture, 12, 12, 8, 8, 8.0))
+	if equipment_rail_texture != null:
+		_apply_node_stylebox(nodes, "equipment_icons", _texture_stylebox(equipment_rail_texture, 14, 14, 14, 14, 8.0))
+	if consumable_rail_texture != null:
+		_apply_node_stylebox(nodes, "consumable_icons", _texture_stylebox(consumable_rail_texture, 14, 14, 14, 14, 8.0))
 	_apply_progressbar_flat_style(nodes.get("hp_bar") as ProgressBar, Color(0.78, 0.16, 0.17, 1.0))
 	var mastery_title_font_size := 22
 	var mastery_panel := nodes.get("mastery_panel") as Control
@@ -1218,6 +1255,20 @@ func _hud_vitals_stylebox() -> StyleBoxFlat:
 	style.border_color = Color(0.18, 0.25, 0.34, 0.96)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(4)
+	return style
+
+
+func _texture_stylebox(texture: Texture2D, left: int, right: int, top: int, bottom: int, content_margin: float = 8.0) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = left
+	style.texture_margin_right = right
+	style.texture_margin_top = top
+	style.texture_margin_bottom = bottom
+	style.content_margin_left = content_margin
+	style.content_margin_right = content_margin
+	style.content_margin_top = content_margin
+	style.content_margin_bottom = content_margin
 	return style
 
 
@@ -1839,7 +1890,10 @@ func _slot_tooltip(content: Dictionary, fallback_id: String) -> String:
 	return display_name if description == "" else "%s\n%s" % [display_name, description]
 
 
-func _slot_stylebox(selected: bool = false, empty: bool = false) -> StyleBoxFlat:
+func _slot_stylebox(selected: bool = false, empty: bool = false) -> StyleBox:
+	var slot_texture := _visual_registry().combat_slot_frame_texture(not empty)
+	if slot_texture != null and not selected:
+		return _texture_stylebox(slot_texture, 20, 20, 20, 20, 6.0)
 	var style := StyleBoxFlat.new()
 	if empty:
 		style.bg_color = Color(0.03, 0.05, 0.08, 0.98)

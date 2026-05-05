@@ -636,13 +636,14 @@ Goal: Package and document the first playable prototype.
 
 Primary deliverable: A readable mobile-first playable build that demonstrates the full GDD vertical slice and can be shared for feedback.
 
-Scope note: Milestone 12 starts with combat readability because feedback indicates the current UI is hard to read, especially on mobile. Do not move to release packaging until mobile combat readability has runtime validation evidence or explicit human acceptance.
+Scope note: Milestone 12 starts with combat readability because feedback indicates the current UI is hard to read, especially on mobile. Do not move to release packaging until the reference-faithful mobile combat UI pass has runtime validation evidence and explicit human visual acceptance.
 
 Tasks:
 
 - [~] Rework mobile combat UI readability.
-  - Deliverable: Mobile-first combat layout hierarchy that protects board readability, enemy intent/HP danger, timer, and player HP before secondary build/loadout detail.
-  - Acceptance: At mobile portrait resolutions, enemy threat, board state, timer, and player HP are readable without overlapping mastery/loadout/detail UI. Board touch input still uses `BoardView.gui_input` local coordinates with no transform double-application. Godot MCP validates combat scene load/run state and layout probe results; manual visual/touch acceptance remains the final gate.
+  - Deliverable: Reference-faithful mobile combat presentation with a derived combat UI asset pack, full-screen backdrop/scrim, texture-backed top/enemy/timer/board/mastery/player HUD frames, a large enemy stage with readable intent, protected 5x6 board, readable Elemental Mastery rail, and structured bottom hero/HP/relic/equipment/consumable HUD.
+  - Acceptance: At mobile portrait resolutions, enemy threat, board state, timer, mastery, player HP, and loadout rails are readable without overlapping primary zones. Board touch input still uses `BoardView.gui_input` local coordinates with no transform double-application. Godot MCP validates combat scene load/run state, asset availability, layout probe results, and running-scene screenshots; manual visual/touch acceptance remains the final gate.
+  - Note: 2026-05-05 reference-faithful pass added derived combat UI chrome under `resources/art/first_pass/derived/combat_ui/`, VisualRegistry accessors, texture-backed combat scene chrome, extended layout probe readability checks, and Godot MCP evidence for `1080x1920`, `1080x2400`, and `900x1600`. Human review says the result is closer but still far from polished; human visual approval and real touch QA are still pending, so this gate stays in progress.
 
 - [ ] Add export presets.
   - Deliverable: Export configuration for PC, with mobile export prepared if certificates and SDKs are available.

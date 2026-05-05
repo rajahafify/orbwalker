@@ -2,15 +2,32 @@ extends RefCounted
 
 
 static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
+	var visuals: Variant = nodes.get("visual_registry", null)
+	var background: Variant = nodes.get("background", null)
+	if background is TextureRect:
+		var background_texture := _resolve_visual_texture(visuals, "combat_background")
+		if background_texture != null:
+			(background as TextureRect).texture = background_texture
+		(background as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		(background as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(background as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
+	var backdrop_scrim: Variant = nodes.get("backdrop_scrim", null)
+	if backdrop_scrim is TextureRect:
+		var scrim_texture := _resolve_visual_texture(visuals, "combat_backdrop_scrim_texture")
+		if scrim_texture != null:
+			(backdrop_scrim as TextureRect).texture = scrim_texture
+		(backdrop_scrim as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		(backdrop_scrim as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
+		(backdrop_scrim as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
+
 	var board_view: Variant = nodes.get("board_view", null)
 	if board_view != null:
-		# Keep chrome code-driven to avoid any baked checkerboard artifacts from generated sheets.
 		board_view.cell_frame_texture = null
 		board_view.cell_spacing = 4.0
 		board_view.board_padding = 8.0
 		board_view.orb_scale_in_cell = 0.92
-		board_view.cell_background = Color(0.07, 0.09, 0.12, 0.96)
-		board_view.board_background = Color(0.03, 0.04, 0.06, 0.96)
+		board_view.cell_background = Color(0.05, 0.07, 0.10, 0.98)
+		board_view.board_background = Color(0.02, 0.03, 0.05, 0.96)
 
 	var frame_style := StyleBoxFlat.new()
 	frame_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
@@ -29,6 +46,35 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	]:
 		if panel is Control:
 			(panel as Control).add_theme_stylebox_override("panel", frame_style)
+
+	var board_frame_texture := _resolve_visual_texture(visuals, "combat_board_frame_texture")
+	if board_frame_texture != null:
+		var board_style := _panel_texture_stylebox(board_frame_texture, 26, 26, 26, 26, 16.0)
+		var board_frame: Variant = nodes.get("board_frame", null)
+		if board_frame is Control:
+			(board_frame as Control).add_theme_stylebox_override("panel", board_style)
+
+	var enemy_panel_texture := _resolve_visual_texture(visuals, "combat_enemy_panel_frame_texture")
+	if enemy_panel_texture != null:
+		var enemy_style := _panel_texture_stylebox(enemy_panel_texture, 24, 24, 24, 24, 10.0)
+		var enemy_panel: Variant = nodes.get("enemy_panel", null)
+		if enemy_panel is Control:
+			(enemy_panel as Control).add_theme_stylebox_override("panel", enemy_style)
+
+	var top_bar_texture := _resolve_visual_texture(visuals, "combat_top_bar_frame_texture")
+	if top_bar_texture != null:
+		var top_style := _panel_texture_stylebox(top_bar_texture, 34, 34, 24, 24, 10.0)
+		var top_bar: Variant = nodes.get("top_bar", null)
+		if top_bar is Control:
+			(top_bar as Control).add_theme_stylebox_override("panel", top_style)
+
+	var combat_strip_texture := _resolve_visual_texture(visuals, "combat_timer_track_texture")
+	if combat_strip_texture != null:
+		var strip_style := _panel_texture_stylebox(combat_strip_texture, 18, 18, 10, 10, 8.0)
+		var combat_strip: Variant = nodes.get("combat_strip", null)
+		if combat_strip is Control:
+			(combat_strip as Control).add_theme_stylebox_override("panel", strip_style)
+
 	var ornate_frame_style := StyleBoxFlat.new()
 	ornate_frame_style.bg_color = Color(0.03, 0.05, 0.08, 0.96)
 	ornate_frame_style.border_color = Color(0.55, 0.43, 0.22, 0.96)
@@ -38,23 +84,33 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	ornate_frame_style.content_margin_right = 8.0
 	ornate_frame_style.content_margin_top = 6.0
 	ornate_frame_style.content_margin_bottom = 6.0
-	for panel in [
-		nodes.get("top_bar", null),
-		nodes.get("enemy_panel", null),
-		nodes.get("combat_strip", null),
-	]:
-		if panel is Control:
-			(panel as Control).add_theme_stylebox_override("panel", ornate_frame_style)
+	if top_bar_texture == null:
+		_apply_panel_stylebox(nodes.get("top_bar", null), ornate_frame_style)
+	if enemy_panel_texture == null:
+		_apply_panel_stylebox(nodes.get("enemy_panel", null), ornate_frame_style)
+	if combat_strip_texture == null:
+		_apply_panel_stylebox(nodes.get("combat_strip", null), ornate_frame_style)
 
 	apply_progressbar_flat_style(nodes.get("enemy_hp_bar", null), Color(0.70, 0.12, 0.13, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_hp_bar", null), Color(0.78, 0.16, 0.17, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_armor_bar", null), Color(0.16, 0.50, 0.86, 1.0))
+	apply_progressbar_style(
+		nodes.get("enemy_hp_bar", null),
+		_resolve_visual_texture(visuals, "clean_hud_texture", ["enemy_hp_bar_frame"]),
+		_resolve_visual_texture(visuals, "clean_hud_texture", ["enemy_hp_bar_fill"])
+	)
+	apply_progressbar_style(
+		nodes.get("player_hp_bar", null),
+		_resolve_visual_texture(visuals, "clean_hud_texture", ["hp_bar_frame"]),
+		_resolve_visual_texture(visuals, "clean_hud_texture", ["hp_bar_fill"])
+	)
 
 	var ui_text_color := Color(0.95, 0.96, 0.98, 1.0)
 	for label in [
 		nodes.get("title_label", null),
 		nodes.get("hint_label", null),
 		nodes.get("timer_label", null),
+		nodes.get("enemy_step_label", null),
 		nodes.get("run_progress_label", null),
 		nodes.get("phase_label", null),
 		nodes.get("turn_summary_label", null),
@@ -65,7 +121,12 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		nodes.get("heart_stat_label", null),
 		nodes.get("gold_stat_label", null),
 		nodes.get("enemy_label", null),
+		nodes.get("enemy_name_label", null),
+		nodes.get("enemy_hp_text_label", null),
 		nodes.get("intent_label", null),
+		nodes.get("primary_intent_title_label", null),
+		nodes.get("primary_intent_amount_label", null),
+		nodes.get("primary_intent_detail_label", null),
 	]:
 		if label is Label:
 			(label as Label).add_theme_color_override("font_color", ui_text_color)
@@ -79,9 +140,15 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	var debug_input_height := float(config.get("debug_input_height", 72.0))
 
 	_set_label_font_size(nodes.get("title_label", null), font_size_title)
+	_set_label_font_size(nodes.get("enemy_step_label", null), font_size_value)
 	_set_label_font_size(nodes.get("hint_label", null), font_size_value)
 	_set_label_font_size(nodes.get("intent_label", null), font_size_value)
+	_set_label_font_size(nodes.get("enemy_name_label", null), 34)
+	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 20)
 	_set_label_font_size(nodes.get("enemy_label", null), font_size_value)
+	_set_label_font_size(nodes.get("primary_intent_title_label", null), 20)
+	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 34)
+	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 16)
 	_set_label_font_size(nodes.get("timer_label", null), 22)
 	_set_label_font_size(nodes.get("player_label", null), 24)
 	_set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
@@ -116,6 +183,10 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		armor_badge_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.94))
 
 	_set_label_color(nodes.get("phase_label", null), Color(0.70, 0.78, 0.86, 1.0))
+	_set_label_color(nodes.get("primary_intent_amount_label", null), Color(1.0, 0.90, 0.66, 1.0))
+	_set_label_color(nodes.get("primary_intent_detail_label", null), Color(0.86, 0.92, 0.96, 1.0))
+	_set_label_color(nodes.get("enemy_name_label", null), Color(0.98, 0.95, 0.86, 1.0))
+	_set_label_color(nodes.get("enemy_hp_text_label", null), Color(1.0, 0.93, 0.88, 1.0))
 	_set_label_color(nodes.get("run_progress_label", null), Color(0.82, 0.90, 0.98, 1.0))
 	_set_label_color(nodes.get("player_label", null), Color(1.0, 0.96, 0.92, 1.0))
 	_set_label_color(nodes.get("player_armor_label", null), Color(0.82, 0.94, 1.0, 1.0))
@@ -125,20 +196,31 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 
 	apply_timer_label_readability(nodes.get("timer_label", null))
 	apply_timer_label_readability(nodes.get("timer_state_label", null))
+	var intent_badge: TextureRect = nodes.get("intent_badge", null) as TextureRect
+	if intent_badge != null:
+		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		intent_badge.custom_minimum_size = Vector2(96, 96)
+	var primary_intent_detail: Label = nodes.get("primary_intent_detail_label", null) as Label
+	if primary_intent_detail != null:
+		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	apply_button_theme([
 		nodes.get("back_button", null),
 		nodes.get("debug_toggle_button", null),
 		nodes.get("settings_button", null),
 		nodes.get("next_button", null),
 	])
-	apply_timer_track_theme(nodes.get("timer_track", null))
+	apply_timer_track_theme(nodes.get("timer_track", null), visuals)
+	apply_decorative_overlays(nodes, visuals)
 	apply_loadout_group_theme(
 		nodes.get("loadout_frame", null),
 		nodes.get("mastery_strip", null),
 		nodes.get("hero_card", null),
 		nodes.get("vitals_frame", null),
 		nodes.get("hero_level_badge", null),
-		nodes.get("armor_badge", null)
+		nodes.get("armor_badge", null),
+		visuals
 	)
 
 	var player_loadout_hud: Variant = nodes.get("player_loadout_hud", null)
@@ -305,20 +387,32 @@ static func apply_button_theme(buttons: Array) -> void:
 		(button as Button).add_theme_stylebox_override("pressed", style_hover)
 
 
-static func apply_timer_track_theme(timer_track: Variant) -> void:
+static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = null) -> void:
 	if not (timer_track is Control):
 		return
-	var timer_style := StyleBoxFlat.new()
-	timer_style.bg_color = Color(0.04, 0.10, 0.14, 0.95)
-	timer_style.border_color = Color(0.44, 0.64, 0.82, 0.90)
-	timer_style.set_border_width_all(2)
-	timer_style.set_corner_radius_all(8)
+	var timer_style_flat := StyleBoxFlat.new()
+	timer_style_flat.bg_color = Color(0.04, 0.10, 0.14, 0.95)
+	timer_style_flat.border_color = Color(0.44, 0.64, 0.82, 0.90)
+	timer_style_flat.set_border_width_all(2)
+	timer_style_flat.set_corner_radius_all(8)
+	var timer_style: StyleBox = timer_style_flat
+	var timer_track_texture := _resolve_visual_texture(visuals, "combat_timer_track_texture")
+	if timer_track_texture != null:
+		timer_style = _panel_texture_stylebox(timer_track_texture, 10, 10, 10, 10, 2.0)
 	var frame: Variant = (timer_track as Control).get_node_or_null("TimerTrackFrame")
 	if frame is Panel:
 		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
 	var timer_fill: Variant = (timer_track as Control).get_node_or_null("TimerFill")
 	if timer_fill is ColorRect:
 		(timer_fill as ColorRect).color = Color(0.26, 0.62, 0.88, 0.92)
+	var center_marker: Variant = (timer_track as Control).get_node_or_null("TimerCenterMarker")
+	if center_marker is TextureRect:
+		var marker_texture := _resolve_visual_texture(visuals, "combat_timer_center_marker_texture")
+		if marker_texture != null:
+			(center_marker as TextureRect).texture = marker_texture
+		(center_marker as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		(center_marker as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		(center_marker as TextureRect).modulate = Color(1.0, 0.98, 0.88, 0.96)
 
 
 static func apply_timer_label_readability(label: Variant) -> void:
@@ -331,7 +425,7 @@ static func apply_timer_label_readability(label: Variant) -> void:
 	(label as Label).add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.80))
 
 
-static func apply_loadout_group_theme(loadout_frame: Variant, mastery_strip: Variant, hero_card: Variant, vitals_frame: Variant, hero_level_badge: Variant, armor_badge: Variant) -> void:
+static func apply_loadout_group_theme(loadout_frame: Variant, mastery_strip: Variant, hero_card: Variant, vitals_frame: Variant, hero_level_badge: Variant, armor_badge: Variant, visuals: Variant = null) -> void:
 	var inner_panel_style := StyleBoxFlat.new()
 	inner_panel_style.bg_color = Color(0.05, 0.08, 0.12, 0.98)
 	inner_panel_style.border_color = Color(0.18, 0.24, 0.31, 0.95)
@@ -371,7 +465,33 @@ static func apply_loadout_group_theme(loadout_frame: Variant, mastery_strip: Var
 		armor_badge_style.content_margin_right = 8.0
 		armor_badge_style.content_margin_top = 2.0
 		armor_badge_style.content_margin_bottom = 2.0
-		(armor_badge as Control).add_theme_stylebox_override("panel", armor_badge_style)
+		var block_badge_texture := _resolve_visual_texture(visuals, "combat_block_badge_texture")
+		if block_badge_texture != null:
+			(armor_badge as Control).add_theme_stylebox_override("panel", _panel_texture_stylebox(block_badge_texture, 12, 12, 8, 8, 8.0))
+		else:
+			(armor_badge as Control).add_theme_stylebox_override("panel", armor_badge_style)
+
+
+static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> void:
+	var divider_texture := _resolve_visual_texture(visuals, "combat_divider_texture")
+	for key in ["divider_enemy_timer", "divider_timer_board", "divider_board_player"]:
+		var divider_node: Variant = nodes.get(key, null)
+		if divider_node is TextureRect:
+			if divider_texture != null:
+				(divider_node as TextureRect).texture = divider_texture
+			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
+			(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.92)
+
+	var corner_texture := _resolve_visual_texture(visuals, "combat_corner_ornament_texture")
+	for key in ["corner_top_left", "corner_top_right", "corner_bottom_left", "corner_bottom_right"]:
+		var corner: Variant = nodes.get(key, null)
+		if corner is TextureRect:
+			if corner_texture != null:
+				(corner as TextureRect).texture = corner_texture
+			(corner as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			(corner as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			(corner as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.96)
 
 
 static func apply_zone_guide(zone: Variant, label_text: String, enabled: bool) -> void:
@@ -419,6 +539,34 @@ static func apply_zone_guide(zone: Variant, label_text: String, enabled: bool) -
 		var guide: Variant = zone.get_node_or_null("ZoneGuideLabel")
 		if guide != null:
 			guide.queue_free()
+
+
+static func _apply_panel_stylebox(panel: Variant, stylebox: StyleBox) -> void:
+	if panel is Control:
+		(panel as Control).add_theme_stylebox_override("panel", stylebox)
+
+
+static func _panel_texture_stylebox(texture: Texture2D, left: int, right: int, top: int, bottom: int, content_margin: float = 8.0) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = left
+	style.texture_margin_right = right
+	style.texture_margin_top = top
+	style.texture_margin_bottom = bottom
+	style.content_margin_left = content_margin
+	style.content_margin_right = content_margin
+	style.content_margin_top = content_margin
+	style.content_margin_bottom = content_margin
+	return style
+
+
+static func _resolve_visual_texture(visuals: Variant, method_name: String, args: Array = []) -> Texture2D:
+	if visuals == null:
+		return null
+	if not visuals.has_method(method_name):
+		return null
+	var value: Variant = visuals.callv(method_name, args)
+	return value as Texture2D
 
 
 static func _set_label_font_size(label: Variant, font_size: int) -> void:

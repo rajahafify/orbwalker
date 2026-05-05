@@ -3,12 +3,14 @@ extends Control
 @onready var _board_surface: BoardSurface = %BoardSurface
 @onready var _board_view: BoardView = _board_surface.board_view()
 @onready var _background: TextureRect = %Background
+@onready var _background_scrim: TextureRect = %BackgroundScrim
 @onready var _status_label: Label = %StatusLabel
 @onready var _timer_label: Label = %TimerLabel
 @onready var _run_progress_label: Label = %RunProgressLabel
 @onready var _turn_summary_label: Label = %TurnSummaryLabel
 @onready var _player_label: Label = %PlayerHpLabel
 @onready var _enemy_label: Label = %EnemyStageLabel
+@onready var _enemy_step_label: Label = %EnemyStepLabel
 @onready var _enemy_debug_label: Label = %EnemyStateLabel
 @onready var _intent_label: Label = %EnemyIntentLabel
 @onready var _phase_label: Label = %CombatPhaseLabel
@@ -26,11 +28,14 @@ extends Control
 @onready var _intent_row: HBoxContainer = %IntentRow
 @onready var _enemy_stage: Control = %EnemyStage
 @onready var _enemy_hp_row: Control = %EnemyHpRow
+@onready var _enemy_name_label: Label = %EnemyNameLabel
+@onready var _enemy_hp_text_label: Label = %EnemyHpLabel
 @onready var _combat_strip: PanelContainer = $"CombatLayoutRoot/CombatStrip"
 @onready var _timer_track: Control = %TimerTrack
 @onready var _timer_fill: ColorRect = %TimerFill
 @onready var _timer_icon: TextureRect = %TimerIcon
 @onready var _timer_state_label: Label = %TimerStateLabel
+@onready var _timer_center_marker: TextureRect = %TimerCenterMarker
 @onready var _board_frame: PanelContainer = $"CombatLayoutRoot/BoardPanel/BoardSurface/BoardFrame"
 @onready var _board_panel: Control = %BoardPanel
 @onready var _board_shadow: Panel = %BoardShadow
@@ -67,6 +72,10 @@ extends Control
 @onready var _hint_label: Label = %HintLabel
 @onready var _enemy_portrait: TextureRect = %EnemyPortrait
 @onready var _intent_badge: TextureRect = %IntentBadge
+@onready var _primary_intent_text_column: VBoxContainer = %PrimaryIntentTextColumn
+@onready var _primary_intent_title_label: Label = %PrimaryIntentTitleLabel
+@onready var _primary_intent_amount_label: Label = %PrimaryIntentAmountLabel
+@onready var _primary_intent_detail_label: Label = %PrimaryIntentDetailLabel
 @onready var _enemy_hp_bar: ProgressBar = %EnemyHpBar
 @onready var _player_hp_bar: ProgressBar = %PlayerHpBar
 @onready var _player_armor_bar: ProgressBar = %PlayerArmorBar
@@ -84,6 +93,13 @@ extends Control
 @onready var _relic_row_label: Label = %RelicLabel
 @onready var _mastery_row_label: Label = %MasteryLabel
 @onready var _vfx_layer: Control = %VfxLayer
+@onready var _divider_enemy_timer: TextureRect = %DividerEnemyTimer
+@onready var _divider_timer_board: TextureRect = %DividerTimerBoard
+@onready var _divider_board_player: TextureRect = %DividerBoardPlayer
+@onready var _corner_top_left: TextureRect = %CornerTopLeft
+@onready var _corner_top_right: TextureRect = %CornerTopRight
+@onready var _corner_bottom_left: TextureRect = %CornerBottomLeft
+@onready var _corner_bottom_right: TextureRect = %CornerBottomRight
 
 const SWAP_ANIMATION_SECONDS := 0.08
 const MATCH_FLASH_SECONDS := 0.12
@@ -144,10 +160,10 @@ const SLOT_SIZE := Vector2(88, 88)
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
-const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 58))
-const ENEMY_PANEL_RECT := Rect2(Vector2(16, 70), Vector2(1048, 340))
-const COMBAT_STRIP_RECT := Rect2(Vector2(16, 424), Vector2(1048, 56))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 492), Vector2(1048, 584))
+const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 66))
+const ENEMY_PANEL_RECT := Rect2(Vector2(16, 80), Vector2(1048, 392))
+const COMBAT_STRIP_RECT := Rect2(Vector2(16, 484), Vector2(1048, 56))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 552), Vector2(1048, 846))
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
 const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(80, 520), Vector2(920, 540))
 const BOSS_REWARD_CARD_GAP := 12.0
@@ -229,7 +245,7 @@ var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
-var _layout_player_hud_section_rect := Rect2(Vector2(0, 1092), Vector2(1080, 828))
+var _layout_player_hud_section_rect := Rect2(Vector2(0, 1408), Vector2(1080, 512))
 var _flow_trace_route_id := ""
 var _intent_preview_emphasis_tween: Tween = null
 var _intent_bubble_tweens: Array[Tween] = []
@@ -365,6 +381,7 @@ func _ready() -> void:
 	_board_view.gui_input.connect(_on_board_view_gui_input)
 	_board_view.mouse_exited.connect(_on_board_view_mouse_exited)
 	_debug_overlay.visible = false
+	_debug_toggle_button.visible = false
 	if _console_input.visible:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	_debug_console.set_overlay_visible(false)
@@ -409,22 +426,42 @@ func _bind_combat_layout_manager() -> void:
 	_combat_layout_manager.bind({
 		"layout_root": _layout_root,
 		"top_bar": _top_bar,
+		"top_bar_row": _top_bar.get_node_or_null("TopBarRow"),
+		"back_button": _back_button,
+		"settings_button": _settings_button,
+		"title_label": _title_label,
+		"hint_label": _hint_label,
 		"enemy_panel": _enemy_panel,
 		"enemy_panel_root": _enemy_panel_root,
 		"intent_row": _intent_row,
 		"enemy_stage": _enemy_stage,
 		"enemy_hp_row": _enemy_hp_row,
 		"intent_badge": _intent_badge,
+		"primary_intent_column": _primary_intent_text_column,
+		"primary_intent_title_label": _primary_intent_title_label,
+		"primary_intent_amount_label": _primary_intent_amount_label,
+		"primary_intent_detail_label": _primary_intent_detail_label,
 		"enemy_portrait": _enemy_portrait,
 		"enemy_hp_bar": _enemy_hp_bar,
 		"enemy_label": _enemy_label,
+		"enemy_name_label": _enemy_name_label,
+		"enemy_hp_text_label": _enemy_hp_text_label,
+		"enemy_step_label": _enemy_step_label,
 		"combat_strip": _combat_strip,
 		"timer_track": _timer_track,
 		"timer_icon": _timer_icon,
+		"timer_center_marker": _timer_center_marker,
 		"board_panel": _board_panel,
 		"board_surface": _board_surface,
 		"board_view_control": _board_view_control,
 		"board_shadow": _board_shadow,
+		"divider_enemy_timer": _divider_enemy_timer,
+		"divider_timer_board": _divider_timer_board,
+		"divider_board_player": _divider_board_player,
+		"corner_top_left": _corner_top_left,
+		"corner_top_right": _corner_top_right,
+		"corner_bottom_left": _corner_bottom_left,
+		"corner_bottom_right": _corner_bottom_right,
 		"player_loadout_hud": _player_loadout_hud,
 		"equipment_icons": _equipment_icons,
 		"consumable_icons": _consumable_icons,
@@ -502,6 +539,8 @@ func _apply_visual_chrome() -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_visual_chrome(
 		{
 			"board_view": _board_view,
+			"background": _background,
+			"backdrop_scrim": _background_scrim,
 			"top_bar": _top_bar,
 			"enemy_panel": _enemy_panel,
 			"combat_strip": _combat_strip,
@@ -513,6 +552,7 @@ func _apply_visual_chrome() -> void:
 			"player_armor_bar": _player_armor_bar,
 			"title_label": _title_label,
 			"hint_label": _hint_label,
+			"enemy_step_label": _enemy_step_label,
 			"timer_label": _timer_label,
 			"run_progress_label": _run_progress_label,
 			"phase_label": _phase_label,
@@ -524,7 +564,12 @@ func _apply_visual_chrome() -> void:
 			"heart_stat_label": _heart_stat_label,
 			"gold_stat_label": _gold_stat_label,
 			"enemy_label": _enemy_label,
+			"enemy_name_label": _enemy_name_label,
+			"enemy_hp_text_label": _enemy_hp_text_label,
 			"intent_label": _intent_label,
+			"primary_intent_title_label": _primary_intent_title_label,
+			"primary_intent_amount_label": _primary_intent_amount_label,
+			"primary_intent_detail_label": _primary_intent_detail_label,
 			"equipment_row_label": _equipment_row_label,
 			"consumable_row_label": _consumable_row_label,
 			"relic_row_label": _relic_row_label,
@@ -536,6 +581,8 @@ func _apply_visual_chrome() -> void:
 			"settings_button": _settings_button,
 			"next_button": _next_button,
 			"timer_track": _timer_track,
+			"timer_center_marker": _timer_center_marker,
+			"intent_badge": _intent_badge,
 			"loadout_frame": _loadout_frame,
 			"mastery_strip": _mastery_strip,
 			"hero_card": _hero_card,
@@ -550,8 +597,16 @@ func _apply_visual_chrome() -> void:
 			"enemy_debug_label": _enemy_debug_label,
 			"combat_log_text": _combat_log_text,
 			"debug_console": _debug_console,
+			"divider_enemy_timer": _divider_enemy_timer,
+			"divider_timer_board": _divider_timer_board,
+			"divider_board_player": _divider_board_player,
+			"corner_top_left": _corner_top_left,
+			"corner_top_right": _corner_top_right,
+			"corner_bottom_left": _corner_bottom_left,
+			"corner_bottom_right": _corner_bottom_right,
 			"player_loadout_hud": _player_loadout_hud,
 			"player_hud_nodes": _combat_player_hud_nodes(),
+			"visual_registry": _visuals,
 		},
 		{
 			"font_size_title": FONT_SIZE_TITLE,
@@ -705,6 +760,7 @@ func _toggle_debug_overlay() -> void:
 	_debug_overlay.visible = not _debug_overlay.visible
 	if _debug_console != null:
 		_debug_console.set_overlay_visible(_debug_overlay.visible)
+	_update_hud()
 
 
 func _on_regenerate_button_pressed() -> void:
@@ -716,6 +772,10 @@ func _on_print_board_button_pressed() -> void:
 
 
 func _on_back_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+
+func _on_settings_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 
@@ -2104,9 +2164,9 @@ func _build_hud_snapshot() -> Dictionary:
 	if _drag_active():
 		timer_state = TIMER_STATE_ACTIVE
 	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
-	var enemy_texture: Texture2D = null
+	var enemy_stage_texture: Texture2D = null
 	if _visuals != null:
-		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+		enemy_stage_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
 	var player_gold := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
 	var enemy_hp := int(_staged_hud_values.get("enemy_hp", int(_enemy_state.current_hp)))
 	var enemy_turn_block := int(_staged_hud_values.get("enemy_turn_block", int(_enemy_state.current_turn_block)))
@@ -2115,17 +2175,24 @@ func _build_hud_snapshot() -> Dictionary:
 		enemy_intent_preview = _enemy_intent_preview_data(intent, enemy_hp, int(_enemy_state.max_hp))
 	var player_hp := int(_staged_hud_values.get("player_hp", int(_player_state.current_hp)))
 	var player_armor := int(_staged_hud_values.get("player_armor", int(_player_state.armor)))
+	var run_label := RunState.level_sequence_label()
+	var top_level_text := "LEVEL %d / %d" % [RunState.dungeon_level, RunState.MAX_DUNGEON_LEVELS]
+	var top_enemy_step_text := _top_enemy_step_text()
+	var top_gold_text := "GOLD %d" % player_gold
+	var primary_intent_badge := _primary_intent_badge_snapshot(intent)
 	return _hud_snapshot_builder.build_snapshot(
 		{
-			"run_label": RunState.level_sequence_label(),
-			"player_gold": player_gold,
-			"enemy_display_name": _enemy_state.display_name,
+			"top_level_text": top_level_text,
+			"top_enemy_step_text": top_enemy_step_text,
+			"top_gold_text": top_gold_text,
+			"enemy_name_text": _enemy_state.display_name,
 			"enemy_hp": enemy_hp,
 			"enemy_max_hp": int(_enemy_state.max_hp),
+			"enemy_hp_text": "HP %d / %d" % [enemy_hp, int(_enemy_state.max_hp)],
 			"enemy_turn_block": enemy_turn_block,
-			"enemy_intent_text": _format_intent_compact(intent),
 			"enemy_intent_preview": enemy_intent_preview,
-			"enemy_texture": enemy_texture,
+			"enemy_stage_texture": enemy_stage_texture,
+			"primary_intent_badge": primary_intent_badge,
 			"combat_turn_index": int(_combat.turn_index),
 			"combat_phase_name": _combat.phase_name(),
 			"timer_state": timer_state,
@@ -2139,35 +2206,118 @@ func _build_hud_snapshot() -> Dictionary:
 			"gold_mastery_level": int(mastery_levels.get(OrbType.Id.GOLD, 0)),
 			"turn_summary_text": _turn_summary_label.text,
 			"progression_snapshot": progression_snapshot,
+			"run_label": run_label,
 		}
 	)
+
+
+func _top_enemy_step_text() -> String:
+	var step := String(RunState.current_step_key)
+	match step:
+		"enemy_1":
+			return "ENEMY 1"
+		"enemy_2":
+			return "ENEMY 2"
+		"boss":
+			return "BOSS"
+		"shop":
+			return "SHOP"
+		_:
+			return step.to_upper()
+
+
+func _primary_intent_badge_snapshot(intent: Dictionary) -> Dictionary:
+	if intent.is_empty():
+		return {
+			"kind": "idle",
+			"title": "Intent",
+			"amount": "--",
+			"detail": "No immediate action.",
+		}
+	var entries := _intent_entries_data(intent)
+	if entries.is_empty():
+		return {
+			"kind": "idle",
+			"title": "Intent",
+			"amount": "--",
+			"detail": _format_intent_compact(intent),
+		}
+	var attack_amount := 0
+	var block_amount := 0
+	for entry in entries:
+		var kind := String(entry.get("kind", ""))
+		var amount := maxi(0, int(entry.get("amount", 0)))
+		if kind == "attack":
+			attack_amount += amount
+		elif kind == "block":
+			block_amount += amount
+	var kind := "idle"
+	var title := "Intent"
+	var amount_text := "--"
+	var detail_text := ""
+	if attack_amount > 0 and block_amount > 0:
+		kind = "mixed"
+		title = "Strike + Guard"
+		amount_text = "%d / %d" % [attack_amount, block_amount]
+		detail_text = "Deals %d and gains %d block." % [attack_amount, block_amount]
+	elif attack_amount > 0:
+		kind = "attack"
+		title = "Attack"
+		amount_text = str(attack_amount)
+		detail_text = "Incoming damage %d." % attack_amount
+	elif block_amount > 0:
+		kind = "block"
+		title = "Block"
+		amount_text = str(block_amount)
+		detail_text = "Enemy gains %d block." % block_amount
+	else:
+		detail_text = _format_intent_compact(intent)
+	return {
+		"kind": kind,
+		"title": title,
+		"amount": amount_text,
+		"detail": detail_text,
+	}
 
 
 func _apply_hud_snapshot(hud_snapshot: Dictionary) -> void:
 	_sync_top_hud(hud_snapshot.get("top_hud", {}))
 	_sync_enemy_stage(hud_snapshot.get("enemy_stage", {}))
+	_sync_primary_intent_badge(hud_snapshot.get("primary_intent_badge", {}))
 	_sync_tempo_row(hud_snapshot.get("tempo_row", {}))
 	_sync_player_strip(hud_snapshot.get("player_strip", {}))
 	_sync_debug_overlay(hud_snapshot.get("debug_overlay", {}))
 
 
 func _sync_top_hud(snapshot: Dictionary) -> void:
-	_title_label.text = String(snapshot.get("title_text", ""))
-	_hint_label.text = String(snapshot.get("hint_text", ""))
+	_title_label.text = String(snapshot.get("level_text", "LEVEL"))
+	_enemy_step_label.text = String(snapshot.get("enemy_step_text", "FIGHT"))
+	_hint_label.text = String(snapshot.get("gold_text", "GOLD 0"))
 
 
 func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_intent_label.text = ""
 	_intent_label.visible = false
-	_intent_badge.visible = false
 	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
-	var enemy_texture: Texture2D = snapshot.get("enemy_texture", null)
+	var enemy_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
 	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.visible = true
 	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
 	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
-	_enemy_label.text = String(snapshot.get("enemy_text", ""))
+	_enemy_name_label.text = String(snapshot.get("enemy_name_text", "Enemy"))
+	_enemy_label.text = _enemy_name_label.text
+	_enemy_hp_text_label.text = String(snapshot.get("enemy_hp_text", "HP 0 / 0"))
 	_sync_enemy_block_intent_preview(Dictionary(snapshot.get("enemy_intent_preview", {})))
+
+
+func _sync_primary_intent_badge(snapshot: Dictionary) -> void:
+	var kind := String(snapshot.get("kind", "idle"))
+	var badge_texture := _visuals.combat_intent_badge_texture(kind) if _visuals != null else null
+	_intent_badge.texture = badge_texture
+	_intent_badge.visible = true
+	_primary_intent_title_label.text = String(snapshot.get("title", "Intent"))
+	_primary_intent_amount_label.text = String(snapshot.get("amount", "--"))
+	_primary_intent_detail_label.text = String(snapshot.get("detail", ""))
 
 
 func _sync_tempo_row(snapshot: Dictionary) -> void:
@@ -2508,16 +2658,22 @@ func _intent_bubble_targets(kind: String) -> Array[Control]:
 			continue
 		if String(button.get_meta("intent_kind", "")) == kind:
 			targets.append(button)
+	if targets.is_empty() and _intent_badge != null and _intent_badge.visible:
+		targets.append(_intent_badge)
 	return targets
 
 
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
 	_enemy_intent_entries.clear()
+	_clear_enemy_intent_bubbles()
+	if not (_debug_overlay != null and _debug_overlay.visible):
+		if _intent_row != null:
+			_intent_row.visible = true
+		return
 	if preview.has("entries") and preview.get("entries") is Array:
 		for raw in Array(preview.get("entries", [])):
 			if raw is Dictionary:
 				_enemy_intent_entries.append((raw as Dictionary).duplicate(true))
-	_clear_enemy_intent_bubbles()
 	if _intent_row == null:
 		return
 	var has_entries := not _enemy_intent_entries.is_empty()
@@ -3032,11 +3188,11 @@ func _ensure_placeholder_visuals() -> void:
 	if _timer_icon.texture == null:
 		_timer_icon.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_timer_placeholder_texture()
 	_timer_icon.visible = true
-	_intent_badge.visible = false
+	_intent_badge.visible = true
 	_intent_label.visible = false
 	var enemy_texture: Texture2D = null
 	if _enemy_state != null:
-		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+		enemy_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
 	if enemy_texture == null:
 		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_texture
@@ -3051,7 +3207,7 @@ func _ensure_placeholder_visuals() -> void:
 func _refresh_character_portraits() -> void:
 	var enemy_texture: Texture2D = null
 	if _enemy_state != null:
-		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+		enemy_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
 	if enemy_texture == null:
 		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_texture

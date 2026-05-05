@@ -12,6 +12,7 @@ const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
 const PATH_DERIVED_ORB_DIR := "res://resources/art/first_pass/derived/orbs"
 const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
 const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
+const PATH_DERIVED_COMBAT_UI_DIR := "res://resources/art/first_pass/derived/combat_ui"
 const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
 const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
@@ -45,6 +46,13 @@ const _ENEMY_PORTRAIT_PATHS := {
 	"striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
 	"charger": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+}
+
+const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
+	"training_goblin": "cavern_striker",
+	"striker": "cavern_striker",
+	"defender": "cavern_defender",
+	"charger": "ash_hunter",
 }
 
 const _ICON_INDEX_BY_KEY := {
@@ -144,6 +152,7 @@ var _icon_textures: Dictionary = {}
 var _derived_icon_textures: Dictionary = {}
 var _derived_hud_textures: Dictionary = {}
 var _derived_chrome_textures: Dictionary = {}
+var _derived_combat_ui_textures: Dictionary = {}
 var _vfx_textures: Dictionary = {}
 
 var _combat_background: Texture2D
@@ -397,6 +406,146 @@ func chrome_texture(key: String, use_placeholder: bool = true) -> Texture2D:
 		_warn_missing("chrome:%s" % normalized_key)
 		return placeholder_texture("chrome_%s_missing" % normalized_key)
 	return null
+
+
+func combat_ui_texture(key: String, use_placeholder: bool = true) -> Texture2D:
+	var normalized_key := key.strip_edges().to_lower()
+	var texture := _load_derived_texture(PATH_DERIVED_COMBAT_UI_DIR, normalized_key, _derived_combat_ui_textures)
+	if texture != null:
+		return texture
+	if use_placeholder:
+		_warn_missing("combat_ui:%s" % normalized_key)
+		return placeholder_texture("combat_ui_%s_missing" % normalized_key, Color(0.08, 0.09, 0.12, 0.78), Vector2i(64, 64))
+	return null
+
+
+func combat_backdrop_scrim_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_backdrop_scrim", false)
+	if texture != null:
+		return texture
+	return placeholder_texture("combat_backdrop_scrim_missing", Color(0.0, 0.0, 0.0, 0.34), Vector2i(1080, 1920))
+
+
+func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
+	var normalized_id := enemy_id.strip_edges().to_lower()
+	if _COMBAT_STAGE_ALIAS_BY_ENEMY_ID.has(normalized_id):
+		normalized_id = String(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID[normalized_id])
+	var stage_texture := combat_ui_texture("combat_stage_%s" % normalized_id, false)
+	if stage_texture != null:
+		return stage_texture
+	stage_texture = combat_ui_texture("combat_stage_fallback", false)
+	if stage_texture != null:
+		return stage_texture
+	var portrait_fallback := enemy_portrait(normalized_id)
+	return portrait_fallback if portrait_fallback != null else placeholder_texture(
+		"combat_stage_fallback_missing",
+		Color(0.08, 0.09, 0.12, 0.84),
+		Vector2i(1048, 336)
+	)
+
+
+func combat_intent_badge_texture(kind: String) -> Texture2D:
+	var normalized_kind := kind.strip_edges().to_lower()
+	var badge_key := "combat_intent_badge_idle"
+	match normalized_kind:
+		"attack":
+			badge_key = "combat_intent_badge_attack"
+		"block":
+			badge_key = "combat_intent_badge_block"
+		"mixed", "attack_and_block", "attack+block":
+			badge_key = "combat_intent_badge_mixed"
+		_:
+			badge_key = "combat_intent_badge_idle"
+	var texture := combat_ui_texture(badge_key, false)
+	if texture != null:
+		return texture
+	return combat_ui_texture("combat_intent_badge_idle", false)
+
+
+func combat_top_bar_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_top_bar_frame", false)
+	if texture != null:
+		return texture
+	return chrome_texture("top_bar_frame", false)
+
+
+func combat_enemy_panel_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_enemy_panel_frame", false)
+	if texture != null:
+		return texture
+	return combat_ui_texture("combat_enemy_panel", false)
+
+
+func combat_enemy_panel_texture() -> Texture2D:
+	return combat_enemy_panel_frame_texture()
+
+
+func combat_board_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_board_frame", false)
+	return texture
+
+
+func combat_mastery_rail_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_mastery_rail_frame", false)
+	if texture != null:
+		return texture
+	return combat_ui_texture("combat_mastery_rail", false)
+
+
+func combat_mastery_rail_texture() -> Texture2D:
+	return combat_mastery_rail_frame_texture()
+
+
+func combat_player_vitals_frame_texture() -> Texture2D:
+	return combat_ui_texture("combat_player_vitals_frame", false)
+
+
+func combat_equipment_rail_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_equipment_rail_frame", false)
+	if texture != null:
+		return texture
+	return combat_ui_texture("combat_loadout_rail", false)
+
+
+func combat_consumables_rail_frame_texture() -> Texture2D:
+	var texture := combat_ui_texture("combat_consumables_rail_frame", false)
+	if texture != null:
+		return texture
+	return combat_ui_texture("combat_loadout_rail", false)
+
+
+func combat_slot_frame_texture(filled: bool) -> Texture2D:
+	if filled:
+		return combat_ui_texture("combat_slot_frame_filled", false)
+	return combat_ui_texture("combat_slot_frame_empty", false)
+
+
+func combat_player_hud_rail_texture() -> Texture2D:
+	return combat_ui_texture("combat_player_hud_rail", false)
+
+
+func combat_loadout_rail_texture() -> Texture2D:
+	return combat_ui_texture("combat_loadout_rail", false)
+
+
+func combat_block_badge_texture() -> Texture2D:
+	return combat_ui_texture("combat_block_badge", false)
+
+
+func combat_timer_track_texture() -> Texture2D:
+	return combat_ui_texture("combat_timer_track", false)
+
+
+func combat_timer_center_marker_texture() -> Texture2D:
+	return combat_ui_texture("combat_timer_center_marker", false)
+
+
+func combat_divider_texture() -> Texture2D:
+	return combat_ui_texture("combat_divider_h", false)
+
+
+func combat_corner_ornament_texture() -> Texture2D:
+	return combat_ui_texture("combat_corner_ornament", false)
 
 
 func clean_hud_texture(key: String) -> Texture2D:

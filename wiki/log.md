@@ -1822,3 +1822,17 @@ Append-only history of wiki operations.
 - Validation:
   - Godot MCP cache-ignore script reloads returned `0`, `combat_player.tscn` instantiated, `play_scene current` launched, and the probe reported `0` actionable overlaps for `1080x1920`, `1080x2400`, and `900x1600`.
   - Manual mobile visual/touch acceptance remains pending before the M12 readability gate is complete.
+
+## [2026-05-05] code-change | M12 Reference-Faithful Mobile Combat UI Polish
+
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/ui/visual_registry.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `resources/art/first_pass/derived/combat_ui/`, `tools/asset_tools/generate_combat_ui_chrome.py`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Added deterministic derived combat UI chrome for the mobile combat reference pass: backdrop/scrim, enemy panel, board frame, mastery rail, player HUD rail, loadout rail, block badge asset, timer track/marker, dividers, and corner ornaments.
+  - Extended `VisualRegistry` with combat UI texture accessors and stable fallbacks.
+  - Reworked combat scene chrome around texture-backed layers, including full-screen backdrop/scrim, large enemy stage, framed board, timer center marker, decorative dividers/corners, readable mastery rail, and structured bottom player HUD.
+  - Extended the mobile layout probe to report primary zone rects, board size, overlap checks, and minimum readable zones for enemy intent, timer, board, mastery, HP, and loadout rails.
+- Validation:
+  - Godot MCP cache-ignore load/instantiate probes passed for layout, chrome, controller, shared HUD, visual registry, probe script, and `res://scenes/combat/combat_player.tscn`.
+  - Godot MCP asset probe confirmed the new combat UI textures resolve through `VisualRegistry`; `play_scene current` launched, and a running-scene screenshot was captured/inspected at the current portrait runtime viewport.
+  - Layout probe passed with `overlap_count=0`, empty actionable readability overlaps, and `readability_all_pass=true` for `1080x1920`, `1080x2400`, and `900x1600`; a board-local drag probe preserved intended cell selection.
+  - Human screenshot review says the result is closer but still far from polished. Human reference approval and real touch QA remain pending before M12 export packaging resumes.

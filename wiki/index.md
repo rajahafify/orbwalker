@@ -17,7 +17,7 @@
 
 ## Current Goal
 
-- First playable prototype vertical slice: a 3-level run with board combat, shop flow, boss rewards, and the initial content pack. Architecture-review tasks AR-01 through AR-18 are closed, and Milestone 10 short-term playtest balance has a validated playable baseline. The next major project focus is Milestone 11 meta progression; deeper economy/combat tuning should wait until post-meta evidence exists. (source: `todo.md`, `docs/test_plan.md`, `docs/game_design_document.md`, `docs/architecture_review_tasks.md`, `docs/milestone_10_balance_tasks.md`)
+- First playable prototype vertical slice: a 3-level run with board combat, shop flow, boss rewards, initial content, temporary balance, and Milestone 11 meta progression. The current major project focus is Milestone 12 first playable build readiness, starting with reference-faithful mobile combat UI readability before export packaging. Deeper economy/combat tuning should wait until post-meta and post-build-readiness evidence exists. (source: `todo.md`, `docs/test_plan.md`, `docs/game_design_document.md`, `docs/architecture_review_tasks.md`, `docs/milestone_10_balance_tasks.md`)
 
 ## Features
 
