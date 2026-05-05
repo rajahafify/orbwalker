@@ -28,6 +28,18 @@ const PROTOTYPE_BALANCE_DEFAULTS := {
 	"level_3_fight_gold_reward": 14,
 	"enemy_hp_multiplier": 1.0,
 	"enemy_damage_multiplier": 1.0,
+	"level_1_normal_hp_multiplier": 0.50,
+	"level_1_normal_damage_multiplier": 0.50,
+	"level_1_boss_hp_multiplier": 0.60,
+	"level_1_boss_damage_multiplier": 0.65,
+	"level_2_normal_hp_multiplier": 0.90,
+	"level_2_normal_damage_multiplier": 1.00,
+	"level_2_boss_hp_multiplier": 1.0,
+	"level_2_boss_damage_multiplier": 1.10,
+	"level_3_normal_hp_multiplier": 1.0,
+	"level_3_normal_damage_multiplier": 1.0,
+	"level_3_boss_hp_multiplier": 1.0,
+	"level_3_boss_damage_multiplier": 1.0,
 }
 const LEVEL_SEQUENCE: Array[String] = [
 	"enemy_1",
@@ -85,9 +97,9 @@ var _normal_encounters_by_level := {
 			"max_hp": 76,
 			"is_boss": false,
 			"intent_cycle": [
-				{"type": 0, "attack": 12, "block": 0, "label": "Slash 12"},
-				{"type": 2, "attack": 8, "block": 4, "label": "Shield Bash 8 + Guard 4"},
-				{"type": 0, "attack": 13, "block": 0, "label": "Heavy Slash 13"},
+				{"type": 1, "attack": 0, "block": 8, "label": "Brace 8"},
+				{"type": 2, "attack": 9, "block": 6, "label": "Shield Bash 9 + Guard 6"},
+				{"type": 0, "attack": 11, "block": 0, "label": "Heavy Slash 11"},
 			],
 		},
 		{
@@ -96,9 +108,9 @@ var _normal_encounters_by_level := {
 			"max_hp": 82,
 			"is_boss": false,
 			"intent_cycle": [
-				{"type": 1, "attack": 0, "block": 10, "label": "Fortify 10"},
-				{"type": 2, "attack": 10, "block": 6, "label": "Counter 10 + Guard 6"},
-				{"type": 0, "attack": 11, "block": 0, "label": "Crush 11"},
+				{"type": 1, "attack": 0, "block": 12, "label": "Fortify 12"},
+				{"type": 2, "attack": 8, "block": 9, "label": "Counter 8 + Guard 9"},
+				{"type": 0, "attack": 10, "block": 0, "label": "Crush 10"},
 			],
 		},
 	],
@@ -109,9 +121,9 @@ var _normal_encounters_by_level := {
 			"max_hp": 94,
 			"is_boss": false,
 			"intent_cycle": [
-				{"type": 2, "attack": 11, "block": 6, "label": "Flare Cut 11 + Guard 6"},
-				{"type": 0, "attack": 15, "block": 0, "label": "Torch Combo 15"},
-				{"type": 1, "attack": 0, "block": 12, "label": "Ash Guard 12"},
+				{"type": 0, "attack": 16, "block": 0, "label": "Torch Combo 16"},
+				{"type": 2, "attack": 14, "block": 3, "label": "Flare Cut 14 + Guard 3"},
+				{"type": 0, "attack": 18, "block": 0, "label": "Scorch Drive 18"},
 			],
 		},
 		{
@@ -120,9 +132,9 @@ var _normal_encounters_by_level := {
 			"max_hp": 98,
 			"is_boss": false,
 			"intent_cycle": [
-				{"type": 0, "attack": 16, "block": 0, "label": "Pierce 16"},
-				{"type": 2, "attack": 10, "block": 8, "label": "Brace 8 + Jab 10"},
-				{"type": 0, "attack": 14, "block": 0, "label": "Thrust 14"},
+				{"type": 0, "attack": 18, "block": 0, "label": "Pierce 18"},
+				{"type": 0, "attack": 16, "block": 0, "label": "Thrust 16"},
+				{"type": 2, "attack": 15, "block": 2, "label": "Jab 15 + Brace 2"},
 			],
 		},
 	],
@@ -159,9 +171,9 @@ var _boss_encounters_by_level := {
 		"max_hp": 142,
 		"is_boss": true,
 		"intent_cycle": [
-			{"type": 1, "attack": 0, "block": 16, "label": "Fortress Stance 16"},
-			{"type": 0, "attack": 20, "block": 0, "label": "Gate Slam 20"},
-			{"type": 2, "attack": 14, "block": 10, "label": "Wall Bash 14 + Guard 10"},
+			{"type": 1, "attack": 0, "block": 20, "label": "Fortress Stance 20"},
+			{"type": 2, "attack": 14, "block": 12, "label": "Wall Bash 14 + Guard 12"},
+			{"type": 0, "attack": 16, "block": 0, "label": "Gate Slam 16"},
 		],
 	},
 	2: {
@@ -170,9 +182,9 @@ var _boss_encounters_by_level := {
 		"max_hp": 158,
 		"is_boss": true,
 		"intent_cycle": [
-			{"type": 0, "attack": 21, "block": 0, "label": "Inferno Cleave 21"},
-			{"type": 2, "attack": 15, "block": 10, "label": "Blazing Guard 10 + Slash 15"},
-			{"type": 0, "attack": 19, "block": 0, "label": "Scorching Lunge 19"},
+			{"type": 0, "attack": 24, "block": 0, "label": "Inferno Cleave 24"},
+			{"type": 0, "attack": 22, "block": 0, "label": "Scorching Lunge 22"},
+			{"type": 2, "attack": 18, "block": 4, "label": "Blazing Guard 4 + Slash 18"},
 		],
 	},
 	3: {
@@ -1451,8 +1463,12 @@ func _prototype_balance_apply_to_encounter(source: Dictionary) -> Dictionary:
 	var encounter := source.duplicate(true)
 	if encounter.is_empty():
 		return encounter
+	var encounter_level := clampi(int(encounter.get("dungeon_level", dungeon_level)), 1, MAX_DUNGEON_LEVELS)
+	var encounter_is_boss := bool(encounter.get("is_boss", false))
 	var hp_multiplier := float(_prototype_balance_levers.get("enemy_hp_multiplier", 1.0))
+	hp_multiplier *= _prototype_balance_level_scoped_multiplier(encounter_level, encounter_is_boss, "hp")
 	var damage_multiplier := float(_prototype_balance_levers.get("enemy_damage_multiplier", 1.0))
+	damage_multiplier *= _prototype_balance_level_scoped_multiplier(encounter_level, encounter_is_boss, "damage")
 	if not is_equal_approx(hp_multiplier, 1.0):
 		encounter["max_hp"] = maxi(1, int(round(float(encounter.get("max_hp", 1)) * hp_multiplier)))
 	if not is_equal_approx(damage_multiplier, 1.0):
@@ -1464,6 +1480,13 @@ func _prototype_balance_apply_to_encounter(source: Dictionary) -> Dictionary:
 			scaled_intents.append(intent)
 		encounter["intent_cycle"] = scaled_intents
 	return encounter
+
+
+func _prototype_balance_level_scoped_multiplier(level: int, is_boss: bool, stat: String) -> float:
+	var clamped_level := clampi(level, 1, MAX_DUNGEON_LEVELS)
+	var scope := "boss" if is_boss else "normal"
+	var key := "level_%d_%s_%s_multiplier" % [clamped_level, scope, stat]
+	return maxf(0.0, float(_prototype_balance_levers.get(key, 1.0)))
 
 
 func _merge_combat_modifiers(target: Dictionary, source_data: Dictionary) -> void:

@@ -1680,3 +1680,34 @@ Append-only history of wiki operations.
   - Left enemy HP/damage at `1.0` for M10-05.
 - Validation:
   - Godot MCP `get_project_info`, `view_script`, focused script reload checks, and focused reward/popup/shop affordability probes passed. `get_godot_errors` still included pre-existing stale enum diagnostics in the session log, but touched script reloads returned `0`.
+
+## [2026-05-05] code-change | M10-05 Early Combat Survivability
+
+- Source: `scripts/core/run_state.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Added level/type-scoped temporary survivability multipliers to the M10 prototype balance surface while keeping global enemy HP/damage multipliers neutral.
+  - Set temporary level 1 normal HP/damage to `0.50/0.50`, level 1 boss to `0.60/0.65`, level 2 normal to `0.90/0.85`, level 2 boss to `1.0/0.90`, and level 3 normal/boss to `1.0/1.0`.
+  - Recorded the level 1 target as forgiving enough for a player who can make at least one basic combo per turn.
+  - Preserved enemy block values, intent order, player HP rules, combat math, resolver behavior, shop semantics, RunState routing, Run Log behavior, combat presentation timing, and the M10-04 fixed fight-gold reward/popup behavior.
+- Validation:
+  - `git status --short --branch`, Godot MCP `get_project_info`, `view_script`, focused encounter stat/economy guard/scoped override probes, `get_godot_errors`, and `git diff --check` passed. No normal human-played tuned Run Logs were captured; M10-07 should still gather tuned playtest logs before treating the values as accepted balance.
+
+## [2026-05-05] qa-evidence | M10-05 Tuned Run Log
+
+- Source: `logs/run_1777962841_273458_2026-05-05t14_34_01.json`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Observed:
+  - Human-played tuned run cleared level 1 and reached the level 2 boss.
+  - Fight outcomes: L1 enemy 1 victory in `4` turns, L1 enemy 2 victory in `21` turns, L1 boss victory in `11` turns, L2 enemy 1 victory in `15` turns, L2 enemy 2 victory in `7` turns, then L2 boss defeat on turn `3`.
+  - The run opened five shops, filled equipment slots, bought a booster, claimed a mastery-card booster option, bought another mastery card, chose `Stalwart Mantle`, and ended with `7` gold.
+- Notes:
+  - Objective evidence supports the level 1 survivability target, but L1 enemy 2 took `21` turns at about `1.29` average combos per turn, so level 1 pacing remains worth watching.
+
+## [2026-05-05] code-change | M10-05 Dungeon Identity Tuning
+
+- Source: `scripts/core/run_state.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Kept Dungeon 1 forgiving on incoming damage while shifting its level 1 normal and boss intent cycles toward frequent block/defend, making it a damage check.
+  - Shifted Dungeon 2 toward a defense check by raising level 2 damage multipliers to `1.0` normal and `1.10` boss, increasing attack frequency, and reducing block-heavy turns.
+  - Preserved level 3 encounter stat signatures and M10-04 fight rewards `10/12/14`.
+- Validation:
+  - Godot MCP `view_script`, focused stat/identity probe with `ResourceLoader.CACHE_MODE_IGNORE`, `get_godot_errors`, and `git diff --check` passed. A normal `load(...)` probe observed stale cached script values before the cache-ignore rerun confirmed the current source.

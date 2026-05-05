@@ -125,12 +125,12 @@ Validation evidence:
 
 ## M10-05: Early Combat Survivability Tuning
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Tune level 1-2 enemy HP, damage, block, and player survivability.
 - Deliverable: Temporary enemy/player survivability values that let testers reach multiple shops.
-- Progress: Not started.
-- Blockers: M10-02 baseline and M10-03 lever layer should be available first.
-- Next action: Tune against baseline turns-to-kill, HP loss, death, and level-reached evidence.
+- Progress: Added level/type-scoped temporary survivability levers through the M10-03 prototype balance surface while keeping the existing global enemy HP/damage multipliers neutral at `1.0`. Current temporary M10-05 defaults make Dungeon 1 a forgiving damage check where enemies defend often and anyone who can make at least one basic combo per turn should usually clear the first level: level 1 normal HP `0.50` and damage `0.50`, level 1 boss HP `0.60` and damage `0.65`. Dungeon 2 is now the first defense check: level 2 normal HP `0.90` and damage `1.0`, level 2 boss HP `1.0` and damage `1.10`, with fewer block-heavy turns and stronger/more frequent attacks. All level 3 normal/boss survivability multipliers remain `1.0`. These values are prototype playtest scaffolding, not final balance. Combat math, resolver behavior, shop behavior, RunState routing, Run Log behavior, combat presentation timing, and M10-04 fixed fight-gold reward/popup behavior were not changed.
+- Blockers: None known. The tuned values still need normal playtest Run Log follow-up before treating survivability as accepted balance.
+- Next action: Start M10-06 and check item/relic/booster access against the M10-04 economy floor plus the M10-05 early survivability values.
 - Acceptance:
   - Normal runs survive long enough to test shop/build decisions.
   - Mistakes and poor boards can still cost HP or cause defeat.
@@ -139,6 +139,17 @@ Validation evidence:
   - Godot MCP encounter stat probes.
   - Run Log comparison for turns-to-kill, HP loss, deaths, and level reached.
 - Docs/wiki impact: Record temporary survivability assumptions in `docs/test_plan.md`; update wiki only for durable behavior/workflow changes.
+
+Validation evidence:
+
+- `git status --short --branch` confirmed work on `codex/milestone-10`.
+- M10-02 comparison baseline: the new-player simulation died in level 1 fight 1 after `12` turns, the high-skill run died at the level 2 boss after `38` total turns, and the third baseline died at level 3 enemy 1 after `30` total turns. Existing M10-04-era local logs remained mixed after economy tuning, with examples including level 1 fight 1 defeats, a level 1 boss defeat, level 2 enemy defeats, and one full victory, so the first survivability pass avoids final-value claims.
+- Focused Godot MCP encounter-stat probe confirmed current defaults express the intended dungeon identities while preserving level 3: L1F1 became `38 HP`, `0/5/6 attack`, and `8/6/0 block`; L1F2 became `41 HP`, `0/4/5 attack`, and `12/9/0 block`; L1 boss became `85 HP`, `0/9/10 attack`, and `20/12/0 block`. L2F1 is now `85 HP`, `16/14/18 attack`, and `0/3/0 block`; L2F2 is now `88 HP`, `18/16/15 attack`, and `0/0/2 block`; L2 boss is now `158 HP`, `26/24/20 attack`, and `0/0/4 block`. L3F1 stayed `112 HP, 18/12/17 attack`; L3 boss stayed `176 HP, 0/24/16 attack`.
+- Focused math check confirmed a mastery-0 basic 3-orb elemental match with `1` combo deals `3` damage before enemy block. The new level 1 HP/damage values are intentionally forgiving for that low-skill floor, while the level 1 boss remains tougher through higher HP and existing block.
+- Focused Godot MCP guard probe confirmed level rewards remain `10/12/14`, level 3 stat signatures stay unchanged, and a first fight victory with no matched gold still grants `10` base gold.
+- Focused Godot MCP scoped override probe confirmed changing `level_2_boss_damage_multiplier` affected only level 2 boss attacks, without leaking to level 2 normal enemies or level 3 boss.
+- Tuned human-played Run Log comparison `run_1777962841_273458_2026-05-05t14_34_01` cleared level 1 and reached level 2 boss without debug flow. It cleared L1 enemy 1 in `4` turns, L1 enemy 2 in `21` turns, L1 boss in `11` turns, L2 enemy 1 in `15` turns, and L2 enemy 2 in `7` turns before dying to Burning Knight on L2 boss turn `3`. The run opened five shops, bought five equipment items, bought one booster, claimed one mastery-card booster option, bought another mastery card, chose `Stalwart Mantle`, and ended with `7` gold. This supports the level 1 survivability target, but L1 enemy 2 remains a possible pacing concern because it took `21` turns at about `1.29` average combos per turn.
+- Godot MCP `get_project_info`, `view_script` for `res://scripts/core/run_state.gd`, focused stat/economy/override probes, current `get_godot_errors` checks, and `git diff --check` passed. One probe using normal `load(...)` saw stale cached script values; rerunning with `ResourceLoader.CACHE_MODE_IGNORE` confirmed the current identity values.
 
 ## M10-06: Item, Relic, Booster Access Pass
 
