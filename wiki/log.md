@@ -1909,3 +1909,13 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check`, `combat_player.tscn` instantiate, and the mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
   - Godot MCP `play_scene current`, running node inspection, screenshot capture, and `get_godot_errors` review completed. Stale session diagnostics remain in the Godot error buffer; final visual approval and real touch/device QA remain pending.
+
+## [2026-05-06] code-change | M12 Static Enemy Image Revert
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Kept the generated dungeon background and single generated foreground enemy image, then removed the runtime spritesheet-backed enemy path after the temporary goblin animation experiment was rejected.
+  - Preserved the presentation-only boundary: no combat math, resolver, routing, drag coordinate, combat speed, replay timing, SFX, shop, RunState, or final-summary changes were intentional.
+- Validation:
+  - `git diff --check` passed, runtime searches found no active `EnemySpriteView` / `EnemyAnimatedSprite` / spritesheet lookup references, and Godot MCP `play_scene current` launched `res://scenes/combat/combat_player.tscn`.
+  - Running scene-tree inspection confirmed `EnemyStageBackdrop` plus visible `EnemyPortrait`, no animated enemy nodes, hidden intent prose, and compact intent bubble visibility. Screenshot review scored the final static enemy image pass 9/10. `get_godot_errors` retained the same two stale enum reload diagnostics.

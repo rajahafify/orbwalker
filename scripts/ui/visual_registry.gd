@@ -13,6 +13,7 @@ const PATH_DERIVED_ORB_DIR := "res://resources/art/first_pass/derived/orbs"
 const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
 const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
 const PATH_DERIVED_COMBAT_UI_DIR := "res://resources/art/first_pass/derived/combat_ui"
+const PATH_DERIVED_COMBAT_LAYERS_DIR := "res://resources/art/first_pass/derived/combat_layers"
 const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
 const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
@@ -53,6 +54,14 @@ const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
 	"striker": "cavern_striker",
 	"defender": "cavern_defender",
 	"charger": "ash_hunter",
+}
+
+const _ENEMY_STAGE_BACKGROUND_PATHS := {
+	"cavern_striker": "res://resources/art/first_pass/derived/combat_layers/generated_cavern_dungeon_bg_v1.png",
+}
+
+const _ENEMY_SPRITE_PATHS := {
+	"cavern_striker": "res://resources/art/first_pass/enemy_sprites/generated_cavern_striker_sprite_wide_v1.png",
 }
 
 const _ICON_INDEX_BY_KEY := {
@@ -144,6 +153,8 @@ const _STABLE_PLACEHOLDER_ICON_COLORS := {
 var _warned_keys: Dictionary = {}
 var _placeholder_cache: Dictionary = {}
 var _enemy_portrait_textures: Dictionary = {}
+var _enemy_stage_background_textures: Dictionary = {}
+var _enemy_sprite_textures: Dictionary = {}
 var _orb_textures: Dictionary = {}
 var _intent_textures: Dictionary = {}
 var _rarity_textures: Dictionary = {}
@@ -204,6 +215,35 @@ func enemy_portrait(enemy_id: String) -> Texture2D:
 		_enemy_portrait_textures[normalized_id] = loaded
 		return loaded
 	return placeholder_texture("enemy_portrait")
+
+
+func enemy_stage_background(enemy_id: String) -> Texture2D:
+	var normalized_id := _normalized_enemy_visual_id(enemy_id)
+	if _enemy_stage_background_textures.has(normalized_id):
+		return _enemy_stage_background_textures[normalized_id]
+	var path := String(_ENEMY_STAGE_BACKGROUND_PATHS.get(normalized_id, ""))
+	if path == "":
+		return combat_background()
+	var loaded := _safe_load_texture(path, "enemy_stage_bg:%s" % normalized_id)
+	if loaded != null:
+		_enemy_stage_background_textures[normalized_id] = loaded
+		return loaded
+	return combat_background()
+
+
+func enemy_sprite(enemy_id: String) -> Texture2D:
+	var normalized_id := _normalized_enemy_visual_id(enemy_id)
+	if _enemy_sprite_textures.has(normalized_id):
+		return _enemy_sprite_textures[normalized_id]
+	var path := String(_ENEMY_SPRITE_PATHS.get(normalized_id, ""))
+	if path != "":
+		var loaded := _safe_load_texture(path, "enemy_sprite:%s" % normalized_id)
+		if loaded != null:
+			_enemy_sprite_textures[normalized_id] = loaded
+			return loaded
+	var fallback := enemy_portrait(normalized_id)
+	_enemy_sprite_textures[normalized_id] = fallback
+	return fallback
 
 
 func hero_portrait() -> Texture2D:
@@ -442,6 +482,13 @@ func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
 		Color(0.08, 0.09, 0.12, 0.84),
 		Vector2i(1048, 336)
 	)
+
+
+func _normalized_enemy_visual_id(enemy_id: String) -> String:
+	var normalized_id := enemy_id.strip_edges().to_lower()
+	if _COMBAT_STAGE_ALIAS_BY_ENEMY_ID.has(normalized_id):
+		normalized_id = String(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID[normalized_id])
+	return normalized_id
 
 
 func combat_intent_badge_texture(kind: String) -> Texture2D:
@@ -1023,6 +1070,17 @@ func _safe_load_texture(path: String, key: String) -> Texture2D:
 		if load_error == OK:
 			return ImageTexture.create_from_image(image)
 	_warn_missing("texture_path:%s" % key)
+	return null
+
+
+func _load_image_texture(path: String, key: String) -> Texture2D:
+	if not FileAccess.file_exists(path):
+		_warn_missing("texture_path:%s" % key)
+		return null
+	var image := Image.new()
+	var load_error := image.load(path)
+	if load_error == OK:
+		return ImageTexture.create_from_image(image)
 	return null
 
 

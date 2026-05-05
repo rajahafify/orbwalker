@@ -201,8 +201,8 @@ const CASCADE_PASS_HOLD_SECONDS := 0.16
 const TURN_REPLAY_STEP_SECONDS := 0.34
 const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
 const ENEMY_BLOCK_PREVIEW_PULSE_SECONDS := 0.60
-const INTENT_BUBBLE_SIZE := Vector2(128.0, 52.0)
-const INTENT_BUBBLE_GAP := 10.0
+const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
+const INTENT_BUBBLE_GAP := 12.0
 
 enum InputPhase {
 	PLAYER_INPUT,
@@ -2031,7 +2031,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var heart_heal := int(turn_log.get("healed", 0))
 	var armor_gain := int(turn_log.get("armor_gained", 0))
 	var gold_gain := int(turn_log.get("gold_gained", 0))
-	var enemy_target := _control_global_center(_enemy_portrait, 0.48)
+	var enemy_target := _control_global_center(_active_enemy_visual_control(), 0.48)
 	var player_target := _control_global_center(_player_portrait, 0.64)
 	var enemy_impact_size := Vector2(84, 84)
 	var player_impact_size := Vector2(84, 84)
@@ -2179,7 +2179,7 @@ func _build_hud_snapshot() -> Dictionary:
 	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
 	var enemy_stage_texture: Texture2D = null
 	if _visuals != null:
-		enemy_stage_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
+		enemy_stage_texture = _visuals.enemy_stage_background(_enemy_state.enemy_id)
 	var player_gold := int(_staged_hud_values.get("player_gold", int(_player_state.gold)))
 	var enemy_hp := int(_staged_hud_values.get("enemy_hp", int(_enemy_state.current_hp)))
 	var enemy_turn_block := int(_staged_hud_values.get("enemy_turn_block", int(_enemy_state.current_turn_block)))
@@ -2258,35 +2258,35 @@ func _primary_intent_badge_snapshot(intent: Dictionary) -> Dictionary:
 	var attack_amount := 0
 	var block_amount := 0
 	for entry in entries:
-		var kind := String(entry.get("kind", ""))
+		var entry_kind := String(entry.get("kind", ""))
 		var amount := maxi(0, int(entry.get("amount", 0)))
-		if kind == "attack":
+		if entry_kind == "attack":
 			attack_amount += amount
-		elif kind == "block":
+		elif entry_kind == "block":
 			block_amount += amount
-	var kind := "idle"
+	var badge_kind := "idle"
 	var title := "Intent"
 	var amount_text := "--"
 	var detail_text := ""
 	if attack_amount > 0 and block_amount > 0:
-		kind = "mixed"
+		badge_kind = "mixed"
 		title = "Strike + Guard"
 		amount_text = "%d / %d" % [attack_amount, block_amount]
 		detail_text = "Deals %d and gains %d block." % [attack_amount, block_amount]
 	elif attack_amount > 0:
-		kind = "attack"
+		badge_kind = "attack"
 		title = "Attack"
 		amount_text = str(attack_amount)
 		detail_text = "Incoming damage %d." % attack_amount
 	elif block_amount > 0:
-		kind = "block"
+		badge_kind = "block"
 		title = "Block"
 		amount_text = str(block_amount)
 		detail_text = "Enemy gains %d block." % block_amount
 	else:
 		detail_text = _format_intent_compact(intent)
 	return {
-		"kind": kind,
+		"kind": badge_kind,
 		"title": title,
 		"amount": amount_text,
 		"detail": detail_text,
@@ -2314,20 +2314,14 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
 	var enemy_stage_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		var backdrop_texture: Texture2D = _visuals.combat_background() if _visuals != null else null
-		if backdrop_texture == null and _visuals != null and _enemy_state != null:
-			backdrop_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+		var backdrop_texture: Texture2D = enemy_stage_texture
+		if backdrop_texture == null:
+			backdrop_texture = _visuals.enemy_stage_background(_enemy_state.enemy_id) if _visuals != null and _enemy_state != null else null
 		if backdrop_texture == null:
 			backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 		_enemy_stage_backdrop.texture = backdrop_texture
 		_enemy_stage_backdrop.visible = true
-	var enemy_texture: Texture2D = null
-	if _visuals != null and _enemy_state != null:
-		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
-	if enemy_texture == null:
-		enemy_texture = enemy_stage_texture
-	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.visible = true
+	_refresh_enemy_stage_visual()
 	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
 	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
 	_enemy_name_label.text = String(snapshot.get("enemy_name_text", "Enemy"))
@@ -2336,14 +2330,12 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_sync_enemy_block_intent_preview(Dictionary(snapshot.get("enemy_intent_preview", {})))
 
 
-func _sync_primary_intent_badge(snapshot: Dictionary) -> void:
-	var kind := String(snapshot.get("kind", "idle"))
-	var badge_texture := _visuals.combat_intent_badge_texture(kind) if _visuals != null else null
-	_intent_badge.texture = badge_texture
-	_intent_badge.visible = true
-	_primary_intent_title_label.text = String(snapshot.get("title", "Intent"))
-	_primary_intent_amount_label.text = String(snapshot.get("amount", "--"))
-	_primary_intent_detail_label.text = String(snapshot.get("detail", ""))
+func _sync_primary_intent_badge(_snapshot: Dictionary) -> void:
+	_intent_badge.visible = false
+	_primary_intent_text_column.visible = false
+	_primary_intent_title_label.visible = false
+	_primary_intent_amount_label.visible = false
+	_primary_intent_detail_label.visible = false
 
 
 func _sync_tempo_row(snapshot: Dictionary) -> void:
@@ -2692,10 +2684,6 @@ func _intent_bubble_targets(kind: String) -> Array[Control]:
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
 	_enemy_intent_entries.clear()
 	_clear_enemy_intent_bubbles()
-	if not (_debug_overlay != null and _debug_overlay.visible):
-		if _intent_row != null:
-			_intent_row.visible = true
-		return
 	if preview.has("entries") and preview.get("entries") is Array:
 		for raw in Array(preview.get("entries", [])):
 			if raw is Dictionary:
@@ -2705,6 +2693,8 @@ func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
 	var has_entries := not _enemy_intent_entries.is_empty()
 	_intent_badge.visible = false
 	_intent_label.visible = false
+	_primary_intent_text_column.visible = false
+	_intent_row.visible = has_entries
 	if not has_entries:
 		return
 	var index := 0
@@ -2738,8 +2728,10 @@ func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
 	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
 	button.set_meta("intent_kind", kind)
-	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_font_size_override("font_size", 24)
 	button.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0, 1.0))
+	button.add_theme_constant_override("outline_size", 2)
+	button.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.03, 0.95))
 	button.add_theme_stylebox_override("normal", _intent_bubble_stylebox(kind, false))
 	button.add_theme_stylebox_override("hover", _intent_bubble_stylebox(kind, true))
 	button.add_theme_stylebox_override("pressed", _intent_bubble_stylebox(kind, true))
@@ -2758,10 +2750,10 @@ func _intent_bubble_stylebox(kind: String, hover: bool) -> StyleBoxFlat:
 	style.border_color = border
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
-	style.content_margin_left = 10.0
-	style.content_margin_right = 10.0
-	style.content_margin_top = 4.0
-	style.content_margin_bottom = 4.0
+	style.content_margin_left = 12.0
+	style.content_margin_right = 12.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
 	return style
 
 
@@ -2986,7 +2978,7 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	var hp_damage := int(enemy_attack.get("hp_damage", 0))
 	if blocked_by_armor <= 0 and hp_damage <= 0:
 		return
-	var enemy_source := _control_global_center(_enemy_portrait, 0.56)
+	var enemy_source := _control_global_center(_active_enemy_visual_control(), 0.56)
 	var player_impact_target := _control_global_center(_player_portrait, 0.58)
 	if player_impact_target == Vector2.ZERO:
 		player_impact_target = player_target
@@ -3215,25 +3207,18 @@ func _ensure_placeholder_visuals() -> void:
 	if _timer_icon.texture == null:
 		_timer_icon.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_timer_placeholder_texture()
 	_timer_icon.visible = true
-	_intent_badge.visible = true
+	_intent_badge.visible = false
 	_intent_label.visible = false
-	var enemy_stage_texture: Texture2D = _visuals.combat_background()
-	var enemy_portrait_texture: Texture2D = null
-	if _enemy_state != null:
-		enemy_portrait_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
-	if enemy_stage_texture == null:
-		enemy_stage_texture = enemy_portrait_texture
-	if enemy_stage_texture == null:
-		enemy_stage_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	if enemy_portrait_texture == null:
-		enemy_portrait_texture = _visuals.enemy_portrait("cavern_striker") if _visuals != null else null
-	if enemy_portrait_texture == null:
-		enemy_portrait_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_primary_intent_text_column.visible = false
+	var backdrop_texture: Texture2D = _visuals.enemy_stage_background(_enemy_state.enemy_id) if _visuals != null and _enemy_state != null else null
+	if backdrop_texture == null and _visuals != null:
+		backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+	if backdrop_texture == null:
+		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture = enemy_stage_texture
+		_enemy_stage_backdrop.texture = backdrop_texture
 		_enemy_stage_backdrop.visible = true
-	_enemy_portrait.texture = enemy_portrait_texture
-	_enemy_portrait.visible = true
+	_refresh_enemy_stage_visual()
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
 		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
@@ -3242,26 +3227,39 @@ func _ensure_placeholder_visuals() -> void:
 
 
 func _refresh_character_portraits() -> void:
-	var enemy_stage_texture: Texture2D = _visuals.combat_background()
-	var enemy_portrait_texture: Texture2D = null
-	if _enemy_state != null:
-		enemy_portrait_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
-	if enemy_stage_texture == null:
-		enemy_stage_texture = enemy_portrait_texture
-	if enemy_stage_texture == null:
-		enemy_stage_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	if enemy_portrait_texture == null:
-		enemy_portrait_texture = _visuals.enemy_portrait("cavern_striker") if _visuals != null else null
-	if enemy_portrait_texture == null:
-		enemy_portrait_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	var backdrop_texture: Texture2D = _visuals.enemy_stage_background(_enemy_state.enemy_id) if _visuals != null and _enemy_state != null else null
+	if backdrop_texture == null and _visuals != null:
+		backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+	if backdrop_texture == null:
+		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture = enemy_stage_texture
+		_enemy_stage_backdrop.texture = backdrop_texture
 		_enemy_stage_backdrop.visible = true
-	_enemy_portrait.texture = enemy_portrait_texture
+	_refresh_enemy_stage_visual()
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
 		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
 	_player_portrait.texture = hero_texture
+
+
+func _refresh_enemy_stage_visual() -> void:
+	_enemy_portrait.texture = _resolve_enemy_figure_texture()
+	_enemy_portrait.visible = true
+
+
+func _resolve_enemy_figure_texture() -> Texture2D:
+	var enemy_figure_texture: Texture2D = null
+	if _visuals != null and _enemy_state != null:
+		enemy_figure_texture = _visuals.enemy_sprite(_enemy_state.enemy_id)
+	if enemy_figure_texture == null and _visuals != null:
+		enemy_figure_texture = _visuals.enemy_sprite("cavern_striker")
+	if enemy_figure_texture == null:
+		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	return enemy_figure_texture
+
+
+func _active_enemy_visual_control() -> Control:
+	return _enemy_portrait
 
 
 func _ensure_enemy_stage_backdrop_node() -> void:
@@ -3285,7 +3283,7 @@ func _ensure_enemy_stage_backdrop_node() -> void:
 	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.86)
+	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	_enemy_stage_backdrop.visible = true
 	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
 

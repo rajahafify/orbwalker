@@ -5,11 +5,11 @@ const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 92))
 const ENEMY_PANEL_RECT = Rect2(Vector2(16, 108), Vector2(1048, 432))
 const COMBAT_STRIP_RECT = Rect2(Vector2(16, 552), Vector2(1048, 64))
 const BOARD_PANEL_RECT = Rect2(Vector2(16, 636), Vector2(1048, 780))
-const ENEMY_INTENT_RECT = Rect2(Vector2(736, 84), Vector2(280, 244))
+const ENEMY_INTENT_RECT = Rect2(Vector2(724, 332), Vector2(300, 76))
 const ENEMY_STAGE_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
-const ENEMY_HP_ROW_RECT = Rect2(Vector2(24, 252), Vector2(682, 164))
-const ENEMY_PORTRAIT_SIZE = Vector2(1360, 980)
-const ENEMY_HP_BAR_SIZE = Vector2(568, 46)
+const ENEMY_HP_ROW_RECT = Rect2(Vector2(24, 292), Vector2(682, 124))
+const ENEMY_FIGURE_TARGET_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
+const ENEMY_HP_BAR_SIZE = Vector2(612, 52)
 const BOARD_SURFACE_SIZE = Vector2(480, 576)
 const BOARD_SURFACE_TOP = 4.0
 const BOARD_SURFACE_SIDE_PADDING = 4.0
@@ -30,15 +30,15 @@ const PLAYER_HUD_MASTERY_PANEL_RECT = Rect2(Vector2(16, 0), Vector2(1048, 160))
 const PLAYER_HUD_MASTERY_TITLE_RECT = Rect2(Vector2(0, 6), Vector2(1048, 50))
 const PLAYER_HUD_MASTERY_CARDS_RECT = Rect2(Vector2(0, 58), Vector2(1048, 102))
 const PLAYER_HUD_FOOTER_PANEL_RECT = Rect2(Vector2(0, 168), Vector2(1080, 324))
-const COMPACT_VITALS_PANEL_RECT = Rect2(Vector2(228, 8), Vector2(836, 182))
-const COMPACT_PLAYER_HP_BAR_RECT = Rect2(Vector2(14, 20), Vector2(806, 62))
+const COMPACT_VITALS_PANEL_RECT = Rect2(Vector2(228, 12), Vector2(836, 152))
+const COMPACT_PLAYER_HP_BAR_RECT = Rect2(Vector2(14, 16), Vector2(806, 58))
 const COMPACT_PLAYER_LOADOUT_RECT = Rect2(Vector2(16, 168), Vector2(1048, 156))
-const COMPACT_EQUIPMENT_RAIL_RECT = Rect2(Vector2(16, 40), Vector2(552, 116))
-const COMPACT_CONSUMABLE_RAIL_RECT = Rect2(Vector2(576, 40), Vector2(344, 116))
-const COMPACT_VITALS_RELIC_ICONS_RECT = Rect2(Vector2(424, 94), Vector2(402, 64))
+const COMPACT_EQUIPMENT_RAIL_RECT = Rect2(Vector2(20, 34), Vector2(540, 106))
+const COMPACT_CONSUMABLE_RAIL_RECT = Rect2(Vector2(596, 34), Vector2(314, 106))
+const COMPACT_VITALS_RELIC_ICONS_RECT = Rect2(Vector2(126, 82), Vector2(402, 64))
 const DIVIDER_SIZE = Vector2(700, 20)
 const CORNER_ORNAMENT_SIZE = Vector2(56, 56)
-const MIN_READABLE_ENEMY_INTENT = Vector2(280, 96)
+const MIN_READABLE_ENEMY_INTENT = Vector2(280, 56)
 const MIN_READABLE_TIMER = Vector2(860, 32)
 const MIN_READABLE_BOARD = Vector2(470, 560)
 const MIN_READABLE_MASTERY = Vector2(1000, 96)
@@ -152,17 +152,17 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	}
 	var enemy_intent_rect := _offset_rect(ENEMY_INTENT_RECT, enemy_panel_rect.position)
 	var enemy_name_rect := Rect2(
-		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 8.0),
-		Vector2(548.0, 44.0)
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 4.0),
+		Vector2(548.0, 42.0)
 	)
 	var enemy_hp_text_rect := Rect2(
-		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 58.0),
-		Vector2(360.0, 32.0)
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 54.0),
+		ENEMY_HP_BAR_SIZE
 	)
 	var timer_track_rect := _timer_track_rect(combat_strip_rect)
 	var board_surface_rect := _board_surface_rect(board_panel_rect)
 	var enemy_hp_bar_rect := Rect2(
-		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 98.0),
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 54.0),
 		ENEMY_HP_BAR_SIZE
 	)
 	var mastery_rail_rect := mastery_panel_global
@@ -313,13 +313,13 @@ func _apply_enemy_panel_layout() -> void:
 	_apply_design_rect(_control("enemy_hp_row"), ENEMY_HP_ROW_RECT)
 	var enemy_stage_backdrop := _control("enemy_stage_backdrop")
 	if enemy_stage_backdrop != null:
-		enemy_stage_backdrop.position = Vector2.ZERO
+		enemy_stage_backdrop.position = ENEMY_STAGE_RECT.position
 		enemy_stage_backdrop.size = ENEMY_STAGE_RECT.size
-		enemy_stage_backdrop.z_index = -2
+		enemy_stage_backdrop.z_index = 0
 	var enemy_text_scrim := _control("enemy_text_scrim")
 	if enemy_text_scrim != null:
-		enemy_text_scrim.position = Vector2(16.0, ENEMY_HP_ROW_RECT.position.y + 6.0)
-		enemy_text_scrim.size = Vector2(640.0, 150.0)
+		enemy_text_scrim.position = Vector2(18.0, ENEMY_HP_ROW_RECT.position.y + 2.0)
+		enemy_text_scrim.size = Vector2(638.0, 116.0)
 		enemy_text_scrim.z_index = 2
 	var enemy_panel := _control("enemy_panel")
 	if enemy_panel != null:
@@ -331,8 +331,8 @@ func _apply_enemy_panel_layout() -> void:
 	var intent_row := _control("intent_row")
 	if intent_row != null:
 		intent_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		intent_row.alignment = BoxContainer.ALIGNMENT_END
-		intent_row.add_theme_constant_override("separation", 10)
+		intent_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		intent_row.add_theme_constant_override("separation", 12)
 		intent_row.z_index = 9
 	var intent_badge := _control("intent_badge")
 	if intent_badge != null:
@@ -358,21 +358,18 @@ func _apply_enemy_panel_layout() -> void:
 		enemy_hp_row.clip_contents = true
 	var enemy_name_label := _control("enemy_name_label")
 	if enemy_name_label != null:
-		enemy_name_label.position = Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 8.0)
-		enemy_name_label.size = Vector2(548.0, 44.0)
+		enemy_name_label.position = Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 4.0)
+		enemy_name_label.size = Vector2(548.0, 42.0)
 		enemy_name_label.z_index = 9
 	var enemy_portrait := _control("enemy_portrait")
 	if enemy_portrait != null:
-		enemy_portrait.size = ENEMY_PORTRAIT_SIZE
-		enemy_portrait.position = Vector2(
-			-236.0,
-			(ENEMY_STAGE_RECT.size.y - ENEMY_PORTRAIT_SIZE.y) * 0.5 + 22.0
-		)
+		enemy_portrait.position = ENEMY_FIGURE_TARGET_RECT.position
+		enemy_portrait.size = ENEMY_FIGURE_TARGET_RECT.size
 		enemy_portrait.z_index = 1
 	var enemy_hp_bar := _control("enemy_hp_bar")
 	if enemy_hp_bar != null:
 		enemy_hp_bar.size = ENEMY_HP_BAR_SIZE
-		enemy_hp_bar.position = Vector2(18.0, 98.0)
+		enemy_hp_bar.position = Vector2(18.0, 54.0)
 	var enemy_label := _control("enemy_label")
 	if enemy_label != null:
 		enemy_label.position = Vector2(0.0, 0.0)
@@ -380,9 +377,10 @@ func _apply_enemy_panel_layout() -> void:
 		enemy_label.visible = false
 	var enemy_hp_text_label := _control("enemy_hp_text_label")
 	if enemy_hp_text_label != null:
-		enemy_hp_text_label.position = Vector2(18.0, 58.0)
-		enemy_hp_text_label.size = Vector2(360.0, 32.0)
-		enemy_hp_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		enemy_hp_text_label.position = Vector2(18.0, 54.0)
+		enemy_hp_text_label.size = ENEMY_HP_BAR_SIZE
+		enemy_hp_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		enemy_hp_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
 func _apply_combat_strip_layout() -> void:
@@ -619,8 +617,8 @@ static func _build_readability_report(zone_rects: Dictionary) -> Dictionary:
 		"board_surface": MIN_READABLE_BOARD,
 		"mastery_rail": MIN_READABLE_MASTERY,
 		"player_hp": MIN_READABLE_HP,
-		"equipment_rail": Vector2(500, 112),
-		"consumable_rail": Vector2(308, 112),
+		"equipment_rail": Vector2(500, 100),
+		"consumable_rail": Vector2(308, 100),
 	}
 	var checks: Dictionary = {}
 	var passing_count := 0
@@ -706,10 +704,10 @@ func _apply_player_panel_layout() -> void:
 		hero_level_badge.visible = false
 	var player_armor_bar := _canvas_item("player_armor_bar")
 	if player_armor_bar != null:
-		player_armor_bar.visible = true
+		player_armor_bar.visible = false
 	var player_armor_label := _canvas_item("player_armor_label")
 	if player_armor_label != null:
-		player_armor_label.visible = true
+		player_armor_label.visible = false
 	var stat_chip_row := _canvas_item("stat_chip_row")
 	if stat_chip_row != null:
 		stat_chip_row.visible = false

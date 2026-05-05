@@ -72,20 +72,20 @@ const CONSUMABLE_LABEL_RECT := Rect2(Vector2(556, 102), Vector2(314, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
-const COMPACT_HERO_CARD_RECT := Rect2(Vector2(16, 8), Vector2(216, 186))
-const COMPACT_HERO_PORTRAIT_RECT := Rect2(Vector2(8, 8), Vector2(200, 170))
-const COMPACT_VITALS_PANEL_RECT := Rect2(Vector2(228, 8), Vector2(836, 182))
-const COMPACT_VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(836, 182))
-const COMPACT_PLAYER_HP_BAR_RECT := Rect2(Vector2(14, 20), Vector2(806, 62))
-const COMPACT_PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(14, 80), Vector2(500, 22))
-const COMPACT_ARMOR_BADGE_RECT := Rect2(Vector2(526, 80), Vector2(304, 22))
+const COMPACT_HERO_CARD_RECT := Rect2(Vector2(16, 12), Vector2(200, 152))
+const COMPACT_HERO_PORTRAIT_RECT := Rect2(Vector2(8, 8), Vector2(184, 136))
+const COMPACT_VITALS_PANEL_RECT := Rect2(Vector2(228, 12), Vector2(836, 152))
+const COMPACT_VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(836, 152))
+const COMPACT_PLAYER_HP_BAR_RECT := Rect2(Vector2(14, 16), Vector2(806, 58))
+const COMPACT_PLAYER_ARMOR_BAR_RECT := Rect2(Vector2.ZERO, Vector2.ZERO)
+const COMPACT_ARMOR_BADGE_RECT := Rect2(Vector2.ZERO, Vector2.ZERO)
 const COMPACT_PLAYER_LOADOUT_RECT := Rect2(Vector2(16, 168), Vector2(1048, 156))
-const COMPACT_EQUIPMENT_LABEL_RECT := Rect2(Vector2(16, 8), Vector2(552, 24))
-const COMPACT_CONSUMABLE_LABEL_RECT := Rect2(Vector2(576, 8), Vector2(344, 24))
-const COMPACT_EQUIPMENT_RAIL_RECT := Rect2(Vector2(16, 40), Vector2(552, 116))
-const COMPACT_CONSUMABLE_RAIL_RECT := Rect2(Vector2(576, 40), Vector2(344, 116))
-const COMPACT_RELIC_LABEL_RECT := Rect2(Vector2(424, 72), Vector2(402, 22))
-const COMPACT_VITALS_RELIC_ICONS_RECT := Rect2(Vector2(424, 94), Vector2(402, 64))
+const COMPACT_EQUIPMENT_LABEL_RECT := Rect2(Vector2(20, 4), Vector2(540, 24))
+const COMPACT_CONSUMABLE_LABEL_RECT := Rect2(Vector2(596, 4), Vector2(314, 24))
+const COMPACT_EQUIPMENT_RAIL_RECT := Rect2(Vector2(20, 34), Vector2(540, 106))
+const COMPACT_CONSUMABLE_RAIL_RECT := Rect2(Vector2(596, 34), Vector2(314, 106))
+const COMPACT_RELIC_LABEL_RECT := Rect2(Vector2(20, 101), Vector2(98, 24))
+const COMPACT_VITALS_RELIC_ICONS_RECT := Rect2(Vector2(126, 82), Vector2(402, 64))
 const COMPACT_PLAYER_MASTERY_RECT := Rect2(Vector2(16, 286), Vector2(1048, 44))
 const COMPACT_MASTERY_ROOT_RECT := Rect2(Vector2(0, 0), Vector2(1048, 44))
 const COMPACT_MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(100, 44))
@@ -1117,42 +1117,20 @@ func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}
 
 func apply_player_hud_chrome(nodes: Dictionary) -> void:
 	var section_texture := _visual_registry().combat_player_hud_rail_texture()
-	var mastery_rail_texture := _visual_registry().combat_mastery_rail_frame_texture()
-	var loadout_rail_texture := _visual_registry().combat_loadout_rail_texture()
-	var vitals_frame_texture := _visual_registry().combat_player_vitals_frame_texture()
-	var equipment_rail_texture := _visual_registry().combat_equipment_rail_frame_texture()
-	var consumable_rail_texture := _visual_registry().combat_consumables_rail_frame_texture()
-	var block_badge_texture := _visual_registry().combat_block_badge_texture()
 	if section_texture != null:
 		_apply_node_stylebox(nodes, "section", _texture_stylebox(section_texture, 26, 26, 26, 26, 10.0))
-		_apply_node_stylebox(nodes, "footer_panel", _texture_stylebox(section_texture, 24, 24, 24, 24, 10.0))
+		_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
 	else:
 		_apply_node_stylebox(nodes, "section", _hud_section_stylebox())
 		_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
-	if mastery_rail_texture != null:
-		_apply_node_stylebox(nodes, "mastery_panel", _texture_stylebox(mastery_rail_texture, 16, 16, 16, 16, 8.0))
-	else:
-		_apply_node_stylebox(nodes, "mastery_panel", StyleBoxEmpty.new())
-	if loadout_rail_texture != null:
-		_apply_node_stylebox(nodes, "loadout_frame", _texture_stylebox(loadout_rail_texture, 18, 18, 18, 18, 8.0))
-	else:
-		_apply_node_stylebox(nodes, "loadout_frame", _hud_inner_panel_stylebox())
-	_apply_node_stylebox(nodes, "hero_card", _hud_inner_panel_stylebox())
-	if vitals_frame_texture != null:
-		_apply_node_stylebox(nodes, "vitals_frame", _texture_stylebox(vitals_frame_texture, 16, 16, 16, 16, 8.0))
-	else:
-		_apply_node_stylebox(nodes, "vitals_frame", _hud_vitals_stylebox())
-	if block_badge_texture != null:
-		_apply_node_stylebox(nodes, "armor_badge", _texture_stylebox(block_badge_texture, 12, 12, 8, 8, 8.0))
-	if equipment_rail_texture != null:
-		_apply_node_stylebox(nodes, "equipment_icons", _texture_stylebox(equipment_rail_texture, 14, 14, 14, 14, 8.0))
-	else:
-		_apply_node_stylebox(nodes, "equipment_icons", _hud_loadout_strip_stylebox())
-	if consumable_rail_texture != null:
-		_apply_node_stylebox(nodes, "consumable_icons", _texture_stylebox(consumable_rail_texture, 14, 14, 14, 14, 8.0))
-	else:
-		_apply_node_stylebox(nodes, "consumable_icons", _hud_loadout_strip_stylebox())
-	_apply_node_stylebox(nodes, "relic_icons", _hud_relic_strip_stylebox())
+	_apply_node_stylebox(nodes, "mastery_panel", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "loadout_frame", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "hero_card", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "vitals_frame", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "armor_badge", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "equipment_icons", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "consumable_icons", StyleBoxEmpty.new())
+	_apply_node_stylebox(nodes, "relic_icons", StyleBoxEmpty.new())
 	_apply_progressbar_flat_style(nodes.get("hp_bar") as ProgressBar, Color(0.78, 0.16, 0.17, 1.0))
 	var mastery_title_font_size := 32
 	var mastery_panel := nodes.get("mastery_panel") as Control
@@ -1234,6 +1212,9 @@ func apply_player_footer_layout(nodes: Dictionary) -> void:
 	_set_node_visible(nodes, "relic_icons", true)
 	_set_node_visible(nodes, "relic_row", false)
 	_set_node_visible(nodes, "mastery_label", false)
+	_set_node_visible(nodes, "armor_bar", false)
+	_set_node_visible(nodes, "armor_label", false)
+	_set_node_visible(nodes, "armor_badge", false)
 	var equipment_label := nodes.get("equipment_label") as Label
 	if equipment_label != null:
 		equipment_label.add_theme_font_size_override("font_size", 17 if compact_mode else 19)
@@ -1305,6 +1286,19 @@ func _hud_inner_panel_stylebox() -> StyleBoxFlat:
 	style.set_corner_radius_all(8)
 	style.content_margin_left = 10.0
 	style.content_margin_right = 10.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
+	return style
+
+
+func _hud_soft_panel_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.02, 0.04, 0.07, 0.82)
+	style.border_color = Color(0.28, 0.34, 0.42, 0.70)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 8.0
 	style.content_margin_top = 8.0
 	style.content_margin_bottom = 8.0
 	return style

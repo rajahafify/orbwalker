@@ -64,16 +64,16 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if enemy_stage_backdrop is TextureRect:
 		(enemy_stage_backdrop as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		(enemy_stage_backdrop as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		(enemy_stage_backdrop as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
+		(enemy_stage_backdrop as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.94)
 	var enemy_portrait: Variant = nodes.get("enemy_portrait", null)
 	if enemy_portrait is TextureRect:
 		(enemy_portrait as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		(enemy_portrait as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
 		(enemy_portrait as TextureRect).material = null
 	var enemy_text_scrim: Variant = nodes.get("enemy_text_scrim", null)
 	if enemy_text_scrim is ColorRect:
-		(enemy_text_scrim as ColorRect).color = Color(0.01, 0.03, 0.05, 0.84)
+		(enemy_text_scrim as ColorRect).color = Color(0.01, 0.03, 0.05, 0.56)
 		(enemy_text_scrim as ColorRect).visible = true
 
 	var top_bar_texture := _resolve_visual_texture(visuals, "combat_top_bar_frame_texture")
@@ -106,14 +106,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if combat_strip_texture == null:
 		_apply_panel_stylebox(nodes.get("combat_strip", null), ornate_frame_style)
 
-	apply_progressbar_flat_style(nodes.get("enemy_hp_bar", null), Color(0.70, 0.12, 0.13, 1.0))
+	apply_progressbar_flat_style(nodes.get("enemy_hp_bar", null), Color(0.58, 0.09, 0.78, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_hp_bar", null), Color(0.78, 0.16, 0.17, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_armor_bar", null), Color(0.16, 0.50, 0.86, 1.0))
-	apply_progressbar_style(
-		nodes.get("enemy_hp_bar", null),
-		_resolve_visual_texture(visuals, "clean_hud_texture", ["enemy_hp_bar_frame"]),
-		_resolve_visual_texture(visuals, "clean_hud_texture", ["enemy_hp_bar_fill"])
-	)
 	apply_progressbar_style(
 		nodes.get("player_hp_bar", null),
 		_resolve_visual_texture(visuals, "clean_hud_texture", ["hp_bar_frame"]),
@@ -161,9 +156,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	_set_label_font_size(nodes.get("enemy_name_label", null), 38)
 	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 28)
 	_set_label_font_size(nodes.get("enemy_label", null), font_size_value)
-	_set_label_font_size(nodes.get("primary_intent_title_label", null), 24)
-	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 52)
-	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 18)
+	_set_label_font_size(nodes.get("primary_intent_title_label", null), 22)
+	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 40)
+	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 16)
 	_set_label_font_size(nodes.get("timer_label", null), 34)
 	_set_label_font_size(nodes.get("player_label", null), 26)
 	_set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
@@ -229,16 +224,20 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		intent_badge.custom_minimum_size = Vector2(112, 112)
+		intent_badge.visible = false
 	var primary_intent_detail: Label = nodes.get("primary_intent_detail_label", null) as Label
 	if primary_intent_detail != null:
 		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_detail.visible = false
 	var primary_intent_title: Label = nodes.get("primary_intent_title_label", null) as Label
 	if primary_intent_title != null:
 		primary_intent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_title.visible = false
 	var primary_intent_amount: Label = nodes.get("primary_intent_amount_label", null) as Label
 	if primary_intent_amount != null:
 		primary_intent_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_amount.visible = false
 	apply_button_theme([
 		nodes.get("back_button", null),
 		nodes.get("debug_toggle_button", null),
@@ -387,7 +386,7 @@ static func apply_progressbar_flat_style(bar: Variant, fill_color: Color) -> voi
 	if not (bar is ProgressBar):
 		return
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.03, 0.06, 0.09, 0.97)
+	bg.bg_color = Color(0.015, 0.025, 0.035, 0.98)
 	bg.set_corner_radius_all(7)
 	bg.set_border_width_all(2)
 	bg.border_color = Color(0.54, 0.42, 0.20, 0.82)
@@ -521,7 +520,10 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 				(divider_node as TextureRect).texture = divider_texture
 			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
-			(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.90)
+			if key == "divider_board_player":
+				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.0)
+			else:
+				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.90)
 
 	var corner_texture := _resolve_visual_texture(visuals, "combat_corner_ornament_texture")
 	for key in ["corner_top_left", "corner_top_right", "corner_bottom_left", "corner_bottom_right"]:
