@@ -125,7 +125,7 @@ Phase D: Validation and debug visibility
 - [x] Generated shop stock and booster equipment options do not show equipment already equipped by the player.
 - [x] Full-slot booster rewards keep the player HUD usable and can be skipped without locking shop progression.
 - [x] Normal boosters do not generate relics by default.
-- [ ] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
+- [x] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
 
 Verification notes (2026-04-26):
 - Shop flow is now wired to runtime systems (`ShopState`, `ShopService`) and accessible via post-fight transition to `res://scenes/flow/shop_player.tscn` (player-facing) and `res://scenes/flow/shop_placeholder.tscn` (debug/legacy).
@@ -137,6 +137,7 @@ Verification notes (2026-04-26):
 - Godot MCP validation on 2026-05-02: editor-script service probes confirmed generated shop stock and booster equipment options exclude already-equipped equipment, consumable selling clears the selected consumable slot, `res://scenes/flow/shop_player.tscn` and `res://scenes/combat/combat_player.tscn` instantiate, and `get_godot_errors` reported no session errors.
 - Godot MCP validation on 2026-05-03: combat consumable rails now render filled consumable slots as selectable HUD buttons wired to the existing slot-indexed consumable use path, and shop relic offers now reject owned relics when generating or reusing a cached per-level relic offer. `view_script`, focused helper probes, and `get_godot_errors` reported no session errors; direct autoload editor-script probes returned `<null>` in this MCP session, so manual active-run click-through remains useful for final acceptance.
 - Godot MCP validation on 2026-05-03: `PlayerLoadoutHud` now owns the shared combat/shop HUD renderer and item popover API. Combat and shop bind HUD node references, pass player/progression data through `update_player_data(...)`, delegate outside-click focus handling, and respond to the HUD's `sell_slot_requested` signal instead of creating their own item detail bubbles. The shared HUD popover covers equipment, consumables, and relics; equipment/consumables can be sold from it in combat or shop. `view_script`, scene instantiate probes, `get_godot_errors`, and `git diff --check` reported no errors; active-run visual click-through remains useful.
+- Godot MCP and Run Log validation on 2026-05-05: M10 closeout evidence confirmed the tuned first-shop floor now gives `10+` gold after the first enemy, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` opened the first shop with `13` gold, affordable `shortsword`, affordable booster, and affordable consumable options. This satisfies the early booster-affordability checklist for the temporary M10 playtest layer, not final economy balance.
 
 ## Milestone 7: Dungeon And Run Flow
 
@@ -436,7 +437,7 @@ Tracker: `docs/milestone_10_balance_tasks.md`
 - [x] Early combat survivability has temporary level 1-2 HP/damage tuning values without removing all threat.
 - [x] Equipment, mastery cards, consumables, relics, and boosters can be exercised without many economy-starved runs.
 - [x] Temporary balance assumptions are documented separately from final economy/design decisions.
-- [ ] Focused level 1 and early-run playtest loops record gold earned, shop purchases, deaths, item access, and major blockers.
+- [x] Focused level 1 and early-run playtest loops record gold earned, shop purchases, deaths, item access, and major blockers.
 - [x] M10-02 untuned baseline includes at least 3 human-played normal runs exported from the main-menu `Generate Log` flow.
 
 Verification notes (2026-05-05):
@@ -503,6 +504,12 @@ Follow-up verification notes (2026-05-05, Run Log shop detail):
 - `shop_action` now records gold before/after, selected offer or booster option details, granted booster content, and sanitized shop before/after snapshots. `shop_leave` records the shop snapshot before and after closing, which preserves sold-out relic evidence in the timeline.
 - Focused Godot MCP probes confirmed a first-shop Run Log snapshot contains `shortsword`, a booster offer, 3 item offers, and relic fields; a booster purchase logs `shop_before`, `shop_after`, and `selected_offer`; text export includes shop summaries; and a bought same-level relic logs as `sold_out=true`, `available=false`, and `owned=true` in the next same-level shop.
 - Validation performed: Godot MCP `get_project_info`; `view_script` for `run_state.gd` and `run_log_reporter.gd`; focused Run Log shop/open/action/relic probes; `get_godot_errors`; `git diff --check`. `get_godot_errors` still includes stale diagnostics from failed ad hoc probes, while the final focused probes executed successfully.
+
+Verification notes (2026-05-05, M10-07 focused playtest closeout):
+- M10-07 compared tuned logs against the M10-02 untuned baseline and found no Milestone 10 blocker. Baseline evidence showed first-shop access was weak or absent: `run_1777938769_177353_2026-05-05t07_52_49` opened first shop with `3` gold and died at L2 boss, `run_1777940350_422781_2026-05-05t08_19_10` died in L1 enemy 1 with no shop access, and `run_1777941462_641881_2026-05-05t08_37_42` opened first shop with `0` gold before eventually dying at L3 enemy 1.
+- Tuned evidence is materially better: `run_1777968781_770133_2026-05-05t16_13_01` opened first shops with `10` gold and reached L3 enemy 1, `run_1777969048_434533_2026-05-05t16_17_28` won a full run with eight shop opens and two booster actions, and `run_1777973747_694854_2026-05-05t17_35_47` reached L3 enemy 2 after opening first shop with `13` gold, buying `shortsword`, buying boosters, taking two boss relics, and exposing equipment-slot-full friction.
+- Closeout classification: early gold access, survivability, first-shop affordability, booster access, relic access, and content access are sufficient for a Milestone 11 baseline. Level 3 full-slot friction is visible but not blocking because the newest run recovered by buying a booster and choosing a consumable. Merchant Compass free-first-reroll remains deferred. Final combat/economy values remain post-Milestone 11/meta-progression tuning work, not accepted final balance.
+- Validation performed: `git status --short --branch`; Godot MCP `get_project_info`; focused scene instantiate smoke for `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`; Godot MCP `play_scene main` launch/stop; final `get_godot_errors` with no session errors; local Run Log comparison; `git diff --check`.
 
 ## Milestone 11: Meta Progression Foundation
 

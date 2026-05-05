@@ -188,12 +188,12 @@ Validation evidence:
 
 ## M10-07: Focused Playtest Loop And Closeout
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Confirm M10 creates a playable baseline for Milestone 11.
 - Deliverable: Final M10 playtest notes and tracker updates.
-- Progress: Not started.
-- Blockers: M10-01 through M10-06 should be complete or explicitly deferred.
-- Next action: Compare tuned logs against the untuned baseline and separate remaining post-meta tuning questions from M10 blockers.
+- Progress: Compared tuned Run Logs against the M10-02 untuned baseline and found M10 creates a playable baseline for Milestone 11. The untuned baseline opened first shops with `3`, no shop, and `0` gold across the three counted runs, while tuned runs now show a first-shop floor of `10+` gold and practical shop access. Accepted tuned run `run_1777968781_770133_2026-05-05t16_13_01` reached Dungeon 3 and died at Vault Executioner after six fight victories. Accepted tuned run `run_1777969048_434533_2026-05-05t16_17_28` completed the full run with eight shop opens, booster actions, boss relic rewards, and longer Dungeon 3 fights. Newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reached level 3 enemy 2, opened the first shop with `13` gold, offered affordable `shortsword`, booster, and consumable options, bought equipment and boosters, took two boss relic rewards, exposed level 3 equipment-slot-full friction, then died to Goldbound Keeper with `42` gold. No M10 blocker was found in early gold access, survivability, shop/content access, first-shop affordability, booster access, relic access, or full-slot friction.
+- Blockers: None for Milestone 10 closeout. Merchant Compass free-first-reroll remains deferred, and full-slot friction plus final economy/combat values should be revisited after Milestone 11 meta progression changes player power and content pressure.
+- Next action: Start Milestone 11 meta progression foundation; do not deepen combat/economy rebalance until post-meta evidence exists.
 - Acceptance:
   - Multiple early-run logs show improved gold access, survivability, and content access versus baseline.
   - Temporary balance assumptions are recorded.
@@ -203,6 +203,16 @@ Validation evidence:
   - Godot MCP final smoke: main, combat, shop, final summary, and `get_godot_errors`.
   - Manual playtest notes or exported logs for at least 2 tuned runs.
 - Docs/wiki impact: Update `todo.md`, `docs/test_plan.md`, relevant wiki pages, and `wiki/log.md` if wiki changes.
+
+Validation evidence:
+
+- `git status --short --branch` confirmed work on `codex/milestone-10` with a clean starting status.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main.tscn` as the main scene.
+- Focused Godot MCP scene instantiate smoke passed for `res://scenes/main.tscn`, `res://scenes/combat/combat_player.tscn`, `res://scenes/flow/shop_player.tscn`, and `res://scenes/flow/final_run_summary.tscn`.
+- Godot MCP `play_scene main` launched and stopped successfully.
+- Final Godot MCP `get_godot_errors` reported no session errors after the corrected scene smoke. An earlier ad hoc editor-script smoke failed from local probe typing and was corrected before counting validation.
+- Run Log comparison covered the M10-02 baseline files `run_1777938769_177353_2026-05-05t07_52_49`, `run_1777940350_422781_2026-05-05t08_19_10`, and `run_1777941462_641881_2026-05-05t08_37_42`, plus tuned files `run_1777968781_770133_2026-05-05t16_13_01`, `run_1777969048_434533_2026-05-05t16_17_28`, and `run_1777973747_694854_2026-05-05t17_35_47`.
+- `git diff --check` passed after documentation/wiki updates.
 
 ## Agent Instruction Template
 

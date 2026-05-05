@@ -1753,3 +1753,16 @@ Append-only history of wiki operations.
   - Updated text and Markdown Run Log summaries so shop details are readable without manually parsing JSON.
 - Validation:
   - Godot MCP `get_project_info`, `view_script`, focused first-shop/action/relic Run Log probes, `get_godot_errors`, and `git diff --check` ran. The final focused probes confirmed `shortsword`, booster, selected offer, text summary, and sold-out owned relic evidence in the log payloads; `get_godot_errors` still retained stale diagnostics from failed ad hoc probes.
+
+## [2026-05-05] decision | M10-07 Playtest Baseline Closeout
+
+- Source: `logs/run_1777968781_770133_2026-05-05t16_13_01.json`, `logs/run_1777969048_434533_2026-05-05t16_17_28.json`, `logs/run_1777973747_694854_2026-05-05t17_35_47.json`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`, `wiki/open-questions.md`
+- Decided:
+  - Milestone 10 creates a playable baseline for Milestone 11.
+  - Do not treat M10 values as final balance.
+  - Defer deeper combat/economy tuning, late full-slot friction review, and final shop-price/reroll decisions until after Milestone 11 meta progression changes the power curve.
+- Evidence:
+  - Untuned baseline first-shop access was weak or absent: first shops opened with `3`, no shop, and `0` gold across the three counted M10-02 baseline logs.
+  - Tuned evidence includes one Dungeon 3 defeat, one full victory, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reaching L3 enemy 2 after first-shop affordability, booster buys, equipment buys, and two boss relic rewards.
+- Validation:
+  - Godot MCP `get_project_info`, focused scene instantiate smoke for main/combat/shop/final summary, `play_scene main`, final `get_godot_errors`, local Run Log comparison, and `git diff --check` passed for the closeout documentation update.

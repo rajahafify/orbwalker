@@ -317,7 +317,7 @@ Tasks:
   - Deliverable: Buying a booster opens a pack view with 3 generated options and allows the player to pick 1.
   - Acceptance: Boosters can generate element-based or category-based options and do not generate relics by default; full equipment or consumable inventories leave the player HUD usable and provide a clear Skip path instead of blocking shop progression.
 
-- [~] Tune early affordability.
+- [x] Tune early affordability.
   - Deliverable: Initial price and gold spawn settings.
   - Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 booster pack.
 
@@ -539,7 +539,7 @@ Tasks:
 
 ## Milestone 10: Short-Term Playtest Balance Pass
 
-Status: In progress.
+Status: Complete.
 
 Goal: Make the current run loop easier to playtest before adding meta progression.
 
@@ -563,30 +563,35 @@ Tasks:
   - Acceptance: M10-02 records level/fight reach, turns per fight, gold, shop access, purchases, deaths, item/relic access, and blocker categories before any balance tuning.
   - Note: 2026-05-05 M10-02 verified 3 human-played baseline logs. The runs covered a high-skill defeat at level 2 boss, an intentional new-player simulation defeat in level 1 fight 1, and a third defeat at level 3 enemy 1. Current blockers are mixed: first-shop affordability, first-fight survivability/combat effectiveness, and level 2-3 enemy pressure.
 
-- [ ] Add or expose playtest balance levers.
+- [x] Add or expose playtest balance levers.
   - Deliverable: Configurable values for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test settings.
   - Acceptance: Designers can make item and shop testing easier without rewriting core systems.
+  - Note: 2026-05-05 M10-03 added temporary prototype levers for starting gold, Gold orb spawn access, shop price/reroll multipliers, fight base rewards, and enemy HP/damage multipliers while keeping default parity until tuning tasks changed values.
 
-- [ ] Tune early gold access.
+- [x] Tune early gold access.
   - Deliverable: Temporary prototype settings for gold orb value/spawn rate, starting gold, fight rewards, shop prices, or booster affordability.
   - Acceptance: After the first enemy, a normal playtest run can usually buy at least one item, booster, consumable, or useful shop option.
+  - Note: 2026-05-05 M10-04 set temporary fixed fight base rewards to `10/12/14` by dungeon level, kept Gold spawn/shop/reroll multipliers neutral, and later M10-06 made the first shop guarantee affordable `Shortsword` damage access at the `10` gold floor.
 
-- [ ] Tune early combat survivability.
+- [x] Tune early combat survivability.
   - Deliverable: Temporary level 1-2 enemy HP, damage, block, and player starting-stat adjustments.
   - Acceptance: Runs survive long enough to reach multiple shops and test build decisions, while mistakes can still matter.
+  - Note: 2026-05-05 M10-05 added temporary dungeon/type survivability identities: forgiving Dungeon 1 normal fights, a tougher Dungeon 1 boss skill check, Dungeon 2 defense pressure, and a retuned Dungeon 3 late damage check. Player accepted the current early balance for now and deferred deeper rebalance until after Milestone 11 meta progression.
 
 - [x] Tune item and relic test access.
   - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and boosters practical to inspect during repeated runs.
   - Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.
   - Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one booster when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second booster unless needed. The first level-1 shop now guarantees affordable damage equipment (`Shortsword`) instead of `Coin Purse`; `Shortsword` price is `10`. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.
 
-- [ ] Record first-pass balance assumptions.
+- [x] Record first-pass balance assumptions.
   - Deliverable: Short notes in `docs/test_plan.md` or relevant wiki pages describing temporary balance values, what they are meant to test, and what is intentionally not final.
   - Acceptance: Future meta progression work can distinguish test scaffolding from accepted design.
+  - Note: 2026-05-05 M10 tracker, test plan, and wiki notes label M10 values as temporary playtest scaffolding rather than final balance.
 
-- [ ] Run focused playtest loops.
+- [x] Run focused playtest loops.
   - Deliverable: Recorded notes from repeated level 1 and early-run playtests covering gold earned, shop purchases, deaths, item access, and major blockers.
   - Acceptance: The team has enough evidence to start meta progression on a playable baseline.
+  - Note: 2026-05-05 M10-07 compared tuned logs against the M10-02 untuned baseline. Tuned evidence includes a D3 defeat, a full victory, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reaching L3 enemy 2 with first-shop affordability, booster access, boss relic rewards, and visible full-slot friction. No M10 blocker remains; full-slot friction, Merchant Compass reroll behavior, and final tuning move to post-Milestone 11/meta-progression work.
 
 ## Milestone 11: Meta Progression Foundation
 
