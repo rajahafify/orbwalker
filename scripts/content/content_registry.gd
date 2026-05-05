@@ -21,6 +21,10 @@ var _shop_pricing_config := {
 	"reroll_base": 1,
 	"reroll_step": 1,
 }
+var _prototype_balance_levers := {
+	"shop_price_multiplier": 1.0,
+	"reroll_cost_multiplier": 1.0,
+}
 
 
 func _init() -> void:
@@ -109,7 +113,26 @@ func shop_relic_pool(dungeon_level: int) -> Array[Dictionary]:
 
 
 func shop_pricing_config() -> Dictionary:
-	return _shop_pricing_config.duplicate(true)
+	var pricing := _shop_pricing_config.duplicate(true)
+	var price_multiplier := maxf(0.0, float(_prototype_balance_levers.get("shop_price_multiplier", 1.0)))
+	var reroll_multiplier := maxf(0.0, float(_prototype_balance_levers.get("reroll_cost_multiplier", 1.0)))
+	pricing["prototype_balance"] = {
+		"temporary": true,
+		"shop_price_multiplier": price_multiplier,
+		"reroll_cost_multiplier": reroll_multiplier,
+	}
+	return pricing
+
+
+func set_prototype_balance_levers(levers: Dictionary) -> void:
+	_prototype_balance_levers["shop_price_multiplier"] = maxf(
+		0.0,
+		float(levers.get("shop_price_multiplier", _prototype_balance_levers.get("shop_price_multiplier", 1.0)))
+	)
+	_prototype_balance_levers["reroll_cost_multiplier"] = maxf(
+		0.0,
+		float(levers.get("reroll_cost_multiplier", _prototype_balance_levers.get("reroll_cost_multiplier", 1.0)))
+	)
 
 
 func content_contract_snapshot() -> Dictionary:

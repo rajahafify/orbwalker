@@ -17,6 +17,15 @@ const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
 const SCENE_RUN_SUMMARY := "res://scenes/flow/final_run_summary.tscn"
 const MAX_DUNGEON_LEVELS := 3
 const FLOW_TRACE_ENABLED := true
+const PROTOTYPE_BALANCE_PROJECT_SETTINGS_PREFIX := "matchatro/prototype_balance/"
+const PROTOTYPE_BALANCE_DEFAULTS := {
+	"starting_gold": 0,
+	"gold_orb_spawn_weight_multiplier": 1.0,
+	"shop_price_multiplier": 1.0,
+	"reroll_cost_multiplier": 1.0,
+	"enemy_hp_multiplier": 1.0,
+	"enemy_damage_multiplier": 1.0,
+}
 const LEVEL_SEQUENCE: Array[String] = [
 	"enemy_1",
 	"shop",
@@ -63,6 +72,7 @@ var _run_log_last_export_paths: Dictionary = {}
 var _run_log_last_export_errors: Array[String] = []
 var _run_log_last_export_unix: int = 0
 var _generate_run_log_files := false
+var _prototype_balance_levers: Dictionary = PROTOTYPE_BALANCE_DEFAULTS.duplicate(true)
 
 var _normal_encounters_by_level := {
 	1: [
@@ -211,6 +221,8 @@ func ensure_player_progression_service():
 func ensure_content_registry():
 	if content_registry == null:
 		content_registry = CONTENT_REGISTRY_SCRIPT.new()
+	if content_registry.has_method("set_prototype_balance_levers"):
+		content_registry.set_prototype_balance_levers(_prototype_balance_levers)
 	return content_registry
 
 
@@ -251,6 +263,7 @@ func run_contract_snapshot() -> Dictionary:
 			"_boss_relic_reward_options",
 			"_boss_reward_claimed_relic_id",
 			"_run_summary",
+			"_prototype_balance_levers",
 		],
 		"scene_route_constants": {
 			"SCENE_MAIN": SCENE_MAIN,
@@ -277,6 +290,9 @@ func run_contract_snapshot() -> Dictionary:
 			"run_log_last_export_snapshot",
 			"run_log_last_export_paths",
 			"log_turn_result",
+			"prototype_balance_levers_snapshot",
+			"set_prototype_balance_levers",
+			"reset_prototype_balance_levers",
 		],
 		"content_dependency": {
 			"content_registry_owner": "ContentRegistry",
@@ -288,6 +304,26 @@ func run_contract_snapshot() -> Dictionary:
 		"compatibility_note": "AR-07 contract snapshot only; no routing, transition, resolver, summary, or presentation behavior changes.",
 	}
 	return snapshot.duplicate(true)
+
+
+func prototype_balance_levers_snapshot() -> Dictionary:
+	return _prototype_balance_levers.duplicate(true)
+
+
+func prototype_balance_defaults_snapshot() -> Dictionary:
+	return PROTOTYPE_BALANCE_DEFAULTS.duplicate(true)
+
+
+func set_prototype_balance_levers(levers: Dictionary) -> Dictionary:
+	_prototype_balance_levers = _normalized_prototype_balance_levers(levers)
+	_sync_prototype_balance_project_settings()
+	if content_registry != null and content_registry.has_method("set_prototype_balance_levers"):
+		content_registry.set_prototype_balance_levers(_prototype_balance_levers)
+	return prototype_balance_levers_snapshot()
+
+
+func reset_prototype_balance_levers() -> Dictionary:
+	return set_prototype_balance_levers(PROTOTYPE_BALANCE_DEFAULTS)
 
 
 func progression_snapshot() -> Dictionary:
@@ -429,7 +465,8 @@ func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
 
 func reset_run() -> void:
 	ensure_player_state().reset_for_new_run()
-	run_gold = ensure_player_state().gold
+	run_gold = maxi(0, int(_prototype_balance_levers.get("starting_gold", 0)))
+	ensure_player_state().gold = run_gold
 	dungeon_level = 1
 	_relic_offer_ids_by_level.clear()
 	ensure_player_progression_state().reset_for_new_run()
@@ -480,7 +517,7 @@ func level_sequence_label() -> String:
 
 
 func current_level_boss_preview() -> Dictionary:
-	return Dictionary(_boss_encounters_by_level.get(dungeon_level, {})).duplicate(true)
+	return _prototype_balance_apply_to_encounter(Dictionary(_boss_encounters_by_level.get(dungeon_level, {})))
 
 
 func current_level_boss_name() -> String:
@@ -781,6 +818,7 @@ func _assign_current_fight() -> void:
 			"intent_cycle": [],
 		}
 
+	encounter = _prototype_balance_apply_to_encounter(encounter)
 	encounter["dungeon_level"] = dungeon_level
 	encounter["step_key"] = current_step_key
 	encounter["boss_preview_name"] = current_level_boss_name()
@@ -1357,6 +1395,46 @@ func _step_display_name(step: String) -> String:
 
 func _sync_player_gold_from_run() -> void:
 	ensure_player_state().gold = run_gold
+
+
+func _normalized_prototype_balance_levers(levers: Dictionary) -> Dictionary:
+	var normalized := PROTOTYPE_BALANCE_DEFAULTS.duplicate(true)
+	for key in normalized.keys():
+		if not levers.has(key):
+			continue
+		match key:
+			"starting_gold":
+				normalized[key] = maxi(0, int(levers.get(key, normalized[key])))
+			_:
+				normalized[key] = maxf(0.0, float(levers.get(key, normalized[key])))
+	return normalized
+
+
+func _sync_prototype_balance_project_settings() -> void:
+	for key in _prototype_balance_levers.keys():
+		ProjectSettings.set_setting(
+			PROTOTYPE_BALANCE_PROJECT_SETTINGS_PREFIX + String(key),
+			_prototype_balance_levers[key]
+		)
+
+
+func _prototype_balance_apply_to_encounter(source: Dictionary) -> Dictionary:
+	var encounter := source.duplicate(true)
+	if encounter.is_empty():
+		return encounter
+	var hp_multiplier := float(_prototype_balance_levers.get("enemy_hp_multiplier", 1.0))
+	var damage_multiplier := float(_prototype_balance_levers.get("enemy_damage_multiplier", 1.0))
+	if not is_equal_approx(hp_multiplier, 1.0):
+		encounter["max_hp"] = maxi(1, int(round(float(encounter.get("max_hp", 1)) * hp_multiplier)))
+	if not is_equal_approx(damage_multiplier, 1.0):
+		var intents: Array = encounter.get("intent_cycle", [])
+		var scaled_intents: Array = []
+		for raw_intent in intents:
+			var intent: Dictionary = Dictionary(raw_intent).duplicate(true)
+			intent["attack"] = maxi(0, int(round(float(intent.get("attack", 0)) * damage_multiplier)))
+			scaled_intents.append(intent)
+		encounter["intent_cycle"] = scaled_intents
+	return encounter
 
 
 func _merge_combat_modifiers(target: Dictionary, source_data: Dictionary) -> void:

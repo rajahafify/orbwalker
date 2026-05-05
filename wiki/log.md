@@ -1640,3 +1640,13 @@ Append-only history of wiki operations.
   - Updated the next action to M10-03 prototype balance levers before direct economy or survivability tuning.
 - Validation:
   - `git status --short --branch`, local Run Log inspection, `git diff --check`, Godot MCP `get_project_info`, and `get_godot_errors` were run. No automated probe runs were counted as baseline evidence.
+
+## [2026-05-05] code-change | M10-03 Prototype Balance Levers
+
+- Source: `scripts/core/run_state.gd`, `scripts/board/board_generation_settings.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Added neutral temporary prototype balance levers for `starting_gold`, `gold_orb_spawn_weight_multiplier`, `shop_price_multiplier`, `reroll_cost_multiplier`, `enemy_hp_multiplier`, and `enemy_damage_multiplier`.
+  - Kept active ownership authoritative: `RunState` applies starting gold and active encounter scaling, `BoardGenerationSettings` owns base orb weights, `ContentRegistry` exposes dictionary-backed pricing metadata, and `ShopService` applies offer/reroll price multipliers.
+  - Deferred new debug/test access levers because existing debug commands cover forced setup and M10-02 evidence first needs economy/survivability tuning surfaces.
+- Validation:
+  - `git status --short --branch`, Godot MCP `get_project_info`, `view_script` checks, focused script-load checks, focused default/override lever probe, `get_godot_errors`, and `git diff --check` passed. The lever probe confirmed default parity and override effects for starting gold, enemy HP, enemy attack, gold normalized weight, shop price, and reroll cost.

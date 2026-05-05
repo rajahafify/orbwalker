@@ -75,12 +75,12 @@ Validation evidence:
 
 ## M10-03: Prototype Balance Lever Layer
 
-- Status: `not started`
+- Status: `done`
 - Owner/scope: Add a small temporary balance surface for playtest tuning.
 - Deliverable: Configurable prototype values for starting gold, gold access, shop affordability, reroll cost, enemy HP/damage scaling, and debug/test access where appropriate.
-- Progress: Not started.
-- Blockers: M10-01 and M10-02 should establish evidence before changing tuning surfaces.
-- Next action: Identify the narrow balance ownership surface, preserve default behavior, then expose temporary prototype overrides.
+- Progress: Added a temporary `RunState` prototype balance lever surface with neutral defaults: `starting_gold = 0`, `gold_orb_spawn_weight_multiplier = 1.0`, `shop_price_multiplier = 1.0`, `reroll_cost_multiplier = 1.0`, `enemy_hp_multiplier = 1.0`, and `enemy_damage_multiplier = 1.0`. Defaults preserve current behavior. `RunState` applies starting gold on new runs and scales active encounter HP/attack snapshots when overrides are set. `BoardGenerationSettings` reads the gold-orb spawn multiplier through the same runtime lever mirror, so new board generation can adjust gold access without changing the base spawn table. `ContentRegistry` exposes temporary shop price/reroll multipliers through its existing dictionary-backed pricing config, and `ShopService` applies those multipliers without changing transaction semantics. No debug/test access lever was added in this slice because the M10-02 evidence points first to economy and survivability, while existing combat debug commands already cover forced content/run setup for later M10-06 investigation.
+- Blockers: None known.
+- Next action: Start M10-04 and tune early gold access by adjusting these temporary levers against the M10-02 baseline, without treating values as final balance.
 - Acceptance:
   - Designers can adjust early-run playtest access without rewriting core systems.
   - Defaults preserve current behavior until M10 tuning intentionally changes them.
@@ -88,7 +88,14 @@ Validation evidence:
 - Validation:
   - Godot MCP focused probes confirm default parity.
   - Focused probes confirm overridden values affect new runs, shops, enemies, or debug access as intended.
-- Docs/wiki impact: Document the lever ownership, default parity, and temporary intent in `docs/test_plan.md`; update wiki if the ownership surface is durable.
+- Docs/wiki impact: Documented lever ownership, default parity, and temporary intent in `docs/test_plan.md`; updated wiki because the temporary balance workflow/ownership surface is durable for the rest of M10.
+
+Validation evidence:
+
+- `git status --short --branch` confirmed work on `codex/milestone-10`.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, the `RunState` autoload, and `res://scenes/main.tscn` as the main scene.
+- Godot MCP `view_script` passed for `res://scripts/core/run_state.gd`, `res://scripts/content/content_registry.gd`, `res://scripts/shop/shop_service.gd`, and `res://scripts/board/board_generation_settings.gd`.
+- Focused Godot MCP lever probe confirmed default parity and override effects: default starting gold `0`, first enemy HP `76`, first attack `12`, gold normalized weight about `0.08257`, base price `10`, and reroll cost `1`; override values changed those to starting gold `7`, first enemy HP `38`, first attack `24`, gold normalized weight about `0.15254`, base price `5`, and reroll cost `3`.
 
 ## M10-04: Early Economy Tuning
 

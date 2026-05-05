@@ -494,13 +494,17 @@ func _compute_offer_price(data: Dictionary, rarity: String, level: int, pricing:
 	var level_step := int(pricing.get("level_step", int(DEFAULT_PRICING.get("level_step", 2))))
 	if base_price <= 0:
 		base_price = rarity_base
-	return maxi(1, base_price + (maxi(1, level) - 1) * level_step)
+	var prototype_balance: Dictionary = pricing.get("prototype_balance", {})
+	var price_multiplier := maxf(0.0, float(prototype_balance.get("shop_price_multiplier", 1.0)))
+	return maxi(1, int(round(float(base_price + (maxi(1, level) - 1) * level_step) * price_multiplier)))
 
 
 func _compute_reroll_cost(reroll_count: int, pricing: Dictionary) -> int:
 	var reroll_base := int(pricing.get("reroll_base", int(DEFAULT_PRICING.get("reroll_base", 1))))
 	var reroll_step := int(pricing.get("reroll_step", int(DEFAULT_PRICING.get("reroll_step", 1))))
-	return maxi(0, reroll_base + reroll_count * reroll_step)
+	var prototype_balance: Dictionary = pricing.get("prototype_balance", {})
+	var reroll_multiplier := maxf(0.0, float(prototype_balance.get("reroll_cost_multiplier", 1.0)))
+	return maxi(0, int(round(float(reroll_base + reroll_count * reroll_step) * reroll_multiplier)))
 
 
 func _ensure_rng_seeded() -> void:
