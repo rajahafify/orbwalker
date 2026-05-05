@@ -1588,3 +1588,44 @@ Append-only history of wiki operations.
   - Shifted first playable build packaging to Milestone 12.
 - Notes:
   - This was a planning/documentation update only; no runtime validation was run.
+
+## [2026-05-05] docs-change | Milestone 10 Balance Task Tracker
+
+- Source: `docs/milestone_10_balance_tasks.md`, `todo.md`, `docs/test_plan.md`, `wiki/index.md`, `wiki/known-issues.md`
+- Changed:
+  - Added the M10 tracker with ordered tasks M10-01 through M10-07: Run Log plus balance-source inventory, untuned baseline runs, prototype balance levers, economy tuning, survivability tuning, content access, and closeout.
+  - Added the M10 next-agent instruction template with explicit multi-agent workflow, Godot MCP validation, no-headless validation, and no-commit-unless-requested guardrails.
+  - Linked the tracker from `todo.md`, `docs/test_plan.md`, and the wiki index, and replaced the generic balance-tuning known issue with a pointer to the M10 tracker and active source-owner caveat.
+- Notes:
+  - This was a documentation/tracker update only; no runtime validation was run.
+
+## [2026-05-05] code-change | M10-01 Run Log And Balance Inventory
+
+- Source: `scripts/core/run_state.gd`, `scripts/core/run_log_reporter.gd`, `scripts/combat/combat_player_controller.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`, `wiki/index.md`
+- Changed:
+  - Added passive Run Log capture in `RunState` for run start/end, fight start/end, turn results, shop open/actions/leave, and boss reward choice/skip.
+  - Added JSON, text, and Markdown export helpers for baseline evidence.
+  - Follow-up change writes JSON, Markdown, and text files automatically under gitignored `logs/` when a run finalizes, with last-export path/error metadata exposed through `RunState`.
+  - Recorded the active balance-source inventory before tuning: board weights in `BoardGenerationSettings`, run gold and active encounters in `RunState`, combat gold formulas in `CombatStateMachine`, and shop pricing in `ContentRegistry` plus `ShopService`.
+- Validation:
+  - `git diff --check`, `git check-ignore -v logs/test.json`, Godot MCP `get_project_info`, `view_script`, focused load/scene instantiate probes, Run Log event/export probes, automatic file-export probe, boss reward choice probe, `play_scene main`, and final `get_godot_errors` passed.
+  - Normal manual fight 1/shop 1 baseline exports remain for M10-02.
+
+## [2026-05-05] code-change | Main Menu Run Log Toggle
+
+- Source: `scripts/core/main_boot.gd`, `scenes/main.tscn`, `scripts/core/run_state.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, `wiki/index.md`
+- Changed:
+  - Added a main-menu `Generate Log` toggle that defaults off and persists through `user://matchatro_settings.cfg`.
+  - Kept Run Log in-memory capture active, but gated automatic JSON/Markdown/text file export under `logs/` behind the toggle.
+- Validation:
+  - `git diff --check`, Godot MCP `view_script` for `run_state.gd` and `main_boot.gd`, focused toggle/export probe, `git status --short --ignored logs`, `play_scene main`, and final `get_godot_errors` passed.
+
+## [2026-05-05] docs-change | Run Log Human Notes
+
+- Source: `wiki/log-notes.md`, `wiki/index.md`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`
+- Changed:
+  - Moved player-skill context for the first two generated Run Logs out of M10-02 tracker/test-plan evidence.
+  - Added [[log-notes]] to record that `run_1777938769_177353_2026-05-05t07_52_49` was a high-skill run and `run_1777940350_422781_2026-05-05t08_19_10` was an intentional new-player simulation.
+  - Kept M10-02 baseline capture unstarted so M10-01 remains the active focus.
+- Validation:
+  - `git diff --check` passed.

@@ -1354,6 +1354,13 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 	_staged_hud_values = _capture_hud_stage_values()
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
+	RunState.log_turn_result(
+		turn_log,
+		{
+			"total_combos": int(resolve_result.get("total_combos", 0)),
+			"resolve_pass_count": Array(resolve_result.get("passes", [])).size(),
+		}
+	)
 	_sync_combat_mastery_preview_totals()
 	RunState.flow_trace_mark(
 		"combat_before_replay_turn_resolution_from_log",

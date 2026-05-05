@@ -6,6 +6,11 @@ const PLAYER_PROGRESSION_SERVICE_SCRIPT := preload("res://scripts/run/player_pro
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
 const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
+const RUN_LOG_REPORTER_SCRIPT := preload("res://scripts/core/run_log_reporter.gd")
+const RUN_LOG_EXPORT_DIR := "res://logs"
+const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
+const USER_SETTINGS_SECTION := "run_log"
+const USER_SETTINGS_GENERATE_LOG_KEY := "generate_log"
 const SCENE_MAIN := "res://scenes/main.tscn"
 const SCENE_COMBAT := "res://scenes/combat/combat_player.tscn"
 const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
@@ -48,6 +53,16 @@ var _reward_rng := RandomNumberGenerator.new()
 var _flow_trace_routes: Dictionary = {}
 var _flow_trace_route_serial: int = 0
 var _flow_trace_active_route_id: String = ""
+var _run_log_events: Array[Dictionary] = []
+var _run_log_event_serial: int = 0
+var _run_log_run_id: String = ""
+var _run_log_started_unix: int = 0
+var _run_log_started_iso: String = ""
+var _run_log_current_fight_turns: int = 0
+var _run_log_last_export_paths: Dictionary = {}
+var _run_log_last_export_errors: Array[String] = []
+var _run_log_last_export_unix: int = 0
+var _generate_run_log_files := false
 
 var _normal_encounters_by_level := {
 	1: [
@@ -169,6 +184,7 @@ func _ready() -> void:
 	ensure_shop_state()
 	ensure_shop_service()
 	_reward_rng.randomize()
+	load_user_settings()
 	_sync_player_gold_from_run()
 	validate_player_state_content()
 	reset_run()
@@ -254,6 +270,13 @@ func run_contract_snapshot() -> Dictionary:
 			"skip_boss_relic_reward",
 			"next_scene_path",
 			"run_summary_snapshot",
+			"run_log_snapshot",
+			"run_log_export_json",
+			"run_log_export_text",
+			"run_log_export_markdown",
+			"run_log_last_export_snapshot",
+			"run_log_last_export_paths",
+			"log_turn_result",
 		],
 		"content_dependency": {
 			"content_registry_owner": "ContentRegistry",
@@ -328,35 +351,68 @@ func can_afford(amount: int) -> bool:
 
 
 func open_shop_for_current_level() -> Dictionary:
-	return ensure_shop_service().open_shop(self, dungeon_level)
+	var result: Dictionary = ensure_shop_service().open_shop(self, dungeon_level)
+	var shop_snapshot: Dictionary = ensure_shop_state().to_snapshot()
+	_run_log_append(
+		"shop_open",
+		{
+			"result": _run_log_result_brief(result),
+			"dungeon_level": dungeon_level,
+			"item_offer_count": Array(shop_snapshot.get("item_offers", [])).size(),
+			"has_relic_offer": not Dictionary(shop_snapshot.get("relic_offer", {})).is_empty(),
+		}
+	)
+	return result
 
 
 func reroll_shop_items() -> Dictionary:
-	return ensure_shop_service().reroll_shop_items(self)
+	var result: Dictionary = ensure_shop_service().reroll_shop_items(self)
+	_run_log_shop_action("reroll", result)
+	return result
 
 
 func buy_shop_offer(offer_id: String) -> Dictionary:
-	return ensure_shop_service().buy_offer(self, offer_id)
+	var result: Dictionary = ensure_shop_service().buy_offer(self, offer_id)
+	_run_log_shop_action("buy_offer", result, {"offer_id": offer_id})
+	return result
 
 
 func sell_equipped_item(slot_index: int) -> Dictionary:
-	return ensure_shop_service().sell_equipped_item(self, slot_index)
+	var result: Dictionary = ensure_shop_service().sell_equipped_item(self, slot_index)
+	_run_log_shop_action("sell_equipment", result, {"slot_index": slot_index})
+	return result
 
 
 func sell_consumable_item(slot_index: int) -> Dictionary:
-	return ensure_shop_service().sell_consumable_item(self, slot_index)
+	var result: Dictionary = ensure_shop_service().sell_consumable_item(self, slot_index)
+	_run_log_shop_action("sell_consumable", result, {"slot_index": slot_index})
+	return result
 
 
 func choose_booster_option(option_index: int) -> Dictionary:
-	return ensure_shop_service().choose_booster_option(self, option_index)
+	var result: Dictionary = ensure_shop_service().choose_booster_option(self, option_index)
+	_run_log_shop_action("choose_booster", result, {"option_index": option_index})
+	return result
 
 
 func replace_pending_booster_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
-	return ensure_shop_service().replace_pending_booster_option(self, option_index, slot_index, sell_replaced)
+	var result: Dictionary = ensure_shop_service().replace_pending_booster_option(self, option_index, slot_index, sell_replaced)
+	_run_log_shop_action(
+		"replace_booster_option",
+		result,
+		{
+			"option_index": option_index,
+			"slot_index": slot_index,
+			"sell_replaced": sell_replaced,
+		}
+	)
+	return result
 
 
 func discard_pending_booster_options() -> Dictionary:
-	return ensure_shop_service().discard_pending_booster_options(self)
+	var result: Dictionary = ensure_shop_service().discard_pending_booster_options(self)
+	_run_log_shop_action("skip_booster", result)
+	return result
 
 
 func close_shop(mark_skipped: bool = false) -> void:
@@ -389,12 +445,20 @@ func reset_run() -> void:
 	_boss_relic_reward_options.clear()
 	_boss_reward_claimed_relic_id = ""
 	_run_summary.clear()
+	_run_log_reset()
 	validate_player_state_content()
 
 
 func start_new_run() -> void:
 	reset_run()
 	run_active = true
+	_run_log_append(
+		"run_start",
+		{
+			"dungeon_level": dungeon_level,
+			"step": current_step_key,
+		}
+	)
 	_assign_current_fight()
 
 
@@ -430,7 +494,7 @@ func skip_to_fight(level: int, fight: int) -> Dictionary:
 		return {"ok": false, "reason": "fight_must_be_1_to_3", "next_scene": SCENE_COMBAT}
 
 	if not run_active:
-		start_new_run()
+		reset_run()
 	run_active = true
 	run_victory = false
 	_run_summary.clear()
@@ -445,6 +509,14 @@ func skip_to_fight(level: int, fight: int) -> Dictionary:
 		3:
 			_step_index = 4
 	current_step_key = LEVEL_SEQUENCE[_step_index]
+	_run_log_append(
+		"run_start",
+		{
+			"source": "skip_to_fight",
+			"dungeon_level": dungeon_level,
+			"step": current_step_key,
+		}
+	)
 	_assign_current_fight()
 	return _transition_result()
 
@@ -481,6 +553,15 @@ func claim_boss_relic_reward(option_index: int) -> Dictionary:
 
 	_boss_reward_claimed_relic_id = relic_id
 	_boss_relic_reward_options.clear()
+	_run_log_append(
+		"boss_reward_choice",
+		{
+			"option_index": option_index,
+			"relic_id": relic_id,
+			"display_name": String(option.get("display_name", relic_id)),
+			"already_owned": already_owned,
+		}
+	)
 	return {
 		"ok": true,
 		"reason": "",
@@ -499,6 +580,7 @@ func skip_boss_relic_reward() -> Dictionary:
 		return {"ok": false, "reason": "not_boss_reward_step"}
 	_boss_reward_claimed_relic_id = ""
 	_boss_relic_reward_options.clear()
+	_run_log_append("boss_reward_skip", {})
 	return {"ok": true, "reason": ""}
 
 
@@ -516,6 +598,7 @@ func mark_fight_victory() -> Dictionary:
 		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
 	if not is_current_step_fight():
 		return {"ok": false, "reason": "not_fight_step", "next_scene": SCENE_MAIN}
+	_run_log_append("fight_end", _run_log_capture_fight_outcome_payload("victory"))
 
 	enemies_defeated += 1
 	if bool(_current_encounter.get("is_boss", false)):
@@ -529,12 +612,20 @@ func mark_fight_victory() -> Dictionary:
 
 
 func mark_player_defeated(cause: String) -> Dictionary:
+	if run_active and is_current_step_fight():
+		_run_log_append("fight_end", _run_log_capture_fight_outcome_payload("defeat", cause))
 	_finalize_run(false, cause)
 	return _transition_result()
 
 
 func advance_after_shop(mark_skipped: bool) -> Dictionary:
 	close_shop(mark_skipped)
+	_run_log_append(
+		"shop_leave",
+		{
+			"mark_skipped": mark_skipped,
+		}
+	)
 	if not run_active:
 		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
 	if not is_current_step_shop():
@@ -558,6 +649,92 @@ func run_summary_snapshot() -> Dictionary:
 			"relic_ids": progression_snapshot().get("relic_ids", []),
 		}
 	return _run_summary.duplicate(true)
+
+
+func run_log_snapshot() -> Dictionary:
+	return {
+		"run_id": _run_log_run_id,
+		"started_unix": _run_log_started_unix,
+		"started_iso": _run_log_started_iso,
+		"event_count": _run_log_events.size(),
+		"run_active": run_active,
+		"run_victory": run_victory,
+		"dungeon_level": dungeon_level,
+		"current_step_key": current_step_key,
+		"run_gold": run_gold,
+		"enemies_defeated": enemies_defeated,
+		"bosses_defeated": bosses_defeated,
+		"generate_log_files_enabled": _generate_run_log_files,
+		"last_export": run_log_last_export_snapshot(),
+		"summary": run_summary_snapshot(),
+		"events": _run_log_events.duplicate(true),
+	}
+
+
+func run_log_export_json(pretty: bool = true) -> String:
+	return JSON.stringify(run_log_snapshot(), "  " if pretty else "")
+
+
+func run_log_export_text() -> String:
+	var reporter = RUN_LOG_REPORTER_SCRIPT.new()
+	return reporter.build_text_report(run_log_snapshot())
+
+
+func run_log_export_markdown() -> String:
+	var reporter = RUN_LOG_REPORTER_SCRIPT.new()
+	return reporter.build_markdown_report(run_log_snapshot())
+
+
+func run_log_last_export_snapshot() -> Dictionary:
+	return {
+		"paths": _run_log_last_export_paths.duplicate(true),
+		"errors": _run_log_last_export_errors.duplicate(),
+		"exported_unix": _run_log_last_export_unix,
+	}
+
+
+func run_log_last_export_paths() -> Dictionary:
+	return _run_log_last_export_paths.duplicate(true)
+
+
+func generate_run_log_files_enabled() -> bool:
+	return _generate_run_log_files
+
+
+func set_generate_run_log_files_enabled(enabled: bool) -> void:
+	_generate_run_log_files = enabled
+	_save_user_settings()
+
+
+func load_user_settings() -> void:
+	var config := ConfigFile.new()
+	var error := config.load(USER_SETTINGS_PATH)
+	if error == OK:
+		_generate_run_log_files = bool(config.get_value(
+			USER_SETTINGS_SECTION,
+			USER_SETTINGS_GENERATE_LOG_KEY,
+			false
+		))
+	else:
+		_generate_run_log_files = false
+
+
+func log_turn_result(turn_log: Dictionary, context: Dictionary = {}) -> void:
+	var payload := {
+		"turn_index_for_fight": _run_log_current_fight_turns + 1,
+		"enemy_damage_taken": int(turn_log.get("enemy_damage_taken", 0)),
+		"enemy_blocked": int(turn_log.get("enemy_blocked", 0)),
+		"healed": int(turn_log.get("healed", 0)),
+		"armor_gained": int(turn_log.get("armor_gained", 0)),
+		"gold_gained": int(turn_log.get("gold_gained", 0)),
+		"damage_to_player": int(Dictionary(turn_log.get("enemy_attack_resolution", {})).get("hp_damage", 0)),
+		"matches": Dictionary(turn_log.get("matched_counts", {})).duplicate(true),
+		"raw_turn_log": turn_log.duplicate(true),
+	}
+	for key in context.keys():
+		payload[key] = context[key]
+	_run_log_current_fight_turns += 1
+	_run_log_append("turn_result", payload)
 
 
 func _advance_sequence() -> void:
@@ -608,6 +785,13 @@ func _assign_current_fight() -> void:
 	encounter["step_key"] = current_step_key
 	encounter["boss_preview_name"] = current_level_boss_name()
 	_current_encounter = encounter
+	_run_log_current_fight_turns = 0
+	_run_log_append(
+		"fight_start",
+		{
+			"encounter": _current_encounter.duplicate(true),
+		}
+	)
 
 
 func _prepare_boss_relic_reward_options() -> void:
@@ -665,6 +849,161 @@ func _finalize_run(victory: bool, cause: String) -> void:
 		"equipment_slots": progression.get("equipment_slots", []),
 		"relic_ids": progression.get("relic_ids", []),
 	}
+	_run_log_append(
+		"run_end",
+		{
+			"victory": victory,
+			"cause": cause,
+			"summary": _run_summary.duplicate(true),
+		}
+	)
+	if _generate_run_log_files:
+		_run_log_export_to_disk()
+
+
+func _run_log_reset() -> void:
+	_run_log_events.clear()
+	_run_log_event_serial = 0
+	_run_log_run_id = _run_log_create_run_id()
+	_run_log_started_unix = int(Time.get_unix_time_from_system())
+	_run_log_started_iso = Time.get_datetime_string_from_system()
+	_run_log_current_fight_turns = 0
+	_run_log_last_export_paths.clear()
+	_run_log_last_export_errors.clear()
+	_run_log_last_export_unix = 0
+
+
+func _run_log_append(event_type: String, payload: Dictionary) -> void:
+	_run_log_event_serial += 1
+	_run_log_events.append(
+		{
+			"seq": _run_log_event_serial,
+			"event": event_type,
+			"timestamp_unix": int(Time.get_unix_time_from_system()),
+			"timestamp_iso": Time.get_datetime_string_from_system(),
+			"run_id": _run_log_run_id,
+			"dungeon_level": dungeon_level,
+			"step_key": current_step_key,
+			"run_gold": run_gold,
+			"run_active": run_active,
+			"payload": payload.duplicate(true),
+		}
+	)
+
+
+func _run_log_create_run_id() -> String:
+	return "run_%d_%06d" % [int(Time.get_unix_time_from_system()), _reward_rng.randi_range(0, 999999)]
+
+
+func _run_log_export_to_disk() -> void:
+	_run_log_last_export_paths.clear()
+	_run_log_last_export_errors.clear()
+	_run_log_last_export_unix = int(Time.get_unix_time_from_system())
+
+	var absolute_dir := ProjectSettings.globalize_path(RUN_LOG_EXPORT_DIR)
+	var mkdir_error := DirAccess.make_dir_recursive_absolute(absolute_dir)
+	if mkdir_error != OK:
+		_run_log_last_export_errors.append("mkdir_failed:%s:%d" % [absolute_dir, mkdir_error])
+		return
+
+	var run_slug := _run_log_safe_filename_fragment(_run_log_run_id)
+	var started_slug := _run_log_safe_filename_fragment(_run_log_started_iso)
+	if started_slug == "":
+		started_slug = str(_run_log_started_unix)
+	var base_name := "%s_%s" % [run_slug, started_slug]
+
+	_run_log_write_export_file(base_name + ".json", run_log_export_json(true), "json")
+	_run_log_write_export_file(base_name + ".md", run_log_export_markdown(), "markdown")
+	_run_log_write_export_file(base_name + ".txt", run_log_export_text(), "text")
+
+
+func _save_user_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value(USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY, _generate_run_log_files)
+	var error := config.save(USER_SETTINGS_PATH)
+	if error != OK:
+		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])
+
+
+func _run_log_write_export_file(file_name: String, contents: String, kind: String) -> void:
+	var resource_path := RUN_LOG_EXPORT_DIR.path_join(file_name)
+	var absolute_path := ProjectSettings.globalize_path(resource_path)
+	var file := FileAccess.open(absolute_path, FileAccess.WRITE)
+	if file == null:
+		var open_error := FileAccess.get_open_error()
+		_run_log_last_export_errors.append("write_failed:%s:%d" % [absolute_path, open_error])
+		return
+	file.store_string(contents)
+	file.flush()
+	file.close()
+	_run_log_last_export_paths[kind] = {
+		"resource_path": resource_path,
+		"absolute_path": absolute_path,
+	}
+
+
+func _run_log_safe_filename_fragment(value: String) -> String:
+	var source := value.strip_edges().to_lower()
+	if source == "":
+		return "run"
+	var out := ""
+	var underscore_pending := false
+	for i in source.length():
+		var c := source.unicode_at(i)
+		var is_alpha := c >= 97 and c <= 122
+		var is_digit := c >= 48 and c <= 57
+		if is_alpha or is_digit:
+			if underscore_pending and out != "":
+				out += "_"
+			underscore_pending = false
+			out += String.chr(c)
+		elif c == 45:
+			if underscore_pending and out != "":
+				out += "_"
+			underscore_pending = false
+			out += "-"
+		elif c == 95:
+			underscore_pending = true
+		elif c == 32 or c == 46 or c == 58 or c == 47 or c == 92:
+			underscore_pending = true
+		else:
+			underscore_pending = true
+	if out == "":
+		return "run"
+	return out
+
+
+func _run_log_result_brief(result: Dictionary) -> Dictionary:
+	return {
+		"ok": bool(result.get("ok", false)),
+		"reason": String(result.get("reason", "")),
+		"gold": int(result.get("gold", run_gold)),
+		"result": Dictionary(result.get("result", {})).duplicate(true),
+	}
+
+
+func _run_log_shop_action(action: String, result: Dictionary, request: Dictionary = {}) -> void:
+	var payload := {
+		"action": action,
+		"request": request.duplicate(true),
+		"result": _run_log_result_brief(result),
+	}
+	_run_log_append("shop_action", payload)
+
+
+func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "") -> Dictionary:
+	var payload := {
+		"outcome": outcome,
+		"dungeon_level": dungeon_level,
+		"step_key": current_step_key,
+		"is_boss": bool(_current_encounter.get("is_boss", false)),
+		"enemy_id": String(_current_encounter.get("enemy_id", "")),
+		"enemy_name": String(_current_encounter.get("display_name", "")),
+		"turn_count": _run_log_current_fight_turns,
+	}
+	if cause != "":
+		payload["cause"] = cause
+	return payload
 
 
 func _transition_result() -> Dictionary:

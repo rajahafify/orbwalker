@@ -4,7 +4,7 @@
 
 **Sources**: `docs/test_plan.md`, `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `docs/tmp_transition_delay_handoff.md`, `scripts/shop/shop_service.gd`, `scripts/content/content_registry.gd`, `scripts/core/run_state.gd`
 
-**Last updated**: 2026-05-04
+**Last updated**: 2026-05-05
 
 ---
 
@@ -29,7 +29,8 @@ The prototype is functional, but several QA items remain unchecked and a few imp
 - Temporary diagnostics are retained intentionally for Milestone 10 QA: `RunState` FlowTrace logs, combat `ResolveTrace` logs, and the feature-flagged AR-01 combat result-envelope probe. They should be retired, feature-flagged further, or moved into a narrower debug harness in a later cleanup task if they outlive balance/QA usefulness. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `scripts/core/run_state.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/debug/ar01_combat_result_probe.gd`)
 - AR-01 baseline capture found repeated unsourced Godot `GDScript::reload: Integer division. Decimal part will be discarded.` warnings after scene smokes. Later AR batches repeatedly reached no-session-error `get_godot_errors` gates, but if the warning reappears it should still be localized before treating error output as a clean regression signal. (source: `docs/test_plan.md`)
 - Android CLI export on this Windows checkout can hang after writing a valid `Orbwalker.apk`, leaving `Godot_v4.6.2-stable_win64_console.exe` and Java/Gradle processes alive. The observed workaround is to verify the APK timestamp/size, run `adb install -r D:\godot\matchatro\Orbwalker.apk`, then stop the stuck console exporter and Java child. Root cause is not confirmed; candidates include Gradle shutdown, the Godot 4.6.2 console exporter, or the enabled MCP editor plugin Android export warning. (source: `wiki/setup.md`, `docs/test_plan.md`)
-- Balance tuning is still open for orb spawn rates, prices, enemy stats, boss stats, and item strength. (source: `todo.md`, `docs/game_design_document.md`)
+- Balance tuning is tracked through the Milestone 10 task tracker. The M10-01 inventory confirmed the active tuning owners before value changes: shop pricing and much prototype content live in dictionary-backed `ContentRegistry`, while current runtime encounter selection and enemy/boss stats are still owned by `RunState`. `ContentRegistry` still carries older enemy rows for contract/content coverage, so active enemy HP/intent tuning should use `RunState` unless ownership is deliberately migrated later. (source: `docs/milestone_10_balance_tasks.md`, `scripts/content/content_registry.gd`, `scripts/core/run_state.gd`, `todo.md`, `docs/game_design_document.md`)
+- M10 baseline evidence now has automatic Run Log files, but normal untuned baseline playthroughs still need to be captured through M10-02. Finalized runs write JSON, Markdown, and text files under gitignored `logs/`; use `RunState.run_log_last_export_snapshot()` to inspect the latest generated paths or export errors. (source: `scripts/core/run_state.gd`, `scripts/core/run_log_reporter.gd`, `docs/milestone_10_balance_tasks.md`, `.gitignore`)
 
 ## Important Files
 

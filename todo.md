@@ -539,7 +539,7 @@ Tasks:
 
 ## Milestone 10: Short-Term Playtest Balance Pass
 
-Status: Not started.
+Status: In progress.
 
 Goal: Make the current run loop easier to playtest before adding meta progression.
 
@@ -547,7 +547,16 @@ Primary deliverable: A temporary balance layer where gold income, shop access, d
 
 Scope note: This milestone is a playtest-enabling pass, not the final balance pass. Meta progression will change power curves, unlock pacing, and economy pressure, so deep final tuning should happen after meta progression exists.
 
+Tracker: `docs/milestone_10_balance_tasks.md`
+
+Execution note: M10 work should proceed through the tracker order: add the Run Log and active balance-source inventory, capture untuned baseline logs, add temporary balance levers, tune economy and survivability, improve content test access, then close out with focused playtest evidence. Do not tune balance values before baseline evidence exists.
+
 Tasks:
+
+- [x] Add run-log baseline evidence capture.
+  - Deliverable: Passive Run Log with opt-in JSON/text/Markdown file generation under gitignored `logs/` plus an inventory of active balance data owners.
+  - Acceptance: M10-01 identifies orb weights, run gold, combat formulas, shop pricing, active encounter stats, debug commands, and current validation surfaces before tuning. Runtime logging records run, fight, turn, shop, boss reward, and run-end events without changing combat math, shop behavior, route semantics, balance values, or presentation timing.
+  - Note: 2026-05-05 M10-01 added `RunState.run_log_snapshot()`, `run_log_export_json(...)`, `run_log_export_text()`, `run_log_export_markdown()`, and a main-menu `Generate Log` toggle for per-run export to `logs/` on run end. Focused Godot MCP probes verified representative events and generated files; normal untuned baseline playthroughs remain M10-02.
 
 - [ ] Add or expose playtest balance levers.
   - Deliverable: Configurable values for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test settings.

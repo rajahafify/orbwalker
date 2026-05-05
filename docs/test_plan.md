@@ -428,6 +428,9 @@ Verification notes (2026-04-30, character art polish pass):
 
 ## Milestone 10: Short-Term Playtest Balance Pass
 
+Tracker: `docs/milestone_10_balance_tasks.md`
+
+- [x] M10-01 Run Log and balance-source inventory are available before tuning.
 - [ ] Playtest balance levers exist for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test values.
 - [ ] Early gold access lets a normal playtest run usually buy at least one item, booster, consumable, or useful shop option after the first enemy.
 - [ ] Early combat survivability lets runs reach multiple shops and build decisions without removing all threat.
@@ -439,6 +442,17 @@ Verification notes (2026-05-05):
 - Milestone 10 was narrowed from broad final balance/regression into a short-term playtest balance pass before meta progression. This pass should make item/shop/content testing practical; it should not be treated as final economy balance.
 - Meta progression moved into Milestone 11 because unlocks, mastery growth, or other persistent systems will change power curves and economy pressure.
 - No runtime validation was run for this planning update.
+- Added `docs/milestone_10_balance_tasks.md` as the ordered M10 tracker. The required task order is Run Log plus active balance-source inventory first, untuned baseline runs second, then temporary balance levers and tuning. This documentation update did not run gameplay validation.
+
+Verification notes (2026-05-05, M10-01 Run Log):
+- Added passive run-level logging owned by `RunState`. Public export/read APIs are `run_log_snapshot()`, `run_log_export_json(pretty := true)`, `run_log_export_text()`, `run_log_export_markdown()`, `run_log_last_export_snapshot()`, and `run_log_last_export_paths()`. The main menu has a persisted `Generate Log` toggle, defaulting off. When enabled, finalizing a run writes JSON, Markdown, and text files under project-root `logs/`, which is ignored by git.
+- Run Log event coverage now includes `run_start`, `fight_start`, `turn_result`, `fight_end`, `shop_open`, `shop_action`, `shop_leave`, `boss_reward_choice`, `boss_reward_skip`, and `run_end`. Turn result logging is called after `CombatStateMachine.resolve_player_turn(...)` returns its existing `turn_log`, so the logger records resolved values without changing combat math.
+- Export usage for baseline capture: enable `Generate Log` on the main menu, complete or lose a run normally, then use the generated files in `logs/`. `RunState.run_log_last_export_snapshot()` reports the latest absolute/resource paths and any export errors. `RunState.run_log_export_json(true)`, `RunState.run_log_export_markdown()`, and `RunState.run_log_export_text()` remain available for probe/debug reads.
+- Active balance-source inventory before tuning: orb spawn weights are in `scripts/board/board_generation_settings.gd`; run/starting gold and active encounter HP/intents are in `scripts/core/run_state.gd`; gold formulas are in `scripts/combat/combat_state_machine.gd`; shop pricing config is dictionary-backed in `scripts/content/content_registry.gd` and applied by `scripts/shop/shop_service.gd`; combat debug commands live in `scripts/combat/combat_debug_console.gd`.
+- Important source-of-truth note: active runtime enemy HP/intent selection is currently in `RunState`. `ContentRegistry` still includes older enemy content entries, so do not tune current encounter balance from registry enemy rows unless that ownership is deliberately migrated later.
+- Validation passed: `git diff --check`; Godot MCP `get_project_info`; `view_script` for `run_state.gd`, `run_log_reporter.gd`, and `combat_player_controller.gd`; focused Godot MCP load checks for the new helper, touched runtime scripts, and current validation scenes; focused Run Log event/export probes for JSON/text/Markdown fields and representative run/fight/turn/shop/boss reward/run-end events; focused automatic file-export probe confirming files under `D:/godot/matchatro/logs/`; `git check-ignore -v logs/test.json`; scene instantiate probe for `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`; `play_scene main`; final `get_godot_errors` reported no session errors.
+- Follow-up validation on 2026-05-05 gated file generation behind the main-menu `Generate Log` toggle. Godot MCP `view_script` passed for `run_state.gd` and `main_boot.gd`; a focused disk-source probe confirmed disabled runs leave `0` export paths, enabled runs write JSON/Markdown/text files, the setting persists back to `false` after restore, and `main.tscn` contains `GenerateLogToggle` with one `toggled` connection. `git diff --check` passed, `git status --short --ignored logs` confirmed `logs/` stays ignored, `play_scene main` launched, and final `get_godot_errors` reported no session errors.
+- Manual fight 1/shop 1 playthrough remains for M10-02; this pass verified automatic file generation through focused probes, not a normal human-played baseline.
 
 ## Milestone 11: Meta Progression Foundation
 

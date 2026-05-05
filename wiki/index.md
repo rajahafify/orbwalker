@@ -22,8 +22,10 @@
 ## Features
 
 - [[features]] - Implemented gameplay, UI, and content features
+- [[log-notes]] - Human annotations for local Run Log files, such as player skill context not stored in the exported payload
 - [[milestone-9-combat-ui-replication-plan]] - Approved combat UI replication plan for Milestone 9 close-match pass
 - `docs/combat_feedback_revamp_tasks.md` - Combat feedback readability revamp tracker for result numbers, source-to-target timing, mastery activation, and enemy attack feedback
+- `docs/milestone_10_balance_tasks.md` - Milestone 10 short-term playtest balance tracker for Run Log evidence, baseline runs, temporary balance levers, economy/survivability tuning, content access, and closeout. M10-01 added the passive Run Log API in `RunState` with opt-in JSON/text/Markdown files under gitignored `logs/`.
 
 ## Decisions
 

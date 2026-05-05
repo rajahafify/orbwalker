@@ -45,6 +45,7 @@ const FOOTER_ICON_FALLBACK_PATHS: Array[String] = [
 @onready var _logo_texture: TextureRect = %LogoTexture
 @onready var _menu_button_column: VBoxContainer = %MenuButtonColumn
 @onready var _start_run_button: Button = %StartRunButton
+@onready var _generate_log_toggle: CheckButton = %GenerateLogToggle
 @onready var _continue_button: Button = %ContinueButton
 @onready var _collection_button: Button = %CollectionButton
 @onready var _settings_button: Button = %SettingsButton
@@ -114,6 +115,7 @@ func _ready() -> void:
 	_menu_icons = _resolve_menu_icons()
 	_load_textures()
 	_apply_static_text()
+	_sync_generate_log_toggle()
 	_apply_chrome_styles()
 	_layout_ui()
 	_start_menu_music.call_deferred()
@@ -374,6 +376,7 @@ func _load_textures() -> void:
 
 func _apply_static_text() -> void:
 	_start_run_button.text = "START RUN"
+	_generate_log_toggle.text = "GENERATE LOG"
 	_continue_button.text = "CONTINUE"
 	_collection_button.text = "COLLECTION"
 	_settings_button.text = "SETTINGS"
@@ -408,6 +411,18 @@ func _apply_static_text() -> void:
 	_footer_settings_button.disabled = true
 
 
+func _sync_generate_log_toggle() -> void:
+	if RunState.has_method("load_user_settings"):
+		RunState.load_user_settings()
+	_generate_log_toggle.set_pressed_no_signal(RunState.generate_run_log_files_enabled())
+
+
+func _on_generate_log_toggle_toggled(enabled: bool) -> void:
+	RunState.set_generate_run_log_files_enabled(enabled)
+	_status_label.text = "Run Log export %s." % ("enabled" if enabled else "disabled")
+	_status_label.visible = true
+
+
 func _apply_chrome_styles() -> void:
 	_stats_panel.add_theme_stylebox_override(
 		"panel",
@@ -418,6 +433,7 @@ func _apply_chrome_styles() -> void:
 		_stats_panel.add_theme_stylebox_override("panel", stats_style)
 
 	_apply_menu_button_style(_start_run_button, _primary_button_texture, true, false)
+	_apply_menu_button_style(_generate_log_toggle, _secondary_button_texture, false, false)
 	_apply_menu_button_style(_continue_button, _secondary_button_texture, false, true)
 	_apply_menu_button_style(_collection_button, _secondary_button_texture, false, true)
 	_apply_menu_button_style(_settings_button, _secondary_button_texture, false, true)
@@ -455,7 +471,7 @@ func _layout_ui() -> void:
 	_set_control_rect(_outer_border_texture, _inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)))
 
 	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.01, 0.025, 0.98, 0.17))
-	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.40, 0.23, 0.57, 0.31))
+	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.40, 0.22, 0.57, 0.34))
 	_set_control_rect(_element_row, _rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12))
 	_set_control_rect(_stats_panel, _rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14))
 	_set_control_rect(_footer_actions, _rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077))
@@ -472,8 +488,8 @@ func _layout_ui() -> void:
 	_menu_button_column.add_theme_constant_override("separation", int(round(clampf(6.0 * (viewport_size.y / DESIGN_SIZE.y), 4.0, 10.0))))
 	_footer_actions.add_theme_constant_override("separation", int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))))
 
-	var menu_button_min_height := int(round(viewport_size.y * 0.062))
-	for button in [_start_run_button, _continue_button, _collection_button, _settings_button, _quit_button]:
+	var menu_button_min_height := int(round(viewport_size.y * 0.052))
+	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
 		button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
@@ -513,7 +529,7 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 	var version_size := maxi(12, int(round(18.0 * scale_factor)))
 	var status_size := maxi(10, int(round(13.0 * scale_factor)))
 
-	for button in [_start_run_button, _continue_button, _collection_button, _settings_button, _quit_button]:
+	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
 		button.add_theme_font_size_override("font_size", menu_size)
 	for label_node in _element_labels:
 		var element_label := label_node as Label
