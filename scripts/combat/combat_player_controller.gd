@@ -27,6 +27,8 @@ extends Control
 @onready var _enemy_panel_root: Control = %EnemyPanelRoot
 @onready var _intent_row: HBoxContainer = %IntentRow
 @onready var _enemy_stage: Control = %EnemyStage
+var _enemy_stage_backdrop: TextureRect = null
+var _enemy_text_scrim: ColorRect = null
 @onready var _enemy_hp_row: Control = %EnemyHpRow
 @onready var _enemy_name_label: Label = %EnemyNameLabel
 @onready var _enemy_hp_text_label: Label = %EnemyHpLabel
@@ -350,6 +352,8 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _flow_trace_route_id)
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
+	_ensure_enemy_stage_backdrop_node()
+	_ensure_enemy_text_scrim_node()
 	_ensure_enemy_block_preview_nodes()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
 	_adopt_relic_footer_nodes_for_shared_layout()
@@ -435,6 +439,8 @@ func _bind_combat_layout_manager() -> void:
 		"enemy_panel_root": _enemy_panel_root,
 		"intent_row": _intent_row,
 		"enemy_stage": _enemy_stage,
+		"enemy_stage_backdrop": _enemy_stage_backdrop,
+		"enemy_text_scrim": _enemy_text_scrim,
 		"enemy_hp_row": _enemy_hp_row,
 		"intent_badge": _intent_badge,
 		"primary_intent_column": _primary_intent_text_column,
@@ -543,6 +549,10 @@ func _apply_visual_chrome() -> void:
 			"backdrop_scrim": _background_scrim,
 			"top_bar": _top_bar,
 			"enemy_panel": _enemy_panel,
+			"enemy_stage_backdrop": _enemy_stage_backdrop,
+			"enemy_text_scrim": _enemy_text_scrim,
+			"enemy_portrait": _enemy_portrait,
+			"enemy_hp_row": _enemy_hp_row,
 			"combat_strip": _combat_strip,
 			"board_frame": _board_frame,
 			"debug_overlay": _debug_overlay,
@@ -1804,9 +1814,11 @@ func _sync_timer_display(seconds_left: float, state: String) -> void:
 	var state_text := "READY"
 	var timer_color := TIMER_READY_COLOR
 	var text_color := TIMER_TEXT_COLOR
-	var fill_ratio := 1.0
+	var fill_ratio := 0.0
+	var show_fill := false
 	var text_alpha := 1.0
 	if state == TIMER_STATE_ACTIVE:
+		show_fill = true
 		fill_ratio = time_ratio
 		state_text = "MOVE"
 		if clamped_seconds > 0.0 and clamped_seconds < TIMER_WARNING_SECONDS:
@@ -1840,7 +1852,8 @@ func _sync_timer_display(seconds_left: float, state: String) -> void:
 	var fill_width := maxf(0.0, (track_size.x - TIMER_TRACK_PADDING * 2.0) * fill_ratio)
 	_timer_fill.position = Vector2(TIMER_TRACK_PADDING, TIMER_TRACK_PADDING)
 	_timer_fill.size = Vector2(fill_width, maxf(0.0, track_size.y - TIMER_TRACK_PADDING * 2.0))
-	_timer_fill.color = Color(timer_color.r, timer_color.g, timer_color.b, 0.72)
+	_timer_fill.color = Color(timer_color.r, timer_color.g, timer_color.b, 0.72 if show_fill else 0.0)
+	_timer_fill.visible = show_fill
 	_timer_label.text = label_text
 	_timer_state_label.text = state_text
 	var final_text_color := Color(text_color.r, text_color.g, text_color.b, text_alpha)
@@ -2299,7 +2312,20 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_intent_label.text = ""
 	_intent_label.visible = false
 	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
-	var enemy_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
+	var enemy_stage_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		var backdrop_texture: Texture2D = _visuals.combat_background() if _visuals != null else null
+		if backdrop_texture == null and _visuals != null and _enemy_state != null:
+			backdrop_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+		if backdrop_texture == null:
+			backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+		_enemy_stage_backdrop.texture = backdrop_texture
+		_enemy_stage_backdrop.visible = true
+	var enemy_texture: Texture2D = null
+	if _visuals != null and _enemy_state != null:
+		enemy_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	if enemy_texture == null:
+		enemy_texture = enemy_stage_texture
 	_enemy_portrait.texture = enemy_texture if enemy_texture != null else COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.visible = true
 	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
@@ -3153,6 +3179,7 @@ func _combat_player_hud_nodes() -> Dictionary:
 		"consumable_icons": _consumable_icons,
 		"relic_label": _relic_row_label,
 		"relic_icons": _relic_icons,
+		"relic_row": _relic_row,
 		"mastery_strip": _mastery_strip,
 		"mastery_root": _mastery_root,
 		"mastery_label": _mastery_row_label,
@@ -3161,20 +3188,20 @@ func _combat_player_hud_nodes() -> Dictionary:
 
 
 func _adopt_relic_footer_nodes_for_shared_layout() -> void:
-	if _loadout_root == null:
-		return
 	if _relic_row != null:
 		_relic_row.visible = false
-	if _relic_row_label != null and _relic_row_label.get_parent() != _loadout_root:
-		var label_parent := _relic_row_label.get_parent()
-		if label_parent != null:
-			label_parent.remove_child(_relic_row_label)
-		_loadout_root.add_child(_relic_row_label)
-	if _relic_icons != null and _relic_icons.get_parent() != _loadout_root:
+	if _vitals_panel == null:
+		return
+	if _relic_row_label != null and _relic_row_label.get_parent() != _vitals_panel:
+		var relic_label_parent := _relic_row_label.get_parent()
+		if relic_label_parent != null:
+			relic_label_parent.remove_child(_relic_row_label)
+		_vitals_panel.add_child(_relic_row_label)
+	if _relic_icons != null and _relic_icons.get_parent() != _vitals_panel:
 		var icons_parent := _relic_icons.get_parent()
 		if icons_parent != null:
 			icons_parent.remove_child(_relic_icons)
-		_loadout_root.add_child(_relic_icons)
+		_vitals_panel.add_child(_relic_icons)
 
 
 func _apply_loadout_rail_layout() -> void:
@@ -3190,12 +3217,22 @@ func _ensure_placeholder_visuals() -> void:
 	_timer_icon.visible = true
 	_intent_badge.visible = true
 	_intent_label.visible = false
-	var enemy_texture: Texture2D = null
+	var enemy_stage_texture: Texture2D = _visuals.combat_background()
+	var enemy_portrait_texture: Texture2D = null
 	if _enemy_state != null:
-		enemy_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
-	if enemy_texture == null:
-		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.texture = enemy_texture
+		enemy_portrait_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	if enemy_stage_texture == null:
+		enemy_stage_texture = enemy_portrait_texture
+	if enemy_stage_texture == null:
+		enemy_stage_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	if enemy_portrait_texture == null:
+		enemy_portrait_texture = _visuals.enemy_portrait("cavern_striker") if _visuals != null else null
+	if enemy_portrait_texture == null:
+		enemy_portrait_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		_enemy_stage_backdrop.texture = enemy_stage_texture
+		_enemy_stage_backdrop.visible = true
+	_enemy_portrait.texture = enemy_portrait_texture
 	_enemy_portrait.visible = true
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
@@ -3205,16 +3242,74 @@ func _ensure_placeholder_visuals() -> void:
 
 
 func _refresh_character_portraits() -> void:
-	var enemy_texture: Texture2D = null
+	var enemy_stage_texture: Texture2D = _visuals.combat_background()
+	var enemy_portrait_texture: Texture2D = null
 	if _enemy_state != null:
-		enemy_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
-	if enemy_texture == null:
-		enemy_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.texture = enemy_texture
+		enemy_portrait_texture = _visuals.enemy_portrait(_enemy_state.enemy_id)
+	if enemy_stage_texture == null:
+		enemy_stage_texture = enemy_portrait_texture
+	if enemy_stage_texture == null:
+		enemy_stage_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	if enemy_portrait_texture == null:
+		enemy_portrait_texture = _visuals.enemy_portrait("cavern_striker") if _visuals != null else null
+	if enemy_portrait_texture == null:
+		enemy_portrait_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		_enemy_stage_backdrop.texture = enemy_stage_texture
+		_enemy_stage_backdrop.visible = true
+	_enemy_portrait.texture = enemy_portrait_texture
 	var hero_texture := _visuals.hero_portrait()
 	if hero_texture == null:
 		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
 	_player_portrait.texture = hero_texture
+
+
+func _ensure_enemy_stage_backdrop_node() -> void:
+	if _enemy_stage == null:
+		return
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		if _enemy_stage_backdrop.get_parent() != _enemy_stage:
+			var existing_parent := _enemy_stage_backdrop.get_parent()
+			if existing_parent != null:
+				existing_parent.remove_child(_enemy_stage_backdrop)
+			_enemy_stage.add_child(_enemy_stage_backdrop)
+		_enemy_stage.move_child(_enemy_stage_backdrop, 0)
+		return
+	var existing := _enemy_stage.get_node_or_null("EnemyStageBackdrop")
+	if existing is TextureRect:
+		_enemy_stage_backdrop = existing as TextureRect
+	else:
+		_enemy_stage_backdrop = TextureRect.new()
+		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
+		_enemy_stage.add_child(_enemy_stage_backdrop)
+	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.86)
+	_enemy_stage_backdrop.visible = true
+	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
+
+
+func _ensure_enemy_text_scrim_node() -> void:
+	if _enemy_stage == null:
+		return
+	if _enemy_text_scrim != null and is_instance_valid(_enemy_text_scrim):
+		if _enemy_text_scrim.get_parent() != _enemy_stage:
+			var existing_parent := _enemy_text_scrim.get_parent()
+			if existing_parent != null:
+				existing_parent.remove_child(_enemy_text_scrim)
+			_enemy_stage.add_child(_enemy_text_scrim)
+		return
+	var existing := _enemy_stage.get_node_or_null("EnemyTextScrim")
+	if existing is ColorRect:
+		_enemy_text_scrim = existing as ColorRect
+	else:
+		_enemy_text_scrim = ColorRect.new()
+		_enemy_text_scrim.name = "EnemyTextScrim"
+		_enemy_stage.add_child(_enemy_text_scrim)
+	_enemy_text_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_enemy_text_scrim.color = Color(0.02, 0.04, 0.06, 0.72)
+	_enemy_text_scrim.visible = true
 
 
 func _apply_zone_guides() -> void:

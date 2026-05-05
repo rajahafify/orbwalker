@@ -1836,3 +1836,76 @@ Append-only history of wiki operations.
   - Godot MCP asset probe confirmed the new combat UI textures resolve through `VisualRegistry`; `play_scene current` launched, and a running-scene screenshot was captured/inspected at the current portrait runtime viewport.
   - Layout probe passed with `overlap_count=0`, empty actionable readability overlaps, and `readability_all_pass=true` for `1080x1920`, `1080x2400`, and `900x1600`; a board-local drag probe preserved intended cell selection.
   - Human screenshot review says the result is closer but still far from polished. Human reference approval and real touch QA remain pending before M12 export packaging resumes.
+
+## [2026-05-05] code-change | M12 Combat UI Follow-Up Polish
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Enlarged enemy stage/intent presentation, separated enemy name from the HP bar, softened dividers/corners/frame borders, enlarged top-bar hit targets, and made compact HP/mastery/loadout rails more readable.
+  - Kept the pass presentation-only; combat math, resolver behavior, RunState routing, drag coordinate handling, combat speed, replay timing, SFX, shop, and final summary behavior were not intentionally changed.
+- Validation:
+  - Godot MCP cache-ignore script loads and `combat_player.tscn` instantiate passed; layout probe reported `overlap_count=0`, actionable overlaps `0`, readability `7/7`, and enemy-name/HP-bar overlap `(0,0)` for `1080x1920`, `1080x2400`, and `900x1600`.
+  - Godot MCP `play_scene current`, running scene-tree inspection, screenshot capture, and `git diff --check` passed. Final `get_godot_errors` still retained the stale session diagnostics already documented for the previous M12 combat UI pass; human visual approval remains pending.
+
+## [2026-05-05] code-change | M12 Combat UI Restage
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Restaged combat toward the reference RPG hierarchy with a taller ornate header, deeper enemy banner, decorative READY divider, restored larger board, `MASTERY` rail, compact HP/relic panel, and split equipment/consumable rails.
+  - Kept the pass presentation-only; combat math, resolver behavior, RunState routing, drag coordinate handling, combat speed, replay timing, and SFX were not intentionally changed.
+- Validation:
+  - `git diff --check`, cache-ignore script/scene loads, and `combat_player.tscn` instantiate passed with key combat/HUD nodes present.
+  - Mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`; default board surface is about `643x772`.
+  - Godot MCP `play_scene current`, running scene-tree inspection, and screenshot capture passed. Final `get_godot_errors` still retained stale session diagnostics from earlier probe attempts; human visual approval and real touch QA remain pending.
+
+## [2026-05-05] code-change | M12 Combat UI Focused Review Pass
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Enlarged the perceived enemy encounter crop, integrated intent/block into the banner, reduced the READY fill visual, strengthened board bevel contrast, enlarged the `MASTERY` strip, and added empty relic placeholders for no-relic combat starts.
+  - Kept the pass presentation-only with no intentional combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes.
+- Validation:
+  - `git diff --check`, cache-ignore script/scene loads, and `combat_player.tscn` instantiate passed.
+  - Mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
+  - Godot MCP `play_scene current`, running screenshot capture, and `get_godot_errors` review completed. Stale session diagnostics remain in the Godot error buffer; human visual approval remains pending.
+
+## [2026-05-06] code-change | M12 Combat UI Structural Correction
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Reworked the rejected compact/decorated surfaces structurally: enemy banner now uses a full-width backdrop plus separate foreground enemy layer, READY hides the fill at rest and reads as a decorative divider, `MASTERY` uses a broader strip with subtler per-orb segments, relic placeholders sit under player HP/vitals, and the footer is equipment plus consumables only.
+  - Kept the pass presentation-only with no intentional combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes.
+- Validation:
+  - `git diff --check`, cache-ignore combat script loads, and `combat_player.tscn` instantiate passed.
+  - Mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
+  - Godot MCP `play_scene current`, running scene-tree inspection, screenshot capture, and `get_godot_errors` review completed. The screenshot is structurally closer but not manually accepted; enemy foreground scale/source-art quality and real touch/device QA remain pending. Stale session diagnostics remain in the Godot error buffer.
+
+## [2026-05-06] code-change | M12 Enemy Banner Composition Follow-Up
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Changed:
+  - Rebuilt the enemy banner composition so the cave backdrop fills the full banner, the enemy is a large clipped foreground layer, the name/HP/HP bar cluster sits inside the lower-left banner, and the intent badge remains integrated on the right.
+  - Fixed the follow-up containment regression by clipping enemy art to the banner so the header, READY divider, and board stay visible.
+- Validation:
+  - `git diff --check`, `combat_player.tscn` instantiate, and the mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
+  - Godot MCP `play_scene current`, running screenshot capture, and `get_godot_errors` review completed. Stale session diagnostics remain in the Godot error buffer; final visual approval and real touch/device QA remain pending.
+
+## [2026-05-06] code-change | M12 Combat UI Refinement Pass
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Changed:
+  - Refined the enemy intent module into a smaller right-side block with clearer title/value/detail hierarchy, cleaned the lower-left enemy name/HP scrim block, enlarged `MASTERY` readability, added a visible `RELICS` label with larger relic placeholders, and slightly expanded footer slot/label treatment.
+  - Kept board/gems, READY divider direction, top header structure, combat math, resolver behavior, routing, drag coordinates, combat speed, replay timing, and SFX unchanged.
+- Validation:
+  - `git diff --check`, `combat_player.tscn` instantiate, and the mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
+  - Godot MCP `play_scene current`, running node inspection, screenshot capture, and `get_godot_errors` review completed. Stale session diagnostics remain in the Godot error buffer; final visual approval and real touch/device QA remain pending.
+
+## [2026-05-06] code-change | M12 Constrained HUD Refinement
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Changed:
+  - Kept board/gems, READY divider, top header, and screen order unchanged while refining intent padding/readability, player HUD height/portrait/relic spacing, mastery icon/text sizing, and footer slot centering/padding.
+  - Preserved the presentation-only boundary: no combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes were intentional.
+- Validation:
+  - `git diff --check`, `combat_player.tscn` instantiate, and the mobile layout probe passed for `1080x1920`, `1080x2400`, and `900x1600` with `overlap_count=0`, actionable readability overlaps `0`, and readability `7/7`.
+  - Godot MCP `play_scene current`, running node inspection, screenshot capture, and `get_godot_errors` review completed. Stale session diagnostics remain in the Godot error buffer; final visual approval and real touch/device QA remain pending.

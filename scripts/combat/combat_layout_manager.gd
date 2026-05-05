@@ -1,15 +1,15 @@
 extends RefCounted
 
 const DESIGN_SIZE = Vector2(1080, 1920)
-const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 66))
-const ENEMY_PANEL_RECT = Rect2(Vector2(16, 80), Vector2(1048, 392))
-const COMBAT_STRIP_RECT = Rect2(Vector2(16, 484), Vector2(1048, 56))
-const BOARD_PANEL_RECT = Rect2(Vector2(16, 552), Vector2(1048, 846))
-const ENEMY_INTENT_RECT = Rect2(Vector2(700, 12), Vector2(332, 108))
-const ENEMY_STAGE_RECT = Rect2(Vector2(0, 0), Vector2(1048, 332))
-const ENEMY_HP_ROW_RECT = Rect2(Vector2(0, 334), Vector2(1048, 48))
-const ENEMY_PORTRAIT_SIZE = Vector2(1048, 332)
-const ENEMY_HP_BAR_SIZE = Vector2(860, 24)
+const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 92))
+const ENEMY_PANEL_RECT = Rect2(Vector2(16, 108), Vector2(1048, 432))
+const COMBAT_STRIP_RECT = Rect2(Vector2(16, 552), Vector2(1048, 64))
+const BOARD_PANEL_RECT = Rect2(Vector2(16, 636), Vector2(1048, 780))
+const ENEMY_INTENT_RECT = Rect2(Vector2(724, 84), Vector2(300, 244))
+const ENEMY_STAGE_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
+const ENEMY_HP_ROW_RECT = Rect2(Vector2(24, 252), Vector2(682, 164))
+const ENEMY_PORTRAIT_SIZE = Vector2(1360, 980)
+const ENEMY_HP_BAR_SIZE = Vector2(568, 46)
 const BOARD_SURFACE_SIZE = Vector2(480, 576)
 const BOARD_SURFACE_TOP = 4.0
 const BOARD_SURFACE_SIDE_PADDING = 4.0
@@ -20,30 +20,30 @@ const PLAYER_STAT_CHIP_RECT = Rect2(Vector2(222, 110), Vector2(552, 42))
 const PLAYER_META_RECT = Rect2(Vector2(230, 190), Vector2(740, 32))
 const PLAYER_SUMMARY_RECT = Rect2(Vector2(230, 224), Vector2(740, 28))
 const PLAYER_PORTRAIT_SIZE = Vector2(188, 194)
-const TIMER_TRACK_SIZE = Vector2(860, 42)
-const TIMER_ICON_SIZE = Vector2(34, 34)
-const TIMER_CENTER_MARKER_SIZE = Vector2(20, 44)
+const TIMER_TRACK_SIZE = Vector2(980, 32)
+const TIMER_ICON_SIZE = Vector2.ZERO
+const TIMER_CENTER_MARKER_SIZE = Vector2(18, 32)
 const EQUIPMENT_RAIL_RECT = Rect2(Vector2(16, 16), Vector2(472, 88))
 const CONSUMABLE_RAIL_RECT = Rect2(Vector2(512, 16), Vector2(280, 88))
-const PLAYER_HUD_SECTION_BASE_RECT = Rect2(Vector2(0, 1408), Vector2(1080, 512))
-const PLAYER_HUD_MASTERY_PANEL_RECT = Rect2(Vector2(16, 0), Vector2(1048, 128))
-const PLAYER_HUD_MASTERY_TITLE_RECT = Rect2(Vector2(0, 8), Vector2(1048, 30))
-const PLAYER_HUD_MASTERY_CARDS_RECT = Rect2(Vector2(0, 40), Vector2(1048, 84))
-const PLAYER_HUD_FOOTER_PANEL_RECT = Rect2(Vector2(0, 136), Vector2(1080, 376))
-const COMPACT_VITALS_PANEL_RECT = Rect2(Vector2(212, 22), Vector2(852, 132))
-const COMPACT_PLAYER_HP_BAR_RECT = Rect2(Vector2(14, 24), Vector2(824, 44))
-const COMPACT_PLAYER_LOADOUT_RECT = Rect2(Vector2(16, 180), Vector2(1048, 172))
-const COMPACT_EQUIPMENT_RAIL_RECT = Rect2(Vector2(16, 34), Vector2(472, 88))
-const COMPACT_CONSUMABLE_RAIL_RECT = Rect2(Vector2(512, 34), Vector2(280, 88))
-const COMPACT_FOOTER_RELIC_RAIL_RECT = Rect2(Vector2(804, 34), Vector2(228, 58))
-const DIVIDER_SIZE = Vector2(640, 16)
-const CORNER_ORNAMENT_SIZE = Vector2(46, 46)
-const MIN_READABLE_ENEMY_INTENT = Vector2(240, 64)
-const MIN_READABLE_TIMER = Vector2(780, 30)
+const PLAYER_HUD_SECTION_BASE_RECT = Rect2(Vector2(0, 1428), Vector2(1080, 484))
+const PLAYER_HUD_MASTERY_PANEL_RECT = Rect2(Vector2(16, 0), Vector2(1048, 160))
+const PLAYER_HUD_MASTERY_TITLE_RECT = Rect2(Vector2(0, 6), Vector2(1048, 50))
+const PLAYER_HUD_MASTERY_CARDS_RECT = Rect2(Vector2(0, 58), Vector2(1048, 102))
+const PLAYER_HUD_FOOTER_PANEL_RECT = Rect2(Vector2(0, 168), Vector2(1080, 316))
+const COMPACT_VITALS_PANEL_RECT = Rect2(Vector2(228, 8), Vector2(836, 182))
+const COMPACT_PLAYER_HP_BAR_RECT = Rect2(Vector2(14, 20), Vector2(806, 62))
+const COMPACT_PLAYER_LOADOUT_RECT = Rect2(Vector2(16, 168), Vector2(1048, 156))
+const COMPACT_EQUIPMENT_RAIL_RECT = Rect2(Vector2(16, 40), Vector2(552, 116))
+const COMPACT_CONSUMABLE_RAIL_RECT = Rect2(Vector2(576, 40), Vector2(344, 116))
+const COMPACT_VITALS_RELIC_ICONS_RECT = Rect2(Vector2(424, 106), Vector2(402, 64))
+const DIVIDER_SIZE = Vector2(700, 20)
+const CORNER_ORNAMENT_SIZE = Vector2(56, 56)
+const MIN_READABLE_ENEMY_INTENT = Vector2(280, 96)
+const MIN_READABLE_TIMER = Vector2(860, 32)
 const MIN_READABLE_BOARD = Vector2(470, 560)
-const MIN_READABLE_MASTERY = Vector2(1000, 72)
-const MIN_READABLE_HP = Vector2(700, 40)
-const MIN_READABLE_LOADOUT = Vector2(760, 88)
+const MIN_READABLE_MASTERY = Vector2(1000, 96)
+const MIN_READABLE_HP = Vector2(760, 56)
+const MIN_READABLE_LOADOUT = Vector2(860, 120)
 
 var _nodes = {}
 var _layout_top_bar_rect = TOP_BAR_RECT
@@ -135,13 +135,13 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	var mastery_panel_global := _offset_rect(mastery_panel_local, section_rect.position)
 	var footer_panel_global := _offset_rect(footer_panel_local, section_rect.position)
 	var top_bar_rect: Rect2 = snapshot["top_bar_rect"]
-	var top_row_rect := Rect2(top_bar_rect.position + Vector2(12.0, 6.0), top_bar_rect.size - Vector2(24.0, 12.0))
+	var top_row_rect := Rect2(top_bar_rect.position + Vector2(12.0, 10.0), top_bar_rect.size - Vector2(24.0, 20.0))
 	var top_segments := {
-		"top_back": Rect2(top_row_rect.position, Vector2(74, 46)),
-		"top_level": Rect2(top_row_rect.position + Vector2(84, 0), Vector2(264, 46)),
-		"top_enemy_step": Rect2(top_row_rect.position + Vector2(358, 0), Vector2(264, 46)),
-		"top_gold": Rect2(top_row_rect.position + Vector2(632, 0), Vector2(244, 46)),
-		"top_menu": Rect2(top_row_rect.position + Vector2(886, 0), Vector2(74, 46)),
+		"top_back": Rect2(top_row_rect.position, Vector2(90, 58)),
+		"top_level": Rect2(top_row_rect.position + Vector2(100, 0), Vector2(250, 58)),
+		"top_enemy_step": Rect2(top_row_rect.position + Vector2(360, 0), Vector2(250, 58)),
+		"top_gold": Rect2(top_row_rect.position + Vector2(620, 0), Vector2(304, 58)),
+		"top_menu": Rect2(top_row_rect.position + Vector2(934, 0), Vector2(90, 58)),
 	}
 	var primary_zone_rects := {
 		"top_bar": top_bar_rect,
@@ -152,25 +152,25 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	}
 	var enemy_intent_rect := _offset_rect(ENEMY_INTENT_RECT, enemy_panel_rect.position)
 	var enemy_name_rect := Rect2(
-		enemy_panel_rect.position + Vector2(24.0, ENEMY_STAGE_RECT.size.y - 52.0),
-		Vector2(640.0, 40.0)
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 8.0),
+		Vector2(548.0, 44.0)
 	)
 	var enemy_hp_text_rect := Rect2(
-		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + ENEMY_HP_ROW_RECT.size.x - 260.0, ENEMY_HP_ROW_RECT.position.y),
-		Vector2(248.0, 18.0)
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 58.0),
+		Vector2(360.0, 32.0)
 	)
 	var timer_track_rect := _timer_track_rect(combat_strip_rect)
 	var board_surface_rect := _board_surface_rect(board_panel_rect)
 	var enemy_hp_bar_rect := Rect2(
-		enemy_panel_rect.position + Vector2((ENEMY_HP_ROW_RECT.size.x - ENEMY_HP_BAR_SIZE.x) * 0.5, ENEMY_HP_ROW_RECT.position.y + 18.0),
+		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 98.0),
 		ENEMY_HP_BAR_SIZE
 	)
 	var mastery_rail_rect := mastery_panel_global
 	var hero_vitals_rect := _offset_rect(COMPACT_VITALS_PANEL_RECT, footer_panel_global.position)
 	var equipment_rail_rect := _offset_rect(COMPACT_EQUIPMENT_RAIL_RECT, _offset_rect(COMPACT_PLAYER_LOADOUT_RECT, footer_panel_global.position).position)
 	var consumable_rail_rect := _offset_rect(COMPACT_CONSUMABLE_RAIL_RECT, _offset_rect(COMPACT_PLAYER_LOADOUT_RECT, footer_panel_global.position).position)
-	var relic_rail_rect := _offset_rect(COMPACT_FOOTER_RELIC_RAIL_RECT, _offset_rect(COMPACT_PLAYER_LOADOUT_RECT, footer_panel_global.position).position)
-	var outcome_overlay_rect := Rect2(board_panel_rect.position + Vector2(224.0, 224.0), Vector2(600.0, 372.0))
+	var relic_rail_rect := _offset_rect(COMPACT_VITALS_RELIC_ICONS_RECT, hero_vitals_rect.position)
+	var outcome_overlay_rect := Rect2(board_panel_rect.position + Vector2(224.0, 164.0), Vector2(600.0, 372.0))
 	var hp_bar_rect := _player_hp_zone_rect(section_rect, footer_panel_local)
 	var loadout_rails_rect := _player_loadout_rails_rect(section_rect, footer_panel_local)
 	var readability_zones := {
@@ -213,6 +213,10 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	var player_hud_internal_overlaps := _collect_zone_overlaps(player_hud_internal_zone_rects)
 	var readability_overlaps := _collect_zone_overlaps(readability_zones)
 	var readability_actionable_overlaps := _collect_zone_overlaps(readability_actionable_zone_rects)
+	readability_actionable_overlaps = _filter_actionable_readability_overlaps(
+		readability_actionable_overlaps,
+		readability_actionable_zone_rects
+	)
 	var actionable_overlaps: Array = []
 	actionable_overlaps.append_array(primary_overlaps)
 	actionable_overlaps.append_array(player_hud_internal_overlaps)
@@ -280,23 +284,23 @@ func _apply_design_rect(control: Control, rect: Rect2) -> void:
 func _apply_top_bar_layout() -> void:
 	var top_row := _control("top_bar_row")
 	if top_row != null:
-		top_row.position = Vector2(12.0, 6.0)
-		top_row.size = _layout_top_bar_rect.size - Vector2(24.0, 12.0)
+		top_row.position = Vector2(12.0, 10.0)
+		top_row.size = _layout_top_bar_rect.size - Vector2(24.0, 20.0)
 	var back_button := _control("back_button")
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(74, 46)
+		back_button.custom_minimum_size = Vector2(102, 60)
 	var settings_button := _control("settings_button")
 	if settings_button != null:
-		settings_button.custom_minimum_size = Vector2(74, 46)
+		settings_button.custom_minimum_size = Vector2(102, 60)
 	var title_label := _control("title_label")
 	if title_label != null:
-		title_label.custom_minimum_size = Vector2(264, 46)
+		title_label.custom_minimum_size = Vector2(248, 60)
 	var enemy_step_label := _control("enemy_step_label")
 	if enemy_step_label != null:
-		enemy_step_label.custom_minimum_size = Vector2(264, 46)
+		enemy_step_label.custom_minimum_size = Vector2(248, 60)
 	var hint_label := _control("hint_label")
 	if hint_label != null:
-		hint_label.custom_minimum_size = Vector2(244, 46)
+		hint_label.custom_minimum_size = Vector2(292, 60)
 
 
 func _apply_enemy_panel_layout() -> void:
@@ -307,25 +311,68 @@ func _apply_enemy_panel_layout() -> void:
 	_apply_design_rect(_control("intent_row"), ENEMY_INTENT_RECT)
 	_apply_design_rect(_control("enemy_stage"), ENEMY_STAGE_RECT)
 	_apply_design_rect(_control("enemy_hp_row"), ENEMY_HP_ROW_RECT)
+	var enemy_stage_backdrop := _control("enemy_stage_backdrop")
+	if enemy_stage_backdrop != null:
+		enemy_stage_backdrop.position = Vector2.ZERO
+		enemy_stage_backdrop.size = ENEMY_STAGE_RECT.size
+		enemy_stage_backdrop.z_index = -2
+	var enemy_text_scrim := _control("enemy_text_scrim")
+	if enemy_text_scrim != null:
+		enemy_text_scrim.position = Vector2(16.0, ENEMY_HP_ROW_RECT.position.y + 6.0)
+		enemy_text_scrim.size = Vector2(640.0, 150.0)
+		enemy_text_scrim.z_index = 2
+	var enemy_panel := _control("enemy_panel")
+	if enemy_panel != null:
+		enemy_panel.clip_contents = true
+	var enemy_stage := _control("enemy_stage")
+	if enemy_stage != null:
+		enemy_stage.clip_contents = true
+		enemy_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var intent_row := _control("intent_row")
+	if intent_row != null:
+		intent_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		intent_row.alignment = BoxContainer.ALIGNMENT_END
+		intent_row.add_theme_constant_override("separation", 12)
+		intent_row.z_index = 9
 	var intent_badge := _control("intent_badge")
 	if intent_badge != null:
-		intent_badge.custom_minimum_size = Vector2(96, 96)
-		intent_badge.size = Vector2(96, 96)
+		intent_badge.custom_minimum_size = Vector2(124, 124)
+		intent_badge.size = Vector2(124, 124)
 	var primary_intent_column := _control("primary_intent_column")
 	if primary_intent_column != null:
-		primary_intent_column.custom_minimum_size = Vector2(220, 96)
+		primary_intent_column.custom_minimum_size = Vector2(164, 198)
+		primary_intent_column.size_flags_horizontal = Control.SIZE_SHRINK_END
+	var primary_intent_title_label := _control("primary_intent_title_label")
+	if primary_intent_title_label != null:
+		primary_intent_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var primary_intent_amount_label := _control("primary_intent_amount_label")
+	if primary_intent_amount_label != null:
+		primary_intent_amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var primary_intent_detail_label := _control("primary_intent_detail_label")
+	if primary_intent_detail_label != null:
+		primary_intent_detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var enemy_hp_row := _control("enemy_hp_row")
+	if enemy_hp_row != null:
+		enemy_hp_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		enemy_hp_row.z_index = 8
+		enemy_hp_row.clip_contents = true
 	var enemy_name_label := _control("enemy_name_label")
 	if enemy_name_label != null:
-		enemy_name_label.position = Vector2(24.0, ENEMY_STAGE_RECT.size.y - 52.0)
-		enemy_name_label.size = Vector2(640.0, 40.0)
+		enemy_name_label.position = Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 8.0)
+		enemy_name_label.size = Vector2(548.0, 44.0)
+		enemy_name_label.z_index = 9
 	var enemy_portrait := _control("enemy_portrait")
 	if enemy_portrait != null:
-		enemy_portrait.size = ENEMY_STAGE_RECT.size
-		enemy_portrait.position = Vector2.ZERO
+		enemy_portrait.size = ENEMY_PORTRAIT_SIZE
+		enemy_portrait.position = Vector2(
+			-236.0,
+			(ENEMY_STAGE_RECT.size.y - ENEMY_PORTRAIT_SIZE.y) * 0.5 + 22.0
+		)
+		enemy_portrait.z_index = 1
 	var enemy_hp_bar := _control("enemy_hp_bar")
 	if enemy_hp_bar != null:
 		enemy_hp_bar.size = ENEMY_HP_BAR_SIZE
-		enemy_hp_bar.position = Vector2((ENEMY_HP_ROW_RECT.size.x - ENEMY_HP_BAR_SIZE.x) * 0.5, 18.0)
+		enemy_hp_bar.position = Vector2(18.0, 98.0)
 	var enemy_label := _control("enemy_label")
 	if enemy_label != null:
 		enemy_label.position = Vector2(0.0, 0.0)
@@ -333,8 +380,9 @@ func _apply_enemy_panel_layout() -> void:
 		enemy_label.visible = false
 	var enemy_hp_text_label := _control("enemy_hp_text_label")
 	if enemy_hp_text_label != null:
-		enemy_hp_text_label.position = Vector2(ENEMY_HP_ROW_RECT.size.x - 260.0, 0.0)
-		enemy_hp_text_label.size = Vector2(248.0, 18.0)
+		enemy_hp_text_label.position = Vector2(18.0, 58.0)
+		enemy_hp_text_label.size = Vector2(360.0, 32.0)
+		enemy_hp_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 
 func _apply_combat_strip_layout() -> void:
@@ -348,9 +396,10 @@ func _apply_combat_strip_layout() -> void:
 	var timer_icon := _control("timer_icon")
 	if timer_icon != null:
 		timer_icon.custom_minimum_size = TIMER_ICON_SIZE
+		timer_icon.visible = false
 	var timer_label := _control("timer_label")
 	if timer_label != null:
-		timer_label.custom_minimum_size = Vector2(220, 0.0)
+		timer_label.custom_minimum_size = Vector2(420, 0.0)
 	var timer_state_label := _control("timer_state_label")
 	if timer_state_label != null:
 		timer_state_label.custom_minimum_size = Vector2.ZERO
@@ -397,10 +446,10 @@ func _apply_decorative_layout() -> void:
 	_place_divider(_control("divider_enemy_timer"), _layout_enemy_panel_rect.position.y + _layout_enemy_panel_rect.size.y + 2.0)
 	_place_divider(_control("divider_timer_board"), _layout_combat_strip_rect.position.y + _layout_combat_strip_rect.size.y + 2.0)
 	_place_divider(_control("divider_board_player"), _layout_board_panel_rect.position.y + _layout_board_panel_rect.size.y + 2.0)
-	_place_corner(_control("corner_top_left"), _layout_top_bar_rect.position + Vector2(-8.0, -6.0), false, false)
-	_place_corner(_control("corner_top_right"), Vector2(_layout_top_bar_rect.position.x + _layout_top_bar_rect.size.x - CORNER_ORNAMENT_SIZE.x + 8.0, _layout_top_bar_rect.position.y - 6.0), true, false)
-	_place_corner(_control("corner_bottom_left"), Vector2(_layout_player_hud_section_rect.position.x - 8.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 6.0), false, true)
-	_place_corner(_control("corner_bottom_right"), Vector2(_layout_player_hud_section_rect.position.x + _layout_player_hud_section_rect.size.x - CORNER_ORNAMENT_SIZE.x + 8.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 6.0), true, true)
+	_place_corner(_control("corner_top_left"), _layout_top_bar_rect.position + Vector2(-10.0, -8.0), false, false)
+	_place_corner(_control("corner_top_right"), Vector2(_layout_top_bar_rect.position.x + _layout_top_bar_rect.size.x - CORNER_ORNAMENT_SIZE.x + 10.0, _layout_top_bar_rect.position.y - 8.0), true, false)
+	_place_corner(_control("corner_bottom_left"), Vector2(_layout_player_hud_section_rect.position.x - 10.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 8.0), false, true)
+	_place_corner(_control("corner_bottom_right"), Vector2(_layout_player_hud_section_rect.position.x + _layout_player_hud_section_rect.size.x - CORNER_ORNAMENT_SIZE.x + 10.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 8.0), true, true)
 
 
 func _place_divider(node: Control, y: float) -> void:
@@ -471,7 +520,7 @@ static func _compute_layout_rects_from_root_size(layout_root_size: Vector2) -> D
 			"player_hud_footer_panel_rect": base_player_override["footer_panel"],
 		}
 	var board_top = board_panel_rect.position.y
-	var board_gap = 8.0
+	var board_gap = 12.0
 	var player_section_base_size = player_hud_section_rect.size
 	var max_board_width = BOARD_PANEL_RECT.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0)
 	var board_panel_max_height = (max_board_width * (BOARD_SURFACE_SIZE.y / BOARD_SURFACE_SIZE.x)) + BOARD_SURFACE_TOP + BOARD_SURFACE_BOTTOM_PADDING
@@ -570,8 +619,8 @@ static func _build_readability_report(zone_rects: Dictionary) -> Dictionary:
 		"board_surface": MIN_READABLE_BOARD,
 		"mastery_rail": MIN_READABLE_MASTERY,
 		"player_hp": MIN_READABLE_HP,
-		"equipment_rail": Vector2(440, 82),
-		"consumable_rail": Vector2(260, 82),
+		"equipment_rail": Vector2(500, 112),
+		"consumable_rail": Vector2(308, 112),
 	}
 	var checks: Dictionary = {}
 	var passing_count := 0
@@ -619,6 +668,30 @@ static func _collect_zone_overlaps(zone_rects: Dictionary) -> Array:
 					"intersection": intersection,
 				})
 	return overlaps
+
+
+static func _filter_actionable_readability_overlaps(overlaps: Array, zone_rects: Dictionary) -> Array:
+	var filtered: Array = []
+	var hero_vitals_rect: Rect2 = zone_rects.get("hero_vitals", Rect2())
+	var relic_rail_rect: Rect2 = zone_rects.get("relic_rail", Rect2())
+	var is_embedded_relic_rail := _rect_contains_rect(hero_vitals_rect, relic_rail_rect)
+	for overlap_entry in overlaps:
+		var a := String(overlap_entry.get("a", ""))
+		var b := String(overlap_entry.get("b", ""))
+		var is_relic_inside_vitals_pair := (a == "hero_vitals" and b == "relic_rail") or (a == "relic_rail" and b == "hero_vitals")
+		if is_embedded_relic_rail and is_relic_inside_vitals_pair:
+			continue
+		filtered.append(overlap_entry)
+	return filtered
+
+
+static func _rect_contains_rect(container: Rect2, candidate: Rect2) -> bool:
+	if container.size.x <= 0.0 or container.size.y <= 0.0:
+		return false
+	if candidate.size.x <= 0.0 or candidate.size.y <= 0.0:
+		return false
+	var clipped := container.intersection(candidate)
+	return is_equal_approx(clipped.size.x, candidate.size.x) and is_equal_approx(clipped.size.y, candidate.size.y)
 
 
 func _apply_player_panel_layout() -> void:

@@ -22,22 +22,22 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 
 	var board_view: Variant = nodes.get("board_view", null)
 	if board_view != null:
-		board_view.cell_frame_texture = null
-		board_view.cell_spacing = 4.0
-		board_view.board_padding = 8.0
-		board_view.orb_scale_in_cell = 0.92
-		board_view.cell_background = Color(0.05, 0.07, 0.10, 0.98)
-		board_view.board_background = Color(0.02, 0.03, 0.05, 0.96)
+		board_view.cell_frame_texture = _resolve_visual_texture(visuals, "combat_slot_frame_texture", [true])
+		board_view.cell_spacing = 5.0
+		board_view.board_padding = 10.0
+		board_view.orb_scale_in_cell = 0.90
+		board_view.cell_background = Color(0.08, 0.10, 0.14, 0.99)
+		board_view.board_background = Color(0.01, 0.02, 0.04, 0.98)
 
 	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.025, 0.045, 0.07, 0.94)
-	frame_style.border_color = Color(0.18, 0.24, 0.31, 0.90)
-	frame_style.set_border_width_all(1)
-	frame_style.set_corner_radius_all(4)
-	frame_style.content_margin_left = 8.0
-	frame_style.content_margin_right = 8.0
-	frame_style.content_margin_top = 6.0
-	frame_style.content_margin_bottom = 6.0
+	frame_style.bg_color = Color(0.02, 0.04, 0.06, 0.96)
+	frame_style.border_color = Color(0.56, 0.44, 0.22, 0.88)
+	frame_style.set_border_width_all(2)
+	frame_style.set_corner_radius_all(8)
+	frame_style.content_margin_left = 10.0
+	frame_style.content_margin_right = 10.0
+	frame_style.content_margin_top = 8.0
+	frame_style.content_margin_bottom = 8.0
 
 	for panel in [
 		nodes.get("board_frame", null),
@@ -56,10 +56,25 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 
 	var enemy_panel_texture := _resolve_visual_texture(visuals, "combat_enemy_panel_frame_texture")
 	if enemy_panel_texture != null:
-		var enemy_style := _panel_texture_stylebox(enemy_panel_texture, 24, 24, 24, 24, 10.0)
+		var enemy_style := _panel_texture_stylebox(enemy_panel_texture, 24, 24, 24, 24, 2.0)
 		var enemy_panel: Variant = nodes.get("enemy_panel", null)
 		if enemy_panel is Control:
 			(enemy_panel as Control).add_theme_stylebox_override("panel", enemy_style)
+	var enemy_stage_backdrop: Variant = nodes.get("enemy_stage_backdrop", null)
+	if enemy_stage_backdrop is TextureRect:
+		(enemy_stage_backdrop as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		(enemy_stage_backdrop as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(enemy_stage_backdrop as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
+	var enemy_portrait: Variant = nodes.get("enemy_portrait", null)
+	if enemy_portrait is TextureRect:
+		(enemy_portrait as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(enemy_portrait as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
+		(enemy_portrait as TextureRect).material = null
+	var enemy_text_scrim: Variant = nodes.get("enemy_text_scrim", null)
+	if enemy_text_scrim is ColorRect:
+		(enemy_text_scrim as ColorRect).color = Color(0.01, 0.03, 0.05, 0.84)
+		(enemy_text_scrim as ColorRect).visible = true
 
 	var top_bar_texture := _resolve_visual_texture(visuals, "combat_top_bar_frame_texture")
 	if top_bar_texture != null:
@@ -76,14 +91,14 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 			(combat_strip as Control).add_theme_stylebox_override("panel", strip_style)
 
 	var ornate_frame_style := StyleBoxFlat.new()
-	ornate_frame_style.bg_color = Color(0.03, 0.05, 0.08, 0.96)
-	ornate_frame_style.border_color = Color(0.55, 0.43, 0.22, 0.96)
+	ornate_frame_style.bg_color = Color(0.02, 0.04, 0.07, 0.98)
+	ornate_frame_style.border_color = Color(0.70, 0.55, 0.29, 0.94)
 	ornate_frame_style.set_border_width_all(2)
-	ornate_frame_style.set_corner_radius_all(6)
-	ornate_frame_style.content_margin_left = 8.0
-	ornate_frame_style.content_margin_right = 8.0
-	ornate_frame_style.content_margin_top = 6.0
-	ornate_frame_style.content_margin_bottom = 6.0
+	ornate_frame_style.set_corner_radius_all(10)
+	ornate_frame_style.content_margin_left = 10.0
+	ornate_frame_style.content_margin_right = 10.0
+	ornate_frame_style.content_margin_top = 8.0
+	ornate_frame_style.content_margin_bottom = 8.0
 	if top_bar_texture == null:
 		_apply_panel_stylebox(nodes.get("top_bar", null), ornate_frame_style)
 	if enemy_panel_texture == null:
@@ -131,9 +146,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		if label is Label:
 			(label as Label).add_theme_color_override("font_color", ui_text_color)
 
-	var font_size_title := maxi(int(config.get("font_size_title", 20)), 26)
-	var font_size_value := maxi(int(config.get("font_size_value", 18)), 20)
-	var font_size_meta := maxi(int(config.get("font_size_meta", 15)), 16)
+	var font_size_title := maxi(int(config.get("font_size_title", 20)), 30)
+	var font_size_value := maxi(int(config.get("font_size_value", 18)), 22)
+	var font_size_meta := maxi(int(config.get("font_size_meta", 15)), 18)
 	var font_size_row_label := int(config.get("font_size_row_label", 16))
 	var debug_text_font_size := int(config.get("debug_text_font_size", 24))
 	var debug_input_font_size := int(config.get("debug_input_font_size", 24))
@@ -143,14 +158,14 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	_set_label_font_size(nodes.get("enemy_step_label", null), font_size_value)
 	_set_label_font_size(nodes.get("hint_label", null), font_size_value)
 	_set_label_font_size(nodes.get("intent_label", null), font_size_value)
-	_set_label_font_size(nodes.get("enemy_name_label", null), 34)
-	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 20)
+	_set_label_font_size(nodes.get("enemy_name_label", null), 38)
+	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 28)
 	_set_label_font_size(nodes.get("enemy_label", null), font_size_value)
-	_set_label_font_size(nodes.get("primary_intent_title_label", null), 20)
-	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 34)
-	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 16)
-	_set_label_font_size(nodes.get("timer_label", null), 22)
-	_set_label_font_size(nodes.get("player_label", null), 24)
+	_set_label_font_size(nodes.get("primary_intent_title_label", null), 26)
+	_set_label_font_size(nodes.get("primary_intent_amount_label", null), 56)
+	_set_label_font_size(nodes.get("primary_intent_detail_label", null), 20)
+	_set_label_font_size(nodes.get("timer_label", null), 34)
+	_set_label_font_size(nodes.get("player_label", null), 26)
 	_set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
 
 	for stat_label in [
@@ -177,22 +192,35 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 
 	var armor_badge_label: Label = nodes.get("armor_badge_label", null) as Label
 	if armor_badge_label != null:
-		armor_badge_label.add_theme_font_size_override("font_size", 16)
+		armor_badge_label.add_theme_font_size_override("font_size", 20)
 		armor_badge_label.add_theme_color_override("font_color", Color(0.88, 0.95, 1.0, 1.0))
 		armor_badge_label.add_theme_constant_override("outline_size", 2)
 		armor_badge_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.06, 0.94))
 
 	_set_label_color(nodes.get("phase_label", null), Color(0.70, 0.78, 0.86, 1.0))
-	_set_label_color(nodes.get("primary_intent_amount_label", null), Color(1.0, 0.90, 0.66, 1.0))
-	_set_label_color(nodes.get("primary_intent_detail_label", null), Color(0.86, 0.92, 0.96, 1.0))
+	_set_label_color(nodes.get("primary_intent_amount_label", null), Color(1.0, 0.94, 0.75, 1.0))
+	_set_label_color(nodes.get("primary_intent_detail_label", null), Color(0.88, 0.94, 0.99, 1.0))
 	_set_label_color(nodes.get("enemy_name_label", null), Color(0.98, 0.95, 0.86, 1.0))
 	_set_label_color(nodes.get("enemy_hp_text_label", null), Color(1.0, 0.93, 0.88, 1.0))
 	_set_label_color(nodes.get("run_progress_label", null), Color(0.82, 0.90, 0.98, 1.0))
 	_set_label_color(nodes.get("player_label", null), Color(1.0, 0.96, 0.92, 1.0))
 	_set_label_color(nodes.get("player_armor_label", null), Color(0.82, 0.94, 1.0, 1.0))
-	_set_label_color(nodes.get("timer_label", null), Color(0.85, 0.93, 1.0, 1.0))
+	_set_label_color(nodes.get("timer_label", null), Color(0.92, 0.97, 1.0, 1.0))
 	_set_label_color(nodes.get("timer_state_label", null), Color(0.73, 0.84, 0.92, 1.0))
-	_set_label_font_size(nodes.get("timer_state_label", null), 18)
+	_set_label_font_size(nodes.get("timer_state_label", null), 22)
+	var timer_state_label := nodes.get("timer_state_label", null) as Label
+	if timer_state_label != null:
+		timer_state_label.visible = false
+		timer_state_label.custom_minimum_size = Vector2.ZERO
+	var timer_icon := nodes.get("timer_icon", null) as TextureRect
+	if timer_icon != null:
+		timer_icon.visible = false
+		timer_icon.custom_minimum_size = Vector2.ZERO
+	_set_label_outline(nodes.get("title_label", null), 3, Color(0.01, 0.02, 0.03, 0.92))
+	_set_label_outline(nodes.get("enemy_step_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
+	_set_label_outline(nodes.get("hint_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
+	_set_label_outline(nodes.get("run_progress_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
+	_set_label_outline(nodes.get("timer_label", null), 3, Color(0.01, 0.02, 0.03, 0.92))
 
 	apply_timer_label_readability(nodes.get("timer_label", null))
 	apply_timer_label_readability(nodes.get("timer_state_label", null))
@@ -200,11 +228,17 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if intent_badge != null:
 		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		intent_badge.custom_minimum_size = Vector2(96, 96)
+		intent_badge.custom_minimum_size = Vector2(124, 124)
 	var primary_intent_detail: Label = nodes.get("primary_intent_detail_label", null) as Label
 	if primary_intent_detail != null:
 		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var primary_intent_title: Label = nodes.get("primary_intent_title_label", null) as Label
+	if primary_intent_title != null:
+		primary_intent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var primary_intent_amount: Label = nodes.get("primary_intent_amount_label", null) as Label
+	if primary_intent_amount != null:
+		primary_intent_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	apply_button_theme([
 		nodes.get("back_button", null),
 		nodes.get("debug_toggle_button", null),
@@ -254,7 +288,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 static func apply_board_focus_theme(board_shadow: Variant, outcome_summary_panel: Variant, outcome_title_label: Variant, outcome_body_label: Variant, next_button: Variant) -> void:
 	if board_shadow != null:
 		var shadow_style := StyleBoxFlat.new()
-		shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.24)
+		shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.34)
 		shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
 		shadow_style.set_corner_radius_all(12)
 		board_shadow.add_theme_stylebox_override("panel", shadow_style)
@@ -353,13 +387,13 @@ static func apply_progressbar_flat_style(bar: Variant, fill_color: Color) -> voi
 	if not (bar is ProgressBar):
 		return
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0.04, 0.07, 0.10, 0.95)
-	bg.set_corner_radius_all(4)
-	bg.set_border_width_all(1)
-	bg.border_color = Color(0.18, 0.25, 0.34, 0.85)
+	bg.bg_color = Color(0.03, 0.06, 0.09, 0.97)
+	bg.set_corner_radius_all(7)
+	bg.set_border_width_all(2)
+	bg.border_color = Color(0.54, 0.42, 0.20, 0.82)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = fill_color
-	fill.set_corner_radius_all(4)
+	fill.set_corner_radius_all(7)
 	(bar as ProgressBar).add_theme_stylebox_override("background", bg)
 	(bar as ProgressBar).add_theme_stylebox_override("fill", fill)
 
@@ -369,20 +403,20 @@ static func apply_button_theme(buttons: Array) -> void:
 		if not (button is Button):
 			continue
 		(button as Button).add_theme_color_override("font_color", Color(0.84, 0.89, 0.94, 1.0))
-		(button as Button).add_theme_font_size_override("font_size", 20)
-		(button as Button).custom_minimum_size = Vector2(92.0, 36.0)
+		(button as Button).add_theme_font_size_override("font_size", 24)
+		(button as Button).custom_minimum_size = Vector2(102.0, 58.0)
 		var style_normal := StyleBoxFlat.new()
-		style_normal.bg_color = Color(0.04, 0.07, 0.10, 0.84)
-		style_normal.border_color = Color(0.22, 0.30, 0.39, 0.92)
-		style_normal.set_border_width_all(1)
-		style_normal.set_corner_radius_all(4)
+		style_normal.bg_color = Color(0.04, 0.07, 0.10, 0.92)
+		style_normal.border_color = Color(0.58, 0.45, 0.21, 0.86)
+		style_normal.set_border_width_all(2)
+		style_normal.set_corner_radius_all(10)
 		style_normal.content_margin_left = 8.0
 		style_normal.content_margin_right = 8.0
 		style_normal.content_margin_top = 4.0
 		style_normal.content_margin_bottom = 4.0
 		(button as Button).add_theme_stylebox_override("normal", style_normal)
 		var style_hover: StyleBoxFlat = style_normal.duplicate() as StyleBoxFlat
-		style_hover.bg_color = Color(0.08, 0.12, 0.17, 0.94)
+		style_hover.bg_color = Color(0.09, 0.14, 0.19, 0.96)
 		(button as Button).add_theme_stylebox_override("hover", style_hover)
 		(button as Button).add_theme_stylebox_override("pressed", style_hover)
 
@@ -391,20 +425,18 @@ static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = nul
 	if not (timer_track is Control):
 		return
 	var timer_style_flat := StyleBoxFlat.new()
-	timer_style_flat.bg_color = Color(0.04, 0.10, 0.14, 0.95)
-	timer_style_flat.border_color = Color(0.44, 0.64, 0.82, 0.90)
-	timer_style_flat.set_border_width_all(2)
-	timer_style_flat.set_corner_radius_all(8)
+	timer_style_flat.bg_color = Color(0.01, 0.02, 0.04, 0.96)
+	timer_style_flat.border_color = Color(0.62, 0.50, 0.24, 0.86)
+	timer_style_flat.set_border_width_all(1)
+	timer_style_flat.set_corner_radius_all(6)
 	var timer_style: StyleBox = timer_style_flat
-	var timer_track_texture := _resolve_visual_texture(visuals, "combat_timer_track_texture")
-	if timer_track_texture != null:
-		timer_style = _panel_texture_stylebox(timer_track_texture, 10, 10, 10, 10, 2.0)
 	var frame: Variant = (timer_track as Control).get_node_or_null("TimerTrackFrame")
 	if frame is Panel:
 		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
 	var timer_fill: Variant = (timer_track as Control).get_node_or_null("TimerFill")
 	if timer_fill is ColorRect:
-		(timer_fill as ColorRect).color = Color(0.26, 0.62, 0.88, 0.92)
+		(timer_fill as ColorRect).color = Color(0.72, 0.56, 0.26, 0.60)
+		(timer_fill as ColorRect).visible = false
 	var center_marker: Variant = (timer_track as Control).get_node_or_null("TimerCenterMarker")
 	if center_marker is TextureRect:
 		var marker_texture := _resolve_visual_texture(visuals, "combat_timer_center_marker_texture")
@@ -412,7 +444,8 @@ static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = nul
 			(center_marker as TextureRect).texture = marker_texture
 		(center_marker as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		(center_marker as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		(center_marker as TextureRect).modulate = Color(1.0, 0.98, 0.88, 0.96)
+		(center_marker as TextureRect).modulate = Color(0.98, 0.90, 0.62, 0.96)
+
 
 
 static func apply_timer_label_readability(label: Variant) -> void:
@@ -421,30 +454,37 @@ static func apply_timer_label_readability(label: Variant) -> void:
 	(label as Label).add_theme_color_override("font_shadow_color", Color(0.01, 0.02, 0.03, 0.95))
 	(label as Label).add_theme_constant_override("shadow_offset_x", 1)
 	(label as Label).add_theme_constant_override("shadow_offset_y", 2)
-	(label as Label).add_theme_constant_override("outline_size", 2)
+	(label as Label).add_theme_constant_override("outline_size", 3)
 	(label as Label).add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.80))
+
+
+static func _set_label_outline(label: Variant, outline_size: int, outline_color: Color) -> void:
+	if not (label is Label):
+		return
+	(label as Label).add_theme_constant_override("outline_size", outline_size)
+	(label as Label).add_theme_color_override("font_outline_color", outline_color)
 
 
 static func apply_loadout_group_theme(loadout_frame: Variant, mastery_strip: Variant, hero_card: Variant, vitals_frame: Variant, hero_level_badge: Variant, armor_badge: Variant, visuals: Variant = null) -> void:
 	var inner_panel_style := StyleBoxFlat.new()
-	inner_panel_style.bg_color = Color(0.05, 0.08, 0.12, 0.98)
-	inner_panel_style.border_color = Color(0.18, 0.24, 0.31, 0.95)
-	inner_panel_style.set_border_width_all(1)
-	inner_panel_style.set_corner_radius_all(4)
-	inner_panel_style.content_margin_left = 8.0
-	inner_panel_style.content_margin_right = 8.0
-	inner_panel_style.content_margin_top = 6.0
-	inner_panel_style.content_margin_bottom = 6.0
+	inner_panel_style.bg_color = Color(0.04, 0.07, 0.11, 0.98)
+	inner_panel_style.border_color = Color(0.40, 0.32, 0.18, 0.90)
+	inner_panel_style.set_border_width_all(2)
+	inner_panel_style.set_corner_radius_all(8)
+	inner_panel_style.content_margin_left = 10.0
+	inner_panel_style.content_margin_right = 10.0
+	inner_panel_style.content_margin_top = 8.0
+	inner_panel_style.content_margin_bottom = 8.0
 	for panel in [loadout_frame, mastery_strip, hero_card]:
 		if panel is Panel:
 			(panel as Panel).add_theme_stylebox_override("panel", inner_panel_style)
 
 	if vitals_frame is Panel:
 		var vitals_frame_style := StyleBoxFlat.new()
-		vitals_frame_style.bg_color = Color(0.04, 0.08, 0.13, 0.98)
-		vitals_frame_style.border_color = Color(0.18, 0.25, 0.34, 0.96)
-		vitals_frame_style.set_border_width_all(1)
-		vitals_frame_style.set_corner_radius_all(4)
+		vitals_frame_style.bg_color = Color(0.03, 0.08, 0.13, 0.98)
+		vitals_frame_style.border_color = Color(0.48, 0.37, 0.18, 0.92)
+		vitals_frame_style.set_border_width_all(2)
+		vitals_frame_style.set_corner_radius_all(8)
 		(vitals_frame as Panel).add_theme_stylebox_override("panel", vitals_frame_style)
 
 	var badge_style := StyleBoxFlat.new()
@@ -457,10 +497,10 @@ static func apply_loadout_group_theme(loadout_frame: Variant, mastery_strip: Var
 
 	if armor_badge is Control:
 		var armor_badge_style := StyleBoxFlat.new()
-		armor_badge_style.bg_color = Color(0.08, 0.19, 0.31, 0.98)
-		armor_badge_style.border_color = Color(0.40, 0.70, 0.96, 0.96)
-		armor_badge_style.set_border_width_all(1)
-		armor_badge_style.set_corner_radius_all(6)
+		armor_badge_style.bg_color = Color(0.08, 0.19, 0.31, 0.96)
+		armor_badge_style.border_color = Color(0.46, 0.75, 0.98, 0.94)
+		armor_badge_style.set_border_width_all(2)
+		armor_badge_style.set_corner_radius_all(8)
 		armor_badge_style.content_margin_left = 8.0
 		armor_badge_style.content_margin_right = 8.0
 		armor_badge_style.content_margin_top = 2.0
@@ -481,7 +521,7 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 				(divider_node as TextureRect).texture = divider_texture
 			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
-			(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.92)
+			(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.90)
 
 	var corner_texture := _resolve_visual_texture(visuals, "combat_corner_ornament_texture")
 	for key in ["corner_top_left", "corner_top_right", "corner_bottom_left", "corner_bottom_right"]:
@@ -491,7 +531,7 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 				(corner as TextureRect).texture = corner_texture
 			(corner as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			(corner as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			(corner as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.96)
+			(corner as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.94)
 
 
 static func apply_zone_guide(zone: Variant, label_text: String, enabled: bool) -> void:
