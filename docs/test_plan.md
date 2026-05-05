@@ -530,6 +530,11 @@ Verification notes (2026-05-05, M11 code-complete pass):
 
 ## Milestone 12: First Playable Build
 
+- [~] Mobile combat UI is readable before packaging.
+  - Board state, enemy intent/HP danger, timer, and player HP are the protected default mobile read path.
+  - Equipment, consumables, relics, and mastery remain visible or inspectable without taking over the combat screen.
+  - Combat layout has no actionable overlap on `1080x1920`, tall portrait `1080x2400`, and smaller portrait `900x1600`.
+  - Board touch input still uses `BoardView.gui_input` local coordinates.
 - [ ] Exported build launches.
 - [ ] A new run can be started without debug tools.
 - [ ] A full 3-level run can be won.
@@ -548,6 +553,13 @@ Verification notes (2026-05-03):
 - 2026-05-03 follow-up: Android launcher icon fields now use `res://raw/icon.png` for `launcher_icons/main_192x192` and `launcher_icons/adaptive_foreground_432x432` in `export_presets.cfg`. A debug Android APK exported and installed successfully on connected device `b21e3ea8`; the same MCP plugin Android `arm64` warning remains.
 - 2026-05-03 Android regression follow-up: after touch-coordinate and Android WAV-first music fixes, debug APK export to `Orbwalker.apk` succeeded with the same MCP plugin Android `arm64` warning. `adb install -r` could not run during that pass because no device/emulator was connected (`adb devices` returned an empty list), so on-device touch and listening retest remained pending.
 - 2026-05-03 AR-04 Android install follow-up: Godot CLI export with `Godot_v4.6.2-stable_win64_console.exe --export-debug Android` wrote an updated `Orbwalker.apk` but hung instead of exiting, leaving a console Godot process plus Java/Gradle child. The APK timestamp/size updated and `adb install -r D:\godot\matchatro\Orbwalker.apk` returned `Success` on device `b21e3ea8`; package `com.example.orbwalker` was present. Workaround documented in `wiki/setup.md` and `wiki/known-issues.md`; root cause remains unverified.
+
+Verification notes (2026-05-05, M12 mobile combat readability pass):
+- Combat layout now prioritizes mobile readability before export packaging. `CombatLayoutManager` uses a reference-oriented vertical stack: readable top bar, larger enemy stage/intent area, slim timer strip, protected 5x6 board, narrow Elemental Mastery rail, and compact player footer.
+- `PlayerLoadoutHud` now uses compact combat mastery cards, hides low-value label bands in compact combat mode, keeps the hero portrait/HP row together, and structures relic/equipment/consumable rails in a shallow footer instead of a large empty framed area.
+- Added `res://scripts/debug/mobile_combat_layout_probe.gd`. Godot MCP focused probe passed for `1080x1920`, `1080x2400`, and `900x1600`: default board surface is about `782x938`, tall portrait reaches `1040x1248`, smaller portrait scales the same design layout, and actionable overlap count is `0` for all three cases.
+- Godot MCP script reload and combat scene instantiate passed for `combat_layout_manager.gd`, `player_loadout_hud.gd`, `combat_chrome_styler.gd`, `mobile_combat_layout_probe.gd`, and `res://scenes/combat/combat_player.tscn`. `play_scene current` launched combat and screenshot inspection confirmed the board is the dominant mobile surface with enemy/timer/player HUD hierarchy closer to the provided reference. Final `get_godot_errors` still retained two stale enum reload diagnostics in the editor session even though cache-ignore script reloads returned `0` and the running combat scene launched.
+- Manual mobile visual/touch acceptance remains required before marking this M12 readability gate complete.
 
 ## General Regression Checklist
 

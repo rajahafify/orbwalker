@@ -1812,3 +1812,13 @@ Append-only history of wiki operations.
   - Recorded that follow-up fixes covered final-summary parser warnings, defeat unlock-toast leakage, and moving profile reset to the main-menu Profile overlay.
 - Validation:
   - User QA passed.
+
+## [2026-05-05] code-change | M12 Mobile Combat Readability Layout
+
+- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Reworked the mobile combat composition toward the provided reference: top bar, larger enemy stage/intent, slim timer, protected board, narrow mastery rail, and compact player footer.
+  - Added the mobile combat layout probe for common portrait viewport overlap checks.
+- Validation:
+  - Godot MCP cache-ignore script reloads returned `0`, `combat_player.tscn` instantiated, `play_scene current` launched, and the probe reported `0` actionable overlaps for `1080x1920`, `1080x2400`, and `900x1600`.
+  - Manual mobile visual/touch acceptance remains pending before the M12 readability gate is complete.

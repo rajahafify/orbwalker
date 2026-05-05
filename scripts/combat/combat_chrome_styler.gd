@@ -23,15 +23,28 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	frame_style.content_margin_bottom = 6.0
 
 	for panel in [
-		nodes.get("top_bar", null),
-		nodes.get("enemy_panel", null),
-		nodes.get("combat_strip", null),
 		nodes.get("board_frame", null),
 		nodes.get("debug_overlay", null),
 		nodes.get("combat_log_frame", null),
 	]:
 		if panel is Control:
 			(panel as Control).add_theme_stylebox_override("panel", frame_style)
+	var ornate_frame_style := StyleBoxFlat.new()
+	ornate_frame_style.bg_color = Color(0.03, 0.05, 0.08, 0.96)
+	ornate_frame_style.border_color = Color(0.55, 0.43, 0.22, 0.96)
+	ornate_frame_style.set_border_width_all(2)
+	ornate_frame_style.set_corner_radius_all(6)
+	ornate_frame_style.content_margin_left = 8.0
+	ornate_frame_style.content_margin_right = 8.0
+	ornate_frame_style.content_margin_top = 6.0
+	ornate_frame_style.content_margin_bottom = 6.0
+	for panel in [
+		nodes.get("top_bar", null),
+		nodes.get("enemy_panel", null),
+		nodes.get("combat_strip", null),
+	]:
+		if panel is Control:
+			(panel as Control).add_theme_stylebox_override("panel", ornate_frame_style)
 
 	apply_progressbar_flat_style(nodes.get("enemy_hp_bar", null), Color(0.70, 0.12, 0.13, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_hp_bar", null), Color(0.78, 0.16, 0.17, 1.0))
@@ -57,9 +70,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		if label is Label:
 			(label as Label).add_theme_color_override("font_color", ui_text_color)
 
-	var font_size_title := int(config.get("font_size_title", 20))
-	var font_size_value := int(config.get("font_size_value", 18))
-	var font_size_meta := int(config.get("font_size_meta", 15))
+	var font_size_title := maxi(int(config.get("font_size_title", 20)), 26)
+	var font_size_value := maxi(int(config.get("font_size_value", 18)), 20)
+	var font_size_meta := maxi(int(config.get("font_size_meta", 15)), 16)
 	var font_size_row_label := int(config.get("font_size_row_label", 16))
 	var debug_text_font_size := int(config.get("debug_text_font_size", 24))
 	var debug_input_font_size := int(config.get("debug_input_font_size", 24))
@@ -69,7 +82,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	_set_label_font_size(nodes.get("hint_label", null), font_size_value)
 	_set_label_font_size(nodes.get("intent_label", null), font_size_value)
 	_set_label_font_size(nodes.get("enemy_label", null), font_size_value)
-	_set_label_font_size(nodes.get("timer_label", null), font_size_value)
+	_set_label_font_size(nodes.get("timer_label", null), 22)
 	_set_label_font_size(nodes.get("player_label", null), 24)
 	_set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
 
@@ -108,7 +121,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	_set_label_color(nodes.get("player_armor_label", null), Color(0.82, 0.94, 1.0, 1.0))
 	_set_label_color(nodes.get("timer_label", null), Color(0.85, 0.93, 1.0, 1.0))
 	_set_label_color(nodes.get("timer_state_label", null), Color(0.73, 0.84, 0.92, 1.0))
-	_set_label_font_size(nodes.get("timer_state_label", null), font_size_meta)
+	_set_label_font_size(nodes.get("timer_state_label", null), 18)
 
 	apply_timer_label_readability(nodes.get("timer_label", null))
 	apply_timer_label_readability(nodes.get("timer_state_label", null))
@@ -274,7 +287,8 @@ static func apply_button_theme(buttons: Array) -> void:
 		if not (button is Button):
 			continue
 		(button as Button).add_theme_color_override("font_color", Color(0.84, 0.89, 0.94, 1.0))
-		(button as Button).add_theme_font_size_override("font_size", 18)
+		(button as Button).add_theme_font_size_override("font_size", 20)
+		(button as Button).custom_minimum_size = Vector2(92.0, 36.0)
 		var style_normal := StyleBoxFlat.new()
 		style_normal.bg_color = Color(0.04, 0.07, 0.10, 0.84)
 		style_normal.border_color = Color(0.22, 0.30, 0.39, 0.92)
@@ -295,13 +309,16 @@ static func apply_timer_track_theme(timer_track: Variant) -> void:
 	if not (timer_track is Control):
 		return
 	var timer_style := StyleBoxFlat.new()
-	timer_style.bg_color = Color(0.035, 0.075, 0.11, 0.94)
-	timer_style.border_color = Color(0.20, 0.30, 0.40, 0.90)
-	timer_style.set_border_width_all(1)
-	timer_style.set_corner_radius_all(4)
+	timer_style.bg_color = Color(0.04, 0.10, 0.14, 0.95)
+	timer_style.border_color = Color(0.44, 0.64, 0.82, 0.90)
+	timer_style.set_border_width_all(2)
+	timer_style.set_corner_radius_all(8)
 	var frame: Variant = (timer_track as Control).get_node_or_null("TimerTrackFrame")
 	if frame is Panel:
 		(frame as Panel).add_theme_stylebox_override("panel", timer_style)
+	var timer_fill: Variant = (timer_track as Control).get_node_or_null("TimerFill")
+	if timer_fill is ColorRect:
+		(timer_fill as ColorRect).color = Color(0.26, 0.62, 0.88, 0.92)
 
 
 static func apply_timer_label_readability(label: Variant) -> void:

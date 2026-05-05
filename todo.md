@@ -6,10 +6,10 @@ Target: First playable prototype vertical slice from the GDD.
 
 ## Current Project State
 
-- Godot project exists and is configured as `Orbwalker`.
-- `docs/game_design_document.md` defines the game direction and first playable scope.
-- `scripts/` exists but currently has no gameplay scripts.
-- No gameplay scenes, board implementation, combat loop, shop, or content data files are present yet.
+- Milestones 0-11 are complete through meta progression foundation.
+- The project is on Milestone 12 work: first playable build readiness.
+- Before packaging the build, the current active blocker is a mobile-first combat UI readability pass. Player feedback says the combat UI is hard to read on both mobile and PC; Milestone 12 should first protect mobile readability for board state, enemy intent/HP danger, timer, and player HP before build/export closeout.
+- Combat, shop, run flow, balance scaffolding, initial content, and equipment meta progression are implemented; remaining Milestone 12 work is readiness, validation, documentation, and export packaging.
 
 ## Execution Strategy
 
@@ -630,11 +630,19 @@ Tasks:
 
 ## Milestone 12: First Playable Build
 
+Status: In progress.
+
 Goal: Package and document the first playable prototype.
 
-Primary deliverable: A playable build that demonstrates the full GDD vertical slice and can be shared for feedback.
+Primary deliverable: A readable mobile-first playable build that demonstrates the full GDD vertical slice and can be shared for feedback.
+
+Scope note: Milestone 12 starts with combat readability because feedback indicates the current UI is hard to read, especially on mobile. Do not move to release packaging until mobile combat readability has runtime validation evidence or explicit human acceptance.
 
 Tasks:
+
+- [~] Rework mobile combat UI readability.
+  - Deliverable: Mobile-first combat layout hierarchy that protects board readability, enemy intent/HP danger, timer, and player HP before secondary build/loadout detail.
+  - Acceptance: At mobile portrait resolutions, enemy threat, board state, timer, and player HP are readable without overlapping mastery/loadout/detail UI. Board touch input still uses `BoardView.gui_input` local coordinates with no transform double-application. Godot MCP validates combat scene load/run state and layout probe results; manual visual/touch acceptance remains the final gate.
 
 - [ ] Add export presets.
   - Deliverable: Export configuration for PC, with mobile export prepared if certificates and SDKs are available.

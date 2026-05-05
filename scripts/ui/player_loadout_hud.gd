@@ -24,6 +24,9 @@ const MASTERY_CELL_GAP := 24.0
 const COMBAT_MASTERY_CARD_SIZE := Vector2(132, 104)
 const COMBAT_MASTERY_CARD_GAP := 14.0
 const COMBAT_MASTERY_ICON_SIZE := Vector2(46, 46)
+const COMBAT_MASTERY_COMPACT_CARD_SIZE := Vector2(60, 56)
+const COMBAT_MASTERY_COMPACT_CARD_GAP := 8.0
+const COMBAT_MASTERY_COMPACT_ICON_SIZE := Vector2(24, 24)
 const COMBAT_MASTERY_ACTIVATION_BASE_ALPHA := 0.14
 const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
 const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
@@ -48,6 +51,7 @@ const PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 8), Vector2(1048, 32))
 const PLAYER_HUD_MASTERY_CARDS_RECT := Rect2(Vector2(0, 48), Vector2(1048, 108))
 const PLAYER_HUD_FOOTER_PANEL_RECT := Rect2(Vector2(0, 188), Vector2(1080, 640))
 const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 640)
+const COMPACT_COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 408)
 const HERO_CARD_RECT := Rect2(Vector2(42, 32), Vector2(220, 246))
 const HERO_PORTRAIT_RECT := Rect2(Vector2(16, 16), Vector2(188, 214))
 const VITALS_PANEL_RECT := Rect2(Vector2(294, 50), Vector2(714, 196))
@@ -66,6 +70,23 @@ const FOOTER_RELIC_LABEL_RECT := Rect2(Vector2(390, 6), Vector2(216, 22))
 const MASTERY_ROOT_RECT := Rect2(Vector2(16, 2), Vector2(964, 46))
 const MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(120, 46))
 const MASTERY_ICONS_RECT := Rect2(Vector2(172, 2), Vector2(720, MASTERY_SLOT_SIZE.y))
+const COMPACT_HERO_CARD_RECT := Rect2(Vector2(16, 16), Vector2(184, 176))
+const COMPACT_HERO_PORTRAIT_RECT := Rect2(Vector2(14, 12), Vector2(156, 152))
+const COMPACT_VITALS_PANEL_RECT := Rect2(Vector2(212, 22), Vector2(852, 132))
+const COMPACT_VITALS_FRAME_RECT := Rect2(Vector2.ZERO, Vector2(852, 132))
+const COMPACT_PLAYER_HP_BAR_RECT := Rect2(Vector2(14, 24), Vector2(824, 44))
+const COMPACT_PLAYER_ARMOR_BAR_RECT := Rect2(Vector2(14, 74), Vector2(520, 24))
+const COMPACT_ARMOR_BADGE_RECT := Rect2(Vector2(546, 74), Vector2(292, 24))
+const COMPACT_PLAYER_LOADOUT_RECT := Rect2(Vector2(16, 180), Vector2(1048, 172))
+const COMPACT_EQUIPMENT_LABEL_RECT := Rect2(Vector2(16, 8), Vector2(472, 20))
+const COMPACT_CONSUMABLE_LABEL_RECT := Rect2(Vector2(512, 8), Vector2(280, 20))
+const COMPACT_EQUIPMENT_RAIL_RECT := Rect2(Vector2(16, 34), Vector2(472, 88))
+const COMPACT_CONSUMABLE_RAIL_RECT := Rect2(Vector2(512, 34), Vector2(280, 88))
+const COMPACT_FOOTER_RELIC_RAIL_RECT := Rect2(Vector2(804, 34), Vector2(228, 58))
+const COMPACT_PLAYER_MASTERY_RECT := Rect2(Vector2(16, 360), Vector2(1048, 36))
+const COMPACT_MASTERY_ROOT_RECT := Rect2(Vector2(0, 0), Vector2(1048, 36))
+const COMPACT_MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(100, 36))
+const COMPACT_MASTERY_ICONS_RECT := Rect2(Vector2(116, 0), Vector2(724, MASTERY_SLOT_SIZE.y))
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
 const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(320.0, 156.0)
@@ -351,9 +372,13 @@ func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
 
 func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
 	_clear_children(row)
+	var compact_mode := row.size.y > 0.0 and row.size.y <= 88.0
+	var card_size := COMBAT_MASTERY_COMPACT_CARD_SIZE if compact_mode else COMBAT_MASTERY_CARD_SIZE
+	var card_gap := COMBAT_MASTERY_COMPACT_CARD_GAP if compact_mode else COMBAT_MASTERY_CARD_GAP
+	var icon_size := COMBAT_MASTERY_COMPACT_ICON_SIZE if compact_mode else COMBAT_MASTERY_ICON_SIZE
 	var row_width := row.size.x if row.size.x > 0.0 else COMBAT_MASTERY_ROOT_RECT.size.x
-	var total_cards_width := COMBAT_MASTERY_CARD_SIZE.x * float(COMBAT_MASTERY_ORDER.size())
-	total_cards_width += COMBAT_MASTERY_CARD_GAP * float(COMBAT_MASTERY_ORDER.size() - 1)
+	var total_cards_width := card_size.x * float(COMBAT_MASTERY_ORDER.size())
+	total_cards_width += card_gap * float(COMBAT_MASTERY_ORDER.size() - 1)
 	var start_x := maxf(0.0, (row_width - total_cards_width) * 0.5)
 	for index in range(COMBAT_MASTERY_ORDER.size()):
 		var orb_id: int = COMBAT_MASTERY_ORDER[index]
@@ -364,30 +389,30 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		card.name = _combat_mastery_card_name(orb_id)
 		card.clip_contents = true
 		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		card.size = COMBAT_MASTERY_CARD_SIZE
-		card.position = Vector2(start_x + float(index) * (COMBAT_MASTERY_CARD_SIZE.x + COMBAT_MASTERY_CARD_GAP), 0.0)
+		card.size = card_size
+		card.position = Vector2(start_x + float(index) * (card_size.x + card_gap), 0.0)
 
 		var panel := Panel.new()
 		panel.name = "CardPanel"
-		panel.custom_minimum_size = COMBAT_MASTERY_CARD_SIZE
-		panel.size = COMBAT_MASTERY_CARD_SIZE
+		panel.custom_minimum_size = card_size
+		panel.size = card_size
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
 
 		var activation_glow := ColorRect.new()
 		activation_glow.name = "ActivationGlow"
 		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		activation_glow.position = Vector2(8.0, 6.0)
-		activation_glow.size = Vector2(116.0, 92.0)
+		activation_glow.position = Vector2(4.0, 4.0)
+		activation_glow.size = card_size - Vector2(8.0, 8.0)
 		var activation_accent := OrbType.color(orb_id)
 		activation_glow.color = Color(activation_accent.r, activation_accent.g, activation_accent.b, 0.0)
 		activation_glow.visible = false
 
 		var icon := TextureRect.new()
 		icon.name = "MasteryIcon"
-		icon.custom_minimum_size = COMBAT_MASTERY_ICON_SIZE
-		icon.size = COMBAT_MASTERY_ICON_SIZE
-		icon.position = Vector2((COMBAT_MASTERY_CARD_SIZE.x - COMBAT_MASTERY_ICON_SIZE.x) * 0.5, 8.0)
+		icon.custom_minimum_size = icon_size
+		icon.size = icon_size
+		icon.position = Vector2((card_size.x - icon_size.x) * 0.5, 6.0 if compact_mode else 8.0)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
@@ -396,22 +421,23 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		var name_label := Label.new()
 		name_label.name = "MasteryLabel"
 		name_label.text = OrbType.display_name(orb_id)
-		name_label.position = Vector2(8.0, 56.0)
-		name_label.size = Vector2(116.0, 22.0)
+		name_label.position = Vector2(4.0, 30.0 if compact_mode else 40.0)
+		name_label.size = Vector2(card_size.x - 8.0, 14.0 if compact_mode else 16.0)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		name_label.add_theme_font_size_override("font_size", 16)
+		name_label.add_theme_font_size_override("font_size", 11 if compact_mode else 16)
 		name_label.add_theme_color_override("font_color", Color(0.88, 0.92, 0.96, 1.0))
 		name_label.add_theme_constant_override("outline_size", 1)
 		name_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
+		name_label.visible = not compact_mode
 
 		var level_label := Label.new()
 		level_label.name = "MasteryLevel"
-		level_label.text = "Lv %d" % level
-		level_label.position = Vector2(8.0, 76.0)
-		level_label.size = Vector2(116.0, 18.0)
+		level_label.text = "L%d" % level if compact_mode else "Lv %d" % level
+		level_label.position = Vector2(3.0, 28.0 if compact_mode else 76.0)
+		level_label.size = Vector2(card_size.x - 6.0, 14.0 if compact_mode else 18.0)
 		level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		level_label.add_theme_font_size_override("font_size", 14)
+		level_label.add_theme_font_size_override("font_size", 10 if compact_mode else 14)
 		level_label.add_theme_color_override("font_color", Color(0.70, 0.76, 0.84, 1.0))
 		level_label.add_theme_constant_override("outline_size", 1)
 		level_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.04, 0.92))
@@ -419,10 +445,10 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 
 		var feedback_label := Label.new()
 		feedback_label.name = "MasteryFeedback"
-		feedback_label.text = _combat_mastery_feedback_text(orb_id, feedback_value)
-		feedback_label.position = Vector2(4.0, 78.0)
-		feedback_label.size = Vector2(124.0, 22.0)
-		feedback_label.add_theme_font_size_override("font_size", 13)
+		feedback_label.text = _combat_mastery_feedback_text_for_display(orb_id, feedback_value, compact_mode)
+		feedback_label.position = Vector2(2.0, 40.0 if compact_mode else 78.0)
+		feedback_label.size = Vector2(card_size.x - 4.0, 14.0 if compact_mode else 22.0)
+		feedback_label.add_theme_font_size_override("font_size", 8 if compact_mode else 13)
 		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.90, 0.50, 0.86))
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -439,14 +465,14 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		activation_frame.name = "ActivationFrame"
 		activation_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		activation_frame.position = Vector2.ZERO
-		activation_frame.size = COMBAT_MASTERY_CARD_SIZE
+		activation_frame.size = card_size
 		activation_frame.visible = false
 
 		var hover_highlight := ColorRect.new()
 		hover_highlight.name = "HoverHighlight"
 		hover_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hover_highlight.position = Vector2(2.0, 2.0)
-		hover_highlight.size = COMBAT_MASTERY_CARD_SIZE - Vector2(4.0, 4.0)
+		hover_highlight.size = card_size - Vector2(4.0, 4.0)
 		hover_highlight.color = Color(1.0, 1.0, 1.0, 0.0)
 		hover_highlight.visible = false
 
@@ -454,7 +480,7 @@ func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, fee
 		hover_frame.name = "HoverFrame"
 		hover_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hover_frame.position = Vector2.ZERO
-		hover_frame.size = COMBAT_MASTERY_CARD_SIZE
+		hover_frame.size = card_size
 		hover_frame.visible = false
 
 		panel.add_child(activation_glow)
@@ -490,7 +516,8 @@ func set_combat_mastery_feedback(row: Control, orb_id: int, feedback_value: int)
 	var feedback_label: Label = panel.get_node_or_null("MasteryFeedback") as Label
 	if feedback_label == null:
 		return
-	var feedback_text := _combat_mastery_feedback_text(orb_id, feedback_value)
+	var compact_mode := card.size.y <= COMBAT_MASTERY_COMPACT_CARD_SIZE.y + 1.0
+	var feedback_text := _combat_mastery_feedback_text_for_display(orb_id, feedback_value, compact_mode)
 	feedback_label.text = feedback_text
 	feedback_label.visible = feedback_text != ""
 	feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
@@ -538,6 +565,26 @@ func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
 			feedback_kind = "ARMOR"
 		OrbType.Id.GOLD:
 			feedback_kind = "GOLD"
+		_:
+			return ""
+	return "+%d %s" % [value, feedback_kind]
+
+
+func _combat_mastery_feedback_text_for_display(orb_id: int, value: int, compact_mode: bool) -> String:
+	if not compact_mode:
+		return _combat_mastery_feedback_text(orb_id, value)
+	if value <= 0:
+		return ""
+	var feedback_kind := ""
+	match orb_id:
+		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
+			feedback_kind = "DMG"
+		OrbType.Id.HEART:
+			feedback_kind = "HP"
+		OrbType.Id.ARMOR:
+			feedback_kind = "AR"
+		OrbType.Id.GOLD:
+			feedback_kind = "G"
 		_:
 			return ""
 	return "+%d %s" % [value, feedback_kind]
@@ -1028,7 +1075,11 @@ func apply_player_hud_chrome(nodes: Dictionary) -> void:
 	_apply_node_stylebox(nodes, "vitals_frame", _hud_vitals_stylebox())
 	_apply_node_stylebox(nodes, "loadout_frame", _hud_inner_panel_stylebox())
 	_apply_progressbar_flat_style(nodes.get("hp_bar") as ProgressBar, Color(0.78, 0.16, 0.17, 1.0))
-	_apply_hud_label_style(nodes.get("mastery_title") as Label, Color(0.78, 0.84, 0.90, 1.0), 22)
+	var mastery_title_font_size := 22
+	var mastery_panel := nodes.get("mastery_panel") as Control
+	if mastery_panel != null and mastery_panel.size.y <= 110.0:
+		mastery_title_font_size = 14
+	_apply_hud_label_style(nodes.get("mastery_title") as Label, Color(0.78, 0.84, 0.90, 1.0), mastery_title_font_size)
 	_apply_hud_label_style(nodes.get("hp_label") as Label, Color(0.95, 0.96, 0.98, 1.0), 24)
 	_apply_hud_label_style(nodes.get("equipment_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
 	_apply_hud_label_style(nodes.get("consumable_label") as Label, Color(0.67, 0.73, 0.80, 1.0), 18)
@@ -1037,33 +1088,66 @@ func apply_player_hud_chrome(nodes: Dictionary) -> void:
 
 
 func apply_player_footer_layout(nodes: Dictionary) -> void:
+	var footer_panel := nodes.get("footer_panel") as Control
+	var compact_mode := footer_panel != null and footer_panel.size.y <= COMPACT_COMBAT_PLAYER_PANEL_SIZE.y + 4.0
+	var player_panel_size := COMPACT_COMBAT_PLAYER_PANEL_SIZE if compact_mode else COMBAT_PLAYER_PANEL_SIZE
+	var hero_card_rect := COMPACT_HERO_CARD_RECT if compact_mode else HERO_CARD_RECT
+	var hero_portrait_rect := COMPACT_HERO_PORTRAIT_RECT if compact_mode else HERO_PORTRAIT_RECT
+	var vitals_panel_rect := COMPACT_VITALS_PANEL_RECT if compact_mode else VITALS_PANEL_RECT
+	var vitals_frame_rect := COMPACT_VITALS_FRAME_RECT if compact_mode else VITALS_FRAME_RECT
+	var hp_bar_rect := COMPACT_PLAYER_HP_BAR_RECT if compact_mode else PLAYER_HP_BAR_RECT
+	var armor_bar_rect := COMPACT_PLAYER_ARMOR_BAR_RECT if compact_mode else PLAYER_ARMOR_BAR_RECT
+	var armor_badge_rect := COMPACT_ARMOR_BADGE_RECT if compact_mode else ARMOR_BADGE_RECT
+	var loadout_rect := COMPACT_PLAYER_LOADOUT_RECT if compact_mode else PLAYER_LOADOUT_RECT
+	var equipment_label_rect := COMPACT_EQUIPMENT_LABEL_RECT if compact_mode else EQUIPMENT_LABEL_RECT
+	var consumable_label_rect := COMPACT_CONSUMABLE_LABEL_RECT if compact_mode else CONSUMABLE_LABEL_RECT
+	var equipment_icons_rect := COMPACT_EQUIPMENT_RAIL_RECT if compact_mode else EQUIPMENT_RAIL_RECT
+	var consumable_icons_rect := COMPACT_CONSUMABLE_RAIL_RECT if compact_mode else CONSUMABLE_RAIL_RECT
+	var relic_icons_rect := COMPACT_FOOTER_RELIC_RAIL_RECT if compact_mode else FOOTER_RELIC_RAIL_RECT
+	var mastery_strip_rect := COMPACT_PLAYER_MASTERY_RECT if compact_mode else PLAYER_MASTERY_RECT
+	var mastery_root_rect := COMPACT_MASTERY_ROOT_RECT if compact_mode else MASTERY_ROOT_RECT
+	var mastery_label_rect := COMPACT_MASTERY_LABEL_RECT if compact_mode else MASTERY_LABEL_RECT
+	var mastery_icons_rect := COMPACT_MASTERY_ICONS_RECT if compact_mode else MASTERY_ICONS_RECT
 	if nodes.has("footer_root"):
-		_apply_node_rect(nodes, "footer_root", Rect2(Vector2.ZERO, COMBAT_PLAYER_PANEL_SIZE))
+		_apply_node_rect(nodes, "footer_root", Rect2(Vector2.ZERO, player_panel_size))
 	else:
-		_apply_node_rect(nodes, "root", Rect2(Vector2.ZERO, COMBAT_PLAYER_PANEL_SIZE))
-	_apply_node_rect(nodes, "hero_card", HERO_CARD_RECT)
-	_apply_node_rect(nodes, "hero_card_root", Rect2(Vector2.ZERO, HERO_CARD_RECT.size))
-	_apply_node_rect(nodes, "hero_portrait", HERO_PORTRAIT_RECT)
-	_apply_node_rect(nodes, "vitals_panel", VITALS_PANEL_RECT)
-	_apply_node_rect(nodes, "vitals_frame", VITALS_FRAME_RECT)
-	_apply_node_rect(nodes, "hp_bar", PLAYER_HP_BAR_RECT)
-	_apply_node_rect(nodes, "hp_label", PLAYER_HP_BAR_RECT)
-	_apply_node_rect(nodes, "armor_bar", PLAYER_ARMOR_BAR_RECT)
-	_apply_node_rect(nodes, "armor_label", PLAYER_ARMOR_BAR_RECT)
-	_apply_node_rect(nodes, "armor_badge", ARMOR_BADGE_RECT)
-	_apply_node_min_size(nodes, "armor_badge_label", ARMOR_BADGE_RECT.size)
-	_apply_node_rect(nodes, "loadout_frame", PLAYER_LOADOUT_RECT)
-	_apply_node_rect(nodes, "loadout_root", Rect2(Vector2.ZERO, PLAYER_LOADOUT_RECT.size))
-	_apply_node_rect(nodes, "equipment_label", EQUIPMENT_LABEL_RECT)
-	_apply_node_rect(nodes, "consumable_label", CONSUMABLE_LABEL_RECT)
+		_apply_node_rect(nodes, "root", Rect2(Vector2.ZERO, player_panel_size))
+	_apply_node_rect(nodes, "hero_card", hero_card_rect)
+	_apply_node_rect(nodes, "hero_card_root", Rect2(Vector2.ZERO, hero_card_rect.size))
+	_apply_node_rect(nodes, "hero_portrait", hero_portrait_rect)
+	_apply_node_rect(nodes, "vitals_panel", vitals_panel_rect)
+	_apply_node_rect(nodes, "vitals_frame", vitals_frame_rect)
+	_apply_node_rect(nodes, "hp_bar", hp_bar_rect)
+	_apply_node_rect(nodes, "hp_label", hp_bar_rect)
+	_apply_node_rect(nodes, "armor_bar", armor_bar_rect)
+	_apply_node_rect(nodes, "armor_label", armor_bar_rect)
+	_apply_node_rect(nodes, "armor_badge", armor_badge_rect)
+	_apply_node_min_size(nodes, "armor_badge_label", armor_badge_rect.size)
+	_apply_node_rect(nodes, "loadout_frame", loadout_rect)
+	_apply_node_rect(nodes, "loadout_root", Rect2(Vector2.ZERO, loadout_rect.size))
+	_apply_node_rect(nodes, "equipment_label", equipment_label_rect)
+	_apply_node_rect(nodes, "consumable_label", consumable_label_rect)
 	_apply_node_rect(nodes, "relic_label", FOOTER_RELIC_LABEL_RECT)
-	_apply_node_rect(nodes, "equipment_icons", EQUIPMENT_RAIL_RECT)
-	_apply_node_rect(nodes, "consumable_icons", CONSUMABLE_RAIL_RECT)
-	_apply_node_rect(nodes, "relic_icons", FOOTER_RELIC_RAIL_RECT)
-	_apply_node_rect(nodes, "mastery_strip", PLAYER_MASTERY_RECT)
-	_apply_node_rect(nodes, "mastery_root", MASTERY_ROOT_RECT)
-	_apply_node_rect(nodes, "mastery_label", MASTERY_LABEL_RECT)
-	_apply_node_rect(nodes, "mastery_icons", MASTERY_ICONS_RECT)
+	_apply_node_rect(nodes, "equipment_icons", equipment_icons_rect)
+	_apply_node_rect(nodes, "consumable_icons", consumable_icons_rect)
+	_apply_node_rect(nodes, "relic_icons", relic_icons_rect)
+	_apply_node_rect(nodes, "mastery_strip", mastery_strip_rect)
+	_apply_node_rect(nodes, "mastery_root", mastery_root_rect)
+	_apply_node_rect(nodes, "mastery_label", mastery_label_rect)
+	_apply_node_rect(nodes, "mastery_icons", mastery_icons_rect)
+	_set_node_visible(nodes, "equipment_label", true)
+	_set_node_visible(nodes, "consumable_label", true)
+	_set_node_visible(nodes, "relic_label", false)
+	_set_node_visible(nodes, "mastery_label", false)
+	var equipment_label := nodes.get("equipment_label") as Label
+	if equipment_label != null:
+		equipment_label.add_theme_font_size_override("font_size", 14 if compact_mode else 18)
+	var consumable_label := nodes.get("consumable_label") as Label
+	if consumable_label != null:
+		consumable_label.add_theme_font_size_override("font_size", 14 if compact_mode else 18)
+	var hp_label := nodes.get("hp_label") as Label
+	if hp_label != null:
+		hp_label.add_theme_font_size_override("font_size", 20 if compact_mode else 24)
 
 
 func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
@@ -1834,3 +1918,10 @@ func _apply_node_min_size(nodes: Dictionary, key: String, size: Vector2) -> void
 	if control == null:
 		return
 	control.custom_minimum_size = size
+
+
+func _set_node_visible(nodes: Dictionary, key: String, visible: bool) -> void:
+	var canvas_item := nodes.get(key, null) as CanvasItem
+	if canvas_item == null:
+		return
+	canvas_item.visible = visible
