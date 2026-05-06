@@ -2024,3 +2024,16 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check` passed.
   - Godot MCP `view_script` loaded `run_state.gd`; focused cache-ignore rollback probe confirmed before/after state equality after a forced reset; `play_scene main`, running scene-tree smoke, `stop_running_scene`, and `get_godot_errors` completed with `Session has no errors`.
+
+## [2026-05-06] code-change | FlowTrace And Callback Cleanup
+
+- Source: `scripts/core/run_state.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/core/main_boot.gd`, `scripts/flow/collection.gd`, `scripts/flow/final_run_summary.gd`, `scripts/flow/shop_player.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`, `wiki/architecture.md`, `wiki/file-map.md`
+- Changed:
+  - Capped retained FlowTrace route state at 50 routes and added `flow_trace_debug_snapshot()` for focused probes.
+  - Added transition-generation stale rollback protection around prepared-scene post-ready checks and run mutation boundaries.
+  - Added `PlayerLoadoutHud` bound-section lifecycle cleanup for intent preview tweens.
+  - Replaced low-risk string-based `Callable(self, "...")` bindings with direct callable references and removed stable transition API `has_method(...)` guards.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded all touched runtime scripts; focused FlowTrace cap/generation, scene instantiate, HUD lifecycle, and AR-01 combat result-envelope probes passed.
+  - `play_scene main`, `stop_running_scene`, and final `get_godot_errors` completed with `Session has no errors`.

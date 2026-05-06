@@ -135,6 +135,7 @@ var _mastery_detail_value: Label
 var _mastery_detail_modifiers: Label
 var _mastery_detail_hovered_orb_id := -1
 var _highlighted_mastery_source_ids: Dictionary = {}
+var _hud_section_node: Node = null
 
 
 func set_selected_equipment_slot(slot_index: int) -> void:
@@ -150,11 +151,54 @@ func set_visual_registry(visuals: VisualRegistry) -> void:
 
 
 func bind_player_hud(nodes: Dictionary) -> void:
+	_disconnect_hud_lifecycle()
 	_hud_nodes = nodes
+	_connect_hud_lifecycle()
 	_ensure_slot_detail_popover()
 	_ensure_intent_damage_preview_nodes()
 	apply_player_hud_chrome(_hud_nodes)
 	_layout_intent_damage_preview()
+
+
+func _connect_hud_lifecycle() -> void:
+	var section := _hud_nodes.get("section", null) as Node
+	if section == null:
+		return
+	_hud_section_node = section
+	if not section.tree_exiting.is_connected(_on_hud_section_tree_exiting):
+		section.tree_exiting.connect(_on_hud_section_tree_exiting)
+
+
+func _disconnect_hud_lifecycle() -> void:
+	if _hud_section_node == null or not is_instance_valid(_hud_section_node):
+		_hud_section_node = null
+		return
+	if _hud_section_node.tree_exiting.is_connected(_on_hud_section_tree_exiting):
+		_hud_section_node.tree_exiting.disconnect(_on_hud_section_tree_exiting)
+	_hud_section_node = null
+
+
+func _on_hud_section_tree_exiting() -> void:
+	_cleanup_intent_preview_tweens()
+	_hud_section_node = null
+
+
+func _cleanup_intent_preview_tweens() -> void:
+	_stop_intent_hp_danger_pulse()
+	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
+		_intent_armor_risk_tween.kill()
+	_intent_armor_risk_tween = null
+	if _intent_hp_danger_button != null and is_instance_valid(_intent_hp_danger_button):
+		_intent_hp_danger_button.visible = false
+	if _intent_hp_danger_empty != null and is_instance_valid(_intent_hp_danger_empty):
+		_intent_hp_danger_empty.visible = false
+	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
+		_intent_hp_danger_fill.visible = false
+	if _intent_armor_risk_rect != null and is_instance_valid(_intent_armor_risk_rect):
+		_intent_armor_risk_rect.visible = false
+		_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.68)
+	_intent_damage_preview.clear()
 
 
 func set_player_hud_layout_override(layout_override: Dictionary) -> void:

@@ -302,3 +302,22 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Route invariant probe passed for new run to combat, fight victory to shop, shop advance to combat, final victory to final summary, and defeat to final summary.
   - Initial `get_godot_errors` after script loads showed only the existing stale enum reload warnings and no new touched-script parse errors. Final `play_scene main` launched the menu with desktop `MainMenuMusicPlayer` playback and `get_godot_errors` reported no session errors.
 - Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the resolved transition/HUD findings.
+
+## Post-Review: FlowTrace And Callback Cleanup
+
+- Status: `done`
+- Owner/scope: Focused P1/P2 cleanup for confirmed architecture-review risks without changing combat math, mobile combat layout, shop economy, route semantics, debug command names, or visual timing. Scope includes bounded FlowTrace route retention, deferred rollback generation guards, `PlayerLoadoutHud` intent tween lifecycle cleanup, direct callable references in low-risk callback bindings, and removal of stable `RunState` transition API `has_method(...)` guards.
+- Progress: 2026-05-06 completed the cleanup. `RunState` now caps retained FlowTrace route state at 50 routes while preserving the active route, exposes `flow_trace_debug_snapshot()` for focused probes, and tracks a transition generation that is bumped at prepared scene attach plus run mutation boundaries such as `start_new_run()` and `reset_run()`. Deferred prepared-scene post-ready callbacks now skip stale rollback restoration if a newer transition/run mutation happened during the one-frame health-check window. `PlayerLoadoutHud` now connects to the bound HUD section lifecycle and kills intent HP danger and armor-risk pulse tweens when that section exits. Low-risk `Callable(self, "...")` callback bindings were converted to direct callable references in combat, main-menu, collection, shop, and final-summary paths. Stable snapshot/restore and Collection FlowTrace wrapper guards now call the current `RunState` API directly; optional profile/meta/audio compatibility probes remain guarded.
+- Out of scope:
+  - Do not consolidate flow colors without a shared exact-match color owner.
+  - Do not migrate UI to `.tscn` scenes, theme resources, or broader coordinator refactors.
+  - Do not remove optional `has_method(...)` compatibility probes for profile/meta fallback names, dynamic audio nodes, or achievement toast APIs.
+- Validation:
+  - `git status --short --branch` confirmed branch `codex/milestone-12` with the focused source/doc changes; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `run_state.gd`, `player_loadout_hud.gd`, `combat_player_controller.gd`, `main_boot.gd`, `collection.gd`, `final_run_summary.gd`, and `shop_player.gd`.
+  - Focused FlowTrace probe created 65 synthetic routes and confirmed retained route count capped at `50`, active route id stayed present, `start_new_run()` bumped transition generation, and `reset_run()` bumped it again.
+  - Focused scene instantiate probe passed for `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`.
+  - Focused HUD lifecycle probe confirmed the new `PlayerLoadoutHud` cleanup callback is valid and can run when the bound HUD section exits.
+  - Retained AR-01 combat result-envelope probe still matched baseline values under the nested `result` payload: `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
+  - `play_scene main` launched with desktop `MainMenuMusicPlayer` playback; `stop_running_scene` succeeded; final `get_godot_errors` reported `Session has no errors`.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the cleanup and validation evidence.

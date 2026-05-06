@@ -308,8 +308,8 @@ func _ready() -> void:
 		"board_view": _board_view,
 		"board_panel": _board_panel,
 		"timer_owner": self,
-		"spawn_vfx_texture_callback": Callable(self, "_spawn_vfx_texture"),
-		"combo_sound_callback": Callable(self, "_on_presenter_combo_sound"),
+		"spawn_vfx_texture_callback": _spawn_vfx_texture,
+		"combo_sound_callback": _on_presenter_combo_sound,
 	})
 	_resolve_presenter.set_combat_speed(_combat_speed)
 	_debug_console.bind(
@@ -323,26 +323,26 @@ func _ready() -> void:
 			"initial_log_level": LOG_LEVEL_NORMAL,
 			"turn_logger": _turn_logger,
 			"callbacks": {
-				"set_status_text": Callable(self, "_console_set_status_text"),
-				"state_snapshot_data": Callable(self, "_console_state_snapshot_data"),
-				"skip_to_fight": Callable(self, "_console_skip_to_fight"),
-				"board_print_data": Callable(self, "_console_board_print_data"),
-				"board_reroll": Callable(self, "_console_board_reroll"),
-				"board_seed": Callable(self, "_console_board_seed"),
-				"gold_add": Callable(self, "_console_gold_add"),
-				"gold_set": Callable(self, "_console_gold_set"),
-				"mastery_add": Callable(self, "_console_mastery_add"),
-				"mastery_list": Callable(self, "_console_mastery_list"),
-				"consumable_add": Callable(self, "_console_consumable_add"),
-				"consumable_list": Callable(self, "_console_consumable_list"),
-				"equipment_list": Callable(self, "_console_equipment_list"),
-				"equipment_details": Callable(self, "_console_equipment_details"),
-				"equipment_add": Callable(self, "_console_equipment_add"),
-				"relic_list": Callable(self, "_console_relic_list"),
-				"relic_details": Callable(self, "_console_relic_details"),
-				"relic_add": Callable(self, "_console_relic_add"),
-				"fight_win": Callable(self, "_console_fight_win"),
-				"fight_lose": Callable(self, "_console_fight_lose"),
+				"set_status_text": _console_set_status_text,
+				"state_snapshot_data": _console_state_snapshot_data,
+				"skip_to_fight": _console_skip_to_fight,
+				"board_print_data": _console_board_print_data,
+				"board_reroll": _console_board_reroll,
+				"board_seed": _console_board_seed,
+				"gold_add": _console_gold_add,
+				"gold_set": _console_gold_set,
+				"mastery_add": _console_mastery_add,
+				"mastery_list": _console_mastery_list,
+				"consumable_add": _console_consumable_add,
+				"consumable_list": _console_consumable_list,
+				"equipment_list": _console_equipment_list,
+				"equipment_details": _console_equipment_details,
+				"equipment_add": _console_equipment_add,
+				"relic_list": _console_relic_list,
+				"relic_details": _console_relic_details,
+				"relic_add": _console_relic_add,
+				"fight_win": _console_fight_win,
+				"fight_lose": _console_fight_lose,
 			},
 		}
 	)
@@ -508,9 +508,9 @@ func _bind_board_drag_input_handler() -> void:
 		},
 		{
 			"swap_animation_seconds": SWAP_ANIMATION_SECONDS,
-			"swap_sound_callback": Callable(self, "_on_drag_swap_success"),
-			"match_groups_callback": Callable(self, "_drag_match_groups"),
-			"move_timer_seconds_callback": Callable(self, "_drag_move_timer_seconds"),
+			"swap_sound_callback": _on_drag_swap_success,
+			"match_groups_callback": _drag_match_groups,
+			"move_timer_seconds_callback": _drag_move_timer_seconds,
 		}
 	)
 
@@ -677,7 +677,7 @@ func _initialize_combat_state() -> void:
 				_flow_trace_route_id,
 				"combat_player_controller._initialize_combat_state",
 				"",
-				Callable(self, "_on_combat_scene_post_ready_rollback")
+				_on_combat_scene_post_ready_rollback
 			)
 			if not _scene_change_succeeded(change_result):
 				_handle_combat_scene_change_failure(
@@ -1761,7 +1761,7 @@ func _trace_and_change_scene_to_target(
 		transition_route_id,
 		source,
 		"",
-		Callable(self, "_on_combat_scene_post_ready_rollback")
+		_on_combat_scene_post_ready_rollback
 	)
 	if not _scene_change_succeeded(scene_change_result):
 		_handle_combat_scene_change_failure(target_scene, transition_route_id, source, scene_change_result)
@@ -1922,10 +1922,10 @@ func _play_resolve_animations(
 		visual_board_state,
 		resolve_trace_origin_usec,
 		{
-			"trace_callback": Callable(self, "_resolve_trace"),
-			"combo_preview_callback": Callable(self, "_on_resolve_presenter_combo_preview"),
-			"combo_feedback_callback": Callable(self, "_on_resolve_presenter_combo_feedback"),
-			"set_pass_index_callback": Callable(self, "_on_resolve_presenter_pass_index"),
+			"trace_callback": _resolve_trace,
+			"combo_preview_callback": _on_resolve_presenter_combo_preview,
+			"combo_feedback_callback": _on_resolve_presenter_combo_feedback,
+			"set_pass_index_callback": _on_resolve_presenter_pass_index,
 		}
 	)
 

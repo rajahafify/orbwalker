@@ -16,7 +16,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 
 ### Run flow
 
-- `RunState` tracks dungeon level, current step, current encounter, run gold, total gold earned, and the boss-reward sequence. It also chooses the next scene to load. (source: `scripts/core/run_state.gd`)
+- `RunState` tracks dungeon level, current step, current encounter, run gold, total gold earned, and the boss-reward sequence. It also chooses the next scene to load. Its FlowTrace diagnostics retain only the latest 50 route records while preserving the active route, and prepared-scene rollback uses a transition-generation guard to avoid restoring stale snapshots after newer run/transition mutations. (source: `scripts/core/run_state.gd`)
 - The level structure is a 3-level prototype run with repeated enemy, shop, boss reward, and advance steps. (source: `todo.md`, `scripts/core/run_state.gd`)
 
 ### Board and combat

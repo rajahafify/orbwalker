@@ -23,6 +23,7 @@ const SCENE_SHOP := "res://scenes/flow/shop_player.tscn"
 const SCENE_RUN_SUMMARY := "res://scenes/flow/final_run_summary.tscn"
 const MAX_DUNGEON_LEVELS := 3
 const FLOW_TRACE_ENABLED := true
+const FLOW_TRACE_ROUTE_RETENTION_MAX := 50
 const PROTOTYPE_BALANCE_PROJECT_SETTINGS_PREFIX := "matchatro/prototype_balance/"
 const PROTOTYPE_BALANCE_DEFAULTS := {
 	"starting_gold": 0,
@@ -85,8 +86,10 @@ var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
 var _flow_trace_routes: Dictionary = {}
+var _flow_trace_route_order: Array[String] = []
 var _flow_trace_route_serial: int = 0
 var _flow_trace_active_route_id: String = ""
+var _flow_trace_transition_generation: int = 0
 var _run_log_events: Array[Dictionary] = []
 var _run_log_event_serial: int = 0
 var _run_log_run_id: String = ""
@@ -641,6 +644,7 @@ func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
 
 
 func reset_run() -> void:
+	_flow_trace_bump_transition_generation()
 	ensure_player_state().reset_for_new_run()
 	_sync_meta_profile_default_unlocks()
 	run_gold = maxi(0, int(_prototype_balance_levers.get("starting_gold", 0)))
@@ -667,6 +671,7 @@ func reset_run() -> void:
 
 
 func start_new_run() -> void:
+	_flow_trace_bump_transition_generation()
 	reset_run()
 	run_active = true
 	_run_log_append(
@@ -2074,6 +2079,7 @@ func flow_trace_attach_prepared_scene(
 
 	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
 		var post_ready_failure_callback: Callable = prepared.get("post_ready_failure_callback", Callable())
+		_flow_trace_transition_generation += 1
 		_deferred_finish_prepared_scene_attach.call_deferred(
 			tree,
 			old_scene,
@@ -2081,6 +2087,7 @@ func flow_trace_attach_prepared_scene(
 			target_scene,
 			source,
 			resolved_route_id,
+			_flow_trace_transition_generation,
 			old_scene_name,
 			old_scene_path,
 			Dictionary(prepared.get("rollback_snapshot", {})),
@@ -2097,12 +2104,32 @@ func _deferred_finish_prepared_scene_attach(
 	target_scene: String,
 	source: String,
 	route_id: String,
+	transition_generation: int,
 	old_scene_name: String,
 	old_scene_path: String,
 	rollback_snapshot: Dictionary = {},
 	post_ready_failure_callback: Callable = Callable()
 ) -> void:
 	await get_tree().process_frame
+	if transition_generation != _flow_trace_transition_generation:
+		flow_trace_mark(
+			"prepared_scene_post_ready_stale_generation_skip",
+			{
+				"expected_generation": transition_generation,
+				"current_generation": _flow_trace_transition_generation,
+				"old_scene_name": old_scene_name,
+				"old_scene_path": old_scene_path,
+			},
+			route_id,
+			target_scene
+		)
+		if old_scene != null and is_instance_valid(old_scene):
+			if tree == null or tree.current_scene != old_scene:
+				old_scene.queue_free()
+		if is_instance_valid(new_scene):
+			if tree == null or tree.current_scene != new_scene:
+				new_scene.queue_free()
+		return
 	var new_scene_healthy := (
 		tree != null
 		and is_instance_valid(new_scene)
@@ -2161,6 +2188,54 @@ func flow_trace_active_route_id() -> String:
 	return _flow_trace_active_route_id
 
 
+func flow_trace_debug_snapshot() -> Dictionary:
+	return {
+		"route_count": _flow_trace_routes.size(),
+		"active_route_id": _flow_trace_active_route_id,
+		"transition_generation": _flow_trace_transition_generation,
+	}
+
+
+func _flow_trace_bump_transition_generation() -> void:
+	_flow_trace_transition_generation += 1
+
+
+func _flow_trace_register_route(route_id: String) -> void:
+	if route_id == "":
+		return
+	if _flow_trace_route_order.has(route_id):
+		_flow_trace_route_order.erase(route_id)
+	_flow_trace_route_order.append(route_id)
+
+
+func _flow_trace_prune_routes() -> void:
+	var retained_order: Array[String] = []
+	for raw_route_id in _flow_trace_route_order:
+		var route_id := String(raw_route_id)
+		if _flow_trace_routes.has(route_id):
+			retained_order.append(route_id)
+	_flow_trace_route_order = retained_order
+	while _flow_trace_routes.size() > FLOW_TRACE_ROUTE_RETENTION_MAX:
+		var prune_route_id := ""
+		for ordered_route_id in _flow_trace_route_order:
+			var candidate_id := String(ordered_route_id)
+			if candidate_id == _flow_trace_active_route_id:
+				continue
+			prune_route_id = candidate_id
+			break
+		if prune_route_id == "":
+			for raw_candidate in _flow_trace_routes.keys():
+				var candidate := String(raw_candidate)
+				if candidate == _flow_trace_active_route_id:
+					continue
+				prune_route_id = candidate
+				break
+		if prune_route_id == "":
+			break
+		_flow_trace_routes.erase(prune_route_id)
+		_flow_trace_route_order.erase(prune_route_id)
+
+
 func _flow_trace_mark_internal(route_id: String, step: String, details: Dictionary, target_scene_override: String) -> void:
 	var route_data: Dictionary = _flow_trace_routes.get(route_id, {})
 	if route_data.is_empty():
@@ -2182,6 +2257,8 @@ func _flow_trace_mark_internal(route_id: String, step: String, details: Dictiona
 	route_data["last_usec"] = now
 	route_data["target_scene"] = target_scene
 	_flow_trace_routes[route_id] = route_data
+	_flow_trace_register_route(route_id)
+	_flow_trace_prune_routes()
 
 	var details_text := ""
 	if not details.is_empty():

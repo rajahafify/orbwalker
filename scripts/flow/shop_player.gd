@@ -172,7 +172,7 @@ func _queue_ready_redirect(target_scene: String, source: String) -> void:
 		_flow_trace_route_id,
 		target_scene
 	)
-	Callable(self, "_deferred_ready_redirect").bind(target_scene, source).call_deferred()
+	_deferred_ready_redirect.bind(target_scene, source).call_deferred()
 
 
 func _deferred_ready_redirect(target_scene: String, source: String) -> void:
@@ -186,7 +186,7 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 		_flow_trace_route_id,
 		transition_source,
 		"",
-		Callable(self, "_on_scene_change_post_ready_rollback")
+		_on_scene_change_post_ready_rollback
 	)
 	if scene_change_result == OK:
 		return
@@ -682,8 +682,7 @@ func _on_continue_button_pressed() -> void:
 		_flow_trace_route_id
 	)
 	var pre_transition_state: Dictionary = {}
-	if RunState.has_method("snapshot_run_transition_state"):
-		pre_transition_state = RunState.snapshot_run_transition_state()
+	pre_transition_state = RunState.snapshot_run_transition_state()
 	RunState.flow_trace_mark("shop_before_advance_after_shop", {}, _flow_trace_route_id)
 	var transition: Dictionary = RunState.advance_after_shop(false)
 	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
@@ -720,7 +719,7 @@ func _on_continue_button_pressed() -> void:
 		route_id,
 		"shop_continue_button",
 		"",
-		Callable(self, "_on_scene_change_post_ready_rollback"),
+		_on_scene_change_post_ready_rollback,
 		pre_transition_state
 	)
 	if scene_change_result != OK:
@@ -752,7 +751,7 @@ func _on_main_menu_button_pressed() -> void:
 		_flow_trace_route_id,
 		"shop_main_menu_button",
 		"",
-		Callable(self, "_on_scene_change_post_ready_rollback")
+		_on_scene_change_post_ready_rollback
 	)
 	if scene_change_result != OK:
 		_set_status("Main menu failed: %s" % _scene_change_failure_reason(scene_change_result), false)
@@ -806,8 +805,7 @@ func _on_scene_change_post_ready_rollback(result: Dictionary) -> void:
 func _restore_transition_snapshot(snapshot: Dictionary) -> void:
 	if snapshot.is_empty():
 		return
-	if RunState.has_method("restore_run_transition_state"):
-		RunState.restore_run_transition_state(snapshot)
+	RunState.restore_run_transition_state(snapshot)
 
 
 func _scene_change_failure_reason(result: Variant) -> String:

@@ -70,11 +70,10 @@ func _route_from_summary(start_new_run: bool) -> void:
 			_is_transitioning = false
 			_set_action_buttons_disabled(false)
 			return
-		if RunState.has_method("snapshot_run_transition_state"):
-			pre_run_state = RunState.snapshot_run_transition_state()
+		pre_run_state = RunState.snapshot_run_transition_state()
 		if not pre_run_state.is_empty():
 			prepared_scene["rollback_snapshot"] = pre_run_state
-		prepared_scene["post_ready_failure_callback"] = Callable(self, "_on_new_run_post_ready_rollback")
+		prepared_scene["post_ready_failure_callback"] = _on_new_run_post_ready_rollback
 		RunState.flow_trace_mark("final_summary_before_start_new_run", {"source": source}, route_id, target_scene)
 		RunState.start_new_run()
 		RunState.flow_trace_mark("final_summary_after_start_new_run", {"source": source}, route_id, target_scene)
@@ -90,11 +89,11 @@ func _route_from_summary(start_new_run: bool) -> void:
 			route_id,
 			source,
 			"",
-			Callable(self, "_on_summary_post_ready_rollback")
+			_on_summary_post_ready_rollback
 		)
 	if _scene_change_succeeded(transition_result):
 		return
-	if start_new_run and RunState.has_method("restore_run_transition_state") and not pre_run_state.is_empty():
+	if start_new_run and not pre_run_state.is_empty():
 		RunState.restore_run_transition_state(pre_run_state)
 	var failure := _scene_change_failure_reason(transition_result)
 	push_error("Final summary transition failed: %s -> %s (%s)" % [source, target_scene, failure])

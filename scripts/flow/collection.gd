@@ -105,7 +105,7 @@ func _on_back_button_pressed() -> void:
 		MAIN_MENU_SCENE_PATH,
 		route_id,
 		"collection.back_button",
-		Callable(self, "_on_back_post_ready_rollback")
+		_on_back_post_ready_rollback
 	)
 	if _scene_change_succeeded(transition_result):
 		return
@@ -422,14 +422,11 @@ func _normalize_unlock_entries(payload: Variant) -> Array[Dictionary]:
 
 
 func _flow_trace_begin(route_name: String, target_scene: String, details: Dictionary) -> String:
-	if RunState.has_method("flow_trace_begin"):
-		return String(RunState.call("flow_trace_begin", route_name, target_scene, details))
-	return ""
+	return String(RunState.flow_trace_begin(route_name, target_scene, details))
 
 
 func _flow_trace_mark(step: String, details: Dictionary, route_id: String, target_scene: String) -> void:
-	if RunState.has_method("flow_trace_mark"):
-		RunState.call("flow_trace_mark", step, details, route_id, target_scene)
+	RunState.flow_trace_mark(step, details, route_id, target_scene)
 
 
 func _flow_trace_change_scene(
@@ -438,9 +435,7 @@ func _flow_trace_change_scene(
 	source: String,
 	post_ready_failure_callback: Callable = Callable()
 ) -> Variant:
-	if RunState.has_method("flow_trace_change_scene"):
-		return RunState.call("flow_trace_change_scene", get_tree(), target_scene, route_id, source, "", post_ready_failure_callback)
-	return get_tree().change_scene_to_file(target_scene)
+	return RunState.flow_trace_change_scene(get_tree(), target_scene, route_id, source, "", post_ready_failure_callback)
 
 
 func _scene_change_succeeded(result: Variant) -> bool:

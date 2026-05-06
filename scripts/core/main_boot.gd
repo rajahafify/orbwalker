@@ -162,11 +162,10 @@ func _on_start_fight_button_pressed() -> void:
 		push_error("Start Run prepare failed: %s -> %s (%s)" % [route_id, target_scene, prepare_failure_reason])
 		return
 	var pre_run_state: Dictionary = {}
-	if RunState.has_method("snapshot_run_transition_state"):
-		pre_run_state = RunState.snapshot_run_transition_state()
+	pre_run_state = RunState.snapshot_run_transition_state()
 	if not pre_run_state.is_empty():
 		prepared_scene["rollback_snapshot"] = pre_run_state
-	prepared_scene["post_ready_failure_callback"] = Callable(self, "_on_start_run_post_ready_rollback")
+	prepared_scene["post_ready_failure_callback"] = _on_start_run_post_ready_rollback
 	RunState.flow_trace_mark("before_start_new_run", {}, route_id)
 	RunState.start_new_run()
 	RunState.flow_trace_mark("after_start_new_run", {}, route_id)
@@ -190,7 +189,7 @@ func _on_start_fight_button_pressed() -> void:
 		return
 	_start_run_transitioning = false
 	_start_run_button.disabled = false
-	if RunState.has_method("restore_run_transition_state") and not pre_run_state.is_empty():
+	if not pre_run_state.is_empty():
 		if not bool(RunState.restore_run_transition_state(pre_run_state)):
 			RunState.reset_run()
 	else:
@@ -236,7 +235,7 @@ func _on_collection_button_pressed() -> void:
 		route_id,
 		"main_boot.collection_button",
 		"",
-		Callable(self, "_on_collection_post_ready_rollback")
+		_on_collection_post_ready_rollback
 	)
 	if _scene_change_succeeded(transition_result):
 		return
