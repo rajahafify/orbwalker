@@ -1,12 +1,12 @@
 extends RefCounted
-class_name BoardDragInputHandler
+class_name BoardController
 
 const ACTION_NONE := ""
 const ACTION_START := "start"
 const ACTION_END := "end"
 
 var _board_view: BoardView
-var _board_state: BoardState
+var _board_model: BoardModel
 var _swap_sound_callback: Callable
 var _match_groups_callback: Callable
 var _move_timer_seconds_callback: Callable
@@ -22,15 +22,15 @@ var _move_time_left: float = 0.0
 
 func bind(dependencies: Dictionary, config: Dictionary = {}) -> void:
 	_board_view = dependencies.get("board_view") as BoardView
-	_board_state = dependencies.get("board_state") as BoardState
+	_board_model = dependencies.get("board_model") as BoardModel
 	_swap_sound_callback = config.get("swap_sound_callback", Callable())
 	_match_groups_callback = config.get("match_groups_callback", Callable())
 	_move_timer_seconds_callback = config.get("move_timer_seconds_callback", Callable())
 	_swap_animation_seconds = float(config.get("swap_animation_seconds", _swap_animation_seconds))
 
 
-func set_board_state(board_state: BoardState) -> void:
-	_board_state = board_state
+func set_board_model(board_model: BoardModel) -> void:
+	_board_model = board_model
 
 
 func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
@@ -116,7 +116,7 @@ func move_time_left() -> float:
 func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictionary:
 	if not input_enabled:
 		return {"handled": false, "action": ACTION_NONE}
-	if not _has_valid_board_view() or _board_state == null:
+	if not _has_valid_board_view() or _board_model == null:
 		return {"handled": false, "action": ACTION_NONE}
 
 	var start_cell := _board_view.board_position_to_cell(board_local_position)
@@ -126,7 +126,7 @@ func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictiona
 	_active_drag = true
 	_move_time_left = _resolve_move_timer_seconds()
 	_drag_current_cell = start_cell
-	_drag_selected_orb_id = _board_state.get_cell(start_cell.x, start_cell.y)
+	_drag_selected_orb_id = _board_model.get_cell(start_cell.x, start_cell.y)
 	_drag_path.clear()
 	_drag_path.append(start_cell)
 	_board_view.selected_cell = start_cell
@@ -142,7 +142,7 @@ func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictiona
 
 
 func _update_drag(board_local_position: Vector2) -> void:
-	if not _active_drag or not _has_valid_board_view() or _board_state == null:
+	if not _active_drag or not _has_valid_board_view() or _board_model == null:
 		return
 
 	_board_view.drag_pointer_position = board_local_position
@@ -155,9 +155,9 @@ func _update_drag(board_local_position: Vector2) -> void:
 		return
 
 	var from_cell := _drag_current_cell
-	var moving_orb_id := _board_state.get_cell(from_cell.x, from_cell.y)
-	var displaced_orb_id := _board_state.get_cell(target_cell.x, target_cell.y)
-	_board_state.swap_cells(_drag_current_cell.x, _drag_current_cell.y, target_cell.x, target_cell.y)
+	var moving_orb_id := _board_model.get_cell(from_cell.x, from_cell.y)
+	var displaced_orb_id := _board_model.get_cell(target_cell.x, target_cell.y)
+	_board_model.swap_cells(_drag_current_cell.x, _drag_current_cell.y, target_cell.x, target_cell.y)
 	if _swap_sound_callback.is_valid():
 		_swap_sound_callback.call()
 	_drag_current_cell = target_cell
@@ -165,7 +165,7 @@ func _update_drag(board_local_position: Vector2) -> void:
 	_board_view.animate_swap(from_cell, target_cell, moving_orb_id, displaced_orb_id, _swap_animation_seconds)
 	_board_view.path_cells = _drag_path.duplicate()
 	_board_view.selected_cell = _drag_current_cell
-	_board_view.board_state = _board_state
+	_board_view.board_model = _board_model
 
 
 func _end_drag(timed_out: bool, handled: bool) -> Dictionary:

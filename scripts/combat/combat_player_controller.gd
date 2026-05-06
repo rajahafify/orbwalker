@@ -1,7 +1,7 @@
 extends Control
 
-@onready var _board_surface: BoardSurface = %BoardSurface
-@onready var _board_view: BoardView = _board_surface.board_view()
+@onready var _board: Control = %Board
+@onready var _board_view: BoardView = _resolve_board_view()
 @onready var _background: TextureRect = %Background
 @onready var _background_scrim: TextureRect = %BackgroundScrim
 @onready var _status_label: Label = %StatusLabel
@@ -20,7 +20,7 @@ extends Control
 @onready var _back_button: Button = $"CombatLayoutRoot/TopBar/TopBarRow/BackButton"
 @onready var _debug_toggle_button: Button = %DebugToggleButton
 @onready var _settings_button: Button = $"CombatLayoutRoot/TopBar/TopBarRow/SettingsButton"
-@onready var _board_view_control: Control = %BoardSurface
+@onready var _board_view_control: Control = %Board
 @onready var _layout_root: Control = %CombatLayoutRoot
 @onready var _top_bar: PanelContainer = $"CombatLayoutRoot/TopBar"
 @onready var _enemy_panel: PanelContainer = $"CombatLayoutRoot/EnemyPanel"
@@ -38,7 +38,7 @@ var _enemy_text_scrim: ColorRect = null
 @onready var _timer_icon: TextureRect = %TimerIcon
 @onready var _timer_state_label: Label = %TimerStateLabel
 @onready var _timer_center_marker: TextureRect = %TimerCenterMarker
-@onready var _board_frame: PanelContainer = $"CombatLayoutRoot/BoardPanel/BoardSurface/BoardFrame"
+@onready var _board_frame: PanelContainer = $"CombatLayoutRoot/BoardPanel/Board/BoardFrame"
 @onready var _board_panel: Control = %BoardPanel
 @onready var _board_shadow: Panel = %BoardShadow
 @onready var _outcome_summary_panel: Panel = %OutcomeSummaryPanel
@@ -121,7 +121,7 @@ const COMBAT_TURN_LOGGER_SCRIPT := preload("res://scripts/combat/combat_turn_log
 const COMBAT_LAYOUT_MANAGER_SCRIPT := preload("res://scripts/combat/combat_layout_manager.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_MANAGER_SCRIPT := preload("res://scripts/combat/combat_vfx_manager.gd")
-const BOARD_DRAG_INPUT_HANDLER_SCRIPT := preload("res://scripts/combat/board_drag_input_handler.gd")
+const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_builder.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -211,7 +211,7 @@ enum InputPhase {
 }
 
 var _settings := BoardGenerationSettings.new()
-var _board_state := BoardState.new()
+var _board_model := BoardModel.new()
 var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
 var _combat: Variant
 var _player_state: PlayerState
@@ -241,7 +241,7 @@ var _staged_hud_values: Dictionary = {}
 var _resolve_presenter: Variant = null
 var _combat_layout_manager: Variant = null
 var _combat_vfx_manager: Variant = null
-var _board_drag_input_handler: Variant = null
+var _board_controller: Variant = null
 var _hud_snapshot_builder: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
@@ -280,7 +280,25 @@ func _player_hud_node(unique_name: String) -> Node:
 	return hud_section.get_node_or_null("%s%s" % ["%", unique_name])
 
 
+func _resolve_board_view() -> BoardView:
+	if _board != null and is_instance_valid(_board):
+		var board_scene_unique: Node = _board.get_node_or_null("%BoardView")
+		if board_scene_unique is BoardView:
+			return board_scene_unique as BoardView
+		var board_scene_path: Node = _board.get_node_or_null("BoardFrame/BoardAspect/BoardView")
+		if board_scene_path is BoardView:
+			return board_scene_path as BoardView
+	var absolute_path: Node = get_node_or_null("CombatLayoutRoot/BoardPanel/Board/BoardFrame/BoardAspect/BoardView")
+	if absolute_path is BoardView:
+		return absolute_path as BoardView
+	push_error("CombatPlayerController: unable to resolve BoardView under CombatLayoutRoot/BoardPanel/Board.")
+	return null
+
+
 func _ready() -> void:
+	if _board_view == null:
+		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
+		return
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_active_route_id()
 	if _flow_trace_route_id == "":
@@ -305,15 +323,15 @@ func _ready() -> void:
 		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
 	if _combat_vfx_manager == null:
 		_combat_vfx_manager = COMBAT_VFX_MANAGER_SCRIPT.new()
-	if _board_drag_input_handler == null:
-		_board_drag_input_handler = BOARD_DRAG_INPUT_HANDLER_SCRIPT.new()
+	if _board_controller == null:
+		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
 	if _hud_snapshot_builder == null:
 		_hud_snapshot_builder = COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT.new()
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
 	_resolve_presenter.bind({
-		"board_surface": _board_surface,
+		"board": _board,
 		"board_view": _board_view,
 		"board_panel": _board_panel,
 		"timer_owner": self,
@@ -371,7 +389,7 @@ func _ready() -> void:
 	}, true))
 	_bind_combat_vfx_manager()
 	_bind_combat_layout_manager()
-	_bind_board_drag_input_handler()
+	_bind_board_controller()
 	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id)
 	_apply_visual_chrome()
 	RunState.flow_trace_mark("combat_after_chrome", {}, _flow_trace_route_id)
@@ -466,7 +484,7 @@ func _bind_combat_layout_manager() -> void:
 		"timer_icon": _timer_icon,
 		"timer_center_marker": _timer_center_marker,
 		"board_panel": _board_panel,
-		"board_surface": _board_surface,
+		"board": _board,
 		"board_view_control": _board_view_control,
 		"board_shadow": _board_shadow,
 		"divider_enemy_timer": _divider_enemy_timer,
@@ -506,13 +524,13 @@ func _bind_combat_vfx_manager() -> void:
 	})
 
 
-func _bind_board_drag_input_handler() -> void:
-	if _board_drag_input_handler == null:
+func _bind_board_controller() -> void:
+	if _board_controller == null:
 		return
-	_board_drag_input_handler.bind(
+	_board_controller.bind(
 		{
 			"board_view": _board_view,
-			"board_state": _board_state,
+			"board_model": _board_model,
 		},
 		{
 			"swap_animation_seconds": SWAP_ANIMATION_SECONDS,
@@ -528,9 +546,9 @@ func _on_drag_swap_success() -> void:
 
 
 func _drag_match_groups() -> Array:
-	if _resolver == null or _board_state == null:
+	if _resolver == null or _board_model == null:
 		return []
-	return _resolver.get_match_groups(_board_state)
+	return _resolver.get_match_groups(_board_model)
 
 
 func _drag_move_timer_seconds() -> float:
@@ -540,13 +558,13 @@ func _drag_move_timer_seconds() -> float:
 
 
 func _drag_active() -> bool:
-	return _board_drag_input_handler != null and bool(_board_drag_input_handler.active_drag())
+	return _board_controller != null and bool(_board_controller.active_drag())
 
 
 func _drag_move_time_left() -> float:
-	if _board_drag_input_handler == null:
+	if _board_controller == null:
 		return 0.0
-	return float(_board_drag_input_handler.move_time_left())
+	return float(_board_controller.move_time_left())
 
 
 func _apply_visual_chrome() -> void:
@@ -767,7 +785,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_create_new_board()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_P:
-			_print_board_state()
+			_print_board_model()
 			get_viewport().set_input_as_handled()
 		elif event.keycode == KEY_C:
 			_try_use_first_consumable()
@@ -793,7 +811,7 @@ func _on_regenerate_button_pressed() -> void:
 
 
 func _on_print_board_button_pressed() -> void:
-	_print_board_state()
+	_print_board_model()
 
 
 func _on_back_button_pressed() -> void:
@@ -880,9 +898,9 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 	var consumable_id := String(payload.get("consumable_id", ""))
 	var effects: Array = payload.get("effects", [])
 	var conversion_total := _apply_consumable_effects(effects)
-	_board_view.board_state = _board_state
-	if _board_drag_input_handler != null:
-		_board_drag_input_handler.refresh_match_glow()
+	_board_view.board_model = _board_model
+	if _board_controller != null:
+		_board_controller.refresh_match_glow()
 	_status_label.text = "Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total]
 	_append_combat_log("Consumable used: %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
 	_update_hud()
@@ -931,9 +949,9 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
 		return 0
 
 	var candidates: Array[Vector2i] = []
-	for row in BoardState.ROW_COUNT:
-		for column in BoardState.COLUMN_COUNT:
-			var orb_id := _board_state.get_cell(column, row)
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			var orb_id := _board_model.get_cell(column, row)
 			if orb_id == target_orb_id:
 				continue
 			candidates.append(Vector2i(column, row))
@@ -945,7 +963,7 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
 	for _i in picks:
 		var pick_index := _consumable_rng.randi_range(0, candidates.size() - 1)
 		var cell := candidates[pick_index]
-		_board_state.set_cell(cell.x, cell.y, target_orb_id)
+		_board_model.set_cell(cell.x, cell.y, target_orb_id)
 		candidates.remove_at(pick_index)
 		converted += 1
 	return converted
@@ -954,7 +972,7 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
 func _process(delta: float) -> void:
 	if _player_state == null:
 		return
-	if _board_drag_input_handler == null:
+	if _board_controller == null:
 		return
 	if not _drag_active():
 		if _input_phase == InputPhase.PLAYER_INPUT:
@@ -963,7 +981,7 @@ func _process(delta: float) -> void:
 			_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 		return
 
-	var drag_update: Dictionary = _board_drag_input_handler.update(
+	var drag_update: Dictionary = _board_controller.update(
 		delta,
 		_input_phase == InputPhase.PLAYER_INPUT
 	)
@@ -972,9 +990,9 @@ func _process(delta: float) -> void:
 
 
 func _handle_pointer_input(event: InputEvent) -> bool:
-	if _board_drag_input_handler == null:
+	if _board_controller == null:
 		return false
-	var drag_result: Dictionary = _board_drag_input_handler.handle_pointer_input(
+	var drag_result: Dictionary = _board_controller.handle_pointer_input(
 		event,
 		_input_phase == InputPhase.PLAYER_INPUT
 	)
@@ -999,7 +1017,7 @@ func _update_board_orb_hover_from_gui_input(event: InputEvent) -> void:
 	if _drag_active():
 		_set_hovered_board_orb_id(-1)
 		return
-	if _board_view == null or _board_state == null:
+	if _board_view == null or _board_model == null:
 		_set_hovered_board_orb_id(-1)
 		return
 	if event is InputEventMouseMotion:
@@ -1089,29 +1107,29 @@ func _resolve_seed() -> int:
 	return int(Time.get_ticks_usec())
 
 
-func _print_board_state() -> void:
-	var debug_text := _board_state.to_debug_string()
-	print("\n[Board Debug] Seed=", _board_state.rng_seed)
+func _print_board_model() -> void:
+	var debug_text := _board_model.to_debug_string()
+	print("\n[Board Debug] Seed=", _board_model.rng_seed)
 	print(debug_text)
-	_print_board_state_to_console()
-	_status_label.text = "Printed board for seed %d to output." % _board_state.rng_seed
+	_print_board_model_to_console()
+	_status_label.text = "Printed board for seed %d to output." % _board_model.rng_seed
 
 
 func _set_board_seed(board_seed: int) -> void:
-	if _board_drag_input_handler != null:
-		_board_drag_input_handler.abort()
+	if _board_controller != null:
+		_board_controller.abort()
 	_board_view.clear_animations()
-	_board_state.initialize(board_seed, _settings)
-	if _board_drag_input_handler != null:
-		_board_drag_input_handler.set_board_state(_board_state)
-	_board_view.board_state = _board_state
+	_board_model.initialize(board_seed, _settings)
+	if _board_controller != null:
+		_board_controller.set_board_model(_board_model)
+	_board_view.board_model = _board_model
 	if _combat != null and not _combat.is_fight_over():
 		_set_input_phase(InputPhase.PLAYER_INPUT)
 
 
-func _print_board_state_to_console() -> void:
-	_append_combat_log("Board seed: %d" % _board_state.rng_seed)
-	var lines: PackedStringArray = _board_state.to_debug_string().split("\n", false)
+func _print_board_model_to_console() -> void:
+	_append_combat_log("Board seed: %d" % _board_model.rng_seed)
+	var lines: PackedStringArray = _board_model.to_debug_string().split("\n", false)
 	for line in lines:
 		_append_combat_log("  %s" % line)
 
@@ -1169,8 +1187,8 @@ func _console_skip_to_fight(level: int, fight: int) -> Dictionary:
 	var result: Dictionary = RunState.skip_to_fight(level, fight)
 	if not bool(result.get("ok", false)):
 		return result
-	if _board_drag_input_handler != null:
-		_board_drag_input_handler.abort()
+	if _board_controller != null:
+		_board_controller.abort()
 	_last_resolve_result.clear()
 	_initialize_combat_state()
 	_create_new_board()
@@ -1185,15 +1203,15 @@ func _console_skip_to_fight(level: int, fight: int) -> Dictionary:
 
 func _console_board_print_data() -> Dictionary:
 	return {
-		"seed": _board_state.rng_seed,
-		"debug_text": _board_state.to_debug_string(),
+		"seed": _board_model.rng_seed,
+		"debug_text": _board_model.to_debug_string(),
 	}
 
 
 func _console_board_reroll() -> Dictionary:
 	_create_new_board()
 	return {
-		"seed": _board_state.rng_seed,
+		"seed": _board_model.rng_seed,
 	}
 
 
@@ -1201,7 +1219,7 @@ func _console_board_seed(board_seed: int) -> Dictionary:
 	_set_board_seed(board_seed)
 	return {
 		"ok": true,
-		"seed": _board_state.rng_seed,
+		"seed": _board_model.rng_seed,
 	}
 
 
@@ -1364,7 +1382,7 @@ func _console_fight_lose() -> Dictionary:
 
 
 func _end_drag(timed_out: bool) -> void:
-	if _board_drag_input_handler == null:
+	if _board_controller == null:
 		return
 
 	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
@@ -1379,25 +1397,25 @@ func _end_drag(timed_out: bool) -> void:
 	_resolve_trace_pass_index = -1
 	_resolve_trace(
 		resolve_trace_origin_usec,
-		"phase=resolve_start move_end_reason=\"%s\" board_seed=%d" % [move_end_reason, _board_state.rng_seed]
+		"phase=resolve_start move_end_reason=\"%s\" board_seed=%d" % [move_end_reason, _board_model.rng_seed]
 	)
 
-	_board_drag_input_handler.reset_visuals()
+	_board_controller.reset_visuals()
 	_board_view.clear_animations()
 	_set_input_phase(InputPhase.RESOLVING)
 	_reset_combat_mastery_preview()
-	var visual_board_state: BoardState = _board_state.clone()
-	var simulation_board_state: BoardState = _board_state.clone()
-	_board_view.board_state = visual_board_state
+	var visual_board_model: BoardModel = _board_model.clone()
+	var simulation_board_model: BoardModel = _board_model.clone()
+	_board_view.board_model = visual_board_model
 	_resolve_trace(
 		resolve_trace_origin_usec,
-		"phase=visual_state_ready board_seed=%d" % visual_board_state.rng_seed
+		"phase=visual_state_ready board_seed=%d" % visual_board_model.rng_seed
 	)
 	_resolve_trace(
 		resolve_trace_origin_usec,
-		"phase=simulation_resolve_start board_seed=%d" % simulation_board_state.rng_seed
+		"phase=simulation_resolve_start board_seed=%d" % simulation_board_model.rng_seed
 	)
-	_last_resolve_result = _resolver.resolve_all(simulation_board_state)
+	_last_resolve_result = _resolver.resolve_all(simulation_board_model)
 	_resolve_trace(
 		resolve_trace_origin_usec,
 		"phase=simulation_resolve_complete total_combos=%d passes=%d" % [
@@ -1405,7 +1423,7 @@ func _end_drag(timed_out: bool) -> void:
 			Array(_last_resolve_result.get("passes", [])).size(),
 		]
 	)
-	await _play_resolve_animations(_last_resolve_result, visual_board_state, resolve_trace_origin_usec)
+	await _play_resolve_animations(_last_resolve_result, visual_board_model, resolve_trace_origin_usec)
 	if not _can_continue_after_async_wait(true):
 		_resolve_trace_active = false
 		_resolve_trace_pass_index = -1
@@ -1417,12 +1435,12 @@ func _end_drag(timed_out: bool) -> void:
 			Array(_last_resolve_result.get("passes", [])).size(),
 		]
 	)
-	_board_state = simulation_board_state
-	_board_drag_input_handler.set_board_state(_board_state)
-	_board_view.board_state = _board_state
+	_board_model = simulation_board_model
+	_board_controller.set_board_model(_board_model)
+	_board_view.board_model = _board_model
 	_resolve_trace(
 		resolve_trace_origin_usec,
-		"phase=final_board_commit board_seed=%d" % _board_state.rng_seed
+		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
 	)
 	if _input_phase == InputPhase.RESOLVING:
 		await _resolve_combat_turn_from_board(_last_resolve_result)
@@ -1913,21 +1931,21 @@ func _timer_ready_seconds() -> float:
 
 
 func _abort_active_drag() -> void:
-	if _board_drag_input_handler != null:
-		_board_drag_input_handler.abort()
+	if _board_controller != null:
+		_board_controller.abort()
 	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
 
 
 func _play_resolve_animations(
 	result: Dictionary,
-	visual_board_state: BoardState = null,
+	visual_board_model: BoardModel = null,
 	resolve_trace_origin_usec: int = 0
 ) -> void:
 	if result.total_combos <= 0 or _resolve_presenter == null:
 		return
 	await _resolve_presenter.play_resolve_animations(
 		result,
-		visual_board_state,
+		visual_board_model,
 		resolve_trace_origin_usec,
 		{
 			"trace_callback": _resolve_trace,

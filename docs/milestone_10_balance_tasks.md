@@ -32,7 +32,7 @@ The first implementation should capture the untuned baseline before changing bal
 
 Balance-source inventory captured for M10-01:
 
-- Orb spawn weights: `scripts/board/board_generation_settings.gd` owns `spawn_weights`; current defaults are `1.0` for Fire/Ice/Earth/Heart/Armor and `0.45` for Gold, normalized by `BoardGenerationSettings.normalized_weights()` and consumed by `BoardState`.
+- Orb spawn weights: `scripts/board/board_generation_settings.gd` owns `spawn_weights`; current defaults are `1.0` for Fire/Ice/Earth/Heart/Armor and `0.45` for Gold, normalized by `BoardGenerationSettings.normalized_weights()` and consumed by `BoardModel`.
 - Starting/run gold: `scripts/combat/player_state.gd` resets player gold to `0`; `scripts/core/run_state.gd` owns `run_gold`, `total_gold_earned`, `set_gold(...)`, `add_gold(...)`, `spend_gold(...)`, and persistence across fights/shops.
 - Gold gain formula: `scripts/combat/combat_state_machine.gd` computes gold from matched Gold orb count with combo multiplier `1.0`, active orb values/modifiers, and `flat_gold_bonus` only when Gold resolved, then applies it through `RunState.add_gold(...)`.
 - Shop pricing/reroll costs: `scripts/content/content_registry.gd` owns the dictionary-backed shop pricing config (`common=10`, `uncommon=16`, `rare=24`, `level_step=2`, `reroll_base=1`, `reroll_step=1`); `scripts/shop/shop_service.gd` applies offer and reroll formulas.

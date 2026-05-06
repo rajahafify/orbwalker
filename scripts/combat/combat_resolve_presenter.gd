@@ -17,7 +17,7 @@ const COMBAT_SPEED_NORMAL := "normal"
 const COMBAT_SPEED_FAST := "fast"
 const COMBAT_SPEED_INSTANT := "instant"
 
-var _board_surface: Control
+var _board: Control
 var _board_view: BoardView
 var _board_panel: Control
 var _timer_owner: Node
@@ -33,7 +33,7 @@ var _combo_popup_fade_tween: Tween
 
 
 func bind(nodes: Dictionary) -> void:
-	_board_surface = nodes.get("board_surface") as Control
+	_board = nodes.get("board") as Control
 	_board_view = nodes.get("board_view") as BoardView
 	_board_panel = nodes.get("board_panel") as Control
 	_timer_owner = nodes.get("timer_owner") as Node
@@ -70,7 +70,7 @@ func wait_combat_speed(base_seconds: float) -> void:
 
 func play_resolve_animations(
 	result: Dictionary,
-	visual_board_state: BoardState = null,
+	visual_board_model: BoardModel = null,
 	resolve_trace_origin_usec: int = 0,
 	callbacks: Dictionary = {}
 ) -> void:
@@ -106,7 +106,7 @@ func play_resolve_animations(
 		)
 		await _play_match_groups_for_pass(
 			presented_groups,
-			visual_board_state,
+			visual_board_model,
 			resolve_trace_origin_usec,
 			pass_index,
 			trace_callback,
@@ -135,7 +135,7 @@ func play_resolve_animations(
 		await wait_combat_speed(GRAVITY_ANIMATION_SECONDS)
 		if not _can_continue_after_wait():
 			return
-		_apply_visual_fall_moves(visual_board_state, pass_result.fall_moves)
+		_apply_visual_fall_moves(visual_board_model, pass_result.fall_moves)
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
@@ -158,7 +158,7 @@ func play_resolve_animations(
 		await wait_combat_speed(REFILL_ANIMATION_SECONDS)
 		if not _can_continue_after_wait():
 			return
-		_apply_visual_refill_spawns(visual_board_state, pass_result.refill_spawns)
+		_apply_visual_refill_spawns(visual_board_model, pass_result.refill_spawns)
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
@@ -196,7 +196,7 @@ func play_resolve_animations(
 
 func _play_match_groups_for_pass(
 	groups: Array,
-	visual_board_state: BoardState,
+	visual_board_model: BoardModel,
 	resolve_trace_origin_usec: int,
 	pass_index: int,
 	trace_callback: Callable,
@@ -242,7 +242,7 @@ func _play_match_groups_for_pass(
 		await wait_combat_speed(CLEAR_ANIMATION_SECONDS)
 		if not _can_continue_after_wait():
 			return
-		_apply_visual_clear_groups(visual_board_state, one_group)
+		_apply_visual_clear_groups(visual_board_model, one_group)
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
@@ -308,10 +308,10 @@ func _compare_match_groups_for_presentation(left: Dictionary, right: Dictionary)
 func _match_group_anchor(group: Dictionary) -> Vector2i:
 	var cells: Array = group.get("cells", [])
 	if cells.is_empty():
-		return Vector2i(BoardState.COLUMN_COUNT, BoardState.ROW_COUNT)
+		return Vector2i(BoardModel.COLUMN_COUNT, BoardModel.ROW_COUNT)
 
-	var min_row := BoardState.ROW_COUNT
-	var min_column := BoardState.COLUMN_COUNT
+	var min_row := BoardModel.ROW_COUNT
+	var min_column := BoardModel.COLUMN_COUNT
 	for cell in cells:
 		var typed_cell: Vector2i = cell
 		if typed_cell.y < min_row:
@@ -322,38 +322,38 @@ func _match_group_anchor(group: Dictionary) -> Vector2i:
 	return Vector2i(min_column, min_row)
 
 
-func _apply_visual_clear_groups(visual_board_state: BoardState, groups: Array) -> void:
-	if visual_board_state == null or _board_view == null:
+func _apply_visual_clear_groups(visual_board_model: BoardModel, groups: Array) -> void:
+	if visual_board_model == null or _board_view == null:
 		return
 	for group in groups:
 		for cell in group.cells:
 			var typed_cell: Vector2i = cell
-			visual_board_state.clear_cell(typed_cell.x, typed_cell.y)
+			visual_board_model.clear_cell(typed_cell.x, typed_cell.y)
 	_board_view.queue_redraw()
 
 
-func _apply_visual_fall_moves(visual_board_state: BoardState, fall_moves: Array) -> void:
-	if visual_board_state == null or _board_view == null:
+func _apply_visual_fall_moves(visual_board_model: BoardModel, fall_moves: Array) -> void:
+	if visual_board_model == null or _board_view == null:
 		return
 	for move in fall_moves:
 		var from_cell: Vector2i = move.from
-		visual_board_state.clear_cell(from_cell.x, from_cell.y)
+		visual_board_model.clear_cell(from_cell.x, from_cell.y)
 	for move in fall_moves:
 		var to_cell: Vector2i = move.to
 		var orb_id := int(move.orb_id)
 		if OrbType.is_valid_id(orb_id):
-			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
+			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
 	_board_view.queue_redraw()
 
 
-func _apply_visual_refill_spawns(visual_board_state: BoardState, refill_spawns: Array) -> void:
-	if visual_board_state == null or _board_view == null:
+func _apply_visual_refill_spawns(visual_board_model: BoardModel, refill_spawns: Array) -> void:
+	if visual_board_model == null or _board_view == null:
 		return
 	for spawn in refill_spawns:
 		var to_cell: Vector2i = spawn.to
 		var orb_id := int(spawn.orb_id)
 		if OrbType.is_valid_id(orb_id):
-			visual_board_state.set_cell(to_cell.x, to_cell.y, orb_id)
+			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
 	_board_view.queue_redraw()
 
 
@@ -499,9 +499,9 @@ func _finish_combo_popup() -> void:
 
 
 func _center_combo_popup_position() -> Vector2:
-	if _board_surface == null:
+	if _board == null:
 		return Vector2.ZERO
-	return _board_surface.position + (_board_surface.size - COMBO_POPUP_SIZE) * 0.5
+	return _board.position + (_board.size - COMBO_POPUP_SIZE) * 0.5
 
 
 func _wait_duration(seconds: float) -> void:

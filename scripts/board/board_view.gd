@@ -36,9 +36,9 @@ var drag_orb_id: int = -1:
 		drag_orb_id = value
 		queue_redraw()
 
-var board_state: BoardState = null:
+var board_model: BoardModel = null:
 	set(value):
-		board_state = value
+		board_model = value
 		queue_redraw()
 
 var orb_texture_map: Dictionary = {}:
@@ -90,13 +90,13 @@ func _draw() -> void:
 	var board_rect := _calculate_board_rect()
 	draw_rect(board_rect.grow(board_padding), board_background)
 
-	if board_state == null:
+	if board_model == null:
 		return
 
 	var cell_size := _cell_size_for_rect(board_rect)
 	var cell_radius := cell_size * 0.5 * clampf(orb_scale_in_cell, 0.35, 1.0)
-	for row in BoardState.ROW_COUNT:
-		for column in BoardState.COLUMN_COUNT:
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
 			var pos := board_rect.position + Vector2(
 				column * (cell_size + cell_spacing),
 				row * (cell_size + cell_spacing)
@@ -106,7 +106,7 @@ func _draw() -> void:
 			if cell_frame_texture != null:
 				draw_texture_rect(cell_frame_texture, rect, false, cell_frame_tint)
 
-			var orb_id := board_state.get_cell(column, row)
+			var orb_id := board_model.get_cell(column, row)
 			var cell_index: int = _cell_index(column, row)
 			var is_selected_cell := selected_cell == Vector2i(column, row) and drag_orb_id >= 0
 			var is_suppressed: bool = _suppressed_cells.has(cell_index)
@@ -319,11 +319,11 @@ func get_orb_id_at_position(board_local_position: Vector2) -> int:
 
 
 func get_orb_id_at_cell(cell: Vector2i) -> int:
-	if board_state == null:
+	if board_model == null:
 		return -1
 	if not is_cell_valid(cell):
 		return -1
-	return int(board_state.get_cell(cell.x, cell.y))
+	return int(board_model.get_cell(cell.x, cell.y))
 
 
 func is_cell_valid(cell: Vector2i) -> bool:
@@ -347,21 +347,21 @@ func _calculate_board_rect() -> Rect2:
 	)
 	var cell_size := _cell_size_for_rect(available)
 	var board_size := Vector2(
-		BoardState.COLUMN_COUNT * cell_size + (BoardState.COLUMN_COUNT - 1) * cell_spacing,
-		BoardState.ROW_COUNT * cell_size + (BoardState.ROW_COUNT - 1) * cell_spacing
+		BoardModel.COLUMN_COUNT * cell_size + (BoardModel.COLUMN_COUNT - 1) * cell_spacing,
+		BoardModel.ROW_COUNT * cell_size + (BoardModel.ROW_COUNT - 1) * cell_spacing
 	)
 	var board_pos := available.position + (available.size - board_size) * 0.5
 	return Rect2(board_pos, board_size)
 
 
 func _cell_size_for_rect(rect: Rect2) -> float:
-	var width_cell_size := (rect.size.x - (BoardState.COLUMN_COUNT - 1) * cell_spacing) / BoardState.COLUMN_COUNT
-	var height_cell_size := (rect.size.y - (BoardState.ROW_COUNT - 1) * cell_spacing) / BoardState.ROW_COUNT
+	var width_cell_size := (rect.size.x - (BoardModel.COLUMN_COUNT - 1) * cell_spacing) / BoardModel.COLUMN_COUNT
+	var height_cell_size := (rect.size.y - (BoardModel.ROW_COUNT - 1) * cell_spacing) / BoardModel.ROW_COUNT
 	return maxf(8.0, minf(width_cell_size, height_cell_size))
 
 
 func _is_cell_index_valid(column: int, row: int) -> bool:
-	return column >= 0 and column < BoardState.COLUMN_COUNT and row >= 0 and row < BoardState.ROW_COUNT
+	return column >= 0 and column < BoardModel.COLUMN_COUNT and row >= 0 and row < BoardModel.ROW_COUNT
 
 
 func _cell_center_from_float_row(column: int, row: float) -> Vector2:
@@ -375,7 +375,7 @@ func _cell_center_from_float_row(column: int, row: float) -> Vector2:
 
 
 func _cell_index(column: int, row: int) -> int:
-	return row * BoardState.COLUMN_COUNT + column
+	return row * BoardModel.COLUMN_COUNT + column
 
 
 func set_orb_texture_map(texture_map: Dictionary) -> void:

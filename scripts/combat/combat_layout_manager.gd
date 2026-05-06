@@ -10,10 +10,10 @@ const ENEMY_STAGE_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
 const ENEMY_HP_ROW_RECT = Rect2(Vector2(24, 292), Vector2(682, 124))
 const ENEMY_FIGURE_TARGET_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
 const ENEMY_HP_BAR_SIZE = Vector2(612, 52)
-const BOARD_SURFACE_SIZE = Vector2(480, 576)
-const BOARD_SURFACE_TOP = 4.0
-const BOARD_SURFACE_SIDE_PADDING = 4.0
-const BOARD_SURFACE_BOTTOM_PADDING = 4.0
+const BOARD_SIZE = Vector2(480, 576)
+const BOARD_TOP = 4.0
+const BOARD_SIDE_PADDING = 4.0
+const BOARD_BOTTOM_PADDING = 4.0
 const BOARD_SHADOW_OFFSET = Vector2(0, 0)
 const BOARD_SHADOW_EXPAND = Vector2(36, 18)
 const PLAYER_STAT_CHIP_RECT = Rect2(Vector2(222, 110), Vector2(552, 42))
@@ -160,7 +160,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 		ENEMY_HP_BAR_SIZE
 	)
 	var timer_track_rect := _timer_track_rect(combat_strip_rect)
-	var board_surface_rect := _board_surface_rect(board_panel_rect)
+	var board_rect := _board_rect(board_panel_rect)
 	var enemy_hp_bar_rect := Rect2(
 		enemy_panel_rect.position + Vector2(ENEMY_HP_ROW_RECT.position.x + 18.0, ENEMY_HP_ROW_RECT.position.y + 54.0),
 		ENEMY_HP_BAR_SIZE
@@ -179,7 +179,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 		"enemy_hp": enemy_hp_text_rect,
 		"primary_intent_badge": enemy_intent_rect,
 		"timer": timer_track_rect,
-		"board_surface": board_surface_rect,
+		"board": board_rect,
 		"mastery_rail": mastery_rail_rect,
 		"hero_vitals": hero_vitals_rect,
 		"relic_rail": relic_rail_rect,
@@ -196,7 +196,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 		"enemy_hp": enemy_hp_text_rect,
 		"primary_intent_badge": enemy_intent_rect,
 		"timer": timer_track_rect,
-		"board_surface": board_surface_rect,
+		"board": board_rect,
 		"mastery_rail": mastery_rail_rect,
 		"hero_vitals": hero_vitals_rect,
 		"relic_rail": relic_rail_rect,
@@ -238,7 +238,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 		"overlaps_readability_actionable": readability_actionable_overlaps,
 		"overlaps": actionable_overlaps,
 		"overlap_count": actionable_overlaps.size(),
-		"board_surface_size": _board_surface_size_for_rect(board_panel_rect),
+		"board_size": _board_size_for_rect(board_panel_rect),
 		"readability": readability,
 	}
 
@@ -416,19 +416,19 @@ func _apply_combat_strip_layout() -> void:
 
 func _apply_board_panel_layout() -> void:
 	var board_panel := _control("board_panel")
-	var board_surface := _control("board_surface")
+	var board := _control("board")
 	var board_view_control := _control("board_view_control")
 	var board_shadow := _control("board_shadow")
-	if board_panel == null or board_surface == null or board_view_control == null or board_shadow == null:
+	if board_panel == null or board == null or board_view_control == null or board_shadow == null:
 		return
 	board_panel.clip_contents = true
-	var board_surface_size := _board_surface_size_for_rect(_layout_board_panel_rect)
-	board_surface.set_anchors_preset(Control.LayoutPreset.PRESET_TOP_LEFT)
-	board_surface.position = Vector2((_layout_board_panel_rect.size.x - board_surface_size.x) * 0.5, BOARD_SURFACE_TOP)
-	board_surface.size = board_surface_size
-	board_view_control.custom_minimum_size = board_surface_size
-	var shadow_position = board_surface.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
-	var shadow_size = board_surface_size + BOARD_SHADOW_EXPAND
+	var board_size := _board_size_for_rect(_layout_board_panel_rect)
+	board.set_anchors_preset(Control.LayoutPreset.PRESET_TOP_LEFT)
+	board.position = Vector2((_layout_board_panel_rect.size.x - board_size.x) * 0.5, BOARD_TOP)
+	board.size = board_size
+	board_view_control.custom_minimum_size = board_size
+	var shadow_position = board.position + BOARD_SHADOW_OFFSET - BOARD_SHADOW_EXPAND * 0.5
+	var shadow_size = board_size + BOARD_SHADOW_EXPAND
 	shadow_size.x = minf(shadow_size.x, _layout_board_panel_rect.size.x)
 	shadow_size.y = minf(shadow_size.y, _layout_board_panel_rect.size.y)
 	shadow_position.x = clampf(shadow_position.x, 0.0, maxf(0.0, _layout_board_panel_rect.size.x - shadow_size.x))
@@ -520,8 +520,8 @@ static func _compute_layout_rects_from_root_size(layout_root_size: Vector2) -> D
 	var board_top = board_panel_rect.position.y
 	var board_gap = 12.0
 	var player_section_base_size = player_hud_section_rect.size
-	var max_board_width = BOARD_PANEL_RECT.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0)
-	var board_panel_max_height = (max_board_width * (BOARD_SURFACE_SIZE.y / BOARD_SURFACE_SIZE.x)) + BOARD_SURFACE_TOP + BOARD_SURFACE_BOTTOM_PADDING
+	var max_board_width = BOARD_PANEL_RECT.size.x - (BOARD_SIDE_PADDING * 2.0)
+	var board_panel_max_height = (max_board_width * (BOARD_SIZE.y / BOARD_SIZE.x)) + BOARD_TOP + BOARD_BOTTOM_PADDING
 	var board_growth_capacity = maxf(0.0, board_panel_max_height - BOARD_PANEL_RECT.size.y)
 	var board_growth = minf(extra_height, board_growth_capacity)
 	var player_growth = extra_height - board_growth
@@ -562,10 +562,10 @@ static func _player_hud_layout_override_for_section(section_rect: Rect2) -> Dict
 	}
 
 
-static func _board_surface_size_for_rect(board_panel_rect: Rect2) -> Vector2:
-	var board_aspect = BOARD_SURFACE_SIZE.x / BOARD_SURFACE_SIZE.y
-	var max_board_height = maxf(64.0, board_panel_rect.size.y - BOARD_SURFACE_TOP - BOARD_SURFACE_BOTTOM_PADDING)
-	var max_board_width = maxf(64.0, board_panel_rect.size.x - (BOARD_SURFACE_SIDE_PADDING * 2.0))
+static func _board_size_for_rect(board_panel_rect: Rect2) -> Vector2:
+	var board_aspect = BOARD_SIZE.x / BOARD_SIZE.y
+	var max_board_height = maxf(64.0, board_panel_rect.size.y - BOARD_TOP - BOARD_BOTTOM_PADDING)
+	var max_board_width = maxf(64.0, board_panel_rect.size.x - (BOARD_SIDE_PADDING * 2.0))
 	var board_height = minf(max_board_height, max_board_width / maxf(0.001, board_aspect))
 	var board_width = board_height * board_aspect
 	return Vector2(board_width, board_height)
@@ -585,14 +585,14 @@ static func _timer_track_rect(combat_strip_rect: Rect2) -> Rect2:
 	)
 
 
-static func _board_surface_rect(board_panel_rect: Rect2) -> Rect2:
-	var board_surface_size := _board_surface_size_for_rect(board_panel_rect)
+static func _board_rect(board_panel_rect: Rect2) -> Rect2:
+	var board_size := _board_size_for_rect(board_panel_rect)
 	return Rect2(
 		Vector2(
-			board_panel_rect.position.x + (board_panel_rect.size.x - board_surface_size.x) * 0.5,
-			board_panel_rect.position.y + BOARD_SURFACE_TOP
+			board_panel_rect.position.x + (board_panel_rect.size.x - board_size.x) * 0.5,
+			board_panel_rect.position.y + BOARD_TOP
 		),
-		board_surface_size
+		board_size
 	)
 
 
@@ -614,7 +614,7 @@ static func _build_readability_report(zone_rects: Dictionary) -> Dictionary:
 	var thresholds := {
 		"primary_intent_badge": MIN_READABLE_ENEMY_INTENT,
 		"timer": MIN_READABLE_TIMER,
-		"board_surface": MIN_READABLE_BOARD,
+		"board": MIN_READABLE_BOARD,
 		"mastery_rail": MIN_READABLE_MASTERY,
 		"player_hp": MIN_READABLE_HP,
 		"equipment_rail": Vector2(500, 100),

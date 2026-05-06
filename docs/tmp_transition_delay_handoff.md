@@ -16,7 +16,7 @@ Original user runtime capture before the fix:
 
 Follow-up Godot MCP editor probes isolated the instantiate cost to script member construction:
 
-- `res://scenes/board/board_surface.tscn` instantiate: about `0.1ms`
+- `res://scenes/ui/board.tscn` instantiate: about `0.1ms`
 - `res://resources/visual/first_pass_theme.tres` duplicate: about `0.1ms`
 - `res://scripts/ui/visual_registry.gd.new()`: about `847ms`
 - `res://scripts/ui/player_loadout_hud.gd.new()`: about `833ms`, because it also constructed a `VisualRegistry`

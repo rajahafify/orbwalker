@@ -220,7 +220,7 @@ func _handle_board_command(parts: PackedStringArray) -> void:
 	match board_sub:
 		"print":
 			var board_data: Dictionary = _callback_dict("board_print_data")
-			_append_board_state_snapshot(board_data)
+			_append_board_model_snapshot(board_data)
 		"reroll":
 			var reroll_data: Dictionary = _callback_dict("board_reroll")
 			append_log("Board rerolled (seed %d)." % int(reroll_data.get("seed", 0)))
@@ -418,7 +418,7 @@ func _print_state_snapshot() -> void:
 		append_log(line)
 
 
-func _append_board_state_snapshot(board_data: Dictionary) -> void:
+func _append_board_model_snapshot(board_data: Dictionary) -> void:
 	append_log("Board seed: %d" % int(board_data.get("seed", 0)))
 	var debug_text := String(board_data.get("debug_text", ""))
 	var lines: PackedStringArray = debug_text.split("\n", false)

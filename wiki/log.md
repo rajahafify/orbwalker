@@ -2077,3 +2077,7 @@ Append-only history of wiki operations.
   - Godot MCP `view_script` reloaded `scripts/flow/shop_player.gd`.
   - Godot MCP `play_scene current` loaded `res://scenes/flow/shop_player.tscn` and redirected cleanly when no active run existed.
   - Godot MCP `get_godot_errors` reported `Session has no errors` after rerun; active-run shop screenshot review remains pending.
+
+## 2026-05-06 - Board MVC naming refactor
+
+- Renamed the reusable board scene to `scenes/ui/board.tscn`, renamed the board data class to `BoardModel`, moved drag/touch ownership to `scripts/board/board_controller.gd`, and documented the MVC split across [[architecture]], [[features]], and [[file-map]]. Combat now instances the UI board scene and binds `BoardModel`, `BoardView`, and `BoardController` without the removed board surface wrapper. Godot MCP loaded the renamed scripts and instantiated the board/combat scenes; runtime source/scene cleanup found no remaining current references to the removed names. Historical log entries still mention old names because [[log]] is append-only. (source: `scenes/ui/board.tscn`, `scenes/combat/combat_player.tscn`, `scripts/board/board_model.gd`, `scripts/board/board_view.gd`, `scripts/board/board_controller.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`)

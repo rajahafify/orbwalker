@@ -179,7 +179,7 @@ Planned runtime models:
 - `PlayerState`
   - Owns player stats: max HP, current HP, current armor, orb base values, equipment slots, consumable slots, move timer, equipped items, held consumables, relics, and mastery levels.
 
-- `BoardState`
+- `BoardModel`
   - Owns the 5x6 orb grid, cell helpers, board generation, current seed or RNG stream, and pure board operations.
 
 - `CombatState`

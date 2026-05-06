@@ -175,9 +175,9 @@ func _test_refill_fills_all_empties() -> String:
 		return "Expected at least one pass."
 	if result.passes[0].refill_spawns.is_empty():
 		return "Expected refill spawns after clear."
-	for row in BoardState.ROW_COUNT:
-		for column in BoardState.COLUMN_COUNT:
-			if board.get_cell(column, row) == BoardState.EMPTY_ORB_ID:
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			if board.get_cell(column, row) == BoardModel.EMPTY_ORB_ID:
 				return "Board contains empty cell after refill."
 	return ""
 
@@ -197,21 +197,21 @@ func _test_cascade_generates_multiple_passes() -> String:
 	return ""
 
 
-func _board_from_rows(rows: Array[String]) -> BoardState:
-	if rows.size() != BoardState.ROW_COUNT:
-		push_error("BoardResolverTestRunner expected %d rows, got %d." % [BoardState.ROW_COUNT, rows.size()])
+func _board_from_rows(rows: Array[String]) -> BoardModel:
+	if rows.size() != BoardModel.ROW_COUNT:
+		push_error("BoardResolverTestRunner expected %d rows, got %d." % [BoardModel.ROW_COUNT, rows.size()])
 
-	var board := BoardState.new()
+	var board := BoardModel.new()
 	board.initialize(123456)
 	for row in rows.size():
 		var row_text := rows[row]
-		if row_text.length() != BoardState.COLUMN_COUNT:
+		if row_text.length() != BoardModel.COLUMN_COUNT:
 			push_error("BoardResolverTestRunner row %d has invalid width %d." % [row, row_text.length()])
 			continue
-		for column in BoardState.COLUMN_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
 			var symbol := row_text.substr(column, 1)
 			var orb_id := _char_to_orb_id(symbol)
-			if orb_id == BoardState.EMPTY_ORB_ID:
+			if orb_id == BoardModel.EMPTY_ORB_ID:
 				board.clear_cell(column, row)
 			else:
 				board.set_cell(column, row, orb_id)
@@ -233,7 +233,7 @@ func _char_to_orb_id(symbol: String) -> int:
 		"G":
 			return OrbType.Id.GOLD
 		".":
-			return BoardState.EMPTY_ORB_ID
+			return BoardModel.EMPTY_ORB_ID
 		_:
 			push_error("Unsupported board test character: %s" % symbol)
 			return OrbType.Id.FIRE

@@ -14,7 +14,7 @@ Current scene layout:
 scenes/
   main.tscn
   board/
-    board_surface.tscn
+    board.tscn
   combat/
     combat_player.tscn
   flow/
@@ -71,7 +71,7 @@ scenes/
       final_run_summary.tscn
   components/
     board/
-      board_surface.tscn
+      board.tscn
     hud/
       player_hud_section.tscn
       elemental_mastery_panel.tscn
@@ -97,7 +97,7 @@ scenes/
   summary/
     final_run_summary.tscn
   shared/
-    board_surface.tscn
+    board.tscn
     player_hud_section.tscn
     elemental_mastery_panel.tscn
   dev/
@@ -177,7 +177,7 @@ Proposed moves:
 - `scenes/flow/shop_player.tscn` -> `scenes/screens/shop/shop_player.tscn`
 - `scenes/flow/collection.tscn` -> `scenes/screens/collection/collection.tscn`
 - `scenes/flow/final_run_summary.tscn` -> `scenes/screens/run_summary/final_run_summary.tscn`
-- `scenes/board/board_surface.tscn` -> `scenes/components/board/board_surface.tscn`
+- `scenes/ui/board.tscn` -> `scenes/components/board/board.tscn`
 - `scenes/ui/elemental_mastery_hud_variants.tscn` -> `scenes/dev/elemental_mastery_hud_variants.tscn`
 
 Acceptance:

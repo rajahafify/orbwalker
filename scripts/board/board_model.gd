@@ -1,5 +1,5 @@
 extends RefCounted
-class_name BoardState
+class_name BoardModel
 
 const COLUMN_COUNT := 5
 const ROW_COUNT := 6
@@ -34,8 +34,8 @@ func initialize(new_seed: int, settings: BoardGenerationSettings = null) -> void
 	_generate_starting_board_without_matches()
 
 
-func clone() -> BoardState:
-	var copy := BoardState.new()
+func clone():
+	var copy = BoardModel.new()
 	copy.rng_seed = rng_seed
 	copy.generation_settings = generation_settings
 	copy._weights = _weights.duplicate()
@@ -50,24 +50,24 @@ func in_bounds(column: int, row: int) -> bool:
 
 func get_cell(column: int, row: int) -> int:
 	if not in_bounds(column, row):
-		push_error("BoardState.get_cell out of bounds: (%d, %d)" % [column, row])
+		push_error("BoardModel.get_cell out of bounds: (%d, %d)" % [column, row])
 		return -1
 	return _cells[_index(column, row)]
 
 
 func set_cell(column: int, row: int, orb_id: int) -> void:
 	if not in_bounds(column, row):
-		push_error("BoardState.set_cell out of bounds: (%d, %d)" % [column, row])
+		push_error("BoardModel.set_cell out of bounds: (%d, %d)" % [column, row])
 		return
 	if not OrbType.is_valid_id(orb_id):
-		push_error("BoardState.set_cell invalid orb id: %d" % orb_id)
+		push_error("BoardModel.set_cell invalid orb id: %d" % orb_id)
 		return
 	_cells[_index(column, row)] = orb_id
 
 
 func clear_cell(column: int, row: int) -> void:
 	if not in_bounds(column, row):
-		push_error("BoardState.clear_cell out of bounds: (%d, %d)" % [column, row])
+		push_error("BoardModel.clear_cell out of bounds: (%d, %d)" % [column, row])
 		return
 	_cells[_index(column, row)] = EMPTY_ORB_ID
 
@@ -80,7 +80,7 @@ func is_cell_empty(column: int, row: int) -> bool:
 
 func swap_cells(column_a: int, row_a: int, column_b: int, row_b: int) -> bool:
 	if not in_bounds(column_a, row_a) or not in_bounds(column_b, row_b):
-		push_error("BoardState.swap_cells out of bounds: (%d, %d) <-> (%d, %d)" % [
+		push_error("BoardModel.swap_cells out of bounds: (%d, %d) <-> (%d, %d)" % [
 			column_a,
 			row_a,
 			column_b,

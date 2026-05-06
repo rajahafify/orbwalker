@@ -111,7 +111,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not start content migration or theme-resource extraction in this batch.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-10-combat-controller-refactor`; `git diff --check` passed.
-  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; focused `ResourceLoader.CACHE_MODE_IGNORE` probes loaded all three current scripts; `res://scenes/combat/combat_player.tscn` instantiated with `DebugOverlay`, `CombatLogText`, `ConsoleInput`, `BoardSurface`, and `OutcomeSummaryPanel`; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors after rerun.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; focused `ResourceLoader.CACHE_MODE_IGNORE` probes loaded all three current scripts; `res://scenes/combat/combat_player.tscn` instantiated with `DebugOverlay`, `CombatLogText`, `ConsoleInput`, `Board`, and `OutcomeSummaryPanel`; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors after rerun.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - Focused turn-logger probe confirmed the known normal turn summary lines and summary string match the pre-refactor baseline; a broader in-editor console lambda probe returned `<null>` because of MCP tool-script limitations, so representative live debug command click-through remains manual QA.
   - Manual acceptance should cover opening combat, using representative debug commands, completing one normal combat transition, and confirming no visible behavior changed.
@@ -128,7 +128,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-11-combat-layout-manager`; `git diff --check` passed.
   - Godot MCP `view_script` passed for `res://scripts/combat/combat_player_controller.gd`, `res://scripts/combat/combat_layout_manager.gd`, and `res://scripts/ui/player_loadout_hud.gd`; focused script reload returned `reload=0 base=RefCounted new=true` for the layout helper.
-  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `CombatLayoutRoot`, `BoardPanel`, `BoardSurface`, `PlayerHudSection`, `DebugOverlay`, and `OutcomeSummaryPanel`.
+  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `CombatLayoutRoot`, `BoardPanel`, `Board`, `PlayerHudSection`, `DebugOverlay`, and `OutcomeSummaryPanel`.
   - Focused layout probe preserved key formulas: `1080x1920` board `480x576`, `1080x2400` board `880x1056`, tall board panel `1048x1064`, wide viewport root centering/scale, and compact/right-side debug overlay anchoring.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - `play_scene main` launched with desktop menu WAV playback and clean recent runtime output. Final `get_godot_errors` still carried two stale enum diagnostics from an earlier failed MCP editor-script probe; focused `view_script` refreshes for `run_state.gd` and `ar01_combat_result_probe.gd` passed, and no project runtime error appeared in the rerun log.
@@ -153,7 +153,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/combat_vfx_manager.gd`.
   - Focused helper reload/instantiate probe returned `reload=0 base=RefCounted new=true`.
   - Focused VFX helper probe confirmed a null texture no-op kept `VfxLayer` at `0` children, a spawned texture parented one `TextureRect` under `VfxLayer`, and preserved size plus alpha modulation.
-  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `VfxLayer`, `ElementalMasteryCards`, `EnemyPortrait`, `PlayerPortrait`, and `BoardSurface`.
+  - Focused `res://scenes/combat/combat_player.tscn` instantiate probe confirmed `VfxLayer`, `ElementalMasteryCards`, `EnemyPortrait`, `PlayerPortrait`, and `Board`.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, and overlap checks.
@@ -162,8 +162,8 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 ## AR-13: Board Drag Input Handler Extraction
 
 - Status: `done`
-- Owner/scope: Extracted the board drag/pointer input state machine from `scripts/combat/combat_player_controller.gd` into `scripts/combat/board_drag_input_handler.gd`.
-- Progress: 2026-05-04 completed the behavior-preserving drag-input extraction. `BoardDragInputHandler` now owns board-local mouse/touch event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, drag timer countdown state, drag visual reset/abort, and live match-glow refresh. `CombatPlayerController` keeps input phase ownership, timer/status rendering, swap SFX policy through a callback, resolve kickoff, visual/simulation board cloning, combat math, resolve presentation, HUD sync, VFX, layout, debug callbacks, `/skip`, outcome routing, and scene transitions.
+- Owner/scope: Extracted the board drag/pointer input state machine from `scripts/combat/combat_player_controller.gd` into `scripts/board/board_controller.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving drag-input extraction. `BoardController` now owns board-local mouse/touch event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, drag timer countdown state, drag visual reset/abort, and live match-glow refresh. `CombatPlayerController` keeps input phase ownership, timer/status rendering, swap SFX policy through a callback, resolve kickoff, visual/simulation board cloning, combat math, resolve presentation, HUD sync, VFX, layout, debug callbacks, `/skip`, outcome routing, and scene transitions.
 - Plan:
   - Move pointer/touch drag bookkeeping, selected cell/path tracking, swap-attempt flow, drag visual clearing, and board input event parsing where it can be separated without changing board state rules.
   - Keep `combat_player_controller.gd` responsible for input phase ownership, combat resolve kickoff, audio callback decisions, board-state mutation approval, and post-drag orchestration.
@@ -174,9 +174,9 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not add gesture features, input buffering, rapid-tap behavior changes, or responsive layout fixes.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-13-board-drag-input-handler`; `git diff --check` passed.
-  - Godot MCP `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/board_drag_input_handler.gd`; focused script-load probe returned controller base `Control` and helper base `RefCounted`.
+  - Godot MCP `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/board/board_controller.gd`; focused script-load probe returned controller base `Control` and helper base `RefCounted`.
   - Focused helper probes confirmed `BoardView` local coordinate round trip for cell `(2, 4)`, valid drag start, adjacent move swap, invalid start rejection, invalid/non-adjacent move rejection without board mutation, release end action, reset visual state, touch start/second-touch rejection/touch-drag/touch-end behavior, and timeout end action.
-  - `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot` and `BoardSurface`; retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
+  - `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot` and `Board`; retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - User manual QA confirmed real mouse drag, Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy passed.
 - Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new drag-input helper boundary and validation evidence.
 
@@ -196,7 +196,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-14-combat-theme-chrome-boundary`; `git diff --check` passed.
   - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd` and `combat_chrome_styler.gd`.
-  - Focused script-load probe returned controller base `Control`, helper reload `0`, and helper base `RefCounted`; `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot`, `BoardSurface`, `TimerTrack`, and `OutcomeSummaryPanel`.
+  - Focused script-load probe returned controller base `Control`, helper reload `0`, and helper base `RefCounted`; `res://scenes/combat/combat_player.tscn` instantiated with `CombatLayoutRoot`, `Board`, `TimerTrack`, and `OutcomeSummaryPanel`.
   - Focused style probe confirmed representative pre-refactor values: shared frame bg `(0.025, 0.045, 0.07, 0.94)`, border `(0.18, 0.24, 0.31, 0.9)`, border width `1`, radius `4`, margins `8/6`; timer track bg `(0.035, 0.075, 0.11, 0.94)`, border `(0.2, 0.3, 0.4, 0.9)`, border width `1`, radius `4`; timer font `18`, timer-state font `15`, outline `2`, shadow x `1`; enemy HP fill `(0.7, 0.12, 0.13, 1.0)`.
   - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - User manual QA passed after the helper extraction.
@@ -218,7 +218,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - `git status --short --branch` confirmed `codex/ar-15-combat-placeholder-texture-utility`; `git diff --check` passed.
   - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/combat/combat_player_controller.gd` and `res://scripts/combat/combat_placeholder_textures.gd`.
   - Focused texture probe confirmed timer `96x96`, intent `96x96`, enemy `260x230`, and hero `192x192` placeholders plus representative sampled colors/alpha matched the pre-refactor source values.
-  - Focused script-load and scene instantiate probe loaded the controller as `Control`, the helper as `RefCounted`, instantiated `res://scenes/combat/combat_player.tscn`, and confirmed `TimerIcon`, `IntentBadge`, `EnemyPortrait`, `PlayerPortrait`, and `BoardSurface` nodes exist.
+  - Focused script-load and scene instantiate probe loaded the controller as `Control`, the helper as `RefCounted`, instantiated `res://scenes/combat/combat_player.tscn`, and confirmed `TimerIcon`, `IntentBadge`, `EnemyPortrait`, `PlayerPortrait`, and `Board` nodes exist.
   - Retained AR-01 combat result-envelope probe still matched baseline values; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
   - A separate async scene-ready texture-assignment probe hit an MCP tool-script parse limitation before execution, so runtime ready-time placeholder assignment remains covered by existing controller fallback code paths plus main-scene smoke rather than that specific probe.
   - User manual QA passed after the helper extraction.
