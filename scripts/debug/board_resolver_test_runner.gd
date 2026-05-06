@@ -1,7 +1,7 @@
 extends RefCounted
 class_name BoardResolverTestRunner
 
-const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_v3.gd")
+const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_service.gd")
 var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
 
 

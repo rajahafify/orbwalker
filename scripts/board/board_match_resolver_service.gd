@@ -1,5 +1,5 @@
 extends RefCounted
-class_name BoardMatchResolverV3
+class_name BoardMatchResolverService
 
 signal match_found(groups: Array)
 signal cells_cleared(cells: Array)
@@ -53,7 +53,7 @@ func resolve_all(board_model: BoardModel, max_steps: int = 64) -> Dictionary:
 		cascade_step_complete.emit(step_index, result.total_combos)
 
 	if result.passes.size() >= max_steps:
-		push_warning("BoardMatchResolverV3 hit max_steps=%d before stabilizing." % max_steps)
+		push_warning("BoardMatchResolverService hit max_steps=%d before stabilizing." % max_steps)
 
 	resolve_complete.emit(result)
 	return result

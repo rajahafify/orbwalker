@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-06 - Board Match Resolver Service Rename
+
+- Renamed the board match resolver script from `board_match_resolver_v3.gd` to `board_match_resolver_service.gd` and aligned the class name to `BoardMatchResolverService`. Runtime preloads in combat and the debug resolver test runner now use the service-named path. (source: `scripts/board/board_match_resolver_service.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)
+
 ## 2026-05-06 - Board Input Plumbing Ownership Refactor
 
 - Updated [[architecture]], [[file-map]], and [[features]] for board-only input ownership: `BoardController` now owns guarded `BoardView.gui_input` and `mouse_exited` signal wiring, board-local hover-id translation via `BoardView.get_hover_orb_id(event.position)`, drag-result callback forwarding, and `BoardView.set_input_enabled(...)` forwarding through `BoardController.set_input_enabled(...)`. `CombatPlayerController` keeps input phase authority, hovered-orb HUD interpretation, and drag-result consequences. This preserves board-local touch coordinates and avoids global transform reapplication. (source: `scripts/board/board_controller.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/board/board_view.gd`)

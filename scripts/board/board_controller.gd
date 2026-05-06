@@ -224,7 +224,7 @@ func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
 	return {"handled": false, "action": ACTION_NONE}
 
 
-func update(delta: float, _input_enabled: bool) -> Dictionary:
+func update(delta: float, _input_active: bool) -> Dictionary:
 	if not _active_drag:
 		return {"action": ACTION_NONE}
 	_refresh_drag_match_glow()
