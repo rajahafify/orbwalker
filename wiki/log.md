@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-06 - Scene Review Finding Cleanup
+
+- Documented and validated the scene-review finding cleanup: `CombatLayoutManager` now casts enum-style layout assignments so the current Godot MCP error gate is clean, and `docs/scene_structure_refactor_plan.md` now treats the shop HUD preset cleanup as resolved while keeping the reusable HUD `.tscn` boundary as the remaining scene-structure target. Validation passed `git diff --check`, Godot MCP `view_script`, focused combat scene instantiate/load probe, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/combat/combat_layout_manager.gd`, `docs/scene_structure_refactor_plan.md`, `docs/test_plan.md`)
+
 ## 2026-05-06 - Scene Review P1/P2 Cleanup
 
 - Updated [[known-issues]], [[architecture]], [[file-map]], and [[features]] for the scene-review cleanup: `RunState` now supports split prepare/attach FlowTrace transitions, Start Run and final-summary New Run prepare combat before mutating run/audio state and restore snapshots on attach failure, shop ready-time redirects use traced scene-change recovery, and shop HUD internals now come from `PlayerLoadoutHud.shop_player_hud_layout_preset()` instead of shop-local geometry constants. The shop action-to-HUD gap remains 30 design pixels. Godot MCP validation passed for script loading, focused transition/HUD probes, scene instantiation, and route invariants; final main-scene smoke is recorded in `docs/test_plan.md`. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/flow/final_run_summary.gd`, `scripts/flow/shop_player.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`)

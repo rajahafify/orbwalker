@@ -34,16 +34,15 @@ Observed mismatch:
 - `scenes/run/` exists but does not contain run summary or run-flow scene assets.
 - Shared UI surfaces such as the player HUD are still mostly code-built through `PlayerLoadoutHud`, not represented as a reusable scene/partial asset.
 
-## Regression To Record
+## Resolved HUD Preset Cleanup
 
-The shop readability pass introduced a shop-specific `PlayerLoadoutHud` layout override in `scripts/flow/shop_player.gd`. That preserved the same HUD renderer but broke the intended "Rails partial" style contract where combat and shop should mount the same Player HUD section with identical structure and geometry.
+The shop readability pass briefly introduced shop-specific `PlayerLoadoutHud` geometry constants in `scripts/flow/shop_player.gd`. The scene-review P1/P2 cleanup moved that geometry into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through `CombatLayoutManager`, and shop applies the named shared preset from `PlayerLoadoutHud`.
 
-The regression was architectural, not a gameplay logic bug:
+The remaining architectural issue is not the old shop-local constants. It is the lack of a reusable HUD scene/component boundary:
 
-- Combat uses `CombatLayoutManager` to apply a combat-owned HUD layout override.
-- Shop now applies independent `SHOP_PLAYER_HUD_*` geometry constants.
-- Both still call `PlayerLoadoutHud`, but the mounted HUD section is no longer identical across combat and shop.
-- This creates visual drift and makes future polish fragile because each screen can reshape the shared HUD independently.
+- Combat and shop still build or mount equivalent Player HUD structures separately.
+- `PlayerLoadoutHud` owns the shared data binding and named layout presets, but the HUD is not yet represented by a reusable `.tscn` component.
+- Future screens should add shared `PlayerLoadoutHud` presets or a shared HUD component instead of defining screen-local internal HUD geometry.
 
 Target principle:
 

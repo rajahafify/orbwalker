@@ -327,11 +327,11 @@ func _apply_enemy_panel_layout() -> void:
 	var enemy_stage := _control("enemy_stage")
 	if enemy_stage != null:
 		enemy_stage.clip_contents = true
-		enemy_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		enemy_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	var intent_row := _control("intent_row")
 	if intent_row != null:
-		intent_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		intent_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		intent_row.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		intent_row.alignment = BoxContainer.ALIGNMENT_CENTER as BoxContainer.AlignmentMode
 		intent_row.add_theme_constant_override("separation", 12)
 		intent_row.z_index = 9
 	var intent_badge := _control("intent_badge")
@@ -341,19 +341,19 @@ func _apply_enemy_panel_layout() -> void:
 	var primary_intent_column := _control("primary_intent_column")
 	if primary_intent_column != null:
 		primary_intent_column.custom_minimum_size = Vector2(156, 198)
-		primary_intent_column.size_flags_horizontal = Control.SIZE_SHRINK_END
+		primary_intent_column.size_flags_horizontal = Control.SIZE_SHRINK_END as Control.SizeFlags
 	var primary_intent_title_label := _control("primary_intent_title_label")
 	if primary_intent_title_label != null:
-		primary_intent_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 	var primary_intent_amount_label := _control("primary_intent_amount_label")
 	if primary_intent_amount_label != null:
-		primary_intent_amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 	var primary_intent_detail_label := _control("primary_intent_detail_label")
 	if primary_intent_detail_label != null:
-		primary_intent_detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_detail_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 	var enemy_hp_row := _control("enemy_hp_row")
 	if enemy_hp_row != null:
-		enemy_hp_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		enemy_hp_row.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		enemy_hp_row.z_index = 8
 		enemy_hp_row.clip_contents = true
 	var enemy_name_label := _control("enemy_name_label")
@@ -379,8 +379,8 @@ func _apply_enemy_panel_layout() -> void:
 	if enemy_hp_text_label != null:
 		enemy_hp_text_label.position = Vector2(18.0, 54.0)
 		enemy_hp_text_label.size = ENEMY_HP_BAR_SIZE
-		enemy_hp_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		enemy_hp_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		enemy_hp_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		enemy_hp_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 
 
 func _apply_combat_strip_layout() -> void:
@@ -698,7 +698,7 @@ func _apply_player_panel_layout() -> void:
 	_apply_design_rect(_control("turn_summary_label"), PLAYER_SUMMARY_RECT)
 	var mastery_root := _control("mastery_root")
 	if mastery_root != null:
-		mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		mastery_root.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN as Control.SizeFlags
 	var hero_level_badge := _canvas_item("hero_level_badge")
 	if hero_level_badge != null:
 		hero_level_badge.visible = false
