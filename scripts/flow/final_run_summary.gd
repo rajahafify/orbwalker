@@ -72,6 +72,8 @@ func _route_from_summary(start_new_run: bool) -> void:
 			return
 		if RunState.has_method("snapshot_run_transition_state"):
 			pre_run_state = RunState.snapshot_run_transition_state()
+		if not pre_run_state.is_empty():
+			prepared_scene["rollback_snapshot"] = pre_run_state
 		RunState.flow_trace_mark("final_summary_before_start_new_run", {"source": source}, route_id, target_scene)
 		RunState.start_new_run()
 		RunState.flow_trace_mark("final_summary_after_start_new_run", {"source": source}, route_id, target_scene)
@@ -117,20 +119,20 @@ func _scene_change_failure_reason(result: Variant) -> String:
 func _apply_static_layout() -> void:
 	var background := TextureRect.new()
 	background.name = "SummaryBackground"
-	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
+	background.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
+	background.set("expand_mode", TextureRect.EXPAND_IGNORE_SIZE)
+	background.set("stretch_mode", TextureRect.STRETCH_KEEP_ASPECT_COVERED)
 	background.texture = load(BACKGROUND_PATH)
 	background.modulate = Color(0.52, 0.48, 0.42, 1.0)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.set("mouse_filter", Control.MOUSE_FILTER_IGNORE)
 	add_child(background)
 	move_child(background, 0)
 
 	var scrim := ColorRect.new()
 	scrim.name = "SummaryScrim"
-	scrim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scrim.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
 	scrim.color = Color(0.02, 0.018, 0.014, 0.54)
-	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scrim.set("mouse_filter", Control.MOUSE_FILTER_IGNORE)
 	add_child(scrim)
 	move_child(scrim, 1)
 
@@ -146,12 +148,12 @@ func _apply_static_layout() -> void:
 
 	_title_label.add_theme_font_size_override("font_size", 62)
 	_title_label.add_theme_color_override("font_color", COLOR_VICTORY)
-	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.set("horizontal_alignment", HORIZONTAL_ALIGNMENT_CENTER)
 
 	_summary_label.add_theme_font_size_override("font_size", 28)
 	_summary_label.add_theme_color_override("font_color", COLOR_MUTED)
-	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	_summary_label.set("horizontal_alignment", HORIZONTAL_ALIGNMENT_CENTER)
+	_summary_label.set("autowrap_mode", TextServer.AUTOWRAP_WORD_SMART)
 
 	_style_action_button(_new_run_button, true)
 	_style_action_button(_main_menu_button, false)
@@ -184,7 +186,7 @@ func _make_stats_grid(summary: Dictionary) -> GridContainer:
 	var grid := GridContainer.new()
 	grid.name = "SummaryStats"
 	grid.columns = 2
-	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.set("size_flags_horizontal", Control.SIZE_EXPAND_FILL)
 	grid.add_theme_constant_override("h_separation", 18)
 	grid.add_theme_constant_override("v_separation", 18)
 	var bosses_killed := int(summary.get("bosses_defeated", 0))
@@ -201,21 +203,21 @@ func _make_stats_grid(summary: Dictionary) -> GridContainer:
 func _add_stat_card(parent: GridContainer, label_text: String, value_text: String, value_color: Color = COLOR_TEXT) -> void:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(368, 118)
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.set("size_flags_horizontal", Control.SIZE_EXPAND_FILL)
 	card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(COLOR_CARD, COLOR_CARD_EDGE, 3, 14, Vector4(24, 20, 24, 20)))
 	var box := VBoxContainer.new()
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.set("alignment", BoxContainer.ALIGNMENT_CENTER)
 	box.add_theme_constant_override("separation", 3)
 	card.add_child(box)
 	var label := Label.new()
 	label.text = label_text
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.set("horizontal_alignment", HORIZONTAL_ALIGNMENT_CENTER)
 	label.add_theme_font_size_override("font_size", 20)
 	label.add_theme_color_override("font_color", COLOR_MUTED)
 	box.add_child(label)
 	var value := Label.new()
 	value.text = value_text
-	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value.set("horizontal_alignment", HORIZONTAL_ALIGNMENT_CENTER)
 	value.add_theme_font_size_override("font_size", 42)
 	value.add_theme_color_override("font_color", value_color)
 	box.add_child(value)
@@ -225,7 +227,7 @@ func _add_stat_card(parent: GridContainer, label_text: String, value_text: Strin
 func _make_loadout_section(title: String, values: Array[String]) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.name = "%sSection" % title.replace(" ", "")
-	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.set("size_flags_horizontal", Control.SIZE_EXPAND_FILL)
 	panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.095, 0.078, 0.06, 0.92), COLOR_CARD_EDGE, 2, 12, Vector4(24, 20, 24, 20)))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 9)
@@ -239,7 +241,7 @@ func _make_loadout_section(title: String, values: Array[String]) -> PanelContain
 	body.text = "\n".join(values)
 	body.add_theme_font_size_override("font_size", 28)
 	body.add_theme_color_override("font_color", COLOR_TEXT)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	body.set("autowrap_mode", TextServer.AUTOWRAP_WORD_SMART)
 	box.add_child(body)
 	return panel
 
@@ -247,7 +249,7 @@ func _make_loadout_section(title: String, values: Array[String]) -> PanelContain
 func _make_action_row() -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.name = "SummaryActions"
-	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.set("size_flags_horizontal", Control.SIZE_EXPAND_FILL)
 	row.add_theme_constant_override("separation", 18)
 	row.add_child(_new_run_button)
 	row.add_child(_main_menu_button)
@@ -280,7 +282,7 @@ func _title_case_id(value: String) -> String:
 
 func _style_action_button(button: Button, primary: bool) -> void:
 	button.custom_minimum_size = Vector2(0, 82)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.set("size_flags_horizontal", Control.SIZE_EXPAND_FILL)
 	button.add_theme_font_size_override("font_size", 30)
 	button.add_theme_color_override("font_color", Color(0.08, 0.055, 0.025, 1.0) if primary else COLOR_TEXT)
 	var normal_color := Color(0.95, 0.68, 0.20, 1.0) if primary else Color(0.16, 0.13, 0.10, 1.0)

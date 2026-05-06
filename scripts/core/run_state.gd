@@ -2043,6 +2043,11 @@ func flow_trace_attach_prepared_scene(
 		push_error("[FlowTrace] flow_trace_change_scene failed: current_scene assignment failed for %s" % target_scene)
 		return ERR_CANT_CREATE
 
+	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
+		old_scene.process_mode = Node.PROCESS_MODE_DISABLED
+		if old_scene is CanvasItem:
+			(old_scene as CanvasItem).visible = false
+
 	var new_scene_path := ""
 	if new_scene.is_inside_tree():
 		new_scene_path = String(new_scene.get_path())
@@ -2062,18 +2067,73 @@ func flow_trace_attach_prepared_scene(
 	)
 
 	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
+		_deferred_finish_prepared_scene_attach.call_deferred(
+			tree,
+			old_scene,
+			new_scene,
+			target_scene,
+			resolved_route_id,
+			old_scene_name,
+			old_scene_path,
+			Dictionary(prepared.get("rollback_snapshot", {}))
+		)
+
+	return OK
+
+
+func _deferred_finish_prepared_scene_attach(
+	tree: SceneTree,
+	old_scene: Node,
+	new_scene: Node,
+	target_scene: String,
+	route_id: String,
+	old_scene_name: String,
+	old_scene_path: String,
+	rollback_snapshot: Dictionary = {}
+) -> void:
+	await get_tree().process_frame
+	var new_scene_healthy := (
+		tree != null
+		and is_instance_valid(new_scene)
+		and new_scene.is_inside_tree()
+		and tree.current_scene == new_scene
+	)
+	if new_scene_healthy:
 		flow_trace_mark(
 			"before_old_scene_free",
 			{
 				"old_scene_name": old_scene_name,
 				"old_scene_path": old_scene_path,
+				"post_ready_check": true,
 			},
-			resolved_route_id,
+			route_id,
 			target_scene
 		)
-		old_scene.queue_free()
+		if old_scene != null and is_instance_valid(old_scene):
+			old_scene.queue_free()
+		return
 
-	return OK
+	flow_trace_mark(
+		"prepared_scene_post_ready_check_failed",
+		{
+			"old_scene_name": old_scene_name,
+			"old_scene_path": old_scene_path,
+			"new_scene_valid": is_instance_valid(new_scene),
+		},
+		route_id,
+		target_scene
+	)
+	if not rollback_snapshot.is_empty():
+		restore_run_transition_state(rollback_snapshot)
+	if old_scene != null and is_instance_valid(old_scene):
+		old_scene.process_mode = Node.PROCESS_MODE_INHERIT
+		if old_scene is CanvasItem:
+			(old_scene as CanvasItem).visible = true
+		if tree != null:
+			tree.current_scene = old_scene
+	if is_instance_valid(new_scene):
+		new_scene.queue_free()
+	push_error("[FlowTrace] prepared scene post-ready check failed for %s; restored previous scene when available" % target_scene)
 
 
 func flow_trace_active_route_id() -> String:

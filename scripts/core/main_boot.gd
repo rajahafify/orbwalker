@@ -164,6 +164,8 @@ func _on_start_fight_button_pressed() -> void:
 	var pre_run_state: Dictionary = {}
 	if RunState.has_method("snapshot_run_transition_state"):
 		pre_run_state = RunState.snapshot_run_transition_state()
+	if not pre_run_state.is_empty():
+		prepared_scene["rollback_snapshot"] = pre_run_state
 	RunState.flow_trace_mark("before_start_new_run", {}, route_id)
 	RunState.start_new_run()
 	RunState.flow_trace_mark("after_start_new_run", {}, route_id)

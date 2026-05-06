@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-06 - Prepared Scene Post-Ready Guard
+
+- Documented and validated the review follow-up: `RunState.flow_trace_attach_prepared_scene(...)` now keeps the old scene disabled/hidden until the prepared scene survives a deferred post-ready frame, logs `post_ready_check` before freeing the old scene, and restores the supplied rollback snapshot plus old scene if that health check fails. Start Run and final-summary New Run now pass rollback snapshots into the prepared scene payload. `CombatLayoutManager` enum assignments use fully-qualified enum values so the Godot MCP script reload gate is clean. Validation passed `git diff --check`, Godot MCP `view_script` for `combat_layout_manager.gd` and `final_run_summary.gd`, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/flow/final_run_summary.gd`, `scripts/combat/combat_layout_manager.gd`, `docs/test_plan.md`)
+
 ## 2026-05-06 - Scene Review Finding Cleanup
 
 - Documented and validated the scene-review finding cleanup: `CombatLayoutManager` now casts enum-style layout assignments so the current Godot MCP error gate is clean, and `docs/scene_structure_refactor_plan.md` now treats the shop HUD preset cleanup as resolved while keeping the reusable HUD `.tscn` boundary as the remaining scene-structure target. Validation passed `git diff --check`, Godot MCP `view_script`, focused combat scene instantiate/load probe, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/combat/combat_layout_manager.gd`, `docs/scene_structure_refactor_plan.md`, `docs/test_plan.md`)
