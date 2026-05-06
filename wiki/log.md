@@ -2001,3 +2001,13 @@ Append-only history of wiki operations.
   - Added SOLID ownership rules and stepwise refactor tasks for shared HUD scene extraction, combat/shop HUD identity restoration, scene moves, empty folder cleanup, and scene contract validation.
 - Validation:
   - Documentation-only change. Current scene inventory was checked with PowerShell; no files were moved and no runtime behavior was changed.
+
+## [2026-05-06] code-change | Transition Rollback Nested State
+
+- Source: `scripts/core/run_state.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Changed:
+  - Extended `RunState` transition snapshots to capture and restore nested player combat state, progression state, and shop state.
+  - Preserved Start Run and final-summary New Run prepare-before-commit behavior while making attach-failure recovery restore HP, armor, timer, inventory, mastery, relics, active effects, shop data, and shop offer sequence.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded `run_state.gd`; focused cache-ignore rollback probe confirmed before/after state equality after a forced reset; `play_scene main`, running scene-tree smoke, `stop_running_scene`, and `get_godot_errors` completed with `Session has no errors`.

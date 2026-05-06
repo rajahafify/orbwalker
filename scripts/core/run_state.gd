@@ -681,6 +681,9 @@ func start_new_run() -> void:
 
 func snapshot_run_transition_state() -> Dictionary:
 	return {
+		"player_state": _snapshot_player_state_for_transition(),
+		"player_progression_state": _snapshot_player_progression_state_for_transition(),
+		"shop_state": _snapshot_shop_state_for_transition(),
 		"run_active": run_active,
 		"run_victory": run_victory,
 		"run_gold": run_gold,
@@ -748,8 +751,99 @@ func restore_run_transition_state(snapshot: Dictionary) -> bool:
 	_run_log_last_export_paths = Dictionary(snapshot.get("run_log_last_export_paths", {})).duplicate(true)
 	_run_log_last_export_errors = Array(snapshot.get("run_log_last_export_errors", [])).duplicate()
 	_run_log_last_export_unix = int(snapshot.get("run_log_last_export_unix", _run_log_last_export_unix))
+	_restore_player_state_for_transition(Dictionary(snapshot.get("player_state", {})))
+	_restore_player_progression_state_for_transition(Dictionary(snapshot.get("player_progression_state", {})))
+	_restore_shop_state_for_transition(Dictionary(snapshot.get("shop_state", {})))
 	_sync_player_gold_from_run()
 	return true
+
+
+func _snapshot_player_state_for_transition() -> Dictionary:
+	var state = ensure_player_state()
+	return {
+		"max_hp": state.max_hp,
+		"current_hp": state.current_hp,
+		"armor": state.armor,
+		"gold": state.gold,
+		"equipment_slots": state.equipment_slots,
+		"consumable_slots": state.consumable_slots,
+		"move_timer_seconds": state.move_timer_seconds,
+		"increase_combo_modifier": state.increase_combo_modifier,
+		"more_combo_modifier": state.more_combo_modifier,
+	}
+
+
+func _restore_player_state_for_transition(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	var state = ensure_player_state()
+	state.max_hp = maxi(1, int(snapshot.get("max_hp", state.max_hp)))
+	state.current_hp = clampi(int(snapshot.get("current_hp", state.current_hp)), 0, state.max_hp)
+	state.armor = maxi(0, int(snapshot.get("armor", state.armor)))
+	state.gold = maxi(0, int(snapshot.get("gold", state.gold)))
+	state.equipment_slots = maxi(0, int(snapshot.get("equipment_slots", state.equipment_slots)))
+	state.consumable_slots = maxi(0, int(snapshot.get("consumable_slots", state.consumable_slots)))
+	state.move_timer_seconds = maxf(0.0, float(snapshot.get("move_timer_seconds", state.move_timer_seconds)))
+	state.increase_combo_modifier = int(snapshot.get("increase_combo_modifier", state.increase_combo_modifier))
+	state.more_combo_modifier = maxf(0.0, float(snapshot.get("more_combo_modifier", state.more_combo_modifier)))
+
+
+func _snapshot_player_progression_state_for_transition() -> Dictionary:
+	var progression = ensure_player_progression_state()
+	return {
+		"equipped_item_ids": progression.equipped_item_ids.duplicate(),
+		"held_consumable_ids": progression.held_consumable_ids.duplicate(),
+		"relic_ids": progression.relic_ids.duplicate(),
+		"mastery_levels": progression.mastery_levels.duplicate(true),
+		"active_effects_by_hook": progression.active_effects_by_hook.duplicate(true),
+	}
+
+
+func _restore_player_progression_state_for_transition(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	var progression = ensure_player_progression_state()
+	progression.equipped_item_ids = _string_array_from_snapshot(snapshot.get("equipped_item_ids", []), PlayerProgressionState.EQUIPMENT_SLOT_COUNT)
+	progression.held_consumable_ids = _string_array_from_snapshot(snapshot.get("held_consumable_ids", []), PlayerProgressionState.CONSUMABLE_SLOT_COUNT)
+	progression.relic_ids = _string_array_from_snapshot(snapshot.get("relic_ids", []), -1)
+	progression.mastery_levels = Dictionary(snapshot.get("mastery_levels", {})).duplicate(true)
+	progression.active_effects_by_hook = Dictionary(snapshot.get("active_effects_by_hook", {})).duplicate(true)
+
+
+func _snapshot_shop_state_for_transition() -> Dictionary:
+	var state = ensure_shop_state()
+	var snapshot: Dictionary = state.to_snapshot()
+	snapshot["offer_sequence"] = state.offer_sequence
+	return snapshot
+
+
+func _restore_shop_state_for_transition(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	var state = ensure_shop_state()
+	state.active = bool(snapshot.get("active", state.active))
+	state.dungeon_level = maxi(1, int(snapshot.get("dungeon_level", state.dungeon_level)))
+	state.item_offers = Array(snapshot.get("item_offers", [])).duplicate(true)
+	state.relic_offer = Dictionary(snapshot.get("relic_offer", {})).duplicate(true)
+	state.reroll_count = maxi(0, int(snapshot.get("reroll_count", state.reroll_count)))
+	state.reroll_cost = maxi(0, int(snapshot.get("reroll_cost", state.reroll_cost)))
+	state.pending_booster_options = Array(snapshot.get("pending_booster_options", [])).duplicate(true)
+	state.pending_booster_offer_id = String(snapshot.get("pending_booster_offer_id", state.pending_booster_offer_id))
+	state.offer_sequence = maxi(1, int(snapshot.get("offer_sequence", state.offer_sequence)))
+	state.skipped = bool(snapshot.get("skipped", state.skipped))
+
+
+func _string_array_from_snapshot(raw_values: Variant, fixed_size: int = -1) -> Array[String]:
+	var values: Array = raw_values if raw_values is Array else []
+	var out: Array[String] = []
+	for raw_value in values:
+		out.append(String(raw_value))
+	if fixed_size >= 0:
+		while out.size() < fixed_size:
+			out.append("")
+		while out.size() > fixed_size:
+			out.remove_at(out.size() - 1)
+	return out
 
 
 func is_current_step_fight() -> bool:
