@@ -1,0 +1,223 @@
+[gd_scene format=3]
+
+[node name="PlayerHudSection" type="Panel"]
+unique_name_in_owner = true
+layout_mode = 1
+mouse_filter = 2
+
+[node name="ElementalMasteryPanel" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ElementalMasteryRoot" type="Control" parent="ElementalMasteryPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ElementalMasteryTitle" type="Label" parent="ElementalMasteryPanel/ElementalMasteryRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "ELEMENTAL MASTERY"
+horizontal_alignment = 1
+
+[node name="ElementalMasteryCards" type="Control" parent="ElementalMasteryPanel/ElementalMasteryRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PlayerPanel" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PlayerPanelRoot" type="Control" parent="PlayerPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="HeroCard" type="Panel" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="HeroCardRoot" type="Control" parent="PlayerPanel/PlayerPanelRoot/HeroCard"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PlayerPortrait" type="TextureRect" parent="PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroLevelBadge" type="PanelContainer" parent="PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="HeroLevelLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot/HeroLevelBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VitalsPanel" type="Control" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="VitalsFrame" type="Panel" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PlayerHpBar" type="ProgressBar" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+show_percentage = false
+max_value = 100.0
+value = 100.0
+
+[node name="PlayerHpLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerArmorBar" type="ProgressBar" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+show_percentage = false
+max_value = 100.0
+value = 0.0
+
+[node name="PlayerArmorLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "0 / 30"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ArmorBadge" type="PanelContainer" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ArmorBadgeLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/VitalsPanel/ArmorBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "BLOCK +0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatChipRow" type="HBoxContainer" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="AttackStatLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/StatChipRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ATK 1"
+horizontal_alignment = 1
+
+[node name="ArmorStatLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/StatChipRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ARM 1"
+horizontal_alignment = 1
+
+[node name="HeartStatLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/StatChipRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HEART 0%"
+horizontal_alignment = 1
+
+[node name="GoldStatLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/StatChipRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "GOLD 0%"
+horizontal_alignment = 1
+
+[node name="CombatMetaRow" type="HBoxContainer" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+theme_override_constants/separation = 10
+
+[node name="RunProgressLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Turn Summary"
+
+[node name="CombatPhaseLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Phase"
+horizontal_alignment = 2
+
+[node name="TurnSummaryLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+text = "Turn Summary"
+
+[node name="LoadoutFrame" type="Panel" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="LoadoutRoot" type="Control" parent="PlayerPanel/PlayerPanelRoot/LoadoutFrame"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="EquipmentLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "EQUIPMENT"
+horizontal_alignment = 1
+
+[node name="EquipmentIcons" type="Control" parent="PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ConsumableLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+text = "CONSUMABLES"
+horizontal_alignment = 1
+
+[node name="ConsumableIcons" type="Control" parent="PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="MasteryStrip" type="Panel" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="MasteryRoot" type="Control" parent="PlayerPanel/PlayerPanelRoot/MasteryStrip"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="MasteryLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/MasteryStrip/MasteryRoot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 1
+text = "MASTERY"
+vertical_alignment = 1
+
+[node name="MasteryIcons" type="Control" parent="PlayerPanel/PlayerPanelRoot/MasteryStrip/MasteryRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="RelicRow" type="HBoxContainer" parent="PlayerPanel/PlayerPanelRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="RelicLabel" type="Label" parent="PlayerPanel/PlayerPanelRoot/RelicRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "RELICS"
+
+[node name="RelicIcons" type="HBoxContainer" parent="PlayerPanel/PlayerPanelRoot/RelicRow"]
+unique_name_in_owner = true
+layout_mode = 2

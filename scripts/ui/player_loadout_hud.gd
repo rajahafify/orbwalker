@@ -51,11 +51,7 @@ const PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 6), Vector2(1048, 50))
 const PLAYER_HUD_MASTERY_CARDS_RECT := Rect2(Vector2(0, 58), Vector2(1048, 102))
 const PLAYER_HUD_FOOTER_PANEL_RECT := Rect2(Vector2(0, 168), Vector2(1080, 324))
 const SHOP_PLAYER_HUD_LAYOUT_PRESET := {
-	"section": Rect2(Vector2(0, 1236), Vector2(1080, 684)),
-	"mastery_panel": Rect2(Vector2(16, 0), Vector2(1048, 180)),
-	"mastery_title": Rect2(Vector2(0, 8), Vector2(1048, 56)),
-	"mastery_cards": Rect2(Vector2(0, 62), Vector2(1048, 118)),
-	"footer_panel": Rect2(Vector2(0, 190), Vector2(1080, 340)),
+	"section": Rect2(Vector2(0, 1236), PLAYER_HUD_SECTION_RECT.size),
 }
 const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 640)
 const COMPACT_COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 336)
@@ -1165,6 +1161,7 @@ func apply_player_hud_chrome(nodes: Dictionary) -> void:
 
 
 func apply_player_footer_layout(nodes: Dictionary) -> void:
+	_adopt_player_hud_relic_nodes(nodes)
 	var footer_panel := nodes.get("footer_panel") as Control
 	var compact_mode := footer_panel != null and footer_panel.size.y <= COMPACT_COMBAT_PLAYER_PANEL_SIZE.y + 4.0
 	var player_panel_size := COMPACT_COMBAT_PLAYER_PANEL_SIZE if compact_mode else COMBAT_PLAYER_PANEL_SIZE
@@ -1220,9 +1217,14 @@ func apply_player_footer_layout(nodes: Dictionary) -> void:
 	_set_node_visible(nodes, "relic_icons", true)
 	_set_node_visible(nodes, "relic_row", false)
 	_set_node_visible(nodes, "mastery_label", false)
+	_set_node_visible(nodes, "mastery_strip", false)
 	_set_node_visible(nodes, "armor_bar", false)
 	_set_node_visible(nodes, "armor_label", false)
 	_set_node_visible(nodes, "armor_badge", false)
+	_set_node_visible(nodes, "hero_level_badge", false)
+	_set_node_visible(nodes, "stat_chip_row", false)
+	_set_node_visible(nodes, "combat_meta_row", false)
+	_set_node_visible(nodes, "turn_summary_label", false)
 	var equipment_label := nodes.get("equipment_label") as Label
 	if equipment_label != null:
 		equipment_label.add_theme_font_size_override("font_size", 17 if compact_mode else 19)
@@ -1239,6 +1241,20 @@ func apply_player_footer_layout(nodes: Dictionary) -> void:
 
 func apply_combat_player_panel_layout(nodes: Dictionary) -> void:
 	apply_player_footer_layout(nodes)
+
+
+func _adopt_player_hud_relic_nodes(nodes: Dictionary) -> void:
+	var vitals_panel := nodes.get("vitals_panel") as Node
+	if vitals_panel == null:
+		return
+	for key in ["relic_label", "relic_icons"]:
+		var node := nodes.get(key) as Node
+		if node == null or node.get_parent() == vitals_panel:
+			continue
+		var existing_parent := node.get_parent()
+		if existing_parent != null:
+			existing_parent.remove_child(node)
+		vitals_panel.add_child(node)
 
 
 func _layout_rect(layout_override: Dictionary, key: String, fallback: Rect2) -> Rect2:

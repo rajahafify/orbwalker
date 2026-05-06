@@ -2037,3 +2037,19 @@ Append-only history of wiki operations.
   - `git diff --check` passed.
   - Godot MCP `view_script` loaded all touched runtime scripts; focused FlowTrace cap/generation, scene instantiate, HUD lifecycle, and AR-01 combat result-envelope probes passed.
   - `play_scene main`, `stop_running_scene`, and final `get_godot_errors` completed with `Session has no errors`.
+
+## [2026-05-06] code-change | Shared Player HUD Scene
+
+- Source: `scenes/ui/player_hud.tscn`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, `wiki/file-map.md`, `wiki/features.md`
+- Changed:
+  - Promoted the combat PlayerHudSection tree into reusable `scenes/ui/player_hud.tscn`.
+  - Updated combat to instance the shared HUD scene and resolve HUD internals through the shared root.
+  - Updated shop to instantiate the same shared HUD scene instead of dynamically building a parallel HUD tree.
+  - Corrected the shared HUD binding so shop and combat bind the same full node set and use one internal PlayerHUD layout; shop only positions the whole HUD section.
+  - Documented the user-confirmed intended behavior in `docs/test_plan.md`, `wiki/features.md`, `wiki/file-map.md`, and `wiki/known-issues.md`.
+  - Added `scripts/debug/player_hud_contract_probe.gd` to guard the shared PlayerHUD scene, combat/shop binding keys, and shop whole-section-only layout override against regression.
+- Validation:
+  - Godot MCP `view_script` and `scripts/debug/player_hud_contract_probe.gd` returned `{ "status": "ok", "failures": [] }`.
+  - Godot MCP focused probe confirmed `player_hud.tscn`, `combat_player.tscn`, and `shop_player.tscn` load, and that combat instances the shared HUD scene with required HUD nodes present.
+  - Godot MCP `play_scene current` for combat reached first usable frame with no new runtime errors.
+  - Godot MCP `play_scene current` for shop created and bound the shared HUD before redirecting to main menu when no active run existed; no new runtime errors were reported. Existing stale enum reload warnings remained in the editor session.

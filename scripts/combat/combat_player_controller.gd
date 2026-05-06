@@ -6,14 +6,14 @@ extends Control
 @onready var _background_scrim: TextureRect = %BackgroundScrim
 @onready var _status_label: Label = %StatusLabel
 @onready var _timer_label: Label = %TimerLabel
-@onready var _run_progress_label: Label = %RunProgressLabel
-@onready var _turn_summary_label: Label = %TurnSummaryLabel
-@onready var _player_label: Label = %PlayerHpLabel
+@onready var _run_progress_label: Label = _player_hud_node("RunProgressLabel") as Label
+@onready var _turn_summary_label: Label = _player_hud_node("TurnSummaryLabel") as Label
+@onready var _player_label: Label = _player_hud_node("PlayerHpLabel") as Label
 @onready var _enemy_label: Label = %EnemyStageLabel
 @onready var _enemy_step_label: Label = %EnemyStepLabel
 @onready var _enemy_debug_label: Label = %EnemyStateLabel
 @onready var _intent_label: Label = %EnemyIntentLabel
-@onready var _phase_label: Label = %CombatPhaseLabel
+@onready var _phase_label: Label = _player_hud_node("CombatPhaseLabel") as Label
 @onready var _combat_log_text: RichTextLabel = %CombatLogText
 @onready var _console_input: LineEdit = %ConsoleInput
 @onready var _next_button: Button = %NextButton
@@ -47,27 +47,27 @@ var _enemy_text_scrim: ColorRect = null
 @onready var _outcome_title_label: Label = %OutcomeTitleLabel
 @onready var _outcome_body_label: Label = %OutcomeBodyLabel
 @onready var _player_hud_section: Panel = %PlayerHudSection
-@onready var _player_panel: Panel = %PlayerPanel
-@onready var _player_panel_root: Control = %PlayerPanelRoot
-@onready var _hero_card: Panel = %HeroCard
-@onready var _hero_card_root: Control = %HeroCardRoot
-@onready var _hero_level_badge: PanelContainer = %HeroLevelBadge
-@onready var _vitals_panel: Control = %VitalsPanel
-@onready var _vitals_frame: Panel = %VitalsFrame
-@onready var _player_hp_label: Label = %PlayerHpLabel
-@onready var _player_armor_label: Label = %PlayerArmorLabel
-@onready var _armor_badge: PanelContainer = %ArmorBadge
-@onready var _armor_badge_label: Label = %ArmorBadgeLabel
-@onready var _stat_chip_row: HBoxContainer = %StatChipRow
-@onready var _attack_stat_label: Label = %AttackStatLabel
-@onready var _armor_stat_label: Label = %ArmorStatLabel
-@onready var _heart_stat_label: Label = %HeartStatLabel
-@onready var _gold_stat_label: Label = %GoldStatLabel
-@onready var _combat_meta_row: HBoxContainer = %CombatMetaRow
-@onready var _loadout_frame: Panel = %LoadoutFrame
-@onready var _loadout_root: Control = %LoadoutRoot
-@onready var _mastery_strip: Panel = %MasteryStrip
-@onready var _mastery_root: Control = %MasteryRoot
+@onready var _player_panel: Panel = _player_hud_node("PlayerPanel") as Panel
+@onready var _player_panel_root: Control = _player_hud_node("PlayerPanelRoot") as Control
+@onready var _hero_card: Panel = _player_hud_node("HeroCard") as Panel
+@onready var _hero_card_root: Control = _player_hud_node("HeroCardRoot") as Control
+@onready var _hero_level_badge: PanelContainer = _player_hud_node("HeroLevelBadge") as PanelContainer
+@onready var _vitals_panel: Control = _player_hud_node("VitalsPanel") as Control
+@onready var _vitals_frame: Panel = _player_hud_node("VitalsFrame") as Panel
+@onready var _player_hp_label: Label = _player_hud_node("PlayerHpLabel") as Label
+@onready var _player_armor_label: Label = _player_hud_node("PlayerArmorLabel") as Label
+@onready var _armor_badge: PanelContainer = _player_hud_node("ArmorBadge") as PanelContainer
+@onready var _armor_badge_label: Label = _player_hud_node("ArmorBadgeLabel") as Label
+@onready var _stat_chip_row: HBoxContainer = _player_hud_node("StatChipRow") as HBoxContainer
+@onready var _attack_stat_label: Label = _player_hud_node("AttackStatLabel") as Label
+@onready var _armor_stat_label: Label = _player_hud_node("ArmorStatLabel") as Label
+@onready var _heart_stat_label: Label = _player_hud_node("HeartStatLabel") as Label
+@onready var _gold_stat_label: Label = _player_hud_node("GoldStatLabel") as Label
+@onready var _combat_meta_row: HBoxContainer = _player_hud_node("CombatMetaRow") as HBoxContainer
+@onready var _loadout_frame: Panel = _player_hud_node("LoadoutFrame") as Panel
+@onready var _loadout_root: Control = _player_hud_node("LoadoutRoot") as Control
+@onready var _mastery_strip: Panel = _player_hud_node("MasteryStrip") as Panel
+@onready var _mastery_root: Control = _player_hud_node("MasteryRoot") as Control
 @onready var _combat_log_frame: PanelContainer = $"DebugOverlay/DebugVBox/CombatLogFrame"
 @onready var _debug_overlay: PanelContainer = %DebugOverlay
 @onready var _title_label: Label = %TitleLabel
@@ -79,21 +79,21 @@ var _enemy_text_scrim: ColorRect = null
 @onready var _primary_intent_amount_label: Label = %PrimaryIntentAmountLabel
 @onready var _primary_intent_detail_label: Label = %PrimaryIntentDetailLabel
 @onready var _enemy_hp_bar: ProgressBar = %EnemyHpBar
-@onready var _player_hp_bar: ProgressBar = %PlayerHpBar
-@onready var _player_armor_bar: ProgressBar = %PlayerArmorBar
-@onready var _player_portrait: TextureRect = %PlayerPortrait
-@onready var _equipment_icons: Control = %EquipmentIcons
-@onready var _consumable_icons: Control = %ConsumableIcons
-@onready var _relic_icons: HBoxContainer = %RelicIcons
-@onready var _mastery_icons: Control = %MasteryIcons
-@onready var _elemental_mastery_cards: Control = %ElementalMasteryCards
-@onready var _elemental_mastery_panel: Panel = %ElementalMasteryPanel
-@onready var _elemental_mastery_title: Label = %ElementalMasteryTitle
-@onready var _relic_row: HBoxContainer = %RelicRow
-@onready var _equipment_row_label: Label = %EquipmentLabel
-@onready var _consumable_row_label: Label = %ConsumableLabel
-@onready var _relic_row_label: Label = %RelicLabel
-@onready var _mastery_row_label: Label = %MasteryLabel
+@onready var _player_hp_bar: ProgressBar = _player_hud_node("PlayerHpBar") as ProgressBar
+@onready var _player_armor_bar: ProgressBar = _player_hud_node("PlayerArmorBar") as ProgressBar
+@onready var _player_portrait: TextureRect = _player_hud_node("PlayerPortrait") as TextureRect
+@onready var _equipment_icons: Control = _player_hud_node("EquipmentIcons") as Control
+@onready var _consumable_icons: Control = _player_hud_node("ConsumableIcons") as Control
+@onready var _relic_icons: HBoxContainer = _player_hud_node("RelicIcons") as HBoxContainer
+@onready var _mastery_icons: Control = _player_hud_node("MasteryIcons") as Control
+@onready var _elemental_mastery_cards: Control = _player_hud_node("ElementalMasteryCards") as Control
+@onready var _elemental_mastery_panel: Panel = _player_hud_node("ElementalMasteryPanel") as Panel
+@onready var _elemental_mastery_title: Label = _player_hud_node("ElementalMasteryTitle") as Label
+@onready var _relic_row: HBoxContainer = _player_hud_node("RelicRow") as HBoxContainer
+@onready var _equipment_row_label: Label = _player_hud_node("EquipmentLabel") as Label
+@onready var _consumable_row_label: Label = _player_hud_node("ConsumableLabel") as Label
+@onready var _relic_row_label: Label = _player_hud_node("RelicLabel") as Label
+@onready var _mastery_row_label: Label = _player_hud_node("MasteryLabel") as Label
 @onready var _vfx_layer: Control = %VfxLayer
 @onready var _divider_enemy_timer: TextureRect = %DividerEnemyTimer
 @onready var _divider_timer_board: TextureRect = %DividerTimerBoard
@@ -271,6 +271,15 @@ func _enter_tree() -> void:
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id)
 
 
+func _player_hud_node(unique_name: String) -> Node:
+	var hud_section: Node = _player_hud_section
+	if hud_section == null:
+		hud_section = get_node_or_null("CombatLayoutRoot/PlayerHudSection")
+	if hud_section == null:
+		return null
+	return hud_section.get_node_or_null("%s%s" % ["%", unique_name])
+
+
 func _ready() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_active_route_id()
@@ -356,7 +365,6 @@ func _ready() -> void:
 	_ensure_enemy_text_scrim_node()
 	_ensure_enemy_block_preview_nodes()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
-	_adopt_relic_footer_nodes_for_shared_layout()
 	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
 		"popover_parent": _layout_root,
 		"popover_z_index": 210,
@@ -3191,6 +3199,7 @@ func _combat_player_hud_nodes() -> Dictionary:
 		"hero_card": _hero_card,
 		"hero_card_root": _hero_card_root,
 		"hero_portrait": _player_portrait,
+		"hero_level_badge": _hero_level_badge,
 		"vitals_panel": _vitals_panel,
 		"vitals_frame": _vitals_frame,
 		"hp_bar": _player_hp_bar,
@@ -3212,24 +3221,11 @@ func _combat_player_hud_nodes() -> Dictionary:
 		"mastery_root": _mastery_root,
 		"mastery_label": _mastery_row_label,
 		"mastery_icons": _mastery_icons,
+		"stat_chip_row": _stat_chip_row,
+		"combat_meta_row": _combat_meta_row,
+		"combat_phase_label": _phase_label,
+		"turn_summary_label": _turn_summary_label,
 	}
-
-
-func _adopt_relic_footer_nodes_for_shared_layout() -> void:
-	if _relic_row != null:
-		_relic_row.visible = false
-	if _vitals_panel == null:
-		return
-	if _relic_row_label != null and _relic_row_label.get_parent() != _vitals_panel:
-		var relic_label_parent := _relic_row_label.get_parent()
-		if relic_label_parent != null:
-			relic_label_parent.remove_child(_relic_row_label)
-		_vitals_panel.add_child(_relic_row_label)
-	if _relic_icons != null and _relic_icons.get_parent() != _vitals_panel:
-		var icons_parent := _relic_icons.get_parent()
-		if icons_parent != null:
-			icons_parent.remove_child(_relic_icons)
-		_vitals_panel.add_child(_relic_icons)
 
 
 func _apply_loadout_rail_layout() -> void:

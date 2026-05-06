@@ -599,7 +599,7 @@ Verification notes (2026-05-05, M12 reference-faithful mobile combat UI polish):
 - [ ] Post-change route timings are captured for the same three routes and compared against baseline.
 - [ ] `PackedScene.instantiate()` no longer regresses to multi-second stalls on combat entry.
 - [ ] Deferred orb texture-map path is visually checked for noticeable post-load pop-in on the board.
-- [ ] Shared `PlayerLoadoutHud` behavior is checked in both combat and shop for slot focus, popover ownership, sell flow, and outside-click dismiss.
+- [ ] Shared `PlayerLoadoutHud` behavior is checked in both combat and shop for slot focus, popover ownership, sell flow, outside-click dismiss, and the shared PlayerHUD scene contract. Combat and shop must use `res://scenes/ui/player_hud.tscn`, bind the same full HUD node-key set, and only position the whole `PlayerHudSection`; internal HUD geometry/chrome belongs to `PlayerLoadoutHud`, not to individual screens.
 - [ ] Run-flow invariants are verified after refactor: no dual victory/defeat, correct boss reward routing, correct post-boss shop routing, and correct final-boss summary routing.
 - [ ] Architecture-model alignment is rechecked: `docs/system_architecture.md`, `wiki/architecture.md`, and live content-loading behavior describe the same source-of-truth model.
 - [ ] Temporary diagnostic instrumentation (if used) is either removed or explicitly documented as still required, with rationale.
@@ -639,6 +639,11 @@ Verification notes (2026-05-03, AR-01 baseline regression harness):
 
 Debug harness note:
 - `res://scripts/debug/ar01_combat_result_probe.gd` is a retained AR-01 regression helper. It is inert by default behind `debug/ar01_combat_result_probe_enabled=false`. To rerun it through Godot MCP, load the script with `ResourceLoader.CACHE_MODE_IGNORE`, set the project setting to `true`, call `run_baseline_probe()`, then set the project setting back to `false`.
+- `res://scripts/debug/player_hud_contract_probe.gd` is a retained shared-PlayerHUD regression helper. It verifies the reusable HUD scene contains the expected node tree, combat instances that scene, shop instances the same scene in code, combat/shop binding dictionaries contain the same required key contract, and the shop HUD layout preset only repositions the whole section. This encodes the intended behavior that combat and shop have a one-to-one PlayerHUD layout and functionality contract.
+
+Verification notes (2026-05-06, shared PlayerHUD intended behavior):
+- User visual review confirmed the current combat/shop PlayerHUD behavior is working as intended. The intended contract is: `scenes/ui/player_hud.tscn` is the single shared PlayerHUD layout; `PlayerLoadoutHud` owns internal layout, chrome, relic adoption, inventory slot rendering, popover/focus behavior, and compatibility-node visibility; combat and shop only mount/bind the shared scene, pass player/progression data, react to scene-specific actions, and position the whole `PlayerHudSection` in their screen flow.
+- Regression guard added: `scripts/debug/player_hud_contract_probe.gd` must stay green when future HUD layout work changes `scenes/ui/player_hud.tscn`, `scripts/combat/combat_player_controller.gd`, `scripts/flow/shop_player.gd`, or `scripts/ui/player_loadout_hud.gd`.
 
 Verification notes (2026-05-03, AR-02 low-risk intent snapshot fix):
 - `EnemyState.get_current_intent()` now duplicates the current intent before adding the derived `index`, so callers still receive the same intent envelope while the method is explicitly non-mutating by construction.

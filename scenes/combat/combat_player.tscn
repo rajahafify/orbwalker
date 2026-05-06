@@ -1,8 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://drw4ejx7wqn6v"]
+[gd_scene load_steps=4 format=3 uid="uid://drw4ejx7wqn6v"]
 
 [ext_resource type="Script" path="res://scripts/combat/combat_player_controller.gd" id="1_ctrl"]
 [ext_resource type="PackedScene" path="res://scenes/board/board_surface.tscn" id="2_board_surface"]
 [ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="3_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_player_hud"]
 
 [node name="CombatPlayer" type="Control"]
 layout_mode = 3
@@ -340,10 +341,9 @@ custom_minimum_size = Vector2(150, 56)
 layout_mode = 2
 text = "Continue"
 
-[node name="PlayerHudSection" type="Panel" parent="CombatLayoutRoot"]
+[node name="PlayerHudSection" parent="CombatLayoutRoot" instance=ExtResource("4_player_hud")]
 unique_name_in_owner = true
 layout_mode = 1
-mouse_filter = 2
 
 [node name="DividerBoardPlayer" type="TextureRect" parent="CombatLayoutRoot"]
 unique_name_in_owner = true
@@ -351,223 +351,6 @@ layout_mode = 1
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 0
-
-[node name="ElementalMasteryPanel" type="Panel" parent="CombatLayoutRoot/PlayerHudSection"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="ElementalMasteryRoot" type="Control" parent="CombatLayoutRoot/PlayerHudSection/ElementalMasteryPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="ElementalMasteryTitle" type="Label" parent="CombatLayoutRoot/PlayerHudSection/ElementalMasteryPanel/ElementalMasteryRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-text = "ELEMENTAL MASTERY"
-horizontal_alignment = 1
-
-[node name="ElementalMasteryCards" type="Control" parent="CombatLayoutRoot/PlayerHudSection/ElementalMasteryPanel/ElementalMasteryRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="PlayerPanel" type="Panel" parent="CombatLayoutRoot/PlayerHudSection"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="PlayerPanelRoot" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="HeroCard" type="Panel" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="HeroCardRoot" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/HeroCard"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="PlayerPortrait" type="TextureRect" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HeroLevelBadge" type="PanelContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="HeroLevelLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/HeroCard/HeroCardRoot/HeroLevelBadge"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="VitalsPanel" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="VitalsFrame" type="Panel" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="PlayerHpBar" type="ProgressBar" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-show_percentage = false
-max_value = 100.0
-value = 100.0
-
-[node name="PlayerHpLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-text = "100 / 100"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="PlayerArmorBar" type="ProgressBar" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-show_percentage = false
-max_value = 100.0
-value = 0.0
-
-[node name="PlayerArmorLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-text = "0 / 30"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ArmorBadge" type="PanelContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="ArmorBadgeLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/VitalsPanel/ArmorBadge"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "BLOCK +0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="StatChipRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="AttackStatLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/StatChipRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ATK 1"
-horizontal_alignment = 1
-
-[node name="ArmorStatLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/StatChipRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ARM 1"
-horizontal_alignment = 1
-
-[node name="HeartStatLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/StatChipRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "HEART 0%"
-horizontal_alignment = 1
-
-[node name="GoldStatLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/StatChipRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "GOLD 0%"
-horizontal_alignment = 1
-
-[node name="CombatMetaRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-theme_override_constants/separation = 10
-
-[node name="RunProgressLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Turn Summary"
-
-[node name="CombatPhaseLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/CombatMetaRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Phase"
-horizontal_alignment = 2
-
-[node name="TurnSummaryLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-text = "Turn Summary"
-
-[node name="LoadoutFrame" type="Panel" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="LoadoutRoot" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/LoadoutFrame"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="EquipmentLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-text = "EQUIPMENT"
-horizontal_alignment = 1
-
-[node name="EquipmentIcons" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="ConsumableLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-text = "CONSUMABLES"
-horizontal_alignment = 1
-
-[node name="ConsumableIcons" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/LoadoutFrame/LoadoutRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="MasteryStrip" type="Panel" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-
-[node name="MasteryRoot" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/MasteryStrip"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="MasteryLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/MasteryStrip/MasteryRoot"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 0)
-layout_mode = 1
-text = "MASTERY"
-vertical_alignment = 1
-
-[node name="MasteryIcons" type="Control" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/MasteryStrip/MasteryRoot"]
-unique_name_in_owner = true
-layout_mode = 1
-
-[node name="RelicRow" type="HBoxContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-
-[node name="RelicLabel" type="Label" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/RelicRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "RELICS"
-
-[node name="RelicIcons" type="HBoxContainer" parent="CombatLayoutRoot/PlayerHudSection/PlayerPanel/PlayerPanelRoot/RelicRow"]
-unique_name_in_owner = true
-layout_mode = 2
 
 [node name="CornerBottomLeft" type="TextureRect" parent="CombatLayoutRoot"]
 unique_name_in_owner = true

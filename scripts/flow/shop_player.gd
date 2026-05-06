@@ -2,6 +2,7 @@ extends Control
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const PLAYER_HUD_SCENE := preload("res://scenes/ui/player_hud.tscn")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 
@@ -63,19 +64,37 @@ var _elemental_mastery_cards: Control
 var _player_panel_root: Control
 var _hero_card: Panel
 var _hero_card_root: Control
+var _hero_level_badge: PanelContainer
 var _hero_portrait: TextureRect
 var _vitals_panel: Control
 var _vitals_frame: Panel
 var _hp_bar: ProgressBar
 var _hp_label: Label
+var _armor_bar: ProgressBar
+var _armor_label: Label
+var _armor_badge: PanelContainer
+var _armor_badge_label: Label
+var _stat_chip_row: HBoxContainer
+var _attack_stat_label: Label
+var _armor_stat_label: Label
+var _heart_stat_label: Label
+var _gold_stat_label: Label
+var _combat_meta_row: HBoxContainer
+var _combat_phase_label: Label
+var _turn_summary_label: Label
 var _equipment_label: Label
 var _equipment_slots_root: Control
 var _consumable_label: Label
 var _consumable_slots_root: Control
 var _relic_label: Label
 var _relic_icons_root: Control
+var _relic_row: HBoxContainer
 var _loadout_frame: Panel
 var _loadout_root: Control
+var _mastery_strip: Panel
+var _mastery_root: Control
+var _mastery_label: Label
+var _mastery_icons: Control
 var _booster_overlay: ColorRect
 var _booster_modal: Panel
 var _booster_title_label: Label
@@ -249,38 +268,7 @@ func _create_ui() -> void:
 	_sell_equipment_button = _make_button("SellEquipmentButton", _action_row, "Sell Selected")
 	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
 
-	_player_hud_section = _make_panel("PlayerHudSection", _layout_root)
-	_player_hud_section.clip_contents = false
-	_elemental_mastery_panel = _make_panel("ElementalMasteryPanel", _player_hud_section)
-	_elemental_mastery_title = _make_label("ElementalMasteryTitle", _elemental_mastery_panel, "ELEMENTAL MASTERY", 22, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_elemental_mastery_cards = _make_root("ElementalMasteryCards", _elemental_mastery_panel)
-	_build_panel = _make_panel("PlayerPanel", _player_hud_section)
-	_build_panel.clip_contents = false
-	_player_panel_root = _make_root("PlayerPanelRoot", _build_panel)
-	_player_panel_root.clip_contents = false
-	_hero_card = _make_panel("HeroCard", _player_panel_root)
-	_hero_card_root = _make_root("HeroCardRoot", _hero_card)
-	_hero_portrait = _make_texture("PlayerPortrait", _hero_card_root)
-	_vitals_panel = _make_root("VitalsPanel", _player_panel_root)
-	_vitals_frame = _make_panel("VitalsFrame", _vitals_panel)
-	_hp_bar = ProgressBar.new()
-	_hp_bar.name = "PlayerHpBar"
-	_hp_bar.show_percentage = false
-	_vitals_panel.add_child(_hp_bar)
-	_hp_label = _make_label("PlayerHpLabel", _vitals_panel, "HP -", 24, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_loadout_frame = _make_panel("LoadoutFrame", _player_panel_root)
-	_loadout_root = _make_root("LoadoutRoot", _loadout_frame)
-	_loadout_frame.clip_contents = false
-	_loadout_root.clip_contents = false
-	_equipment_label = _make_label("EquipmentLabel", _loadout_root, "EQUIPMENT", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_equipment_slots_root = _make_root("EquipmentIcons", _loadout_root)
-	_equipment_slots_root.clip_contents = false
-	_consumable_label = _make_label("ConsumableLabel", _loadout_root, "CONSUMABLES", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_consumable_slots_root = _make_root("ConsumableIcons", _loadout_root)
-	_consumable_slots_root.clip_contents = false
-	_relic_label = _make_label("RelicLabel", _loadout_root, "RELICS", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_relic_icons_root = _make_root("RelicIcons", _loadout_root)
-	_relic_icons_root.clip_contents = false
+	_bind_shared_player_hud_scene()
 	_booster_overlay = ColorRect.new()
 	_booster_overlay.name = "BoosterOverlay"
 	_booster_overlay.visible = false
@@ -295,6 +283,59 @@ func _create_ui() -> void:
 		_booster_option_buttons.append(button)
 	_skip_booster_button = _make_button("SkipBoosterButton", _booster_modal, "Skip")
 	_skip_booster_button.visible = false
+
+
+func _bind_shared_player_hud_scene() -> void:
+	_player_hud_section = PLAYER_HUD_SCENE.instantiate() as Panel
+	_player_hud_section.name = "PlayerHudSection"
+	_player_hud_section.clip_contents = false
+	_layout_root.add_child(_player_hud_section)
+
+	_elemental_mastery_panel = _shared_player_hud_node("ElementalMasteryPanel") as Panel
+	_elemental_mastery_title = _shared_player_hud_node("ElementalMasteryTitle") as Label
+	_elemental_mastery_cards = _shared_player_hud_node("ElementalMasteryCards") as Control
+	_build_panel = _shared_player_hud_node("PlayerPanel") as Panel
+	_player_panel_root = _shared_player_hud_node("PlayerPanelRoot") as Control
+	_hero_card = _shared_player_hud_node("HeroCard") as Panel
+	_hero_card_root = _shared_player_hud_node("HeroCardRoot") as Control
+	_hero_level_badge = _shared_player_hud_node("HeroLevelBadge") as PanelContainer
+	_hero_portrait = _shared_player_hud_node("PlayerPortrait") as TextureRect
+	_vitals_panel = _shared_player_hud_node("VitalsPanel") as Control
+	_vitals_frame = _shared_player_hud_node("VitalsFrame") as Panel
+	_hp_bar = _shared_player_hud_node("PlayerHpBar") as ProgressBar
+	_hp_label = _shared_player_hud_node("PlayerHpLabel") as Label
+	_armor_bar = _shared_player_hud_node("PlayerArmorBar") as ProgressBar
+	_armor_label = _shared_player_hud_node("PlayerArmorLabel") as Label
+	_armor_badge = _shared_player_hud_node("ArmorBadge") as PanelContainer
+	_armor_badge_label = _shared_player_hud_node("ArmorBadgeLabel") as Label
+	_stat_chip_row = _shared_player_hud_node("StatChipRow") as HBoxContainer
+	_attack_stat_label = _shared_player_hud_node("AttackStatLabel") as Label
+	_armor_stat_label = _shared_player_hud_node("ArmorStatLabel") as Label
+	_heart_stat_label = _shared_player_hud_node("HeartStatLabel") as Label
+	_gold_stat_label = _shared_player_hud_node("GoldStatLabel") as Label
+	_combat_meta_row = _shared_player_hud_node("CombatMetaRow") as HBoxContainer
+	_combat_phase_label = _shared_player_hud_node("CombatPhaseLabel") as Label
+	_turn_summary_label = _shared_player_hud_node("TurnSummaryLabel") as Label
+	_loadout_frame = _shared_player_hud_node("LoadoutFrame") as Panel
+	_loadout_root = _shared_player_hud_node("LoadoutRoot") as Control
+	_equipment_label = _shared_player_hud_node("EquipmentLabel") as Label
+	_equipment_slots_root = _shared_player_hud_node("EquipmentIcons") as Control
+	_consumable_label = _shared_player_hud_node("ConsumableLabel") as Label
+	_consumable_slots_root = _shared_player_hud_node("ConsumableIcons") as Control
+	_relic_label = _shared_player_hud_node("RelicLabel") as Label
+	_relic_icons_root = _shared_player_hud_node("RelicIcons") as Control
+	_relic_row = _shared_player_hud_node("RelicRow") as HBoxContainer
+	_mastery_strip = _shared_player_hud_node("MasteryStrip") as Panel
+	_mastery_root = _shared_player_hud_node("MasteryRoot") as Control
+	_mastery_label = _shared_player_hud_node("MasteryLabel") as Label
+	_mastery_icons = _shared_player_hud_node("MasteryIcons") as Control
+
+
+func _shared_player_hud_node(unique_name: String) -> Node:
+	if _player_hud_section == null:
+		return null
+	return _player_hud_section.get_node_or_null("%s%s" % ["%", unique_name])
+
 
 func _connect_signals() -> void:
 	for index in _offer_cards.size():
@@ -940,10 +981,15 @@ func _shop_player_hud_nodes() -> Dictionary:
 		"hero_card": _hero_card,
 		"hero_card_root": _hero_card_root,
 		"hero_portrait": _hero_portrait,
+		"hero_level_badge": _hero_level_badge,
 		"vitals_panel": _vitals_panel,
 		"vitals_frame": _vitals_frame,
 		"hp_bar": _hp_bar,
 		"hp_label": _hp_label,
+		"armor_bar": _armor_bar,
+		"armor_label": _armor_label,
+		"armor_badge": _armor_badge,
+		"armor_badge_label": _armor_badge_label,
 		"loadout_frame": _loadout_frame,
 		"loadout_root": _loadout_root,
 		"equipment_label": _equipment_label,
@@ -952,6 +998,15 @@ func _shop_player_hud_nodes() -> Dictionary:
 		"consumable_icons": _consumable_slots_root,
 		"relic_label": _relic_label,
 		"relic_icons": _relic_icons_root,
+		"relic_row": _relic_row,
+		"mastery_strip": _mastery_strip,
+		"mastery_root": _mastery_root,
+		"mastery_label": _mastery_label,
+		"mastery_icons": _mastery_icons,
+		"stat_chip_row": _stat_chip_row,
+		"combat_meta_row": _combat_meta_row,
+		"combat_phase_label": _combat_phase_label,
+		"turn_summary_label": _turn_summary_label,
 	}
 
 
