@@ -59,6 +59,12 @@ func begin_player_input() -> void:
 		phase = Phase.PLAYER_INPUT
 
 
+func reset_to_intent_preview() -> void:
+	if is_fight_over():
+		return
+	phase = Phase.INTENT_PREVIEW
+
+
 func set_debug_hooks(hooks: Dictionary) -> void:
 	_debug_hooks = hooks
 	_debug_local_gold = int(_debug_hooks.get("initial_gold", 0))

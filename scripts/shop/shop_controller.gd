@@ -4,6 +4,7 @@ class_name ShopController
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
+const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
 var _host: Control
 var _model
@@ -131,7 +132,7 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 	)
 	if scene_change_result == OK:
 		return
-	var failure_reason := _scene_change_failure_reason(scene_change_result)
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result)
 	_set_status("Redirect failed: %s" % failure_reason, false)
 	RunState.flow_trace_mark(
 		"shop_ready_redirect_change_scene_failed",
@@ -343,7 +344,7 @@ func _on_continue_pressed() -> void:
 		pre_transition_state
 	)
 	if scene_change_result != OK:
-		_set_status("Continue failed: %s" % _scene_change_failure_reason(scene_change_result), false)
+		_set_status("Continue failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
 		_restore_transition_snapshot(pre_transition_state)
 		_end_transition_lock()
 
@@ -374,7 +375,7 @@ func _on_main_menu_pressed() -> void:
 		Callable(self, "_on_scene_change_post_ready_rollback")
 	)
 	if scene_change_result != OK:
-		_set_status("Main menu failed: %s" % _scene_change_failure_reason(scene_change_result), false)
+		_set_status("Main menu failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
 		_end_transition_lock()
 
 
@@ -423,13 +424,6 @@ func _restore_transition_snapshot(snapshot: Dictionary) -> void:
 	if snapshot.is_empty():
 		return
 	RunState.restore_run_transition_state(snapshot)
-
-
-func _scene_change_failure_reason(result: Variant) -> String:
-	if result is Dictionary:
-		var typed_result := result as Dictionary
-		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
-	return "error_code_%d" % int(result)
 
 
 func _play_shop_result_sfx(result: Dictionary, success_key: String) -> void:

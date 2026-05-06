@@ -8,6 +8,8 @@ const BOOSTERS := "boosters"
 const RELICS := "relics"
 const ENEMIES := "enemies"
 const BOSSES := "bosses"
+const SHOP_MULTIPLIER_MIN := 0.1
+const REROLL_COST_CEILING_DEFAULT := 30
 
 var _player_state_content: Dictionary = {}
 var _index := {}
@@ -20,6 +22,7 @@ var _shop_pricing_config := {
 	"level_step": 2,
 	"reroll_base": 1,
 	"reroll_step": 1,
+	"reroll_max": REROLL_COST_CEILING_DEFAULT,
 }
 var _prototype_balance_levers := {
 	"shop_price_multiplier": 1.0,
@@ -125,23 +128,33 @@ func shop_relic_pool(dungeon_level: int) -> Array[Dictionary]:
 
 func shop_pricing_config() -> Dictionary:
 	var pricing := _shop_pricing_config.duplicate(true)
-	var price_multiplier := maxf(0.0, float(_prototype_balance_levers.get("shop_price_multiplier", 1.0)))
-	var reroll_multiplier := maxf(0.0, float(_prototype_balance_levers.get("reroll_cost_multiplier", 1.0)))
+	var price_multiplier := maxf(
+		SHOP_MULTIPLIER_MIN,
+		float(_prototype_balance_levers.get("shop_price_multiplier", 1.0))
+	)
+	var reroll_multiplier := maxf(
+		SHOP_MULTIPLIER_MIN,
+		float(_prototype_balance_levers.get("reroll_cost_multiplier", 1.0))
+	)
 	pricing["prototype_balance"] = {
 		"temporary": true,
 		"shop_price_multiplier": price_multiplier,
 		"reroll_cost_multiplier": reroll_multiplier,
 	}
+	pricing["reroll_max"] = maxi(
+		int(pricing.get("reroll_base", 1)),
+		maxi(1, int(pricing.get("reroll_max", REROLL_COST_CEILING_DEFAULT)))
+	)
 	return pricing
 
 
 func set_prototype_balance_levers(levers: Dictionary) -> void:
 	_prototype_balance_levers["shop_price_multiplier"] = maxf(
-		0.0,
+		SHOP_MULTIPLIER_MIN,
 		float(levers.get("shop_price_multiplier", _prototype_balance_levers.get("shop_price_multiplier", 1.0)))
 	)
 	_prototype_balance_levers["reroll_cost_multiplier"] = maxf(
-		0.0,
+		SHOP_MULTIPLIER_MIN,
 		float(levers.get("reroll_cost_multiplier", _prototype_balance_levers.get("reroll_cost_multiplier", 1.0)))
 	)
 
@@ -209,11 +222,24 @@ func content_contract_snapshot() -> Dictionary:
 
 func validate_player_state_content() -> Array[Dictionary]:
 	var errors: Array[Dictionary] = []
+	var known_equipment_ids := {}
+	var equipment_entries: Array = _player_state_content.get(EQUIPMENT, [])
+	for raw_equipment_entry in equipment_entries:
+		if not (raw_equipment_entry is Dictionary):
+			continue
+		var equipment_entry = raw_equipment_entry
+		var equipment_id := String(equipment_entry.get("id", ""))
+		if equipment_id != "":
+			known_equipment_ids[equipment_id] = true
+
 	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS, ENEMIES, BOSSES]:
 		var entries: Array = _player_state_content.get(collection_name, [])
 		var seen_ids := {}
 		for raw_entry in entries:
-			var entry: Dictionary = raw_entry
+			if not (raw_entry is Dictionary):
+				errors.append(_validation_error("<invalid_entry>", "%s entry is not a Dictionary" % collection_name))
+				continue
+			var entry = raw_entry
 			var item_id := String(entry.get("id", ""))
 			if item_id == "":
 				errors.append(_validation_error("<missing_id>", "%s entry missing id" % collection_name))
@@ -229,10 +255,17 @@ func validate_player_state_content() -> Array[Dictionary]:
 				errors.append(_validation_error(item_id, "missing_description"))
 			if String(entry.get("icon_key", "")).strip_edges() == "":
 				errors.append(_validation_error(item_id, "missing_icon_key"))
+			if collection_name == EQUIPMENT:
+				var next_tier_item_id := String(entry.get("next_tier_item_id", ""))
+				if next_tier_item_id != "" and not known_equipment_ids.has(next_tier_item_id):
+					errors.append(_validation_error(item_id, "missing_next_tier_item_id:%s" % next_tier_item_id))
 
 			var effects: Array = entry.get("effects", [])
 			for raw_effect in effects:
-				var effect: Dictionary = raw_effect
+				if not (raw_effect is Dictionary):
+					errors.append(_validation_error(item_id, "effect_entry_not_dictionary"))
+					continue
+				var effect = raw_effect
 				var hook_name := String(effect.get("hook", ""))
 				if hook_name == "":
 					errors.append(_validation_error(item_id, "missing_effect_hook"))
@@ -249,7 +282,9 @@ func _rebuild_index() -> void:
 		_index[collection_name] = {}
 		var entries: Array = _player_state_content.get(collection_name, [])
 		for raw_entry in entries:
-			var entry: Dictionary = raw_entry
+			if not (raw_entry is Dictionary):
+				continue
+			var entry = raw_entry
 			var item_id := String(entry.get("id", ""))
 			if item_id == "":
 				continue

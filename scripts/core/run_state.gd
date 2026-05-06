@@ -8,7 +8,8 @@ const META_PROFILE_STATE_SCRIPT := preload("res://scripts/run/meta_profile_state
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
 const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
-const RUN_LOG_REPORTER_SCRIPT := preload("res://scripts/core/run_log_reporter.gd")
+const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
+const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
 const RUN_LOG_EXPORT_DIR := "res://logs"
 const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
 const USER_SETTINGS_SECTION := "run_log"
@@ -85,22 +86,9 @@ var _boss_relic_reward_options: Array[Dictionary] = []
 var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
-var _flow_trace_routes: Dictionary = {}
-var _flow_trace_route_order: Array[String] = []
-var _flow_trace_route_serial: int = 0
-var _flow_trace_active_route_id: String = ""
-var _flow_trace_transition_generation: int = 0
-var _run_log_events: Array[Dictionary] = []
-var _run_log_event_serial: int = 0
-var _run_log_run_id: String = ""
-var _run_log_started_unix: int = 0
-var _run_log_started_iso: String = ""
-var _run_log_current_fight_turns: int = 0
-var _run_log_last_export_paths: Dictionary = {}
-var _run_log_last_export_errors: Array[String] = []
-var _run_log_last_export_unix: int = 0
-var _generate_run_log_files := false
 var _prototype_balance_levers: Dictionary = PROTOTYPE_BALANCE_DEFAULTS.duplicate(true)
+var _run_logger
+var _scene_router
 
 var _normal_encounters_by_level := {
 	1: [
@@ -266,6 +254,18 @@ func ensure_shop_service():
 	if shop_service == null:
 		shop_service = SHOP_SERVICE_SCRIPT.new()
 	return shop_service
+
+
+func _ensure_run_logger():
+	if _run_logger == null:
+		_run_logger = RUN_LOGGER_SCRIPT.new(self)
+	return _run_logger
+
+
+func _ensure_scene_router():
+	if _scene_router == null:
+		_scene_router = SCENE_ROUTER_SCRIPT.new(self, FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX)
+	return _scene_router
 
 
 func ensure_player_profile_state() -> PlayerProfileState:
@@ -685,7 +685,7 @@ func start_new_run() -> void:
 
 
 func snapshot_run_transition_state() -> Dictionary:
-	return {
+	var snapshot := {
 		"player_state": _snapshot_player_state_for_transition(),
 		"player_progression_state": _snapshot_player_progression_state_for_transition(),
 		"shop_state": _snapshot_shop_state_for_transition(),
@@ -705,16 +705,10 @@ func snapshot_run_transition_state() -> Dictionary:
 		"boss_reward_claimed_relic_id": _boss_reward_claimed_relic_id,
 		"relic_offer_ids_by_level": _relic_offer_ids_by_level.duplicate(true),
 		"run_summary": _run_summary.duplicate(true),
-		"run_log_events": _run_log_events.duplicate(true),
-		"run_log_event_serial": _run_log_event_serial,
-		"run_log_run_id": _run_log_run_id,
-		"run_log_started_unix": _run_log_started_unix,
-		"run_log_started_iso": _run_log_started_iso,
-		"run_log_current_fight_turns": _run_log_current_fight_turns,
-		"run_log_last_export_paths": _run_log_last_export_paths.duplicate(true),
-		"run_log_last_export_errors": _run_log_last_export_errors.duplicate(),
-		"run_log_last_export_unix": _run_log_last_export_unix,
 	}
+	snapshot.merge(_ensure_run_logger().transition_snapshot(), true)
+	snapshot.merge(_ensure_scene_router().transition_snapshot(), true)
+	return snapshot
 
 
 func restore_run_transition_state(snapshot: Dictionary) -> bool:
@@ -747,15 +741,8 @@ func restore_run_transition_state(snapshot: Dictionary) -> bool:
 	_boss_reward_claimed_relic_id = String(snapshot.get("boss_reward_claimed_relic_id", ""))
 	_relic_offer_ids_by_level = Dictionary(snapshot.get("relic_offer_ids_by_level", {})).duplicate(true)
 	_run_summary = Dictionary(snapshot.get("run_summary", {})).duplicate(true)
-	_run_log_events = Array(snapshot.get("run_log_events", [])).duplicate(true)
-	_run_log_event_serial = int(snapshot.get("run_log_event_serial", _run_log_event_serial))
-	_run_log_run_id = String(snapshot.get("run_log_run_id", _run_log_run_id))
-	_run_log_started_unix = int(snapshot.get("run_log_started_unix", _run_log_started_unix))
-	_run_log_started_iso = String(snapshot.get("run_log_started_iso", _run_log_started_iso))
-	_run_log_current_fight_turns = maxi(0, int(snapshot.get("run_log_current_fight_turns", _run_log_current_fight_turns)))
-	_run_log_last_export_paths = Dictionary(snapshot.get("run_log_last_export_paths", {})).duplicate(true)
-	_run_log_last_export_errors = Array(snapshot.get("run_log_last_export_errors", [])).duplicate()
-	_run_log_last_export_unix = int(snapshot.get("run_log_last_export_unix", _run_log_last_export_unix))
+	_ensure_run_logger().restore_transition_snapshot(snapshot)
+	_ensure_scene_router().restore_transition_snapshot(snapshot)
 	_restore_player_state_for_transition(Dictionary(snapshot.get("player_state", {})))
 	_restore_player_progression_state_for_transition(Dictionary(snapshot.get("player_progression_state", {})))
 	_restore_shop_state_for_transition(Dictionary(snapshot.get("shop_state", {})))
@@ -1063,72 +1050,44 @@ func run_summary_snapshot() -> Dictionary:
 
 
 func run_log_snapshot() -> Dictionary:
-	return {
-		"run_id": _run_log_run_id,
-		"started_unix": _run_log_started_unix,
-		"started_iso": _run_log_started_iso,
-		"event_count": _run_log_events.size(),
-		"run_active": run_active,
-		"run_victory": run_victory,
-		"dungeon_level": dungeon_level,
-		"current_step_key": current_step_key,
-		"run_gold": run_gold,
-		"run_score": run_score,
-		"enemies_defeated": enemies_defeated,
-		"bosses_defeated": bosses_defeated,
-		"generate_log_files_enabled": _generate_run_log_files,
-		"last_export": run_log_last_export_snapshot(),
-		"summary": run_summary_snapshot(),
-		"events": _run_log_events.duplicate(true),
-	}
+	return _ensure_run_logger().run_log_snapshot()
 
 
 func run_log_export_json(pretty: bool = true) -> String:
-	return JSON.stringify(run_log_snapshot(), "  " if pretty else "")
+	return _ensure_run_logger().run_log_export_json(pretty)
 
 
 func run_log_export_text() -> String:
-	var reporter = RUN_LOG_REPORTER_SCRIPT.new()
-	return reporter.build_text_report(run_log_snapshot())
+	return _ensure_run_logger().run_log_export_text()
 
 
 func run_log_export_markdown() -> String:
-	var reporter = RUN_LOG_REPORTER_SCRIPT.new()
-	return reporter.build_markdown_report(run_log_snapshot())
+	return _ensure_run_logger().run_log_export_markdown()
 
 
 func run_log_last_export_snapshot() -> Dictionary:
-	return {
-		"paths": _run_log_last_export_paths.duplicate(true),
-		"errors": _run_log_last_export_errors.duplicate(),
-		"exported_unix": _run_log_last_export_unix,
-	}
+	return _ensure_run_logger().run_log_last_export_snapshot()
 
 
 func run_log_last_export_paths() -> Dictionary:
-	return _run_log_last_export_paths.duplicate(true)
+	return _ensure_run_logger().run_log_last_export_paths()
 
 
 func generate_run_log_files_enabled() -> bool:
-	return _generate_run_log_files
+	return _ensure_run_logger().generate_run_log_files_enabled()
 
 
 func set_generate_run_log_files_enabled(enabled: bool) -> void:
-	_generate_run_log_files = enabled
+	_ensure_run_logger().set_generate_run_log_files_enabled(enabled)
 	_save_user_settings()
 
 
 func load_user_settings() -> void:
-	var config := ConfigFile.new()
-	var error := config.load(USER_SETTINGS_PATH)
-	if error == OK:
-		_generate_run_log_files = bool(config.get_value(
-			USER_SETTINGS_SECTION,
-			USER_SETTINGS_GENERATE_LOG_KEY,
-			false
-		))
-	else:
-		_generate_run_log_files = false
+	_ensure_run_logger().load_user_settings(USER_SETTINGS_PATH, USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY)
+
+
+func _save_user_settings() -> void:
+	_ensure_run_logger().save_user_settings(USER_SETTINGS_PATH, USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY)
 
 
 func _load_meta_profile() -> void:
@@ -1171,7 +1130,7 @@ func _save_profile() -> void:
 
 func log_turn_result(turn_log: Dictionary, context: Dictionary = {}) -> void:
 	var payload := {
-		"turn_index_for_fight": _run_log_current_fight_turns + 1,
+		"turn_index_for_fight": _ensure_run_logger().next_turn_index_for_fight(),
 		"enemy_damage_taken": int(turn_log.get("enemy_damage_taken", 0)),
 		"enemy_blocked": int(turn_log.get("enemy_blocked", 0)),
 		"healed": int(turn_log.get("healed", 0)),
@@ -1183,7 +1142,7 @@ func log_turn_result(turn_log: Dictionary, context: Dictionary = {}) -> void:
 	}
 	for key in context.keys():
 		payload[key] = context[key]
-	_run_log_current_fight_turns += 1
+	_ensure_run_logger().advance_turn_counter()
 	_run_log_append("turn_result", payload)
 
 
@@ -1236,7 +1195,7 @@ func _assign_current_fight() -> void:
 	encounter["step_key"] = current_step_key
 	encounter["boss_preview_name"] = current_level_boss_name()
 	_current_encounter = encounter
-	_run_log_current_fight_turns = 0
+	_ensure_run_logger().reset_fight_turn_counter()
 	_run_log_append(
 		"fight_start",
 		{
@@ -1319,130 +1278,24 @@ func _finalize_run(victory: bool, cause: String) -> void:
 			"summary": _run_summary.duplicate(true),
 		}
 	)
-	if _generate_run_log_files:
+	if _ensure_run_logger().should_export_run_log_files():
 		_run_log_export_to_disk()
 
 
 func _run_log_reset() -> void:
-	_run_log_events.clear()
-	_run_log_event_serial = 0
-	_run_log_run_id = _run_log_create_run_id()
-	_run_log_started_unix = int(Time.get_unix_time_from_system())
-	_run_log_started_iso = Time.get_datetime_string_from_system()
-	_run_log_current_fight_turns = 0
-	_run_log_last_export_paths.clear()
-	_run_log_last_export_errors.clear()
-	_run_log_last_export_unix = 0
+	_ensure_run_logger().run_log_reset()
 
 
 func _run_log_append(event_type: String, payload: Dictionary) -> void:
-	_run_log_event_serial += 1
-	_run_log_events.append(
-		{
-			"seq": _run_log_event_serial,
-			"event": event_type,
-			"timestamp_unix": int(Time.get_unix_time_from_system()),
-			"timestamp_iso": Time.get_datetime_string_from_system(),
-			"run_id": _run_log_run_id,
-			"dungeon_level": dungeon_level,
-			"step_key": current_step_key,
-			"run_gold": run_gold,
-			"run_score": run_score,
-			"run_active": run_active,
-			"payload": payload.duplicate(true),
-		}
-	)
-
-
-func _run_log_create_run_id() -> String:
-	return "run_%d_%06d" % [int(Time.get_unix_time_from_system()), _reward_rng.randi_range(0, 999999)]
+	_ensure_run_logger().run_log_append(event_type, payload)
 
 
 func _run_log_export_to_disk() -> void:
-	_run_log_last_export_paths.clear()
-	_run_log_last_export_errors.clear()
-	_run_log_last_export_unix = int(Time.get_unix_time_from_system())
-
-	var absolute_dir := ProjectSettings.globalize_path(RUN_LOG_EXPORT_DIR)
-	var mkdir_error := DirAccess.make_dir_recursive_absolute(absolute_dir)
-	if mkdir_error != OK:
-		_run_log_last_export_errors.append("mkdir_failed:%s:%d" % [absolute_dir, mkdir_error])
-		return
-
-	var run_slug := _run_log_safe_filename_fragment(_run_log_run_id)
-	var started_slug := _run_log_safe_filename_fragment(_run_log_started_iso)
-	if started_slug == "":
-		started_slug = str(_run_log_started_unix)
-	var base_name := "%s_%s" % [run_slug, started_slug]
-
-	_run_log_write_export_file(base_name + ".json", run_log_export_json(true), "json")
-	_run_log_write_export_file(base_name + ".md", run_log_export_markdown(), "markdown")
-	_run_log_write_export_file(base_name + ".txt", run_log_export_text(), "text")
-
-
-func _save_user_settings() -> void:
-	var config := ConfigFile.new()
-	config.set_value(USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY, _generate_run_log_files)
-	var error := config.save(USER_SETTINGS_PATH)
-	if error != OK:
-		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])
-
-
-func _run_log_write_export_file(file_name: String, contents: String, kind: String) -> void:
-	var resource_path := RUN_LOG_EXPORT_DIR.path_join(file_name)
-	var absolute_path := ProjectSettings.globalize_path(resource_path)
-	var file := FileAccess.open(absolute_path, FileAccess.WRITE)
-	if file == null:
-		var open_error := FileAccess.get_open_error()
-		_run_log_last_export_errors.append("write_failed:%s:%d" % [absolute_path, open_error])
-		return
-	file.store_string(contents)
-	file.flush()
-	file.close()
-	_run_log_last_export_paths[kind] = {
-		"resource_path": resource_path,
-		"absolute_path": absolute_path,
-	}
-
-
-func _run_log_safe_filename_fragment(value: String) -> String:
-	var source := value.strip_edges().to_lower()
-	if source == "":
-		return "run"
-	var out := ""
-	var underscore_pending := false
-	for i in source.length():
-		var c := source.unicode_at(i)
-		var is_alpha := c >= 97 and c <= 122
-		var is_digit := c >= 48 and c <= 57
-		if is_alpha or is_digit:
-			if underscore_pending and out != "":
-				out += "_"
-			underscore_pending = false
-			out += String.chr(c)
-		elif c == 45:
-			if underscore_pending and out != "":
-				out += "_"
-			underscore_pending = false
-			out += "-"
-		elif c == 95:
-			underscore_pending = true
-		elif c == 32 or c == 46 or c == 58 or c == 47 or c == 92:
-			underscore_pending = true
-		else:
-			underscore_pending = true
-	if out == "":
-		return "run"
-	return out
+	_ensure_run_logger().run_log_export_to_disk(RUN_LOG_EXPORT_DIR)
 
 
 func _run_log_result_brief(result: Dictionary) -> Dictionary:
-	return {
-		"ok": bool(result.get("ok", false)),
-		"reason": String(result.get("reason", "")),
-		"gold": int(result.get("gold", run_gold)),
-		"result": Dictionary(result.get("result", {})).duplicate(true),
-	}
+	return _ensure_run_logger().run_log_result_brief(result)
 
 
 func _run_log_shop_action(
@@ -1452,197 +1305,31 @@ func _run_log_shop_action(
 	shop_before_snapshot: Dictionary = {},
 	gold_before: int = -1
 ) -> void:
-	if gold_before < 0:
-		gold_before = run_gold
-	var raw_before: Dictionary = shop_before_snapshot.duplicate(true)
-	if raw_before.is_empty():
-		raw_before = ensure_shop_state().to_snapshot()
-	var raw_after: Dictionary = Dictionary(result.get("shop", {})).duplicate(true)
-	if raw_after.is_empty():
-		raw_after = ensure_shop_state().to_snapshot()
-	var gold_after := int(result.get("gold", run_gold))
-	var action_details := _run_log_shop_action_details(action, request, result, raw_before, gold_before)
-	var payload := {
-		"action": action,
-		"request": request.duplicate(true),
-		"result": _run_log_result_brief(result),
-		"gold_before": gold_before,
-		"gold_after": gold_after,
-		"shop_before": _run_log_sanitize_shop_snapshot(raw_before, gold_before),
-		"shop_after": _run_log_sanitize_shop_snapshot(raw_after, gold_after),
-	}
-	if not action_details.is_empty():
-		payload["details"] = action_details
-	_run_log_append("shop_action", payload)
-
-
-func _run_log_shop_action_details(
-	action: String,
-	request: Dictionary,
-	result: Dictionary,
-	shop_before_snapshot: Dictionary,
-	gold_before: int
-) -> Dictionary:
-	var details := {}
-	var selected_offer := _run_log_find_selected_offer(request, shop_before_snapshot, gold_before)
-	if not selected_offer.is_empty():
-		details["selected_offer"] = selected_offer
-	var selected_option := _run_log_find_selected_booster_option(request, shop_before_snapshot)
-	if not selected_option.is_empty():
-		details["selected_booster_option"] = selected_option
-
-	var result_payload: Dictionary = Dictionary(result.get("result", {}))
-	var granted := _run_log_sanitize_booster_option(Dictionary(result_payload.get("granted", {})))
-	if not granted.is_empty():
-		details["granted"] = granted
-	var replacement: Dictionary = Dictionary(result_payload.get("replacement", {}))
-	if not replacement.is_empty():
-		details["replacement"] = replacement.duplicate(true)
-	if bool(result_payload.get("discarded", false)):
-		details["discarded"] = true
-
-	if action == "buy_offer" and bool(result.get("ok", false)) and not selected_offer.is_empty():
-		details["purchased_offer"] = selected_offer
-	return details
-
-
-func _run_log_find_selected_offer(request: Dictionary, shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
-	var offer_id := String(request.get("offer_id", ""))
-	if offer_id == "":
-		return {}
-	for raw_offer in Array(shop_snapshot.get("item_offers", [])):
-		var offer: Dictionary = Dictionary(raw_offer)
-		if String(offer.get("offer_id", "")) == offer_id:
-			return _run_log_sanitize_shop_offer(offer, gold_value)
-	var relic_offer := Dictionary(shop_snapshot.get("relic_offer", {}))
-	if String(relic_offer.get("offer_id", "")) == offer_id:
-		return _run_log_sanitize_shop_relic_offer(relic_offer, gold_value)
-	return {}
-
-
-func _run_log_find_selected_booster_option(request: Dictionary, shop_snapshot: Dictionary) -> Dictionary:
-	if not request.has("option_index"):
-		return {}
-	var option_index := int(request.get("option_index", -1))
-	var options: Array = Array(shop_snapshot.get("pending_booster_options", []))
-	if option_index < 0 or option_index >= options.size():
-		return {}
-	return _run_log_sanitize_booster_option(Dictionary(options[option_index]), option_index)
+	_ensure_run_logger().run_log_shop_action(action, result, request, shop_before_snapshot, gold_before)
 
 
 func _run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
-	var item_offers: Array[Dictionary] = []
-	var item_type_counts := {}
-	var has_booster_offer := false
-	for raw_offer in Array(shop_snapshot.get("item_offers", [])):
-		var offer := _run_log_sanitize_shop_offer(Dictionary(raw_offer), gold_value)
-		if offer.is_empty():
-			continue
-		item_offers.append(offer)
-		var offer_type := String(offer.get("type", ""))
-		item_type_counts[offer_type] = int(item_type_counts.get(offer_type, 0)) + 1
-		if offer_type == "booster":
-			has_booster_offer = true
-
-	var relic_offer := _run_log_sanitize_shop_relic_offer(Dictionary(shop_snapshot.get("relic_offer", {})), gold_value)
-	var booster_options: Array[Dictionary] = []
-	var option_index := 0
-	for raw_option in Array(shop_snapshot.get("pending_booster_options", [])):
-		booster_options.append(_run_log_sanitize_booster_option(Dictionary(raw_option), option_index))
-		option_index += 1
-
-	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
-	return {
-		"active": bool(shop_snapshot.get("active", false)),
-		"dungeon_level": int(shop_snapshot.get("dungeon_level", dungeon_level)),
-		"item_offers": item_offers,
-		"item_type_counts": item_type_counts,
-		"has_booster_offer": has_booster_offer,
-		"has_relic_offer": not relic_offer.is_empty(),
-		"relic_offer": relic_offer,
-		"reroll_count": int(shop_snapshot.get("reroll_count", 0)),
-		"reroll_cost": reroll_cost,
-		"can_afford_reroll": gold_value >= reroll_cost,
-		"pending_booster_option_count": booster_options.size(),
-		"pending_booster_options": booster_options,
-		"pending_booster_offer_id": String(shop_snapshot.get("pending_booster_offer_id", "")),
-		"skipped": bool(shop_snapshot.get("skipped", false)),
-	}
+	return _ensure_run_logger().run_log_sanitize_shop_snapshot(shop_snapshot, gold_value)
 
 
 func _run_log_sanitize_shop_offer(offer: Dictionary, gold_value: int) -> Dictionary:
-	if offer.is_empty():
-		return {}
-	var price := int(offer.get("price", 0))
-	var sold_out := bool(offer.get("sold_out", false))
-	var available := bool(offer.get("available", not sold_out))
-	return {
-		"offer_id": String(offer.get("offer_id", "")),
-		"content_id": String(offer.get("content_id", "")),
-		"display_name": String(offer.get("display_name", "")),
-		"type": String(offer.get("type", "")),
-		"rarity": String(offer.get("rarity", "")),
-		"price": price,
-		"available": available,
-		"sold_out": sold_out,
-		"can_afford": gold_value >= price,
-	}
+	return _ensure_run_logger().run_log_sanitize_shop_offer(offer, gold_value)
 
 
 func _run_log_sanitize_shop_relic_offer(offer: Dictionary, gold_value: int) -> Dictionary:
-	if offer.is_empty():
-		return {}
-	var relic_offer := _run_log_sanitize_shop_offer(offer, gold_value)
-	var relic_id := String(relic_offer.get("content_id", ""))
-	relic_offer["owned"] = _run_log_owned_relic_ids().has(relic_id)
-	return relic_offer
+	return _ensure_run_logger().run_log_sanitize_shop_relic_offer(offer, gold_value)
 
 
 func _run_log_sanitize_booster_option(option: Dictionary, option_index: int = -1) -> Dictionary:
-	if option.is_empty():
-		return {}
-	var out := {
-		"type": String(option.get("type", "")),
-		"content_id": String(option.get("content_id", "")),
-		"display_name": String(option.get("display_name", "")),
-	}
-	if option_index >= 0:
-		out["option_index"] = option_index
-	return out
-
-
-func _run_log_owned_relic_ids() -> Dictionary:
-	var owned_ids := {}
-	for raw_id in ensure_player_progression_state().relic_ids:
-		var relic_id := String(raw_id)
-		if relic_id != "":
-			owned_ids[relic_id] = true
-	return owned_ids
+	return _ensure_run_logger().run_log_sanitize_booster_option(option, option_index)
 
 
 func _run_log_next_shop_ordinal() -> int:
-	var count := 0
-	for entry in _run_log_events:
-		if String(entry.get("event", "")) == "shop_open":
-			count += 1
-	return count + 1
+	return _ensure_run_logger().run_log_next_shop_ordinal()
 
 
 func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "", extra: Dictionary = {}) -> Dictionary:
-	var payload := {
-		"outcome": outcome,
-		"dungeon_level": dungeon_level,
-		"step_key": current_step_key,
-		"is_boss": bool(_current_encounter.get("is_boss", false)),
-		"enemy_id": String(_current_encounter.get("enemy_id", "")),
-		"enemy_name": String(_current_encounter.get("display_name", "")),
-		"turn_count": _run_log_current_fight_turns,
-	}
-	if cause != "":
-		payload["cause"] = cause
-	for key in extra.keys():
-		payload[key] = extra[key]
-	return payload
+	return _ensure_run_logger().run_log_capture_fight_outcome_payload(outcome, cause, extra)
 
 
 func _transition_result(extra: Dictionary = {}) -> Dictionary:
@@ -1733,31 +1420,11 @@ func _grant_victory_equipment_unlocks() -> Array[Dictionary]:
 
 
 func flow_trace_begin(route_name: String, target_scene: String, details: Dictionary = {}) -> String:
-	if not FLOW_TRACE_ENABLED:
-		return ""
-	_flow_trace_route_serial += 1
-	var route_id := "%s_%d" % [route_name, _flow_trace_route_serial]
-	var now := Time.get_ticks_usec()
-	_flow_trace_routes[route_id] = {
-		"route_name": route_name,
-		"target_scene": target_scene,
-		"start_usec": now,
-		"last_usec": now,
-	}
-	_flow_trace_active_route_id = route_id
-	_flow_trace_mark_internal(route_id, "route_begin", details, target_scene)
-	return route_id
+	return _ensure_scene_router().flow_trace_begin(route_name, target_scene, details)
 
 
 func flow_trace_mark(step: String, details: Dictionary = {}, route_id: String = "", target_scene_override: String = "") -> void:
-	if not FLOW_TRACE_ENABLED:
-		return
-	var resolved_route_id := route_id
-	if resolved_route_id == "":
-		resolved_route_id = _flow_trace_active_route_id
-	if resolved_route_id == "":
-		return
-	_flow_trace_mark_internal(resolved_route_id, step, details, target_scene_override)
+	_ensure_scene_router().flow_trace_mark(step, details, route_id, target_scene_override)
 
 
 func flow_trace_change_scene(
@@ -1769,25 +1436,15 @@ func flow_trace_change_scene(
 	post_ready_failure_callback: Callable = Callable(),
 	rollback_snapshot: Dictionary = {}
 ) -> int:
-	var resolved_route_id := route_id
-	if resolved_route_id == "":
-		resolved_route_id = flow_trace_active_route_id()
-
-	if before_step != "":
-		var before_details := {}
-		if source != "":
-			before_details["source"] = source
-		flow_trace_mark(before_step, before_details, resolved_route_id, target_scene)
-
-	var prepared := flow_trace_prepare_scene(target_scene, resolved_route_id, source)
-	if not bool(prepared.get("ok", false)):
-		return int(prepared.get("error_code", ERR_CANT_OPEN))
-	if post_ready_failure_callback.is_valid():
-		prepared["post_ready_failure_callback"] = post_ready_failure_callback
-	if not rollback_snapshot.is_empty():
-		prepared["rollback_snapshot"] = rollback_snapshot
-
-	return flow_trace_attach_prepared_scene(tree, prepared, target_scene, resolved_route_id, source)
+	return _ensure_scene_router().flow_trace_change_scene(
+		tree,
+		target_scene,
+		route_id,
+		source,
+		before_step,
+		post_ready_failure_callback,
+		rollback_snapshot
+	)
 
 
 func flow_trace_prepare_scene(
@@ -1795,148 +1452,7 @@ func flow_trace_prepare_scene(
 	route_id: String = "",
 	source: String = ""
 ) -> Dictionary:
-	var resolved_route_id := route_id
-	if resolved_route_id == "":
-		resolved_route_id = flow_trace_active_route_id()
-
-	var transition_details := {}
-	if source != "":
-		transition_details["source"] = source
-	flow_trace_mark("transition_manual_start", transition_details, resolved_route_id, target_scene)
-	flow_trace_mark("before_resource_load", transition_details, resolved_route_id, target_scene)
-
-	if target_scene.strip_edges() == "":
-		flow_trace_mark(
-			"after_resource_load",
-			{
-				"ok": false,
-				"load_ms": 0,
-				"error": "target_scene_empty",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		return {
-			"ok": false,
-			"error_code": ERR_CANT_OPEN,
-			"reason": "target_scene_empty",
-			"route_id": resolved_route_id,
-		}
-
-	var load_start_usec := Time.get_ticks_usec()
-	var loaded_resource: Resource = ResourceLoader.load(target_scene)
-	var load_ms := int((Time.get_ticks_usec() - load_start_usec) / 1000.0)
-	if loaded_resource == null:
-		flow_trace_mark(
-			"after_resource_load",
-			{
-				"ok": false,
-				"load_ms": load_ms,
-				"error": "resource_load_failed",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		return {
-			"ok": false,
-			"error_code": ERR_CANT_OPEN,
-			"reason": "resource_load_failed",
-			"route_id": resolved_route_id,
-		}
-	if not (loaded_resource is PackedScene):
-		flow_trace_mark(
-			"after_resource_load",
-			{
-				"ok": false,
-				"load_ms": load_ms,
-				"resource_type": loaded_resource.get_class(),
-				"error": "resource_not_packed_scene",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		return {
-			"ok": false,
-			"error_code": ERR_INVALID_DATA,
-			"reason": "resource_not_packed_scene",
-			"route_id": resolved_route_id,
-		}
-
-	var packed_scene := loaded_resource as PackedScene
-	flow_trace_mark(
-		"after_resource_load",
-		{
-			"ok": true,
-			"load_ms": load_ms,
-			"resource_type": packed_scene.get_class(),
-		},
-		resolved_route_id,
-		target_scene
-	)
-	flow_trace_mark("before_scene_instantiate", transition_details, resolved_route_id, target_scene)
-
-	var instantiate_start_usec := Time.get_ticks_usec()
-	var instantiated_scene = packed_scene.instantiate()
-	var instantiate_ms := int((Time.get_ticks_usec() - instantiate_start_usec) / 1000.0)
-	if instantiated_scene == null:
-		flow_trace_mark(
-			"after_scene_instantiate",
-			{
-				"ok": false,
-				"instantiate_ms": instantiate_ms,
-				"error": "instantiate_returned_null",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		push_error("[FlowTrace] flow_trace_change_scene instantiate failed for %s (null)" % target_scene)
-		return {
-			"ok": false,
-			"error_code": ERR_CANT_CREATE,
-			"reason": "instantiate_returned_null",
-			"route_id": resolved_route_id,
-		}
-	if not (instantiated_scene is Node):
-		flow_trace_mark(
-			"after_scene_instantiate",
-			{
-				"ok": false,
-				"instantiate_ms": instantiate_ms,
-				"node_type": instantiated_scene.get_class(),
-				"error": "instantiate_not_node",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		push_error(
-			"[FlowTrace] flow_trace_change_scene instantiate returned non-Node for %s: %s"
-			% [target_scene, instantiated_scene.get_class()]
-		)
-		return {
-			"ok": false,
-			"error_code": ERR_CANT_CREATE,
-			"reason": "instantiate_not_node",
-			"route_id": resolved_route_id,
-		}
-
-	var new_scene := instantiated_scene as Node
-	flow_trace_mark(
-		"after_scene_instantiate",
-		{
-			"ok": true,
-			"instantiate_ms": instantiate_ms,
-			"node_type": new_scene.get_class(),
-			"node_name": new_scene.name,
-		},
-		resolved_route_id,
-		target_scene
-	)
-	return {
-		"ok": true,
-		"error_code": OK,
-		"scene": new_scene,
-		"route_id": resolved_route_id,
-	}
+	return _ensure_scene_router().flow_trace_prepare_scene(target_scene, route_id, source)
 
 
 func flow_trace_attach_prepared_scene(
@@ -1946,338 +1462,19 @@ func flow_trace_attach_prepared_scene(
 	route_id: String = "",
 	source: String = ""
 ) -> int:
-	var resolved_route_id := route_id
-	if resolved_route_id == "":
-		resolved_route_id = String(prepared.get("route_id", ""))
-	if resolved_route_id == "":
-		resolved_route_id = flow_trace_active_route_id()
-	if not bool(prepared.get("ok", false)):
-		var prepared_error_code := int(prepared.get("error_code", ERR_INVALID_DATA))
-		flow_trace_mark(
-			"after_scene_attach",
-			{
-				"ok": false,
-				"error_code": prepared_error_code,
-				"attach_ms": 0,
-				"error": "prepared_scene_invalid",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		return prepared_error_code
-	var new_scene := prepared.get("scene", null) as Node
-	if new_scene == null:
-		flow_trace_mark(
-			"after_scene_attach",
-			{
-				"ok": false,
-				"error_code": ERR_INVALID_DATA,
-				"attach_ms": 0,
-				"error": "prepared_scene_missing",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		return ERR_INVALID_DATA
-	var old_scene: Node = null
-	var old_scene_name := ""
-	var old_scene_path := ""
-	if tree != null:
-		old_scene = tree.current_scene
-	if old_scene != null and is_instance_valid(old_scene):
-		old_scene_name = old_scene.name
-		if old_scene.is_inside_tree():
-			old_scene_path = String(old_scene.get_path())
-
-	flow_trace_mark(
-		"before_scene_attach",
-		{
-			"source": source,
-			"old_scene_name": old_scene_name,
-			"old_scene_path": old_scene_path,
-		},
-		resolved_route_id,
-		target_scene
-	)
-
-	if tree == null:
-		flow_trace_mark(
-			"after_scene_attach",
-			{
-				"ok": false,
-				"error_code": ERR_UNAVAILABLE,
-				"attach_ms": 0,
-				"error": "scene_tree_null",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		new_scene.free()
-		push_error("[FlowTrace] flow_trace_change_scene failed: SceneTree is null for %s" % target_scene)
-		return ERR_UNAVAILABLE
-
-	var tree_root := tree.root
-	if tree_root == null:
-		flow_trace_mark(
-			"after_scene_attach",
-			{
-				"ok": false,
-				"error_code": ERR_UNAVAILABLE,
-				"attach_ms": 0,
-				"error": "scene_tree_root_null",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		new_scene.free()
-		push_error("[FlowTrace] flow_trace_change_scene failed: SceneTree root is null for %s" % target_scene)
-		return ERR_UNAVAILABLE
-
-	var attach_start_usec := Time.get_ticks_usec()
-	tree_root.add_child(new_scene)
-	tree.current_scene = new_scene
-	var attach_ms := int((Time.get_ticks_usec() - attach_start_usec) / 1000.0)
-	if tree.current_scene != new_scene:
-		flow_trace_mark(
-			"after_scene_attach",
-			{
-				"ok": false,
-				"error_code": ERR_CANT_CREATE,
-				"attach_ms": attach_ms,
-				"error": "current_scene_not_updated",
-			},
-			resolved_route_id,
-			target_scene
-		)
-		if is_instance_valid(new_scene):
-			new_scene.queue_free()
-		push_error("[FlowTrace] flow_trace_change_scene failed: current_scene assignment failed for %s" % target_scene)
-		return ERR_CANT_CREATE
-
-	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
-		old_scene.process_mode = Node.PROCESS_MODE_DISABLED
-		if old_scene is CanvasItem:
-			(old_scene as CanvasItem).visible = false
-
-	var new_scene_path := ""
-	if new_scene.is_inside_tree():
-		new_scene_path = String(new_scene.get_path())
-	flow_trace_mark(
-		"after_scene_attach",
-		{
-			"ok": true,
-			"error_code": OK,
-			"attach_ms": attach_ms,
-			"old_scene_name": old_scene_name,
-			"old_scene_path": old_scene_path,
-			"new_scene_name": new_scene.name,
-			"new_scene_path": new_scene_path,
-		},
-		resolved_route_id,
-		target_scene
-	)
-
-	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
-		var post_ready_failure_callback: Callable = prepared.get("post_ready_failure_callback", Callable())
-		_flow_trace_transition_generation += 1
-		_deferred_finish_prepared_scene_attach.call_deferred(
-			tree,
-			old_scene,
-			new_scene,
-			target_scene,
-			source,
-			resolved_route_id,
-			_flow_trace_transition_generation,
-			old_scene_name,
-			old_scene_path,
-			Dictionary(prepared.get("rollback_snapshot", {})),
-			post_ready_failure_callback
-		)
-
-	return OK
-
-
-func _deferred_finish_prepared_scene_attach(
-	tree: SceneTree,
-	old_scene: Node,
-	new_scene: Node,
-	target_scene: String,
-	source: String,
-	route_id: String,
-	transition_generation: int,
-	old_scene_name: String,
-	old_scene_path: String,
-	rollback_snapshot: Dictionary = {},
-	post_ready_failure_callback: Callable = Callable()
-) -> void:
-	await get_tree().process_frame
-	if transition_generation != _flow_trace_transition_generation:
-		flow_trace_mark(
-			"prepared_scene_post_ready_stale_generation_skip",
-			{
-				"expected_generation": transition_generation,
-				"current_generation": _flow_trace_transition_generation,
-				"old_scene_name": old_scene_name,
-				"old_scene_path": old_scene_path,
-			},
-			route_id,
-			target_scene
-		)
-		if old_scene != null and is_instance_valid(old_scene):
-			if tree == null or tree.current_scene != old_scene:
-				old_scene.queue_free()
-		if is_instance_valid(new_scene):
-			if tree == null or tree.current_scene != new_scene:
-				new_scene.queue_free()
-		return
-	var new_scene_healthy := (
-		tree != null
-		and is_instance_valid(new_scene)
-		and new_scene.is_inside_tree()
-		and tree.current_scene == new_scene
-	)
-	if new_scene_healthy:
-		flow_trace_mark(
-			"before_old_scene_free",
-			{
-				"old_scene_name": old_scene_name,
-				"old_scene_path": old_scene_path,
-				"post_ready_check": true,
-			},
-			route_id,
-			target_scene
-		)
-		if old_scene != null and is_instance_valid(old_scene):
-			old_scene.queue_free()
-		return
-
-	flow_trace_mark(
-		"prepared_scene_post_ready_check_failed",
-		{
-			"old_scene_name": old_scene_name,
-			"old_scene_path": old_scene_path,
-			"new_scene_valid": is_instance_valid(new_scene),
-		},
-		route_id,
-		target_scene
-	)
-	if not rollback_snapshot.is_empty():
-		restore_run_transition_state(rollback_snapshot)
-	if old_scene != null and is_instance_valid(old_scene):
-		old_scene.process_mode = Node.PROCESS_MODE_INHERIT
-		if old_scene is CanvasItem:
-			(old_scene as CanvasItem).visible = true
-		if tree != null:
-			tree.current_scene = old_scene
-	if is_instance_valid(new_scene):
-		new_scene.queue_free()
-	if post_ready_failure_callback.is_valid():
-		post_ready_failure_callback.call({
-			"ok": false,
-			"reason": "prepared_scene_post_ready_check_failed",
-			"target_scene": target_scene,
-			"route_id": route_id,
-			"source": source,
-			"old_scene_name": old_scene_name,
-			"old_scene_path": old_scene_path,
-		})
-	push_error("[FlowTrace] prepared scene post-ready check failed for %s; restored previous scene when available" % target_scene)
+	return _ensure_scene_router().flow_trace_attach_prepared_scene(tree, prepared, target_scene, route_id, source)
 
 
 func flow_trace_active_route_id() -> String:
-	return _flow_trace_active_route_id
+	return _ensure_scene_router().flow_trace_active_route_id()
 
 
 func flow_trace_debug_snapshot() -> Dictionary:
-	return {
-		"route_count": _flow_trace_routes.size(),
-		"active_route_id": _flow_trace_active_route_id,
-		"transition_generation": _flow_trace_transition_generation,
-	}
+	return _ensure_scene_router().flow_trace_debug_snapshot()
 
 
 func _flow_trace_bump_transition_generation() -> void:
-	_flow_trace_transition_generation += 1
-
-
-func _flow_trace_register_route(route_id: String) -> void:
-	if route_id == "":
-		return
-	if _flow_trace_route_order.has(route_id):
-		_flow_trace_route_order.erase(route_id)
-	_flow_trace_route_order.append(route_id)
-
-
-func _flow_trace_prune_routes() -> void:
-	var retained_order: Array[String] = []
-	for raw_route_id in _flow_trace_route_order:
-		var route_id := String(raw_route_id)
-		if _flow_trace_routes.has(route_id):
-			retained_order.append(route_id)
-	_flow_trace_route_order = retained_order
-	while _flow_trace_routes.size() > FLOW_TRACE_ROUTE_RETENTION_MAX:
-		var prune_route_id := ""
-		for ordered_route_id in _flow_trace_route_order:
-			var candidate_id := String(ordered_route_id)
-			if candidate_id == _flow_trace_active_route_id:
-				continue
-			prune_route_id = candidate_id
-			break
-		if prune_route_id == "":
-			for raw_candidate in _flow_trace_routes.keys():
-				var candidate := String(raw_candidate)
-				if candidate == _flow_trace_active_route_id:
-					continue
-				prune_route_id = candidate
-				break
-		if prune_route_id == "":
-			break
-		_flow_trace_routes.erase(prune_route_id)
-		_flow_trace_route_order.erase(prune_route_id)
-
-
-func _flow_trace_mark_internal(route_id: String, step: String, details: Dictionary, target_scene_override: String) -> void:
-	var route_data: Dictionary = _flow_trace_routes.get(route_id, {})
-	if route_data.is_empty():
-		var now_missing := Time.get_ticks_usec()
-		route_data = {
-			"route_name": "unknown",
-			"target_scene": target_scene_override,
-			"start_usec": now_missing,
-			"last_usec": now_missing,
-		}
-	var now := Time.get_ticks_usec()
-	var start_usec := int(route_data.get("start_usec", now))
-	var last_usec := int(route_data.get("last_usec", start_usec))
-	var target_scene := String(route_data.get("target_scene", ""))
-	if target_scene_override != "":
-		target_scene = target_scene_override
-	var elapsed_ms := int((now - start_usec) / 1000.0)
-	var delta_ms := int((now - last_usec) / 1000.0)
-	route_data["last_usec"] = now
-	route_data["target_scene"] = target_scene
-	_flow_trace_routes[route_id] = route_data
-	_flow_trace_register_route(route_id)
-	_flow_trace_prune_routes()
-
-	var details_text := ""
-	if not details.is_empty():
-		details_text = " details=%s" % str(details)
-	print(
-		"[FlowTrace] route_id=%s route=%s target_scene=%s elapsed_ms=%d delta_ms=%d step=%s dungeon_level=%d run_active=%s current_step=%s%s"
-		% [
-			route_id,
-			String(route_data.get("route_name", "unknown")),
-			target_scene,
-			elapsed_ms,
-			delta_ms,
-			step,
-			dungeon_level,
-			str(run_active),
-			current_step_key,
-			details_text,
-		]
-	)
+	_ensure_scene_router().flow_trace_bump_transition_generation()
 
 
 func _step_display_name(step: String) -> String:

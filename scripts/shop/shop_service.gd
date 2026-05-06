@@ -16,7 +16,9 @@ const DEFAULT_PRICING := {
 	"level_step": 2,
 	"reroll_base": 1,
 	"reroll_step": 1,
+	"reroll_max": 30,
 }
+const SHOP_MULTIPLIER_MIN := 0.1
 
 var _rng := RandomNumberGenerator.new()
 var _seeded: bool = false
@@ -703,16 +705,26 @@ func _compute_offer_price(data: Dictionary, rarity: String, level: int, pricing:
 	if base_price <= 0:
 		base_price = rarity_base
 	var prototype_balance: Dictionary = pricing.get("prototype_balance", {})
-	var price_multiplier := maxf(0.0, float(prototype_balance.get("shop_price_multiplier", 1.0)))
+	var price_multiplier := maxf(SHOP_MULTIPLIER_MIN, float(prototype_balance.get("shop_price_multiplier", 1.0)))
 	return maxi(1, int(round(float(base_price + (maxi(1, level) - 1) * level_step) * price_multiplier)))
 
 
 func _compute_reroll_cost(reroll_count: int, pricing: Dictionary) -> int:
 	var reroll_base := int(pricing.get("reroll_base", int(DEFAULT_PRICING.get("reroll_base", 1))))
 	var reroll_step := int(pricing.get("reroll_step", int(DEFAULT_PRICING.get("reroll_step", 1))))
+	var reroll_max := int(pricing.get("reroll_max", int(DEFAULT_PRICING.get("reroll_max", 30))))
 	var prototype_balance: Dictionary = pricing.get("prototype_balance", {})
-	var reroll_multiplier := maxf(0.0, float(prototype_balance.get("reroll_cost_multiplier", 1.0)))
-	return maxi(0, int(round(float(reroll_base + reroll_count * reroll_step) * reroll_multiplier)))
+	var reroll_multiplier := maxf(SHOP_MULTIPLIER_MIN, float(prototype_balance.get("reroll_cost_multiplier", 1.0)))
+	var unscaled_cost := reroll_base + reroll_count * reroll_step
+	var scaled_cost := int(round(float(unscaled_cost) * reroll_multiplier))
+	if unscaled_cost > 0:
+		scaled_cost = maxi(1, scaled_cost)
+	else:
+		scaled_cost = maxi(0, scaled_cost)
+	var clamped_max := maxi(0, maxi(reroll_base, reroll_max))
+	if unscaled_cost > 0:
+		clamped_max = maxi(1, clamped_max)
+	return mini(scaled_cost, clamped_max)
 
 
 func _ensure_rng_seeded() -> void:

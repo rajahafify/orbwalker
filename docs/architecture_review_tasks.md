@@ -321,3 +321,53 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Retained AR-01 combat result-envelope probe still matched baseline values under the nested `result` payload: `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - `play_scene main` launched with desktop `MainMenuMusicPlayer` playback; `stop_running_scene` succeeded; final `get_godot_errors` reported `Session has no errors`.
 - Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/known-issues.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the cleanup and validation evidence.
+
+## Milestone 12 Architecture Debt Follow-Up
+
+### AR-19: Shop/content safety fixes
+
+- Status: `done`
+- Owner/scope: Harden shop pricing and content validation without changing prototype economy defaults beyond rejecting zero/negative shop multipliers. `ContentRegistry` now clamps `shop_price_multiplier` and `reroll_cost_multiplier` to at least `0.1`, exposes a conservative `reroll_cost_max` pricing field, and validates malformed player-state content entries without crashing. `ShopService` applies the same multiplier floor to item/reroll calculations, keeps positive reroll costs from rounding to zero, and respects the optional reroll ceiling.
+- Validation:
+  - Focused Godot MCP probe confirmed `shop_price_multiplier=0.1`, `reroll_cost_multiplier=0.1`, item price floor `1`, first positive reroll cost `1`, intentional zero-base reroll `0`, and bounded high reroll cost behavior.
+  - Focused content validation probe confirmed non-dictionary entries and missing `next_tier_item_id` references report errors instead of crashing.
+
+### AR-20: Shared flow result utilities
+
+- Status: `done`
+- Owner/scope: Added `scripts/core/flow_result_utils.gd` for common result/transition dictionary interpretation and replaced duplicated `_scene_change_succeeded(...)`, `_result_ok(...)`, and `_result_failure_reason(...)` helpers in main-menu, Collection, combat, shop, and run-summary controllers. Route semantics, rollback payloads, FlowTrace names, transition locks, and visible status text were preserved.
+- Validation:
+  - Focused Godot MCP helper probe confirmed the shared success/failure/reason matrix matches existing controller semantics.
+  - Source search confirmed the duplicated private helper definitions were removed from the affected controllers.
+
+### AR-21: Combat phase encapsulation
+
+- Status: `done`
+- Owner/scope: Added `CombatStateMachine.reset_to_intent_preview()` and replaced external direct writes to `_combat.phase = INTENT_PREVIEW` with the narrow method. Phase remains readable for current HUD/debug checks, and combat phase order, result envelopes, math, timing, and debug probes were not changed.
+- Validation:
+  - Source search confirmed no remaining external `_combat.phase = ...` writes while current phase reads remain intact.
+  - Focused script reload checks covered `scripts/combat/combat_state_machine.gd` and `scripts/scenes/combat.gd`.
+
+### AR-22: RunLogger extraction
+
+- Status: `done`
+- Owner/scope: Added `scripts/core/run_logger.gd` to own run-log event storage, serial allocation, metadata/export state, snapshots, run-end export assembly, and export bookkeeping. `RunState.run_log_*` public methods remain facade wrappers, and existing event names/payload shapes still flow through `RunLogReporter` for formatting.
+- Validation:
+  - Focused Godot MCP run-log probe confirmed a new run starts with `run_start`, preserves event count/order across snapshot/restore, and increments event count after a logged turn event.
+  - Source search confirmed run-log backing state now lives in `RunLogger`, with `RunState` retaining only the delegated logger field and facade calls.
+
+### AR-23: SceneRouter extraction
+
+- Status: `done`
+- Owner/scope: Added `scripts/core/scene_router.gd` to own FlowTrace route record storage, route retention, active route id, transition generation, prepared scene loading/attach helpers, rollback generation guards, and route debug snapshots. `RunState.flow_trace_*`, `next_scene_path()`, and transition-facing public APIs remain compatibility wrappers around the router.
+- Validation:
+  - Focused Godot MCP route probe confirmed route retention stays capped at `50`, the active route survives retention and snapshot/restore, and transition generation is preserved through router snapshot/restore.
+  - Source search confirmed FlowTrace/transition backing state now lives in `SceneRouter`, with `RunState` retaining only the delegated router field and public facade.
+
+- Multi-agent review: Explorer findings were accepted at `8.6/10`. The worker first pass was rejected at `7.4/10` because reroll pricing could still round to zero and extracted logger/router ownership was too shallow. The second worker pass fixed both blockers and was accepted at `8.7/10`.
+- Shared validation:
+  - `git status --short --branch` was checked before implementation/review batches on `codex/milestone-12`.
+  - `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`.
+  - Godot MCP `view_script` loaded the touched source scripts, including `run_state.gd`, `run_logger.gd`, `scene_router.gd`, `flow_result_utils.gd`, `content_registry.gd`, `shop_service.gd`, `combat_state_machine.gd`, and the affected controllers.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the AR-19 through AR-23 architecture debt batch.

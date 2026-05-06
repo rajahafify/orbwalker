@@ -3,6 +3,7 @@ class_name MainMenuController
 
 const AudioStreamLoader = preload("res://scripts/core/audio_stream_loader.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
+const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
 const MAIN_MENU_MUSIC_PATH := "res://resources/audio/music/main-menu.wav"
 const MAIN_MENU_MUSIC_VOLUME_DB := -12.0
@@ -77,7 +78,7 @@ func _on_start_fight_button_pressed() -> void:
 	if not bool(prepared_scene.get("ok", false)):
 		_start_run_transitioning = false
 		_view.set_start_run_locked(false)
-		var prepare_failure_reason := _scene_change_failure_reason(prepared_scene)
+		var prepare_failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(prepared_scene)
 		_view.show_status("Start Run failed: %s" % prepare_failure_reason)
 		push_error("Start Run prepare failed: %s -> %s (%s)" % [route_id, COMBAT_SCENE_PATH, prepare_failure_reason])
 		return
@@ -93,7 +94,7 @@ func _on_start_fight_button_pressed() -> void:
 	var next_scene := RunState.next_scene_path()
 	RunState.flow_trace_mark("before_change_scene_to_file", {"source": source}, route_id, next_scene)
 	var transition_result: Variant = RunState.flow_trace_attach_prepared_scene(_host.get_tree(), prepared_scene, next_scene, route_id, source)
-	if _scene_change_succeeded(transition_result):
+	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return
 	_start_run_transitioning = false
 	_view.set_start_run_locked(false)
@@ -103,7 +104,7 @@ func _on_start_fight_button_pressed() -> void:
 	else:
 		RunState.reset_run()
 	_start_menu_music()
-	var failure_reason := _scene_change_failure_reason(transition_result)
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
 	_view.show_status("Start Run failed: %s" % failure_reason)
 	push_error("Start Run transition failed: %s -> %s (%s)" % [route_id, next_scene, failure_reason])
 
@@ -132,11 +133,11 @@ func _on_collection_button_pressed() -> void:
 		"",
 		_on_collection_post_ready_rollback
 	)
-	if _scene_change_succeeded(transition_result):
+	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return
 	_collection_transitioning = false
 	_view.set_collection_locked(false)
-	var failure_reason := _scene_change_failure_reason(transition_result)
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
 	_view.show_status("Collection failed: %s" % failure_reason)
 	push_error("Collection transition failed: %s -> %s (%s)" % [route_id, COLLECTION_SCENE_PATH, failure_reason])
 
@@ -162,8 +163,8 @@ func _on_close_profile_button_pressed() -> void:
 func _on_reset_profile_button_pressed() -> void:
 	_view.set_reset_profile_locked(true)
 	var reset_result: Variant = _reset_profile()
-	if not _result_ok(reset_result):
-		_view.show_status("Reset Profile failed: %s" % _result_failure_reason(reset_result))
+	if not FLOW_RESULT_UTILS.result_ok(reset_result):
+		_view.show_status("Reset Profile failed: %s" % FLOW_RESULT_UTILS.result_failure_reason(reset_result))
 		_view.set_reset_profile_locked(false)
 		return
 	_audio_play_sfx("ui_accept")
@@ -272,38 +273,6 @@ func _load_menu_music_stream() -> AudioStream:
 		return imported_stream
 	push_warning("Main menu music is not a playable AudioStream: %s" % MAIN_MENU_MUSIC_PATH)
 	return null
-
-
-func _scene_change_succeeded(result: Variant) -> bool:
-	if result is Dictionary:
-		return bool((result as Dictionary).get("ok", false))
-	return int(result) == OK
-
-
-func _scene_change_failure_reason(result: Variant) -> String:
-	if result is Dictionary:
-		var typed_result := result as Dictionary
-		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
-	return "error_code_%d" % int(result)
-
-
-func _result_ok(result: Variant) -> bool:
-	if result is Dictionary:
-		return bool((result as Dictionary).get("ok", false))
-	if result is bool:
-		return bool(result)
-	if result is int:
-		return int(result) == OK
-	return false
-
-
-func _result_failure_reason(result: Variant) -> String:
-	if result is Dictionary:
-		var typed_result := result as Dictionary
-		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
-	if result is int:
-		return "error_code_%d" % int(result)
-	return "unknown"
 
 
 func _reset_profile() -> Variant:

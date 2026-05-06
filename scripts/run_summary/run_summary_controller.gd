@@ -1,6 +1,8 @@
 extends RefCounted
 class_name RunSummaryController
 
+const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
+
 var _host: Control
 var _model
 var _view
@@ -59,7 +61,7 @@ func _route_from_summary(start_new_run: bool) -> void:
 	if start_new_run:
 		prepared_scene = RunState.flow_trace_prepare_scene(target_scene, route_id, source)
 		if not bool(prepared_scene.get("ok", false)):
-			var prepare_failure := _scene_change_failure_reason(prepared_scene)
+			var prepare_failure := FLOW_RESULT_UTILS.scene_change_failure_reason(prepared_scene)
 			push_error("Final summary prepare failed: %s -> %s (%s)" % [source, target_scene, prepare_failure])
 			_view.set_transition_error(prepare_failure)
 			_is_transitioning = false
@@ -87,11 +89,11 @@ func _route_from_summary(start_new_run: bool) -> void:
 			"",
 			_on_summary_post_ready_rollback
 		)
-	if _scene_change_succeeded(transition_result):
+	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return
 	if start_new_run and not pre_run_state.is_empty():
 		RunState.restore_run_transition_state(pre_run_state)
-	var failure := _scene_change_failure_reason(transition_result)
+	var failure := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
 	push_error("Final summary transition failed: %s -> %s (%s)" % [source, target_scene, failure])
 	_view.set_transition_error(failure)
 	_is_transitioning = false
@@ -110,16 +112,3 @@ func _on_post_ready_rollback(result: Dictionary) -> void:
 	_is_transitioning = false
 	_view.set_action_buttons_disabled(false)
 	_view.set_transition_error(String(result.get("reason", "prepared_scene_post_ready_check_failed")))
-
-
-func _scene_change_succeeded(result: Variant) -> bool:
-	if result is Dictionary:
-		return bool((result as Dictionary).get("ok", false))
-	return int(result) == OK
-
-
-func _scene_change_failure_reason(result: Variant) -> String:
-	if result is Dictionary:
-		var typed_result := result as Dictionary
-		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
-	return "error_code_%d" % int(result)

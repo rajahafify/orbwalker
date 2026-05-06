@@ -125,6 +125,7 @@ const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.g
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_SNAPSHOT_BUILDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_builder.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
+const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
 	"shortsword",
 	"buckler",
@@ -706,7 +707,7 @@ func _initialize_combat_state() -> void:
 				"",
 				_on_combat_scene_post_ready_rollback
 			)
-			if not _scene_change_succeeded(change_result):
+			if not FLOW_RESULT_UTILS.scene_change_succeeded(change_result):
 				_handle_combat_scene_change_failure(
 					redirect_scene,
 					_flow_trace_route_id,
@@ -750,7 +751,7 @@ func _begin_turn_preview() -> void:
 	if _combat.is_fight_over():
 		return
 
-	_combat.phase = COMBAT_PHASE_INTENT_PREVIEW
+	_combat.reset_to_intent_preview()
 	_combat.begin_player_input()
 	_set_input_phase(InputPhase.PLAYER_INPUT)
 	_pending_next_scene_path = ""
@@ -1738,7 +1739,7 @@ func _trace_and_change_scene_to_target(
 		"",
 		_on_combat_scene_post_ready_rollback
 	)
-	if not _scene_change_succeeded(scene_change_result):
+	if not FLOW_RESULT_UTILS.scene_change_succeeded(scene_change_result):
 		_handle_combat_scene_change_failure(target_scene, transition_route_id, source, scene_change_result)
 
 
@@ -1752,7 +1753,7 @@ func _on_combat_scene_post_ready_rollback(result: Dictionary) -> void:
 
 
 func _handle_combat_scene_change_failure(target_scene: String, route_id: String, source: String, result: Variant) -> void:
-	var failure_reason := _scene_change_failure_reason(result)
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(result)
 	_pending_next_scene_path = target_scene
 	_outcome_transition_queued = false
 	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
@@ -2158,19 +2159,6 @@ func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
 	if require_board_view and (_board_view == null or not is_instance_valid(_board_view)):
 		return false
 	return true
-
-
-func _scene_change_succeeded(result: Variant) -> bool:
-	if result is Dictionary:
-		return bool((result as Dictionary).get("ok", false))
-	return int(result) == OK
-
-
-func _scene_change_failure_reason(result: Variant) -> String:
-	if result is Dictionary:
-		var typed_result := result as Dictionary
-		return String(typed_result.get("reason", typed_result.get("error", "unknown")))
-	return "error_code_%d" % int(result)
 
 
 func _update_hud() -> void:
