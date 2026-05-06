@@ -166,6 +166,7 @@ func _on_start_fight_button_pressed() -> void:
 		pre_run_state = RunState.snapshot_run_transition_state()
 	if not pre_run_state.is_empty():
 		prepared_scene["rollback_snapshot"] = pre_run_state
+	prepared_scene["post_ready_failure_callback"] = Callable(self, "_on_start_run_post_ready_rollback")
 	RunState.flow_trace_mark("before_start_new_run", {}, route_id)
 	RunState.start_new_run()
 	RunState.flow_trace_mark("after_start_new_run", {}, route_id)
@@ -201,6 +202,17 @@ func _on_start_fight_button_pressed() -> void:
 	push_error("Start Run transition failed: %s -> %s (%s)" % [route_id, next_scene, failure_reason])
 
 
+func _on_start_run_post_ready_rollback(result: Dictionary) -> void:
+	_start_run_transitioning = false
+	if _start_run_button != null and is_instance_valid(_start_run_button):
+		_start_run_button.disabled = false
+	_start_menu_music()
+	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
+	if _status_label != null and is_instance_valid(_status_label):
+		_status_label.text = "Start Run failed: %s" % failure_reason
+		_status_label.visible = true
+
+
 func _on_collection_button_pressed() -> void:
 	if _collection_transitioning:
 		return
@@ -222,7 +234,9 @@ func _on_collection_button_pressed() -> void:
 		get_tree(),
 		COLLECTION_SCENE_PATH,
 		route_id,
-		"main_boot.collection_button"
+		"main_boot.collection_button",
+		"",
+		Callable(self, "_on_collection_post_ready_rollback")
 	)
 	if _scene_change_succeeded(transition_result):
 		return
@@ -232,6 +246,16 @@ func _on_collection_button_pressed() -> void:
 	_status_label.text = "Collection failed: %s" % failure_reason
 	_status_label.visible = true
 	push_error("Collection transition failed: %s -> %s (%s)" % [route_id, COLLECTION_SCENE_PATH, failure_reason])
+
+
+func _on_collection_post_ready_rollback(result: Dictionary) -> void:
+	_collection_transitioning = false
+	if _collection_button != null and is_instance_valid(_collection_button):
+		_collection_button.disabled = false
+	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
+	if _status_label != null and is_instance_valid(_status_label):
+		_status_label.text = "Collection failed: %s" % failure_reason
+		_status_label.visible = true
 
 
 func _on_profile_button_pressed() -> void:

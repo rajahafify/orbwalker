@@ -675,10 +675,17 @@ func _initialize_combat_state() -> void:
 				get_tree(),
 				redirect_scene,
 				_flow_trace_route_id,
-				"combat_player_controller._initialize_combat_state"
+				"combat_player_controller._initialize_combat_state",
+				"",
+				Callable(self, "_on_combat_scene_post_ready_rollback")
 			)
 			if not _scene_change_succeeded(change_result):
-				push_error("Combat initialize redirect failed: %s" % _scene_change_failure_reason(change_result))
+				_handle_combat_scene_change_failure(
+					redirect_scene,
+					_flow_trace_route_id,
+					"combat_player_controller._initialize_combat_state",
+					change_result
+				)
 		return
 
 	_player_state = RunState.ensure_player_state()
@@ -1483,18 +1490,11 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			if next_scene.find("run_summary") >= 0:
 				_append_combat_log("Outcome: Final boss victory. Opening run summary.")
 				_hide_outcome_summary()
-				RunState.flow_trace_mark(
-					"combat_before_final_summary_change_scene",
-					{},
-					_flow_trace_route_id,
-					next_scene
-				)
-				RunState.call_deferred(
-					"flow_trace_change_scene",
-					get_tree(),
+				_trace_and_change_scene_to_target(
 					next_scene,
 					_flow_trace_route_id,
-					"combat_final_summary_auto"
+					"combat_final_summary_auto",
+					"combat_before_final_summary_change_scene"
 				)
 				return
 			_status_label.text = _turn_logger.build_victory_status(turn_log, transition) + " Press Continue."
@@ -1755,12 +1755,48 @@ func _trace_and_change_scene_to_target(
 		transition_route_id,
 		target_scene
 	)
-	RunState.flow_trace_change_scene(
+	var scene_change_result: Variant = RunState.flow_trace_change_scene(
 		get_tree(),
 		target_scene,
 		transition_route_id,
-		source
+		source,
+		"",
+		Callable(self, "_on_combat_scene_post_ready_rollback")
 	)
+	if not _scene_change_succeeded(scene_change_result):
+		_handle_combat_scene_change_failure(target_scene, transition_route_id, source, scene_change_result)
+
+
+func _on_combat_scene_post_ready_rollback(result: Dictionary) -> void:
+	_handle_combat_scene_change_failure(
+		String(result.get("target_scene", RunState.SCENE_RUN_SUMMARY)),
+		String(result.get("route_id", _flow_trace_route_id)),
+		String(result.get("source", "combat_post_ready_rollback")),
+		result
+	)
+
+
+func _handle_combat_scene_change_failure(target_scene: String, route_id: String, source: String, result: Variant) -> void:
+	var failure_reason := _scene_change_failure_reason(result)
+	_pending_next_scene_path = target_scene
+	_outcome_transition_queued = false
+	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+	var button_text := "Run Summary" if target_scene.find("run_summary") >= 0 else "Continue"
+	_show_outcome_summary("Transition Failed", "Could not open the next scene.\n%s" % failure_reason, true, button_text)
+	if _status_label != null and is_instance_valid(_status_label):
+		_status_label.text = "Transition failed: %s" % failure_reason
+		_status_label.modulate = STATUS_COLOR_NEGATIVE
+	_append_combat_log("Scene transition failed from %s to %s: %s" % [source, target_scene, failure_reason])
+	RunState.flow_trace_mark(
+		"combat_scene_change_failed",
+		{
+			"source": source,
+			"reason": failure_reason,
+		},
+		route_id,
+		target_scene
+	)
+	push_error("Combat scene transition failed: %s -> %s (%s)" % [source, target_scene, failure_reason])
 
 
 func _ensure_outcome_overlay_layer() -> void:

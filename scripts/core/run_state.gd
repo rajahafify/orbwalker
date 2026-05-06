@@ -1760,7 +1760,9 @@ func flow_trace_change_scene(
 	target_scene: String,
 	route_id: String = "",
 	source: String = "",
-	before_step: String = ""
+	before_step: String = "",
+	post_ready_failure_callback: Callable = Callable(),
+	rollback_snapshot: Dictionary = {}
 ) -> int:
 	var resolved_route_id := route_id
 	if resolved_route_id == "":
@@ -1775,6 +1777,10 @@ func flow_trace_change_scene(
 	var prepared := flow_trace_prepare_scene(target_scene, resolved_route_id, source)
 	if not bool(prepared.get("ok", false)):
 		return int(prepared.get("error_code", ERR_CANT_OPEN))
+	if post_ready_failure_callback.is_valid():
+		prepared["post_ready_failure_callback"] = post_ready_failure_callback
+	if not rollback_snapshot.is_empty():
+		prepared["rollback_snapshot"] = rollback_snapshot
 
 	return flow_trace_attach_prepared_scene(tree, prepared, target_scene, resolved_route_id, source)
 
@@ -2067,15 +2073,18 @@ func flow_trace_attach_prepared_scene(
 	)
 
 	if old_scene != null and is_instance_valid(old_scene) and old_scene != new_scene:
+		var post_ready_failure_callback: Callable = prepared.get("post_ready_failure_callback", Callable())
 		_deferred_finish_prepared_scene_attach.call_deferred(
 			tree,
 			old_scene,
 			new_scene,
 			target_scene,
+			source,
 			resolved_route_id,
 			old_scene_name,
 			old_scene_path,
-			Dictionary(prepared.get("rollback_snapshot", {}))
+			Dictionary(prepared.get("rollback_snapshot", {})),
+			post_ready_failure_callback
 		)
 
 	return OK
@@ -2086,10 +2095,12 @@ func _deferred_finish_prepared_scene_attach(
 	old_scene: Node,
 	new_scene: Node,
 	target_scene: String,
+	source: String,
 	route_id: String,
 	old_scene_name: String,
 	old_scene_path: String,
-	rollback_snapshot: Dictionary = {}
+	rollback_snapshot: Dictionary = {},
+	post_ready_failure_callback: Callable = Callable()
 ) -> void:
 	await get_tree().process_frame
 	var new_scene_healthy := (
@@ -2133,6 +2144,16 @@ func _deferred_finish_prepared_scene_attach(
 			tree.current_scene = old_scene
 	if is_instance_valid(new_scene):
 		new_scene.queue_free()
+	if post_ready_failure_callback.is_valid():
+		post_ready_failure_callback.call({
+			"ok": false,
+			"reason": "prepared_scene_post_ready_check_failed",
+			"target_scene": target_scene,
+			"route_id": route_id,
+			"source": source,
+			"old_scene_name": old_scene_name,
+			"old_scene_path": old_scene_path,
+		})
 	push_error("[FlowTrace] prepared scene post-ready check failed for %s; restored previous scene when available" % target_scene)
 
 

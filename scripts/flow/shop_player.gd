@@ -184,7 +184,9 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 		get_tree(),
 		target_scene,
 		_flow_trace_route_id,
-		transition_source
+		transition_source,
+		"",
+		Callable(self, "_on_scene_change_post_ready_rollback")
 	)
 	if scene_change_result == OK:
 		return
@@ -679,6 +681,9 @@ func _on_continue_button_pressed() -> void:
 		{"button_text": _continue_button.text},
 		_flow_trace_route_id
 	)
+	var pre_transition_state: Dictionary = {}
+	if RunState.has_method("snapshot_run_transition_state"):
+		pre_transition_state = RunState.snapshot_run_transition_state()
 	RunState.flow_trace_mark("shop_before_advance_after_shop", {}, _flow_trace_route_id)
 	var transition: Dictionary = RunState.advance_after_shop(false)
 	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
@@ -693,6 +698,7 @@ func _on_continue_button_pressed() -> void:
 	)
 	if not bool(transition.get("ok", false)):
 		_set_status("Continue failed: %s" % String(transition.get("reason", "unknown")), false)
+		_restore_transition_snapshot(pre_transition_state)
 		_end_transition_lock()
 		return
 	var route_id := _flow_trace_route_id
@@ -712,10 +718,14 @@ func _on_continue_button_pressed() -> void:
 		get_tree(),
 		next_scene,
 		route_id,
-		"shop_continue_button"
+		"shop_continue_button",
+		"",
+		Callable(self, "_on_scene_change_post_ready_rollback"),
+		pre_transition_state
 	)
 	if scene_change_result != OK:
 		_set_status("Continue failed: %s" % _scene_change_failure_reason(scene_change_result), false)
+		_restore_transition_snapshot(pre_transition_state)
 		_end_transition_lock()
 
 
@@ -740,7 +750,9 @@ func _on_main_menu_button_pressed() -> void:
 		get_tree(),
 		"res://scenes/main.tscn",
 		_flow_trace_route_id,
-		"shop_main_menu_button"
+		"shop_main_menu_button",
+		"",
+		Callable(self, "_on_scene_change_post_ready_rollback")
 	)
 	if scene_change_result != OK:
 		_set_status("Main menu failed: %s" % _scene_change_failure_reason(scene_change_result), false)
@@ -774,6 +786,28 @@ func _end_transition_lock() -> void:
 		_continue_button.disabled = false
 	if _main_menu_button != null:
 		_main_menu_button.disabled = false
+
+
+func _on_scene_change_post_ready_rollback(result: Dictionary) -> void:
+	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
+	_set_status("Transition failed: %s" % failure_reason, false)
+	RunState.flow_trace_mark(
+		"shop_post_ready_scene_change_failed",
+		{
+			"source": String(result.get("source", "shop_player")),
+			"reason": failure_reason,
+		},
+		String(result.get("route_id", _flow_trace_route_id)),
+		String(result.get("target_scene", ""))
+	)
+	_end_transition_lock()
+
+
+func _restore_transition_snapshot(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	if RunState.has_method("restore_run_transition_state"):
+		RunState.restore_run_transition_state(snapshot)
 
 
 func _scene_change_failure_reason(result: Variant) -> String:
@@ -1087,8 +1121,10 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.horizontal_alignment = align
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if enable_wrap else TextServer.AUTOWRAP_OFF
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	label.autowrap_mode = (
+		TextServer.AUTOWRAP_WORD_SMART if enable_wrap else TextServer.AUTOWRAP_OFF
+	) as TextServer.AutowrapMode
 	label.clip_text = true
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", font_size)

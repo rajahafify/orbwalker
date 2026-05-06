@@ -101,12 +101,24 @@ func _on_back_button_pressed() -> void:
 	_back_button.disabled = true
 	var route_id := _flow_trace_begin("collection_to_main_menu", MAIN_MENU_SCENE_PATH, {"source": "collection.back_button"})
 	_flow_trace_mark("collection_before_change_scene", {"source": "collection.back_button"}, route_id, MAIN_MENU_SCENE_PATH)
-	var transition_result: Variant = _flow_trace_change_scene(MAIN_MENU_SCENE_PATH, route_id, "collection.back_button")
+	var transition_result: Variant = _flow_trace_change_scene(
+		MAIN_MENU_SCENE_PATH,
+		route_id,
+		"collection.back_button",
+		Callable(self, "_on_back_post_ready_rollback")
+	)
 	if _scene_change_succeeded(transition_result):
 		return
 	_is_transitioning = false
 	_back_button.disabled = false
 	_set_status("Main Menu failed: %s" % _scene_change_failure_reason(transition_result), true)
+
+
+func _on_back_post_ready_rollback(result: Dictionary) -> void:
+	_is_transitioning = false
+	if _back_button != null and is_instance_valid(_back_button):
+		_back_button.disabled = false
+	_set_status("Main Menu failed: %s" % String(result.get("reason", "prepared_scene_post_ready_check_failed")), true)
 
 
 func _reload_profile_snapshot() -> void:
@@ -420,9 +432,14 @@ func _flow_trace_mark(step: String, details: Dictionary, route_id: String, targe
 		RunState.call("flow_trace_mark", step, details, route_id, target_scene)
 
 
-func _flow_trace_change_scene(target_scene: String, route_id: String, source: String) -> Variant:
+func _flow_trace_change_scene(
+	target_scene: String,
+	route_id: String,
+	source: String,
+	post_ready_failure_callback: Callable = Callable()
+) -> Variant:
 	if RunState.has_method("flow_trace_change_scene"):
-		return RunState.call("flow_trace_change_scene", get_tree(), target_scene, route_id, source)
+		return RunState.call("flow_trace_change_scene", get_tree(), target_scene, route_id, source, "", post_ready_failure_callback)
 	return get_tree().change_scene_to_file(target_scene)
 
 
