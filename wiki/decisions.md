@@ -24,7 +24,7 @@ This page records decisions that are already reflected in the code or explicitly
 
 **Consequences**: Run flow is centralized, which simplifies validation, but `RunState` is now a high-value integration point that needs careful compatibility handling.
 
-**Sources**: `project.godot`, `scripts/core/run_state.gd`, `scripts/flow/boss_relic_reward.gd`, `scripts/flow/shop_player.gd`
+**Sources**: `project.godot`, `scripts/core/run_state.gd`, `scripts/scenes/combat.gd`, `scripts/scenes/shop.gd`
 
 ### 2026-05-03 - Keep The Current Dictionary-Backed Content Registry For The Prototype
 

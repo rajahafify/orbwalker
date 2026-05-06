@@ -15,7 +15,7 @@ const FALLBACK_BUTTON_SECONDARY_PATH := "res://resources/art/first_pass/menu/mai
 const FALLBACK_STATS_PANEL_PATH := "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png"
 const MAIN_MENU_MUSIC_PATH := "res://resources/audio/music/main-menu.wav"
 const MAIN_MENU_MUSIC_VOLUME_DB := -12.0
-const COLLECTION_SCENE_PATH := "res://scenes/flow/collection.tscn"
+const COLLECTION_SCENE_PATH := "res://scenes/collection.tscn"
 
 const ELEMENT_KEYS: Array[String] = ["fire", "ice", "earth", "heart", "armor", "gold"]
 const ELEMENT_ICON_FALLBACK_PATHS: Array[String] = [
@@ -145,8 +145,8 @@ func _on_start_fight_button_pressed() -> void:
 	_start_run_transitioning = true
 	_start_run_button.disabled = true
 	_audio_play_sfx("ui_accept")
-	var target_scene := "res://scenes/combat/combat_player.tscn"
-	var source := "main_boot.start_button"
+	var target_scene := "res://scenes/combat.tscn"
+	var source := "main_menu.start_button"
 	var route_id := RunState.flow_trace_begin(
 		"start_run_to_combat",
 		target_scene,
@@ -221,11 +221,11 @@ func _on_collection_button_pressed() -> void:
 	var route_id := RunState.flow_trace_begin(
 		"main_menu_to_collection",
 		COLLECTION_SCENE_PATH,
-		{"source": "main_boot.collection_button"}
+		{"source": "main_menu.collection_button"}
 	)
 	RunState.flow_trace_mark(
 		"before_change_scene_to_file",
-		{"source": "main_boot.collection_button"},
+		{"source": "main_menu.collection_button"},
 		route_id,
 		COLLECTION_SCENE_PATH
 	)
@@ -233,7 +233,7 @@ func _on_collection_button_pressed() -> void:
 		get_tree(),
 		COLLECTION_SCENE_PATH,
 		route_id,
-		"main_boot.collection_button",
+		"main_menu.collection_button",
 		"",
 		_on_collection_post_ready_rollback
 	)
@@ -469,25 +469,25 @@ func _load_menu_music_stream() -> AudioStream:
 
 
 func _configure_ui_nodes() -> void:
-	_background_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_background_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_logo_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_logo_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_outer_border_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_outer_border_texture.stretch_mode = TextureRect.STRETCH_SCALE
+	_background_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	_background_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
+	_logo_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	_logo_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	_outer_border_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	_outer_border_texture.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 
 	for icon_node in _element_icons:
 		var icon := icon_node as TextureRect
 		if icon != null:
-			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 			icon.custom_minimum_size = Vector2.ZERO
 
 	for icon_node in _stat_icons:
 		var icon := icon_node as TextureRect
 		if icon != null:
-			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 			icon.custom_minimum_size = Vector2.ZERO
 
 	for container in [_menu_button_column, _element_row, _stats_row, _footer_actions]:

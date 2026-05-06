@@ -2,7 +2,7 @@
 
 **Summary**: Inventory and map for the generated main menu art package. This page records the new menu background, logo, UI chrome, stat panel, and icon assets, plus the existing mastery icons that are reused for the elemental row.
 
-**Sources**: `resources/art/first_pass/menu/`, `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`, `resources/visual/first_pass_asset_map.json`, `docs/main_menu_layout_guide.html`, `docs/main_menu_recreation.html`, `scenes/main.tscn`, `scripts/ui/visual_registry.gd`
+**Sources**: `resources/art/first_pass/menu/`, `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`, `resources/visual/first_pass_asset_map.json`, `docs/main_menu_layout_guide.html`, `docs/main_menu_recreation.html`, `scenes/main_menu.tscn`, `scripts/ui/visual_registry.gd`
 
 **Last updated**: 2026-04-30
 
@@ -14,7 +14,7 @@ The menu art package now lives under `resources/art/first_pass/menu/` and is doc
 
 The six elemental row icons are reused from the existing mastery icon family instead of being regenerated. (source: `resources/art/first_pass/derived/icons/mastery_fire.png`, `resources/art/first_pass/derived/icons/mastery_ice.png`, `resources/art/first_pass/derived/icons/mastery_earth.png`, `resources/art/first_pass/derived/icons/mastery_heart.png`, `resources/art/first_pass/derived/icons/mastery_armor.png`, `resources/art/first_pass/derived/icons/mastery_gold.png`)
 
-The runtime main menu scene is now wired to the menu art package for background, logo, outer border, button chrome, stats panel chrome, and menu icon sets through the asset map. The generated chrome/icon PNGs have been cleaned so transparent regions are real alpha instead of baked checkerboard pixels. (source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `resources/visual/first_pass_asset_map.json`, `tools/asset_tools/clean_menu_art.py`)
+The runtime main menu scene is now wired to the menu art package for background, logo, outer border, button chrome, stats panel chrome, and menu icon sets through the asset map. The generated chrome/icon PNGs have been cleaned so transparent regions are real alpha instead of baked checkerboard pixels. (source: `scenes/main_menu.tscn`, `scripts/scenes/main_menu.gd`, `resources/visual/first_pass_asset_map.json`, `tools/asset_tools/clean_menu_art.py`)
 
 ## Details
 
@@ -65,20 +65,20 @@ The mapped `menu.logo` path now points to the cleaned alpha logo variant to avoi
 - Resolved logo clipping and menu overlap caused by native texture-size expansion in runtime layout.
 - Resolved elemental row/stats/footer overflow caused by unbounded icon minimum sizes.
 - Resolved footer panel blowout and bottom text collisions by clamping runtime icon sizes and simplifying bottom label usage.
-- Resolution is implemented in runtime scene composition code, not by changing source art dimensions. (source: `scripts/core/main_boot.gd`, `docs/test_plan.md`)
+- Resolution is implemented in runtime scene composition code, not by changing source art dimensions. (source: `scripts/scenes/main_menu.gd`, `docs/test_plan.md`)
 
 ### Runtime reference-match pass (2026-04-30)
 
 - Main menu now uses generated `menu.button_primary` and `menu.button_secondary` textures at runtime for action and footer button chrome.
 - Main menu `StatsPanel` now uses generated `menu.stats_panel` texture at runtime.
 - Main menu stats and footer iconography now uses generated `menu.menu_icons` mappings at runtime instead of progression-item fallback icons.
-- Main menu no longer exposes a visible debug combat button; `Start Run` remains the only functional player-facing action. (source: `scenes/main.tscn`, `scripts/core/main_boot.gd`, `docs/test_plan.md`)
+- Main menu no longer exposes a visible debug combat button; `Start Run` remains the only functional player-facing action. (source: `scenes/main_menu.tscn`, `scripts/scenes/main_menu.gd`, `docs/test_plan.md`)
 
 ### Checkerboard alpha cleanup (2026-04-30)
 
 - `tools/asset_tools/clean_menu_art.py` removes baked checkerboard pixels from generated menu chrome/icon PNGs and rewrites them with real transparent alpha.
 - Cleaned assets include the outer border, primary/secondary button plates, stats triptych panel, and all `main_menu_icon_*` files.
-- `scripts/core/main_boot.gd` now uses zero texture-slice margins for these highly compressed runtime button/panel plates so the cleaned art remains visible in the current menu layout. (source: `tools/asset_tools/clean_menu_art.py`, `scripts/core/main_boot.gd`, `docs/test_plan.md`)
+- `scripts/scenes/main_menu.gd` now uses zero texture-slice margins for these highly compressed runtime button/panel plates so the cleaned art remains visible in the current menu layout. (source: `tools/asset_tools/clean_menu_art.py`, `scripts/scenes/main_menu.gd`, `docs/test_plan.md`)
 
 ## Important Files
 
@@ -86,8 +86,8 @@ The mapped `menu.logo` path now points to the cleaned alpha logo variant to avoi
 - `resources/visual/first_pass_asset_map.json` - JSON map for the new menu art package and the reused mastery icons.
 - `docs/main_menu_layout_guide.html` - HTML overlay and slot map for main menu composition/layout planning.
 - `docs/main_menu_recreation.html` - HTML visual recreation of the reference menu using the generated art pack.
-- `scenes/main.tscn` - authored main menu scene with background/logo zones, textured border, button stack, element row, stats panel, and footer actions.
-- `scripts/core/main_boot.gd` - main menu runtime layout, menu asset-map texture binding, textured styleboxes for buttons/panels, and `Start Run` behavior wiring.
+- `scenes/main_menu.tscn` - authored main menu scene with background/logo zones, textured border, button stack, element row, stats panel, and footer actions.
+- `scripts/scenes/main_menu.gd` - main menu runtime layout, menu asset-map texture binding, textured styleboxes for buttons/panels, and `Start Run` behavior wiring.
 - `tools/asset_tools/clean_menu_art.py` - menu chrome/icon alpha cleanup utility for generated assets with baked checkerboard backgrounds.
 - `scripts/ui/visual_registry.gd` - still does not expose dedicated menu accessors; main menu currently reads mapped paths directly.
 

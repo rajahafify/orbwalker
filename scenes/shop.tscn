@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://d4f7ouqy8ad44"]
+[gd_scene format=3 uid="uid://d4f7ouqy8ad44"]
 
-[ext_resource type="Script" path="res://scripts/flow/shop_player.gd" id="1_shop"]
+[ext_resource type="Script" path="res://scripts/scenes/shop.gd" id="1_shop"]
 [ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="2_theme"]
 
-[node name="ShopPlayer" type="Control"]
+[node name="Shop" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

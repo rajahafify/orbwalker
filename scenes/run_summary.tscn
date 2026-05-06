@@ -1,9 +1,9 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/flow/final_run_summary.gd" id="1_0"]
+[ext_resource type="Script" path="res://scripts/scenes/run_summary.gd" id="1_0"]
 [ext_resource type="Script" path="res://scripts/ui/achievement_toast.gd" id="2_toast"]
 
-[node name="FinalRunSummary" type="Control"]
+[node name="RunSummary" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

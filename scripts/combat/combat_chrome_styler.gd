@@ -8,16 +8,16 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		var background_texture := _resolve_visual_texture(visuals, "combat_background")
 		if background_texture != null:
 			(background as TextureRect).texture = background_texture
-		(background as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(background as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(background as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		(background as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 		(background as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
 	var backdrop_scrim: Variant = nodes.get("backdrop_scrim", null)
 	if backdrop_scrim is TextureRect:
 		var scrim_texture := _resolve_visual_texture(visuals, "combat_backdrop_scrim_texture")
 		if scrim_texture != null:
 			(backdrop_scrim as TextureRect).texture = scrim_texture
-		(backdrop_scrim as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(backdrop_scrim as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
+		(backdrop_scrim as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		(backdrop_scrim as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 		(backdrop_scrim as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 	var board_view: Variant = nodes.get("board_view", null)
@@ -62,13 +62,13 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 			(enemy_panel as Control).add_theme_stylebox_override("panel", enemy_style)
 	var enemy_stage_backdrop: Variant = nodes.get("enemy_stage_backdrop", null)
 	if enemy_stage_backdrop is TextureRect:
-		(enemy_stage_backdrop as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(enemy_stage_backdrop as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		(enemy_stage_backdrop as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		(enemy_stage_backdrop as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 		(enemy_stage_backdrop as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.94)
 	var enemy_portrait: Variant = nodes.get("enemy_portrait", null)
 	if enemy_portrait is TextureRect:
-		(enemy_portrait as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		(enemy_portrait as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		(enemy_portrait as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
 		(enemy_portrait as TextureRect).material = null
 	var enemy_text_scrim: Variant = nodes.get("enemy_text_scrim", null)
@@ -221,22 +221,22 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	apply_timer_label_readability(nodes.get("timer_state_label", null))
 	var intent_badge: TextureRect = nodes.get("intent_badge", null) as TextureRect
 	if intent_badge != null:
-		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		intent_badge.custom_minimum_size = Vector2(112, 112)
 		intent_badge.visible = false
 	var primary_intent_detail: Label = nodes.get("primary_intent_detail_label", null) as Label
 	if primary_intent_detail != null:
-		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+		primary_intent_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 		primary_intent_detail.visible = false
 	var primary_intent_title: Label = nodes.get("primary_intent_title_label", null) as Label
 	if primary_intent_title != null:
-		primary_intent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 		primary_intent_title.visible = false
 	var primary_intent_amount: Label = nodes.get("primary_intent_amount_label", null) as Label
 	if primary_intent_amount != null:
-		primary_intent_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		primary_intent_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 		primary_intent_amount.visible = false
 	apply_button_theme([
 		nodes.get("back_button", null),
@@ -441,8 +441,8 @@ static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = nul
 		var marker_texture := _resolve_visual_texture(visuals, "combat_timer_center_marker_texture")
 		if marker_texture != null:
 			(center_marker as TextureRect).texture = marker_texture
-		(center_marker as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		(center_marker as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		(center_marker as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		(center_marker as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		(center_marker as TextureRect).modulate = Color(0.98, 0.90, 0.62, 0.96)
 
 
@@ -518,8 +518,8 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 		if divider_node is TextureRect:
 			if divider_texture != null:
 				(divider_node as TextureRect).texture = divider_texture
-			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE
+			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 			if key == "divider_board_player":
 				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.0)
 			else:
@@ -531,8 +531,8 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 		if corner is TextureRect:
 			if corner_texture != null:
 				(corner as TextureRect).texture = corner_texture
-			(corner as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			(corner as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			(corner as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+			(corner as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 			(corner as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.94)
 
 

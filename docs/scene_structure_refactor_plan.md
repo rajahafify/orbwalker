@@ -36,7 +36,7 @@ Observed mismatch:
 
 ## Resolved HUD Preset Cleanup
 
-The shop readability pass briefly introduced shop-specific `PlayerLoadoutHud` geometry constants in `scripts/flow/shop_player.gd`. The scene-review P1/P2 cleanup moved that geometry into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through `CombatLayoutManager`, and shop applies the named shared preset from `PlayerLoadoutHud`.
+The shop readability pass briefly introduced shop-specific `PlayerLoadoutHud` geometry constants in `scripts/scenes/shop.gd`. The scene-review P1/P2 cleanup moved that geometry into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through `CombatLayoutManager`, and shop applies the named shared preset from `PlayerLoadoutHud`.
 
 The remaining architectural issue is not the old shop-local constants. It is the lack of a reusable HUD scene/component boundary:
 
@@ -172,11 +172,11 @@ Move finalized full screens into the target folder taxonomy.
 
 Proposed moves:
 
-- `scenes/main.tscn` -> `scenes/app/main_menu.tscn`
-- `scenes/combat/combat_player.tscn` -> `scenes/screens/combat/combat_player.tscn`
-- `scenes/flow/shop_player.tscn` -> `scenes/screens/shop/shop_player.tscn`
-- `scenes/flow/collection.tscn` -> `scenes/screens/collection/collection.tscn`
-- `scenes/flow/final_run_summary.tscn` -> `scenes/screens/run_summary/final_run_summary.tscn`
+- `scenes/main_menu.tscn` -> `scenes/app/main_menu.tscn`
+- `scenes/combat.tscn` -> `scenes/screens/combat/combat_player.tscn`
+- `scenes/shop.tscn` -> `scenes/screens/shop/shop_player.tscn`
+- `scenes/collection.tscn` -> `scenes/screens/collection/collection.tscn`
+- `scenes/run_summary.tscn` -> `scenes/screens/run_summary/final_run_summary.tscn`
 - `scenes/ui/board.tscn` -> `scenes/components/board/board.tscn`
 - `scenes/ui/elemental_mastery_hud_variants.tscn` -> `scenes/dev/elemental_mastery_hud_variants.tscn`
 

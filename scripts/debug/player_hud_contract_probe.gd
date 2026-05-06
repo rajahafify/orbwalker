@@ -2,9 +2,9 @@ extends RefCounted
 class_name PlayerHudContractProbe
 
 const PLAYER_HUD_SCENE_PATH := "res://scenes/ui/player_hud.tscn"
-const COMBAT_SCENE_PATH := "res://scenes/combat/combat_player.tscn"
-const SHOP_SCRIPT_PATH := "res://scripts/flow/shop_player.gd"
-const COMBAT_SCRIPT_PATH := "res://scripts/combat/combat_player_controller.gd"
+const COMBAT_SCENE_PATH := "res://scenes/combat.tscn"
+const SHOP_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
+const COMBAT_SCRIPT_PATH := "res://scripts/scenes/combat.gd"
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 
 const REQUIRED_SHARED_NODE_NAMES := [

@@ -4,11 +4,11 @@ Date: 2026-05-03
 
 ## Current Diagnosis
 
-Temporary FlowTrace instrumentation originally showed the visible `Start Run -> Combat` stall was dominated by `PackedScene.instantiate()` for `res://scenes/combat/combat_player.tscn`.
+Temporary FlowTrace instrumentation originally showed the visible `Start Run -> Combat` stall was dominated by `PackedScene.instantiate()` for `res://scenes/combat.tscn`.
 
 Original user runtime capture before the fix:
 
-- `ResourceLoader.load(res://scenes/combat/combat_player.tscn)`: about `213ms`
+- `ResourceLoader.load(res://scenes/combat.tscn)`: about `213ms`
 - `PackedScene.instantiate()`: about `2471ms`
 - Scene attach/root swap: about `81ms`
 - Combat `_ready()` and first usable frame after attach: about `90ms`
@@ -20,7 +20,7 @@ Follow-up Godot MCP editor probes isolated the instantiate cost to script member
 - `res://resources/visual/first_pass_theme.tres` duplicate: about `0.1ms`
 - `res://scripts/ui/visual_registry.gd.new()`: about `847ms`
 - `res://scripts/ui/player_loadout_hud.gd.new()`: about `833ms`, because it also constructed a `VisualRegistry`
-- `res://scripts/combat/combat_player_controller.gd.new()`: about `1687ms`
+- `res://scripts/scenes/combat.gd.new()`: about `1687ms`
 
 The expensive work was `VisualRegistry._init()` eagerly processing the large orb sheet into cleaned runtime orb textures. That happened twice during combat controller construction: once directly in `CombatPlayerController` and once inside `PlayerLoadoutHud`.
 
@@ -35,12 +35,12 @@ Latest Godot MCP validation after the fix:
 
 - `VisualRegistry.new()`: about `0.013ms`
 - `PlayerLoadoutHud.new()`: about `0.008ms`
-- `res://scenes/combat/combat_player.tscn` instantiate: about `67ms`
-- Direct `res://scenes/combat/combat_player.tscn` runtime trace: first usable frame around `149ms`; deferred orb texture map finishes around `1355ms`
+- `res://scenes/combat.tscn` instantiate: about `67ms`
+- Direct `res://scenes/combat.tscn` runtime trace: first usable frame around `149ms`; deferred orb texture map finishes around `1355ms`
 
 Latest user route-level capture from the real `Start Run` button after the fix:
 
-- `ResourceLoader.load(res://scenes/combat/combat_player.tscn)`: about `206ms`
+- `ResourceLoader.load(res://scenes/combat.tscn)`: about `206ms`
 - `PackedScene.instantiate()`: about `1ms`
 - Scene attach/root swap, including combat `_ready()`: about `83ms`
 - `combat_first_usable_frame`: about `300ms` after route start
@@ -48,7 +48,7 @@ Latest user route-level capture from the real `Start Run` button after the fix:
 
 Latest user route-level capture for `Combat -> Shop` after the fix:
 
-- `ResourceLoader.load(res://scenes/flow/shop_player.tscn)`: about `52ms`
+- `ResourceLoader.load(res://scenes/shop.tscn)`: about `52ms`
 - `PackedScene.instantiate()`: about `0ms`
 - Scene attach/root swap, including shop `_ready()`: about `140ms`
 - `shop_first_usable_frame`: about `245ms` after route start
@@ -60,9 +60,9 @@ These captures confirm the original `2s+` instantiate-time blocker is resolved f
 Temporary FlowTrace markers are currently wired through:
 
 - `scripts/core/run_state.gd`
-- `scripts/core/main_boot.gd`
-- `scripts/combat/combat_player_controller.gd`
-- `scripts/flow/shop_player.gd`
+- `scripts/scenes/main_menu.gd`
+- `scripts/scenes/combat.gd`
+- `scripts/scenes/shop.gd`
 
 The traced transition helper splits route time into:
 
@@ -94,7 +94,7 @@ Interpretation:
 
 ## Reproduction
 
-1. Run `res://scenes/main.tscn` in the Godot editor.
+1. Run `res://scenes/main_menu.tscn` in the Godot editor.
 2. Click Start Run.
 3. Inspect Godot output for `[FlowTrace]` lines on route `start_run_to_combat`.
 4. For shop routing, win a combat, press Continue, and inspect route `combat_to_shop`.

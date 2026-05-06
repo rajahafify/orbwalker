@@ -436,7 +436,7 @@ func _ensure_combo_popup_panel() -> PanelContainer:
 	if not _can_continue_after_wait() or _board_panel == null:
 		return null
 	var combo_panel := PanelContainer.new()
-	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	combo_panel.size = COMBO_POPUP_SIZE
 	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
 	combo_panel.z_index = 80
@@ -447,9 +447,9 @@ func _ensure_combo_popup_panel() -> PanelContainer:
 	combo_panel.add_theme_stylebox_override("panel", panel_style)
 
 	var combo_label := Label.new()
-	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	combo_label.add_theme_font_size_override("font_size", COMBO_POPUP_BASE_FONT_SIZE)
 	combo_label.add_theme_constant_override("outline_size", 7)
 	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.00, 0.96))

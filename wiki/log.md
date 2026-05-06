@@ -1,5 +1,10 @@
 # Wiki Log
 
+## 2026-05-06 - Scene And Root Script Naming Refactor
+
+- Renamed player-facing scene entry points to the new convention: `scenes/main_menu.tscn`, `scenes/combat.tscn`, `scenes/shop.tscn`, `scenes/run_summary.tscn`, and `scenes/collection.tscn`. Updated `project.godot` main scene, `RunState` route constants/fallbacks, and scene/script references so runtime routing stays behavior-equivalent under the new names. (source: `project.godot`, `scripts/core/run_state.gd`, `scenes/main_menu.tscn`, `scenes/combat.tscn`, `scenes/shop.tscn`, `scenes/run_summary.tscn`, `scenes/collection.tscn`)
+- Moved root scene controllers into `scripts/scenes/` with matching `.gd.uid` sidecars: `main_menu.gd`, `combat.gd`, `shop.gd`, `run_summary.gd`, and `collection.gd`. Updated scene `ext_resource` script paths and debug probe contracts (including `player_hud_contract_probe.gd`) to the new locations without moving reusable domain/helper modules. (source: `scripts/scenes/main_menu.gd`, `scripts/scenes/combat.gd`, `scripts/scenes/shop.gd`, `scripts/scenes/run_summary.gd`, `scripts/scenes/collection.gd`, `scripts/debug/player_hud_contract_probe.gd`)
+
 ## 2026-05-06 - Board Match Resolver Service Rename
 
 - Renamed the board match resolver script from `board_match_resolver_v3.gd` to `board_match_resolver_service.gd` and aligned the class name to `BoardMatchResolverService`. Runtime preloads in combat and the debug resolver test runner now use the service-named path. (source: `scripts/board/board_match_resolver_service.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)

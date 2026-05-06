@@ -38,14 +38,14 @@ Balance-source inventory captured for M10-01:
 - Shop pricing/reroll costs: `scripts/content/content_registry.gd` owns the dictionary-backed shop pricing config (`common=10`, `uncommon=16`, `rare=24`, `level_step=2`, `reroll_base=1`, `reroll_step=1`); `scripts/shop/shop_service.gd` applies offer and reroll formulas.
 - Enemy HP/intent damage: active runtime encounter selection, HP, and intent cycles are currently owned by `scripts/core/run_state.gd`. `ContentRegistry` still contains older enemy entries for content-contract coverage, but active balance tuning should treat `RunState` as authoritative for current encounter stats.
 - Debug commands: `scripts/combat/combat_debug_console.gd` owns combat debug command parsing for state/log level, `/skip <level> <fight>`, board print/reroll/seed, gold add/set, mastery/consumable/equipment/relic list/add/show, and debug fight win/lose.
-- Current validation surfaces: `res://scenes/main.tscn`, `res://scenes/combat/combat_player.tscn`, `res://scenes/flow/shop_player.tscn`, `res://scenes/flow/final_run_summary.tscn`, plus focused Godot MCP probes. Deleted debug/fallback scenes remain historical only.
+- Current validation surfaces: `res://scenes/main_menu.tscn`, `res://scenes/combat.tscn`, `res://scenes/shop.tscn`, `res://scenes/run_summary.tscn`, plus focused Godot MCP probes. Deleted debug/fallback scenes remain historical only.
 
 Validation evidence:
 
 - `git status --short --branch` confirmed work began on `codex/milestone-10` with existing uncommitted docs/wiki/tracker edits.
 - `git diff --check` passed after the runtime changes.
-- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main.tscn` as the main scene.
-- Godot MCP `view_script` passed for `res://scripts/core/run_state.gd`, `res://scripts/core/run_log_reporter.gd`, and `res://scripts/combat/combat_player_controller.gd`.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main_menu.tscn` as the main scene.
+- Godot MCP `view_script` passed for `res://scripts/core/run_state.gd`, `res://scripts/core/run_log_reporter.gd`, and `res://scripts/scenes/combat.gd`.
 - Focused Godot MCP load probe passed for `run_log_reporter.gd`, `run_state.gd`, `combat_player_controller.gd`, `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`.
 - Focused Godot MCP Run Log probe produced `17` events and verified JSON/text/Markdown exports include event data/timeline fields. Representative event counts included `run_start`, `fight_start`, `turn_result`, `fight_end`, `shop_open`, `shop_action`, `shop_leave`, `boss_reward_skip`, and `run_end`.
 - Separate focused Godot MCP boss reward probe generated `3` boss reward options, claimed one, and verified a `boss_reward_choice` event with a relic id.
@@ -93,7 +93,7 @@ Validation evidence:
 Validation evidence:
 
 - `git status --short --branch` confirmed work on `codex/milestone-10`.
-- Godot MCP `get_project_info` confirmed Godot `4.6.2`, the `RunState` autoload, and `res://scenes/main.tscn` as the main scene.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, the `RunState` autoload, and `res://scenes/main_menu.tscn` as the main scene.
 - Godot MCP `view_script` passed for `res://scripts/core/run_state.gd`, `res://scripts/content/content_registry.gd`, `res://scripts/shop/shop_service.gd`, and `res://scripts/board/board_generation_settings.gd`.
 - Focused Godot MCP lever probe confirmed default parity and override effects: default starting gold `0`, first enemy HP `76`, first attack `12`, gold normalized weight about `0.08257`, base price `10`, and reroll cost `1`; override values changed those to starting gold `7`, first enemy HP `38`, first attack `24`, gold normalized weight about `0.15254`, base price `5`, and reroll cost `3`.
 
@@ -182,7 +182,7 @@ Validation evidence:
 - Focused Godot MCP relic filter probe pre-owned `deep_pockets`, then opened a shop and confirmed the shop relic offer was a different relic (`crown_of_chains`), preserving owned-relic filtering.
 - Focused Godot MCP relic persistence probe bought the level relic, reopened later same-level shops, and confirmed the same relic id stayed visible as `sold_out=true`; after level advance, the next level generated a different unsold relic offer.
 - Focused Godot MCP full-slot probe confirmed booster option choice fails explicitly with `equipment_slots_full` or `consumable_slots_full` when those inventories are full, while `replace_pending_booster_option(...)` succeeds for both equipment and consumable replacement paths.
-- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main.tscn` as the main scene. `view_script` passed for `shop_service.gd` and `content_registry.gd`. `git diff --check` passed. `get_godot_errors` retained two stale enum reload diagnostics from older sessions and failed ad hoc probe attempts; the final focused M10-06 probes executed successfully.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main_menu.tscn` as the main scene. `view_script` passed for `shop_service.gd` and `content_registry.gd`. `git diff --check` passed. `get_godot_errors` retained two stale enum reload diagnostics from older sessions and failed ad hoc probe attempts; the final focused M10-06 probes executed successfully.
 - Follow-up Run Log observability patch improved future M10-06 evidence capture without changing shop behavior. `shop_open` now exports sanitized item offer, relic offer, type-count, booster-presence, reroll, and pending-booster details; `shop_action` exports gold before/after plus selected/purchased/granted details and shop before/after snapshots; `shop_leave` keeps a final before/after shop snapshot so sold-out relic state is visible in exported logs.
 - Focused Godot MCP Run Log probes confirmed first-shop exports include `shortsword`, a booster, and relic fields; booster buy actions include selected offer and shop before/after details; text reports summarize shop data; and a bought same-level relic logs as `sold_out=true`, `available=false`, and `owned=true` in the next same-level shop.
 
@@ -207,8 +207,8 @@ Validation evidence:
 Validation evidence:
 
 - `git status --short --branch` confirmed work on `codex/milestone-10` with a clean starting status.
-- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main.tscn` as the main scene.
-- Focused Godot MCP scene instantiate smoke passed for `res://scenes/main.tscn`, `res://scenes/combat/combat_player.tscn`, `res://scenes/flow/shop_player.tscn`, and `res://scenes/flow/final_run_summary.tscn`.
+- Godot MCP `get_project_info` confirmed Godot `4.6.2`, `RunState` autoload, and `res://scenes/main_menu.tscn` as the main scene.
+- Focused Godot MCP scene instantiate smoke passed for `res://scenes/main_menu.tscn`, `res://scenes/combat.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
 - Godot MCP `play_scene main` launched and stopped successfully.
 - Final Godot MCP `get_godot_errors` reported no session errors after the corrected scene smoke. An earlier ad hoc editor-script smoke failed from local probe typing and was corrected before counting validation.
 - Run Log comparison covered the M10-02 baseline files `run_1777938769_177353_2026-05-05t07_52_49`, `run_1777940350_422781_2026-05-05t08_19_10`, and `run_1777941462_641881_2026-05-05t08_37_42`, plus tuned files `run_1777968781_770133_2026-05-05t16_13_01`, `run_1777969048_434533_2026-05-05t16_17_28`, and `run_1777973747_694854_2026-05-05t17_35_47`.
@@ -273,7 +273,7 @@ Expected final response:
 - Source/runtime code edits should be assigned to a worker in multi-agent mode.
 - Keep each task narrow and sequential; do not overlap balance tuning before M10-01/M10-02 baseline evidence exists.
 - Treat active source as authoritative: current runtime encounter selection and enemy stat tuning live in `RunState`, while shop pricing and much prototype content live in dictionary-backed `ContentRegistry`. If docs/wiki imply a different owner, call out the mismatch before tuning.
-- Current validation surfaces are `res://scenes/main.tscn`, `res://scenes/combat/combat_player.tscn`, `res://scenes/flow/shop_player.tscn`, `res://scenes/flow/final_run_summary.tscn`, and focused Godot MCP probes. Do not use deleted debug/fallback scenes as current validation surfaces.
+- Current validation surfaces are `res://scenes/main_menu.tscn`, `res://scenes/combat.tscn`, `res://scenes/shop.tscn`, `res://scenes/run_summary.tscn`, and focused Godot MCP probes. Do not use deleted debug/fallback scenes as current validation surfaces.
 - Do not start Milestone 11 meta progression inside M10.
 - Do not treat temporary M10 values as final balance.
 - Do not change combat math, resolver rules, shop transaction semantics, RunState routing, or combat presentation timing unless a specific M10 task explicitly calls for it.

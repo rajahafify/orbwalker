@@ -2,7 +2,7 @@
 
 **Summary**: Design findings and implementation-facing direction for fixing the player section in the combat screen. This document focuses on visual hierarchy, layout, and readability, not gameplay rule changes.
 
-**Sources**: User-provided combat screen screenshot and critique request from 2026-04-29, `docs/game_design_document.md`, `docs/test_plan.md`, `todo.md`, `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`
+**Sources**: User-provided combat screen screenshot and critique request from 2026-04-29, `docs/game_design_document.md`, `docs/test_plan.md`, `todo.md`, `scenes/combat.tscn`, `scripts/scenes/combat.gd`
 
 **Last updated**: 2026-04-29
 
@@ -12,7 +12,7 @@
 
 Turn the bottom player section into a clear combat status console: the player should immediately understand hero condition, available build resources, empty slot capacity, and mastery progress without the section feeling like placeholder debug UI. The board remains the primary interaction area; the player section should support decisions rather than compete with it. (source: user-provided combat screen screenshot, `docs/game_design_document.md`)
 
-The current combat player scene already has first-class nodes for `PlayerPanel`, `HeroCard`, `VitalsPanel`, `LoadoutFrame`, and `MasteryStrip`, so the redesign should preserve that conceptual split while improving composition and visual treatment. (source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_player_controller.gd`)
+The current combat player scene already has first-class nodes for `PlayerPanel`, `HeroCard`, `VitalsPanel`, `LoadoutFrame`, and `MasteryStrip`, so the redesign should preserve that conceptual split while improving composition and visual treatment. (source: `scenes/combat.tscn`, `scripts/scenes/combat.gd`)
 
 ## Design Principles
 
@@ -38,7 +38,7 @@ Recommended proportions for the existing 468 px design-space player panel height
 | Loadout | 135-155 px | 5 equipment slots, 3 consumable slots |
 | Mastery | 55-70 px | Six mastery tracks |
 
-The exact pixel values can change during implementation, but these proportions keep the top area from feeling empty while giving loadout and mastery enough room to breathe. (source: `scripts/combat/combat_player_controller.gd`)
+The exact pixel values can change during implementation, but these proportions keep the top area from feeling empty while giving loadout and mastery enough room to breathe. (source: `scripts/scenes/combat.gd`)
 
 ## Problem And Fix List
 

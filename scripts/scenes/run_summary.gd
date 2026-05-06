@@ -50,15 +50,15 @@ func _route_from_summary(start_new_run: bool) -> void:
 		return
 	_is_transitioning = true
 	_set_action_buttons_disabled(true)
-	var source := "final_run_summary.main_menu"
+	var source := "run_summary.main_menu"
 	var route_name := "final_summary_to_main_menu"
-	var target_scene := "res://scenes/main.tscn"
+	var target_scene := "res://scenes/main_menu.tscn"
 	var pre_run_state: Dictionary = {}
 	var prepared_scene: Dictionary = {}
 	if start_new_run:
-		source = "final_run_summary.new_run"
+		source = "run_summary.new_run"
 		route_name = "final_summary_to_combat"
-		target_scene = "res://scenes/combat/combat_player.tscn"
+		target_scene = "res://scenes/combat.tscn"
 	var route_id := RunState.flow_trace_begin(route_name, target_scene, {"source": source})
 	if start_new_run:
 		prepared_scene = RunState.flow_trace_prepare_scene(target_scene, route_id, source)
@@ -172,11 +172,11 @@ func _apply_static_layout() -> void:
 
 	_title_label.add_theme_font_size_override("font_size", 62)
 	_title_label.add_theme_color_override("font_color", COLOR_VICTORY)
-	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 
 	_summary_label.add_theme_font_size_override("font_size", 28)
 	_summary_label.add_theme_color_override("font_color", COLOR_MUTED)
-	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 
 	_style_action_button(_new_run_button, true)
@@ -235,13 +235,13 @@ func _add_stat_card(parent: GridContainer, label_text: String, value_text: Strin
 	card.add_child(box)
 	var label := Label.new()
 	label.text = label_text
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	label.add_theme_font_size_override("font_size", 20)
 	label.add_theme_color_override("font_color", COLOR_MUTED)
 	box.add_child(label)
 	var value := Label.new()
 	value.text = value_text
-	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	value.add_theme_font_size_override("font_size", 42)
 	value.add_theme_color_override("font_color", value_color)
 	box.add_child(value)

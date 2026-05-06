@@ -105,10 +105,10 @@ Use `godot-mcp` for Godot tasks. Do not use headless Godot.
 
 Preferred validation surfaces and tools:
 
-- `res://scenes/main.tscn` - startup/main-menu flow.
-- `res://scenes/combat/combat_player.tscn` - player-facing combat scene.
-- `res://scenes/flow/shop_player.tscn` - player-facing shop flow.
-- `res://scenes/flow/final_run_summary.tscn` - final victory summary flow.
+- `res://scenes/main_menu.tscn` - startup/main-menu flow.
+- `res://scenes/combat.tscn` - player-facing combat scene.
+- `res://scenes/shop.tscn` - player-facing shop flow.
+- `res://scenes/run_summary.tscn` - final victory summary flow.
 - Focused `execute_editor_script` probes for board resolver, combat envelope, RunState routing, and content contracts.
 - `get_project_info`
 - `get_godot_errors`

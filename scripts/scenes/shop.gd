@@ -130,8 +130,8 @@ func _enter_tree() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_begin(
 			"shop_scene_load",
-			"res://scenes/flow/shop_player.tscn",
-			{"source": "shop_player._enter_tree"}
+			"res://scenes/shop.tscn",
+			{"source": "shop._enter_tree"}
 		)
 	RunState.flow_trace_mark("shop_enter_tree", {}, _flow_trace_route_id)
 
@@ -142,8 +142,8 @@ func _ready() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_begin(
 			"shop_scene_load",
-			"res://scenes/flow/shop_player.tscn",
-			{"source": "shop_player._ready"}
+			"res://scenes/shop.tscn",
+			{"source": "shop._ready"}
 		)
 	RunState.flow_trace_mark("shop_ready_start", {}, _flow_trace_route_id)
 	_audio_play_music("shop")
@@ -169,7 +169,7 @@ func _ready() -> void:
 	if not RunState.run_active:
 		_title_label.text = "Shop"
 		_set_status("No active run. Returning to main menu.", false)
-		_queue_ready_redirect("res://scenes/main.tscn", "no_active_run")
+		_queue_ready_redirect("res://scenes/main_menu.tscn", "no_active_run")
 		return
 	if not RunState.is_current_step_shop():
 		var redirect_scene := RunState.next_scene_path()
@@ -193,7 +193,7 @@ func _trace_flow_first_usable_frame() -> void:
 	await get_tree().process_frame
 	RunState.flow_trace_mark(
 		"shop_first_usable_frame",
-		{"source": "shop_player._ready_deferred"},
+		{"source": "shop._ready_deferred"},
 		_flow_trace_route_id
 	)
 
@@ -238,9 +238,9 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 
 
 func _create_ui() -> void:
-	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_hud_overlay = _make_root("HudOverlay", _layout_root)
-	_hud_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_hud_overlay.z_index = 50
 	_hud_overlay.clip_contents = false
 
@@ -256,7 +256,7 @@ func _create_ui() -> void:
 	_merchant_stage = _make_panel("MerchantStage", _layout_root)
 	_merchant_backdrop = _make_texture("MerchantBackdrop", _merchant_stage)
 	_merchant_backdrop.texture = _visuals.shop_background()
-	_merchant_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_merchant_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 	_merchant_scrim = _make_color_rect("MerchantScrim", _merchant_stage, Color(0.0, 0.0, 0.0, 0.30))
 	_merchant_counter = _make_color_rect("MerchantCounter", _merchant_stage, Color(0.08, 0.045, 0.025, 0.88))
 	_speech_card = _make_panel("SpeechCard", _merchant_stage)
@@ -286,10 +286,10 @@ func _create_ui() -> void:
 	_booster_overlay = ColorRect.new()
 	_booster_overlay.name = "BoosterOverlay"
 	_booster_overlay.visible = false
-	_booster_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_booster_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_layout_root.add_child(_booster_overlay)
 	_booster_modal = _make_panel("BoosterModal", _booster_overlay)
-	_booster_modal.mouse_filter = Control.MOUSE_FILTER_PASS
+	_booster_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
 	_booster_title_label = _make_label("BoosterTitleLabel", _booster_modal, "Choose One Booster Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_booster_hint_label = _make_label("BoosterHintLabel", _booster_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	for index in 3:
@@ -745,7 +745,7 @@ func _on_continue_button_pressed() -> void:
 	pre_transition_state = RunState.snapshot_run_transition_state()
 	RunState.flow_trace_mark("shop_before_advance_after_shop", {}, _flow_trace_route_id)
 	var transition: Dictionary = RunState.advance_after_shop(false)
-	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
 	RunState.flow_trace_mark(
 		"shop_after_advance_after_shop",
 		{
@@ -761,7 +761,7 @@ func _on_continue_button_pressed() -> void:
 		_end_transition_lock()
 		return
 	var route_id := _flow_trace_route_id
-	if next_scene.find("combat_player.tscn") >= 0:
+	if next_scene.find("combat.tscn") >= 0:
 		route_id = RunState.flow_trace_begin(
 			"shop_to_combat",
 			next_scene,
@@ -797,17 +797,17 @@ func _on_main_menu_button_pressed() -> void:
 		"shop_main_menu_button_pressed",
 		{"button_text": _main_menu_button.text},
 		_flow_trace_route_id,
-		"res://scenes/main.tscn"
+		"res://scenes/main_menu.tscn"
 	)
 	RunState.flow_trace_mark(
 		"shop_before_change_scene_to_file_main_menu",
 		{"source": "shop_main_menu_button"},
 		_flow_trace_route_id,
-		"res://scenes/main.tscn"
+		"res://scenes/main_menu.tscn"
 	)
 	var scene_change_result := RunState.flow_trace_change_scene(
 		get_tree(),
-		"res://scenes/main.tscn",
+		"res://scenes/main_menu.tscn",
 		_flow_trace_route_id,
 		"shop_main_menu_button",
 		"",
@@ -853,7 +853,7 @@ func _on_scene_change_post_ready_rollback(result: Dictionary) -> void:
 	RunState.flow_trace_mark(
 		"shop_post_ready_scene_change_failed",
 		{
-			"source": String(result.get("source", "shop_player")),
+			"source": String(result.get("source", "shop")),
 			"reason": failure_reason,
 		},
 		String(result.get("route_id", _flow_trace_route_id)),
@@ -1135,7 +1135,7 @@ func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, 
 func _make_panel(node_name: String, parent: Node) -> Panel:
 	var panel := Panel.new()
 	panel.name = node_name
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(panel)
 	return panel
 
@@ -1144,7 +1144,7 @@ func _make_button(node_name: String, parent: Node, button_text: String) -> Butto
 	var button := Button.new()
 	button.name = node_name
 	button.text = button_text
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 	parent.add_child(button)
 	return button
 
@@ -1152,7 +1152,7 @@ func _make_button(node_name: String, parent: Node, button_text: String) -> Butto
 func _make_root(node_name: String, parent: Node) -> Control:
 	var control := Control.new()
 	control.name = node_name
-	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	control.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(control)
 	return control
 
@@ -1160,9 +1160,9 @@ func _make_root(node_name: String, parent: Node) -> Control:
 func _make_texture(node_name: String, parent: Node) -> TextureRect:
 	var texture := TextureRect.new()
 	texture.name = node_name
-	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	texture.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(texture)
 	return texture
 
@@ -1171,7 +1171,7 @@ func _make_color_rect(node_name: String, parent: Node, color: Color) -> ColorRec
 	var rect := ColorRect.new()
 	rect.name = node_name
 	rect.color = color
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(rect)
 	return rect
 
@@ -1187,7 +1187,7 @@ func _make_label(node_name: String, parent: Node, text: String, font_size: int, 
 func _make_child_root(parent: Control) -> Control:
 	var root := Control.new()
 	root.name = "CardRoot"
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	root.position = Vector2.ZERO
 	root.size = parent.size
 	parent.add_child(root)
@@ -1196,7 +1196,7 @@ func _make_child_root(parent: Control) -> Control:
 
 func _make_dynamic_panel(parent: Node, rect: Rect2, style: StyleBox) -> Panel:
 	var panel := Panel.new()
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	panel.position = rect.position
 	panel.size = rect.size
 	panel.add_theme_stylebox_override("panel", style)
@@ -1215,8 +1215,8 @@ func _make_dynamic_label(parent: Node, text: String, rect: Rect2, color: Color, 
 
 func _configure_label(label: Label, text: String, font_size: int, color: Color, align: HorizontalAlignment, enable_wrap: bool) -> void:
 	label.text = text
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.horizontal_alignment = align
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	label.horizontal_alignment = align as HorizontalAlignment
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	label.autowrap_mode = (
 		TextServer.AUTOWRAP_WORD_SMART if enable_wrap else TextServer.AUTOWRAP_OFF

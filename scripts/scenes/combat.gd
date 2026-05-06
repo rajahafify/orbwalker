@@ -265,8 +265,8 @@ func _enter_tree() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_begin(
 			"combat_scene_load",
-			"res://scenes/combat/combat_player.tscn",
-			{"source": "combat_player_controller._enter_tree"}
+			"res://scenes/combat.tscn",
+			{"source": "combat._enter_tree"}
 		)
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id)
 
@@ -304,8 +304,8 @@ func _ready() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_begin(
 			"combat_scene_load",
-			"res://scenes/combat/combat_player.tscn",
-			{"source": "combat_player_controller._ready"}
+			"res://scenes/combat.tscn",
+			{"source": "combat._ready"}
 		)
 	RunState.flow_trace_mark("combat_ready_start", {}, _flow_trace_route_id)
 	_audio_play_music("combat")
@@ -432,7 +432,7 @@ func _exit_tree() -> void:
 func _trace_flow_first_usable_frame() -> void:
 	RunState.flow_trace_mark(
 		"combat_first_usable_frame",
-		{"source": "combat_player_controller._ready_deferred"},
+		{"source": "combat._ready_deferred"},
 		_flow_trace_route_id
 	)
 
@@ -702,7 +702,7 @@ func _initialize_combat_state() -> void:
 				get_tree(),
 				redirect_scene,
 				_flow_trace_route_id,
-				"combat_player_controller._initialize_combat_state",
+				"combat._initialize_combat_state",
 				"",
 				_on_combat_scene_post_ready_rollback
 			)
@@ -710,7 +710,7 @@ func _initialize_combat_state() -> void:
 				_handle_combat_scene_change_failure(
 					redirect_scene,
 					_flow_trace_route_id,
-					"combat_player_controller._initialize_combat_state",
+					"combat._initialize_combat_state",
 					change_result
 				)
 		return
@@ -816,11 +816,11 @@ func _on_print_board_button_pressed() -> void:
 
 
 func _on_back_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func _on_settings_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func _on_run_tests_button_pressed() -> void:
@@ -1310,7 +1310,7 @@ func _console_fight_win() -> Dictionary:
 			"reason": String(win_transition.get("reason", "unknown_error")),
 		}
 	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	_pending_next_scene_path = String(win_transition.get("next_scene", "res://scenes/main.tscn"))
+	_pending_next_scene_path = String(win_transition.get("next_scene", "res://scenes/main_menu.tscn"))
 	_update_hud()
 	_show_outcome_summary("Victory", _build_run_outcome_summary("Debug command."), true)
 	_status_label.text = "Debug victory queued. Press Continue."
@@ -1461,7 +1461,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
 			RunState.flow_trace_mark("combat_boss_reward_available", {}, _flow_trace_route_id)
 		else:
-			var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+			var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
 			if next_scene.find("run_summary") >= 0:
 				_append_combat_log("Outcome: Final boss victory. Opening run summary.")
 				_hide_outcome_summary()
@@ -1677,7 +1677,7 @@ func _claim_boss_reward_option(index: int) -> void:
 	_update_hud()
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
-	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
 	_trace_and_change_scene_to_target(
 		next_scene,
 		_flow_trace_route_id,
@@ -1698,7 +1698,7 @@ func _skip_boss_reward_option() -> void:
 	_outcome_overlay.set_boss_reward_pending(false)
 	_audio_play_sfx("ui_accept")
 	_hide_outcome_summary()
-	var next_scene := String(transition.get("next_scene", "res://scenes/main.tscn"))
+	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
 	_trace_and_change_scene_to_target(
 		next_scene,
 		_flow_trace_route_id,
@@ -1715,7 +1715,7 @@ func _trace_and_change_scene_to_target(
 	begin_payload_extra: Dictionary = {}
 ) -> void:
 	var transition_route_id := current_route_id
-	if target_scene.find("shop_player.tscn") >= 0:
+	if target_scene.find("shop.tscn") >= 0:
 		var begin_payload := {"source": source}
 		for key in begin_payload_extra.keys():
 			begin_payload[key] = begin_payload_extra[key]
@@ -2738,8 +2738,8 @@ func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
 	button.text = String(entry.get("label", _intent_entry_label(kind, amount)))
 	button.custom_minimum_size = INTENT_BUBBLE_SIZE
 	button.size = INTENT_BUBBLE_SIZE
-	button.focus_mode = Control.FOCUS_NONE
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
 	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
 	button.set_meta("intent_kind", kind)
 	button.add_theme_font_size_override("font_size", 24)
@@ -2794,8 +2794,8 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_button = Control.new()
 		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
 		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_hovered)
 		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
 	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
@@ -2807,7 +2807,7 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_fill = ColorRect.new()
 		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
 		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 0.68)
-		_enemy_block_preview_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		_enemy_block_preview_fill.visible = false
 	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
 		var existing_fill_parent := _enemy_block_preview_fill.get_parent()
@@ -2825,7 +2825,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_ensure_enemy_block_preview_nodes()
 	if _enemy_block_preview_button != null and is_instance_valid(_enemy_block_preview_button):
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
 		_enemy_block_preview_fill.visible = false
 	_stop_enemy_block_preview_pulse()
@@ -2846,7 +2846,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_enemy_block_preview_button.position = _enemy_hp_bar.position
 	_enemy_block_preview_button.size = Vector2(preview_width, _enemy_hp_bar.size.y)
 	_enemy_block_preview_button.visible = true
-	_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_STOP
+	_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 	_enemy_block_preview_fill.position = Vector2.ZERO
 	_enemy_block_preview_fill.size = _enemy_block_preview_button.size
 	_enemy_block_preview_fill.visible = true
@@ -3282,9 +3282,9 @@ func _ensure_enemy_stage_backdrop_node() -> void:
 		_enemy_stage_backdrop = TextureRect.new()
 		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
 		_enemy_stage.add_child(_enemy_stage_backdrop)
-	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	_enemy_stage_backdrop.visible = true
 	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
@@ -3307,7 +3307,7 @@ func _ensure_enemy_text_scrim_node() -> void:
 		_enemy_text_scrim = ColorRect.new()
 		_enemy_text_scrim.name = "EnemyTextScrim"
 		_enemy_stage.add_child(_enemy_text_scrim)
-	_enemy_text_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_enemy_text_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_enemy_text_scrim.color = Color(0.02, 0.04, 0.06, 0.72)
 	_enemy_text_scrim.visible = true
 

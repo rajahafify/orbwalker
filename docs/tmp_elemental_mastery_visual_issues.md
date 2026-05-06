@@ -9,7 +9,7 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
 - Area: `ElementalMasteryPanel` between the board and player HUD.
 - Selected direction: variant 5, `Feedback Ready`, is now the combat-runtime target.
 - Current source refs:
-  - `scripts/combat/combat_player_controller.gd:138-141` controls board/mastery panel/title/card row rects.
+  - `scripts/scenes/combat.gd:138-141` controls board/mastery panel/title/card row rects.
   - `scripts/ui/player_loadout_hud.gd:15-17` controls combat mastery card size, gap, and icon size.
   - `scripts/ui/player_loadout_hud.gd:176-216` controls icon, title, level, and feedback label placement inside each card.
 
@@ -33,13 +33,13 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
 - [x] EM-01 Title overlaps the card row
   - Screenshot issue: `ELEMENTAL MASTERY` sits on top of the card row/borders instead of occupying a clean header band.
   - Target behavior: title has dedicated vertical space above cards with no overlap.
-  - Current refs: `scripts/combat/combat_player_controller.gd:140-141`.
+  - Current refs: `scripts/scenes/combat.gd:140-141`.
   - Validation notes: Godot MCP confirmed `ElementalMasteryTitle` at `Vector2(0, 28)` size `Vector2(1048, 68)` and `ElementalMasteryCards` at `Vector2(0, 122)` size `Vector2(1048, 222)` in the running combat scene on 2026-05-01.
 
 - [x] EM-02 Panel still reads as a shallow strip
   - Screenshot issue: the whole section feels compressed horizontally and vertically, closer to a stat strip than mastery cards.
   - Target behavior: card row reads as a deliberate card section with visible height and hierarchy.
-  - Current refs: `scripts/combat/combat_player_controller.gd:139-141`, `scripts/ui/player_loadout_hud.gd:15`.
+  - Current refs: `scripts/scenes/combat.gd:139-141`, `scripts/ui/player_loadout_hud.gd:15`.
   - Validation notes: combat runtime now uses variant 5 geometry: `ElementalMasteryPanel` at `Vector2(16, 1084)` size `Vector2(1048, 368)` with `156 x 222` cards. Godot MCP screenshot confirmed the section reads as a tall ornate mastery panel.
 
 - [x] EM-03 Level text is too close to the bottom edge
@@ -57,7 +57,7 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
 - [x] EM-05 Outer frame and card borders visually collide
   - Screenshot issue: ornate panel frame, inner frame, and card borders stack tightly, especially along the top and bottom.
   - Target behavior: panel frame and cards have clear separation/padding.
-  - Current refs: `scripts/combat/combat_player_controller.gd:139-141`, `scripts/ui/player_loadout_hud.gd:163-174`.
+  - Current refs: `scripts/scenes/combat.gd:139-141`, `scripts/ui/player_loadout_hud.gd:163-174`.
   - Validation notes: card row now starts at `y=122` inside the `368` high panel, matching variant 5. Godot MCP screenshot confirmed visible top and bottom separation.
 
 - [x] EM-06 Vertical seam artifacts extend below cards
@@ -81,31 +81,31 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
 - [x] EM-09 Title z-order and framing are unclear
   - Screenshot issue: the title appears over the art/border stack rather than integrated into a header area.
   - Target behavior: title is either in a clear header band or visually separated from the card row.
-  - Current refs: `scripts/combat/combat_player_controller.gd:140`, `scripts/combat/combat_player_controller.gd:2562-2592`.
+  - Current refs: `scripts/scenes/combat.gd:140`, `scripts/scenes/combat.gd:2562-2592`.
   - Validation notes: frame is inserted behind the existing root, while title and cards stay in `ElementalMasteryRoot`; Godot MCP screenshot confirmed the title is readable in the header band.
 
 - [x] EM-10 Too many competing borders
   - Screenshot issue: outer frame, inner frame, card frames, and texture borders create visual noise.
   - Target behavior: one clear outer frame plus distinct but quieter card frames.
-  - Current refs: `scripts/combat/combat_player_controller.gd:2562-2592`, `scripts/ui/player_loadout_hud.gd:166-174`.
+  - Current refs: `scripts/scenes/combat.gd:2562-2592`, `scripts/ui/player_loadout_hud.gd:166-174`.
   - Validation notes: selected variant 5 uses the preview frame plus preview card chrome, replacing the previous compressed stack of runtime card art and frame textures.
 
 - [x] EM-11 Left and right padding feel tight
   - Screenshot issue: Fire and Gold cards sit close to the panel frame edge.
   - Target behavior: first and last cards have breathing room without overflowing six-card layout.
-  - Current refs: `scripts/combat/combat_player_controller.gd:141`, `scripts/ui/player_loadout_hud.gd:15-17,163-164`.
+  - Current refs: `scripts/scenes/combat.gd:141`, `scripts/ui/player_loadout_hud.gd:15-17,163-164`.
   - Validation notes: Godot MCP confirmed first card at `x=36`, last card at `x=856`, card size `156 x 222`, and six cards under `ElementalMasteryCards`.
 
 - [x] EM-12 No inactive/ready/triggered state clarity
   - Screenshot issue: the panel shows levels but does not communicate ready, inactive, or recently triggered state.
   - Target behavior: idle state is readable, and triggered cards visibly change through feedback text, pulse, or glow.
-  - Current refs: `scripts/combat/combat_player_controller.gd:1674-1708`, `scripts/ui/player_loadout_hud.gd:239-254`.
+  - Current refs: `scripts/scenes/combat.gd:1674-1708`, `scripts/ui/player_loadout_hud.gd:239-254`.
   - Validation notes: Godot MCP editor-script probe confirmed `populate_combat_mastery_panel()` and `set_combat_mastery_feedback()` both make the lower feedback lane visible with `+12 DAMAGE` at `Vector2(8, 190)` size `Vector2(140, 24)`. Full turn-play feel can still be reviewed manually.
 
 - [x] EM-13 Reference goal still not met
   - Screenshot issue: current result remains a compact row rather than a dramatic mastery section with clear cards.
   - Target behavior: closer to reference hierarchy: section title, large icon, clear card interior, prominent effect text.
-  - Current refs: `scripts/combat/combat_player_controller.gd:138-141`, `scripts/ui/player_loadout_hud.gd:15-17,176-216`.
+  - Current refs: `scripts/scenes/combat.gd:138-141`, `scripts/ui/player_loadout_hud.gd:15-17,176-216`.
   - Validation notes: variant 5 was selected and ported into combat runtime on 2026-05-01. Godot MCP `play_scene`, screenshot, node/property inspection, and `get_godot_errors` passed with no runtime errors.
 
 ## Validation Checklist

@@ -3,7 +3,7 @@ extends Control
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const BACKGROUND_PATH := "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
-const MAIN_MENU_SCENE_PATH := "res://scenes/main.tscn"
+const MAIN_MENU_SCENE_PATH := "res://scenes/main_menu.tscn"
 
 const TIER_ORDER: Array[String] = ["common", "uncommon", "rare"]
 const TIER_REQUIRED_SCORE := {

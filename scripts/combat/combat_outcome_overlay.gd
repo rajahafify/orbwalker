@@ -110,7 +110,7 @@ func ensure_boss_reward_controls(on_claim_option: Callable, on_skip: Callable) -
 		var button := Button.new()
 		button.name = "BossRewardButton%d" % (index + 1)
 		button.visible = false
-		button.focus_mode = Control.FOCUS_NONE
+		button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 		button.z_index = 1
 		button.text = ""
 		button.pressed.connect(on_claim_option.bind(index))
@@ -122,7 +122,7 @@ func ensure_boss_reward_controls(on_claim_option: Callable, on_skip: Callable) -
 	_boss_reward_skip_button.name = "BossRewardSkipButton"
 	_boss_reward_skip_button.text = "Skip Relic"
 	_boss_reward_skip_button.visible = false
-	_boss_reward_skip_button.focus_mode = Control.FOCUS_NONE
+	_boss_reward_skip_button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 	_boss_reward_skip_button.z_index = 1
 	_boss_reward_skip_button.pressed.connect(on_skip)
 	_outcome_summary_root.add_child(_boss_reward_skip_button)
@@ -137,7 +137,7 @@ func ensure_overlay_layer() -> void:
 		scrim.name = "OutcomeScrim"
 		scrim.visible = false
 		scrim.color = _config.get("outcome_boss_scrim_color", Color(0.0, 0.0, 0.0, 0.62))
-		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		scrim.z_as_relative = false
 		scrim.z_index = int(_config.get("outcome_scrim_z_index", 170))
 		_layout_root.add_child(scrim)
@@ -149,7 +149,7 @@ func ensure_overlay_layer() -> void:
 		_layout_root.add_child(_outcome_summary_panel)
 	_outcome_summary_panel.z_as_relative = false
 	_outcome_summary_panel.z_index = int(_config.get("outcome_modal_z_index", 180))
-	_outcome_summary_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_outcome_summary_panel.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 	if _next_button != null:
 		_next_button.z_index = 1
 	sync_visibility()
@@ -159,7 +159,9 @@ func sync_visibility() -> void:
 	if _outcome_scrim != null and _outcome_summary_panel != null:
 		var show_scrim := _outcome_summary_panel.visible and _boss_reward_overlay_active
 		_outcome_scrim.visible = show_scrim
-		_outcome_scrim.mouse_filter = Control.MOUSE_FILTER_STOP if show_scrim else Control.MOUSE_FILTER_IGNORE
+		_outcome_scrim.mouse_filter = (
+			Control.MOUSE_FILTER_STOP if show_scrim else Control.MOUSE_FILTER_IGNORE
+		) as Control.MouseFilter
 
 
 func sync_layout(board_panel_rect: Rect2) -> void:
@@ -331,36 +333,36 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 		return
 	var icon := TextureRect.new()
 	icon.name = "RelicIcon"
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 	button.add_child(icon)
 
 	var name_label := Label.new()
 	name_label.name = "RelicName"
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 	name_label.add_theme_font_size_override("font_size", 13)
 	name_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.58, 1.0))
 	button.add_child(name_label)
 
 	var rarity_label := Label.new()
 	rarity_label.name = "RelicRarity"
-	rarity_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	rarity_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	rarity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	rarity_label.add_theme_font_size_override("font_size", 12)
 	rarity_label.add_theme_color_override("font_color", Color(0.92, 0.78, 0.36, 1.0))
 	button.add_child(rarity_label)
 
 	var description_label := Label.new()
 	description_label.name = "RelicDescription"
-	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 	description_label.add_theme_font_size_override("font_size", 12)
 	description_label.add_theme_color_override("font_color", Color(0.82, 0.79, 0.68, 1.0))
 	button.add_child(description_label)
