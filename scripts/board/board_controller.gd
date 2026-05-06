@@ -27,10 +27,149 @@ func bind(dependencies: Dictionary, config: Dictionary = {}) -> void:
 	_match_groups_callback = config.get("match_groups_callback", Callable())
 	_move_timer_seconds_callback = config.get("move_timer_seconds_callback", Callable())
 	_swap_animation_seconds = float(config.get("swap_animation_seconds", _swap_animation_seconds))
+	bind_view_model()
 
 
 func set_board_model(board_model: BoardModel) -> void:
 	_board_model = board_model
+	bind_view_model()
+
+
+func current_board_model() -> BoardModel:
+	return _board_model
+
+
+func initialize_board(rng_seed: int, settings: BoardGenerationSettings = null) -> int:
+	if _board_model == null:
+		_board_model = BoardModel.new()
+	_board_model.initialize(rng_seed, settings)
+	bind_view_model()
+	return _board_model.rng_seed
+
+
+func bind_view_model() -> void:
+	if not _has_valid_board_view():
+		return
+	_board_view.set_board_presentation_model(_board_model)
+
+
+func board_seed() -> int:
+	if _board_model == null:
+		return -1
+	return _board_model.rng_seed
+
+
+func board_debug_string() -> String:
+	if _board_model == null:
+		return ""
+	return _board_model.to_debug_string()
+
+
+func force_cell_orb(cell: Vector2i, orb_id: int) -> bool:
+	if _board_model == null:
+		return false
+	if not _board_model.in_bounds(cell.x, cell.y):
+		return false
+	if not OrbType.is_valid_id(orb_id):
+		return false
+	_board_model.set_cell(cell.x, cell.y, orb_id)
+	bind_view_model()
+	return true
+
+
+func set_debug_cell_orb(column: int, row: int, orb_id: int) -> bool:
+	return force_cell_orb(Vector2i(column, row), orb_id)
+
+
+func convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
+	if _board_model == null:
+		return 0
+	if count <= 0 or not OrbType.is_valid_id(target_orb_id):
+		return 0
+	if rng == null:
+		return 0
+
+	var candidates: Array[Vector2i] = []
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			var orb_id := _board_model.get_cell(column, row)
+			if orb_id == target_orb_id:
+				continue
+			candidates.append(Vector2i(column, row))
+	if candidates.is_empty():
+		return 0
+
+	var converted := 0
+	var picks := mini(count, candidates.size())
+	for _i in picks:
+		var pick_index := rng.randi_range(0, candidates.size() - 1)
+		var cell := candidates[pick_index]
+		if force_cell_orb(cell, target_orb_id):
+			converted += 1
+		candidates.remove_at(pick_index)
+	return converted
+
+
+func prepare_visual_model_for_resolve() -> Dictionary:
+	if _board_model == null:
+		return {}
+	var visual_board_model: BoardModel = _board_model.clone()
+	var simulation_board_model: BoardModel = _board_model.clone()
+	if _has_valid_board_view():
+		_board_view.set_board_presentation_model(visual_board_model)
+	return {
+		"visual_board_model": visual_board_model,
+		"simulation_board_model": simulation_board_model,
+	}
+
+
+func apply_visual_clear_groups(visual_board_model: BoardModel, groups: Array) -> void:
+	if visual_board_model == null or not _has_valid_board_view():
+		return
+	for group in groups:
+		var group_cells: Array = group.get("cells", [])
+		for cell in group_cells:
+			var typed_cell: Vector2i = cell
+			visual_board_model.clear_cell(typed_cell.x, typed_cell.y)
+	_board_view.queue_redraw()
+
+
+func apply_visual_fall_moves(visual_board_model: BoardModel, fall_moves: Array) -> void:
+	if visual_board_model == null or not _has_valid_board_view():
+		return
+	for move in fall_moves:
+		var from_cell: Vector2i = move.from
+		visual_board_model.clear_cell(from_cell.x, from_cell.y)
+	for move in fall_moves:
+		var to_cell: Vector2i = move.to
+		var orb_id := int(move.orb_id)
+		if OrbType.is_valid_id(orb_id):
+			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
+	_board_view.queue_redraw()
+
+
+func apply_visual_refill_spawns(visual_board_model: BoardModel, refill_spawns: Array) -> void:
+	if visual_board_model == null or not _has_valid_board_view():
+		return
+	for spawn in refill_spawns:
+		var to_cell: Vector2i = spawn.to
+		var orb_id := int(spawn.orb_id)
+		if OrbType.is_valid_id(orb_id):
+			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
+	_board_view.queue_redraw()
+
+
+func commit_model_after_resolve(resolved_board_model: BoardModel) -> void:
+	if resolved_board_model == null:
+		return
+	_board_model = resolved_board_model
+	bind_view_model()
+
+
+func clear_board_presentation() -> void:
+	if not _has_valid_board_view():
+		return
+	_board_view.clear_board_presentation()
 
 
 func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
@@ -84,10 +223,7 @@ func reset_visuals() -> void:
 	if not _has_valid_board_view():
 		return
 	_board_view.clear_match_glow()
-	_board_view.selected_cell = Vector2i(-1, -1)
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.drag_orb_id = -1
-	_board_view.drag_pointer_position = Vector2.ZERO
+	_board_view.reset_drag_visual_state()
 
 
 func abort() -> void:
@@ -129,10 +265,7 @@ func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictiona
 	_drag_selected_orb_id = _board_model.get_cell(start_cell.x, start_cell.y)
 	_drag_path.clear()
 	_drag_path.append(start_cell)
-	_board_view.selected_cell = start_cell
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.drag_pointer_position = board_local_position
-	_board_view.drag_orb_id = _drag_selected_orb_id
+	_board_view.update_drag_visual_state(start_cell, _drag_path.duplicate(), board_local_position, _drag_selected_orb_id)
 	return {
 		"handled": true,
 		"action": ACTION_START,
@@ -145,7 +278,7 @@ func _update_drag(board_local_position: Vector2) -> void:
 	if not _active_drag or not _has_valid_board_view() or _board_model == null:
 		return
 
-	_board_view.drag_pointer_position = board_local_position
+	_board_view.update_drag_visual_state(_drag_current_cell, _drag_path.duplicate(), board_local_position, _drag_selected_orb_id)
 	var target_cell := _board_view.board_position_to_cell(board_local_position)
 	if not _board_view.is_cell_valid(target_cell):
 		return
@@ -163,9 +296,7 @@ func _update_drag(board_local_position: Vector2) -> void:
 	_drag_current_cell = target_cell
 	_drag_path.append(target_cell)
 	_board_view.animate_swap(from_cell, target_cell, moving_orb_id, displaced_orb_id, _swap_animation_seconds)
-	_board_view.path_cells = _drag_path.duplicate()
-	_board_view.selected_cell = _drag_current_cell
-	_board_view.board_model = _board_model
+	_board_view.update_drag_visual_state(_drag_current_cell, _drag_path.duplicate(), board_local_position, _drag_selected_orb_id)
 
 
 func _end_drag(timed_out: bool, handled: bool) -> Dictionary:

@@ -334,6 +334,7 @@ func _ready() -> void:
 		"board": _board,
 		"board_view": _board_view,
 		"board_panel": _board_panel,
+		"board_controller": _board_controller,
 		"timer_owner": self,
 		"spawn_vfx_texture_callback": _spawn_vfx_texture,
 		"combo_sound_callback": _on_presenter_combo_sound,
@@ -898,7 +899,10 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 	var consumable_id := String(payload.get("consumable_id", ""))
 	var effects: Array = payload.get("effects", [])
 	var conversion_total := _apply_consumable_effects(effects)
-	_board_view.board_model = _board_model
+	if _board_controller != null:
+		_board_controller.bind_view_model()
+	else:
+		_board_view.set_board_presentation_model(_board_model)
 	if _board_controller != null:
 		_board_controller.refresh_match_glow()
 	_status_label.text = "Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total]
@@ -940,33 +944,9 @@ func _apply_consumable_effects(effects: Array) -> int:
 		var value: Dictionary = effect.get("value", {})
 		var target_orb_id := int(value.get("target_orb_id", -1))
 		var count := int(value.get("count", 0))
-		total_converted += _convert_random_non_target_orbs(target_orb_id, count)
+		if _board_controller != null:
+			total_converted += _board_controller.convert_random_non_target_orbs(target_orb_id, count, _consumable_rng)
 	return total_converted
-
-
-func _convert_random_non_target_orbs(target_orb_id: int, count: int) -> int:
-	if count <= 0 or not OrbType.is_valid_id(target_orb_id):
-		return 0
-
-	var candidates: Array[Vector2i] = []
-	for row in BoardModel.ROW_COUNT:
-		for column in BoardModel.COLUMN_COUNT:
-			var orb_id := _board_model.get_cell(column, row)
-			if orb_id == target_orb_id:
-				continue
-			candidates.append(Vector2i(column, row))
-	if candidates.is_empty():
-		return 0
-
-	var converted := 0
-	var picks := mini(count, candidates.size())
-	for _i in picks:
-		var pick_index := _consumable_rng.randi_range(0, candidates.size() - 1)
-		var cell := candidates[pick_index]
-		_board_model.set_cell(cell.x, cell.y, target_orb_id)
-		candidates.remove_at(pick_index)
-		converted += 1
-	return converted
 
 
 func _process(delta: float) -> void:
@@ -1022,7 +1002,7 @@ func _update_board_orb_hover_from_gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		var motion_event := event as InputEventMouseMotion
-		var orb_id := _board_view.get_orb_id_at_position(motion_event.position)
+		var orb_id := _board_view.get_hover_orb_id(motion_event.position)
 		if _is_hoverable_combat_orb(orb_id):
 			_set_hovered_board_orb_id(orb_id)
 			return
@@ -1031,7 +1011,7 @@ func _update_board_orb_hover_from_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var button_event := event as InputEventMouseButton
 		if not button_event.pressed:
-			var button_orb_id := _board_view.get_orb_id_at_position(button_event.position)
+			var button_orb_id := _board_view.get_hover_orb_id(button_event.position)
 			if _is_hoverable_combat_orb(button_orb_id):
 				_set_hovered_board_orb_id(button_orb_id)
 				return
@@ -1108,28 +1088,31 @@ func _resolve_seed() -> int:
 
 
 func _print_board_model() -> void:
-	var debug_text := _board_model.to_debug_string()
-	print("\n[Board Debug] Seed=", _board_model.rng_seed)
+	var debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
+	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
+	print("\n[Board Debug] Seed=", board_seed)
 	print(debug_text)
 	_print_board_model_to_console()
-	_status_label.text = "Printed board for seed %d to output." % _board_model.rng_seed
+	_status_label.text = "Printed board for seed %d to output." % board_seed
 
 
 func _set_board_seed(board_seed: int) -> void:
-	if _board_controller != null:
-		_board_controller.abort()
-	_board_view.clear_animations()
-	_board_model.initialize(board_seed, _settings)
-	if _board_controller != null:
-		_board_controller.set_board_model(_board_model)
-	_board_view.board_model = _board_model
+	if _board_controller == null:
+		push_error("CombatPlayerController._set_board_seed called before BoardController was bound.")
+		return
+	_board_controller.abort()
+	_board_controller.clear_board_presentation()
+	_board_controller.initialize_board(board_seed, _settings)
+	_board_model = _board_controller.current_board_model()
 	if _combat != null and not _combat.is_fight_over():
 		_set_input_phase(InputPhase.PLAYER_INPUT)
 
 
 func _print_board_model_to_console() -> void:
-	_append_combat_log("Board seed: %d" % _board_model.rng_seed)
-	var lines: PackedStringArray = _board_model.to_debug_string().split("\n", false)
+	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
+	var board_debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
+	_append_combat_log("Board seed: %d" % board_seed)
+	var lines: PackedStringArray = board_debug_text.split("\n", false)
 	for line in lines:
 		_append_combat_log("  %s" % line)
 
@@ -1202,24 +1185,28 @@ func _console_skip_to_fight(level: int, fight: int) -> Dictionary:
 
 
 func _console_board_print_data() -> Dictionary:
+	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
+	var board_debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
 	return {
-		"seed": _board_model.rng_seed,
-		"debug_text": _board_model.to_debug_string(),
+		"seed": board_seed,
+		"debug_text": board_debug_text,
 	}
 
 
 func _console_board_reroll() -> Dictionary:
 	_create_new_board()
+	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
 	return {
-		"seed": _board_model.rng_seed,
+		"seed": board_seed,
 	}
 
 
 func _console_board_seed(board_seed: int) -> Dictionary:
 	_set_board_seed(board_seed)
+	var current_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
 	return {
 		"ok": true,
-		"seed": _board_model.rng_seed,
+		"seed": current_seed,
 	}
 
 
@@ -1401,12 +1388,16 @@ func _end_drag(timed_out: bool) -> void:
 	)
 
 	_board_controller.reset_visuals()
-	_board_view.clear_animations()
+	_board_controller.clear_board_presentation()
 	_set_input_phase(InputPhase.RESOLVING)
 	_reset_combat_mastery_preview()
-	var visual_board_model: BoardModel = _board_model.clone()
-	var simulation_board_model: BoardModel = _board_model.clone()
-	_board_view.board_model = visual_board_model
+	var resolve_models: Dictionary = _board_controller.prepare_visual_model_for_resolve()
+	var visual_board_model: BoardModel = resolve_models.get("visual_board_model") as BoardModel
+	var simulation_board_model: BoardModel = resolve_models.get("simulation_board_model") as BoardModel
+	if visual_board_model == null or simulation_board_model == null:
+		visual_board_model = _board_model.clone()
+		simulation_board_model = _board_model.clone()
+		_board_view.set_board_presentation_model(visual_board_model)
 	_resolve_trace(
 		resolve_trace_origin_usec,
 		"phase=visual_state_ready board_seed=%d" % visual_board_model.rng_seed
@@ -1435,9 +1426,8 @@ func _end_drag(timed_out: bool) -> void:
 			Array(_last_resolve_result.get("passes", [])).size(),
 		]
 	)
-	_board_model = simulation_board_model
-	_board_controller.set_board_model(_board_model)
-	_board_view.board_model = _board_model
+	_board_controller.commit_model_after_resolve(simulation_board_model)
+	_board_model = _board_controller.current_board_model()
 	_resolve_trace(
 		resolve_trace_origin_usec,
 		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
@@ -1857,11 +1847,11 @@ func _set_input_phase(phase: InputPhase) -> void:
 
 	match _input_phase:
 		InputPhase.PLAYER_INPUT:
-			_board_view.mouse_filter = Control.MOUSE_FILTER_STOP
+			_board_view.set_input_enabled(true)
 		InputPhase.RESOLVING:
-			_board_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_board_view.set_input_enabled(false)
 		InputPhase.LOCKED_EXTERNAL:
-			_board_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_board_view.set_input_enabled(false)
 			if _external_lock_reason != "":
 				_status_label.text = "Input locked: %s" % _external_lock_reason
 

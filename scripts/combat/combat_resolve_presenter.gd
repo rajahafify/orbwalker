@@ -20,6 +20,7 @@ const COMBAT_SPEED_INSTANT := "instant"
 var _board: Control
 var _board_view: BoardView
 var _board_panel: Control
+var _board_controller: BoardController
 var _timer_owner: Node
 var _spawn_vfx_texture_callback: Callable
 var _combo_sound_callback: Callable
@@ -36,6 +37,7 @@ func bind(nodes: Dictionary) -> void:
 	_board = nodes.get("board") as Control
 	_board_view = nodes.get("board_view") as BoardView
 	_board_panel = nodes.get("board_panel") as Control
+	_board_controller = nodes.get("board_controller") as BoardController
 	_timer_owner = nodes.get("timer_owner") as Node
 	_spawn_vfx_texture_callback = nodes.get("spawn_vfx_texture_callback", Callable())
 	_combo_sound_callback = nodes.get("combo_sound_callback", Callable())
@@ -323,38 +325,21 @@ func _match_group_anchor(group: Dictionary) -> Vector2i:
 
 
 func _apply_visual_clear_groups(visual_board_model: BoardModel, groups: Array) -> void:
-	if visual_board_model == null or _board_view == null:
+	if visual_board_model == null or _board_controller == null:
 		return
-	for group in groups:
-		for cell in group.cells:
-			var typed_cell: Vector2i = cell
-			visual_board_model.clear_cell(typed_cell.x, typed_cell.y)
-	_board_view.queue_redraw()
+	_board_controller.apply_visual_clear_groups(visual_board_model, groups)
 
 
 func _apply_visual_fall_moves(visual_board_model: BoardModel, fall_moves: Array) -> void:
-	if visual_board_model == null or _board_view == null:
+	if visual_board_model == null or _board_controller == null:
 		return
-	for move in fall_moves:
-		var from_cell: Vector2i = move.from
-		visual_board_model.clear_cell(from_cell.x, from_cell.y)
-	for move in fall_moves:
-		var to_cell: Vector2i = move.to
-		var orb_id := int(move.orb_id)
-		if OrbType.is_valid_id(orb_id):
-			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
-	_board_view.queue_redraw()
+	_board_controller.apply_visual_fall_moves(visual_board_model, fall_moves)
 
 
 func _apply_visual_refill_spawns(visual_board_model: BoardModel, refill_spawns: Array) -> void:
-	if visual_board_model == null or _board_view == null:
+	if visual_board_model == null or _board_controller == null:
 		return
-	for spawn in refill_spawns:
-		var to_cell: Vector2i = spawn.to
-		var orb_id := int(spawn.orb_id)
-		if OrbType.is_valid_id(orb_id):
-			visual_board_model.set_cell(to_cell.x, to_cell.y, orb_id)
-	_board_view.queue_redraw()
+	_board_controller.apply_visual_refill_spawns(visual_board_model, refill_spawns)
 
 
 func _spawn_match_clear_bursts(groups: Array) -> void:

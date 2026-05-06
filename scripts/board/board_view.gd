@@ -166,6 +166,45 @@ func clear_animations() -> void:
 	queue_redraw()
 
 
+func set_board_presentation_model(model: BoardModel) -> void:
+	board_model = model
+
+
+func bind_board_model(model: BoardModel) -> void:
+	set_board_presentation_model(model)
+
+
+func reset_drag_visual_state() -> void:
+	selected_cell = Vector2i(-1, -1)
+	path_cells = []
+	drag_orb_id = -1
+	drag_pointer_position = Vector2.ZERO
+
+
+func update_drag_visual_state(selected: Vector2i, path: Array[Vector2i], pointer_position: Vector2, selected_orb_id: int) -> void:
+	selected_cell = selected
+	path_cells = path
+	drag_pointer_position = pointer_position
+	drag_orb_id = selected_orb_id
+
+
+func clear_board_presentation() -> void:
+	clear_animations()
+	clear_match_glow()
+	reset_drag_visual_state()
+
+
+func set_input_enabled(enabled: bool) -> void:
+	if enabled:
+		mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	else:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+
+
+func get_hover_orb_id(board_local_position: Vector2) -> int:
+	return get_orb_id_at_position(board_local_position)
+
+
 func has_active_animations() -> bool:
 	return not _overlay_orbs.is_empty() or not _flash_cells.is_empty()
 
