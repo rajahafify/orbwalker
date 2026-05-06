@@ -2,9 +2,9 @@
 
 **Summary**: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.
 
-**Sources**: `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scripts/core/run_state.gd`, `scripts/board/board_model.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/scenes/combat.gd`, `scripts/board/board_controller.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_outcome_overlay.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
+**Sources**: `docs/system_architecture.md`, `docs/architecture_review_tasks.md`, `scripts/core/run_state.gd`, `scripts/board/board_model.gd`, `scripts/board/board_view.gd`, `scripts/combat/combat_state_machine.gd`, `scripts/scenes/combat.gd`, `scripts/board/board_controller.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_outcome_overlay.gd`, `scripts/content/content_registry.gd`, `scripts/shop/shop_service.gd`, `scripts/shop/shop_model.gd`, `scripts/shop/shop_view.gd`, `scripts/shop/shop_controller.gd`, `scripts/scenes/shop.gd`, `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`, `scripts/ui/visual_registry.gd`
 
-**Last updated**: 2026-05-04
+**Last updated**: 2026-05-06
 
 ---
 
@@ -29,7 +29,8 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 
 ### Shop and progression
 
-- `ShopService` opens shops, rerolls offers, buys items, sells equipped items, and resolves booster picks through `RunState` and the progression service. (source: `scripts/shop/shop_service.gd`)
+- `ShopService` remains the economy and shop-state authority that opens shops, rerolls offers, buys items, sells equipped items, and resolves booster picks through `RunState` and the progression service. (source: `scripts/shop/shop_service.gd`)
+- Shop runtime scene ownership now follows a local MVC split: `ShopModel` owns selected-slot/status/transition state plus enriched shop snapshot projection, `ShopView` owns the shop UI surface and shared `PlayerLoadoutHud` binding/layout/rendering, `ShopController` owns shop actions, RunState transition calls, scene-change rollback callbacks, FlowTrace marks, and shop music/SFX hooks, and `scripts/scenes/shop.gd` is a thin host that wires scene nodes to model/view/controller. (source: `scripts/shop/shop_model.gd`, `scripts/shop/shop_view.gd`, `scripts/shop/shop_controller.gd`, `scripts/scenes/shop.gd`)
 - `PlayerProgressionState` stores equipped items, consumables, relics, and mastery levels. `PlayerProgressionService` performs the legal transitions and rebuilds active effects. (source: `scripts/run/player_progression_state.gd`, `scripts/run/player_progression_service.gd`)
 
 ### Content and validation
@@ -44,7 +45,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 ### Scene structure
 
 - The live `scenes/` folder keeps player-facing root screens flat: `main_menu.tscn`, `combat.tscn`, `shop.tscn`, `run_summary.tscn`, and `collection.tscn`. Reusable scene components remain under `scenes/ui/`, including `board.tscn` and `player_hud.tscn`. Root scene scripts mirror those screens under `scripts/scenes/`; reusable systems remain in domain folders such as `scripts/board/`, `scripts/combat/`, `scripts/shop/`, and `scripts/ui/`. (source: repository layout, `project.godot`)
-- Shared UI composition follows the same ownership rule as shared runtime helpers: combat and shop may mount shared components in different screen zones, but should not redefine shared component internals with screen-local geometry constants. `PlayerLoadoutHud` now owns both the default shared HUD geometry and the named shop portrait layout preset, while `CombatLayoutManager` owns combat's runtime section override and `shop.gd` owns only the shop screen mount/placement. (source: `scripts/scenes/shop.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/ui/player_loadout_hud.gd`)
+- Shared UI composition follows the same ownership rule as shared runtime helpers: combat and shop may mount shared components in different screen zones, but should not redefine shared component internals with screen-local geometry constants. `PlayerLoadoutHud` now owns both the default shared HUD geometry and the named shop portrait layout preset, while `CombatLayoutManager` owns combat's runtime section override and `ShopView` owns the shop screen mount/placement. (source: `scripts/shop/shop_view.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/ui/player_loadout_hud.gd`)
 
 ## Important Files
 
@@ -61,6 +62,9 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `scripts/combat/combat_debug_console.gd` - combat debug command parser and log renderer
 - `scripts/combat/combat_turn_logger.gd` - combat turn-log and outcome summary formatter
 - `scripts/combat/combat_outcome_overlay.gd` - combat outcome and boss reward overlay presentation helper
+- `scripts/shop/shop_model.gd` - shop scene state facade and enriched snapshot projection
+- `scripts/shop/shop_view.gd` - shop UI build/layout/rendering and shared PlayerHUD bindings
+- `scripts/shop/shop_controller.gd` - shop action orchestration, transitions, and audio/FlowTrace hooks
 - `scripts/shop/shop_service.gd` - shop generation and purchases
 - `scripts/run/player_progression_service.gd` - equip, sell, mastery, consumable, and relic transitions
 - `docs/system_architecture.md` - original architecture target and planned data model

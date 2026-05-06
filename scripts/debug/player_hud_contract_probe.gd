@@ -3,7 +3,8 @@ class_name PlayerHudContractProbe
 
 const PLAYER_HUD_SCENE_PATH := "res://scenes/ui/player_hud.tscn"
 const COMBAT_SCENE_PATH := "res://scenes/combat.tscn"
-const SHOP_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
+const SHOP_HOST_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
+const SHOP_VIEW_SCRIPT_PATH := "res://scripts/shop/shop_view.gd"
 const COMBAT_SCRIPT_PATH := "res://scripts/scenes/combat.gd"
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 
@@ -124,19 +125,25 @@ static func _check_combat_instances_shared_scene(failures: Array[String]) -> voi
 
 
 static func _check_shop_instances_shared_scene(failures: Array[String]) -> void:
-	var shop_source := FileAccess.get_file_as_string(SHOP_SCRIPT_PATH)
+	var host_source := FileAccess.get_file_as_string(SHOP_HOST_SCRIPT_PATH)
+	if host_source.is_empty():
+		failures.append("Shop host script failed to read: %s" % SHOP_HOST_SCRIPT_PATH)
+	elif not host_source.contains('SHOP_VIEW_SCRIPT := preload("%s")' % SHOP_VIEW_SCRIPT_PATH):
+		failures.append("Shop host must preload ShopView script")
+
+	var shop_source := FileAccess.get_file_as_string(SHOP_VIEW_SCRIPT_PATH)
 	if shop_source.is_empty():
-		failures.append("Shop script failed to read: %s" % SHOP_SCRIPT_PATH)
+		failures.append("Shop view script failed to read: %s" % SHOP_VIEW_SCRIPT_PATH)
 		return
 	if not shop_source.contains('PLAYER_HUD_SCENE := preload("%s")' % PLAYER_HUD_SCENE_PATH):
-		failures.append("Shop must preload the shared PlayerHUD scene instead of building a private HUD")
+		failures.append("Shop view must preload the shared PlayerHUD scene instead of building a private HUD")
 	if not shop_source.contains("_player_hud_section = PLAYER_HUD_SCENE.instantiate()"):
-		failures.append("Shop must instance PLAYER_HUD_SCENE for PlayerHudSection")
+		failures.append("Shop view must instance PLAYER_HUD_SCENE for PlayerHudSection")
 
 
 static func _check_binding_key_contract(failures: Array[String]) -> void:
 	_check_source_contains_binding_keys(COMBAT_SCRIPT_PATH, "_combat_player_hud_nodes", failures)
-	_check_source_contains_binding_keys(SHOP_SCRIPT_PATH, "_shop_player_hud_nodes", failures)
+	_check_source_contains_binding_keys(SHOP_VIEW_SCRIPT_PATH, "_shop_player_hud_nodes", failures)
 
 
 static func _check_source_contains_binding_keys(path: String, function_name: String, failures: Array[String]) -> void:
