@@ -92,7 +92,11 @@ const COMPACT_MASTERY_ROOT_RECT := Rect2(Vector2(0, 0), Vector2(1048, 44))
 const COMPACT_MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(100, 44))
 const COMPACT_MASTERY_ICONS_RECT := Rect2(Vector2(116, 0), Vector2(724, MASTERY_SLOT_SIZE.y))
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
-const SLOT_DETAIL_BUBBLE_WIDTH := 332.0
+const SLOT_DETAIL_BUBBLE_MIN_WIDTH := 440.0
+const SLOT_DETAIL_BUBBLE_MAX_WIDTH := 640.0
+const SLOT_DETAIL_BUBBLE_MIN_HEIGHT := 144.0
+const SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN := 10.0
+const SLOT_DETAIL_BUBBLE_INTERNAL_PADDING := 16.0
 const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(960.0, 468.0)
 const INTENT_PREVIEW_MIN_SEGMENT_WIDTH := 6.0
 const INTENT_PREVIEW_PULSE_SECONDS := 0.52
@@ -1110,6 +1114,16 @@ static func shop_player_hud_layout_preset() -> Dictionary:
 	return SHOP_PLAYER_HUD_LAYOUT_PRESET.duplicate(true)
 
 
+static func slot_detail_popover_probe_snapshot() -> Dictionary:
+	return {
+		"min_width": SLOT_DETAIL_BUBBLE_MIN_WIDTH,
+		"max_width": SLOT_DETAIL_BUBBLE_MAX_WIDTH,
+		"min_height": SLOT_DETAIL_BUBBLE_MIN_HEIGHT,
+		"viewport_margin": SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN,
+		"internal_padding": SLOT_DETAIL_BUBBLE_INTERNAL_PADDING,
+	}
+
+
 func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}) -> void:
 	_apply_node_rect(nodes, "section", _layout_rect(layout_override, "section", PLAYER_HUD_SECTION_RECT))
 	_apply_node_rect(nodes, "mastery_panel", _layout_rect(layout_override, "mastery_panel", PLAYER_HUD_MASTERY_PANEL_RECT))
@@ -1775,12 +1789,12 @@ func _apply_slot_detail_popover_chrome() -> void:
 	bubble_style.set_border_width_all(2)
 	bubble_style.set_corner_radius_all(8)
 	_slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
-	_apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 20)
+	_apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
 	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 15)
+	_apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
 	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_slot_detail_sell_button.add_theme_font_size_override("font_size", 23)
+	_slot_detail_sell_button.add_theme_font_size_override("font_size", 26)
 	_slot_detail_sell_button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78, 1.0))
 	var normal := _button_stylebox(Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0))
 	var hover := _button_stylebox(Color(0.28, 0.18, 0.09, 0.98), Color(0.76, 0.59, 0.34, 1.0))
@@ -1848,12 +1862,6 @@ func _update_slot_detail_bubble() -> void:
 		return
 	var has_description := _slot_detail_description.text != ""
 	var show_sell_action := _slot_popover_shows_sell_action()
-	var bubble_height := 70.0
-	if has_description:
-		bubble_height = 104.0
-	if show_sell_action:
-		bubble_height += 74.0
-	var bubble_size := Vector2(SLOT_DETAIL_BUBBLE_WIDTH, bubble_height)
 	var parent := _slot_detail_bubble.get_parent() as Control
 	var parent_size := COMBAT_PLAYER_PANEL_SIZE
 	var slot_top_left: Vector2 = _hover_slot_global_rect.position
@@ -1864,21 +1872,123 @@ func _update_slot_detail_bubble() -> void:
 		slot_top_left = transform_inverse * _hover_slot_global_rect.position
 		var slot_bottom_right: Vector2 = transform_inverse * (_hover_slot_global_rect.position + _hover_slot_global_rect.size)
 		slot_size = slot_bottom_right - slot_top_left
+
+	var bubble_width := _slot_detail_popover_width(parent_size.x)
+	var max_width := maxf(280.0, parent_size.x - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
+	var max_height := maxf(108.0, parent_size.y - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
+	var bubble_size := Vector2(minf(bubble_width, max_width), SLOT_DETAIL_BUBBLE_MIN_HEIGHT)
+	var content_width := maxf(200.0, bubble_size.x - SLOT_DETAIL_BUBBLE_INTERNAL_PADDING * 2.0)
+
+	var title_height := 38.0
+	var row_gap := 10.0
+	var sell_button_height := 72.0 if show_sell_action else 0.0
+	var description_target_height := _slot_detail_description_height(_slot_detail_description.text, content_width, 18) if has_description else 0.0
+	var non_description_height := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING + title_height + SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
+	if has_description:
+		non_description_height += row_gap
+	if show_sell_action:
+		non_description_height += 12.0 + sell_button_height
+	var description_height := 0.0
+	if has_description:
+		var description_max_height := maxf(40.0, max_height - non_description_height)
+		description_height = minf(description_target_height, description_max_height)
+	var content_height := non_description_height + description_height
+	bubble_size.y = minf(max_height, maxf(SLOT_DETAIL_BUBBLE_MIN_HEIGHT, content_height))
+
 	var local_x: float = slot_top_left.x + (slot_size.x - bubble_size.x) * 0.5
-	local_x = clampf(local_x, 0.0, maxf(0.0, parent_size.x - bubble_size.x))
-	var local_y: float = slot_top_left.y - bubble_size.y - 12.0
-	if local_y < 0.0:
-		local_y = slot_top_left.y + slot_size.y + 12.0
+	local_x = clampf(
+		local_x,
+		SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN,
+		maxf(SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, parent_size.x - bubble_size.x - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN)
+	)
+	var preferred_above := slot_top_left.y - bubble_size.y - 12.0
+	var preferred_below := slot_top_left.y + slot_size.y + 12.0
+	var max_local_y := maxf(SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, parent_size.y - bubble_size.y - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN)
+	var local_y := preferred_above
+	if local_y < SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN:
+		local_y = preferred_below
+	if local_y > max_local_y:
+		local_y = max_local_y
+	local_y = clampf(local_y, SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, max_local_y)
+
 	_slot_detail_bubble.position = Vector2(local_x, local_y)
 	_slot_detail_bubble.size = bubble_size
-	_apply_rect(_slot_detail_title, Rect2(Vector2(12.0, 8.0), Vector2(bubble_size.x - 24.0, 26.0)))
+
+	var cursor_y := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
+	_apply_rect(
+		_slot_detail_title,
+		Rect2(
+			Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
+			Vector2(content_width, title_height)
+		)
+	)
+	cursor_y += title_height
 	if has_description:
-		_apply_rect(_slot_detail_description, Rect2(Vector2(12.0, 36.0), Vector2(bubble_size.x - 24.0, 36.0)))
-	var sell_button_y := 38.0 if not has_description else 78.0
+		cursor_y += row_gap
+		_slot_detail_description.visible = true
+		_apply_rect(
+			_slot_detail_description,
+			Rect2(
+				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
+				Vector2(content_width, description_height)
+			)
+		)
+		cursor_y += description_height
+	else:
+		_slot_detail_description.visible = false
+		_apply_rect(
+			_slot_detail_description,
+			Rect2(
+				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
+				Vector2(content_width, 0.0)
+			)
+		)
+
 	_slot_detail_sell_button.visible = show_sell_action
 	_slot_detail_sell_button.disabled = _selected_slot_kind() == ""
-	_slot_detail_sell_button.text = "Sell\n%s" % _selected_slot_sell_text()
-	_apply_rect(_slot_detail_sell_button, Rect2(Vector2(12.0, sell_button_y), Vector2(bubble_size.x - 24.0, 62.0)))
+	_slot_detail_sell_button.text = "Sell  %s" % _selected_slot_sell_text()
+	if show_sell_action:
+		cursor_y += 12.0
+		_apply_rect(
+			_slot_detail_sell_button,
+			Rect2(
+				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
+				Vector2(content_width, sell_button_height)
+			)
+		)
+	else:
+		_apply_rect(
+			_slot_detail_sell_button,
+			Rect2(
+				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
+				Vector2(content_width, 0.0)
+			)
+		)
+
+
+func _slot_detail_popover_width(parent_width: float) -> float:
+	var available_width := maxf(280.0, parent_width - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
+	var title_len := float(_slot_detail_title.text.length())
+	var description_len := float(_slot_detail_description.text.length())
+	var title_bonus := minf(96.0, maxf(0.0, title_len - 18.0) * 2.2)
+	var description_bonus := minf(140.0, maxf(0.0, description_len - 72.0) * 1.2)
+	var desired := SLOT_DETAIL_BUBBLE_MIN_WIDTH + maxf(title_bonus, description_bonus)
+	return clampf(desired, SLOT_DETAIL_BUBBLE_MIN_WIDTH, minf(SLOT_DETAIL_BUBBLE_MAX_WIDTH, available_width))
+
+
+func _slot_detail_description_height(description: String, width: float, font_size: int) -> float:
+	if description == "":
+		return 0.0
+	var chars_per_line := maxi(18, int(floor(width / maxf(7.0, float(font_size) * 0.53))))
+	var total_lines := 0
+	for segment in description.split("\n", false):
+		var segment_text := segment.strip_edges()
+		if segment_text == "":
+			total_lines += 1
+			continue
+		total_lines += maxi(1, int(ceil(float(segment_text.length()) / float(chars_per_line))))
+	total_lines = clampi(total_lines, 1, 10)
+	return float(total_lines) * (float(font_size) + 3.0) + 6.0
 
 
 func _slot_popover_shows_sell_action() -> bool:

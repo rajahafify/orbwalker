@@ -2053,3 +2053,27 @@ Append-only history of wiki operations.
   - Godot MCP focused probe confirmed `player_hud.tscn`, `combat_player.tscn`, and `shop_player.tscn` load, and that combat instances the shared HUD scene with required HUD nodes present.
   - Godot MCP `play_scene current` for combat reached first usable frame with no new runtime errors.
   - Godot MCP `play_scene current` for shop created and bound the shared HUD before redirecting to main menu when no active run existed; no new runtime errors were reported. Existing stale enum reload warnings remained in the editor session.
+
+## [2026-05-06] code-change | Shop Readability Revamp
+
+- Source: `scripts/flow/shop_player.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Rebalanced the shop portrait layout around readability: shorter merchant stage, taller stock cards, a taller relic card, and explicit non-overlapping card bands for names, rarity/type labels, descriptions, disabled states, and prices.
+  - Enlarged the shared `PlayerLoadoutHud` slot detail popover with larger title/description/sell typography, wider dynamic sizing, wrapped-description height estimation, and parent-bounded placement.
+  - Preserved shop economy, content pools, transaction handlers, RunState routing, booster flow, and the shared `scenes/ui/player_hud.tscn` contract.
+- Validation:
+  - Multi-agent review initially rated the partial pass `6.5/10`; the worker fixed the reported stock-row overflow, disabled-label overlap, and insufficient popover readability.
+  - Godot MCP `get_project_info`, `view_script` for `shop_player.gd` and `player_loadout_hud.gd`, focused layout/readability probe, `play_scene current`, `stop_running_scene`, and `get_godot_errors` passed.
+  - Final probe confirmed `stock_total_width=1016`, `stock_content_width=1020`, `stock_slack=4`, `stock_fits=true`, `offer_desc_state_gap=6`, `offer_state_price_gap=6`, `bottom_gap_before_hud=26`, and `action_row_overlaps_hud=false`.
+  - Active in-run shop screenshot review and target-device visual acceptance remain pending.
+
+## [2026-05-06] bug-fix | Shop Header Load Crash
+
+- Source: `scripts/flow/shop_player.gd`, `scripts/core/run_state.gd`, `docs/test_plan.md`
+- Changed:
+  - Fixed the shop header progress label to use `RunState.current_shop_ordinal_in_level()` instead of the nonexistent `RunState.fight_index` property.
+  - Preserved the readable `Dungeon X-Y Shop` header introduced by the shop readability revamp while staying on the existing RunState public API.
+- Validation:
+  - Godot MCP `view_script` reloaded `scripts/flow/shop_player.gd`.
+  - Godot MCP `play_scene current` loaded `res://scenes/flow/shop_player.tscn` and redirected cleanly when no active run existed.
+  - Godot MCP `get_godot_errors` reported `Session has no errors` after rerun; active-run shop screenshot review remains pending.
