@@ -1971,3 +1971,25 @@ Append-only history of wiki operations.
 - Validation:
   - `git diff --check` passed.
   - Godot MCP `view_script` loaded `player_loadout_hud.gd`; cache-ignore probe confirmed six cards, no `MasteryLabel` or `MasteryLevel` nodes, empty icon tooltip text, and the enlarged detail bubble size; `play_scene current`, screenshot capture, and `get_godot_errors` review completed.
+
+## [2026-05-06] code-change | M12 Shop Mobile Readability
+
+- Source: `scripts/flow/shop_player.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Changed:
+  - Shortened the merchant stage, enlarged the stock panel/cards, relic card, and action row, and increased item names, framed art, descriptions, price badges, and disabled-state labels for mobile portrait readability.
+  - Added a shop-only `PlayerLoadoutHud` layout override so the action row and shared HUD sit in a continuous portrait flow with a 30px design-space gap.
+  - Kept shop economy, content pools, transaction handlers, RunState routing, shared HUD API, booster flow, and sell popover behavior unchanged.
+- Validation:
+  - `git diff --check` passed.
+  - Godot MCP `view_script` loaded `shop_player.gd`; source-parse layout probe confirmed `bottom_gap_before_hud=30`, `action_row_overlaps_hud=false`, `stock_total_width=1004`, `stock_content_width=1004`, and `stock_fits=true`; `get_godot_errors` reported no session errors.
+  - Active in-run shop screenshot review and target-device visual acceptance remain pending.
+
+## [2026-05-06] docs | Scene Structure Refactor Plan
+
+- Source: `docs/scene_structure_refactor_plan.md`, `docs/system_architecture.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`
+- Changed:
+  - Documented the current `scenes/` inventory, empty folder mismatch, and proposed final taxonomy separating app/screen scenes, reusable components, and development previews.
+  - Recorded the Player HUD combat/shop visual drift as an architecture regression from the intended shared partial/component contract.
+  - Added SOLID ownership rules and stepwise refactor tasks for shared HUD scene extraction, combat/shop HUD identity restoration, scene moves, empty folder cleanup, and scene contract validation.
+- Validation:
+  - Documentation-only change. Current scene inventory was checked with PowerShell; no files were moved and no runtime behavior was changed.

@@ -41,6 +41,11 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 
 - `visual_registry.gd` centralizes first-pass texture lookup and fallback behavior for combat and shop presentation. (source: `scripts/ui/visual_registry.gd`)
 
+### Scene structure
+
+- The live `scenes/` folder still reflects prototype growth rather than the finalized game flow: `main.tscn` sits at the root, full player-facing shop/collection/summary scenes live under `scenes/flow/`, reusable board surface lives under `scenes/board/`, and `scenes/run/` plus `scenes/shop/` are currently empty. The scene-structure refactor plan proposes separating full screens from reusable components through a taxonomy such as `scenes/app/`, `scenes/screens/`, `scenes/components/`, and `scenes/dev/`. (source: `docs/scene_structure_refactor_plan.md`, repository layout)
+- Shared UI composition should follow the same ownership rule as shared runtime helpers: combat and shop may mount shared components in different screen zones, but should not redefine shared component internals with screen-local geometry constants. The current Player HUD drift between combat and shop is documented as a follow-up refactor candidate. (source: `docs/scene_structure_refactor_plan.md`, `scripts/flow/shop_player.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/ui/player_loadout_hud.gd`)
+
 ## Important Files
 
 - `scripts/core/run_state.gd` - run orchestration and scene routing
@@ -59,6 +64,7 @@ The architecture is organized around state-owned gameplay logic and scene-driven
 - `scripts/shop/shop_service.gd` - shop generation and purchases
 - `scripts/run/player_progression_service.gd` - equip, sell, mastery, consumable, and relic transitions
 - `docs/system_architecture.md` - original architecture target and planned data model
+- `docs/scene_structure_refactor_plan.md` - proposed final scene folder taxonomy and shared-HUD scene/component refactor plan
 - `docs/architecture_review_tasks.md` - architecture-maintenance task tracker for refactor risks, regression harness work, and current/future architecture alignment
 
 ## Open Questions

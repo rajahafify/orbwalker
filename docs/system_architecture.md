@@ -55,7 +55,7 @@ Deferred until after the first playable:
 
 ## Proposed Folder Structure
 
-This is a planning decision only. The folders should be created during project setup.
+This original planning structure has been superseded by the live prototype and the scene-structure follow-up plan in `docs/scene_structure_refactor_plan.md`. The current first playable flow is finalized enough that `scenes/` should be refactored around full screens and reusable components instead of early milestone folders.
 
 ```text
 res://
@@ -100,6 +100,15 @@ Ownership intent:
 - `scripts/shop/`: shop generation, pricing, reroll, purchase, sell, and booster opening.
 - `scripts/ui/`: presentation components that read state and send commands but do not own gameplay rules.
 - `scripts/debug/`: debug-only tools for seeds, board layouts, test fights, and run manipulation.
+
+Updated scene ownership target:
+
+- Full player-facing screens should live under a dedicated screen/app taxonomy.
+- Reusable scene composition units, such as board surface and player HUD, should live under shared component folders.
+- Development-only visual comparison scenes should live under a development/preview folder.
+- Combat and shop should mount the same Player HUD component rather than redefining HUD internals through separate screen-local layout constants.
+
+See `docs/scene_structure_refactor_plan.md` for the proposed final folder layout, SOLID ownership rules, and stepwise migration tasks.
 
 ## Content Data Format Decision
 
