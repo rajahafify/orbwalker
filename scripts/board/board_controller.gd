@@ -10,7 +10,10 @@ var _board_model: BoardModel
 var _swap_sound_callback: Callable
 var _match_groups_callback: Callable
 var _move_timer_seconds_callback: Callable
+var _drag_input_result_callback: Callable
+var _hovered_orb_changed_callback: Callable
 var _swap_animation_seconds: float = 0.08
+var _input_enabled := true
 
 var _active_drag := false
 var _drag_touch_index: int = -1
@@ -18,16 +21,23 @@ var _drag_selected_orb_id: int = -1
 var _drag_current_cell: Vector2i = Vector2i(-1, -1)
 var _drag_path: Array[Vector2i] = []
 var _move_time_left: float = 0.0
+var _hovered_orb_id: int = -1
 
 
 func bind(dependencies: Dictionary, config: Dictionary = {}) -> void:
+	var previous_board_view := _board_view
+	_disconnect_board_view_signals(previous_board_view)
 	_board_view = dependencies.get("board_view") as BoardView
 	_board_model = dependencies.get("board_model") as BoardModel
 	_swap_sound_callback = config.get("swap_sound_callback", Callable())
 	_match_groups_callback = config.get("match_groups_callback", Callable())
 	_move_timer_seconds_callback = config.get("move_timer_seconds_callback", Callable())
+	_drag_input_result_callback = config.get("drag_input_result_callback", Callable())
+	_hovered_orb_changed_callback = config.get("hovered_orb_changed_callback", Callable())
 	_swap_animation_seconds = float(config.get("swap_animation_seconds", _swap_animation_seconds))
 	bind_view_model()
+	_connect_board_view_signals()
+	set_input_enabled(_input_enabled)
 
 
 func set_board_model(board_model: BoardModel) -> void:
@@ -170,6 +180,14 @@ func clear_board_presentation() -> void:
 	if not _has_valid_board_view():
 		return
 	_board_view.clear_board_presentation()
+
+
+func set_input_enabled(enabled: bool) -> void:
+	_input_enabled = enabled
+	if _has_valid_board_view():
+		_board_view.set_input_enabled(enabled)
+	if not enabled:
+		_emit_hovered_orb_id(-1)
 
 
 func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
@@ -333,3 +351,58 @@ func _refresh_drag_match_glow() -> void:
 
 func _has_valid_board_view() -> bool:
 	return _board_view != null and is_instance_valid(_board_view)
+
+
+func _connect_board_view_signals() -> void:
+	if not _has_valid_board_view():
+		return
+	if not _board_view.gui_input.is_connected(_on_board_view_gui_input):
+		_board_view.gui_input.connect(_on_board_view_gui_input)
+	if not _board_view.mouse_exited.is_connected(_on_board_view_mouse_exited):
+		_board_view.mouse_exited.connect(_on_board_view_mouse_exited)
+
+
+func _disconnect_board_view_signals(board_view: BoardView) -> void:
+	if board_view == null or not is_instance_valid(board_view):
+		return
+	if board_view.gui_input.is_connected(_on_board_view_gui_input):
+		board_view.gui_input.disconnect(_on_board_view_gui_input)
+	if board_view.mouse_exited.is_connected(_on_board_view_mouse_exited):
+		board_view.mouse_exited.disconnect(_on_board_view_mouse_exited)
+
+
+func _on_board_view_gui_input(event: InputEvent) -> void:
+	_emit_hovered_orb_id(_resolve_hovered_orb_id_from_gui_input(event))
+	var drag_result: Dictionary = handle_pointer_input(event, _input_enabled)
+	if _drag_input_result_callback.is_valid():
+		_drag_input_result_callback.call(drag_result)
+	if bool(drag_result.get("handled", false)) and _has_valid_board_view():
+		_board_view.accept_event()
+
+
+func _on_board_view_mouse_exited() -> void:
+	_emit_hovered_orb_id(-1)
+
+
+func _resolve_hovered_orb_id_from_gui_input(event: InputEvent) -> int:
+	if not _input_enabled:
+		return -1
+	if _active_drag:
+		return -1
+	if not _has_valid_board_view() or _board_model == null:
+		return -1
+	if event is InputEventMouseMotion:
+		return _board_view.get_hover_orb_id((event as InputEventMouseMotion).position)
+	if event is InputEventMouseButton:
+		var button_event := event as InputEventMouseButton
+		if not button_event.pressed:
+			return _board_view.get_hover_orb_id(button_event.position)
+	return -1
+
+
+func _emit_hovered_orb_id(orb_id: int) -> void:
+	if _hovered_orb_id == orb_id:
+		return
+	_hovered_orb_id = orb_id
+	if _hovered_orb_changed_callback.is_valid():
+		_hovered_orb_changed_callback.call(_hovered_orb_id)

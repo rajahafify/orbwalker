@@ -1,5 +1,9 @@
 # Wiki Log
 
+## 2026-05-06 - Board Input Plumbing Ownership Refactor
+
+- Updated [[architecture]], [[file-map]], and [[features]] for board-only input ownership: `BoardController` now owns guarded `BoardView.gui_input` and `mouse_exited` signal wiring, board-local hover-id translation via `BoardView.get_hover_orb_id(event.position)`, drag-result callback forwarding, and `BoardView.set_input_enabled(...)` forwarding through `BoardController.set_input_enabled(...)`. `CombatPlayerController` keeps input phase authority, hovered-orb HUD interpretation, and drag-result consequences. This preserves board-local touch coordinates and avoids global transform reapplication. (source: `scripts/board/board_controller.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/board/board_view.gd`)
+
 ## 2026-05-06 - Generic Scene Change Rollback Recovery
 
 - Fixed and documented the remaining generic FlowTrace rollback gap: `RunState.flow_trace_change_scene(...)` now forwards post-ready failure callbacks into prepared scene attach, and locked callers in main menu Collection, Collection back, shop redirects/continue/main-menu, final-summary Main Menu, and combat route helpers pass local recovery callbacks so deferred post-ready rollback unlocks restored controls or shows a retryable combat overlay. Validation is recorded in `docs/test_plan.md`. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/flow/collection.gd`, `scripts/flow/shop_player.gd`, `scripts/flow/final_run_summary.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`)

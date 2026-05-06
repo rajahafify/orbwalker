@@ -409,8 +409,6 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id)
 	_create_new_board()
 	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id)
-	_board_view.gui_input.connect(_on_board_view_gui_input)
-	_board_view.mouse_exited.connect(_on_board_view_mouse_exited)
 	_debug_overlay.visible = false
 	_debug_toggle_button.visible = false
 	if _console_input.visible:
@@ -538,6 +536,8 @@ func _bind_board_controller() -> void:
 			"swap_sound_callback": _on_drag_swap_success,
 			"match_groups_callback": _drag_match_groups,
 			"move_timer_seconds_callback": _drag_move_timer_seconds,
+			"drag_input_result_callback": _on_board_drag_input_result,
+			"hovered_orb_changed_callback": _on_board_hovered_orb_changed,
 		}
 	)
 
@@ -969,53 +969,12 @@ func _process(delta: float) -> void:
 	_handle_drag_input_result(drag_update)
 
 
-func _handle_pointer_input(event: InputEvent) -> bool:
-	if _board_controller == null:
-		return false
-	var drag_result: Dictionary = _board_controller.handle_pointer_input(
-		event,
-		_input_phase == InputPhase.PLAYER_INPUT
-	)
+func _on_board_drag_input_result(drag_result: Dictionary) -> void:
 	_handle_drag_input_result(drag_result)
-	return bool(drag_result.get("handled", false))
 
 
-func _on_board_view_gui_input(event: InputEvent) -> void:
-	_update_board_orb_hover_from_gui_input(event)
-	if _handle_pointer_input(event):
-		_board_view.accept_event()
-
-
-func _on_board_view_mouse_exited() -> void:
-	_set_hovered_board_orb_id(-1)
-
-
-func _update_board_orb_hover_from_gui_input(event: InputEvent) -> void:
-	if _input_phase != InputPhase.PLAYER_INPUT:
-		_set_hovered_board_orb_id(-1)
-		return
-	if _drag_active():
-		_set_hovered_board_orb_id(-1)
-		return
-	if _board_view == null or _board_model == null:
-		_set_hovered_board_orb_id(-1)
-		return
-	if event is InputEventMouseMotion:
-		var motion_event := event as InputEventMouseMotion
-		var orb_id := _board_view.get_hover_orb_id(motion_event.position)
-		if _is_hoverable_combat_orb(orb_id):
-			_set_hovered_board_orb_id(orb_id)
-			return
-		_set_hovered_board_orb_id(-1)
-		return
-	if event is InputEventMouseButton:
-		var button_event := event as InputEventMouseButton
-		if not button_event.pressed:
-			var button_orb_id := _board_view.get_hover_orb_id(button_event.position)
-			if _is_hoverable_combat_orb(button_orb_id):
-				_set_hovered_board_orb_id(button_orb_id)
-				return
-	_set_hovered_board_orb_id(-1)
+func _on_board_hovered_orb_changed(orb_id: int) -> void:
+	_set_hovered_board_orb_id(orb_id)
 
 
 func _set_hovered_board_orb_id(orb_id: int) -> void:
@@ -1847,11 +1806,14 @@ func _set_input_phase(phase: InputPhase) -> void:
 
 	match _input_phase:
 		InputPhase.PLAYER_INPUT:
-			_board_view.set_input_enabled(true)
+			if _board_controller != null:
+				_board_controller.set_input_enabled(true)
 		InputPhase.RESOLVING:
-			_board_view.set_input_enabled(false)
+			if _board_controller != null:
+				_board_controller.set_input_enabled(false)
 		InputPhase.LOCKED_EXTERNAL:
-			_board_view.set_input_enabled(false)
+			if _board_controller != null:
+				_board_controller.set_input_enabled(false)
 			if _external_lock_reason != "":
 				_status_label.text = "Input locked: %s" % _external_lock_reason
 
