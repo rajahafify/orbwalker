@@ -53,16 +53,39 @@ func _route_from_summary(start_new_run: bool) -> void:
 	var source := "final_run_summary.main_menu"
 	var route_name := "final_summary_to_main_menu"
 	var target_scene := "res://scenes/main.tscn"
+	var pre_run_state: Dictionary = {}
+	var prepared_scene: Dictionary = {}
 	if start_new_run:
 		source = "final_run_summary.new_run"
 		route_name = "final_summary_to_combat"
-		RunState.start_new_run()
-		target_scene = RunState.next_scene_path()
+		target_scene = "res://scenes/combat/combat_player.tscn"
 	var route_id := RunState.flow_trace_begin(route_name, target_scene, {"source": source})
+	if start_new_run:
+		prepared_scene = RunState.flow_trace_prepare_scene(target_scene, route_id, source)
+		if not bool(prepared_scene.get("ok", false)):
+			var prepare_failure := _scene_change_failure_reason(prepared_scene)
+			push_error("Final summary prepare failed: %s -> %s (%s)" % [source, target_scene, prepare_failure])
+			_summary_label.text = "Transition failed: %s" % prepare_failure
+			_summary_label.add_theme_color_override("font_color", COLOR_DEFEAT)
+			_is_transitioning = false
+			_set_action_buttons_disabled(false)
+			return
+		if RunState.has_method("snapshot_run_transition_state"):
+			pre_run_state = RunState.snapshot_run_transition_state()
+		RunState.flow_trace_mark("final_summary_before_start_new_run", {"source": source}, route_id, target_scene)
+		RunState.start_new_run()
+		RunState.flow_trace_mark("final_summary_after_start_new_run", {"source": source}, route_id, target_scene)
+		target_scene = RunState.next_scene_path()
 	RunState.flow_trace_mark("final_summary_before_change_scene", {"source": source}, route_id, target_scene)
-	var transition_result: Variant = RunState.flow_trace_change_scene(get_tree(), target_scene, route_id, source)
+	var transition_result: Variant
+	if start_new_run:
+		transition_result = RunState.flow_trace_attach_prepared_scene(get_tree(), prepared_scene, target_scene, route_id, source)
+	else:
+		transition_result = RunState.flow_trace_change_scene(get_tree(), target_scene, route_id, source)
 	if _scene_change_succeeded(transition_result):
 		return
+	if start_new_run and RunState.has_method("restore_run_transition_state") and not pre_run_state.is_empty():
+		RunState.restore_run_transition_state(pre_run_state)
 	var failure := _scene_change_failure_reason(transition_result)
 	push_error("Final summary transition failed: %s -> %s (%s)" % [source, target_scene, failure])
 	_summary_label.text = "Transition failed: %s" % failure

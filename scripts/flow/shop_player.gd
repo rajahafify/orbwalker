@@ -13,11 +13,6 @@ const RELIC_PANEL_RECT := Rect2(Vector2(16, 854), Vector2(1048, 186))
 const ACTION_ROW_RECT := Rect2(Vector2(16, 1104), Vector2(1048, 102))
 const OFFER_CARD_SIZE := Vector2(324, 430)
 const OFFER_CARD_GAP := 16.0
-const SHOP_PLAYER_HUD_SECTION_RECT := Rect2(Vector2(0, 1236), Vector2(1080, 684))
-const SHOP_PLAYER_HUD_MASTERY_PANEL_RECT := Rect2(Vector2(16, 0), Vector2(1048, 180))
-const SHOP_PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 8), Vector2(1048, 56))
-const SHOP_PLAYER_HUD_MASTERY_CARDS_RECT := Rect2(Vector2(0, 62), Vector2(1048, 118))
-const SHOP_PLAYER_HUD_FOOTER_PANEL_RECT := Rect2(Vector2(0, 190), Vector2(1080, 340))
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
@@ -141,23 +136,11 @@ func _ready() -> void:
 	if not RunState.run_active:
 		_title_label.text = "Shop"
 		_set_status("No active run. Returning to main menu.", false)
-		RunState.flow_trace_mark(
-			"shop_ready_redirect_before_change_scene",
-			{"source": "no_active_run"},
-			_flow_trace_route_id,
-			"res://scenes/main.tscn"
-		)
-		get_tree().call_deferred("change_scene_to_file", "res://scenes/main.tscn")
+		_queue_ready_redirect("res://scenes/main.tscn", "no_active_run")
 		return
 	if not RunState.is_current_step_shop():
 		var redirect_scene := RunState.next_scene_path()
-		RunState.flow_trace_mark(
-			"shop_ready_redirect_before_change_scene",
-			{"source": "wrong_step"},
-			_flow_trace_route_id,
-			redirect_scene
-		)
-		get_tree().call_deferred("change_scene_to_file", redirect_scene)
+		_queue_ready_redirect(redirect_scene, "wrong_step")
 		return
 
 	RunState.flow_trace_mark("shop_before_open_shop", {}, _flow_trace_route_id)
@@ -180,6 +163,43 @@ func _trace_flow_first_usable_frame() -> void:
 		{"source": "shop_player._ready_deferred"},
 		_flow_trace_route_id
 	)
+
+
+func _queue_ready_redirect(target_scene: String, source: String) -> void:
+	RunState.flow_trace_mark(
+		"shop_ready_redirect_before_change_scene",
+		{"source": source},
+		_flow_trace_route_id,
+		target_scene
+	)
+	Callable(self, "_deferred_ready_redirect").bind(target_scene, source).call_deferred()
+
+
+func _deferred_ready_redirect(target_scene: String, source: String) -> void:
+	if _is_transitioning:
+		return
+	_begin_transition_lock()
+	var transition_source := "shop_ready_redirect_%s" % source
+	var scene_change_result := RunState.flow_trace_change_scene(
+		get_tree(),
+		target_scene,
+		_flow_trace_route_id,
+		transition_source
+	)
+	if scene_change_result == OK:
+		return
+	var failure_reason := _scene_change_failure_reason(scene_change_result)
+	_set_status("Redirect failed: %s" % failure_reason, false)
+	RunState.flow_trace_mark(
+		"shop_ready_redirect_change_scene_failed",
+		{
+			"source": source,
+			"reason": failure_reason,
+		},
+		_flow_trace_route_id,
+		target_scene
+	)
+	_end_transition_lock()
 
 
 func _create_ui() -> void:
@@ -938,18 +958,15 @@ func _apply_visual_chrome() -> void:
 
 
 func _shop_player_hud_layout_override() -> Dictionary:
-	return {
-		"section": SHOP_PLAYER_HUD_SECTION_RECT,
-		"mastery_panel": SHOP_PLAYER_HUD_MASTERY_PANEL_RECT,
-		"mastery_title": SHOP_PLAYER_HUD_MASTERY_TITLE_RECT,
-		"mastery_cards": SHOP_PLAYER_HUD_MASTERY_CARDS_RECT,
-		"footer_panel": SHOP_PLAYER_HUD_FOOTER_PANEL_RECT,
-	}
+	return PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
 
 
 static func shop_layout_probe_snapshot() -> Dictionary:
+	var hud_layout := PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
+	var hud_section := Rect2(hud_layout.get("section", Rect2()))
+	var hud_footer := Rect2(hud_layout.get("footer_panel", Rect2()))
 	var action_bottom := ACTION_ROW_RECT.position.y + ACTION_ROW_RECT.size.y
-	var hud_bottom := SHOP_PLAYER_HUD_SECTION_RECT.position.y + SHOP_PLAYER_HUD_SECTION_RECT.size.y
+	var hud_bottom := hud_section.position.y + hud_section.size.y
 	var stock_total_width := OFFER_CARD_SIZE.x * 3.0 + OFFER_CARD_GAP * 2.0
 	var stock_content_width := STOCK_PANEL_RECT.size.x - 44.0
 	return {
@@ -963,13 +980,13 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"stock_card_gap": OFFER_CARD_GAP,
 		"stock_total_width": stock_total_width,
 		"stock_content_width": stock_content_width,
-		"player_hud_section": SHOP_PLAYER_HUD_SECTION_RECT,
-		"hud_override_footer": SHOP_PLAYER_HUD_FOOTER_PANEL_RECT,
+		"player_hud_section": hud_section,
+		"hud_override_footer": hud_footer,
 		"action_row_overlaps_hud": (
-			SHOP_PLAYER_HUD_SECTION_RECT.position.y < action_bottom
+			hud_section.position.y < action_bottom
 			and ACTION_ROW_RECT.position.y < hud_bottom
 		),
-		"bottom_gap_before_hud": maxi(0, int(SHOP_PLAYER_HUD_SECTION_RECT.position.y - action_bottom)),
+		"bottom_gap_before_hud": maxi(0, int(hud_section.position.y - action_bottom)),
 	}
 
 

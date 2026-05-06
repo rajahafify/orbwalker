@@ -50,6 +50,13 @@ const PLAYER_HUD_MASTERY_PANEL_RECT := Rect2(Vector2(16, 0), Vector2(1048, 160))
 const PLAYER_HUD_MASTERY_TITLE_RECT := Rect2(Vector2(0, 6), Vector2(1048, 50))
 const PLAYER_HUD_MASTERY_CARDS_RECT := Rect2(Vector2(0, 58), Vector2(1048, 102))
 const PLAYER_HUD_FOOTER_PANEL_RECT := Rect2(Vector2(0, 168), Vector2(1080, 324))
+const SHOP_PLAYER_HUD_LAYOUT_PRESET := {
+	"section": Rect2(Vector2(0, 1236), Vector2(1080, 684)),
+	"mastery_panel": Rect2(Vector2(16, 0), Vector2(1048, 180)),
+	"mastery_title": Rect2(Vector2(0, 8), Vector2(1048, 56)),
+	"mastery_cards": Rect2(Vector2(0, 62), Vector2(1048, 118)),
+	"footer_panel": Rect2(Vector2(0, 190), Vector2(1080, 340)),
+}
 const COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 640)
 const COMPACT_COMBAT_PLAYER_PANEL_SIZE := Vector2(1080, 336)
 const HERO_CARD_RECT := Rect2(Vector2(42, 32), Vector2(220, 246))
@@ -1057,6 +1064,10 @@ func _populate_empty_relic_placeholders(row: Control) -> void:
 func apply_loadout_rail_layout(equipment_row: Control, equipment_rect: Rect2, consumable_row: Control, consumable_rect: Rect2) -> void:
 	_apply_rect(equipment_row, equipment_rect)
 	_apply_rect(consumable_row, consumable_rect)
+
+
+static func shop_player_hud_layout_preset() -> Dictionary:
+	return SHOP_PLAYER_HUD_LAYOUT_PRESET.duplicate(true)
 
 
 func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}) -> void:

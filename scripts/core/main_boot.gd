@@ -145,33 +145,54 @@ func _on_start_fight_button_pressed() -> void:
 	_start_run_transitioning = true
 	_start_run_button.disabled = true
 	_audio_play_sfx("ui_accept")
-	_stop_local_menu_music()
-	_audio_play_music("combat")
+	var target_scene := "res://scenes/combat/combat_player.tscn"
+	var source := "main_boot.start_button"
 	var route_id := RunState.flow_trace_begin(
 		"start_run_to_combat",
-		"res://scenes/combat/combat_player.tscn",
-		{"source": "main_boot.start_button"}
+		target_scene,
+		{"source": source}
 	)
+	var prepared_scene: Dictionary = RunState.flow_trace_prepare_scene(target_scene, route_id, source)
+	if not bool(prepared_scene.get("ok", false)):
+		_start_run_transitioning = false
+		_start_run_button.disabled = false
+		var prepare_failure_reason := _scene_change_failure_reason(prepared_scene)
+		_status_label.text = "Start Run failed: %s" % prepare_failure_reason
+		_status_label.visible = true
+		push_error("Start Run prepare failed: %s -> %s (%s)" % [route_id, target_scene, prepare_failure_reason])
+		return
+	var pre_run_state: Dictionary = {}
+	if RunState.has_method("snapshot_run_transition_state"):
+		pre_run_state = RunState.snapshot_run_transition_state()
 	RunState.flow_trace_mark("before_start_new_run", {}, route_id)
 	RunState.start_new_run()
 	RunState.flow_trace_mark("after_start_new_run", {}, route_id)
+	_stop_local_menu_music()
+	_audio_play_music("combat")
 	var next_scene := RunState.next_scene_path()
 	RunState.flow_trace_mark(
 		"before_change_scene_to_file",
-		{"source": "main_boot.start_button"},
+		{"source": source},
 		route_id,
 		next_scene
 	)
-	var transition_result: Variant = RunState.flow_trace_change_scene(
+	var transition_result: Variant = RunState.flow_trace_attach_prepared_scene(
 		get_tree(),
+		prepared_scene,
 		next_scene,
 		route_id,
-		"main_boot.start_button"
+		source
 	)
 	if _scene_change_succeeded(transition_result):
 		return
 	_start_run_transitioning = false
 	_start_run_button.disabled = false
+	if RunState.has_method("restore_run_transition_state") and not pre_run_state.is_empty():
+		if not bool(RunState.restore_run_transition_state(pre_run_state)):
+			RunState.reset_run()
+	else:
+		RunState.reset_run()
+	_start_menu_music()
 	var failure_reason := _scene_change_failure_reason(transition_result)
 	_status_label.text = "Start Run failed: %s" % failure_reason
 	_status_label.visible = true

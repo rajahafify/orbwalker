@@ -679,6 +679,79 @@ func start_new_run() -> void:
 	_assign_current_fight()
 
 
+func snapshot_run_transition_state() -> Dictionary:
+	return {
+		"run_active": run_active,
+		"run_victory": run_victory,
+		"run_gold": run_gold,
+		"run_score": run_score,
+		"run_score_banked": _run_score_banked,
+		"dungeon_level": dungeon_level,
+		"current_step_key": current_step_key,
+		"step_index": _step_index,
+		"enemies_defeated": enemies_defeated,
+		"bosses_defeated": bosses_defeated,
+		"total_gold_earned": total_gold_earned,
+		"current_encounter": _current_encounter.duplicate(true),
+		"boss_relic_reward_options": _boss_relic_reward_options.duplicate(true),
+		"boss_reward_claimed_relic_id": _boss_reward_claimed_relic_id,
+		"relic_offer_ids_by_level": _relic_offer_ids_by_level.duplicate(true),
+		"run_summary": _run_summary.duplicate(true),
+		"run_log_events": _run_log_events.duplicate(true),
+		"run_log_event_serial": _run_log_event_serial,
+		"run_log_run_id": _run_log_run_id,
+		"run_log_started_unix": _run_log_started_unix,
+		"run_log_started_iso": _run_log_started_iso,
+		"run_log_current_fight_turns": _run_log_current_fight_turns,
+		"run_log_last_export_paths": _run_log_last_export_paths.duplicate(true),
+		"run_log_last_export_errors": _run_log_last_export_errors.duplicate(),
+		"run_log_last_export_unix": _run_log_last_export_unix,
+	}
+
+
+func restore_run_transition_state(snapshot: Dictionary) -> bool:
+	if snapshot.is_empty():
+		return false
+	run_active = bool(snapshot.get("run_active", run_active))
+	run_victory = bool(snapshot.get("run_victory", run_victory))
+	run_gold = maxi(0, int(snapshot.get("run_gold", run_gold)))
+	run_score = int(snapshot.get("run_score", run_score))
+	_run_score_banked = bool(snapshot.get("run_score_banked", _run_score_banked))
+	dungeon_level = maxi(1, int(snapshot.get("dungeon_level", dungeon_level)))
+	current_step_key = String(snapshot.get("current_step_key", current_step_key))
+	var saved_step_index := int(snapshot.get("step_index", -1))
+	var saved_step_index_valid := saved_step_index >= 0 and saved_step_index < LEVEL_SEQUENCE.size()
+	if saved_step_index_valid and String(LEVEL_SEQUENCE[saved_step_index]) == current_step_key:
+		_step_index = saved_step_index
+	elif LEVEL_SEQUENCE.has(current_step_key):
+		_step_index = LEVEL_SEQUENCE.find(current_step_key)
+	elif saved_step_index_valid:
+		_step_index = saved_step_index
+		current_step_key = String(LEVEL_SEQUENCE[_step_index])
+	else:
+		_step_index = 0
+		current_step_key = String(LEVEL_SEQUENCE[_step_index])
+	enemies_defeated = maxi(0, int(snapshot.get("enemies_defeated", enemies_defeated)))
+	bosses_defeated = maxi(0, int(snapshot.get("bosses_defeated", bosses_defeated)))
+	total_gold_earned = maxi(0, int(snapshot.get("total_gold_earned", total_gold_earned)))
+	_current_encounter = Dictionary(snapshot.get("current_encounter", {})).duplicate(true)
+	_boss_relic_reward_options = Array(snapshot.get("boss_relic_reward_options", [])).duplicate(true)
+	_boss_reward_claimed_relic_id = String(snapshot.get("boss_reward_claimed_relic_id", ""))
+	_relic_offer_ids_by_level = Dictionary(snapshot.get("relic_offer_ids_by_level", {})).duplicate(true)
+	_run_summary = Dictionary(snapshot.get("run_summary", {})).duplicate(true)
+	_run_log_events = Array(snapshot.get("run_log_events", [])).duplicate(true)
+	_run_log_event_serial = int(snapshot.get("run_log_event_serial", _run_log_event_serial))
+	_run_log_run_id = String(snapshot.get("run_log_run_id", _run_log_run_id))
+	_run_log_started_unix = int(snapshot.get("run_log_started_unix", _run_log_started_unix))
+	_run_log_started_iso = String(snapshot.get("run_log_started_iso", _run_log_started_iso))
+	_run_log_current_fight_turns = maxi(0, int(snapshot.get("run_log_current_fight_turns", _run_log_current_fight_turns)))
+	_run_log_last_export_paths = Dictionary(snapshot.get("run_log_last_export_paths", {})).duplicate(true)
+	_run_log_last_export_errors = Array(snapshot.get("run_log_last_export_errors", [])).duplicate()
+	_run_log_last_export_unix = int(snapshot.get("run_log_last_export_unix", _run_log_last_export_unix))
+	_sync_player_gold_from_run()
+	return true
+
+
 func is_current_step_fight() -> bool:
 	return current_step_key == "enemy_1" or current_step_key == "enemy_2" or current_step_key == "boss"
 
@@ -1605,6 +1678,22 @@ func flow_trace_change_scene(
 			before_details["source"] = source
 		flow_trace_mark(before_step, before_details, resolved_route_id, target_scene)
 
+	var prepared := flow_trace_prepare_scene(target_scene, resolved_route_id, source)
+	if not bool(prepared.get("ok", false)):
+		return int(prepared.get("error_code", ERR_CANT_OPEN))
+
+	return flow_trace_attach_prepared_scene(tree, prepared, target_scene, resolved_route_id, source)
+
+
+func flow_trace_prepare_scene(
+	target_scene: String,
+	route_id: String = "",
+	source: String = ""
+) -> Dictionary:
+	var resolved_route_id := route_id
+	if resolved_route_id == "":
+		resolved_route_id = flow_trace_active_route_id()
+
 	var transition_details := {}
 	if source != "":
 		transition_details["source"] = source
@@ -1622,7 +1711,12 @@ func flow_trace_change_scene(
 			resolved_route_id,
 			target_scene
 		)
-		return ERR_CANT_OPEN
+		return {
+			"ok": false,
+			"error_code": ERR_CANT_OPEN,
+			"reason": "target_scene_empty",
+			"route_id": resolved_route_id,
+		}
 
 	var load_start_usec := Time.get_ticks_usec()
 	var loaded_resource: Resource = ResourceLoader.load(target_scene)
@@ -1638,7 +1732,12 @@ func flow_trace_change_scene(
 			resolved_route_id,
 			target_scene
 		)
-		return ERR_CANT_OPEN
+		return {
+			"ok": false,
+			"error_code": ERR_CANT_OPEN,
+			"reason": "resource_load_failed",
+			"route_id": resolved_route_id,
+		}
 	if not (loaded_resource is PackedScene):
 		flow_trace_mark(
 			"after_resource_load",
@@ -1651,7 +1750,12 @@ func flow_trace_change_scene(
 			resolved_route_id,
 			target_scene
 		)
-		return ERR_INVALID_DATA
+		return {
+			"ok": false,
+			"error_code": ERR_INVALID_DATA,
+			"reason": "resource_not_packed_scene",
+			"route_id": resolved_route_id,
+		}
 
 	var packed_scene := loaded_resource as PackedScene
 	flow_trace_mark(
@@ -1681,7 +1785,12 @@ func flow_trace_change_scene(
 			target_scene
 		)
 		push_error("[FlowTrace] flow_trace_change_scene instantiate failed for %s (null)" % target_scene)
-		return ERR_CANT_CREATE
+		return {
+			"ok": false,
+			"error_code": ERR_CANT_CREATE,
+			"reason": "instantiate_returned_null",
+			"route_id": resolved_route_id,
+		}
 	if not (instantiated_scene is Node):
 		flow_trace_mark(
 			"after_scene_instantiate",
@@ -1698,7 +1807,12 @@ func flow_trace_change_scene(
 			"[FlowTrace] flow_trace_change_scene instantiate returned non-Node for %s: %s"
 			% [target_scene, instantiated_scene.get_class()]
 		)
-		return ERR_CANT_CREATE
+		return {
+			"ok": false,
+			"error_code": ERR_CANT_CREATE,
+			"reason": "instantiate_not_node",
+			"route_id": resolved_route_id,
+		}
 
 	var new_scene := instantiated_scene as Node
 	flow_trace_mark(
@@ -1712,7 +1826,54 @@ func flow_trace_change_scene(
 		resolved_route_id,
 		target_scene
 	)
+	return {
+		"ok": true,
+		"error_code": OK,
+		"scene": new_scene,
+		"route_id": resolved_route_id,
+	}
 
+
+func flow_trace_attach_prepared_scene(
+	tree: SceneTree,
+	prepared: Dictionary,
+	target_scene: String,
+	route_id: String = "",
+	source: String = ""
+) -> int:
+	var resolved_route_id := route_id
+	if resolved_route_id == "":
+		resolved_route_id = String(prepared.get("route_id", ""))
+	if resolved_route_id == "":
+		resolved_route_id = flow_trace_active_route_id()
+	if not bool(prepared.get("ok", false)):
+		var prepared_error_code := int(prepared.get("error_code", ERR_INVALID_DATA))
+		flow_trace_mark(
+			"after_scene_attach",
+			{
+				"ok": false,
+				"error_code": prepared_error_code,
+				"attach_ms": 0,
+				"error": "prepared_scene_invalid",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		return prepared_error_code
+	var new_scene := prepared.get("scene", null) as Node
+	if new_scene == null:
+		flow_trace_mark(
+			"after_scene_attach",
+			{
+				"ok": false,
+				"error_code": ERR_INVALID_DATA,
+				"attach_ms": 0,
+				"error": "prepared_scene_missing",
+			},
+			resolved_route_id,
+			target_scene
+		)
+		return ERR_INVALID_DATA
 	var old_scene: Node = null
 	var old_scene_name := ""
 	var old_scene_path := ""
