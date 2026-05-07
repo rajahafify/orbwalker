@@ -2232,3 +2232,7 @@ Append-only history of wiki operations.
 - Removed additional controller compatibility wrappers and dead delegates after the view extraction: timer sync wrapper, intent-hover relays, dead HUD/apply and outcome queue helpers, dead turn-summary/victory/defeat formatter wrappers, and replay VFX relay helpers that only forwarded into presenters. (source: `scripts/combat/combat_controller.gd`)
 - Replay call sites now invoke `CombatVfxPresenter` and `CombatView` directly via local null-checked references while preserving resolve/replay order, staged HUD update cadence, and `combat_speed`-scaled waits. (source: `scripts/combat/combat_controller.gd`, `scripts/combat/combat_vfx_presenter.gd`, `scripts/combat/combat_view.gd`)
 - Validation/log evidence is recorded in `docs/test_plan.md` under "CombatController wrapper/delegate cleanup", including static diff checks, Godot MCP script loads, combat/main-menu smoke, and clean `get_godot_errors` status. (source: `docs/test_plan.md`)
+
+## 2026-05-07 - Code review known-issues capture
+
+- Recorded two review follow-ups in [[known-issues]]: combat top-bar Back/Settings still bypass hardened FlowTrace/prepared-scene routing, and current combat scene smoke reports enum reload diagnostics around combat input-phase enum/int conversion. (source: `scripts/combat/combat_controller.gd`, `wiki/known-issues.md`)
