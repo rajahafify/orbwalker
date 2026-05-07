@@ -77,9 +77,13 @@ var _outcome_title_label: Label = null
 var _outcome_body_label: Label = null
 var _player_hud_section: Panel = null
 var _player_panel: Panel = null
+var _player_panel_root: Control = null
 var _hero_card: Panel = null
+var _hero_card_root: Control = null
 var _hero_level_badge: PanelContainer = null
+var _vitals_panel: Control = null
 var _vitals_frame: Panel = null
+var _player_hp_label: Label = null
 var _player_armor_label: Label = null
 var _armor_badge: PanelContainer = null
 var _armor_badge_label: Label = null
@@ -105,12 +109,17 @@ var _enemy_hp_bar: ProgressBar = null
 var _player_hp_bar: ProgressBar = null
 var _player_armor_bar: ProgressBar = null
 var _player_portrait: TextureRect = null
+var _relic_icons: HBoxContainer = null
+var _mastery_icons: Control = null
 var _elemental_mastery_cards: Control = null
+var _elemental_mastery_panel: Panel = null
+var _elemental_mastery_title: Label = null
 var _vfx_layer: Control = null
 var _equipment_icons: Control = null
 var _consumable_icons: Control = null
 var _relic_row: HBoxContainer = null
 var _mastery_root: Control = null
+var _loadout_root: Control = null
 var _equipment_row_label: Label = null
 var _consumable_row_label: Label = null
 var _relic_row_label: Label = null
@@ -162,6 +171,12 @@ func set_dependencies(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud", _player_loadout_hud)
 	_debug_console = dependencies.get("debug_console", _debug_console)
 	_outcome_overlay = dependencies.get("outcome_overlay", _outcome_overlay)
+
+
+func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:
+	if _player_loadout_hud == null:
+		return
+	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes(popover_parent, popover_z_index))
 
 
 func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
@@ -284,6 +299,10 @@ func render_player_loadout(payload: Dictionary, deferred_layout: bool = true) ->
 	apply_loadout_rail_layout()
 	if deferred_layout:
 		call_deferred("apply_loadout_rail_layout")
+	if _relic_row != null:
+		_relic_row.visible = false
+	if _mastery_strip != null:
+		_mastery_strip.visible = false
 
 
 func handle_player_hud_global_click(global_position: Vector2) -> bool:
@@ -334,7 +353,7 @@ func clear_combat_mastery_hover_ui() -> void:
 	_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
 
 
-func apply_visual_chrome(player_hud_nodes: Dictionary, style_config: Dictionary) -> void:
+func apply_visual_chrome(style_config: Dictionary) -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_visual_chrome(
 		{
 			"board_view": _board_view,
@@ -408,7 +427,7 @@ func apply_visual_chrome(player_hud_nodes: Dictionary, style_config: Dictionary)
 			"corner_bottom_left": _corner_bottom_left,
 			"corner_bottom_right": _corner_bottom_right,
 			"player_loadout_hud": _player_loadout_hud,
-			"player_hud_nodes": player_hud_nodes,
+			"player_hud_nodes": _combat_player_hud_nodes(),
 			"visual_registry": _visuals,
 		},
 		style_config
@@ -421,6 +440,12 @@ func apply_visual_chrome(player_hud_nodes: Dictionary, style_config: Dictionary)
 func set_zone_guides_enabled(enabled: bool) -> void:
 	_zone_guides_enabled = enabled
 	_apply_zone_guides()
+
+
+func set_vfx_layer_visible(visible: bool) -> void:
+	if _vfx_layer == null:
+		return
+	_vfx_layer.visible = visible
 
 
 func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) -> void:
@@ -695,8 +720,8 @@ func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
 	button.text = String(entry.get("label", _intent_entry_label(kind, amount)))
 	button.custom_minimum_size = INTENT_BUBBLE_SIZE
 	button.size = INTENT_BUBBLE_SIZE
-	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
+	button.focus_mode = Control.FocusMode.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND
 	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
 	button.set_meta("intent_kind", kind)
 	button.add_theme_font_size_override("font_size", 24)
@@ -743,8 +768,8 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_button = Control.new()
 		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
+		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND
 		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_node_hovered)
 		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
 	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
@@ -756,7 +781,7 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_fill = ColorRect.new()
 		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
 		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 0.68)
-		_enemy_block_preview_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		_enemy_block_preview_fill.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
 		_enemy_block_preview_fill.visible = false
 	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
 		var existing_fill_parent := _enemy_block_preview_fill.get_parent()
@@ -774,7 +799,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_ensure_enemy_block_preview_nodes()
 	if _enemy_block_preview_button != null and is_instance_valid(_enemy_block_preview_button):
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
 	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
 		_enemy_block_preview_fill.visible = false
 	_stop_enemy_block_preview_pulse()
@@ -795,7 +820,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_enemy_block_preview_button.position = _enemy_hp_bar.position
 	_enemy_block_preview_button.size = Vector2(preview_width, _enemy_hp_bar.size.y)
 	_enemy_block_preview_button.visible = true
-	_enemy_block_preview_button.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_STOP
 	_enemy_block_preview_fill.position = Vector2.ZERO
 	_enemy_block_preview_fill.size = _enemy_block_preview_button.size
 	_enemy_block_preview_fill.visible = true
@@ -874,9 +899,9 @@ func _ensure_enemy_stage_backdrop_node() -> void:
 		_enemy_stage_backdrop = TextureRect.new()
 		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
 		_enemy_stage.add_child(_enemy_stage_backdrop)
-	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
+	_enemy_stage_backdrop.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+	_enemy_stage_backdrop.expand_mode = TextureRect.ExpandMode.EXPAND_IGNORE_SIZE
+	_enemy_stage_backdrop.stretch_mode = TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED
 	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	_enemy_stage_backdrop.visible = true
 	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
@@ -899,7 +924,7 @@ func _ensure_enemy_text_scrim_node() -> void:
 		_enemy_text_scrim = ColorRect.new()
 		_enemy_text_scrim.name = "EnemyTextScrim"
 		_enemy_stage.add_child(_enemy_text_scrim)
-	_enemy_text_scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_enemy_text_scrim.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
 	_enemy_text_scrim.color = Color(0.02, 0.04, 0.06, 0.72)
 	_enemy_text_scrim.visible = true
 
@@ -914,6 +939,51 @@ func _apply_zone_guides() -> void:
 
 func _set_zone_guide(zone: Control, label_text: String) -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_zone_guide(zone, label_text, _zone_guides_enabled)
+
+
+func _combat_player_hud_nodes(popover_parent: Control = null, popover_z_index: int = 210) -> Dictionary:
+	var nodes := {
+		"section": _player_hud_section,
+		"mastery_panel": _elemental_mastery_panel,
+		"mastery_title": _elemental_mastery_title,
+		"mastery_cards": _elemental_mastery_cards,
+		"footer_panel": _player_panel,
+		"footer_root": _player_panel_root,
+		"root": _player_panel_root,
+		"hero_card": _hero_card,
+		"hero_card_root": _hero_card_root,
+		"hero_portrait": _player_portrait,
+		"hero_level_badge": _hero_level_badge,
+		"vitals_panel": _vitals_panel,
+		"vitals_frame": _vitals_frame,
+		"hp_bar": _player_hp_bar,
+		"hp_label": _player_hp_label,
+		"armor_bar": _player_armor_bar,
+		"armor_label": _player_armor_label,
+		"armor_badge": _armor_badge,
+		"armor_badge_label": _armor_badge_label,
+		"loadout_frame": _loadout_frame,
+		"loadout_root": _loadout_root,
+		"equipment_label": _equipment_row_label,
+		"equipment_icons": _equipment_icons,
+		"consumable_label": _consumable_row_label,
+		"consumable_icons": _consumable_icons,
+		"relic_label": _relic_row_label,
+		"relic_icons": _relic_icons,
+		"relic_row": _relic_row,
+		"mastery_strip": _mastery_strip,
+		"mastery_root": _mastery_root,
+		"mastery_label": _mastery_row_label,
+		"mastery_icons": _mastery_icons,
+		"stat_chip_row": _stat_chip_row,
+		"combat_meta_row": _combat_meta_row,
+		"combat_phase_label": _phase_label,
+		"turn_summary_label": _turn_summary_label,
+	}
+	if popover_parent != null:
+		nodes["popover_parent"] = popover_parent
+		nodes["popover_z_index"] = popover_z_index
+	return nodes
 
 
 func _control_target_global(control: Control, vertical_bias: float = 0.5) -> Vector2:

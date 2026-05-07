@@ -45,33 +45,10 @@ var _outcome_summary_root: Control
 var _outcome_text_column: Control
 var _outcome_title_label: Label
 var _outcome_body_label: Label
-var _player_hud_section: Panel
-var _player_panel: Panel
-var _player_panel_root: Control
-var _hero_card: Panel
-var _hero_card_root: Control
-var _hero_level_badge: PanelContainer
-var _vitals_panel: Control
-var _vitals_frame: Panel
-var _player_hp_label: Label
-var _player_armor_label: Label
-var _armor_badge: PanelContainer
-var _armor_badge_label: Label
-var _stat_chip_row: HBoxContainer
-var _attack_stat_label: Label
-var _armor_stat_label: Label
-var _heart_stat_label: Label
-var _gold_stat_label: Label
-var _combat_meta_row: HBoxContainer
-var _loadout_frame: Panel
-var _loadout_root: Control
-var _mastery_strip: Panel
-var _mastery_root: Control
 var _combat_log_frame: PanelContainer
 var _debug_overlay: PanelContainer
 var _title_label: Label
 var _hint_label: Label
-var _enemy_portrait: TextureRect
 var _intent_badge: TextureRect
 var _primary_intent_text_column: VBoxContainer
 var _primary_intent_title_label: Label
@@ -80,20 +57,6 @@ var _primary_intent_detail_label: Label
 var _enemy_hp_bar: ProgressBar
 var _player_hp_bar: ProgressBar
 var _player_armor_bar: ProgressBar
-var _player_portrait: TextureRect
-var _equipment_icons: Control
-var _consumable_icons: Control
-var _relic_icons: HBoxContainer
-var _mastery_icons: Control
-var _elemental_mastery_cards: Control
-var _elemental_mastery_panel: Panel
-var _elemental_mastery_title: Label
-var _relic_row: HBoxContainer
-var _equipment_row_label: Label
-var _consumable_row_label: Label
-var _relic_row_label: Label
-var _mastery_row_label: Label
-var _vfx_layer: Control
 var _divider_enemy_timer: TextureRect
 var _divider_timer_board: TextureRect
 var _divider_board_player: TextureRect
@@ -118,7 +81,6 @@ const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_re
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT := preload("res://scripts/combat/combat_debug_command_adapter.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
-const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
@@ -238,7 +200,7 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 	_view = view
 	if _model != null:
 		_model.set_combat_speed(_model.combat_speed())
-	if _view != null and _view.has_method("bind"):
+	if _view != null:
 		_view.bind(root_nodes)
 	for node_name in root_nodes.keys():
 		if node_name in self:
@@ -298,15 +260,6 @@ func _enter_tree() -> void:
 		))
 	_sync_model_state()
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id_value())
-
-
-func _player_hud_node(unique_name: String) -> Node:
-	var hud_section: Node = _player_hud_section
-	if hud_section == null:
-		hud_section = _host.get_node_or_null("CombatLayoutRoot/PlayerHudSection")
-	if hud_section == null:
-		return null
-	return hud_section.get_node_or_null("%s%s" % ["%", unique_name])
 
 
 func _resolve_board_view() -> BoardView:
@@ -435,10 +388,8 @@ func _ready() -> void:
 		})
 		_view.setup_rendering_helpers()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id_value())
-	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
-		"popover_parent": _layout_root,
-		"popover_z_index": 210,
-	}, true))
+	if _view != null:
+		_view.bind_player_hud(_layout_root, 210)
 	_bind_combat_vfx_presenter()
 	if _view != null:
 		_view.bind_layout_presenter()
@@ -471,7 +422,8 @@ func _ready() -> void:
 		_console_input.text_submitted.connect(_on_console_input_text_submitted)
 	_debug_console.set_overlay_visible(false)
 	_host.get_viewport().size_changed.connect(_on_viewport_size_changed)
-	_vfx_layer.visible = true
+	if _view != null:
+		_view.set_vfx_layer_visible(true)
 	_host.set_process(true)
 	_apply_combat_layout()
 	RunState.flow_trace_mark("combat_after_layout", {}, _flow_trace_route_id_value())
@@ -506,20 +458,11 @@ func _apply_orb_texture_map_deferred() -> void:
 
 
 func _bind_combat_vfx_presenter() -> void:
-	if _combat_vfx_presenter == null:
+	if _combat_vfx_presenter == null or _view == null:
 		return
-	if _view != null and _view.has_method("vfx_presenter_bindings"):
-		var view_bindings: Variant = _view.vfx_presenter_bindings(_visuals, _player_loadout_hud, _host)
-		if view_bindings is Dictionary:
-			_combat_vfx_presenter.bind(view_bindings)
-			return
-	_combat_vfx_presenter.bind({
-		"vfx_layer": _vfx_layer,
-		"visual_registry": _visuals,
-		"player_loadout_hud": _player_loadout_hud,
-		"elemental_mastery_cards": _elemental_mastery_cards,
-		"timer_owner": _host,
-	})
+	var view_bindings: Variant = _view.vfx_presenter_bindings(_visuals, _player_loadout_hud, _host)
+	if view_bindings is Dictionary:
+		_combat_vfx_presenter.bind(view_bindings)
 
 
 func _bind_board_controller() -> void:
@@ -569,18 +512,15 @@ func _drag_move_time_left() -> float:
 
 func _apply_visual_chrome() -> void:
 	if _view != null:
-		_view.apply_visual_chrome(
-			_combat_player_hud_nodes(),
-			{
-				"font_size_title": FONT_SIZE_TITLE,
-				"font_size_value": FONT_SIZE_VALUE,
-				"font_size_meta": FONT_SIZE_META,
-				"font_size_row_label": FONT_SIZE_ROW_LABEL,
-				"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
-				"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
-				"debug_input_height": DEBUG_INPUT_HEIGHT,
-			}
-		)
+		_view.apply_visual_chrome({
+			"font_size_title": FONT_SIZE_TITLE,
+			"font_size_value": FONT_SIZE_VALUE,
+			"font_size_meta": FONT_SIZE_META,
+			"font_size_row_label": FONT_SIZE_ROW_LABEL,
+			"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
+			"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
+			"debug_input_height": DEBUG_INPUT_HEIGHT,
+		})
 	_title_label.text = RunState.level_sequence_label()
 	_hint_label.text = "Gold 0"
 
@@ -716,10 +656,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_host.get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var handled_click := false
-		if _view != null and _view.has_method("handle_player_hud_global_click"):
+		if _view != null:
 			handled_click = bool(_view.handle_player_hud_global_click((event as InputEventMouseButton).position))
-		elif _player_loadout_hud != null:
-			handled_click = bool(_player_loadout_hud.handle_global_click((event as InputEventMouseButton).position))
 		if handled_click:
 			_host.get_viewport().set_input_as_handled()
 
@@ -847,19 +785,15 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 		return
 	var item_id := String(slots[slot_index])
 	var item_content: Dictionary = {}
-	if _view != null and _view.has_method("lookup_player_hud_content_definition"):
+	if _view != null:
 		item_content = _view.lookup_player_hud_content_definition(item_id)
-	elif _player_loadout_hud != null:
-		item_content = _player_loadout_hud.lookup_content_definition(item_id)
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
 	var display_name := String(item_content.get("display_name", item_id))
 	if bool(result.get("ok", false)):
 		_status_label.text = "Sold %s for gold. Gold %d." % [display_name, RunState.run_gold]
 		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])
-		if _view != null and _view.has_method("hide_player_hud_slot_popover"):
+		if _view != null:
 			_view.hide_player_hud_slot_popover()
-		elif _player_loadout_hud != null:
-			_player_loadout_hud.hide_slot_detail_popover()
 	else:
 		var reason := String(result.get("reason", "unknown_error"))
 		_status_label.text = "Sell failed: %s" % reason
@@ -913,15 +847,11 @@ func _set_hovered_board_orb_id(orb_id: int) -> void:
 		return
 	_model.set_hovered_board_orb_id(normalized_orb_id)
 	if _model.hovered_board_orb_id() < 0:
-		if _view != null and _view.has_method("clear_hovered_combat_mastery"):
+		if _view != null:
 			_view.clear_hovered_combat_mastery()
-		elif _player_loadout_hud != null:
-			_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
 		return
-	if _view != null and _view.has_method("set_hovered_combat_mastery"):
+	if _view != null:
 		_view.set_hovered_combat_mastery(_model.hovered_board_orb_id())
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, _model.hovered_board_orb_id())
 
 
 func _is_hoverable_combat_orb(orb_id: int) -> bool:
@@ -939,10 +869,8 @@ func _is_hoverable_combat_orb(orb_id: int) -> bool:
 
 func _clear_combat_mastery_hover_state() -> void:
 	_model.clear_hovered_board_orb_id()
-	if _view != null and _view.has_method("clear_combat_mastery_hover_ui"):
+	if _view != null:
 		_view.clear_combat_mastery_hover_ui()
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
 
 
 func _build_combat_mastery_hover_payload(progression_snapshot: Dictionary) -> Dictionary:
@@ -1693,49 +1621,37 @@ func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	if amount <= 0:
 		return
 	var next_total: int = _model.add_combat_mastery_preview_total(orb_id, amount)
-	if _view != null and _view.has_method("set_combat_mastery_feedback"):
+	if _view != null:
 		_view.set_combat_mastery_feedback(orb_id, next_total)
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, next_total)
 
 
 func _reset_combat_mastery_preview() -> void:
 	_model.reset_combat_mastery_preview()
-	if _view != null and _view.has_method("clear_combat_mastery_feedback"):
+	if _view != null:
 		_view.clear_combat_mastery_feedback()
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
 
 
 func _sync_combat_mastery_preview_totals() -> void:
-	var use_view: bool = _view != null and _view.has_method("set_combat_mastery_feedback")
-	if not use_view and _player_loadout_hud == null:
+	if _view == null:
 		return
 	for orb_id in OrbType.ALL_TYPES:
 		var total: int = _model.combat_mastery_preview_total(int(orb_id))
-		if use_view:
-			_view.set_combat_mastery_feedback(int(orb_id), total)
-		else:
-			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), total)
+		_view.set_combat_mastery_feedback(int(orb_id), total)
 
 
 func _release_combat_mastery_feedback(orb_id: int) -> void:
 	if not OrbType.is_valid_id(orb_id):
 		return
 	_model.release_combat_mastery_feedback(orb_id)
-	if _view != null and _view.has_method("set_combat_mastery_feedback"):
+	if _view != null:
 		_view.set_combat_mastery_feedback(orb_id, 0)
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, 0)
 
 
 func _release_remaining_combat_mastery_feedback() -> void:
-	var use_view: bool = _view != null and _view.has_method("set_combat_mastery_feedback")
+	if _view == null:
+		return
 	for orb_id in _model.consume_active_combat_mastery_feedback(OrbType.ALL_TYPES):
-		if use_view:
-			_view.set_combat_mastery_feedback(int(orb_id), 0)
-		elif _player_loadout_hud != null:
-			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), 0)
+		_view.set_combat_mastery_feedback(int(orb_id), 0)
 		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -2232,15 +2148,8 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"combat_mastery_feedback_totals": _model.combat_mastery_preview_totals_snapshot(),
 		"combat_mastery_hover_payload": _build_combat_mastery_hover_payload(progression_snapshot),
 	}
-	if _view != null and _view.has_method("render_player_loadout"):
+	if _view != null:
 		_view.render_player_loadout(loadout_payload, true)
-	elif _player_loadout_hud != null:
-		_player_loadout_hud.update_player_data(loadout_payload)
-		_apply_loadout_rail_layout()
-		call_deferred("_apply_loadout_rail_layout")
-
-	_relic_row.visible = false
-	_mastery_strip.visible = false
 
 
 func _emit_turn_feedback_vfx(_turn_log: Dictionary) -> void:
@@ -2361,36 +2270,18 @@ func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
 	return selected_orb
 
 
-func _control_global_center(control: Control, vertical_bias: float = 0.5) -> Vector2:
-	if _combat_vfx_presenter != null:
-		return _combat_vfx_presenter.control_global_center(control, vertical_bias)
-	if control == null:
-		return Vector2.ZERO
-	var rect := control.get_global_rect()
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return Vector2.ZERO
-	return Vector2(
-		rect.position.x + rect.size.x * 0.5,
-		rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0)
-	)
-
-
 func _enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	if _view != null and _view.has_method("enemy_vfx_target_global"):
-		var view_target: Variant = _view.enemy_vfx_target_global(vertical_bias)
-		if view_target is Vector2 and (view_target as Vector2) != Vector2.ZERO:
-			return view_target as Vector2
-	var enemy_portrait_control: Control = _enemy_portrait
-	return _control_global_center(enemy_portrait_control, vertical_bias)
+	if _view == null:
+		return Vector2.ZERO
+	var view_target: Variant = _view.enemy_vfx_target_global(vertical_bias)
+	return view_target as Vector2 if view_target is Vector2 else Vector2.ZERO
 
 
 func _player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	if _view != null and _view.has_method("player_vfx_target_global"):
-		var view_target: Variant = _view.player_vfx_target_global(vertical_bias)
-		if view_target is Vector2 and (view_target as Vector2) != Vector2.ZERO:
-			return view_target as Vector2
-	var player_portrait_control: Control = _player_portrait
-	return _control_global_center(player_portrait_control, vertical_bias)
+	if _view == null:
+		return Vector2.ZERO
+	var view_target: Variant = _view.player_vfx_target_global(vertical_bias)
+	return view_target as Vector2 if view_target is Vector2 else Vector2.ZERO
 
 
 func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
@@ -2430,73 +2321,9 @@ func _apply_combat_mastery_panel_layout() -> void:
 	pass
 
 
-func _combat_player_hud_nodes() -> Dictionary:
-	return {
-		"section": _player_hud_section,
-		"mastery_panel": _elemental_mastery_panel,
-		"mastery_title": _elemental_mastery_title,
-		"mastery_cards": _elemental_mastery_cards,
-		"footer_panel": _player_panel,
-		"footer_root": _player_panel_root,
-		"root": _player_panel_root,
-		"hero_card": _hero_card,
-		"hero_card_root": _hero_card_root,
-		"hero_portrait": _player_portrait,
-		"hero_level_badge": _hero_level_badge,
-		"vitals_panel": _vitals_panel,
-		"vitals_frame": _vitals_frame,
-		"hp_bar": _player_hp_bar,
-		"hp_label": _player_hp_label,
-		"armor_bar": _player_armor_bar,
-		"armor_label": _player_armor_label,
-		"armor_badge": _armor_badge,
-		"armor_badge_label": _armor_badge_label,
-		"loadout_frame": _loadout_frame,
-		"loadout_root": _loadout_root,
-		"equipment_label": _equipment_row_label,
-		"equipment_icons": _equipment_icons,
-		"consumable_label": _consumable_row_label,
-		"consumable_icons": _consumable_icons,
-		"relic_label": _relic_row_label,
-		"relic_icons": _relic_icons,
-		"relic_row": _relic_row,
-		"mastery_strip": _mastery_strip,
-		"mastery_root": _mastery_root,
-		"mastery_label": _mastery_row_label,
-		"mastery_icons": _mastery_icons,
-		"stat_chip_row": _stat_chip_row,
-		"combat_meta_row": _combat_meta_row,
-		"combat_phase_label": _phase_label,
-		"turn_summary_label": _turn_summary_label,
-	}
-
-
-func _apply_loadout_rail_layout() -> void:
-	if _view != null:
-		_view.apply_loadout_rail_layout()
-
-
 func _refresh_character_portraits() -> void:
 	if _view != null:
 		_view.refresh_character_portraits(String(_enemy_state.enemy_id if _enemy_state != null else ""))
-		return
-	_enemy_portrait.texture = _resolve_enemy_figure_texture()
-	_enemy_portrait.visible = true
-	var hero_texture := _visuals.hero_portrait() if _visuals != null else null
-	if hero_texture == null:
-		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
-	_player_portrait.texture = hero_texture
-
-
-func _resolve_enemy_figure_texture() -> Texture2D:
-	var enemy_figure_texture: Texture2D = null
-	if _visuals != null and _enemy_state != null:
-		enemy_figure_texture = _visuals.enemy_sprite(_enemy_state.enemy_id)
-	if enemy_figure_texture == null and _visuals != null:
-		enemy_figure_texture = _visuals.enemy_sprite("cavern_striker")
-	if enemy_figure_texture == null:
-		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	return enemy_figure_texture
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:
