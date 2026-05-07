@@ -2257,3 +2257,9 @@ Append-only history of wiki operations.
 
 - Fixed the shop-only case where the shared HUD slot-detail Sell button was visible but did not activate. `ShopView.render(...)` now preserves the slot-detail popover across selection refreshes, and `PlayerLoadoutHud.handle_global_click(...)` routes mouse/touch hits inside `SlotDetailSellButton` to the existing `sell_slot_requested` signal before outside-dismissal. (source: `scripts/shop/shop_view.gd`, `scripts/ui/player_loadout_hud.gd`)
 - Documented the manual QA pass in `docs/test_plan.md`; user manual QA confirmed the shop Sell button works after the fix. (source: `docs/test_plan.md`)
+
+## 2026-05-07 - Shop PlayerHudSection bottom-stick target
+
+- Updated shop shared HUD placement to use the shared bottom section rect by setting `PlayerLoadoutHud.shop_player_hud_layout_preset()` to return `"section": PLAYER_HUD_SECTION_RECT` (`y=1428`, `h=492` in `1080x1920`) instead of the previous shop-local `y=1236` offset. (source: `scripts/ui/player_loadout_hud.gd`)
+- Extended `ShopView.shop_layout_probe_snapshot()` with `hud_bottom_gap_after_section` and `hud_bottom_aligned` so bottom anchoring is explicit in probe output alongside the existing overlap and spacing fields. (source: `scripts/shop/shop_view.gd`)
+- Synced wiki QA notes for the new bottom-sticky target and recorded that the current Godot MCP session returned stale old preset values during direct class evaluation, so fresh in-run screenshot/runtime acceptance remains pending. (source: `wiki/features.md`, `wiki/known-issues.md`, `docs/test_plan.md`)

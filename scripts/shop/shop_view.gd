@@ -752,6 +752,8 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"slot_detail_popover_probe": hud_slot_popover_probe,
 		"player_hud_section": hud_section,
 		"hud_override_footer": hud_footer,
+		"hud_bottom_gap_after_section": maxi(0, int(DESIGN_SIZE.y - hud_bottom)),
+		"hud_bottom_aligned": is_equal_approx(hud_bottom, DESIGN_SIZE.y),
 		"action_row_overlaps_hud": (
 			hud_section.position.y < action_bottom
 			and ACTION_ROW_RECT.position.y < hud_bottom
