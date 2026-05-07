@@ -117,7 +117,6 @@ const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outc
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
-const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
@@ -162,10 +161,6 @@ const SLOT_SIZE := Vector2(88, 88)
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
-const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 66))
-const ENEMY_PANEL_RECT := Rect2(Vector2(16, 80), Vector2(1048, 392))
-const COMBAT_STRIP_RECT := Rect2(Vector2(16, 484), Vector2(1048, 56))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 552), Vector2(1048, 846))
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(224, 224), Vector2(600, 372))
 const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(80, 520), Vector2(920, 540))
 const BOSS_REWARD_CARD_GAP := 12.0
@@ -221,18 +216,11 @@ var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
 var _debug_console: CombatDebugConsole = null
 var _turn_log_presenter: Variant = null
-var _is_low_vertical_layout := false
 var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
-var _combat_layout_presenter: Variant = null
 var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
-var _layout_top_bar_rect := TOP_BAR_RECT
-var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
-var _layout_combat_strip_rect := COMBAT_STRIP_RECT
-var _layout_board_panel_rect := BOARD_PANEL_RECT
-var _layout_player_hud_section_rect := Rect2(Vector2(0, 1428), Vector2(1080, 492))
 var _host: Control = null
 var _model = null
 var _view = null
@@ -431,7 +419,8 @@ func _ready() -> void:
 		"popover_z_index": 210,
 	}, true))
 	_bind_combat_vfx_presenter()
-	_bind_combat_layout_presenter()
+	if _view != null:
+		_view.bind_layout_presenter()
 	_bind_board_controller()
 	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id_value())
 	_apply_visual_chrome()
@@ -493,11 +482,6 @@ func _apply_orb_texture_map_deferred() -> void:
 		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
 	})
 	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id_value())
-
-
-func _bind_combat_layout_presenter() -> void:
-	if _view != null:
-		_view.bind_layout_presenter()
 
 
 func _bind_combat_vfx_presenter() -> void:
@@ -2747,12 +2731,6 @@ func _apply_combat_layout() -> void:
 	)
 	if not bool(layout_result.get("applied", false)):
 		return
-	_is_low_vertical_layout = bool(layout_result.get("is_low_vertical_layout", false))
-	_layout_top_bar_rect = layout_result.get("layout_top_bar_rect", _layout_top_bar_rect)
-	_layout_enemy_panel_rect = layout_result.get("layout_enemy_panel_rect", _layout_enemy_panel_rect)
-	_layout_combat_strip_rect = layout_result.get("layout_combat_strip_rect", _layout_combat_strip_rect)
-	_layout_board_panel_rect = layout_result.get("layout_board_panel_rect", _layout_board_panel_rect)
-	_layout_player_hud_section_rect = layout_result.get("layout_player_hud_section_rect", _layout_player_hud_section_rect)
 
 
 func _apply_combat_mastery_panel_layout() -> void:

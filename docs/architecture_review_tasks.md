@@ -516,3 +516,20 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
   - Initial `play_scene current` exposed a nil-model crash in `CombatController._enter_tree()` before `bind(...)`; a pre-bind `_ensure_model()` guard fixed it. The rerun reached `combat_first_usable_frame`, then `stop_running_scene` and final `get_godot_errors` reported no current runtime crash.
   - Manual QA remains pending for this exact state-ownership pass.
+
+### AR-31: Combat layout presenter ownership cleanup
+
+- Status: `done`
+- Owner/scope: Continued the combat MVC cleanup by making `CombatView` the sole owner of `CombatLayoutPresenter` construction/binding and removing controller-side layout presenter compatibility storage. This pass preserved the existing presenter split: `CombatResolvePresenter` and `CombatVfxPresenter` stay controller-owned because the controller still chooses replay/VFX timing and source targets; `CombatTurnLogPresenter` stays controller-owned for debug/outcome text; `CombatHudPresenter` stays controller-owned for side-effect-free snapshot construction.
+- Progress: 2026-05-07 removed `COMBAT_LAYOUT_PRESENTER_SCRIPT`, `_combat_layout_presenter`, `_bind_combat_layout_presenter()`, controller layout result mirrors, and the low-vertical-layout mirror from `CombatController`. `_apply_combat_layout()` now delegates to `CombatView.apply_combat_layout(...)` without storing view layout state.
+- Preserve:
+  - Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, `combat_speed`, debug command names, board-local `BoardView.gui_input` coordinates, and visible resolve/replay timing.
+  - Controller orchestration boundaries for board binding, resolve/VFX timing presenters, outcome overlay, debug console, signal/action callbacks, RunState/FlowTrace routing, audio, and privileged debug callbacks.
+- Validation:
+  - Review gate accepted at `8.3/10`; score is capped because broader controller UI refs remain at current orchestration/VFX/action boundaries, the live editor session still reports existing unused-field reload warnings, and full live resolve/manual route-debug QA was not rerun for this exact slice.
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed with the existing CRLF normalization warning only.
+  - Static searches confirmed removed layout presenter symbols/layout mirror fields are absent from `combat_controller.gd`, and found no standalone no-op statements or untyped controller `_view` inference sites.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_controller.gd`, `combat_view.gd`, `combat_model.gd`, `combat_layout_presenter.gd`, `combat_resolve_presenter.gd`, `combat_vfx_presenter.gd`, and `board_controller.gd`.
+  - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
+  - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
+  - `open_scene res://scenes/combat.tscn`, `play_scene current`, `stop_running_scene`, and final `get_godot_errors` completed with no current runtime crash and the smoke reached `combat_first_usable_frame`. Existing unused-field reload warnings remain in the editor session.
