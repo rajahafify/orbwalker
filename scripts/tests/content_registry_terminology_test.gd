@@ -1,0 +1,51 @@
+extends RefCounted
+class_name ContentRegistryTerminologyTest
+
+const CONTENT_REGISTRY_SCRIPT_PATH := "res://scripts/content/content_registry.gd"
+
+
+func run_all() -> Dictionary:
+	var failures: Array[String] = []
+	_run_case("booster_content_displays_as_treasure_chests", _test_booster_content_displays_as_treasure_chests, failures)
+	_run_case("shop_pool_keeps_internal_booster_type", _test_shop_pool_keeps_internal_booster_type, failures)
+
+	return {
+		"passed": failures.is_empty(),
+		"total": 2,
+		"failed": failures.size(),
+		"failures": failures,
+	}
+
+
+func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
+	var error_text: String = callable.call()
+	if error_text != "":
+		failures.append("%s: %s" % [case_name, error_text])
+
+
+func _test_booster_content_displays_as_treasure_chests() -> String:
+	var registry: RefCounted = _content_registry_script().new()
+	var boosters: Array[Dictionary] = registry.list_boosters()
+	if boosters.is_empty():
+		return "Expected default content to include booster-backed treasure chests."
+	for booster in boosters:
+		var display_name := String(booster.get("display_name", ""))
+		var description := String(booster.get("description", ""))
+		if display_name.findn("booster") >= 0 or description.findn("booster") >= 0:
+			return "Expected public content copy to avoid booster wording for %s." % String(booster.get("id", ""))
+		if display_name.findn("chest") < 0:
+			return "Expected public display name to use chest wording for %s." % String(booster.get("id", ""))
+	return ""
+
+
+func _test_shop_pool_keeps_internal_booster_type() -> String:
+	var registry: RefCounted = _content_registry_script().new()
+	var pool: Array[Dictionary] = registry.shop_item_pool(1)
+	for entry in pool:
+		if String(entry.get("type", "")) == "booster":
+			return ""
+	return "Expected shop pool to keep at least one internal booster type entry."
+
+
+func _content_registry_script() -> GDScript:
+	return ResourceLoader.load(CONTENT_REGISTRY_SCRIPT_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as GDScript

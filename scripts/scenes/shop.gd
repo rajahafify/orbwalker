@@ -39,7 +39,8 @@ func _on_viewport_size_changed() -> void:
 
 
 static func shop_layout_probe_snapshot() -> Dictionary:
-	return SHOP_VIEW_SCRIPT.shop_layout_probe_snapshot()
+	var shop_view_script := ResourceLoader.load("res://scripts/shop/shop_view.gd", "", ResourceLoader.CACHE_MODE_IGNORE)
+	return shop_view_script.shop_layout_probe_snapshot()
 
 
 func _shop_layout_probe_snapshot() -> Dictionary:

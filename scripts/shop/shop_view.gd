@@ -221,7 +221,7 @@ func _create_ui() -> void:
 	_layout_root.add_child(_booster_overlay)
 	_booster_modal = _make_panel("BoosterModal", _booster_overlay)
 	_booster_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
-	_booster_title_label = _make_label("BoosterTitleLabel", _booster_modal, "Choose One Booster Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_booster_title_label = _make_label("BoosterTitleLabel", _booster_modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_booster_hint_label = _make_label("BoosterHintLabel", _booster_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	for index in 3:
 		var button := _make_button("BoosterOptionButton%d" % (index + 1), _booster_modal, "")
@@ -343,7 +343,7 @@ func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) 
 	var root := _make_child_root(card)
 	_make_dynamic_label(root, rarity.to_upper(), OFFER_RARITY_RECT, _rarity_color(rarity), 22, HORIZONTAL_ALIGNMENT_CENTER)
 	_make_dynamic_label(root, String(offer.get("display_name", "Offer")), OFFER_NAME_RECT, _rarity_color(rarity), 32, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_dynamic_label(root, String(offer.get("type", "offer")).replace("_", " ").to_upper(), OFFER_TYPE_RECT, MUTED_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER)
+	_make_dynamic_label(root, _offer_type_label(String(offer.get("type", "offer"))), OFFER_TYPE_RECT, MUTED_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER)
 
 	var art_frame := _make_dynamic_panel(root, OFFER_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0.04, 0.04, 0.05, 0.94), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
 	var icon := _make_texture("OfferIcon", art_frame)
@@ -359,7 +359,7 @@ func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) 
 		state_text = "SOLD OUT"
 		state_color = NEGATIVE_COLOR
 	elif booster_pending:
-		state_text = "BOOSTER FIRST"
+		state_text = "CHEST FIRST"
 		state_color = GOLD_COLOR
 	elif not affordable:
 		state_text = "NOT ENOUGH GOLD"
@@ -418,7 +418,7 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 	if sold_out:
 		_make_state_badge(root, RELIC_STATE_RECT, "SOLD OUT", NEGATIVE_COLOR, 18)
 	elif booster_pending:
-		_make_state_badge(root, RELIC_STATE_RECT, "BOOSTER FIRST", GOLD_COLOR, 18)
+		_make_state_badge(root, RELIC_STATE_RECT, "CHEST FIRST", GOLD_COLOR, 18)
 	elif not affordable:
 		_make_state_badge(root, RELIC_STATE_RECT, "NOT ENOUGH GOLD", NEGATIVE_COLOR, 18)
 
@@ -460,7 +460,7 @@ func _render_booster_overlay(pending_options: Array) -> void:
 	if not overlay_visible:
 		_skip_booster_button.visible = false
 		return
-	_booster_title_label.text = "Choose One Booster Reward"
+	_booster_title_label.text = "Choose One Treasure Chest Reward"
 	_booster_hint_label.text = "Pick one option now, or press Skip to continue shopping."
 	for button in _booster_option_buttons:
 		button.visible = true
@@ -578,10 +578,16 @@ func _price_text(price: int, sold_out: bool, affordable: bool, booster_pending: 
 	if sold_out:
 		return "SOLD OUT"
 	if booster_pending:
-		return "WAIT BOOSTER"
+		return "WAIT CHEST"
 	if not affordable:
 		return "NEED %dG" % price
 	return "PRICE %dG" % price
+
+
+func _offer_type_label(offer_type: String) -> String:
+	if offer_type == "booster":
+		return "TREASURE CHEST"
+	return offer_type.replace("_", " ").to_upper()
 
 
 func _is_full_slot_reason(reason: String) -> bool:
@@ -809,6 +815,14 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"stock_total_width": stock_total_width,
 		"stock_content_width": stock_content_width,
 		"stock_fits": stock_total_width <= stock_content_width,
+		"treasure_chest_terminology": {
+			"pending_state_badge": "CHEST FIRST",
+			"pending_price_badge": "WAIT CHEST",
+			"overlay_title": "Choose One Treasure Chest Reward",
+			"overlay_hint": "Pick one option now, or press Skip to continue shopping.",
+			"offer_type_label": "TREASURE CHEST",
+			"internal_offer_type": "booster",
+		},
 		"stock_relic_gap": int(RELIC_PANEL_RECT.position.y - stock_bottom),
 		"relic_action_gap": int(ACTION_ROW_RECT.position.y - relic_bottom),
 		"offer_desc_state_gap": int(OFFER_STATE_RECT.position.y - (OFFER_DESC_RECT.position.y + OFFER_DESC_RECT.size.y)),
@@ -955,7 +969,7 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 
 func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
 	var disabled_affordability := text.begins_with("NEED")
-	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT BOOSTER"
+	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT CHEST"
 	var bg := Color(0.32, 0.18, 0.04, 0.96)
 	var border := GOLD_COLOR
 	var label_color := GOLD_COLOR
@@ -966,8 +980,8 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 			label_color = NEGATIVE_COLOR
 		elif sold_or_blocked:
 			bg = Color(0.11, 0.08, 0.05, 0.96)
-			border = GOLD_COLOR if text == "WAIT BOOSTER" else NEGATIVE_COLOR
-			label_color = GOLD_COLOR if text == "WAIT BOOSTER" else NEGATIVE_COLOR
+			border = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
+			label_color = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 		else:
 			bg = Color(0.07, 0.07, 0.08, 0.94)
 			border = Color(0.28, 0.28, 0.30, 0.92)

@@ -2295,3 +2295,7 @@ Append-only history of wiki operations.
 
 - Pruned local scratch `tmp/` captures, removed empty placeholder folders that are not tracked by git, ignored future `tmp/` scratch output, and deleted the broken root `test_elemental_mastery.tscn` testbed that referenced a missing debug script.
 - Updated the file map to reflect that runtime content is still dictionary-backed and that empty placeholder scene/content folders are no longer part of the current checkout layout.
+## [2026-05-07] code-change | Treasure Chest Terminology
+
+- Renamed the public shop/content terminology from booster/booster pack to treasure chest/chest while preserving the existing internal `booster` type, state keys, service methods, and log fields for behavior compatibility. Added lightweight terminology tests for content display copy and shop view labels. (source: `scripts/content/content_registry.gd`, `scripts/shop/shop_view.gd`, `scripts/shop/shop_controller.gd`, `scripts/tests/content_registry_terminology_test.gd`, `scripts/tests/shop_view_layout_test.gd`)
+- User manual QA passed on 2026-05-07; `docs/test_plan.md` records the focused Godot MCP terminology tests and acceptance evidence. (source: `docs/test_plan.md`)

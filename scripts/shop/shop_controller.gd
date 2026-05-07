@@ -248,7 +248,7 @@ func _choose_booster_option(index: int) -> void:
 	if not bool(result.get("ok", false)) and _is_full_slot_reason(String(result.get("reason", ""))):
 		_set_status("No free slot for this reward. Sell from the loadout HUD, then pick again, or press Skip.", false)
 	else:
-		_set_status(_result_message("Booster pick", result), bool(result.get("ok", false)))
+		_set_status(_result_message("Chest pick", result), bool(result.get("ok", false)))
 	_refresh_ui()
 
 
@@ -258,9 +258,9 @@ func _skip_pending_booster() -> void:
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.discard_pending_booster_options()
 	_play_shop_result_sfx(result, "ui_cancel")
-	var message := _result_message("Skip booster reward", result)
+	var message := _result_message("Skip chest reward", result)
 	if bool(result.get("ok", false)):
-		message = "Skipped booster reward. Gold %d." % RunState.run_gold
+		message = "Skipped chest reward. Gold %d." % RunState.run_gold
 	_set_status(message, bool(result.get("ok", false)))
 	_refresh_ui()
 

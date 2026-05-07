@@ -8,7 +8,7 @@ Primary inputs: Mouse and touch
 
 ## High Concept
 
-Orbwalker is a fantasy match-3 roguelike where the free orb movement of Puzzle & Dragons / Tower of Saviors meets Balatro-style run progression, shops, boosters, equipment, mastery cards, consumables, and relics.
+Orbwalker is a fantasy match-3 roguelike where the free orb movement of Puzzle & Dragons / Tower of Saviors meets run progression, shops, treasure chests, equipment, mastery cards, consumables, and relics.
 
 The player controls a single hero through a run of dungeon levels. Each fight is turn-based. The player moves one orb freely across a 5x6 board under a short timer, creates matches, resolves cascades, and uses the resulting damage, healing, armor, and gold to survive the run.
 
@@ -250,7 +250,7 @@ Random item slots can contain:
 
 - Equipment.
 - Mastery cards.
-- Boosters.
+- Treasure chests.
 - Consumables.
 
 Relic rules:
@@ -263,7 +263,7 @@ Relic rules:
 Shop actions:
 
 - Buy items.
-- Buy multiple boosters if the player has enough gold.
+- Buy multiple treasure chests if the player has enough gold.
 - Reroll shop inventory.
 - Sell equipment for full gold value.
 
@@ -271,20 +271,20 @@ Pricing rules:
 
 - Prices scale by rarity.
 - Prices may scale by dungeon level.
-- After killing the first enemy, the player should usually be able to afford at least 1 booster pack if they matched some gold.
+- After killing the first enemy, the player should usually be able to afford at least 1 treasure chest if they matched some gold.
 
-## Boosters
+## Treasure Chests
 
-Boosters work like Balatro booster packs.
+Treasure chests are shop rewards that open into a short choice of generated options.
 
 The player buys a pack, opens it, sees 3 generated options, and picks 1.
 
-Booster types:
+Treasure chest types:
 
 - Element booster: generates items tied to a specific orb type, such as Fire, Ice, Earth, Heart, Armor, or Gold.
 - Category booster: generates items from a category, such as 3 equipment, 3 mastery cards, or 3 consumables.
 
-Boosters can produce:
+Treasure chests can produce:
 
 - Equipment.
 - Mastery cards.
@@ -362,7 +362,7 @@ Rules:
 - The player has 3 consumable slots.
 - Consumables can be held for later.
 - Consumables mainly affect the board.
-- Consumables can be bought, found from boosters, or possibly earned from future rewards.
+- Consumables can be bought, found from treasure chests, or possibly earned from future rewards.
 
 Initial consumable direction:
 
@@ -388,7 +388,7 @@ Relics should be stronger and broader than equipment. Examples:
 - Add an equipment slot.
 - Let armor last 2 turns.
 - Increase gold orb spawn rate.
-- Improve all boosters.
+- Improve all treasure chests.
 - Change how combo multiplier scales.
 
 ## Meta Progression

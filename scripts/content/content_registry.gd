@@ -562,8 +562,8 @@ func _build_default_content() -> Dictionary:
 		BOOSTERS: [
 			{
 				"id": "elemental_booster",
-				"display_name": "Elemental Booster",
-				"description": "Choose 1 of 3 elemental-focused options.",
+				"display_name": "Elemental Chest",
+				"description": "Choose 1 of 3 elemental-focused treasures.",
 				"icon_key": "booster_elemental",
 				"rarity": "common",
 				"target_orb_id": -1,
@@ -575,8 +575,8 @@ func _build_default_content() -> Dictionary:
 			},
 			{
 				"id": "fire_booster",
-				"display_name": "Fire Booster",
-				"description": "Choose 1 of 3 Fire-aligned options.",
+				"display_name": "Fire Chest",
+				"description": "Choose 1 of 3 Fire-aligned treasures.",
 				"icon_key": "booster_fire",
 				"rarity": "common",
 				"target_orb_id": OrbType.Id.FIRE,

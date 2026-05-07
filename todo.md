@@ -67,7 +67,7 @@ Tasks:
   - Note: `scenes/main_menu.tscn` and `scripts/scenes/main_menu.gd` were added, and `run/main_scene` now points to this scene.
 
 - [x] Decide the data format for content.
-  - Deliverable: Resource class plan for equipment, mastery cards, consumables, relics, enemies, bosses, booster packs, and shop pricing. Documented in `docs/system_architecture.md`.
+  - Deliverable: Resource class plan for equipment, mastery cards, consumables, relics, enemies, bosses, treasure chests, and shop pricing. Documented in `docs/system_architecture.md`.
   - Acceptance: Each content type can be created as data without custom code per item, except when a unique effect needs a scripted hook.
 
 - [x] Define core runtime state models.
@@ -279,13 +279,13 @@ Tasks:
   - Deliverable: Debug visibility for current player-state snapshot during playtest.
   - Acceptance: Invalid content is reported before run entry and active player progression state can be inspected at runtime.
 
-## Milestone 6: Shop, Economy, And Boosters
+## Milestone 6: Shop, Economy, And Treasure Chests
 
 Status: Complete.
 
 Goal: Build the post-fight shop loop and the economy around matched gold.
 
-Primary deliverable: After each fight, the player enters a shop with 3 random item slots, 1 relic offer for the dungeon level, reroll, boosters, buying, selling, and skipping.
+Primary deliverable: After each fight, the player enters a shop with 3 random item slots, 1 relic offer for the dungeon level, reroll, treasure chests, buying, selling, and skipping.
 
 Tasks:
 
@@ -302,7 +302,7 @@ Tasks:
   - Acceptance: Price balance can be adjusted without changing shop UI code.
 
 - [x] Implement buy action.
-  - Deliverable: Player can buy equipment, mastery cards, consumables, boosters, and relics when they can afford them.
+  - Deliverable: Player can buy equipment, mastery cards, consumables, treasure chests, and relics when they can afford them.
   - Acceptance: Buying subtracts gold, applies the item or moves it into the correct inventory, and prevents invalid purchases.
 
 - [x] Implement sell equipment action.
@@ -313,22 +313,22 @@ Tasks:
   - Deliverable: Reroll replaces random item slots and respects reroll cost.
   - Acceptance: Relic offer behavior is explicitly decided and implemented: either fixed for the dungeon level or rerolled only if the GDD is updated.
 
-- [x] Implement booster pack purchase.
-  - Deliverable: Buying a booster opens a pack view with 3 generated options and allows the player to pick 1.
-  - Acceptance: Boosters can generate element-based or category-based options and do not generate relics by default; full equipment or consumable inventories leave the player HUD usable and provide a clear Skip path instead of blocking shop progression.
+- [x] Implement treasure chest purchase.
+  - Deliverable: Buying a treasure chest opens a reward view with 3 generated options and allows the player to pick 1.
+  - Acceptance: Treasure chests can generate element-based or category-based options and do not generate relics by default; full equipment or consumable inventories leave the player HUD usable and provide a clear Skip path instead of blocking shop progression.
 
 - [x] Tune early affordability.
   - Deliverable: Initial price and gold spawn settings.
-  - Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 booster pack.
+  - Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 treasure chest.
   - Note: Remaining Merchant Compass free-first-reroll behavior and final shop-public-readiness QA are transferred to ITCH-04 in `docs/itch_readiness_tasks.md`.
 
 Verification notes (2026-04-26):
-- Added `ShopState` and `ShopService` runtime systems under `scripts/shop/` for shop open, item/relic offers, buy, sell, reroll, and booster option pick flow.
+- Added `ShopState` and `ShopService` runtime systems under `scripts/shop/` for shop open, item/relic offers, buy, sell, reroll, and treasure chest option pick flow.
 - `RunState` now owns persistent run gold (`run_gold`) and exposes shop/economy actions consumed by combat and shop UI.
 - Combat gold gain now syncs through `RunState`, and the shop scene moved from placeholder text to actionable debug controls.
 - Debug content and pricing scaffolding were extended in `ContentRegistry` to support Milestone 6 shop generation and purchase paths.
 - Fixed strict typing parse break in `scripts/debug/board_debug_controller.gd` by using explicit `Variant` locals for `RunState` service retrieval in debug add-item actions.
-- 2026-05-02 shop UX follow-up: pending booster choices no longer block the shared player HUD, full-slot picks tell the player to sell from the loadout HUD or skip, and `shop_player.gd` now shows a contextual sell bubble near the selected equipment or consumable slot instead of a permanent action-row sell button.
+- 2026-05-02 shop UX follow-up: pending treasure chest choices no longer block the shared player HUD, full-slot picks tell the player to sell from the loadout HUD or skip, and `shop_player.gd` now shows a contextual sell bubble near the selected equipment or consumable slot instead of a permanent action-row sell button.
 
 ## Milestone 7: Dungeon And Run Structure
 
@@ -448,7 +448,7 @@ Tasks:
   - Acceptance: The player can inspect current build state during combat and shop, including owned relics in the shared footer HUD.
 
 - [x] Implement item detail views.
-  - Deliverable: Tooltip or detail panel for equipment, mastery cards, consumables, relics, and boosters.
+  - Deliverable: Tooltip or detail panel for equipment, mastery cards, consumables, relics, and treasure chests.
   - Acceptance: Item effect text is visible before buying, using, or selling.
 
 - [x] Implement shop UI.
@@ -544,7 +544,7 @@ Status: Complete.
 
 Goal: Make the current run loop easier to playtest before adding meta progression.
 
-Primary deliverable: A temporary balance layer where gold income, shop access, damage, enemy survivability, and debug levers let the team repeatedly test items, boosters, relics, and builds without pretending the economy is final.
+Primary deliverable: A temporary balance layer where gold income, shop access, damage, enemy survivability, and debug levers let the team repeatedly test items, treasure chests, relics, and builds without pretending the economy is final.
 
 Scope note: This milestone is a playtest-enabling pass, not the final balance pass. Meta progression will change power curves, unlock pacing, and economy pressure, so deep final tuning should happen after meta progression exists.
 
@@ -580,7 +580,7 @@ Tasks:
   - Note: 2026-05-05 M10-05 added temporary dungeon/type survivability identities: forgiving Dungeon 1 normal fights, a tougher Dungeon 1 boss skill check, Dungeon 2 defense pressure, and a retuned Dungeon 3 late damage check. Player accepted the current early balance for now and deferred deeper rebalance until after Milestone 11 meta progression.
 
 - [x] Tune item and relic test access.
-  - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and boosters practical to inspect during repeated runs.
+  - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and treasure chests practical to inspect during repeated runs.
   - Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.
   - Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one booster when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second booster unless needed. The first level-1 shop now guarantees affordable damage equipment (`Shortsword`) instead of `Coin Purse`; `Shortsword` price is `10`. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.
 
@@ -592,7 +592,7 @@ Tasks:
 - [x] Run focused playtest loops.
   - Deliverable: Recorded notes from repeated level 1 and early-run playtests covering gold earned, shop purchases, deaths, item access, and major blockers.
   - Acceptance: The team has enough evidence to start meta progression on a playable baseline.
-  - Note: 2026-05-05 M10-07 compared tuned logs against the M10-02 untuned baseline. Tuned evidence includes a D3 defeat, a full victory, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reaching L3 enemy 2 with first-shop affordability, booster access, boss relic rewards, and visible full-slot friction. No M10 blocker remains; full-slot friction, Merchant Compass reroll behavior, and final tuning move to post-Milestone 11/meta-progression work.
+  - Note: 2026-05-05 M10-07 compared tuned logs against the M10-02 untuned baseline. Tuned evidence includes a D3 defeat, a full victory, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` reaching L3 enemy 2 with first-shop affordability, treasure chest access, boss relic rewards, and visible full-slot friction. No M10 blocker remains; full-slot friction, Merchant Compass reroll behavior, and final tuning move to post-Milestone 11/meta-progression work.
 
 ## Milestone 11: Meta Progression Foundation
 
@@ -676,7 +676,7 @@ Tasks:
 These tasks should be worked on alongside the milestones when the affected systems appear.
 
 - [x] Deterministic RNG support.
-  - Deliverable: Seeded RNG for board generation, shops, boosters, and enemy selection.
+  - Deliverable: Seeded RNG for board generation, shops, treasure chests, and enemy selection.
   - Acceptance: A run can be reproduced for debugging.
   - Note: First-playable debug/repro needs are covered by existing board/shop/run probes and Run Log evidence. Any public-release reproducibility concern is transferred to ITCH-08 in `docs/itch_readiness_tasks.md`.
 
@@ -750,7 +750,7 @@ The prototype is considered first playable when:
 - Free movement, timer, matching, and cascades work according to the GDD.
 - Enemy intent is shown before movement and resolves after player effects.
 - HP, armor, gold, equipment, mastery, consumables, and relics persist correctly across the run.
-- Shops appear after fights and support buying, selling, rerolling, boosters, relic offers, and skipping.
+- Shops appear after fights and support buying, selling, rerolling, treasure chests, relic offers, and skipping.
 - Bosses provide clear checks and grant relic rewards.
 - The initial content pack is present and functional.
 - The build can be exported and played without debug tools.

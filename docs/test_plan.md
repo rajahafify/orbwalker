@@ -111,7 +111,7 @@ Phase D: Validation and debug visibility
 - [x] Validation output reports an actionable error list with `item_id` and `reason`.
 - [x] Runtime player-state snapshot is visible in debug/playtest tooling.
 
-## Milestone 6: Shop And Boosters
+## Milestone 6: Shop And Treasure Chests
 
 - [x] Shop appears after each normal fight.
 - [x] Shop appears after boss relic reward.
@@ -124,21 +124,21 @@ Phase D: Validation and debug visibility
 - [x] Reroll replaces the correct shop offers.
 - [x] Reroll cost updates correctly.
 - [x] First shop reroll is free when Merchant Compass is active. Remaining implementation/decision is transferred to ITCH-04.
-- [x] Booster purchase opens 3 generated options.
-- [x] Choosing a booster option grants exactly one item.
-- [x] Generated shop stock and booster equipment options do not show equipment already equipped by the player.
-- [x] Full-slot booster rewards keep the player HUD usable and can be skipped without locking shop progression.
-- [x] Normal boosters do not generate relics by default.
-- [x] Early economy usually lets a player afford at least one booster after the first enemy if they matched some gold.
+- [x] Treasure chest purchase opens 3 generated options.
+- [x] Choosing a treasure chest option grants exactly one item.
+- [x] Generated shop stock and treasure chest equipment options do not show equipment already equipped by the player.
+- [x] Full-slot treasure chest rewards keep the player HUD usable and can be skipped without locking shop progression.
+- [x] Normal treasure chests do not generate relics by default.
+- [x] Early economy usually lets a player afford at least one treasure chest after the first enemy if they matched some gold.
 
 Verification notes (2026-04-26):
 - Shop flow is now wired to runtime systems (`ShopState`, `ShopService`) and accessible via post-fight transition to `res://scenes/shop.tscn` (player-facing) and `res://scenes/flow/shop_placeholder.tscn` (debug/legacy).
-- Milestone 6 debug shop UI supports buy, sell, reroll, relic offer purchase, booster option selection, and skip/next transitions.
+- Milestone 6 debug shop UI supports buy, sell, reroll, relic offer purchase, treasure chest option selection, and skip/next transitions.
 - Economy actions run through `RunState` gold helpers, and combat gold gain updates are synchronized to run-level gold.
 - `board_debug_controller.gd` parse stability was restored for debug add-item actions by switching `RunState` service locals to explicit `Variant`.
 - User-confirmed on 2026-04-27: shop appears after boss relic reward.
-- Godot MCP validation on 2026-05-02: pending booster choices no longer block the shared player HUD, full-slot picks leave the booster choices open with a visible Skip path, and equipment can be selected/sold from a contextual loadout bubble while the booster is pending.
-- Godot MCP validation on 2026-05-02: editor-script service probes confirmed generated shop stock and booster equipment options exclude already-equipped equipment, consumable selling clears the selected consumable slot, `res://scenes/shop.tscn` and `res://scenes/combat.tscn` instantiate, and `get_godot_errors` reported no session errors.
+- Godot MCP validation on 2026-05-02: pending treasure chest choices no longer block the shared player HUD, full-slot picks leave the treasure chest choices open with a visible Skip path, and equipment can be selected/sold from a contextual loadout bubble while the treasure chest is pending.
+- Godot MCP validation on 2026-05-02: editor-script service probes confirmed generated shop stock and treasure chest equipment options exclude already-equipped equipment, consumable selling clears the selected consumable slot, `res://scenes/shop.tscn` and `res://scenes/combat.tscn` instantiate, and `get_godot_errors` reported no session errors.
 - Godot MCP validation on 2026-05-03: combat consumable rails now render filled consumable slots as selectable HUD buttons wired to the existing slot-indexed consumable use path, and shop relic offers now reject owned relics when generating or reusing a cached per-level relic offer. `view_script`, focused helper probes, and `get_godot_errors` reported no session errors; direct autoload editor-script probes returned `<null>` in this MCP session, so manual active-run click-through remains useful for final acceptance.
 - Godot MCP validation on 2026-05-03: `PlayerLoadoutHud` now owns the shared combat/shop HUD renderer and item popover API. Combat and shop bind HUD node references, pass player/progression data through `update_player_data(...)`, delegate outside-click focus handling, and respond to the HUD's `sell_slot_requested` signal instead of creating their own item detail bubbles. The shared HUD popover covers equipment, consumables, and relics; equipment/consumables can be sold from it in combat or shop. `view_script`, scene instantiate probes, `get_godot_errors`, and `git diff --check` reported no errors; active-run visual click-through remains useful.
 - Godot MCP and Run Log validation on 2026-05-05: M10 closeout evidence confirmed the tuned first-shop floor now gives `10+` gold after the first enemy, and newest checked run `run_1777973747_694854_2026-05-05t17_35_47` opened the first shop with `13` gold, affordable `shortsword`, affordable booster, and affordable consumable options. This satisfies the early booster-affordability checklist for the temporary M10 playtest layer, not final economy balance.
@@ -146,6 +146,7 @@ Verification notes (2026-04-26):
 - Godot MCP validation on 2026-05-06: Shop MVC refactor moved shop scene ownership into `ShopModel` (`scripts/shop/shop_model.gd`), `ShopView` (`scripts/shop/shop_view.gd`), and `ShopController` (`scripts/shop/shop_controller.gd`), with `scripts/scenes/shop.gd` reduced to a thin scene host. `ShopModel` now provides enriched snapshot state (`affordable`, `sold_out`, `disabled`, `reroll_enabled`) and transition-lock state; `ShopView` now owns shop UI build/layout/rendering plus shared `PlayerLoadoutHud` binding and input signals; `ShopController` now owns shop actions, RunState transitions/rollback callbacks, FlowTrace marks, and shop audio hooks. `player_hud_contract_probe.gd` now validates shop host-to-view preload wiring and shared HUD instancing/binding against `shop_view.gd`. `get_project_info`, `view_script` for the touched shop/probe scripts, `play_scene`/`stop_running_scene` smoke, rerun `get_godot_errors`, and `git diff --check` passed with no session errors.
 - 2026-05-06 active-shop crash follow-up: user-reported entering shop crashed after the MVC refactor. Godot MCP error output showed `ShopView._render_build_panel` assigning the real `PlayerState` object to a variable typed as `Dictionary`; `scripts/shop/shop_view.gd` now keeps that value untyped before passing it through the existing `PlayerLoadoutHud.update_player_data(...)` payload. `git diff --check`, `view_script res://scripts/shop/shop_view.gd`, `play_scene current`, and rerun `get_godot_errors` passed with `Session has no errors`. User QA passed after the crash fix.
 - Godot MCP/source validation on 2026-05-07: shop mobile HUD positioning now uses the shared bottom section rect by changing `PlayerLoadoutHud.shop_player_hud_layout_preset()` to return `"section": PLAYER_HUD_SECTION_RECT` (`y=1428`, `h=492` in `1080x1920`). `shop_layout_probe_snapshot()` now also reports `hud_bottom_gap_after_section` and `hud_bottom_aligned` to make bottom anchoring explicit. `git diff --check` and `view_script` for `player_loadout_hud.gd`/`shop_view.gd` passed. Final in-run shop screenshot/runtime acceptance for public release is transferred to ITCH-04/ITCH-08.
+- Godot MCP/source validation on 2026-05-07: public shop/content terminology now presents booster-backed offers as treasure chests while preserving the internal `booster` type, state keys, signals, and service methods. Added `content_registry_terminology_test.gd` and extended `shop_view_layout_test.gd`; focused MCP test run passed `shop_view_layout_test` 8/8 and `content_registry_terminology_test` 2/2. User manual QA passed on 2026-05-07.
 
 ## Milestone 7: Dungeon And Run Flow
 
@@ -233,8 +234,8 @@ Verification notes (2026-04-27):
 - [x] Mastery levels are visible.
 - [x] Item detail text is readable before purchase.
 - [x] Shop controls are usable without debug tools.
-- [x] Booster selection is clear.
-- [x] Booster full-inventory sell-or-skip paths are clear.
+- [x] Treasure chest selection is clear.
+- [x] Treasure chest full-inventory sell-or-skip paths are clear.
 - [x] Run progress and dungeon level are visible.
 - [x] Important actions have clear visual or audio feedback.
   - 2026-05-02: Added `AudioManager` placeholder audio with generated looped music for menu/combat/shop and SFX hooks for menu start, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/booster success/failure. Godot MCP script load, main runtime smoke, and scene instantiate checks passed. Final public-build listening/volume feel review is transferred to ITCH-06/ITCH-08.

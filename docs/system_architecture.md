@@ -80,7 +80,7 @@ res://
 	  mastery/
 	  consumables/
 	  relics/
-	  boosters/
+	  treasure-chests/
 	  enemies/
 	  bosses/
 	  pricing/
@@ -122,7 +122,7 @@ Deferred Resource-backed content candidates:
 - `MasteryCardData`
 - `ConsumableData`
 - `RelicData`
-- `BoosterPackData`
+- `TreasureChestData`
 - `EnemyData`
 - `BossData`
 - `IntentData`
@@ -145,7 +145,7 @@ Item-specific fields:
 - Mastery card: target orb type, level increase, cap.
 - Consumable: target rules, board mutation effect, slot behavior.
 - Relic: effect list, acquisition source, duplicate policy.
-- Booster pack: generated pool, option count, rarity weighting, orb or category filter.
+- Treasure chest: generated pool, option count, rarity weighting, orb or category filter.
 - Enemy: max HP, intent cycle, level scaling values.
 - Boss: max HP, boss type, preview text, intent cycle, special rule data, scaling values.
 - Pricing: rarity price bands, dungeon level modifier, reroll curve, sell percentage.

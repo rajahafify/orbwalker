@@ -1,8 +1,8 @@
 extends RefCounted
 class_name ShopViewLayoutTest
 
-const SHOP_VIEW_SCRIPT := preload("res://scripts/shop/shop_view.gd")
-const SHOP_SCENE_SCRIPT := preload("res://scripts/scenes/shop.gd")
+const SHOP_VIEW_SCRIPT_PATH := "res://scripts/shop/shop_view.gd"
+const SHOP_SCENE_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
 const EPSILON := 0.001
 
 
@@ -14,11 +14,12 @@ func run_all() -> Dictionary:
 	_run_case("merchant_backdrop_covers_summary_and_detail", _test_merchant_backdrop_covers_summary_and_detail, failures)
 	_run_case("action_row_connected_to_hud", _test_action_row_connected_to_hud, failures)
 	_run_case("stock_cards_fit", _test_stock_cards_fit, failures)
+	_run_case("treasure_chest_labels_replace_booster_copy", _test_treasure_chest_labels_replace_booster_copy, failures)
 	_run_case("scene_facade_matches_shop_view_probe", _test_scene_facade_matches_shop_view_probe, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 7,
+		"total": 8,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -108,9 +109,27 @@ func _test_stock_cards_fit() -> String:
 	return ""
 
 
+func _test_treasure_chest_labels_replace_booster_copy() -> String:
+	var probe := _probe_snapshot()
+	var terminology: Dictionary = probe.get("treasure_chest_terminology", {})
+	if String(terminology.get("pending_state_badge", "")) != "CHEST FIRST":
+		return "Expected pending stock/relic state badge to say CHEST FIRST."
+	if String(terminology.get("pending_price_badge", "")) != "WAIT CHEST":
+		return "Expected pending price badge to say WAIT CHEST."
+	if String(terminology.get("overlay_title", "")) != "Choose One Treasure Chest Reward":
+		return "Expected overlay title to use Treasure Chest wording."
+	if String(terminology.get("overlay_hint", "")).findn("booster") >= 0:
+		return "Expected overlay hint not to use booster copy."
+	if String(terminology.get("offer_type_label", "")) != "TREASURE CHEST":
+		return "Expected offer type label to say TREASURE CHEST while internal type remains booster."
+	if String(terminology.get("internal_offer_type", "")) != "booster":
+		return "Expected internal shop offer type to remain booster for behavior compatibility."
+	return ""
+
+
 func _test_scene_facade_matches_shop_view_probe() -> String:
-	var view_probe := SHOP_VIEW_SCRIPT.shop_layout_probe_snapshot()
-	var facade_probe := SHOP_SCENE_SCRIPT.shop_layout_probe_snapshot()
+	var view_probe: Dictionary = _shop_view_script().shop_layout_probe_snapshot()
+	var facade_probe: Dictionary = _shop_scene_script().shop_layout_probe_snapshot()
 	for key in [
 		"native_tooltips_disabled",
 		"top_controls",
@@ -122,6 +141,7 @@ func _test_scene_facade_matches_shop_view_probe() -> String:
 		"stock_total_width",
 		"stock_content_width",
 		"stock_fits",
+		"treasure_chest_terminology",
 	]:
 		if not facade_probe.has(key):
 			return "Expected scene facade probe snapshot to include key '%s'." % key
@@ -131,7 +151,15 @@ func _test_scene_facade_matches_shop_view_probe() -> String:
 
 
 func _probe_snapshot() -> Dictionary:
-	return SHOP_VIEW_SCRIPT.shop_layout_probe_snapshot()
+	return _shop_view_script().shop_layout_probe_snapshot()
+
+
+func _shop_view_script() -> GDScript:
+	return ResourceLoader.load(SHOP_VIEW_SCRIPT_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as GDScript
+
+
+func _shop_scene_script() -> GDScript:
+	return ResourceLoader.load(SHOP_SCENE_SCRIPT_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as GDScript
 
 
 func _rect_contains(outer: Rect2, inner: Rect2) -> bool:
