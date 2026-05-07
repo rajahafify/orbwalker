@@ -304,7 +304,7 @@
     },
     {
       "id": "core_gameplay_icons",
-      "display_name": "Orbs, Mastery, Intent, Rarity, Equipment, Consumable, Relic, And Booster Icons",
+      "display_name": "Orbs, Mastery, Intent, Rarity, Equipment, Consumable, Relic, And Treasure Chest Icons",
       "priority": "P0",
       "production_status": "first_pass_exists",
       "needed_for_production": [
@@ -414,13 +414,13 @@
           ]
         },
         {
-          "asset_id": "booster_icons",
-          "name": "Booster pack icons",
+          "asset_id": "treasure_chest_icons",
+          "name": "Treasure chest icons",
           "type": "icon_set",
           "status": "placeholder_or_reused",
           "entries": [
-            { "id": "elemental_booster", "display_name": "Elemental Booster", "icon_key": "booster_elemental", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses stable placeholder color or Fire mastery icon fallback." },
-            { "id": "fire_booster", "display_name": "Fire Booster", "icon_key": "booster_fire", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses Fire mastery icon fallback." }
+            { "id": "elemental_treasure_chest", "display_name": "Elemental Chest", "icon_key": "treasure_chest_elemental", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses stable placeholder color or Fire mastery icon fallback." },
+            { "id": "fire_treasure_chest", "display_name": "Fire Chest", "icon_key": "treasure_chest_fire", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses Fire mastery icon fallback." }
           ]
         }
       ]
@@ -492,7 +492,7 @@
         },
         {
           "asset_id": "shop_ui_pack",
-          "name": "Shop card, offer, relic, reroll, booster, and transaction UI pack",
+          "name": "Shop card, offer, relic, reroll, treasure chest, and transaction UI pack",
           "type": "ui_pack",
           "status": "first_pass_exists",
           "current_paths": [
@@ -501,7 +501,7 @@
             "res://resources/art/first_pass/ui/bar_kit_v1.png",
             "res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png"
           ],
-          "notes": "Needs production states for affordable, unaffordable, sold out, selected, booster pick, hover/focus, disabled, and touch feedback."
+          "notes": "Needs production states for affordable, unaffordable, sold out, selected, treasure chest pick, hover/focus, disabled, and touch feedback."
         },
         {
           "asset_id": "result_screen_ui_pack",
@@ -565,7 +565,7 @@
         },
         {
           "asset_id": "shop_transaction_vfx",
-          "name": "Shop buy, sell, reroll, booster, and error feedback VFX",
+          "name": "Shop buy, sell, reroll, treasure chest, and error feedback VFX",
           "type": "vfx_set",
           "current_paths": [],
           "status": "missing"
@@ -668,8 +668,8 @@
             "buy_denied",
             "sell",
             "reroll",
-            "booster_open",
-            "booster_pick",
+            "treasure_chest_open",
+            "treasure_chest_pick",
             "continue"
           ]
         },
@@ -819,9 +819,9 @@
   ],
   "known_production_gaps": [
     {
-      "id": "booster_icons_missing",
+      "id": "treasure_chest_icons_missing",
       "priority": "P0",
-      "summary": "Booster icons currently use stable placeholder/reused mastery art instead of final pack artwork."
+      "summary": "Treasure chest icons currently use stable placeholder/reused mastery art instead of final chest artwork."
     },
     {
       "id": "result_screen_art_missing",
@@ -859,7 +859,7 @@
       "batch_id": "batch_01_public_demo_core",
       "priority": "P0",
       "assets": [
-        "booster_icons",
+        "treasure_chest_icons",
         "result_screen_ui_pack",
         "run_summary_background",
         "sfx_combat_core",

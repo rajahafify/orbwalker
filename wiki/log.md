@@ -2316,3 +2316,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Production asset inventory
 
 - Added root `assets.json` as a production-readiness asset inventory/backlog covering current first-pass coverage and missing production needs for brand identity, screen backgrounds, hero/enemy/boss/merchant art, gameplay icons, UI chrome, VFX, music/SFX, animation, marketing/page assets, and required asset-governance records. The inventory is grounded in the current content registry, VisualRegistry paths, first-pass asset map, itch readiness tracker, and assetgen governance workflow; it is not the final approved production asset manifest. (source: `assets.json`, `scripts/content/content_registry.gd`, `scripts/ui/visual_registry.gd`, `resources/visual/first_pass_asset_map.json`, `docs/itch_readiness_tasks.md`, `resources/assetgen.workflow.md`)
+
+## 2026-05-07 - Asset inventory treasure chest terminology
+
+- Updated `assets.json` to use current treasure chest terminology for shop chest icons, shop UI/VFX, SFX cues, known gaps, and recommended asset batches, matching the runtime `treasure_chests` content and `treasure_chest_*` icon keys after the terminology rebase. (source: `assets.json`, `scripts/content/content_registry.gd`, `scripts/ui/visual_registry.gd`)
