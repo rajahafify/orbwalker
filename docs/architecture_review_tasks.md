@@ -476,3 +476,21 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Godot MCP combat scene smoke ran through `open_scene res://scenes/combat.tscn`, `play_scene current`, and `stop_running_scene`.
   - Retained AR-01 combat result-envelope probe still matched the baseline values.
   - `get_godot_errors` still reported stale open-script/global-class diagnostics for deleted old presenter paths until the local `.godot` editor cache is fully refreshed; cache-ignore script loads and scene smoke used the renamed scripts successfully.
+
+### AR-29: CombatView rendering ownership extraction
+
+- Status: `done`
+- Owner/scope: Continued the combat MVC refactor by moving view-only rendering ownership from `CombatController` into `CombatView`. This pass preserved combat math, resolver result envelopes, board-local `BoardView.gui_input` coordinates, route semantics, debug command behavior, `combat_speed`, and resolve/replay timing.
+- Progress: 2026-05-07 completed the rendering extraction. `CombatView` now owns HUD snapshot application, top/enemy/timer/player/debug rendering, timer display sync, enemy intent bubble and enemy block preview rendering, hover signal emission, visual chrome, backdrop/scrim helpers, zone guides, loadout rail layout calls, and `CombatLayoutPresenter` application. `CombatController` remains the orchestrator for combat setup, HUD snapshot construction, shared HUD payload decisions, input phase authority, resolver kickoff, replay/VFX timing decisions, audio hooks, RunState/FlowTrace route calls, debug callbacks, `/skip`, and outcome routing.
+- Residual follow-up:
+  - Reduce remaining controller compatibility node references and wrapper methods once another narrow pass can do so without touching replay timing or route behavior.
+  - Keep `CombatModel` small until a separate state-ownership pass is planned.
+- Validation:
+  - Review gate accepted at `8.2/10`; score is capped by remaining compatibility wrappers and the blocked direct route probe.
+  - `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_controller.gd`, `combat_view.gd`, `combat_model.gd`, `combat_layout_presenter.gd`, `combat_vfx_presenter.gd`, `combat_resolve_presenter.gd`, and `board_controller.gd`.
+  - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
+  - Retained AR-01 combat result-envelope probe passed, and the focused board local-coordinate/touch drag probe preserved the board-local coordinate path.
+  - `open_scene res://scenes/combat.tscn`, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` passed with `Session has no errors`.
+  - Direct route probing through MCP editor scripts could not execute because `RunState` was exposed as a placeholder instance in that context; manual route QA remains required.
+  - Follow-up parser-crash fix removed invalid no-op compatibility statements and explicitly typed the `_view.apply_combat_layout(...)` result in `combat_controller.gd`; Godot MCP `play_scene current` reached `combat_first_usable_frame` and resolve trace output. User manual QA passed after the fix.
