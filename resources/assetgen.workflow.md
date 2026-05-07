@@ -1,5 +1,14 @@
 # AI-Generated 2D Asset Workflow
 
+This is a Codex multi-agent workflow for producing generated 2D assets. Each
+workflow layer is owned by a separate `worker` subagent with a clear handoff
+between layers. The main/default agent coordinates scope, reviews outputs, and
+records final status, but layer work should be delegated to workers.
+
+All image creation or raster image editing in this workflow must use the Codex
+`imagegen` skill. Use the built-in `image_gen` tool path described by that skill
+unless the human explicitly asks for the skill's CLI fallback.
+
 ## Folder Structure
 
 ```text
@@ -32,6 +41,9 @@ assets/
 
 ## Layer 1: Creative Control
 
+**Worker ownership:** assign one worker subagent to prepare and validate the
+creative-control inputs for the asset batch.
+
 Maintain a single source of truth before production begins.
 
 - **Art bible:** style, palette, lighting, camera angle, shape language, line weight, scale, allowed effects, prohibited motifs.
@@ -40,6 +52,10 @@ Maintain a single source of truth before production begins.
 - **Style and transparency rules:** transparent background required where applicable; no baked shadows, halos, unwanted glow, or unapproved text.
 
 ## Layer 2: Asset Production
+
+**Worker ownership:** assign a separate worker subagent to generate, QA, clean,
+and export candidates from the approved Layer 1 inputs. This worker must use the
+Codex `imagegen` skill for all generated raster asset creation or editing.
 
 Produce, verify, clean, and export assets.
 
@@ -50,6 +66,10 @@ Produce, verify, clean, and export assets.
 5. Export final assets in required formats, sizes, and naming convention.
 
 ## Layer 3: Governance & Integration
+
+**Worker ownership:** assign a separate worker subagent to run the governance
+and integration checklist after Layer 2 finishes. This worker verifies review
+status, metadata, policy/license state, and production integration readiness.
 
 Only reviewed and approved assets enter production.
 

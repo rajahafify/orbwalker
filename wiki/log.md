@@ -2308,3 +2308,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Assetgen workflow wiki
 
 - Added [[assetgen-workflow]] for the AI-generated 2D asset governance process in `resources/assetgen.workflow.md`, including creative-control inputs, generation metadata, lifecycle states, QA/cleanup gates, human/legal review, transparency checks, and the production release gate. Linked the page from [[index]] and recorded the workflow document in [[file-map]]. (source: `resources/assetgen.workflow.md`, `wiki/assetgen-workflow.md`, `wiki/index.md`, `wiki/file-map.md`)
+
+## 2026-05-07 - Assetgen multi-agent workflow clarification
+
+- Clarified that `resources/assetgen.workflow.md` is a Codex multi-agent workflow where each layer is owned by a separate `worker` subagent, and that generated raster asset creation or editing must use the Codex `imagegen` skill with the built-in `image_gen` path unless the human explicitly asks for the CLI fallback. Updated [[assetgen-workflow]] to match. (source: `resources/assetgen.workflow.md`, `wiki/assetgen-workflow.md`)

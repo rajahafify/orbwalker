@@ -10,7 +10,7 @@
 
 ## Overview
 
-`resources/assetgen.workflow.md` defines the review and production process for generated 2D assets. It is a documentation workflow, not a runtime asset loader or Godot integration script. The workflow keeps creative direction, generation metadata, QA, cleanup, human review, legal review, and final engine integration as separate gates. (source: `resources/assetgen.workflow.md`)
+`resources/assetgen.workflow.md` defines the review and production process for generated 2D assets. It is a Codex multi-agent workflow, not a runtime asset loader or Godot integration script. The workflow keeps creative direction, generation metadata, QA, cleanup, human review, legal review, and final engine integration as separate gates. Each layer is owned by a separate `worker` subagent, while the main/default agent coordinates scope, reviews outputs, and records final status. (source: `resources/assetgen.workflow.md`)
 
 ## Details
 
@@ -19,7 +19,7 @@ The proposed asset workspace is organized under an `assets/` folder with separat
 The workflow has three layers:
 
 - Creative control: the art bible, asset briefs, prompt templates, style rules, palette rules, transparency requirements, and negative constraints define what may be generated.
-- Asset production: candidates are generated from approved briefs, generation settings are recorded, QA checks style and technical fit, alpha/artifact cleanup happens before approval, and final assets are exported to the required size and format.
+- Asset production: candidates are generated from approved briefs, generation settings are recorded, QA checks style and technical fit, alpha/artifact cleanup happens before approval, and final assets are exported to the required size and format. All generated raster asset creation or editing must use the Codex `imagegen` skill, using the built-in `image_gen` tool path unless the human explicitly asks for the skill's CLI fallback.
 - Governance and integration: human review checks gameplay fit and brand consistency, legal/policy review checks rights and unsafe content, and only approved assets are copied into the production repository or engine surface. (source: `resources/assetgen.workflow.md`)
 
 Assets move through explicit lifecycle states: `briefed`, `generated`, `qa_pending`, `cleanup_required`, `review_pending`, `approved`, `integrated`, or `rejected`. Rejected assets are blocked from production at the QA, cleanup, or review gates. (source: `resources/assetgen.workflow.md`)
