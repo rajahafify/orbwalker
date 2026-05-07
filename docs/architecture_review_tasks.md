@@ -99,11 +99,11 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 - Status: `done`
 - Owner/scope: Reduce `scripts/scenes/combat.gd` by extracting the lowest-risk remaining responsibilities after AR-09 stability cleanup. First extraction target is debug console ownership plus turn-log formatting, because those areas are large, mostly isolated, and less coupled to combat math or resolve timing than input, layout, VFX, HUD sync, or routing.
-- Progress: 2026-05-04 completed the behavior-preserving extraction. `scripts/combat/combat_debug_console.gd` now owns debug command parsing, help text, log storage/rendering, log-level state, command output coloring, and command dispatch. `scripts/combat/combat_turn_logger.gd` now owns normal/detailed turn-log line generation, state snapshot formatting helpers, intent formatting, and reusable outcome/summary strings. `combat_player_controller.gd` still owns combat state, board mutation, RunState/progression mutations, HUD refresh, `/skip` route/state reset, debug fight win/lose outcome routing, resolve presentation callbacks, input, VFX, layout, and scene transitions.
+- Progress: 2026-05-04 completed the behavior-preserving extraction. `scripts/combat/combat_debug_console.gd` now owns debug command parsing, help text, log storage/rendering, log-level state, command output coloring, and command dispatch. `scripts/combat/combat_turn_log_presenter.gd` now owns normal/detailed turn-log line generation, state snapshot formatting helpers, intent formatting, and reusable outcome/summary strings. `combat_player_controller.gd` still owns combat state, board mutation, RunState/progression mutations, HUD refresh, `/skip` route/state reset, debug fight win/lose outcome routing, resolve presentation callbacks, input, VFX, layout, and scene transitions.
 - Plan:
   - Add `scripts/combat/combat_debug_console.gd` for debug command parsing, help text, debug output formatting, command dispatch, and `/skip <level> <fight>` handling.
   - Keep privileged gameplay actions owned by `combat_player_controller.gd`. The debug console should call controller-provided callbacks for actions such as skip routing, run-state mutation, combat refresh, and status updates instead of directly owning gameplay state.
-  - Add `scripts/combat/combat_turn_logger.gd` for turn-log text generation, verbosity-specific formatting, summary string construction, and reusable result-envelope display text.
+  - Add `scripts/combat/combat_turn_log_presenter.gd` for turn-log text generation, verbosity-specific formatting, summary string construction, and reusable result-envelope display text.
   - Keep combat result dictionaries, `turn_log` shape, debug command names, and visible command output stable unless a confirmed bug is found during extraction.
   - Leave input handling, resolve presentation, combo timing, mastery feedback, VFX spawning, layout management, HUD sync, outcome routing, and RunState transitions in the controller for later AR batches.
 - Out of scope:
@@ -111,23 +111,23 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not start content migration or theme-resource extraction in this batch.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-10-combat-controller-refactor`; `git diff --check` passed.
-  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_logger.gd`; focused `ResourceLoader.CACHE_MODE_IGNORE` probes loaded all three current scripts; `res://scenes/combat.tscn` instantiated with `DebugOverlay`, `CombatLogText`, `ConsoleInput`, `Board`, and `OutcomeSummaryPanel`; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors after rerun.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_player_controller.gd`, `combat_debug_console.gd`, and `combat_turn_log_presenter.gd`; focused `ResourceLoader.CACHE_MODE_IGNORE` probes loaded all three current scripts; `res://scenes/combat.tscn` instantiated with `DebugOverlay`, `CombatLogText`, `ConsoleInput`, `Board`, and `OutcomeSummaryPanel`; `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors after rerun.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - Focused turn-logger probe confirmed the known normal turn summary lines and summary string match the pre-refactor baseline; a broader in-editor console lambda probe returned `<null>` because of MCP tool-script limitations, so representative live debug command click-through remains manual QA.
   - Manual acceptance should cover opening combat, using representative debug commands, completing one normal combat transition, and confirming no visible behavior changed.
 - Docs/wiki impact: Update `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` after the extraction only if the runtime helpers are actually added and validated.
 
-## AR-11: Combat Layout Manager Extraction
+## AR-11: Combat layout presenter extraction
 
 - Status: `done`
-- Owner/scope: Extracted combat scene geometry and responsive design-space positioning from `scripts/scenes/combat.gd` into `scripts/combat/combat_layout_manager.gd`.
-- Progress: 2026-05-04 completed the behavior-preserving layout extraction. `CombatLayoutManager` now owns viewport/design-root scaling, runtime zone rect calculation, design-rect application, enemy panel positioning, combat strip timer geometry, board panel aspect/shadow geometry, player panel legacy visibility/layout, loadout rail positioning, debug overlay anchoring, `PlayerLoadoutHud` section override dispatch, and outcome overlay board-rect sync. `combat_player_controller.gd` keeps scene node ownership, gameplay state, timer state decisions, input, resolver/presenter orchestration, VFX, HUD data refresh, audio, `/skip`, debug command callbacks, outcome routing, and scene transitions.
+- Owner/scope: Extracted combat scene geometry and responsive design-space positioning from `scripts/scenes/combat.gd` into `scripts/combat/combat_layout_presenter.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving layout extraction. `CombatLayoutPresenter` now owns viewport/design-root scaling, runtime zone rect calculation, design-rect application, enemy panel positioning, combat strip timer geometry, board panel aspect/shadow geometry, player panel legacy visibility/layout, loadout rail positioning, debug overlay anchoring, `PlayerLoadoutHud` section override dispatch, and outcome overlay board-rect sync. `combat_player_controller.gd` keeps scene node ownership, gameplay state, timer state decisions, input, resolver/presenter orchestration, VFX, HUD data refresh, audio, `/skip`, debug command callbacks, outcome routing, and scene transitions.
 - Out of scope:
   - Do not redesign the combat screen, resize gameplay zones beyond existing formulas, or combine this with theme-resource extraction.
   - Do not move `PlayerLoadoutHud` ownership; this AR only moves combat-scene positioning orchestration.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-11-combat-layout-manager`; `git diff --check` passed.
-  - Godot MCP `view_script` passed for `res://scripts/scenes/combat.gd`, `res://scripts/combat/combat_layout_manager.gd`, and `res://scripts/ui/player_loadout_hud.gd`; focused script reload returned `reload=0 base=RefCounted new=true` for the layout helper.
+  - Godot MCP `view_script` passed for `res://scripts/scenes/combat.gd`, `res://scripts/combat/combat_layout_presenter.gd`, and `res://scripts/ui/player_loadout_hud.gd`; focused script reload returned `reload=0 base=RefCounted new=true` for the layout helper.
   - Focused `res://scenes/combat.tscn` instantiate probe confirmed `CombatLayoutRoot`, `BoardPanel`, `Board`, `PlayerHudSection`, `DebugOverlay`, and `OutcomeSummaryPanel`.
   - Focused layout probe preserved key formulas: `1080x1920` board `480x576`, `1080x2400` board `880x1056`, tall board panel `1048x1064`, wide viewport root centering/scale, and compact/right-side debug overlay anchoring.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
@@ -135,11 +135,11 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Manual visual QA remains required for overlap checks, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel.
 - Docs/wiki impact: `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`, and `wiki/log.md` updated for the new layout helper boundary and validation evidence.
 
-## AR-12: Combat VFX Manager Extraction
+## AR-12: Combat VFX presenter extraction
 
 - Status: `done`
-- Owner/scope: Extracted combat VFX spawning and transient replay effect helpers from `scripts/scenes/combat.gd` into `scripts/combat/combat_vfx_manager.gd`.
-- Progress: 2026-05-04 completed the behavior-preserving VFX extraction. `CombatVfxManager` now owns VFX layer binding, texture VFX spawning, replay impact texture lookup/fallback, mastery beam source lookup, global-to-VFX-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup through the controller-owned tween owner. `CombatPlayerController` keeps turn-log decisions, replay order, awaits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions.
+- Owner/scope: Extracted combat VFX spawning and transient replay effect helpers from `scripts/scenes/combat.gd` into `scripts/combat/combat_vfx_presenter.gd`.
+- Progress: 2026-05-04 completed the behavior-preserving VFX extraction. `CombatVfxPresenter` now owns VFX layer binding, texture VFX spawning, replay impact texture lookup/fallback, mastery beam source lookup, global-to-VFX-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup through the controller-owned tween owner. `CombatPlayerController` keeps turn-log decisions, replay order, awaits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions.
 - Plan:
   - Move texture-based VFX spawning, replay impact spawning, mastery beam spawning, mastery-card source lookup support, global/local coordinate conversion, fade tween lifecycle, and small visual-effect helper decisions that are not combat math.
   - Keep `CombatPlayerController` responsible for deciding when effects happen, which `turn_log` values trigger them, and when awaited replay steps continue or abort.
@@ -150,7 +150,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not introduce new effects or change visual readability tuning in this refactor batch.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-12-combat-vfx-manager`; `git diff --check` passed.
-  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/scenes/combat.gd` and `res://scripts/combat/combat_vfx_manager.gd`.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/scenes/combat.gd` and `res://scripts/combat/combat_vfx_presenter.gd`.
   - Focused helper reload/instantiate probe returned `reload=0 base=RefCounted new=true`.
   - Focused VFX helper probe confirmed a null texture no-op kept `VfxLayer` at `0` children, a spawned texture parented one `TextureRect` under `VfxLayer`, and preserved size plus alpha modulation.
   - Focused `res://scenes/combat.tscn` instantiate probe confirmed `VfxLayer`, `ElementalMasteryCards`, `EnemyPortrait`, `PlayerPortrait`, and `Board`.
@@ -227,7 +227,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 ## AR-16: Combat HUD Sync Boundary Review
 
 - Status: `done`
-- Owner/scope: Reviewed and reduced remaining HUD data-sync pressure in `scripts/scenes/combat.gd` after `PlayerLoadoutHud`, AR-10, and the layout/theme/placeholder extractions were stable. `scripts/combat/combat_hud_snapshot_builder.gd` now owns side-effect-free combat HUD snapshot dictionary construction; `CombatPlayerController` still owns scene-node application for top HUD, enemy stage, timer/tempo, player vitals/stat labels, debug overlay, `PlayerLoadoutHud` payload dispatch, placeholder fallback decisions, and loadout rail layout refresh.
+- Owner/scope: Reviewed and reduced remaining HUD data-sync pressure in `scripts/scenes/combat.gd` after `PlayerLoadoutHud`, AR-10, and the layout/theme/placeholder extractions were stable. `scripts/combat/combat_hud_presenter.gd` now owns side-effect-free combat HUD snapshot dictionary construction; `CombatPlayerController` still owns scene-node application for top HUD, enemy stage, timer/tempo, player vitals/stat labels, debug overlay, `PlayerLoadoutHud` payload dispatch, placeholder fallback decisions, and loadout rail layout refresh.
 - Progress: 2026-05-04 completed the narrow data-boundary extraction. `_update_hud()` now builds one combat HUD snapshot and applies it through the existing `_sync_*` scene update methods. The new helper returns `top_hud`, `enemy_stage`, `tempo_row`, `player_strip`, and `debug_overlay` dictionaries from controller-provided player/enemy/combat/progression/timer data. No `PlayerLoadoutHud` source was changed, so shop HUD behavior, inventory selection/popovers, consumable use signals, sell flow, mastery card rendering, and layout override behavior remain under the existing shared HUD boundary.
 - Plan:
   - Inventory `_sync_*` and `_update_hud()` responsibilities and separate pure data snapshot construction from scene-specific label/bar updates where doing so reduces coupling.
@@ -239,7 +239,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Do not change Elemental Mastery timing, feedback pooling, or card rendering.
 - Validation:
   - `git status --short --branch` confirmed `codex/ar-16-combat-hud-sync-boundary`; `git diff --check` passed.
-  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/scenes/combat.gd` and `res://scripts/combat/combat_hud_snapshot_builder.gd`.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/scenes/combat.gd` and `res://scripts/combat/combat_hud_presenter.gd`.
   - Focused HUD snapshot probe returned helper base `RefCounted`, controller base `Control`, instantiated `res://scenes/combat.tscn` and `res://scenes/shop.tscn`, and confirmed representative top HUD, enemy, timer, player vitals/stat, truncated turn-summary, and debug snapshot strings.
   - Retained AR-01 combat result-envelope probe still matched baseline values: `status=ok`, `combo_count=3`, `heal_amount=4`, `armor_gained=9`, `gold_gained=2`, `enemy_blocked=5`, `enemy_damage_taken=19`, `total_elemental_damage=24`, `enemy_intent_skipped=false`, and `next_phase_name=Intent Preview`.
   - `play_scene main` launched with desktop menu WAV playback; final `get_godot_errors` reported no session errors.
@@ -277,7 +277,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Covered by AR evidence: baseline and post-change route timing capture, combat instantiate stall regression, shared HUD combat/shop behavior, RunState route invariants, dictionary-backed `ContentRegistry` alignment, per-batch `get_godot_errors`, and tracker/wiki synchronization through AR-18.
   - Combat controller refactor status: `scripts/scenes/combat.gd` is reduced from the pre-AR estimate of about 3357 lines to 2432 lines on the AR-18 branch, a reduction of about 925 lines or 28%. The original high-value leaf extraction target is met: debug console, turn-log formatting, layout/positioning, VFX spawning, drag/pointer input, placeholder textures, resolve presentation, outcome overlay presentation, visual chrome, and side-effect-free HUD snapshot building now live in focused helpers. The controller remains a combat scene coordinator for input phase authority, resolver simulation, combat math handoff, RunState outcome routing, audio hooks, `/skip`, privileged debug callbacks, scene-node HUD application, placeholder fallback assignment, VFX timing decisions, and scene transitions.
   - Still open for Milestone 10 or later QA: board pop-in/perceived transition feel on target hardware, full desktop/mobile overlap sweep, seeded full-run reproducibility, Merchant Compass free-first-reroll behavior, economy/balance tuning, Android audio loop-length listening, and first-playable run/content QA.
-  - Future refactor candidates: a `CombatFlowCoordinator` could own post-resolve outcome decisions and route selection; a `CombatHudApplier` could apply `CombatHudSnapshotBuilder` dictionaries to scene labels/bars/nodes; a `CombatTurnOrchestrator` could own the resolve pipeline, but that is higher risk because it touches combat timing, presentation sequencing, and combat math boundaries.
+  - Future refactor candidates: a `CombatFlowCoordinator` could own post-resolve outcome decisions and route selection; a `CombatHudApplier` could apply `CombatHudPresenter` dictionaries to scene labels/bars/nodes; a `CombatTurnOrchestrator` could own the resolve pipeline, but that is higher risk because it touches combat timing, presentation sequencing, and combat math boundaries.
   - Known failure-path follow-ups from closeout review: `final_run_summary.gd` mutates `RunState` for `Start New Run` before confirming the scene transition, so a failed final-summary transition can leave the old summary visible with a fresh active run; `main_boot.gd` switches from menu music to combat music before confirming Start Run transition success, so a failed Start Run transition can leave combat music playing on the main menu. These do not change the accepted normal route evidence, but should be fixed before treating transition failure recovery as fully closed.
   - Retained intentionally for QA: `RunState` FlowTrace logs, combat `ResolveTrace` logs, and the feature-flagged `scripts/debug/ar01_combat_result_probe.gd`; these are documented diagnostics for Milestone 10 QA rather than accidental architecture ownership boundaries.
 - Blockers: None for closing the AR tracker. Remaining items are Milestone 10 balance/QA or future scoped cleanup, not AR closeout blockers.
@@ -296,7 +296,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 - Progress: 2026-05-06 added `RunState.flow_trace_prepare_scene(...)` and `RunState.flow_trace_attach_prepared_scene(...)` so callers can load/instantiate a target scene, commit run/audio state only after preparation succeeds, and attach through the existing FlowTrace markers. `main_boot.gd` now prepares combat before `RunState.start_new_run()` and combat-music handoff, then restores the prior run snapshot/menu music/button/status if attach fails. `final_run_summary.gd` now prepares combat before clearing the completed summary for New Run, and restores the prior summary/run snapshot plus action buttons on attach failure. `shop_player.gd` replaced no-active-run and wrong-step bare deferred redirects with a deferred traced redirect helper using `RunState.flow_trace_change_scene(...)` and visible failure status. Shop HUD internals moved out of shop-local constants into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, while the shop screen still owns its mount placement and preserves the 30 design-pixel action-to-HUD gap.
 - Validation:
   - `git diff --check` passed.
-  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `run_state.gd`, `main_boot.gd`, `final_run_summary.gd`, `shop_player.gd`, `player_loadout_hud.gd`, and `combat_layout_manager.gd`.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `run_state.gd`, `main_boot.gd`, `final_run_summary.gd`, `shop_player.gd`, `player_loadout_hud.gd`, and `combat_layout_presenter.gd`.
   - Focused editor probes passed for transition preparation failure leaving run state unchanged, Start Run attach failure restoring inactive run state, final-summary New Run attach failure preserving the completed summary snapshot, duplicate shop-step snapshot restore, shared shop HUD preset geometry with 30px gap/no action-row overlap, and combat HUD layout probe with no actionable overlap at `1080x1920`.
   - Scene instantiate probe passed for `main.tscn`, `combat_player.tscn`, `shop_player.tscn`, and `final_run_summary.tscn`.
   - Route invariant probe passed for new run to combat, fight victory to shop, shop advance to combat, final victory to final summary, and defeat to final summary.
@@ -441,3 +441,38 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Existing route semantics and rollback behavior.
   - RunLogger and SceneRouter facade boundaries introduced in AR-22 and AR-23.
 - Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the signal facade.
+
+### AR-27: Shared ConsoleLogger scene
+
+- Status: `deferred`
+- Owner/scope: Replace the combat-local log rendering part of `CombatDebugConsole` with a reusable `ConsoleLogger` scene. The new scene should listen to a shared console-log event stream and append view-ready log lines; it should not own combat command parsing, combat state mutation, or route/debug shortcuts. Any player-facing or debug scene should be able to emit console log events without depending on combat internals.
+- Plan:
+  - Add a reusable console log UI scene, likely under `scenes/ui/`, with script ownership under `scripts/ui/`.
+  - Add or choose a shared event boundary for console log events. Keep it narrow: append log line, clear log if needed, and optional level/category metadata.
+  - Split current `CombatDebugConsole` responsibilities before renaming: command input and command dispatch remain combat-specific unless a later task creates a broader command router; log display moves to `ConsoleLogger`.
+  - Preserve existing debug command names, command behavior, log visibility, and combat debug affordances during the migration.
+- Validation:
+  - Godot MCP instantiate check for the new reusable console scene and existing combat scene.
+  - Focused probe that emits console log events from combat and at least one non-combat scene/controller surface.
+  - Focused probe or manual QA that existing combat debug commands still dispatch and render log output in order.
+  - `play_scene main`, `stop_running_scene`, and `get_godot_errors`.
+
+### AR-28: Combat presenter naming cleanup
+
+- Status: `done`
+- Owner/scope: Aligned combat helper names with Rails-style presentation boundaries and avoided generic `Manager`/`Builder` names where the role is more precise. A presenter takes state, events, or result data and turns it into a consumable presentation object or presentation action for a view/UI surface. This was a naming/ownership pass only and did not intentionally change combat math, resolver envelopes, board coordinate handling, route semantics, or resolve replay timing.
+- Progress: 2026-05-07 completed the behavior-preserving presenter rename pass. `CombatHudPresenter` now owns side-effect-free HUD display payload construction, `CombatTurnLogPresenter` owns readable combat turn/output text preparation, `CombatLayoutPresenter` owns combat scene layout presentation, and `CombatVfxPresenter` owns transient VFX presentation. Matching `.gd.uid` files moved with the renamed scripts, and direct runtime/debug references were updated.
+- Plan:
+  - Treat `Presenter` as the name for view-specific display preparation or sequencing.
+  - Rename `CombatHudPresenter` for combat/player/enemy/run state prepared for HUD display.
+  - Rename `CombatTurnLogPresenter` for text/output prepared for console or run-log presentation rather than owned storage.
+  - Keep `Logger` for classes that own append/export/storage of log events. Do not use `Logger` for a class that only formats a turn result into display text.
+  - Rename `CombatLayoutPresenter` for layout applied as a presentation concern.
+  - Rename `CombatVfxPresenter` for combat events/results turned into visible VFX presentation.
+- Validation:
+  - Source-reference search found no old presenter/helper names across runtime/docs surfaces after docs sync.
+  - `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_controller.gd`, `combat_debug_console.gd`, `combat_hud_presenter.gd`, `combat_turn_log_presenter.gd`, `combat_layout_presenter.gd`, `combat_vfx_presenter.gd`, and `mobile_combat_layout_probe.gd`.
+  - Godot MCP combat scene smoke ran through `open_scene res://scenes/combat.tscn`, `play_scene current`, and `stop_running_scene`.
+  - Retained AR-01 combat result-envelope probe still matched the baseline values.
+  - `get_godot_errors` still reported stale open-script/global-class diagnostics for deleted old presenter paths until the local `.godot` editor cache is fully refreshed; cache-ignore script loads and scene smoke used the renamed scripts successfully.

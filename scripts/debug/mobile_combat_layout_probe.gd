@@ -1,16 +1,16 @@
 extends RefCounted
 
-const LAYOUT_MANAGER_PATH := "res://scripts/combat/combat_layout_manager.gd"
+const LAYOUT_PRESENTER_PATH := "res://scripts/combat/combat_layout_presenter.gd"
 
 
 static func run_probe() -> Dictionary:
-	var layout_manager_script: Variant = _load_layout_manager_script()
-	if layout_manager_script == null or not layout_manager_script.has_method("build_layout_probe"):
+	var layout_presenter_script: Variant = _load_layout_presenter_script()
+	if layout_presenter_script == null or not layout_presenter_script.has_method("build_layout_probe"):
 		return {
 			"probe_id": "mobile-combat-layout-probe",
 			"result_count": 0,
 			"results": [],
-			"error": "layout_manager_script_unavailable",
+			"error": "layout_presenter_script_unavailable",
 		}
 	var cases := [
 		{"name": "mobile_1080x1920", "viewport": Vector2(1080, 1920)},
@@ -21,7 +21,7 @@ static func run_probe() -> Dictionary:
 	for case_entry in cases:
 		var case_name := String(case_entry.get("name", "unknown"))
 		var viewport: Vector2 = case_entry.get("viewport", Vector2.ZERO)
-		var probe: Dictionary = layout_manager_script.build_layout_probe(viewport)
+		var probe: Dictionary = layout_presenter_script.build_layout_probe(viewport)
 		var zone_rects: Dictionary = probe.get("zone_rects", {})
 		var readability: Dictionary = probe.get("readability", {})
 		results.append({
@@ -67,9 +67,9 @@ static func run_probe() -> Dictionary:
 	return summary
 
 
-static func _load_layout_manager_script() -> Variant:
+static func _load_layout_presenter_script() -> Variant:
 	return ResourceLoader.load(
-		LAYOUT_MANAGER_PATH,
+		LAYOUT_PRESENTER_PATH,
 		"",
 		ResourceLoader.CACHE_MODE_IGNORE
 	)

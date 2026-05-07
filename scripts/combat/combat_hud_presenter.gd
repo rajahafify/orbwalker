@@ -1,4 +1,5 @@
 extends RefCounted
+class_name CombatHudPresenter
 
 
 func build_snapshot(data: Dictionary) -> Dictionary:

@@ -1,5 +1,5 @@
 extends RefCounted
-class_name CombatVfxManager
+class_name CombatVfxPresenter
 
 var _vfx_layer: Control
 var _visual_registry: Variant

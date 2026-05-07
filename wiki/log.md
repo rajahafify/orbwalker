@@ -24,11 +24,11 @@
 
 ## 2026-05-06 - Prepared Scene Post-Ready Guard
 
-- Documented and validated the review follow-up: `RunState.flow_trace_attach_prepared_scene(...)` now keeps the old scene disabled/hidden until the prepared scene survives a deferred post-ready frame, logs `post_ready_check` before freeing the old scene, and restores the supplied rollback snapshot plus old scene if that health check fails. Start Run and final-summary New Run now pass rollback snapshots into the prepared scene payload. `CombatLayoutManager` enum assignments use fully-qualified enum values so the Godot MCP script reload gate is clean. Validation passed `git diff --check`, Godot MCP `view_script` for `combat_layout_manager.gd` and `final_run_summary.gd`, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/flow/final_run_summary.gd`, `scripts/combat/combat_layout_manager.gd`, `docs/test_plan.md`)
+- Documented and validated the review follow-up: `RunState.flow_trace_attach_prepared_scene(...)` now keeps the old scene disabled/hidden until the prepared scene survives a deferred post-ready frame, logs `post_ready_check` before freeing the old scene, and restores the supplied rollback snapshot plus old scene if that health check fails. Start Run and final-summary New Run now pass rollback snapshots into the prepared scene payload. `CombatLayoutPresenter` enum assignments use fully-qualified enum values so the Godot MCP script reload gate is clean. Validation passed `git diff --check`, Godot MCP `view_script` for `combat_layout_presenter.gd` and `final_run_summary.gd`, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/core/run_state.gd`, `scripts/core/main_boot.gd`, `scripts/flow/final_run_summary.gd`, `scripts/combat/combat_layout_presenter.gd`, `docs/test_plan.md`)
 
 ## 2026-05-06 - Scene Review Finding Cleanup
 
-- Documented and validated the scene-review finding cleanup: `CombatLayoutManager` now casts enum-style layout assignments so the current Godot MCP error gate is clean, and `docs/scene_structure_refactor_plan.md` now treats the shop HUD preset cleanup as resolved while keeping the reusable HUD `.tscn` boundary as the remaining scene-structure target. Validation passed `git diff --check`, Godot MCP `view_script`, focused combat scene instantiate/load probe, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/combat/combat_layout_manager.gd`, `docs/scene_structure_refactor_plan.md`, `docs/test_plan.md`)
+- Documented and validated the scene-review finding cleanup: `CombatLayoutPresenter` now casts enum-style layout assignments so the current Godot MCP error gate is clean, and `docs/scene_structure_refactor_plan.md` now treats the shop HUD preset cleanup as resolved while keeping the reusable HUD `.tscn` boundary as the remaining scene-structure target. Validation passed `git diff --check`, Godot MCP `view_script`, focused combat scene instantiate/load probe, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. (source: `scripts/combat/combat_layout_presenter.gd`, `docs/scene_structure_refactor_plan.md`, `docs/test_plan.md`)
 
 ## 2026-05-06 - Scene Review P1/P2 Cleanup
 
@@ -36,15 +36,15 @@
 
 ## 2026-05-04 - CFR-08 Enemy Intent HP Preview
 
-- Updated [[features]] for CFR-08 enemy intent HP preview: before the player moves, combat now computes projected incoming attack damage from attack intent entries and visible player HP/armor, then the shared HUD shows current player armor as a persistent full-height semi-transparent silver overshield on the HP bar, including armor from turn start and Armor matches. The old `BLOCK +N` badge is hidden in favor of that HP-bar armor visual. The HUD also shows a slower red-to-empty-to-red blinking HP danger segment for unblocked or partially blocked HP loss; the warning fades over an empty HP backing so the off phase does not reveal the normal red HP fill. Projected blocked player damage and enemy block intent use full-height semi-transparent silver overshield previews, scaled by block over max HP. Enemy intent preview entries now render as separate `Attack N` / `Block N` bubbles with no fixed two-intent limit for attack/block entries, and the retired scene `IntentBadge` / `EnemyIntentLabel` stay hidden so the old single-bubble display does not flash first. Hovering the HP danger preview scales/blinks attack bubbles while hovered; hovering an overshield preview scales/blinks block bubbles. This does not change combat math, enemy intent values, resolver behavior, RunState routing, enemy attack resolution, replay timing, board order, or `combat_speed`. Godot MCP validation passed on 2026-05-04; manual visual QA remains useful for real enemy-intent cases. (source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_hud_snapshot_builder.gd`, `scenes/combat/combat_player.tscn`, `docs/combat_feedback_revamp_tasks.md`)
+- Updated [[features]] for CFR-08 enemy intent HP preview: before the player moves, combat now computes projected incoming attack damage from attack intent entries and visible player HP/armor, then the shared HUD shows current player armor as a persistent full-height semi-transparent silver overshield on the HP bar, including armor from turn start and Armor matches. The old `BLOCK +N` badge is hidden in favor of that HP-bar armor visual. The HUD also shows a slower red-to-empty-to-red blinking HP danger segment for unblocked or partially blocked HP loss; the warning fades over an empty HP backing so the off phase does not reveal the normal red HP fill. Projected blocked player damage and enemy block intent use full-height semi-transparent silver overshield previews, scaled by block over max HP. Enemy intent preview entries now render as separate `Attack N` / `Block N` bubbles with no fixed two-intent limit for attack/block entries, and the retired scene `IntentBadge` / `EnemyIntentLabel` stay hidden so the old single-bubble display does not flash first. Hovering the HP danger preview scales/blinks attack bubbles while hovered; hovering an overshield preview scales/blinks block bubbles. This does not change combat math, enemy intent values, resolver behavior, RunState routing, enemy attack resolution, replay timing, board order, or `combat_speed`. Godot MCP validation passed on 2026-05-04; manual visual QA remains useful for real enemy-intent cases. (source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_hud_presenter.gd`, `scenes/combat/combat_player.tscn`, `docs/combat_feedback_revamp_tasks.md`)
 
 ## 2026-05-04 - CFR-06 Enemy Attack Feedback
 
-- Updated [[features]] for CFR-06 enemy attack feedback: enemy attacks now get a generic cue/travel visual from the enemy portrait, armor-block impacts for `blocked_by_armor`, HP hit impacts for `hp_damage`, and partial-block timing that steps visible armor before the HP damage read. The replay still reads existing `turn_log.enemy_attack_resolution` values and preserves combat math, resolver behavior, RunState routing, board order, `combat_speed`, blocked label text, and enemy attack SFX ownership. User visual QA passed on 2026-05-04 for fully blocked, partially blocked, and unblocked enemy attacks. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+- Updated [[features]] for CFR-06 enemy attack feedback: enemy attacks now get a generic cue/travel visual from the enemy portrait, armor-block impacts for `blocked_by_armor`, HP hit impacts for `hp_damage`, and partial-block timing that steps visible armor before the HP damage read. The replay still reads existing `turn_log.enemy_attack_resolution` values and preserves combat math, resolver behavior, RunState routing, board order, `combat_speed`, blocked label text, and enemy attack SFX ownership. User visual QA passed on 2026-05-04 for fully blocked, partially blocked, and unblocked enemy attacks. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_presenter.gd`, `docs/combat_feedback_revamp_tasks.md`)
 
 ## 2026-05-04 - CFR-04 Mastery Activation Readability
 
-- Updated [[features]] for CFR-04 mastery activation readability: combat mastery cards now keep pooled contribution text but add fixed-size value-scaled activation glow/frame pulses, and mastery beams add a small source pulse at the active card so the player can read the card as the source. The change is presentation-only and preserves combat math, resolver behavior, RunState routing, board order, result labels, and `combat_speed`. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+- Updated [[features]] for CFR-04 mastery activation readability: combat mastery cards now keep pooled contribution text but add fixed-size value-scaled activation glow/frame pulses, and mastery beams add a small source pulse at the active card so the player can read the card as the source. The change is presentation-only and preserves combat math, resolver behavior, RunState routing, board order, result labels, and `combat_speed`. (source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_presenter.gd`, `docs/combat_feedback_revamp_tasks.md`)
 
 ## 2026-05-04 - CFR-03 Combat Feedback Timing
 
@@ -57,7 +57,7 @@
 
 ## 2026-05-04 - Post-Review Safety Cleanup
 
-- Added post-review safety notes for shop traced scene-change failure unlocks, stale-reference guards in combat drag/layout helpers, explicit `PlayerState` mastery-provider binding, detailed armor-log formula correction, shared lazy `AudioManagerResolver`, and `UiUtils.clear_children(...)`. (source: `scripts/flow/shop_player.gd`, `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/core/audio_manager_resolver.gd`, `scripts/ui/ui_utils.gd`)
+- Added post-review safety notes for shop traced scene-change failure unlocks, stale-reference guards in combat drag/layout helpers, explicit `PlayerState` mastery-provider binding, detailed armor-log formula correction, shared lazy `AudioManagerResolver`, and `UiUtils.clear_children(...)`. (source: `scripts/flow/shop_player.gd`, `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_turn_log_presenter.gd`, `scripts/core/audio_manager_resolver.gd`, `scripts/ui/ui_utils.gd`)
 - Updated [[features]], [[file-map]], and [[known-issues]] to record the new helper ownership and the resolved shop transition-lock failure path. (source: `wiki/features.md`, `wiki/file-map.md`, `wiki/known-issues.md`)
 
 ## 2026-05-04 - AR-18 Architecture Review Closeout
@@ -70,9 +70,9 @@
 - Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/board_drag_input_handler.gd`, which now owns board-local mouse/touch drag event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, move-timer countdown state, drag visual reset/abort, and match-glow refresh. `scripts/combat/combat_player_controller.gd` keeps input phase authority, timer/status presentation, resolve kickoff, combat math, presentation, VFX/layout/HUD, debug callbacks, `/skip`, routing, and scene transitions. (source: `scripts/combat/board_drag_input_handler.gd`, `scripts/combat/combat_player_controller.gd`)
 - Recorded AR-13 completion in the architecture review tracker, todo, and test plan with Godot MCP `view_script`, focused script-load, helper state-transition probes, combat scene instantiate, retained AR-01 result-envelope, main-scene smoke, final no-session-error evidence, Android install verification, and user-confirmed manual QA for real mouse drag, Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy. (source: `docs/architecture_review_tasks.md`, `todo.md`, `docs/test_plan.md`)
 
-## 2026-05-04 - AR-12 Combat VFX Manager Extraction
+## 2026-05-04 - AR-12 Combat VFX presenter extraction
 
-- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_vfx_manager.gd`, which now owns transient combat VFX drawing mechanics: VFX layer binding, texture VFX spawning, replay impacts, mastery beam source lookup, global-to-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup. `scripts/combat/combat_player_controller.gd` keeps turn-log decisions, replay order/waits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions. (source: `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_player_controller.gd`)
+- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_vfx_presenter.gd`, which now owns transient combat VFX drawing mechanics: VFX layer binding, texture VFX spawning, replay impacts, mastery beam source lookup, global-to-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup. `scripts/combat/combat_player_controller.gd` keeps turn-log decisions, replay order/waits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, `/skip`, outcome routing, and scene transitions. (source: `scripts/combat/combat_vfx_presenter.gd`, `scripts/combat/combat_player_controller.gd`)
 - Recorded AR-12 completion in the architecture review tracker and test plan with Godot MCP `view_script`, helper reload/instantiate, focused VFX spawn, combat scene instantiate, retained AR-01 result-envelope, main-scene smoke, and final no-session-error evidence. Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, overlap checks, drag/cascade feel, orb texture pop-in, and rapid-tap feel. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
 
 ## 2026-05-04 - Start Run Orb Texture Startup Fix
@@ -80,16 +80,16 @@
 - Added generated clean combat orb textures under `resources/art/first_pass/derived/orbs/` and updated `VisualRegistry` to load those textures before falling back to runtime orb-sheet cleanup. (source: `scripts/ui/visual_registry.gd`, `resources/art/first_pass/derived/orbs/`)
 - Recorded follow-up timing evidence: focused warm-cache `orb_texture()` probes measured about `12ms`, and live `Start Run -> Combat` tracing measured `combat_first_usable_frame` at `314ms` with `combat_after_texture_map` at `325ms`, replacing the old sampled `1.1s-1.2s` deferred cleanup delay. Manual visual pop-in and Android/on-device feel remain QA items. (source: `docs/test_plan.md`, `wiki/known-issues.md`)
 
-## 2026-05-04 - AR-11 Combat Layout Manager Extraction
+## 2026-05-04 - AR-11 Combat layout presenter extraction
 
-- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_layout_manager.gd`, which now owns combat scene geometry, responsive design-space scaling, board/player HUD layout rects, debug overlay anchors, and outcome overlay layout sync while `combat_player_controller.gd` keeps gameplay state, input, VFX, HUD data, routing, and timer state decisions. (source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_player_controller.gd`)
+- Added [[architecture]], [[file-map]], and [[features]] notes for `scripts/combat/combat_layout_presenter.gd`, which now owns combat scene geometry, responsive design-space scaling, board/player HUD layout rects, debug overlay anchors, and outcome overlay layout sync while `combat_player_controller.gd` keeps gameplay state, input, VFX, HUD data, routing, and timer state decisions. (source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_player_controller.gd`)
 - Recorded AR-11 completion in the architecture review tracker and test plan with Godot MCP script-load, scene instantiate, layout parity, retained AR-01 result-envelope, main-scene smoke, and final no-session-error evidence. Manual visual overlap, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel remain broader QA gaps unless retested separately. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
 
 ## 2026-05-04 - AR-10 Combat Controller God-Object Refactor
 
-- Updated [[architecture]], [[file-map]], and [[features]] for the new combat debug/turn-log helper boundary: `scripts/combat/combat_debug_console.gd` owns command parsing and log rendering, `scripts/combat/combat_turn_logger.gd` owns turn-log and summary text, and `scripts/combat/combat_player_controller.gd` keeps privileged gameplay callbacks, `/skip`, routing, input, layout, and VFX. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_debug_console.gd`, `scripts/combat/combat_turn_logger.gd`)
+- Updated [[architecture]], [[file-map]], and [[features]] for the new combat debug/turn-log helper boundary: `scripts/combat/combat_debug_console.gd` owns command parsing and log rendering, `scripts/combat/combat_turn_log_presenter.gd` owns turn-log and summary text, and `scripts/combat/combat_player_controller.gd` keeps privileged gameplay callbacks, `/skip`, routing, input, layout, and VFX. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_debug_console.gd`, `scripts/combat/combat_turn_log_presenter.gd`)
 - Recorded AR-10 completion in the architecture review tracker and test plan with Godot MCP script-load, scene instantiate, AR-01 result-envelope, turn-logger parity, and main-scene smoke evidence. Manual command click-through and Android/visual QA remain broader acceptance items unless retested separately. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
-- Added AR-11 through AR-17 tracker entries for the remaining combat-controller god-object refactor candidates: layout manager, VFX manager, board drag input handler, combat chrome/theme boundary, placeholder texture utility, HUD sync boundary review, and outcome/transition boundary review. (source: `docs/architecture_review_tasks.md`)
+- Added AR-11 through AR-17 tracker entries for the remaining combat-controller god-object refactor candidates: layout presenter, vfx presenter, board drag input handler, combat chrome/theme boundary, placeholder texture utility, HUD sync boundary review, and outcome/transition boundary review. (source: `docs/architecture_review_tasks.md`)
 
 ## 2026-05-03 - AR-07 RunState/Data Contract Roadmap
 
@@ -1548,9 +1548,9 @@ Append-only history of wiki operations.
 
 ## [2026-05-04] code-change | AR-16 Combat HUD Sync Boundary
 
-- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_hud_snapshot_builder.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_hud_presenter.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`
 - Changed:
-  - Added `CombatHudSnapshotBuilder` as the side-effect-free combat HUD snapshot dictionary helper for top HUD, enemy stage, timer/tempo row, player strip, and debug overlay data.
+  - Added `CombatHudPresenter` as the side-effect-free combat HUD snapshot dictionary helper for top HUD, enemy stage, timer/tempo row, player strip, and debug overlay data.
   - Kept `CombatPlayerController` responsible for applying snapshots to scene labels/bars/nodes, dispatching `PlayerLoadoutHud` payloads, loadout rail layout refresh, placeholder fallback assignment, combat-only enemy/timer/status behavior, debug callbacks, routing, and `/skip`.
 - Validation:
   - `git diff --check`, Godot MCP `get_project_info`, `view_script` checks, focused HUD snapshot and combat/shop instantiate probe, retained AR-01 combat result-envelope probe, `play_scene main`, and final `get_godot_errors` passed.
@@ -1561,10 +1561,10 @@ Append-only history of wiki operations.
 - AR-17 combat outcome transition boundary review found a narrow behavior-preserving helper inside `scripts/combat/combat_player_controller.gd`: `_trace_and_change_scene_to_target(...)` now owns duplicated combat outcome trace/change-scene glue for standard Continue, boss reward claim, and boss reward skip. `RunState` still owns route semantics and summaries, and `CombatOutcomeOverlay` still owns presentation. Automated Godot MCP validation passed, and user manual QA found no issues or errors across the outcome-route checklist. Updated [[architecture]], [[file-map]], and [[features]]. (source: `scripts/combat/combat_player_controller.gd`, `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
 - Post-closeout review added two transition failure-path follow-ups to [[known-issues]] and the AR-18 tracker context: final-summary `Start New Run` should not leave `RunState` reset if the combat scene transition fails, and Start Run failure recovery should restore menu audio if the transition fails after switching to combat music. These are documented as failure-path issues, not accepted normal-route blockers. (source: `scripts/flow/final_run_summary.gd`, `scripts/core/main_boot.gd`, `docs/architecture_review_tasks.md`)
 - Documented the AR closeout god-object status for `combat_player_controller.gd`: the controller is down from the pre-AR estimate of about 3357 lines to 2432 lines, with the original leaf helper targets extracted and the remaining risk framed as coordinator-scale combat flow, HUD application, and turn orchestration boundaries. Updated [[architecture]], [[file-map]], [[known-issues]], and the AR-18 tracker context. (source: `docs/architecture_review_tasks.md`, `scripts/combat/combat_player_controller.gd`)
-- CFR-02 implementation added floating combat result labels for turn-log-sourced enemy damage, healing, armor gain, gold gain, enemy block, enemy attack block, and player HP damage. The label system lives in `CombatVfxManager` on the existing `VfxLayer`, while replay timing stays in `CombatPlayerController`; a Godot MCP rerun reached the editor, loaded the edited scripts, instantiated combat with `VfxLayer`, spawned all eight label kinds in a focused probe, and launched `play_scene current`. User manual QA passed the full CFR-02 visual matrix on 2026-05-04, so CFR-02 is closed; the final `get_godot_errors` call still retained earlier enum reload diagnostics from before the casts were fixed and should be treated as stale unless they reappear after editor restart. Updated [[features]]. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`)
+- CFR-02 implementation added floating combat result labels for turn-log-sourced enemy damage, healing, armor gain, gold gain, enemy block, enemy attack block, and player HP damage. The label system lives in `CombatVfxPresenter` on the existing `VfxLayer`, while replay timing stays in `CombatPlayerController`; a Godot MCP rerun reached the editor, loaded the edited scripts, instantiated combat with `VfxLayer`, spawned all eight label kinds in a focused probe, and launched `play_scene current`. User manual QA passed the full CFR-02 visual matrix on 2026-05-04, so CFR-02 is closed; the final `get_godot_errors` call still retained earlier enum reload diagnostics from before the casts were fixed and should be treated as stale unless they reappear after editor restart. Updated [[features]]. (source: `scripts/combat/combat_player_controller.gd`, `scripts/combat/combat_vfx_presenter.gd`, `docs/combat_feedback_revamp_tasks.md`)
 ## [2026-05-04] code-change | CFR-04 Mastery Feedback Release Follow-Up
 
-- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_manager.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Source: `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_vfx_presenter.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
 - Changed:
   - Preserved active combat mastery feedback totals through shared HUD rebuilds so staged replay HUD updates do not clear every lit mastery card at once.
   - Strengthened the mastery beam source pulse at the card/icon so the beam origin is easier to read during replay.
@@ -1583,9 +1583,9 @@ Append-only history of wiki operations.
 
 ## [2026-05-04] code-change | CFR-05 VFX Tier Hooks
 
-- Source: `scripts/combat/combat_vfx_manager.gd`, `scripts/combat/combat_player_controller.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
+- Source: `scripts/combat/combat_vfx_presenter.gd`, `scripts/combat/combat_player_controller.gd`, `docs/combat_feedback_revamp_tasks.md`, `docs/test_plan.md`, `wiki/features.md`
 - Changed:
-  - Added `CombatVfxManager`-owned temporary thresholds for Fire, Ice, Earth, Heart, Armor, and Gold replay impacts.
+  - Added `CombatVfxPresenter`-owned temporary thresholds for Fire, Ice, Earth, Heart, Armor, and Gold replay impacts.
   - Added four positive presentation-only VFX tiers that scale existing/fallback impact size, lifetime, alpha, brightness, positive result-label font size, label outline, and label container size.
   - Routed existing `turn_log` replay values from `CombatPlayerController` into the tiered impact and positive-label helpers without changing combat math, replay order, label text, SFX timing, staged HUD stepping, or `combat_speed`.
   - Increased visible tier scale to `1.0`, `1.5`, `2.0`, `3.0` and lowered early-run thresholds after visual feedback showed the first pass was too subtle.
@@ -1706,7 +1706,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M10-04 Fixed Fight Gold Reward
 
-- Source: `scripts/core/run_state.gd`, `scripts/combat/combat_turn_logger.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/shop/shop_service.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/core/run_state.gd`, `scripts/combat/combat_turn_log_presenter.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/shop/shop_service.gd`, `docs/milestone_10_balance_tasks.md`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Shifted M10-04 early economy tuning from random-access boosts to fixed fight base rewards through the prototype balance lever surface.
   - Set new-run gold to `0`, kept Gold spawn/shop/reroll multipliers neutral, and added level 1/2/3 fight base rewards of `10/12/14`.
@@ -1849,7 +1849,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M12 Mobile Combat Readability Layout
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Reworked the mobile combat composition toward the provided reference: top bar, larger enemy stage/intent, slim timer, protected board, narrow mastery rail, and compact player footer.
   - Added the mobile combat layout probe for common portrait viewport overlap checks.
@@ -1859,7 +1859,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M12 Reference-Faithful Mobile Combat UI Polish
 
-- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/ui/visual_registry.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `resources/art/first_pass/derived/combat_ui/`, `tools/asset_tools/generate_combat_ui_chrome.py`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scenes/combat/combat_player.tscn`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `scripts/ui/visual_registry.gd`, `scripts/debug/mobile_combat_layout_probe.gd`, `resources/art/first_pass/derived/combat_ui/`, `tools/asset_tools/generate_combat_ui_chrome.py`, `docs/test_plan.md`, `todo.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Added deterministic derived combat UI chrome for the mobile combat reference pass: backdrop/scrim, enemy panel, board frame, mastery rail, player HUD rail, loadout rail, block badge asset, timer track/marker, dividers, and corner ornaments.
   - Extended `VisualRegistry` with combat UI texture accessors and stable fallbacks.
@@ -1873,7 +1873,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M12 Combat UI Follow-Up Polish
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Enlarged enemy stage/intent presentation, separated enemy name from the HP bar, softened dividers/corners/frame borders, enlarged top-bar hit targets, and made compact HP/mastery/loadout rails more readable.
   - Kept the pass presentation-only; combat math, resolver behavior, RunState routing, drag coordinate handling, combat speed, replay timing, SFX, shop, and final summary behavior were not intentionally changed.
@@ -1883,7 +1883,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M12 Combat UI Restage
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Restaged combat toward the reference RPG hierarchy with a taller ornate header, deeper enemy banner, decorative READY divider, restored larger board, `MASTERY` rail, compact HP/relic panel, and split equipment/consumable rails.
   - Kept the pass presentation-only; combat math, resolver behavior, RunState routing, drag coordinate handling, combat speed, replay timing, and SFX were not intentionally changed.
@@ -1894,7 +1894,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-05] code-change | M12 Combat UI Focused Review Pass
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Enlarged the perceived enemy encounter crop, integrated intent/block into the banner, reduced the READY fill visual, strengthened board bevel contrast, enlarged the `MASTERY` strip, and added empty relic placeholders for no-relic combat starts.
   - Kept the pass presentation-only with no intentional combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes.
@@ -1905,7 +1905,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Combat UI Structural Correction
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Reworked the rejected compact/decorated surfaces structurally: enemy banner now uses a full-width backdrop plus separate foreground enemy layer, READY hides the fill at rest and reads as a decorative divider, `MASTERY` uses a broader strip with subtler per-orb segments, relic placeholders sit under player HP/vitals, and the footer is equipment plus consumables only.
   - Kept the pass presentation-only with no intentional combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes.
@@ -1916,7 +1916,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Enemy Banner Composition Follow-Up
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
 - Changed:
   - Rebuilt the enemy banner composition so the cave backdrop fills the full banner, the enemy is a large clipped foreground layer, the name/HP/HP bar cluster sits inside the lower-left banner, and the intent badge remains integrated on the right.
   - Fixed the follow-up containment regression by clipping enemy art to the banner so the header, READY divider, and board stay visible.
@@ -1926,7 +1926,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Combat UI Refinement Pass
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
 - Changed:
   - Refined the enemy intent module into a smaller right-side block with clearer title/value/detail hierarchy, cleaned the lower-left enemy name/HP scrim block, enlarged `MASTERY` readability, added a visible `RELICS` label with larger relic placeholders, and slightly expanded footer slot/label treatment.
   - Kept board/gems, READY divider direction, top header structure, combat math, resolver behavior, routing, drag coordinates, combat speed, replay timing, and SFX unchanged.
@@ -1936,7 +1936,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Constrained HUD Refinement
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/known-issues.md`
 - Changed:
   - Kept board/gems, READY divider, top header, and screen order unchanged while refining intent padding/readability, player HUD height/portrait/relic spacing, mastery icon/text sizing, and footer slot centering/padding.
   - Preserved the presentation-only boundary: no combat math, resolver, routing, drag coordinate, combat speed, replay timing, or SFX changes were intentional.
@@ -1946,7 +1946,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Static Enemy Image Revert
 
-- Source: `scripts/combat/combat_layout_manager.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
+- Source: `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_chrome_styler.gd`, `scripts/combat/combat_player_controller.gd`, `scripts/ui/visual_registry.gd`, `scripts/ui/player_loadout_hud.gd`, `docs/test_plan.md`, `wiki/features.md`, `wiki/known-issues.md`
 - Changed:
   - Kept the generated dungeon background and single generated foreground enemy image, then removed the runtime spritesheet-backed enemy path after the temporary goblin animation experiment was rejected.
   - Preserved the presentation-only boundary: no combat math, resolver, routing, drag coordinate, combat speed, replay timing, SFX, shop, RunState, or final-summary changes were intentional.
@@ -1976,7 +1976,7 @@ Append-only history of wiki operations.
 
 ## [2026-05-06] code-change | M12 Consumable Rail Right Alignment
 
-- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_layout_manager.gd`, `docs/test_plan.md`, `wiki/features.md`
+- Source: `scripts/ui/player_loadout_hud.gd`, `scripts/combat/combat_layout_presenter.gd`, `docs/test_plan.md`, `wiki/features.md`
 - Changed:
   - Moved the combat consumable slots and label to the right edge of the bottom loadout strip.
   - Preserved equipment slots, slot rendering, combat math, routing, drag coordinates, combat speed, replay timing, and SFX.
@@ -2147,3 +2147,25 @@ Append-only history of wiki operations.
 ## 2026-05-07 - AR-26 signal follow-up note
 
 - Added a low-priority [[known-issues]] note for the AR-26 signal implementation: `RunState._capture_run_signal_state()` currently deep-copies `_run_summary` and `_emit_run_summary_changed_if_needed(...)` uses full dictionary comparison. This is correct but could be replaced later with a `_run_summary_generation` counter if mobile/performance evidence says it matters. (source: `wiki/known-issues.md`, `scripts/core/run_state.gd`)
+
+## 2026-05-07 - Combat MVC refactor
+
+- Refactored the combat scene into the project-local MVC shape: `scripts/scenes/combat.gd` is now a thin host, `CombatController` owns the migrated combat orchestration and helper binding, `CombatModel` stores a small scene-local state surface, and `CombatView` currently owns node binding/snapshot access. Existing combat math, board local-coordinate input, resolve presenter timing, and route helper boundaries were preserved. (source: `scripts/scenes/combat.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/combat_model.gd`, `scripts/combat/combat_view.gd`)
+- Review gate accepted the worker patch at `8.2/10`. Validation passed `git diff --check`, Godot MCP script loads, scene instantiate checks, retained AR-01 combat envelope probe, focused board local-coordinate/touch probe, `play_scene main`, `stop_running_scene`, and final `get_godot_errors` with no session errors. The score is capped because `CombatView` is still a conservative binding wrapper and route probing could not run through editor-script `RunState` placeholder instances. (source: `docs/test_plan.md`, `scripts/debug/ar01_combat_result_probe.gd`, `scripts/board/board_controller.gd`)
+
+## 2026-05-07 - Future ConsoleLogger and combat naming cleanup
+
+- Added deferred AR-27 for a reusable `ConsoleLogger` scene that listens to shared console-log events from any scene instead of keeping log rendering combat-local in `CombatDebugConsole`. Combat debug command parsing/dispatch should remain separate unless a later command-router task is accepted. (source: `docs/architecture_review_tasks.md`, `wiki/architecture.md`)
+- Added deferred AR-28 for combat presentation naming cleanup: use `Presenter` for view-specific display preparation or sequencing, including HUD snapshots and turn-log presentation, and reserve `Logger` for append/export/storage ownership. (source: `docs/architecture_review_tasks.md`, `wiki/architecture.md`)
+
+## 2026-05-07 - AR-28 combat presenter naming cleanup
+
+- Renamed the combat presentation helpers to match the accepted presenter convention: `CombatHudPresenter`, `CombatTurnLogPresenter`, `CombatLayoutPresenter`, and `CombatVfxPresenter`, with direct runtime/debug references and matching `.gd.uid` files moved to the new names. (source: `scripts/combat/combat_hud_presenter.gd`, `scripts/combat/combat_turn_log_presenter.gd`, `scripts/combat/combat_layout_presenter.gd`, `scripts/combat/combat_vfx_presenter.gd`)
+- Updated [[architecture]], [[file-map]], [[features]], and `docs/test_plan.md` so current docs use presenter names. `ConsoleLogger` remains deferred as AR-27. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/features.md`)
+- Validation used cache-ignore script loads and combat scene smoke successfully; the live Godot editor still showed stale open-script/global-class diagnostics for deleted old presenter paths until local editor cache refresh. (source: `docs/test_plan.md`)
+
+## 2026-05-07 - Combat animation timer owner fix
+
+- Fixed a combat MVC regression where `CombatController` passed itself as the resolve/VFX presenter `timer_owner`. Because the controller is `RefCounted`, presenters did not receive a valid `Node` for waits and tweens; combat resolve presentation skipped visible animation timing. The controller now passes the combat scene host node. (source: `scripts/combat/combat_controller.gd`)
+- Validation: Godot MCP combat scene smoke produced the expected resolve trace sequence over about `1066ms` instead of immediate completion, including match flash, clear, combo tick, gravity, refill, animation drain, and final board commit. (source: `docs/test_plan.md`)
+- User manual QA passed after the timer-owner fix, confirming the combat animations are working again. (source: `docs/test_plan.md`)

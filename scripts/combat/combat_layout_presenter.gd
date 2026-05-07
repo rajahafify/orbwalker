@@ -1,4 +1,5 @@
 extends RefCounted
+class_name CombatLayoutPresenter
 
 const DESIGN_SIZE = Vector2(1080, 1920)
 const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 92))

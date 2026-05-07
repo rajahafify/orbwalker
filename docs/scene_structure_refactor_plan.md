@@ -36,7 +36,7 @@ Observed mismatch:
 
 ## Resolved HUD Preset Cleanup
 
-The shop readability pass briefly introduced shop-specific `PlayerLoadoutHud` geometry constants in `scripts/scenes/shop.gd`. The scene-review P1/P2 cleanup moved that geometry into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through `CombatLayoutManager`, and shop applies the named shared preset from `PlayerLoadoutHud`.
+The shop readability pass briefly introduced shop-specific `PlayerLoadoutHud` geometry constants in `scripts/scenes/shop.gd`. The scene-review P1/P2 cleanup moved that geometry into `PlayerLoadoutHud.shop_player_hud_layout_preset()`, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through `CombatLayoutPresenter`, and shop applies the named shared preset from `PlayerLoadoutHud`.
 
 The remaining architectural issue is not the old shop-local constants. It is the lack of a reusable HUD scene/component boundary:
 
@@ -113,7 +113,7 @@ Single Responsibility:
 - Full screen scenes own screen composition and screen-specific input flow.
 - Component scenes own reusable UI layout and visual structure.
 - Runtime services own game rules and state transitions.
-- Layout managers may position components, but should not redefine another component's internals.
+- layout presenters may position components, but should not redefine another component's internals.
 
 Open/Closed:
 

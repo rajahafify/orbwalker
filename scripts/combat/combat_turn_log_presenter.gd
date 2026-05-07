@@ -1,5 +1,5 @@
 extends RefCounted
-class_name CombatTurnLogger
+class_name CombatTurnLogPresenter
 
 const LOG_LEVEL_NORMAL := "normal"
 const LOG_LEVEL_DETAILED := "detailed"

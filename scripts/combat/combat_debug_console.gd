@@ -3,6 +3,7 @@ class_name CombatDebugConsole
 
 const LOG_LEVEL_NORMAL := "normal"
 const LOG_LEVEL_DETAILED := "detailed"
+const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 
 var _combat_log_text: RichTextLabel
 var _console_input: LineEdit
@@ -14,7 +15,7 @@ var _combat_log_command_flags: Array[bool] = []
 var _combat_log_level: String = LOG_LEVEL_NORMAL
 
 var _callbacks: Dictionary = {}
-var _turn_logger: CombatTurnLogger
+var _turn_log_presenter: Variant
 
 
 func bind(nodes: Dictionary, config: Dictionary = {}) -> void:
@@ -26,11 +27,11 @@ func bind(nodes: Dictionary, config: Dictionary = {}) -> void:
 	if _combat_log_level != LOG_LEVEL_DETAILED:
 		_combat_log_level = LOG_LEVEL_NORMAL
 	_callbacks = config.get("callbacks", {})
-	var turn_logger_candidate: Variant = config.get("turn_logger", null)
-	if turn_logger_candidate is CombatTurnLogger:
-		_turn_logger = turn_logger_candidate
-	if _turn_logger == null:
-		_turn_logger = CombatTurnLogger.new()
+	var turn_log_presenter_candidate: Variant = config.get("turn_log_presenter", null)
+	if turn_log_presenter_candidate != null and turn_log_presenter_candidate.has_method("build_state_snapshot_lines"):
+		_turn_log_presenter = turn_log_presenter_candidate
+	if _turn_log_presenter == null:
+		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
 
 
 func log_level() -> String:
@@ -414,7 +415,7 @@ func _handle_fight_command(parts: PackedStringArray) -> void:
 
 func _print_state_snapshot() -> void:
 	var snapshot: Dictionary = _callback_dict("state_snapshot_data")
-	for line in _turn_logger.build_state_snapshot_lines(snapshot):
+	for line in _turn_log_presenter.build_state_snapshot_lines(snapshot):
 		append_log(line)
 
 
