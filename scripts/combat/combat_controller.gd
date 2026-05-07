@@ -259,20 +259,21 @@ func _ready() -> void:
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
+	var spawn_vfx_texture_callback: Callable = Callable(self, "_spawn_vfx_texture")
 	var resolve_presenter_bindings := {
 		"board": _board,
 		"board_view": _board_view,
 		"board_panel": null,
 		"board_controller": _board_controller,
 		"timer_owner": _host,
-		"spawn_vfx_texture_callback": _spawn_vfx_texture,
+		"spawn_vfx_texture_callback": spawn_vfx_texture_callback,
 		"combo_sound_callback": _on_presenter_combo_sound,
 	}
 	if _view != null:
 		resolve_presenter_bindings = _view.resolve_presenter_bindings(
 			_board_controller,
 			_host,
-			_spawn_vfx_texture,
+			spawn_vfx_texture_callback,
 			_on_presenter_combo_sound
 		)
 	_resolve_presenter.bind(resolve_presenter_bindings)
@@ -763,16 +764,19 @@ func _process(delta: float) -> void:
 		return
 	if not _drag_active():
 		if _input_phase_value() == InputPhase.PLAYER_INPUT:
-			_sync_timer_display(_timer_ready_seconds(), TIMER_STATE_READY)
+			if _view != null:
+				_view.sync_timer_display(_timer_ready_seconds(), TIMER_STATE_READY)
 		else:
-			_sync_timer_display(0.0, TIMER_STATE_LOCKED)
+			if _view != null:
+				_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
 		return
 
 	var drag_update: Dictionary = _board_controller.update(
 		delta,
 		_input_phase_value() == InputPhase.PLAYER_INPUT
 	)
-	_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
+	if _view != null:
+		_view.sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
 	_handle_drag_input_result(drag_update)
 
 
@@ -831,7 +835,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 	if action == "start":
 		_clear_combat_mastery_hover_state()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
-		_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
+		if _view != null:
+			_view.sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
 		_set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
 		_set_status_color(STATUS_COLOR_NEUTRAL)
 		return
@@ -904,12 +909,6 @@ func _set_status_color(color: Color) -> void:
 func _set_turn_summary_text(text: String) -> void:
 	if _view != null:
 		_view.set_turn_summary_text(text)
-
-
-func _turn_summary_text() -> String:
-	if _view == null:
-		return ""
-	return _view.turn_summary_text()
 
 
 func _pulse_turn_summary(tint: Color) -> void:
@@ -994,7 +993,8 @@ func _end_drag(timed_out: bool) -> void:
 	if _board_controller == null:
 		return
 
-	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
+	if _view != null:
+		_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
 	var move_end_reason := "released"
 	if timed_out:
 		move_end_reason = "timer expired"
@@ -1430,14 +1430,6 @@ func _ensure_outcome_overlay_layer() -> void:
 	_outcome_overlay.ensure_overlay_layer()
 
 
-func _queue_outcome_transition(scene_path: String) -> void:
-	if not _model.mark_outcome_transition_queued():
-		return
-	await _host.get_tree().create_timer(1.0).timeout
-	if (_host != null and is_instance_valid(_host) and _host.is_inside_tree()):
-		_host.get_tree().change_scene_to_file(scene_path)
-
-
 func set_external_input_locked(locked: bool, reason: String = "") -> void:
 	_ensure_model().set_external_lock_reason(reason)
 	if locked:
@@ -1497,11 +1489,6 @@ func _combat_speed_value() -> String:
 	return _ensure_model().combat_speed()
 
 
-func _sync_timer_display(seconds_left: float, state: String) -> void:
-	if _view != null:
-		_view.sync_timer_display(seconds_left, state)
-
-
 func _timer_ready_seconds() -> float:
 	if _player_state == null:
 		return MOVE_TIMER_MAX_SECONDS
@@ -1511,7 +1498,8 @@ func _timer_ready_seconds() -> float:
 func _abort_active_drag() -> void:
 	if _board_controller != null:
 		_board_controller.abort()
-	_sync_timer_display(0.0, TIMER_STATE_LOCKED)
+	if _view != null:
+		_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
 
 
 func _play_resolve_animations(
@@ -1635,33 +1623,13 @@ func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
 			return base_amount
 
 
-func _build_turn_summary_status(turn_log: Dictionary) -> String:
-	return _turn_log_presenter.build_turn_summary_status(turn_log)
-
-
-func _build_victory_status(turn_log: Dictionary, transition: Dictionary) -> String:
-	return _turn_log_presenter.build_victory_status(turn_log, transition)
-
-
-func _build_victory_gold_summary(turn_log: Dictionary, transition: Dictionary = {}) -> String:
-	return _turn_log_presenter.build_victory_gold_summary(turn_log, transition)
-
-
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
 	var summary: Dictionary = RunState.run_summary_snapshot()
 	return _turn_log_presenter.build_run_outcome_summary(summary, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
 
 
-func _build_defeat_status(turn_log: Dictionary) -> String:
-	return _turn_log_presenter.build_defeat_status(turn_log)
-
-
-func _build_defeat_cause(turn_log: Dictionary) -> String:
-	var enemy_label := String(_enemy_state.display_name if _enemy_state != null else "Enemy")
-	return _turn_log_presenter.build_defeat_cause(enemy_label, turn_log)
-
-
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
+	var vfx_presenter: Variant = _combat_vfx_presenter
 	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
 	var enemy_blocked := int(turn_log.get("enemy_blocked", 0))
 	var fire_damage := int(turn_log.get("fire_damage", 0))
@@ -1670,8 +1638,11 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var heart_heal := int(turn_log.get("healed", 0))
 	var armor_gain := int(turn_log.get("armor_gained", 0))
 	var gold_gain := int(turn_log.get("gold_gained", 0))
-	var enemy_target := _enemy_vfx_target_global(0.48)
-	var player_target := _player_vfx_target_global(0.64)
+	var enemy_target: Vector2 = Vector2.ZERO
+	var player_target: Vector2 = Vector2.ZERO
+	if _view != null:
+		enemy_target = _view.enemy_vfx_target_global(0.48)
+		player_target = _view.player_vfx_target_global(0.64)
 	var enemy_impact_size := Vector2(84, 84)
 	var player_impact_size := Vector2(84, 84)
 	var gold_impact_size := Vector2(70, 70)
@@ -1682,9 +1653,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
-			_spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime, fire_damage)
-			_spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52), fire_damage)
+			if vfx_presenter != null:
+				vfx_presenter.spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime, fire_damage)
+				vfx_presenter.spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
+				vfx_presenter.spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52), fire_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1692,9 +1664,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_stage_hud_enemy_damage_step(fire_damage)
 			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
-			_spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime, ice_damage)
-			_spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52), ice_damage)
+			if vfx_presenter != null:
+				vfx_presenter.spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime, ice_damage)
+				vfx_presenter.spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
+				vfx_presenter.spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52), ice_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1702,9 +1675,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_stage_hud_enemy_damage_step(ice_damage)
 			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
-			_spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime, earth_damage)
-			_spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
-			_spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52), earth_damage)
+			if vfx_presenter != null:
+				vfx_presenter.spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime, earth_damage)
+				vfx_presenter.spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
+				vfx_presenter.spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52), earth_damage)
 			_play_mastery_effect_sfx("damage")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1713,9 +1687,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		_spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
-		_spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
-		_spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
+		if vfx_presenter != null:
+			vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
+			vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
+			vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
 		_play_mastery_effect_sfx("damage")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1725,14 +1700,16 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		_stage_hud_enemy_result()
 	if enemy_blocked > 0:
-		_spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
+		if vfx_presenter != null:
+			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
 		_stage_hud_enemy_result()
 
 	if heart_heal > 0:
 		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
-		_spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime, heart_heal)
-		_spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
-		_spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46), heart_heal)
+		if vfx_presenter != null:
+			vfx_presenter.spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime, heart_heal)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
+			vfx_presenter.spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46), heart_heal)
 		_play_mastery_effect_sfx("heal")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1742,9 +1719,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if armor_gain > 0:
 		var staged_armor_before_gain: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
-		_spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime, armor_gain)
-		_spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
-		_spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46), armor_gain)
+		if vfx_presenter != null:
+			vfx_presenter.spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime, armor_gain)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
+			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46), armor_gain)
 		_play_mastery_effect_sfx("armor")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1754,9 +1732,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if gold_gain > 0:
 		var staged_gold_before_gain: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
-		_spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
-		_spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
-		_spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
+		if vfx_presenter != null:
+			vfx_presenter.spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
+			vfx_presenter.spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
 		_play_mastery_effect_sfx("gold")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1807,6 +1786,9 @@ func _hud_snapshot_input_data() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var intent := _enemy_state.get_current_intent()
 	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
+	var turn_summary_text: String = ""
+	if _view != null:
+		turn_summary_text = _view.turn_summary_text()
 	var enemy_stage_texture: Texture2D = null
 	var enemy_portrait_texture: Texture2D = null
 	if _visuals != null:
@@ -1847,17 +1829,9 @@ func _hud_snapshot_input_data() -> Dictionary:
 		"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
 		"heart_orb_id": int(OrbType.Id.HEART),
 		"gold_orb_id": int(OrbType.Id.GOLD),
-		"turn_summary_text": _turn_summary_text(),
+		"turn_summary_text": turn_summary_text,
 		"format_intent_compact": Callable(_turn_log_presenter, "format_intent_compact") if _turn_log_presenter != null else Callable(),
 	}
-
-
-func _apply_hud_snapshot(hud_snapshot: Dictionary) -> void:
-	if _view != null:
-		_view.apply_hud_snapshot(
-			hud_snapshot,
-			{"refresh_build_icon_rows": Callable(self, "_refresh_build_icon_rows")}
-		)
 
 
 func _capture_hud_stage_values() -> Dictionary:
@@ -1952,7 +1926,8 @@ func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
 			_set_turn_summary_text(_debug_format_intent(intent))
-	_start_enemy_intent_hover_emphasis("attack")
+	if _view != null:
+		_view.start_enemy_intent_hover_emphasis("attack")
 
 
 func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
@@ -1970,7 +1945,8 @@ func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
 			_set_turn_summary_text(_debug_format_intent(intent))
-	_start_enemy_intent_hover_emphasis("block")
+	if _view != null:
+		_view.start_enemy_intent_hover_emphasis("block")
 
 
 func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
@@ -1990,19 +1966,11 @@ func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
 			_set_turn_summary_text(_debug_format_intent(intent))
-	_start_enemy_intent_hover_emphasis("block")
+	if _view != null:
+		_view.start_enemy_intent_hover_emphasis("block")
 
 
 func _on_intent_damage_preview_hover_ended() -> void:
-	_stop_enemy_intent_hover_emphasis()
-
-
-func _start_enemy_intent_hover_emphasis(kind: String) -> void:
-	if _view != null:
-		_view.start_enemy_intent_hover_emphasis(kind)
-
-
-func _stop_enemy_intent_hover_emphasis() -> void:
 	if _view != null:
 		_view.stop_enemy_intent_hover_emphasis()
 
@@ -2020,7 +1988,8 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 	else:
 		_set_status_text("%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))])
 	_set_status_color(STATUS_COLOR_WARNING)
-	_start_enemy_intent_hover_emphasis(kind)
+	if _view != null:
+		_view.start_enemy_intent_hover_emphasis(kind)
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
@@ -2072,11 +2041,6 @@ func _append_combat_log(message: String, is_command_output: bool = false) -> voi
 		_debug_console.append_log(message, is_command_output)
 
 
-func _refresh_combat_log_display() -> void:
-	if _debug_console != null:
-		_debug_console.refresh_display()
-
-
 func debug_console_log(message: String) -> void:
 	_append_combat_log(message)
 
@@ -2114,11 +2078,8 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		_view.render_player_loadout(loadout_payload, true)
 
 
-func _emit_turn_feedback_vfx(_turn_log: Dictionary) -> void:
-	pass
-
-
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
+	var vfx_presenter: Variant = _combat_vfx_presenter
 	if bool(turn_log.get("enemy_intent_skipped", false)):
 		return
 	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
@@ -2126,18 +2087,25 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	var hp_damage := int(enemy_attack.get("hp_damage", 0))
 	if blocked_by_armor <= 0 and hp_damage <= 0:
 		return
-	var enemy_source := _enemy_vfx_target_global(0.56)
-	var player_impact_target := _player_vfx_target_global(0.58)
+	var enemy_source: Vector2 = Vector2.ZERO
+	var player_impact_target: Vector2 = Vector2.ZERO
+	if _view != null:
+		enemy_source = _view.enemy_vfx_target_global(0.56)
+		player_impact_target = _view.player_vfx_target_global(0.58)
 	if player_impact_target == Vector2.ZERO:
 		player_impact_target = player_target
 	var cue_lifetime := _combat_speed_duration(0.24)
 	var travel_lifetime := _combat_speed_duration(0.28)
 	var impact_lifetime := _combat_speed_duration(0.34)
-	_spawn_enemy_attack_cue(enemy_source, player_impact_target, cue_lifetime, travel_lifetime)
+	if vfx_presenter != null:
+		vfx_presenter.spawn_enemy_attack_cue(enemy_source, cue_lifetime)
+		vfx_presenter.spawn_enemy_attack_travel(enemy_source, player_impact_target, travel_lifetime)
 	if blocked_by_armor > 0:
-		_spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
+		if vfx_presenter != null:
+			vfx_presenter.spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
 		var block_text := "-%d Damage Blocked" % blocked_by_armor
-		_spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
+		if vfx_presenter != null:
+			vfx_presenter.spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -2146,55 +2114,19 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 			_stage_hud_player_final()
 			return
 	if hp_damage > 0:
-		_spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
-		_spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
+		if vfx_presenter != null:
+			vfx_presenter.spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
+			vfx_presenter.spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
 	_stage_hud_player_final()
 
 
-func _spawn_enemy_attack_cue(source_global: Vector2, target_global: Vector2, cue_lifetime: float, travel_lifetime: float) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_enemy_attack_cue(source_global, cue_lifetime)
-	_combat_vfx_presenter.spawn_enemy_attack_travel(source_global, target_global, travel_lifetime)
-
-
-func _spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float, blocked_amount: int) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_enemy_attack_block_impact(target_global, lifetime, blocked_amount)
-
-
-func _spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float, hp_damage: int) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_enemy_attack_hit_impact(target_global, lifetime, hp_damage)
-
-
-func _spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO, result_amount: int = 0) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_result_label(text, global_center, kind, lifetime, offset, result_amount)
-
-
-func _spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_vfx(effect_name, global_center, draw_size, lifetime, modulate_color)
-
-
 func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
 	if _combat_vfx_presenter == null:
 		return
 	_combat_vfx_presenter.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
-
-
-func _spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_replay_impact(global_center, impact_kind, draw_size, lifetime, result_amount)
 
 
 func _mastery_impact_kind(orb_id: int) -> String:
@@ -2232,26 +2164,6 @@ func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
 	return selected_orb
 
 
-func _enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	if _view == null:
-		return Vector2.ZERO
-	var view_target: Variant = _view.enemy_vfx_target_global(vertical_bias)
-	return view_target as Vector2 if view_target is Vector2 else Vector2.ZERO
-
-
-func _player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	if _view == null:
-		return Vector2.ZERO
-	var view_target: Variant = _view.player_vfx_target_global(vertical_bias)
-	return view_target as Vector2 if view_target is Vector2 else Vector2.ZERO
-
-
-func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_mastery_beam(source_orb_or_node, target_or_start, orb_or_target, lifetime)
-
-
 func _on_resolver_match_found(groups: Array) -> void:
 	_audio_play_sfx("match")
 	_set_status_text("Matches found: %d group(s)." % groups.size())
@@ -2272,10 +2184,6 @@ func _apply_combat_layout() -> void:
 	)
 	if not bool(layout_result.get("applied", false)):
 		return
-
-
-func _apply_combat_mastery_panel_layout() -> void:
-	pass
 
 
 func _refresh_character_portraits() -> void:
