@@ -2312,3 +2312,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Assetgen multi-agent workflow clarification
 
 - Clarified that `resources/assetgen.workflow.md` is a Codex multi-agent workflow where each layer is owned by a separate `worker` subagent, and that generated raster asset creation or editing must use the Codex `imagegen` skill with the built-in `image_gen` path unless the human explicitly asks for the CLI fallback. Updated [[assetgen-workflow]] to match. (source: `resources/assetgen.workflow.md`, `wiki/assetgen-workflow.md`)
+
+## 2026-05-07 - Production asset inventory
+
+- Added root `assets.json` as a production-readiness asset inventory/backlog covering current first-pass coverage and missing production needs for brand identity, screen backgrounds, hero/enemy/boss/merchant art, gameplay icons, UI chrome, VFX, music/SFX, animation, marketing/page assets, and required asset-governance records. The inventory is grounded in the current content registry, VisualRegistry paths, first-pass asset map, itch readiness tracker, and assetgen governance workflow; it is not the final approved production asset manifest. (source: `assets.json`, `scripts/content/content_registry.gd`, `scripts/ui/visual_registry.gd`, `resources/visual/first_pass_asset_map.json`, `docs/itch_readiness_tasks.md`, `resources/assetgen.workflow.md`)

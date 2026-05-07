@@ -1,0 +1,897 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-05-07",
+  "project": {
+    "working_title": "Orbwalker",
+    "repo": "D:/godot/matchatro",
+    "purpose": "Production-readiness inventory for game art, audio, UI, marketing, and asset-governance needs.",
+    "scope_note": "This inventory includes assets currently required by the playable prototype plus the additional asset classes needed before the game can be considered production ready. Existing first-pass assets are not treated as final production art unless explicitly marked production_ready."
+  },
+  "source_references": [
+    "project.godot",
+    "todo.md",
+    "docs/game_design_document.md",
+    "docs/itch_readiness_tasks.md",
+    "resources/assetgen.workflow.md",
+    "resources/visual/first_pass_asset_map.json",
+    "scripts/content/content_registry.gd",
+    "scripts/ui/visual_registry.gd",
+    "wiki/file-map.md",
+    "wiki/features.md",
+    "wiki/assetgen-workflow.md"
+  ],
+  "status_legend": {
+    "missing": "No concrete asset exists yet or runtime uses generated/code placeholder.",
+    "first_pass_exists": "A usable first-pass asset exists, but production review/replacement is still expected.",
+    "placeholder_or_reused": "Runtime uses a placeholder, generated fallback, or intentionally reused art that should be replaced or approved.",
+    "needs_review": "Asset exists but needs human, QA, legal, metadata, and integration review before production use.",
+    "production_ready": "Final asset approved, documented, licensed, and integrated. No entries are assumed production_ready by this inventory."
+  },
+  "production_gate": {
+    "required_for_all_final_assets": [
+      "asset brief exists",
+      "style/art-bible fit approved",
+      "technical QA passed at target resolution",
+      "human review passed",
+      "license/source rights checked",
+      "metadata complete",
+      "Godot import settings verified",
+      "integrated path recorded"
+    ],
+    "required_for_transparent_assets": [
+      "functional alpha channel",
+      "checked on white, black, gray, checkerboard, and in-game backgrounds",
+      "no visible halo, matte spill, jagged edge, or baked shadow unless approved",
+      "straight or premultiplied alpha documented"
+    ],
+    "workflow_reference": "resources/assetgen.workflow.md"
+  },
+  "runtime_asset_roots": {
+    "current_first_pass_art": "res://resources/art/first_pass/",
+    "current_visual_map": "res://resources/visual/first_pass_asset_map.json",
+    "current_audio": "res://resources/audio/",
+    "raw_sources": "res://raw/",
+    "proposed_production_workspace": "assets/"
+  },
+  "asset_groups": [
+    {
+      "id": "brand_identity",
+      "display_name": "Brand Identity",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "game_title_logo",
+          "name": "Orbwalker title/logo lockup",
+          "type": "logo",
+          "current_paths": [
+            "res://resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png",
+            "res://resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png"
+          ],
+          "status": "first_pass_exists",
+          "notes": "Needs final title decision, final logo treatment, alpha cleanup review, and store/page variants."
+        },
+        {
+          "asset_id": "app_icon",
+          "name": "Application icon",
+          "type": "icon",
+          "current_paths": [
+            "res://icon.svg",
+            "res://raw/icon.png"
+          ],
+          "status": "first_pass_exists",
+          "notes": "Needs final desktop/mobile/export icon set, including Android density variants if mobile release remains a target."
+        },
+        {
+          "asset_id": "boot_splash",
+          "name": "Boot splash screen image",
+          "type": "splash",
+          "current_paths": [
+            "res://raw/spash.png"
+          ],
+          "status": "first_pass_exists",
+          "notes": "Filename is currently spash.png in raw source. Needs production splash review and import-path policy."
+        },
+        {
+          "asset_id": "store_capsule_key_art",
+          "name": "Store/page capsule or hero key art",
+          "type": "marketing_art",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Needed for itch.io and later Steam-facing pages."
+        }
+      ]
+    },
+    {
+      "id": "screens",
+      "display_name": "Screen Backgrounds And Scene Art",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "main_menu_background",
+          "name": "Main menu cavern/city background",
+          "type": "background",
+          "current_paths": [
+            "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
+          ],
+          "status": "first_pass_exists",
+          "target_surfaces": [
+            "main_menu"
+          ]
+        },
+        {
+          "asset_id": "combat_background",
+          "name": "Dungeon combat background",
+          "type": "background",
+          "current_paths": [
+            "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png",
+            "res://resources/art/first_pass/derived/combat_layers/generated_cavern_dungeon_bg_v1.png"
+          ],
+          "status": "first_pass_exists",
+          "target_surfaces": [
+            "combat"
+          ]
+        },
+        {
+          "asset_id": "shop_background",
+          "name": "Merchant shop background",
+          "type": "background",
+          "current_paths": [
+            "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png"
+          ],
+          "status": "first_pass_exists",
+          "target_surfaces": [
+            "shop"
+          ]
+        },
+        {
+          "asset_id": "run_summary_background",
+          "name": "Victory/defeat run-summary background",
+          "type": "background",
+          "current_paths": [],
+          "status": "missing",
+          "target_surfaces": [
+            "run_summary",
+            "combat_victory",
+            "combat_defeat"
+          ],
+          "notes": "Result screens need an intentional final surface instead of relying on generic/chrome-only treatment."
+        },
+        {
+          "asset_id": "collection_background",
+          "name": "Collection/meta progression background",
+          "type": "background",
+          "current_paths": [],
+          "status": "missing",
+          "target_surfaces": [
+            "collection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "characters",
+      "display_name": "Hero, Enemy, Boss, And Merchant Character Art",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "hero_orbwalker_portrait",
+          "name": "Orbwalker hero portrait",
+          "type": "hero_portrait",
+          "current_paths": [
+            "res://resources/art/first_pass/heroes/hero_orbwalker.png"
+          ],
+          "status": "first_pass_exists",
+          "target_surfaces": [
+            "combat",
+            "shop",
+            "shared_player_hud"
+          ]
+        },
+        {
+          "asset_id": "hero_full_body_or_pose_set",
+          "name": "Orbwalker full-body/key pose set",
+          "type": "character_pose",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Needed for production-grade menus, store art, tutorial/onboarding, and possible result screens."
+        },
+        {
+          "asset_id": "merchant_character",
+          "name": "Shop merchant character/header art",
+          "type": "npc_portrait_or_header",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png"
+          ],
+          "status": "first_pass_exists",
+          "target_surfaces": [
+            "shop"
+          ]
+        },
+        {
+          "asset_id": "enemy_portraits",
+          "name": "Normal enemy portrait set",
+          "type": "enemy_portrait_set",
+          "status": "first_pass_exists",
+          "entries": [
+            {
+              "id": "striker",
+              "display_name": "Striker",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+              "status": "placeholder_or_reused"
+            },
+            {
+              "id": "defender",
+              "display_name": "Defender",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+              "status": "placeholder_or_reused"
+            },
+            {
+              "id": "charger",
+              "display_name": "Charger",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+              "status": "placeholder_or_reused"
+            },
+            {
+              "id": "ruin_lancer",
+              "display_name": "Ruin Lancer",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+              "status": "first_pass_exists"
+            },
+            {
+              "id": "vault_executioner",
+              "display_name": "Vault Executioner",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+              "status": "first_pass_exists"
+            },
+            {
+              "id": "goldbound_keeper",
+              "display_name": "Goldbound Keeper",
+              "current_path": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+              "status": "first_pass_exists"
+            }
+          ],
+          "notes": "Runtime content currently uses striker/defender/charger, with VisualRegistry aliases to cavern/ash art. Production should align content IDs, names, silhouettes, and art one-to-one."
+        },
+        {
+          "asset_id": "boss_portraits",
+          "name": "Boss portrait set",
+          "type": "boss_portrait_set",
+          "status": "first_pass_exists",
+          "entries": [
+            {
+              "id": "iron_gate",
+              "display_name": "Iron Gate",
+              "current_path": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
+              "status": "first_pass_exists"
+            },
+            {
+              "id": "burning_knight",
+              "display_name": "Burning Knight",
+              "current_path": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
+              "status": "first_pass_exists"
+            },
+            {
+              "id": "prism_warden",
+              "display_name": "Prism Warden",
+              "current_path": "res://resources/art/first_pass/enemies/boss_prism_warden.png",
+              "status": "first_pass_exists"
+            }
+          ]
+        },
+        {
+          "asset_id": "combat_enemy_stage_art",
+          "name": "Wide enemy encounter stage/banner art",
+          "type": "combat_stage_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_cavern_striker.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_cavern_defender.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_ash_hunter.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_ruin_lancer.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_vault_executioner.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_goldbound_keeper.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_iron_gate.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_burning_knight.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_prism_warden.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_stage_fallback.png"
+          ],
+          "notes": "Needs final consistency pass with encounter portrait art."
+        }
+      ]
+    },
+    {
+      "id": "core_gameplay_icons",
+      "display_name": "Orbs, Mastery, Intent, Rarity, Equipment, Consumable, Relic, And Booster Icons",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "orb_icons",
+          "name": "Six orb type icons/textures",
+          "type": "orb_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/orbs/orb_fire_clean.png",
+            "res://resources/art/first_pass/derived/orbs/orb_ice_clean.png",
+            "res://resources/art/first_pass/derived/orbs/orb_earth_clean.png",
+            "res://resources/art/first_pass/derived/orbs/orb_heart_clean.png",
+            "res://resources/art/first_pass/derived/orbs/orb_armor_clean.png",
+            "res://resources/art/first_pass/derived/orbs/orb_gold_clean.png",
+            "res://resources/art/first_pass/sheets/orb_icon_set_v1.png"
+          ],
+          "notes": "Must remain readable at mobile combat board size."
+        },
+        {
+          "asset_id": "mastery_icons",
+          "name": "Six mastery card icons",
+          "type": "mastery_icon_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/icons/mastery_fire.png",
+            "res://resources/art/first_pass/derived/icons/mastery_ice.png",
+            "res://resources/art/first_pass/derived/icons/mastery_earth.png",
+            "res://resources/art/first_pass/derived/icons/mastery_heart.png",
+            "res://resources/art/first_pass/derived/icons/mastery_armor.png",
+            "res://resources/art/first_pass/derived/icons/mastery_gold.png"
+          ]
+        },
+        {
+          "asset_id": "intent_icons",
+          "name": "Enemy intent icon set",
+          "type": "intent_icon_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/hud/intent_attack.png",
+            "res://resources/art/first_pass/derived/hud/intent_block.png",
+            "res://resources/art/first_pass/derived/hud/intent_attack_block.png",
+            "res://resources/art/first_pass/sheets/intent_badge_set_v1.png"
+          ]
+        },
+        {
+          "asset_id": "rarity_badges",
+          "name": "Common/uncommon/rare rarity badges",
+          "type": "rarity_badge_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/hud/rarity_common.png",
+            "res://resources/art/first_pass/derived/hud/rarity_uncommon.png",
+            "res://resources/art/first_pass/derived/hud/rarity_rare.png",
+            "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png"
+          ]
+        },
+        {
+          "asset_id": "equipment_icons",
+          "name": "Equipment item icons",
+          "type": "icon_set",
+          "status": "first_pass_exists",
+          "entries": [
+            { "id": "shortsword", "display_name": "Iron Shortsword", "icon_key": "equipment_shortsword", "current_path": "res://resources/art/first_pass/derived/icons/equipment_shortsword.png", "status": "first_pass_exists" },
+            { "id": "buckler", "display_name": "Wooden Buckler", "icon_key": "equipment_buckler", "current_path": "res://resources/art/first_pass/derived/icons/equipment_buckler.png", "status": "first_pass_exists" },
+            { "id": "coin_purse", "display_name": "Worn Coin Purse", "icon_key": "equipment_coin_purse", "current_path": "res://resources/art/first_pass/derived/icons/equipment_coin_purse.png", "status": "first_pass_exists" },
+            { "id": "healing_charm", "display_name": "Linen Healing Charm", "icon_key": "equipment_healing_charm", "current_path": "res://resources/art/first_pass/derived/icons/equipment_healing_charm.png", "status": "first_pass_exists" },
+            { "id": "leather_gloves", "display_name": "Leather Gloves", "icon_key": "equipment_leather_gloves", "current_path": "res://resources/art/first_pass/derived/icons/equipment_leather_gloves.png", "status": "first_pass_exists" },
+            { "id": "shortsword_knight", "display_name": "Knight Shortsword", "icon_key": "equipment_twin_blades", "current_path": "res://resources/art/first_pass/derived/icons/equipment_twin_blades.png", "status": "placeholder_or_reused" },
+            { "id": "buckler_iron", "display_name": "Iron Buckler", "icon_key": "equipment_tower_shield", "current_path": "res://resources/art/first_pass/derived/icons/equipment_tower_shield.png", "status": "placeholder_or_reused" },
+            { "id": "coin_purse_merchant", "display_name": "Merchant Coin Purse", "icon_key": "equipment_merchant_scales", "current_path": "res://resources/art/first_pass/derived/icons/equipment_merchant_scales.png", "status": "placeholder_or_reused" },
+            { "id": "healing_charm_blessed", "display_name": "Blessed Healing Charm", "icon_key": "equipment_hearth_amulet", "current_path": "res://resources/art/first_pass/derived/icons/equipment_hearth_amulet.png", "status": "placeholder_or_reused" },
+            { "id": "leather_gloves_duelist", "display_name": "Duelist Gloves", "icon_key": "equipment_war_banner", "current_path": "res://resources/art/first_pass/derived/icons/equipment_war_banner.png", "status": "placeholder_or_reused" },
+            { "id": "shortsword_royal", "display_name": "Royal Shortsword", "icon_key": "equipment_ruby_brooch", "current_path": "res://resources/art/first_pass/derived/icons/equipment_ruby_brooch.png", "status": "placeholder_or_reused" },
+            { "id": "buckler_guardian", "display_name": "Guardian Buckler", "icon_key": "equipment_champion_plate", "current_path": "res://resources/art/first_pass/derived/icons/equipment_champion_plate.png", "status": "placeholder_or_reused" },
+            { "id": "coin_purse_noble", "display_name": "Noble Coin Purse", "icon_key": "equipment_royal_seal", "current_path": "res://resources/art/first_pass/derived/icons/equipment_royal_seal.png", "status": "placeholder_or_reused" },
+            { "id": "healing_charm_saint", "display_name": "Saint's Healing Charm", "icon_key": "equipment_mirror_charm", "current_path": "res://resources/art/first_pass/derived/icons/equipment_mirror_charm.png", "status": "placeholder_or_reused" },
+            { "id": "leather_gloves_blademaster", "display_name": "Blademaster Gloves", "icon_key": "equipment_battle_drum", "current_path": "res://resources/art/first_pass/derived/icons/equipment_battle_drum.png", "status": "placeholder_or_reused" }
+          ],
+          "notes": "The GDD targets 20-30 equipment items for the first playable prototype; current runtime content has 15 variants across 5 families. Production should decide whether to expand the pack or update the design target."
+        },
+        {
+          "asset_id": "consumable_icons",
+          "name": "Consumable scroll icons",
+          "type": "icon_set",
+          "status": "first_pass_exists",
+          "entries": [
+            { "id": "fire_scroll", "display_name": "Fire Scroll", "icon_key": "consumable_fire_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_fire_scroll.png", "status": "first_pass_exists" },
+            { "id": "ice_scroll", "display_name": "Ice Scroll", "icon_key": "consumable_ice_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_ice_scroll.png", "status": "first_pass_exists" },
+            { "id": "earth_scroll", "display_name": "Earth Scroll", "icon_key": "consumable_earth_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_earth_scroll.png", "status": "first_pass_exists" },
+            { "id": "heart_scroll", "display_name": "Heart Scroll", "icon_key": "consumable_heart_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_heart_scroll.png", "status": "first_pass_exists" },
+            { "id": "armor_scroll", "display_name": "Armor Scroll", "icon_key": "consumable_armor_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_armor_scroll.png", "status": "first_pass_exists" },
+            { "id": "gold_scroll", "display_name": "Gold Scroll", "icon_key": "consumable_gold_scroll", "current_path": "res://resources/art/first_pass/derived/icons/consumable_gold_scroll.png", "status": "first_pass_exists" }
+          ]
+        },
+        {
+          "asset_id": "relic_icons",
+          "name": "Relic icons",
+          "type": "icon_set",
+          "status": "first_pass_exists",
+          "entries": [
+            { "id": "deep_pockets", "display_name": "Deep Pockets", "icon_key": "relic_deep_pockets", "current_path": "res://resources/art/first_pass/derived/icons/relic_deep_pockets.png", "status": "first_pass_exists" },
+            { "id": "stalwart_mantle", "display_name": "Stalwart Mantle", "icon_key": "relic_stalwart_mantle", "current_path": "res://resources/art/first_pass/derived/icons/relic_stalwart_mantle.png", "status": "first_pass_exists" },
+            { "id": "golden_idol", "display_name": "Golden Idol", "icon_key": "relic_golden_idol", "current_path": "res://resources/art/first_pass/derived/icons/relic_golden_idol.png", "status": "first_pass_exists" },
+            { "id": "crown_of_chains", "display_name": "Crown of Chains", "icon_key": "relic_crown_of_chains", "current_path": "res://resources/art/first_pass/derived/icons/relic_crown_of_chains.png", "status": "first_pass_exists" },
+            { "id": "merchant_compass", "display_name": "Merchant Compass", "icon_key": "relic_merchant_compass", "current_path": "res://resources/art/first_pass/derived/icons/relic_merchant_compass.png", "status": "first_pass_exists" }
+          ]
+        },
+        {
+          "asset_id": "booster_icons",
+          "name": "Booster pack icons",
+          "type": "icon_set",
+          "status": "placeholder_or_reused",
+          "entries": [
+            { "id": "elemental_booster", "display_name": "Elemental Booster", "icon_key": "booster_elemental", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses stable placeholder color or Fire mastery icon fallback." },
+            { "id": "fire_booster", "display_name": "Fire Booster", "icon_key": "booster_fire", "current_path": "", "status": "placeholder_or_reused", "notes": "Runtime uses Fire mastery icon fallback." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ui_chrome",
+      "display_name": "UI Chrome, HUD Frames, Buttons, Panels, And Slots",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "main_menu_ui_pack",
+          "name": "Main menu buttons, border, stats panel, and menu icons",
+          "type": "ui_pack",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/menu/main_menu_border_outer_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_button_primary_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_button_secondary_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_profile_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_achievements_v1.png",
+            "res://resources/art/first_pass/menu/main_menu_icon_settings_v1.png"
+          ]
+        },
+        {
+          "asset_id": "combat_ui_chrome_pack",
+          "name": "Combat chrome texture pack",
+          "type": "ui_pack",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/combat_ui/combat_top_bar_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_enemy_panel_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_board_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_mastery_rail_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_player_hud_rail.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_player_vitals_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_equipment_rail_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_consumables_rail_frame.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_slot_frame_empty.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_slot_frame_filled.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_timer_track.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_timer_center_marker.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_divider_h.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_corner_ornament.png",
+            "res://resources/art/first_pass/derived/combat_ui/combat_backdrop_scrim.png"
+          ]
+        },
+        {
+          "asset_id": "shared_hud_chrome",
+          "name": "Shared player HUD, HP bars, slot frames, and mastery panels",
+          "type": "ui_pack",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/hud/hp_bar_frame.png",
+            "res://resources/art/first_pass/derived/hud/hp_bar_fill.png",
+            "res://resources/art/first_pass/derived/hud/enemy_hp_bar_frame.png",
+            "res://resources/art/first_pass/derived/hud/enemy_hp_bar_fill.png",
+            "res://resources/art/first_pass/derived/hud/combo_badge_frame.png",
+            "res://resources/art/first_pass/derived/ui_chrome/panel_frame.png",
+            "res://resources/art/first_pass/derived/ui_chrome/slot_frame_equipment.png",
+            "res://resources/art/first_pass/derived/ui_chrome/slot_frame_consumable.png",
+            "res://resources/art/first_pass/derived/ui_chrome/mastery_panel_frame.png",
+            "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png"
+          ]
+        },
+        {
+          "asset_id": "shop_ui_pack",
+          "name": "Shop card, offer, relic, reroll, booster, and transaction UI pack",
+          "type": "ui_pack",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/ui/shop_card_kit_v1.png",
+            "res://resources/art/first_pass/ui/ui_frame_kit_v1.png",
+            "res://resources/art/first_pass/ui/bar_kit_v1.png",
+            "res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png"
+          ],
+          "notes": "Needs production states for affordable, unaffordable, sold out, selected, booster pick, hover/focus, disabled, and touch feedback."
+        },
+        {
+          "asset_id": "result_screen_ui_pack",
+          "name": "Victory, defeat, boss reward, and run summary UI chrome",
+          "type": "ui_pack",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "ITCH-05 identifies result polish as required for public readiness."
+        },
+        {
+          "asset_id": "tutorial_onboarding_ui_pack",
+          "name": "Tutorial, tooltip, first-run guidance, and control prompt UI",
+          "type": "ui_pack",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "ITCH-02 identifies first-run clarity as launch-readiness work."
+        }
+      ]
+    },
+    {
+      "id": "vfx",
+      "display_name": "Gameplay VFX",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "board_orb_clear_vfx",
+          "name": "Orb clear, cascade, and combo VFX",
+          "type": "vfx_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/vfx/vfx_sprite_sheet_v1.png"
+          ],
+          "notes": "Runtime also uses transient code-driven VFX. Needs final readability and performance review."
+        },
+        {
+          "asset_id": "mastery_vfx",
+          "name": "Elemental mastery beams, shells, and impact VFX",
+          "type": "vfx_set",
+          "status": "first_pass_exists",
+          "current_paths": [
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_fire.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_ice.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_earth.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_heart.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_armor.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_beam_gold.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_shell_armor.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_hit_impact.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_heal_impact.png",
+            "res://resources/art/first_pass/derived/vfx/mastery_gold_impact.png"
+          ]
+        },
+        {
+          "asset_id": "enemy_attack_vfx",
+          "name": "Enemy attack, block, shield, and HP-hit VFX",
+          "type": "vfx_set",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Current feedback is presentation-driven and partly fallback-based. Production should provide clear enemy action VFX."
+        },
+        {
+          "asset_id": "shop_transaction_vfx",
+          "name": "Shop buy, sell, reroll, booster, and error feedback VFX",
+          "type": "vfx_set",
+          "current_paths": [],
+          "status": "missing"
+        },
+        {
+          "asset_id": "unlock_achievement_vfx",
+          "name": "Meta unlock and achievement toast VFX",
+          "type": "vfx_set",
+          "current_paths": [],
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "display_name": "Music And Sound Effects",
+      "priority": "P0",
+      "production_status": "first_pass_exists",
+      "needed_for_production": [
+        {
+          "asset_id": "music_menu",
+          "name": "Main menu music loop",
+          "type": "music",
+          "current_paths": [
+            "res://resources/audio/music/main-menu.wav",
+            "res://resources/audio/raw_music/menu.wav.bin",
+            "res://raw/main-menu.mid"
+          ],
+          "status": "first_pass_exists",
+          "notes": "MIDI-rendered WAV exists. Needs final composition, mastering, loop, license, and Android export review."
+        },
+        {
+          "asset_id": "music_combat",
+          "name": "Combat music loop",
+          "type": "music",
+          "current_paths": [
+            "res://resources/audio/music/combat.wav",
+            "res://resources/audio/raw_music/combat.wav.bin",
+            "res://raw/combat.mid"
+          ],
+          "status": "first_pass_exists"
+        },
+        {
+          "asset_id": "music_shop",
+          "name": "Shop music loop",
+          "type": "music",
+          "current_paths": [
+            "res://resources/audio/music/shop.wav",
+            "res://resources/audio/raw_music/shop.wav.bin",
+            "res://raw/shop.mid"
+          ],
+          "status": "first_pass_exists"
+        },
+        {
+          "asset_id": "music_victory_defeat_summary",
+          "name": "Victory, defeat, and run-summary music stingers/loops",
+          "type": "music",
+          "current_paths": [
+            "res://resources/audio/music/credit.wav",
+            "res://raw/credit.mid"
+          ],
+          "status": "placeholder_or_reused",
+          "notes": "Needs explicit victory, defeat, reward, and summary cues."
+        },
+        {
+          "asset_id": "sfx_combat_core",
+          "name": "Combat core SFX",
+          "type": "sfx_set",
+          "status": "placeholder_or_reused",
+          "current_paths": [],
+          "required_cues": [
+            "drag_start",
+            "valid_swap",
+            "invalid_swap",
+            "timer_warning",
+            "orb_clear",
+            "combo_increment",
+            "fire_damage",
+            "ice_damage",
+            "earth_damage",
+            "heal",
+            "armor_gain",
+            "gold_gain",
+            "enemy_attack",
+            "enemy_block",
+            "player_hit",
+            "victory",
+            "defeat"
+          ],
+          "notes": "AudioManager currently provides generated fallback tones and hooks; production needs authored SFX files."
+        },
+        {
+          "asset_id": "sfx_shop",
+          "name": "Shop SFX",
+          "type": "sfx_set",
+          "status": "placeholder_or_reused",
+          "current_paths": [],
+          "required_cues": [
+            "buy_success",
+            "buy_denied",
+            "sell",
+            "reroll",
+            "booster_open",
+            "booster_pick",
+            "continue"
+          ]
+        },
+        {
+          "asset_id": "sfx_ui",
+          "name": "Shared UI SFX",
+          "type": "sfx_set",
+          "status": "missing",
+          "current_paths": [],
+          "required_cues": [
+            "button_hover",
+            "button_press",
+            "panel_open",
+            "panel_close",
+            "toast_unlock",
+            "error"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "animation",
+      "display_name": "Animation Assets",
+      "priority": "P1",
+      "production_status": "missing",
+      "needed_for_production": [
+        {
+          "asset_id": "hero_animation_set",
+          "name": "Hero idle, hurt, attack-cast, victory, defeat animations",
+          "type": "animation_set",
+          "current_paths": [],
+          "status": "missing"
+        },
+        {
+          "asset_id": "enemy_animation_set",
+          "name": "Enemy idle, intent, attack, block, hit, defeat animations",
+          "type": "animation_set",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Current presentation largely uses static portraits/stages."
+        },
+        {
+          "asset_id": "ui_motion_language",
+          "name": "UI transition and feedback animation specifications",
+          "type": "motion_spec",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Needed for polished production feel and consistent menu/shop/combat/result transitions."
+        }
+      ]
+    },
+    {
+      "id": "marketing_and_store",
+      "display_name": "Marketing, Store, And Page Assets",
+      "priority": "P0",
+      "production_status": "missing",
+      "needed_for_production": [
+        {
+          "asset_id": "screenshots",
+          "name": "Curated screenshot pack",
+          "type": "screenshot_pack",
+          "current_paths": [],
+          "status": "missing",
+          "required_count": "4-6",
+          "required_surfaces": [
+            "main_menu",
+            "combat",
+            "shop",
+            "victory_or_boss_reward",
+            "defeat_or_run_summary"
+          ],
+          "notes": "ITCH-07 requires full-size and thumbnail review."
+        },
+        {
+          "asset_id": "itch_page_graphics",
+          "name": "Itch.io page header, cover, thumbnail, and embed art",
+          "type": "marketing_pack",
+          "current_paths": [],
+          "status": "missing"
+        },
+        {
+          "asset_id": "trailer_or_gif_capture",
+          "name": "Short gameplay GIF/video capture",
+          "type": "marketing_video",
+          "current_paths": [],
+          "status": "missing"
+        },
+        {
+          "asset_id": "controls_visual",
+          "name": "Controls/help visual",
+          "type": "instructional_graphic",
+          "current_paths": [],
+          "status": "missing",
+          "notes": "Needed if first-run controls are not fully self-evident in-game."
+        }
+      ]
+    },
+    {
+      "id": "asset_pipeline_and_metadata",
+      "display_name": "Asset Pipeline, Briefs, Metadata, And QA Records",
+      "priority": "P0",
+      "production_status": "missing",
+      "needed_for_production": [
+        {
+          "asset_id": "art_bible",
+          "name": "Production art bible",
+          "type": "documentation",
+          "current_paths": [],
+          "target_path": "assets/art_bible/style.md",
+          "status": "missing"
+        },
+        {
+          "asset_id": "asset_briefs",
+          "name": "Per-asset briefs",
+          "type": "documentation_set",
+          "current_paths": [],
+          "target_path": "assets/briefs/",
+          "status": "missing"
+        },
+        {
+          "asset_id": "generation_metadata",
+          "name": "Generation metadata records",
+          "type": "metadata_set",
+          "current_paths": [],
+          "target_path": "assets/generated/metadata/",
+          "status": "missing"
+        },
+        {
+          "asset_id": "qa_reports",
+          "name": "Asset QA and transparency reports",
+          "type": "qa_report_set",
+          "current_paths": [],
+          "target_path": "assets/qa/reports/",
+          "status": "missing"
+        },
+        {
+          "asset_id": "approved_asset_manifest",
+          "name": "Approved production asset manifest",
+          "type": "manifest",
+          "current_paths": [],
+          "target_path": "assets/approved/",
+          "status": "missing",
+          "notes": "This assets.json is an inventory/backlog, not the final approval manifest."
+        }
+      ]
+    }
+  ],
+  "known_production_gaps": [
+    {
+      "id": "booster_icons_missing",
+      "priority": "P0",
+      "summary": "Booster icons currently use stable placeholder/reused mastery art instead of final pack artwork."
+    },
+    {
+      "id": "result_screen_art_missing",
+      "priority": "P0",
+      "summary": "Victory, defeat, boss reward, and final run-summary surfaces need dedicated production art/chrome."
+    },
+    {
+      "id": "sfx_authored_files_missing",
+      "priority": "P0",
+      "summary": "Many combat/shop/UI SFX cues rely on generated fallback tones and need authored final files."
+    },
+    {
+      "id": "content_art_id_alignment",
+      "priority": "P0",
+      "summary": "Runtime enemies striker/defender/charger use aliased first-pass art. Production should align content IDs, names, and portraits/stage art."
+    },
+    {
+      "id": "asset_governance_records_missing",
+      "priority": "P0",
+      "summary": "First-pass art predates the documented assetgen approval workflow; production needs briefs, metadata, QA, license review, and approval records."
+    },
+    {
+      "id": "marketing_pack_missing",
+      "priority": "P0",
+      "summary": "Itch.io page assets and screenshot pack still need curation and review."
+    },
+    {
+      "id": "animation_scope_missing",
+      "priority": "P1",
+      "summary": "Static portraits work for the prototype, but production needs an explicit character/enemy/UI motion scope."
+    }
+  ],
+  "recommended_next_asset_batches": [
+    {
+      "batch_id": "batch_01_public_demo_core",
+      "priority": "P0",
+      "assets": [
+        "booster_icons",
+        "result_screen_ui_pack",
+        "run_summary_background",
+        "sfx_combat_core",
+        "sfx_shop",
+        "screenshots",
+        "itch_page_graphics"
+      ],
+      "reason": "Directly supports itch.io alpha/demo readiness tasks."
+    },
+    {
+      "batch_id": "batch_02_runtime_art_alignment",
+      "priority": "P0",
+      "assets": [
+        "enemy_portraits",
+        "combat_enemy_stage_art",
+        "equipment_icons",
+        "hero_orbwalker_portrait",
+        "merchant_character"
+      ],
+      "reason": "Removes content ID/art mismatch and strengthens first-session readability."
+    },
+    {
+      "batch_id": "batch_03_production_governance",
+      "priority": "P0",
+      "assets": [
+        "art_bible",
+        "asset_briefs",
+        "generation_metadata",
+        "qa_reports",
+        "approved_asset_manifest"
+      ],
+      "reason": "Creates the review trail required before generated assets can be considered production ready."
+    }
+  ]
+}
