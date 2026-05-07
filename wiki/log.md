@@ -2143,3 +2143,7 @@ Append-only history of wiki operations.
 - Added additive `RunState` signals for committed gold, run step, run active/victory/summary, profile/meta, and run-summary changes while preserving the existing polling/snapshot API and scene-controller call paths. Snapshot restore emissions are marked with `restore_run_transition_state` so future listeners can distinguish rollback recovery from forward progress. (source: `scripts/core/run_state.gd`)
 - Updated [[architecture]] and [[file-map]] for the signal facade and recorded validation in `docs/test_plan.md` and `docs/architecture_review_tasks.md`. (source: `wiki/architecture.md`, `wiki/file-map.md`, `docs/test_plan.md`, `docs/architecture_review_tasks.md`)
 - Validation: worker patch accepted at `8.6/10`; `git diff --check`, Godot MCP `view_script`, focused signal emission probe, `play_scene main`, `stop_running_scene`, and `get_godot_errors` passed with no runtime errors. User manual QA passed on 2026-05-07 for the deferred AR-24 through AR-26 extraction batch. (source: `docs/architecture_review_tasks.md`, `docs/test_plan.md`)
+
+## 2026-05-07 - AR-26 signal follow-up note
+
+- Added a low-priority [[known-issues]] note for the AR-26 signal implementation: `RunState._capture_run_signal_state()` currently deep-copies `_run_summary` and `_emit_run_summary_changed_if_needed(...)` uses full dictionary comparison. This is correct but could be replaced later with a `_run_summary_generation` counter if mobile/performance evidence says it matters. (source: `wiki/known-issues.md`, `scripts/core/run_state.gd`)
