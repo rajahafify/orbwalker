@@ -2252,3 +2252,8 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Board resolver integration test rename
 
 - Moved the board resolver regression runner from `scripts/debug/board_resolver_test_runner.gd` to `scripts/tests/integrations/board_resolver_test.gd` and renamed the global class to `BoardResolverIntegrationTest`, matching the `scripts/tests/**/_test.gd` convention while leaving AR/debug probes in `scripts/debug/`. (source: `scripts/tests/integrations/board_resolver_test.gd`, `wiki/file-map.md`, `docs/test_plan.md`)
+
+## 2026-05-07 - Shop HUD sell button input fix
+
+- Fixed the shop-only case where the shared HUD slot-detail Sell button was visible but did not activate. `ShopView.render(...)` now preserves the slot-detail popover across selection refreshes, and `PlayerLoadoutHud.handle_global_click(...)` routes mouse/touch hits inside `SlotDetailSellButton` to the existing `sell_slot_requested` signal before outside-dismissal. (source: `scripts/shop/shop_view.gd`, `scripts/ui/player_loadout_hud.gd`)
+- Documented the manual QA pass in `docs/test_plan.md`; user manual QA confirmed the shop Sell button works after the fix. (source: `docs/test_plan.md`)

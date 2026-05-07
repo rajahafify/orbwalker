@@ -231,6 +231,9 @@ func update_player_hud_layout() -> void:
 func handle_global_click(global_point: Vector2) -> bool:
 	if not _has_inventory_focus():
 		return false
+	if _control_contains_point(_slot_detail_sell_button, global_point):
+		_on_slot_detail_sell_pressed()
+		return true
 	if _is_inside_inventory_focus_area(global_point):
 		return false
 	hide_slot_detail_popover()

@@ -281,7 +281,6 @@ func _connect_signals() -> void:
 
 
 func render(snapshot: Dictionary) -> void:
-	_player_loadout_hud.hide_slot_detail_popover()
 	var shop_snapshot: Dictionary = snapshot.get("shop", {})
 	var progression_snapshot: Dictionary = snapshot.get("progression", {})
 	var pending_options: Array = snapshot.get("pending_booster_options", [])
