@@ -3,6 +3,13 @@ class_name VisualRegistry
 
 const PATH_COMBAT_BACKGROUND := "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png"
 const PATH_SHOP_BACKGROUND := "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png"
+const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := [
+	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
+	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header.png",
+	"res://resources/art/first_pass/derived/shop_ui/merchant_header.png",
+	"res://resources/art/first_pass/backgrounds/shop_merchant_header.png",
+	"res://resources/art/first_pass/backgrounds/merchant_header.png",
+]
 const PATH_ORB_SHEET := "res://resources/art/first_pass/sheets/orb_icon_set_v1.png"
 const PATH_INTENT_SHEET := "res://resources/art/first_pass/sheets/intent_badge_set_v1.png"
 const PATH_RARITY_SHEET := "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png"
@@ -168,11 +175,13 @@ var _vfx_textures: Dictionary = {}
 
 var _combat_background: Texture2D
 var _shop_background: Texture2D
+var _shop_merchant_header: Texture2D
 var _hero_portrait: Texture2D
 var _ui_frames: Texture2D
 var _ui_bars: Texture2D
 var _ui_shop_cards: Texture2D
 var _backgrounds_loaded := false
+var _shop_merchant_header_loaded := false
 var _hero_portrait_loaded := false
 var _ui_sheets_loaded := false
 var _orb_textures_built := false
@@ -195,6 +204,13 @@ func combat_background() -> Texture2D:
 func shop_background() -> Texture2D:
 	_ensure_background_textures()
 	return _shop_background if _shop_background != null else placeholder_texture("shop_background")
+
+
+func shop_merchant_header() -> Texture2D:
+	_ensure_shop_merchant_header_texture()
+	if _shop_merchant_header != null:
+		return _shop_merchant_header
+	return shop_background()
 
 
 func enemy_portrait(enemy_id: String) -> Texture2D:
@@ -638,6 +654,19 @@ func _ensure_hero_portrait() -> void:
 		return
 	_hero_portrait_loaded = true
 	_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
+
+
+func _ensure_shop_merchant_header_texture() -> void:
+	if _shop_merchant_header_loaded:
+		return
+	_shop_merchant_header_loaded = true
+	for path in SHOP_MERCHANT_HEADER_CANDIDATE_PATHS:
+		if not ResourceLoader.exists(path):
+			continue
+		var loaded := _safe_load_texture(path, "shop_merchant_header")
+		if loaded != null:
+			_shop_merchant_header = loaded
+			return
 
 
 func _ensure_ui_sheets() -> void:
