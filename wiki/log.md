@@ -2304,3 +2304,7 @@ Append-only history of wiki operations.
 
 - Renamed live runtime/API terminology from `booster` to `treasure_chest` across content registry collections and ids, shop state/service/model/view/controller, RunState wrappers, run-log payload/reporting keys, visual icon keys, tests, and current docs/wiki. Historical logs and dated evidence retain older wording where they describe past behavior. (source: `scripts/content/content_registry.gd`, `scripts/shop/shop_state.gd`, `scripts/shop/shop_service.gd`, `scripts/core/run_state.gd`, `scripts/core/run_logger.gd`, `scripts/core/run_log_reporter.gd`, `scripts/shop/shop_view.gd`, `wiki/features.md`)
 - Validation used Godot MCP script reloads, focused terminology tests, a cache-ignored shop chest transaction smoke, tracked non-historical search evidence, and user manual QA acceptance; `docs/test_plan.md` records the exact checks and caveats. (source: `docs/test_plan.md`, `scripts/tests/content_registry_terminology_test.gd`, `scripts/tests/shop_view_layout_test.gd`)
+
+## 2026-05-07 - Assetgen workflow wiki
+
+- Added [[assetgen-workflow]] for the AI-generated 2D asset governance process in `resources/assetgen.workflow.md`, including creative-control inputs, generation metadata, lifecycle states, QA/cleanup gates, human/legal review, transparency checks, and the production release gate. Linked the page from [[index]] and recorded the workflow document in [[file-map]]. (source: `resources/assetgen.workflow.md`, `wiki/assetgen-workflow.md`, `wiki/index.md`, `wiki/file-map.md`)

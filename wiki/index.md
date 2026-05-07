@@ -14,6 +14,7 @@
 - [[setup]] - How to open, run, and validate the project
 - [[file-map]] - Folder and file responsibility map
 - [[main-menu-assets]] - Main menu art package and asset map
+- [[assetgen-workflow]] - Governance workflow for AI-generated 2D assets before production integration
 
 ## Current Goal
 
