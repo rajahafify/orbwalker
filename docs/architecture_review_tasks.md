@@ -370,4 +370,74 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - `git diff --check` passed.
   - Godot MCP `get_project_info` reported Godot `4.6.2-stable`.
   - Godot MCP `view_script` loaded the touched source scripts, including `run_state.gd`, `run_logger.gd`, `scene_router.gd`, `flow_result_utils.gd`, `content_registry.gd`, `shop_service.gd`, `combat_state_machine.gd`, and the affected controllers.
+  - User manual QA passed on 2026-05-07 after the committed AR-19 through AR-23 batch.
 - Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, `wiki/known-issues.md`, and `wiki/log.md` updated for the AR-19 through AR-23 architecture debt batch.
+
+### AR-24: ProfileRepository extraction
+
+- Status: `done`
+- Owner/scope: Extract profile/meta-profile persistence from `scripts/core/run_state.gd` into a thin `scripts/core/profile_repository.gd` helper while keeping `RunState.profile_snapshot()`, `meta_profile_snapshot()`, `reset_profile()`, `create_default_profile()`, equipment unlock APIs, and Total Score APIs as the public compatibility boundary.
+- Progress: 2026-05-07 completed the persistence-only extraction. `ProfileRepository` now owns profile path constants, `ConfigFile` load/save, legacy meta-profile migration from `user://matchatro_meta_profile.cfg`, save warnings, and last-I/O probe metadata. `RunState` keeps player/meta profile object ownership, default common unlock sync, equipment unlock/claim rules, victory unlock awards, Total Score banking, profile/meta public wrappers, and the reset-profile ordering.
+- Plan:
+  - Move `ConfigFile` load/save path ownership for `PROFILE_PATH`, `PROFILE_SECTION`, legacy `META_PROFILE_PATH`, and `META_PROFILE_SECTION` into `ProfileRepository`.
+  - Keep `RunState` responsible for when profile/meta state is created, reset, synced with default unlocks, and exposed to callers.
+  - Preserve legacy meta-profile migration behavior and existing profile snapshot shapes.
+  - Avoid changing collection unlock rules, victory unlock awards, Total Score banking, profile overlay text, or save file locations.
+- Validation:
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `res://scripts/core/run_state.gd` and `res://scripts/core/profile_repository.gd`.
+  - Focused Godot MCP editor probe with profile-file backup/restore confirmed reset/default common unlock sync, profile/meta snapshot shape, save/load round trip, legacy meta-profile migration, and recent unlock consume persistence behavior.
+  - Godot MCP `play_scene main`, `stop_running_scene`, and `get_godot_errors` reported `Session has no errors`.
+  - Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at `8.8/10`.
+- Preserve:
+  - Public `RunState` profile/meta APIs and return dictionary shapes.
+  - Existing `user://matchatro_profile.cfg` and legacy `user://matchatro_meta_profile.cfg` behavior.
+  - Common-equipment default unlock behavior.
+  - Manual QA acceptance from AR-19 through AR-23 route flow.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new repository ownership.
+
+### AR-25: BalanceManager extraction
+
+- Status: `done`
+- Owner/scope: Extract prototype balance lever normalization, defaults, project-setting sync, fight reward lookup, and encounter stat scaling from `scripts/core/run_state.gd` into `scripts/core/balance_manager.gd`. `RunState` remains the public facade for prototype balance APIs and current encounter assignment.
+- Progress: 2026-05-07 completed the balance helper extraction. `BalanceManager` now owns prototype balance defaults, backing lever state, lever normalization, ProjectSettings sync, fight reward lookup, starting gold lookup, ContentRegistry lever propagation, and encounter HP/damage scaling. `RunState` keeps the public prototype balance facade methods, owns when active encounters are assigned, and still decides when scaling is applied.
+- Plan:
+  - Move `PROTOTYPE_BALANCE_DEFAULTS`, `PROTOTYPE_BALANCE_PROJECT_SETTINGS_PREFIX`, lever normalization, project-setting sync, level-scoped multipliers, encounter scaling, and fight gold reward lookup into `BalanceManager` unless a constant must stay in `RunState` for compatibility.
+  - Keep `RunState.prototype_balance_levers_snapshot()`, `prototype_balance_defaults_snapshot()`, `set_prototype_balance_levers(...)`, `reset_prototype_balance_levers()`, and `prototype_fight_gold_reward_for(...)` wrappers.
+  - Keep `RunState` as the owner of active encounter dictionaries and when scaling is applied during fight assignment.
+  - Preserve temporary Milestone 10/M12 balance defaults except for safety clamps already introduced in AR-19.
+- Validation:
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed.
+  - Godot MCP `view_script` passed for `res://scripts/core/run_state.gd` and `res://scripts/core/balance_manager.gd`.
+  - Focused Godot MCP editor probes confirmed default snapshot parity, setter/resetter parity, ProjectSettings sync, fight rewards `10/12/14`, ContentRegistry shop/reroll multiplier propagation, first-shop guarantee path with `enemy_1` reward `10`, and representative encounter scaling.
+  - Godot MCP `play_scene main`, `stop_running_scene`, and `get_godot_errors` reported no runtime errors.
+  - Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at `8.7/10`.
+- Preserve:
+  - Existing public `RunState` balance method names and return shapes.
+  - Current active encounter stats under default levers.
+  - Current tuned temporary balance values and first-shop guarantee behavior.
+  - Shop/content safety clamps from AR-19.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new balance helper ownership.
+
+### AR-26: RunState signal facade
+
+- Status: `done`
+- Owner/scope: Add a small event-driven facade to `RunState` after logger/router/profile/balance ownership is stable. Initial signals should cover high-value state changes such as gold, level/step, run activity, profile/meta changes, and summary availability without forcing immediate controller migrations.
+- Progress: 2026-05-07 completed the additive signal facade. `RunState` now exposes `gold_changed`, `run_step_changed`, `run_state_changed`, `profile_changed`, and `run_summary_changed` signals with dictionary payloads. Existing polling/snapshot APIs and controller call paths were left unchanged; the signals emit only from committed mutation points and snapshot restore emissions are marked with `restore_run_transition_state`.
+- Plan:
+  - Add conservative `RunState` signals such as `gold_changed`, `run_step_changed`, `run_state_changed`, `profile_changed`, and `run_summary_changed`.
+  - Emit from existing mutation points only after state changes are committed.
+  - Keep existing polling/snapshot APIs working; do not migrate all controllers in this batch unless a narrow caller benefits clearly.
+  - Document signal payloads and avoid duplicate emissions during snapshot restore/rollback unless restoration intentionally changes visible state.
+- Validation:
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed.
+  - Godot MCP `get_project_info`, `view_script` for `res://scripts/core/run_state.gd`, and `get_godot_errors` reported no session errors.
+  - Focused Godot MCP editor probe connected all five signals and verified representative emissions for `start_new_run()`, `add_gold()`, successful and failed `spend_gold()`, fight victory, shop advance, snapshot restore, defeat/final summary, and reset.
+  - Godot MCP `play_scene main`, `stop_running_scene`, and final `get_godot_errors` reported no runtime errors.
+  - Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at `8.6/10`.
+  - User manual QA passed on 2026-05-07 for the deferred AR-24 through AR-26 extraction batch.
+- Preserve:
+  - Public snapshot/polling APIs and current controller behavior.
+  - Existing route semantics and rollback behavior.
+  - RunLogger and SceneRouter facade boundaries introduced in AR-22 and AR-23.
+- Docs/wiki impact: `docs/architecture_review_tasks.md`, `docs/test_plan.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the signal facade.
