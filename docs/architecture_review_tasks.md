@@ -533,3 +533,21 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
   - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
   - `open_scene res://scenes/combat.tscn`, `play_scene current`, `stop_running_scene`, and final `get_godot_errors` completed with no current runtime crash and the smoke reached `combat_first_usable_frame`. Existing unused-field reload warnings remain in the editor session.
+
+### AR-32: Combat VFX target lookup cleanup
+
+- Status: `done`
+- Owner/scope: Continued combat MVC cleanup by moving enemy/player VFX target geometry lookup and VFX presenter binding-node packaging from `CombatController` into `CombatView`. This pass kept `CombatVfxPresenter` controller-owned and kept replay timing/order in `CombatController`.
+- Progress: 2026-05-07 added `CombatView.enemy_vfx_target_global(...)`, `CombatView.player_vfx_target_global(...)`, and `CombatView.vfx_presenter_bindings(...)`. `CombatController` now asks the view for enemy/player replay targets and VFX binding nodes, with compatibility fallback to the existing controller refs. `_active_enemy_visual_control()` was removed because enemy target selection no longer needs a controller-owned helper.
+- Preserve:
+  - Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, `combat_speed`, debug command names, board-local `BoardView.gui_input` coordinates, and visible resolve/replay timing.
+  - Controller ownership of VFX timing decisions, replay waits, staged HUD updates, SFX calls, mastery feedback release, resolver callbacks, RunState/FlowTrace routing, and privileged debug callbacks.
+- Validation:
+  - Review gate accepted at `8.4/10`; score is capped because controller fallback node refs remain for compatibility and full manual route/debug QA was not rerun for this exact slice.
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed with the existing CRLF normalization warning only.
+  - Static searches confirmed `_active_enemy_visual_control` is absent, controller no longer directly computes centers from `_enemy_portrait` or `_player_portrait`, and the new `CombatView` VFX binding helper has explicit `Variant` local typing after an initial parser warning-as-error was found and fixed.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_controller.gd`, `combat_view.gd`, `combat_model.gd`, `combat_resolve_presenter.gd`, `combat_vfx_presenter.gd`, and `board_controller.gd`.
+  - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
+  - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
+  - `open_scene res://scenes/combat.tscn`, `play_scene current`, `stop_running_scene`, and final `get_godot_errors` completed with no current runtime crash. Resolve trace reached match flash, clear, combo ticks, gravity/refill, animation drain, resolve completion, final board commit, and turn replay FlowTrace. Existing unused-field reload warnings remain in the editor session.
+  - User manual QA passed on 2026-05-07 for this exact VFX target lookup cleanup.

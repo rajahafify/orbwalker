@@ -487,6 +487,11 @@ func _apply_orb_texture_map_deferred() -> void:
 func _bind_combat_vfx_presenter() -> void:
 	if _combat_vfx_presenter == null:
 		return
+	if _view != null and _view.has_method("vfx_presenter_bindings"):
+		var view_bindings: Variant = _view.vfx_presenter_bindings(_visuals, _player_loadout_hud, _host)
+		if view_bindings is Dictionary:
+			_combat_vfx_presenter.bind(view_bindings)
+			return
 	_combat_vfx_presenter.bind({
 		"vfx_layer": _vfx_layer,
 		"visual_registry": _visuals,
@@ -1909,8 +1914,8 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var heart_heal := int(turn_log.get("healed", 0))
 	var armor_gain := int(turn_log.get("armor_gained", 0))
 	var gold_gain := int(turn_log.get("gold_gained", 0))
-	var enemy_target := _control_global_center(_active_enemy_visual_control(), 0.48)
-	var player_target := _control_global_center(_player_portrait, 0.64)
+	var enemy_target := _enemy_vfx_target_global(0.48)
+	var player_target := _player_vfx_target_global(0.64)
 	var enemy_impact_size := Vector2(84, 84)
 	var player_impact_size := Vector2(84, 84)
 	var gold_impact_size := Vector2(70, 70)
@@ -2580,8 +2585,8 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	var hp_damage := int(enemy_attack.get("hp_damage", 0))
 	if blocked_by_armor <= 0 and hp_damage <= 0:
 		return
-	var enemy_source := _control_global_center(_active_enemy_visual_control(), 0.56)
-	var player_impact_target := _control_global_center(_player_portrait, 0.58)
+	var enemy_source := _enemy_vfx_target_global(0.56)
+	var player_impact_target := _player_vfx_target_global(0.58)
 	if player_impact_target == Vector2.ZERO:
 		player_impact_target = player_target
 	var cue_lifetime := _combat_speed_duration(0.24)
@@ -2700,6 +2705,24 @@ func _control_global_center(control: Control, vertical_bias: float = 0.5) -> Vec
 	)
 
 
+func _enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
+	if _view != null and _view.has_method("enemy_vfx_target_global"):
+		var view_target: Variant = _view.enemy_vfx_target_global(vertical_bias)
+		if view_target is Vector2 and (view_target as Vector2) != Vector2.ZERO:
+			return view_target as Vector2
+	var enemy_portrait_control: Control = _enemy_portrait
+	return _control_global_center(enemy_portrait_control, vertical_bias)
+
+
+func _player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
+	if _view != null and _view.has_method("player_vfx_target_global"):
+		var view_target: Variant = _view.player_vfx_target_global(vertical_bias)
+		if view_target is Vector2 and (view_target as Vector2) != Vector2.ZERO:
+			return view_target as Vector2
+	var player_portrait_control: Control = _player_portrait
+	return _control_global_center(player_portrait_control, vertical_bias)
+
+
 func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
 	if _combat_vfx_presenter == null:
 		return
@@ -2804,10 +2827,6 @@ func _resolve_enemy_figure_texture() -> Texture2D:
 	if enemy_figure_texture == null:
 		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	return enemy_figure_texture
-
-
-func _active_enemy_visual_control() -> Control:
-	return _enemy_portrait
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:

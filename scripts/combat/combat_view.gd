@@ -105,6 +105,8 @@ var _enemy_hp_bar: ProgressBar = null
 var _player_hp_bar: ProgressBar = null
 var _player_armor_bar: ProgressBar = null
 var _player_portrait: TextureRect = null
+var _elemental_mastery_cards: Control = null
+var _vfx_layer: Control = null
 var _equipment_icons: Control = null
 var _consumable_icons: Control = null
 var _relic_row: HBoxContainer = null
@@ -160,6 +162,26 @@ func set_dependencies(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud", _player_loadout_hud)
 	_debug_console = dependencies.get("debug_console", _debug_console)
 	_outcome_overlay = dependencies.get("outcome_overlay", _outcome_overlay)
+
+
+func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
+	return _control_target_global(_enemy_portrait, vertical_bias)
+
+
+func player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
+	return _control_target_global(_player_portrait, vertical_bias)
+
+
+func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Variant, timer_owner: Node) -> Dictionary:
+	var resolved_visual_registry: Variant = visual_registry if visual_registry != null else _visuals
+	var resolved_player_loadout_hud: Variant = player_loadout_hud if player_loadout_hud != null else _player_loadout_hud
+	return {
+		"vfx_layer": _vfx_layer,
+		"visual_registry": resolved_visual_registry,
+		"player_loadout_hud": resolved_player_loadout_hud,
+		"elemental_mastery_cards": _elemental_mastery_cards,
+		"timer_owner": timer_owner,
+	}
 
 
 func setup_rendering_helpers() -> void:
@@ -835,3 +857,15 @@ func _apply_zone_guides() -> void:
 
 func _set_zone_guide(zone: Control, label_text: String) -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_zone_guide(zone, label_text, _zone_guides_enabled)
+
+
+func _control_target_global(control: Control, vertical_bias: float = 0.5) -> Vector2:
+	if control == null:
+		return Vector2.ZERO
+	var rect := control.get_global_rect()
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return Vector2.ZERO
+	return Vector2(
+		rect.position.x + rect.size.x * 0.5,
+		rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0)
+	)
