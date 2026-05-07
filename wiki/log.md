@@ -2278,3 +2278,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Launch readiness snapshot
 
 - Added `launch-milestone.md` with current launch-readiness progress ratings: itch.io demo/alpha `7/10`, publisher pitch vertical slice `5/10`, Steam Coming Soon page `5.5/10`, and Steam playable demo `4/10`, plus the main presentation gaps and highest-leverage polish targets. (source: `launch-milestone.md`)
+
+## 2026-05-07 - Itch.io readiness tracker
+
+- Added `docs/itch_readiness_tasks.md` as the publish-readiness tracker for moving itch.io alpha/demo readiness from `7/10` to `10/10`, with focused `codex/itch-number-name` branch slices for combat readability, onboarding, run-loop stability, shop clarity, result polish, public build packaging, page/screenshot curation, and final release-candidate QA. (source: `docs/itch_readiness_tasks.md`, `launch-milestone.md`)
