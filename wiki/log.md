@@ -2270,3 +2270,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Shop 9/10 Polish Validation
 
 - Recorded the follow-up shop 9/10 polish pass: `ShopView` disables native offer/relic tooltips, uses compact visual-only `?`/`S` Help/Settings controls, hides the competing `SHOPKEEPER` label, adds merchant summary/detail backing, strengthens sell guidance, and extends `shop_layout_probe_snapshot()` with the new source checks. Live screenshot review passed Readability `9/10`, Layout `9/10`, Feature `9/10`, Fantasy `9/10`, and Reference `9/10`; remaining caveats are no fresh Android/device QA, no full manual transaction click-through, and existing enum reload diagnostics. (source: `docs/test_plan.md`, `scripts/shop/shop_view.gd`)
+
+## 2026-05-07 - Shop View Layout Regression Test
+
+- Added `ShopViewLayoutTest` under `scripts/tests/` to guard the 9/10 shop presentation probe contract: disabled native offer/relic/card icon tooltips, compact visual-only Help/Settings controls, action hint bounds, merchant text backing, action-to-HUD spacing, stock-card fit, and shop scene facade parity. (source: `scripts/tests/shop_view_layout_test.gd`, `docs/test_plan.md`)
