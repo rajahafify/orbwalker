@@ -116,6 +116,7 @@ const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.
 const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outcome_overlay.gd")
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
+const COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT := preload("res://scripts/combat/combat_debug_command_adapter.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
@@ -215,6 +216,7 @@ var _visuals: VisualRegistry = null
 var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
 var _debug_console: CombatDebugConsole = null
+var _debug_command_adapter: Variant = null
 var _turn_log_presenter: Variant = null
 var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
@@ -346,6 +348,8 @@ func _ready() -> void:
 		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
 	if _debug_console == null:
 		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
+	if _debug_command_adapter == null:
+		_debug_command_adapter = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.new()
 	if _combat_vfx_presenter == null:
 		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if _board_controller == null:
@@ -365,6 +369,36 @@ func _ready() -> void:
 		"combo_sound_callback": _on_presenter_combo_sound,
 	})
 	_resolve_presenter.set_combat_speed(_combat_speed_value())
+	_debug_command_adapter.bind(
+		{
+			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
+			"default_victory_scene": "res://scenes/main_menu.tscn",
+			"callbacks": {
+				"set_status_text": Callable(self, "_console_set_status_text"),
+				"combat_state": Callable(self, "_debug_combat_state"),
+				"enemy_state": Callable(self, "_debug_enemy_state"),
+				"player_hp": Callable(self, "_debug_player_hp"),
+				"player_max_hp": Callable(self, "_debug_player_max_hp"),
+				"player_armor": Callable(self, "_debug_player_armor"),
+				"enemy_display_name": Callable(self, "_debug_enemy_display_name"),
+				"enemy_hp": Callable(self, "_debug_enemy_hp"),
+				"enemy_max_hp": Callable(self, "_debug_enemy_max_hp"),
+				"enemy_turn_block": Callable(self, "_debug_enemy_turn_block"),
+				"input_phase_value": Callable(self, "_debug_input_phase_value"),
+				"format_intent": Callable(self, "_debug_format_intent"),
+				"on_skip_success": Callable(self, "_console_on_skip_success"),
+				"board_seed": Callable(self, "_debug_board_seed"),
+				"board_debug_text": Callable(self, "_debug_board_debug_text"),
+				"create_new_board": Callable(self, "_create_new_board"),
+				"set_board_seed": Callable(self, "_set_board_seed"),
+				"update_hud": Callable(self, "_update_hud"),
+				"set_input_phase": Callable(self, "_debug_set_input_phase"),
+				"set_pending_next_scene_path": Callable(self, "_debug_set_pending_next_scene_path"),
+				"show_outcome_summary": Callable(self, "_show_outcome_summary"),
+				"build_run_outcome_summary": Callable(self, "_build_run_outcome_summary"),
+			},
+		}
+	)
 	_debug_console.bind(
 		{
 			"combat_log_text": _combat_log_text,
@@ -375,28 +409,7 @@ func _ready() -> void:
 			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
 			"initial_log_level": LOG_LEVEL_NORMAL,
 			"turn_log_presenter": _turn_log_presenter,
-			"callbacks": {
-				"set_status_text": _console_set_status_text,
-				"state_snapshot_data": _console_state_snapshot_data,
-				"skip_to_fight": _console_skip_to_fight,
-				"board_print_data": _console_board_print_data,
-				"board_reroll": _console_board_reroll,
-				"board_seed": _console_board_seed,
-				"gold_add": _console_gold_add,
-				"gold_set": _console_gold_set,
-				"mastery_add": _console_mastery_add,
-				"mastery_list": _console_mastery_list,
-				"consumable_add": _console_consumable_add,
-				"consumable_list": _console_consumable_list,
-				"equipment_list": _console_equipment_list,
-				"equipment_details": _console_equipment_details,
-				"equipment_add": _console_equipment_add,
-				"relic_list": _console_relic_list,
-				"relic_details": _console_relic_details,
-				"relic_add": _console_relic_add,
-				"fight_win": _console_fight_win,
-				"fight_lose": _console_fight_lose,
-			},
+			"callbacks": _debug_command_adapter.command_callbacks(),
 		}
 	)
 	_consumable_rng.randomize()
@@ -667,7 +680,7 @@ func _begin_turn_preview() -> void:
 	_append_combat_log(
 		"Turn %d intent: %s." % [
 			_combat.turn_index,
-			_format_intent(_enemy_state.get_current_intent()),
+			_debug_format_intent(_enemy_state.get_current_intent()),
 		]
 	)
 
@@ -987,246 +1000,77 @@ func _console_set_status_text(message: String) -> void:
 	_status_label.text = message
 
 
-func _console_state_snapshot_data() -> Dictionary:
-	var progression: Dictionary = RunState.progression_snapshot()
-	var encounter: Dictionary = RunState.current_encounter_snapshot()
-	var intent_text := "-"
-	if _enemy_state != null:
-		intent_text = _turn_log_presenter.format_intent(_enemy_state.get_current_intent())
-	return {
-		"run": {
-			"active": RunState.run_active,
-			"level": int(RunState.dungeon_level),
-			"step": String(RunState.current_step_key),
-			"label": RunState.level_sequence_label(),
-		},
-		"combat": {
-			"turn": int(_combat.turn_index if _combat != null else 0),
-			"phase": (_combat.phase_name() if _combat != null else "N/A"),
-			"input_phase": _input_phase_value(),
-		},
-		"player": {
-			"hp": int(_player_state.current_hp if _player_state != null else 0),
-			"max_hp": int(_player_state.max_hp if _player_state != null else 0),
-			"armor": int(_player_state.armor if _player_state != null else 0),
-			"gold": int(RunState.run_gold),
-		},
-		"enemy": {
-			"display_name": String(encounter.get("display_name", _enemy_state.display_name if _enemy_state != null else "Unknown")),
-			"hp": int(_enemy_state.current_hp if _enemy_state != null else 0),
-			"max_hp": int(_enemy_state.max_hp if _enemy_state != null else 0),
-			"turn_block": int(_enemy_state.current_turn_block if _enemy_state != null else 0),
-			"intent": intent_text,
-		},
-		"progression": {
-			"equipment_slots": progression.get("equipment_slots", []),
-			"consumable_slots": progression.get("consumable_slots", []),
-			"relic_ids": progression.get("relic_ids", []),
-			"mastery_levels": progression.get("mastery_levels", {}),
-		},
-	}
-
-
-func _console_skip_to_fight(level: int, fight: int) -> Dictionary:
-	var result: Dictionary = RunState.skip_to_fight(level, fight)
-	if not bool(result.get("ok", false)):
-		return result
+func _console_on_skip_success() -> void:
 	if _board_controller != null:
 		_board_controller.abort()
 	_last_resolve_result.clear()
 	_initialize_combat_state()
 	_create_new_board()
 	_begin_turn_preview()
-	var label := RunState.level_sequence_label()
-	_status_label.text = "Skipped to %s." % label
-	return {
-		"ok": true,
-		"label": label,
-	}
+
+func _debug_combat_state() -> Variant:
+	return _combat
 
 
-func _console_board_print_data() -> Dictionary:
-	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
-	var board_debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
-	return {
-		"seed": board_seed,
-		"debug_text": board_debug_text,
-	}
+func _debug_enemy_state() -> Variant:
+	return _enemy_state
 
 
-func _console_board_reroll() -> Dictionary:
-	_create_new_board()
-	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
-	return {
-		"seed": board_seed,
-	}
+func _debug_player_hp() -> int:
+	return int(_player_state.current_hp if _player_state != null else 0)
 
 
-func _console_board_seed(board_seed: int) -> Dictionary:
-	_set_board_seed(board_seed)
-	var current_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
-	return {
-		"ok": true,
-		"seed": current_seed,
-	}
+func _debug_player_max_hp() -> int:
+	return int(_player_state.max_hp if _player_state != null else 0)
 
 
-func _console_gold_add(amount: int) -> Dictionary:
-	var added := RunState.add_gold(amount)
-	_update_hud()
-	return {
-		"ok": true,
-		"added": added,
-		"current": RunState.run_gold,
-	}
+func _debug_player_armor() -> int:
+	return int(_player_state.armor if _player_state != null else 0)
 
 
-func _console_gold_set(amount: int) -> Dictionary:
-	RunState.set_gold(amount)
-	_update_hud()
-	return {
-		"ok": true,
-		"current": RunState.run_gold,
-	}
+func _debug_enemy_display_name() -> String:
+	return String(_enemy_state.display_name if _enemy_state != null else "Unknown")
 
 
-func _console_mastery_add(orb_id: int, mastery_amount: int) -> Dictionary:
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var mastery_result: Dictionary = progression_service.grant_mastery(progression_state, orb_id, mastery_amount)
-	if not bool(mastery_result.get("ok", false)):
-		return {
-			"ok": false,
-			"reason": String(mastery_result.get("reason", "unknown_error")),
-		}
-	var mastery_payload: Dictionary = mastery_result.get("result", {})
-	_update_hud()
-	return {
-		"ok": true,
-		"granted": int(mastery_payload.get("granted", 0)),
-		"new_level": int(mastery_payload.get("new_level", 0)),
-	}
+func _debug_enemy_hp() -> int:
+	return int(_enemy_state.current_hp if _enemy_state != null else 0)
 
 
-func _console_mastery_list() -> Array:
-	var content: Variant = RunState.ensure_content_registry()
-	return content.list_mastery_cards()
+func _debug_enemy_max_hp() -> int:
+	return int(_enemy_state.max_hp if _enemy_state != null else 0)
 
 
-func _console_consumable_add(consumable_id: String) -> Dictionary:
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var consumable_result: Dictionary = progression_service.add_consumable(progression_state, consumable_id, content)
-	if not bool(consumable_result.get("ok", false)):
-		return {
-			"ok": false,
-			"reason": String(consumable_result.get("reason", "unknown_error")),
-		}
-	_update_hud()
-	return {"ok": true}
+func _debug_enemy_turn_block() -> int:
+	return int(_enemy_state.current_turn_block if _enemy_state != null else 0)
 
 
-func _console_consumable_list() -> Array:
-	var content: Variant = RunState.ensure_content_registry()
-	return content.list_consumables()
+func _debug_input_phase_value() -> int:
+	return int(_input_phase_value())
 
 
-func _console_equipment_list() -> Array:
-	var content: Variant = RunState.ensure_content_registry()
-	return content.list_equipment()
+func _debug_format_intent(intent: Dictionary) -> String:
+	if _turn_log_presenter != null:
+		return _turn_log_presenter.format_intent(intent)
+	var label := String(intent.get("label", "Unknown"))
+	var attack := int(intent.get("attack", 0))
+	var block := int(intent.get("block", 0))
+	return "%s (Atk %d / Block %d)" % [label, attack, block]
 
 
-func _console_equipment_details(equipment_id: String) -> Dictionary:
-	if equipment_id == "":
-		return {"ok": false, "reason": "equipment id is required"}
-	var content: Variant = RunState.ensure_content_registry()
-	var equipment: Dictionary = content.get_equipment(equipment_id)
-	if equipment.is_empty():
-		return {"ok": false, "reason": "unknown equipment id '%s'" % equipment_id}
-	return {
-		"ok": true,
-		"equipment": equipment,
-	}
+func _debug_board_seed() -> int:
+	return int(_board_controller.board_seed() if _board_controller != null else _board_model.rng_seed)
 
 
-func _console_equipment_add(equipment_id: String) -> Dictionary:
-	if equipment_id == "":
-		return {"ok": false, "reason": "equipment id is required"}
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var equip_result: Dictionary = progression_service.equip_item(progression_state, equipment_id, content)
-	if not bool(equip_result.get("ok", false)):
-		return {
-			"ok": false,
-			"reason": String(equip_result.get("reason", "unknown_error")),
-		}
-	var payload: Dictionary = equip_result.get("result", {})
-	_update_hud()
-	return {
-		"ok": true,
-		"slot_index": int(payload.get("slot_index", -1)),
-	}
+func _debug_board_debug_text() -> String:
+	return String(_board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string())
 
 
-func _console_relic_list() -> Array:
-	var content: Variant = RunState.ensure_content_registry()
-	return content.list_relics()
+func _debug_set_input_phase(raw_phase: int) -> void:
+	_set_input_phase(raw_phase as InputPhase)
 
 
-func _console_relic_details(relic_id: String) -> Dictionary:
-	if relic_id == "":
-		return {"ok": false, "reason": "relic id is required"}
-	var content: Variant = RunState.ensure_content_registry()
-	var relic: Dictionary = content.get_relic(relic_id)
-	if relic.is_empty():
-		return {"ok": false, "reason": "unknown relic id '%s'" % relic_id}
-	return {
-		"ok": true,
-		"relic": relic,
-	}
-
-
-func _console_relic_add(relic_id: String) -> Dictionary:
-	if relic_id == "":
-		return {"ok": false, "reason": "relic id is required"}
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var relic_result: Dictionary = progression_service.add_relic(progression_state, relic_id, content)
-	if not bool(relic_result.get("ok", false)):
-		return {
-			"ok": false,
-			"reason": String(relic_result.get("reason", "unknown_error")),
-		}
-	_update_hud()
-	return {"ok": true}
-
-
-func _console_fight_win() -> Dictionary:
-	var win_transition: Dictionary = RunState.mark_fight_victory()
-	if not bool(win_transition.get("ok", false)):
-		return {
-			"ok": false,
-			"reason": String(win_transition.get("reason", "unknown_error")),
-		}
-	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	_model.set_pending_next_scene_path(String(win_transition.get("next_scene", "res://scenes/main_menu.tscn")))
-	_update_hud()
-	_show_outcome_summary("Victory", _build_run_outcome_summary("Debug command."), true)
-	_status_label.text = "Debug victory queued. Press Continue."
-	return {"ok": true}
-
-
-func _console_fight_lose() -> Dictionary:
-	var lose_transition: Dictionary = RunState.mark_player_defeated("Debug command.")
-	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	_model.set_pending_next_scene_path(String(lose_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY)))
-	_update_hud()
-	_show_outcome_summary("Defeat", _build_run_outcome_summary("Debug command."), true, "Run Summary")
-	_status_label.text = "Debug defeat queued. Run Summary available."
-	return {"ok": true}
+func _debug_set_pending_next_scene_path(scene_path: String) -> void:
+	_model.set_pending_next_scene_path(scene_path)
 
 
 func _end_drag(timed_out: bool) -> void:
@@ -2033,9 +1877,8 @@ func _update_hud() -> void:
 	if _player_state == null or _enemy_state == null or _combat == null:
 		return
 
-	if _hud_presenter == null:
-		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
-	var hud_snapshot: Dictionary = _build_hud_snapshot()
+	_ensure_hud_presenter()
+	var hud_snapshot: Dictionary = _hud_presenter.build_hud_snapshot(_hud_snapshot_input_data())
 	if _view != null:
 		_view.apply_hud_snapshot(
 			hud_snapshot,
@@ -2043,13 +1886,14 @@ func _update_hud() -> void:
 		)
 
 
-func _build_hud_snapshot() -> Dictionary:
+func _ensure_hud_presenter() -> void:
+	if _hud_presenter == null:
+		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+
+
+func _hud_snapshot_input_data() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var mastery_levels: Dictionary = progression_snapshot.get("mastery_levels", {})
 	var intent := _enemy_state.get_current_intent()
-	var timer_state := TIMER_STATE_READY if _input_phase_value() == InputPhase.PLAYER_INPUT else TIMER_STATE_LOCKED
-	if _drag_active():
-		timer_state = TIMER_STATE_ACTIVE
 	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
 	var enemy_stage_texture: Texture2D = null
 	var enemy_portrait_texture: Texture2D = null
@@ -2063,118 +1907,36 @@ func _build_hud_snapshot() -> Dictionary:
 	var player_gold: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
 	var enemy_hp: int = _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp))
 	var enemy_turn_block: int = _model.staged_hud_value("enemy_turn_block", int(_enemy_state.current_turn_block))
-	var enemy_intent_preview: Dictionary = {}
-	if _should_show_intent_damage_preview():
-		enemy_intent_preview = _enemy_intent_preview_data(intent, enemy_hp, int(_enemy_state.max_hp))
 	var player_hp: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
 	var player_armor: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
-	var run_label := RunState.level_sequence_label()
-	var top_level_text := "LEVEL %d / %d" % [RunState.dungeon_level, RunState.MAX_DUNGEON_LEVELS]
-	var top_enemy_step_text := _top_enemy_step_text()
-	var top_gold_text := "GOLD %d" % player_gold
-	var primary_intent_badge := _primary_intent_badge_snapshot(intent)
-	var hud_snapshot: Dictionary = _hud_presenter.build_snapshot(
-		{
-			"top_level_text": top_level_text,
-			"top_enemy_step_text": top_enemy_step_text,
-			"top_gold_text": top_gold_text,
-			"enemy_name_text": _enemy_state.display_name,
-			"enemy_hp": enemy_hp,
-			"enemy_max_hp": int(_enemy_state.max_hp),
-			"enemy_hp_text": "HP %d / %d" % [enemy_hp, int(_enemy_state.max_hp)],
-			"enemy_turn_block": enemy_turn_block,
-			"enemy_intent_preview": enemy_intent_preview,
-			"enemy_stage_texture": enemy_stage_texture,
-			"enemy_portrait_texture": enemy_portrait_texture,
-			"primary_intent_badge": primary_intent_badge,
-			"combat_turn_index": int(_combat.turn_index),
-			"combat_phase_name": _combat.phase_name(),
-			"timer_state": timer_state,
-			"timer_seconds": timer_seconds,
-			"player_hp": player_hp,
-			"player_max_hp": int(_player_state.max_hp),
-			"player_armor": player_armor,
-			"fire_orb_value": int(_player_state.orb_value(OrbType.Id.FIRE)),
-			"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
-			"heart_mastery_level": int(mastery_levels.get(OrbType.Id.HEART, 0)),
-			"gold_mastery_level": int(mastery_levels.get(OrbType.Id.GOLD, 0)),
-			"turn_summary_text": _turn_summary_label.text,
-			"progression_snapshot": progression_snapshot,
-			"run_label": run_label,
-		}
-	)
-	var enemy_stage_snapshot: Dictionary = Dictionary(hud_snapshot.get("enemy_stage", {}))
-	enemy_stage_snapshot["enemy_portrait_texture"] = enemy_portrait_texture
-	hud_snapshot["enemy_stage"] = enemy_stage_snapshot
-	return hud_snapshot
-
-
-func _top_enemy_step_text() -> String:
-	var step := String(RunState.current_step_key)
-	match step:
-		"enemy_1":
-			return "ENEMY 1"
-		"enemy_2":
-			return "ENEMY 2"
-		"boss":
-			return "BOSS"
-		"shop":
-			return "SHOP"
-		_:
-			return step.to_upper()
-
-
-func _primary_intent_badge_snapshot(intent: Dictionary) -> Dictionary:
-	if intent.is_empty():
-		return {
-			"kind": "idle",
-			"title": "Intent",
-			"amount": "--",
-			"detail": "No immediate action.",
-		}
-	var entries := _intent_entries_data(intent)
-	if entries.is_empty():
-		return {
-			"kind": "idle",
-			"title": "Intent",
-			"amount": "--",
-			"detail": _format_intent_compact(intent),
-		}
-	var attack_amount := 0
-	var block_amount := 0
-	for entry in entries:
-		var entry_kind := String(entry.get("kind", ""))
-		var amount := maxi(0, int(entry.get("amount", 0)))
-		if entry_kind == "attack":
-			attack_amount += amount
-		elif entry_kind == "block":
-			block_amount += amount
-	var badge_kind := "idle"
-	var title := "Intent"
-	var amount_text := "--"
-	var detail_text := ""
-	if attack_amount > 0 and block_amount > 0:
-		badge_kind = "mixed"
-		title = "Strike + Guard"
-		amount_text = "%d / %d" % [attack_amount, block_amount]
-		detail_text = "Deals %d and gains %d block." % [attack_amount, block_amount]
-	elif attack_amount > 0:
-		badge_kind = "attack"
-		title = "Attack"
-		amount_text = str(attack_amount)
-		detail_text = "Incoming damage %d." % attack_amount
-	elif block_amount > 0:
-		badge_kind = "block"
-		title = "Block"
-		amount_text = str(block_amount)
-		detail_text = "Enemy gains %d block." % block_amount
-	else:
-		detail_text = _format_intent_compact(intent)
 	return {
-		"kind": badge_kind,
-		"title": title,
-		"amount": amount_text,
-		"detail": detail_text,
+		"progression_snapshot": progression_snapshot,
+		"intent": intent,
+		"show_intent_preview": _should_show_intent_damage_preview(),
+		"dungeon_level": int(RunState.dungeon_level),
+		"max_dungeon_levels": int(RunState.MAX_DUNGEON_LEVELS),
+		"current_step_key": String(RunState.current_step_key),
+		"player_gold": player_gold,
+		"enemy_name_text": _enemy_state.display_name,
+		"enemy_hp": enemy_hp,
+		"enemy_max_hp": int(_enemy_state.max_hp),
+		"enemy_turn_block": enemy_turn_block,
+		"enemy_stage_texture": enemy_stage_texture,
+		"enemy_portrait_texture": enemy_portrait_texture,
+		"combat_turn_index": int(_combat.turn_index),
+		"combat_phase_name": _combat.phase_name(),
+		"is_player_input_phase": _input_phase_value() == InputPhase.PLAYER_INPUT,
+		"drag_active": _drag_active(),
+		"timer_seconds": timer_seconds,
+		"player_hp": player_hp,
+		"player_max_hp": int(_player_state.max_hp),
+		"player_armor": player_armor,
+		"fire_orb_value": int(_player_state.orb_value(OrbType.Id.FIRE)),
+		"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
+		"heart_orb_id": int(OrbType.Id.HEART),
+		"gold_orb_id": int(OrbType.Id.GOLD),
+		"turn_summary_text": _turn_summary_label.text,
+		"format_intent_compact": Callable(_turn_log_presenter, "format_intent_compact") if _turn_log_presenter != null else Callable(),
 	}
 
 
@@ -2270,111 +2032,6 @@ func _should_show_intent_damage_preview() -> bool:
 	return true
 
 
-func _intent_damage_preview_data(intent: Dictionary, player_hp: int, player_armor: int) -> Dictionary:
-	if intent.is_empty():
-		return {}
-	var attack_entries := _intent_entries_for_kind(intent, "attack")
-	if attack_entries.is_empty():
-		return {}
-	var visible_hp := maxi(0, player_hp)
-	if visible_hp <= 0:
-		return {}
-	var visible_armor := maxi(0, player_armor)
-	var attack := 0
-	var blocked := 0
-	var hp_loss := 0
-	for entry in attack_entries:
-		var amount := maxi(0, int(entry.get("amount", 0)))
-		if amount <= 0:
-			continue
-		attack += amount
-		var entry_blocked := mini(amount, visible_armor - blocked)
-		blocked += maxi(0, entry_blocked)
-		hp_loss = mini(visible_hp, hp_loss + maxi(0, amount - entry_blocked))
-	if blocked <= 0 and hp_loss <= 0:
-		return {}
-	return {
-		"attack": attack,
-		"blocked": blocked,
-		"hp_loss": hp_loss,
-		"current_hp": visible_hp,
-		"current_armor": visible_armor,
-		"fully_blocked": hp_loss <= 0 and blocked > 0,
-	}
-
-
-func _enemy_intent_preview_data(intent: Dictionary, enemy_hp: int, enemy_max_hp: int) -> Dictionary:
-	if intent.is_empty():
-		return {}
-	var entries := _intent_entries_data(intent)
-	if entries.is_empty():
-		return {}
-	var max_hp := maxi(1, enemy_max_hp)
-	var block := 0
-	for entry in entries:
-		if String(entry.get("kind", "")) == "block":
-			block += maxi(0, int(entry.get("amount", 0)))
-	return {
-		"block": block,
-		"current_hp": maxi(0, enemy_hp),
-		"max_hp": max_hp,
-		"entries": entries,
-	}
-
-
-func _intent_entries_data(intent: Dictionary) -> Array[Dictionary]:
-	var raw_entries: Array = []
-	if intent.has("entries") and intent.get("entries") is Array:
-		raw_entries = intent.get("entries")
-	elif intent.has("intents") and intent.get("intents") is Array:
-		raw_entries = intent.get("intents")
-	var entries: Array[Dictionary] = []
-	for raw in raw_entries:
-		if not (raw is Dictionary):
-			continue
-		var raw_entry := raw as Dictionary
-		var kind := String(raw_entry.get("kind", raw_entry.get("type", ""))).to_lower()
-		var amount := maxi(0, int(raw_entry.get("amount", raw_entry.get(kind, 0))))
-		if kind == "attack" and amount <= 0:
-			amount = maxi(0, int(raw_entry.get("damage", raw_entry.get("attack", 0))))
-		if kind == "block" and amount <= 0:
-			amount = maxi(0, int(raw_entry.get("block", 0)))
-		if amount <= 0 or (kind != "attack" and kind != "block"):
-			continue
-		entries.append({
-			"id": String(raw_entry.get("id", "%s_%d" % [kind, entries.size()])),
-			"kind": kind,
-			"amount": amount,
-			"label": String(raw_entry.get("label", _intent_entry_label(kind, amount))),
-		})
-	if entries.is_empty():
-		var attack := maxi(0, int(intent.get("attack", 0)))
-		if attack > 0:
-			entries.append({"id": "attack_0", "kind": "attack", "amount": attack, "label": _intent_entry_label("attack", attack)})
-		var block := maxi(0, int(intent.get("block", 0)))
-		if block > 0:
-			entries.append({"id": "block_%d" % entries.size(), "kind": "block", "amount": block, "label": _intent_entry_label("block", block)})
-	return entries
-
-
-func _intent_entries_for_kind(intent: Dictionary, kind: String) -> Array[Dictionary]:
-	var entries: Array[Dictionary] = []
-	for entry in _intent_entries_data(intent):
-		if String(entry.get("kind", "")) == kind:
-			entries.append(entry)
-	return entries
-
-
-func _intent_entry_label(kind: String, amount: int) -> String:
-	match kind:
-		"attack":
-			return "Attack %d" % amount
-		"block":
-			return "Block %d" % amount
-		_:
-			return "%s %d" % [kind.capitalize(), amount]
-
-
 func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
 	if not _should_show_intent_damage_preview():
 		return
@@ -2393,7 +2050,7 @@ func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _format_intent(intent)
+			_turn_summary_label.text = _debug_format_intent(intent)
 	_start_enemy_intent_hover_emphasis("attack")
 
 
@@ -2411,7 +2068,7 @@ func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _format_intent(intent)
+			_turn_summary_label.text = _debug_format_intent(intent)
 	_start_enemy_intent_hover_emphasis("block")
 
 
@@ -2431,7 +2088,7 @@ func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _format_intent(intent)
+			_turn_summary_label.text = _debug_format_intent(intent)
 	_start_enemy_intent_hover_emphasis("block")
 
 
@@ -2463,21 +2120,6 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 		_status_label.text = "%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))]
 	_status_label.modulate = STATUS_COLOR_WARNING
 	_start_enemy_intent_hover_emphasis(kind)
-
-
-func _format_intent(intent: Dictionary) -> String:
-	if _turn_log_presenter != null:
-		return _turn_log_presenter.format_intent(intent)
-	var label := String(intent.get("label", "Unknown"))
-	var attack := int(intent.get("attack", 0))
-	var block := int(intent.get("block", 0))
-	return "%s (Atk %d / Block %d)" % [label, attack, block]
-
-
-func _format_intent_compact(intent: Dictionary) -> String:
-	if _turn_log_presenter != null:
-		return _turn_log_presenter.format_intent_compact(intent)
-	return _format_intent(intent)
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
@@ -2549,7 +2191,8 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	player_display_values["current_armor"] = visible_player_armor
 	var intent_preview: Dictionary = {}
 	if _should_show_intent_damage_preview():
-		intent_preview = _intent_damage_preview_data(
+		_ensure_hud_presenter()
+		intent_preview = _hud_presenter.build_intent_damage_preview(
 			_enemy_state.get_current_intent(),
 			visible_player_hp,
 			visible_player_armor
