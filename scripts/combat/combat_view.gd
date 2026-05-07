@@ -280,7 +280,8 @@ func next_button_text() -> String:
 func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:
 	if _player_loadout_hud == null:
 		return
-	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes(popover_parent, popover_z_index))
+	var resolved_popover_parent: Control = popover_parent if popover_parent != null else _layout_root
+	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes(resolved_popover_parent, popover_z_index))
 
 
 func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
@@ -301,6 +302,37 @@ func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Varian
 		"elemental_mastery_cards": _elemental_mastery_cards,
 		"timer_owner": timer_owner,
 	}
+
+
+func resolve_presenter_bindings(
+	board_controller: Variant,
+	timer_owner: Node,
+	spawn_vfx_texture_callback: Callable,
+	combo_sound_callback: Callable
+) -> Dictionary:
+	return {
+		"board": _board,
+		"board_view": _board_view,
+		"board_panel": _board_panel,
+		"board_controller": board_controller,
+		"timer_owner": timer_owner,
+		"spawn_vfx_texture_callback": spawn_vfx_texture_callback,
+		"combo_sound_callback": combo_sound_callback,
+	}
+
+
+func bootstrap_background() -> void:
+	if _background == null:
+		return
+	_background.texture = null
+	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
+
+
+func set_top_bar_text(level_text: String, hint_text: String) -> void:
+	if _title_label != null:
+		_title_label.text = level_text
+	if _hint_label != null:
+		_hint_label.text = hint_text
 
 
 func setup_rendering_helpers() -> void:

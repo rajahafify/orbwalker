@@ -3,11 +3,6 @@ class_name CombatController
 
 var _board: Control
 var _board_view: BoardView
-var _background: TextureRect
-var _layout_root: Control
-var _board_panel: Control
-var _title_label: Label
-var _hint_label: Label
 
 const SWAP_ANIMATION_SECONDS := 0.08
 const MATCH_FLASH_SECONDS := 0.12
@@ -264,15 +259,23 @@ func _ready() -> void:
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
-	_resolve_presenter.bind({
+	var resolve_presenter_bindings := {
 		"board": _board,
 		"board_view": _board_view,
-		"board_panel": _board_panel,
+		"board_panel": null,
 		"board_controller": _board_controller,
 		"timer_owner": _host,
 		"spawn_vfx_texture_callback": _spawn_vfx_texture,
 		"combo_sound_callback": _on_presenter_combo_sound,
-	})
+	}
+	if _view != null:
+		resolve_presenter_bindings = _view.resolve_presenter_bindings(
+			_board_controller,
+			_host,
+			_spawn_vfx_texture,
+			_on_presenter_combo_sound
+		)
+	_resolve_presenter.bind(resolve_presenter_bindings)
 	_resolve_presenter.set_combat_speed(_combat_speed_value())
 	_debug_command_adapter.bind(
 		{
@@ -315,8 +318,8 @@ func _ready() -> void:
 		}
 	)
 	_consumable_rng.randomize()
-	_background.texture = null
-	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
+	if _view != null:
+		_view.bootstrap_background()
 	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _flow_trace_route_id_value())
 	_ensure_boss_reward_controls()
 	_ensure_outcome_overlay_layer()
@@ -330,7 +333,7 @@ func _ready() -> void:
 		_view.setup_rendering_helpers()
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id_value())
 	if _view != null:
-		_view.bind_player_hud(_layout_root, 210)
+		_view.bind_player_hud()
 	_bind_combat_vfx_presenter()
 	if _view != null:
 		_view.bind_layout_presenter()
@@ -463,8 +466,7 @@ func _apply_visual_chrome() -> void:
 			"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
 			"debug_input_height": DEBUG_INPUT_HEIGHT,
 		})
-	_title_label.text = RunState.level_sequence_label()
-	_hint_label.text = "Gold 0"
+		_view.set_top_bar_text(RunState.level_sequence_label(), "Gold 0")
 
 
 func _initialize_combat_state() -> void:
