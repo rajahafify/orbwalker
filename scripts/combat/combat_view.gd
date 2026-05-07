@@ -155,10 +155,6 @@ func nodes_snapshot() -> Dictionary:
 	return _root_nodes
 
 
-func node(key: String) -> Variant:
-	return _root_nodes.get(key)
-
-
 func set_dependencies(dependencies: Dictionary) -> void:
 	_visuals = dependencies.get("visual_registry", _visuals)
 	_player_loadout_hud = dependencies.get("player_loadout_hud", _player_loadout_hud)
@@ -355,6 +351,42 @@ func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) ->
 	_sync_tempo_row(hud_snapshot.get("tempo_row", {}))
 	_sync_player_strip(hud_snapshot.get("player_strip", {}), callbacks)
 	_sync_debug_overlay(hud_snapshot.get("debug_overlay", {}))
+
+
+func refresh_character_portraits(enemy_id: String) -> void:
+	_ensure_enemy_stage_backdrop_node()
+	var resolved_enemy_id := enemy_id.strip_edges()
+	if resolved_enemy_id == "":
+		resolved_enemy_id = "cavern_striker"
+
+	var backdrop_texture: Texture2D = null
+	if _visuals != null:
+		backdrop_texture = _visuals.enemy_stage_background(resolved_enemy_id)
+		if backdrop_texture == null:
+			backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+	if backdrop_texture == null:
+		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		_enemy_stage_backdrop.texture = backdrop_texture
+		_enemy_stage_backdrop.visible = true
+
+	var enemy_figure_texture: Texture2D = null
+	if _visuals != null:
+		enemy_figure_texture = _visuals.enemy_sprite(resolved_enemy_id)
+		if enemy_figure_texture == null:
+			enemy_figure_texture = _visuals.enemy_sprite("cavern_striker")
+	if enemy_figure_texture == null:
+		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_figure_texture
+	_enemy_portrait.visible = true
+
+	var hero_texture: Texture2D = null
+	if _visuals != null:
+		hero_texture = _visuals.hero_portrait()
+	if hero_texture == null:
+		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
+	_player_portrait.texture = hero_texture
+	_player_portrait.visible = true
 
 
 func sync_timer_display(seconds_left: float, state: String) -> void:

@@ -28,8 +28,6 @@ var _enemy_panel: PanelContainer
 var _enemy_panel_root: Control
 var _intent_row: HBoxContainer
 var _enemy_stage: Control
-var _enemy_stage_backdrop: TextureRect = null
-var _enemy_text_scrim: ColorRect = null
 var _enemy_hp_row: Control
 var _enemy_name_label: Label
 var _enemy_hp_text_label: Label
@@ -202,10 +200,6 @@ const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
 const TURN_REPLAY_STEP_SECONDS := 0.34
 const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
-const ENEMY_BLOCK_PREVIEW_PULSE_SECONDS := 0.60
-const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
-const INTENT_BUBBLE_GAP := 12.0
-
 enum InputPhase {
 	PLAYER_INPUT,
 	RESOLVING,
@@ -251,14 +245,6 @@ var _layout_combat_strip_rect := COMBAT_STRIP_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
 var _layout_player_hud_section_rect := Rect2(Vector2(0, 1428), Vector2(1080, 492))
 var _flow_trace_route_id := ""
-var _intent_preview_emphasis_tween: Tween = null
-var _intent_bubble_tweens: Array[Tween] = []
-var _intent_entry_buttons: Array[Button] = []
-var _enemy_block_preview_button: Control = null
-var _enemy_block_preview_fill: ColorRect = null
-var _enemy_block_preview_pulse_tween: Tween = null
-var _enemy_block_intent_preview: Dictionary = {}
-var _enemy_intent_entries: Array[Dictionary] = []
 var _hovered_board_orb_id := -1
 
 var _host: Control = null
@@ -456,8 +442,6 @@ func _ready() -> void:
 			"outcome_overlay": _outcome_overlay,
 		})
 		_view.setup_rendering_helpers()
-		_enemy_stage_backdrop = _view.node("_enemy_stage_backdrop")
-		_enemy_text_scrim = _view.node("_enemy_text_scrim")
 	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id)
 	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes().merged({
 		"popover_parent": _layout_root,
@@ -2221,30 +2205,6 @@ func _apply_hud_snapshot(hud_snapshot: Dictionary) -> void:
 		)
 
 
-func _sync_top_hud(_snapshot: Dictionary) -> void:
-	pass
-
-
-func _sync_enemy_stage(_snapshot: Dictionary) -> void:
-	pass
-
-
-func _sync_primary_intent_badge(_snapshot: Dictionary) -> void:
-	pass
-
-
-func _sync_tempo_row(_snapshot: Dictionary) -> void:
-	pass
-
-
-func _sync_player_strip(_snapshot: Dictionary) -> void:
-	pass
-
-
-func _sync_debug_overlay(_snapshot: Dictionary) -> void:
-	pass
-
-
 func _capture_hud_stage_values() -> Dictionary:
 	if _player_state == null or _enemy_state == null:
 		return {}
@@ -2475,15 +2435,12 @@ func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
 	_start_enemy_intent_hover_emphasis("block")
 
 
-func _on_enemy_block_preview_hovered(preview: Dictionary = {}) -> void:
+func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
 	if not _should_show_intent_damage_preview():
 		return
-	var block_preview: Dictionary = preview
-	if block_preview.is_empty():
-		block_preview = _enemy_block_intent_preview
-	if block_preview.is_empty():
+	if preview.is_empty():
 		return
-	var block := maxi(0, int(block_preview.get("block", 0)))
+	var block := maxi(0, int(preview.get("block", 0)))
 	if block <= 0:
 		return
 	_status_label.text = "%s | Enemy will gain %d block." % [
@@ -2512,30 +2469,6 @@ func _stop_enemy_intent_hover_emphasis() -> void:
 		_view.stop_enemy_intent_hover_emphasis()
 
 
-func _reset_enemy_intent_emphasis() -> void:
-	pass
-
-
-func _intent_bubble_targets(_kind: String) -> Array[Control]:
-	return []
-
-
-func _sync_enemy_intent_bubbles(_preview: Dictionary) -> void:
-	pass
-
-
-func _clear_enemy_intent_bubbles() -> void:
-	pass
-
-
-func _make_intent_entry_button(_entry: Dictionary, _index: int) -> Button:
-	return Button.new()
-
-
-func _intent_bubble_stylebox(_kind: String, _hover: bool) -> StyleBoxFlat:
-	return StyleBoxFlat.new()
-
-
 func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 	if not _should_show_intent_damage_preview():
 		return
@@ -2550,26 +2483,6 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 		_status_label.text = "%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))]
 	_status_label.modulate = STATUS_COLOR_WARNING
 	_start_enemy_intent_hover_emphasis(kind)
-
-
-func _ensure_enemy_block_preview_nodes() -> void:
-	pass
-
-
-func _sync_enemy_block_intent_preview(preview: Dictionary) -> void:
-	_enemy_block_intent_preview = preview.duplicate(true)
-
-
-func _layout_enemy_block_intent_preview() -> void:
-	pass
-
-
-func _start_enemy_block_preview_pulse() -> void:
-	pass
-
-
-func _stop_enemy_block_preview_pulse() -> void:
-	pass
 
 
 func _format_intent(intent: Dictionary) -> String:
@@ -2901,29 +2814,16 @@ func _apply_loadout_rail_layout() -> void:
 		_view.apply_loadout_rail_layout()
 
 
-func _ensure_placeholder_visuals() -> void:
-	pass
-
-
 func _refresh_character_portraits() -> void:
-	var backdrop_texture: Texture2D = _visuals.enemy_stage_background(_enemy_state.enemy_id) if _visuals != null and _enemy_state != null else null
-	if backdrop_texture == null and _visuals != null:
-		backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
-	if backdrop_texture == null:
-		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture = backdrop_texture
-		_enemy_stage_backdrop.visible = true
-	_refresh_enemy_stage_visual()
-	var hero_texture := _visuals.hero_portrait()
+	if _view != null:
+		_view.refresh_character_portraits(String(_enemy_state.enemy_id if _enemy_state != null else ""))
+		return
+	_enemy_portrait.texture = _resolve_enemy_figure_texture()
+	_enemy_portrait.visible = true
+	var hero_texture := _visuals.hero_portrait() if _visuals != null else null
 	if hero_texture == null:
 		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
 	_player_portrait.texture = hero_texture
-
-
-func _refresh_enemy_stage_visual() -> void:
-	_enemy_portrait.texture = _resolve_enemy_figure_texture()
-	_enemy_portrait.visible = true
 
 
 func _resolve_enemy_figure_texture() -> Texture2D:
@@ -2939,45 +2839,6 @@ func _resolve_enemy_figure_texture() -> Texture2D:
 
 func _active_enemy_visual_control() -> Control:
 	return _enemy_portrait
-
-
-func _ensure_enemy_stage_backdrop_node() -> void:
-	if _enemy_stage == null:
-		return
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		if _enemy_stage_backdrop.get_parent() != _enemy_stage:
-			var existing_parent := _enemy_stage_backdrop.get_parent()
-			if existing_parent != null:
-				existing_parent.remove_child(_enemy_stage_backdrop)
-			_enemy_stage.add_child(_enemy_stage_backdrop)
-		_enemy_stage.move_child(_enemy_stage_backdrop, 0)
-		return
-	var existing := _enemy_stage.get_node_or_null("EnemyStageBackdrop")
-	if existing is TextureRect:
-		_enemy_stage_backdrop = existing as TextureRect
-	else:
-		_enemy_stage_backdrop = TextureRect.new()
-		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
-		_enemy_stage.add_child(_enemy_stage_backdrop)
-	_enemy_stage_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_enemy_stage_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	_enemy_stage_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
-	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
-	_enemy_stage_backdrop.visible = true
-	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
-
-
-func _ensure_enemy_text_scrim_node() -> void:
-	pass
-
-
-func _apply_zone_guides() -> void:
-	if _view != null:
-		_view.set_zone_guides_enabled(_zone_guides_enabled)
-
-
-func _set_zone_guide(_zone: Control, _label_text: String) -> void:
-	pass
 
 
 func _on_resolver_cells_cleared(cells: Array) -> void:
