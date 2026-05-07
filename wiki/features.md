@@ -17,7 +17,7 @@ The project already covers the early prototype loop: board generation, drag move
 ### Board and combat
 
 - 5x6 orb board with six orb types, deterministic generation, and no starting automatic matches. (source: `scripts/board/board_model.gd`, `todo.md`)
-- Drag-based orb movement and board rendering are handled by the player-facing combat board path. The old board-debug scene/controller was removed in AR-08; focused editor-script probes now cover board resolver regression checks. The combat scene host delegates runtime orchestration to `CombatController`, while `BoardController` still owns board-local `BoardView.gui_input` handling. (source: `scripts/board/board_view.gd`, `scripts/board/board_controller.gd`, `scripts/scenes/combat.gd`, `scripts/combat/combat_controller.gd`, `scripts/debug/board_resolver_test_runner.gd`)
+- Drag-based orb movement and board rendering are handled by the player-facing combat board path. The old board-debug scene/controller was removed in AR-08; focused editor-script probes now cover board resolver regression checks. The combat scene host delegates runtime orchestration to `CombatController`, while `BoardController` still owns board-local `BoardView.gui_input` handling. (source: `scripts/board/board_view.gd`, `scripts/board/board_controller.gd`, `scripts/scenes/combat.gd`, `scripts/combat/combat_controller.gd`, `scripts/tests/integrations/board_resolver_test.gd`)
 - Match resolution supports lines, L, T, gravity, refill, and cascades. (source: `docs/test_plan.md`, `scripts/board/board_match_resolver_service.gd`)
 - Combat resolves heart healing, armor gain, elemental damage, gold gain, block, and enemy death-before-intent behavior. (source: `scripts/combat/combat_state_machine.gd`, `docs/test_plan.md`)
 

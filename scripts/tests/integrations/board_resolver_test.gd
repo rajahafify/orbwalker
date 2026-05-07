@@ -1,5 +1,5 @@
 extends RefCounted
-class_name BoardResolverTestRunner
+class_name BoardResolverIntegrationTest
 
 const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_service.gd")
 var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
@@ -199,14 +199,14 @@ func _test_cascade_generates_multiple_passes() -> String:
 
 func _board_from_rows(rows: Array[String]) -> BoardModel:
 	if rows.size() != BoardModel.ROW_COUNT:
-		push_error("BoardResolverTestRunner expected %d rows, got %d." % [BoardModel.ROW_COUNT, rows.size()])
+		push_error("BoardResolverIntegrationTest expected %d rows, got %d." % [BoardModel.ROW_COUNT, rows.size()])
 
 	var board := BoardModel.new()
 	board.initialize(123456)
 	for row in rows.size():
 		var row_text := rows[row]
 		if row_text.length() != BoardModel.COLUMN_COUNT:
-			push_error("BoardResolverTestRunner row %d has invalid width %d." % [row, row_text.length()])
+			push_error("BoardResolverIntegrationTest row %d has invalid width %d." % [row, row_text.length()])
 			continue
 		for column in BoardModel.COLUMN_COUNT:
 			var symbol := row_text.substr(column, 1)

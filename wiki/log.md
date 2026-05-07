@@ -2248,3 +2248,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Full model test coverage
 
 - Added framework-free callable tests for the remaining current MVC models under `scripts/tests/`: `BoardModel`, `MainMenuModel`, `ShopModel`, `CollectionModel`, and `RunSummaryModel`. Together with the existing combat runners, every model script now has a lightweight structured `run_all()` validation surface callable through Godot MCP/editor scripts. (source: `scripts/tests/board_model_test.gd`, `scripts/tests/main_menu_model_test.gd`, `scripts/tests/shop_model_test.gd`, `scripts/tests/collection_model_test.gd`, `scripts/tests/run_summary_model_test.gd`, `docs/test_plan.md`)
+
+## 2026-05-07 - Board resolver integration test rename
+
+- Moved the board resolver regression runner from `scripts/debug/board_resolver_test_runner.gd` to `scripts/tests/integrations/board_resolver_test.gd` and renamed the global class to `BoardResolverIntegrationTest`, matching the `scripts/tests/**/_test.gd` convention while leaving AR/debug probes in `scripts/debug/`. (source: `scripts/tests/integrations/board_resolver_test.gd`, `wiki/file-map.md`, `docs/test_plan.md`)
