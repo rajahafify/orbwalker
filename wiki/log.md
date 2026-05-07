@@ -2266,3 +2266,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Shop Reference Polish Validation
 
 - Recorded the shop reference-polish pass: `ShopView` now owns a larger merchant/header, top run/gold/action bar, larger stock/relic/action surfaces, visual-only Help/Settings controls, and a connected shared `PlayerHudSection`; `VisualRegistry` now resolves the generated shop merchant header from `resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png`. Live screenshot review passed the all-8 gate with Readability `9/10`, Layout `8/10`, Feature `8/10`, Fantasy `8/10`, and Reference `8/10`, with caveats for small helper copy, visual-only Help/Settings, and missing fresh Android/manual transaction click-through. (source: `docs/test_plan.md`, `scripts/shop/shop_view.gd`, `scripts/ui/visual_registry.gd`)
+
+## 2026-05-07 - Shop 9/10 Polish Validation
+
+- Recorded the follow-up shop 9/10 polish pass: `ShopView` disables native offer/relic tooltips, uses compact visual-only `?`/`S` Help/Settings controls, hides the competing `SHOPKEEPER` label, adds merchant summary/detail backing, strengthens sell guidance, and extends `shop_layout_probe_snapshot()` with the new source checks. Live screenshot review passed Readability `9/10`, Layout `9/10`, Feature `9/10`, Fantasy `9/10`, and Reference `9/10`; remaining caveats are no fresh Android/device QA, no full manual transaction click-through, and existing enum reload diagnostics. (source: `docs/test_plan.md`, `scripts/shop/shop_view.gd`)
