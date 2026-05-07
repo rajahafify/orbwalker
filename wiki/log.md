@@ -2274,3 +2274,7 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Shop View Layout Regression Test
 
 - Added `ShopViewLayoutTest` under `scripts/tests/` to guard the 9/10 shop presentation probe contract: disabled native offer/relic/card icon tooltips, compact visual-only Help/Settings controls, action hint bounds, merchant text backing, action-to-HUD spacing, stock-card fit, and shop scene facade parity. (source: `scripts/tests/shop_view_layout_test.gd`, `docs/test_plan.md`)
+
+## 2026-05-07 - Launch readiness snapshot
+
+- Added `launch-milestone.md` with current launch-readiness progress ratings: itch.io demo/alpha `7/10`, publisher pitch vertical slice `5/10`, Steam Coming Soon page `5.5/10`, and Steam playable demo `4/10`, plus the main presentation gaps and highest-leverage polish targets. (source: `launch-milestone.md`)
