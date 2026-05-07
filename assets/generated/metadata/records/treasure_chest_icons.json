@@ -1,4 +1,4 @@
-﻿{
+{
     "asset_id":  "treasure_chest_icons",
     "asset_name":  "Treasure chest icons",
     "asset_type":  "icon_set",
@@ -19,13 +19,13 @@
     "usage_rights":  "needs_review",
     "dimensions":  "1254x1254",
     "export_format":  "png_candidate",
-    "alpha_type":  "cleanup_candidate_has_binary_alpha",
-    "transparent_background":  "cleanup_candidate_passes_basic_alpha_probe",
-    "qa_status":  "generated_bulk_pending_qa",
+    "alpha_type":  "mixed_candidates_cleanup_only_has_real_alpha",
+    "transparent_background":  "cleanup_candidate_only_real_alpha",
+    "qa_status":  "cleanup_required",
     "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_requested_needs_visual_confirmation",
-    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. Deferred transparency QA (2026-05-08): generated candidates remain RGB/opaque; only assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png currently has real alpha, so pack remains cleanup_required and blocked.",
     "final_prompt":  "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
     "generation_mode":  "built-in imagegen"
 }

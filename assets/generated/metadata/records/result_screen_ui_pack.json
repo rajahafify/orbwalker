@@ -1,4 +1,4 @@
-﻿{
+{
     "asset_id":  "result_screen_ui_pack",
     "asset_name":  "Victory, defeat, boss reward, and run summary UI chrome",
     "asset_type":  "ui_pack",
@@ -15,13 +15,13 @@
     "usage_rights":  "needs_review",
     "dimensions":  "1536x1024",
     "export_format":  "png_candidate",
-    "alpha_type":  "needs_qa",
-    "transparent_background":  "required_true_in_brief_but_not_met",
-    "qa_status":  "generated_bulk_pending_qa",
+    "alpha_type":  "alpha_sensitive_missing_real_alpha_cleanup_required",
+    "transparent_background":  "alpha_sensitive_no_real_alpha",
+    "qa_status":  "cleanup_required",
     "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_requested_needs_visual_confirmation",
-    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. Deferred transparency QA (2026-05-08): alpha-sensitive candidate is RGB/no real alpha in probe samples; cleanup is required before review or integration gates can reopen.",
     "final_prompt":  "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
     "generation_mode":  "built-in imagegen"
 }

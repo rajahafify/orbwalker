@@ -36,7 +36,7 @@
                    },
                    {
                        "asset_id":  "board_orb_clear_vfx",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/board_orb_clear_vfx.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png"
@@ -84,7 +84,7 @@
                    },
                    {
                        "asset_id":  "combat_ui_chrome_pack",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/combat_ui_chrome_pack.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png"
@@ -92,7 +92,7 @@
                    },
                    {
                        "asset_id":  "consumable_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/consumable_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png"
@@ -108,15 +108,15 @@
                    },
                    {
                        "asset_id":  "enemy_animation_set",
-                       "qa_status":  "not_started",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/enemy_animation_set.qa.md",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png"
                                            ]
                    },
                    {
                        "asset_id":  "enemy_attack_vfx",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/enemy_attack_vfx.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png"
@@ -132,7 +132,7 @@
                    },
                    {
                        "asset_id":  "equipment_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/equipment_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png"
@@ -156,7 +156,7 @@
                    },
                    {
                        "asset_id":  "hero_animation_set",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/hero_animation_set.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png"
@@ -180,7 +180,7 @@
                    },
                    {
                        "asset_id":  "intent_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/intent_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png"
@@ -204,7 +204,7 @@
                    },
                    {
                        "asset_id":  "main_menu_ui_pack",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/main_menu_ui_pack.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png"
@@ -212,7 +212,7 @@
                    },
                    {
                        "asset_id":  "mastery_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/mastery_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png"
@@ -220,7 +220,7 @@
                    },
                    {
                        "asset_id":  "mastery_vfx",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/mastery_vfx.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png"
@@ -268,7 +268,7 @@
                    },
                    {
                        "asset_id":  "orb_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/orb_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png"
@@ -284,7 +284,7 @@
                    },
                    {
                        "asset_id":  "rarity_badges",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/rarity_badges.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png"
@@ -292,7 +292,7 @@
                    },
                    {
                        "asset_id":  "relic_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/relic_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png"
@@ -300,7 +300,7 @@
                    },
                    {
                        "asset_id":  "result_screen_ui_pack",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/result_screen_ui_pack.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png"
@@ -348,7 +348,7 @@
                    },
                    {
                        "asset_id":  "shared_hud_chrome",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/shared_hud_chrome.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png"
@@ -364,7 +364,7 @@
                    },
                    {
                        "asset_id":  "shop_transaction_vfx",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/shop_transaction_vfx.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png"
@@ -372,7 +372,7 @@
                    },
                    {
                        "asset_id":  "shop_ui_pack",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/shop_ui_pack.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png"
@@ -396,7 +396,7 @@
                    },
                    {
                        "asset_id":  "treasure_chest_icons",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/treasure_chest_icons.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
@@ -407,7 +407,7 @@
                    },
                    {
                        "asset_id":  "tutorial_onboarding_ui_pack",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/tutorial_onboarding_ui_pack.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png"
@@ -423,12 +423,12 @@
                    },
                    {
                        "asset_id":  "unlock_achievement_vfx",
-                       "qa_status":  "generated_bulk_pending_qa",
+                       "qa_status":  "cleanup_required",
                        "report_path":  "assets/qa/reports/unlock_achievement_vfx.qa.md",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png"
                                            ]
                    }
                ],
-    "qa_status":  "bulk_generation_first_37_of_38_image_candidates_generated_qa_deferred"
+    "qa_status":  "bulk_generation_first_transparency_pass_recorded_alpha_sensitive_cleanup_required"
 }

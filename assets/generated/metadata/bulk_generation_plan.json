@@ -89,8 +89,8 @@
                                                 ]
                   },
     "progress":  {
-                     "generated_candidate_records":  37,
-                     "remaining_image_candidate_records":  1,
+                     "generated_candidate_records":  38,
+                     "remaining_image_candidate_records":  0,
                      "generated_candidate_asset_ids":  [
                                                            "app_icon",
                                                            "board_orb_clear_vfx",
@@ -102,6 +102,7 @@
                                                            "combat_ui_chrome_pack",
                                                            "consumable_icons",
                                                            "controls_visual",
+                                                           "enemy_animation_set",
                                                            "enemy_attack_vfx",
                                                            "enemy_portraits",
                                                            "equipment_icons",
