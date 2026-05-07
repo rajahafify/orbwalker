@@ -1,0 +1,10 @@
+﻿{
+    "asset_id":  "run_summary_background",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png",
+    "prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
+    "negative_constraints":  "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard",
+    "dimensions":  "941x1672",
+    "status":  "candidate_generated_qa_pending"
+}

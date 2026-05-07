@@ -1,0 +1,11 @@
+{
+  "asset_id": "treasure_chest_icons",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_03.png",
+  "cleanup_path": "assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png",
+  "prompt": "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
+  "negative_constraints": "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard, no opaque background",
+  "dimensions": "1254x1254",
+  "status": "candidate_generated_alpha_failed_cleanup_created"
+}

@@ -1,0 +1,10 @@
+﻿{
+    "asset_id":  "itch_page_graphics",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png",
+    "prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
+    "negative_constraints":  "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard",
+    "dimensions":  "1672x941",
+    "status":  "candidate_generated_qa_pending"
+}

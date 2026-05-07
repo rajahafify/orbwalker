@@ -1,0 +1,273 @@
+﻿{
+    "runtime_changes_allowed":  false,
+    "generated_on":  "2026-05-07",
+    "integration_status":  "blocked_pending_approval",
+    "asset_count":  53,
+    "assets":  [
+                   {
+                       "asset_id":  "app_icon",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "approved_asset_manifest",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "art_bible",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "asset_briefs",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "board_orb_clear_vfx",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "boot_splash",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "boss_portraits",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "collection_background",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "combat_background",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "combat_enemy_stage_art",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "combat_ui_chrome_pack",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "consumable_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "controls_visual",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "enemy_animation_set",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "enemy_attack_vfx",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "enemy_portraits",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "equipment_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "game_title_logo",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "generation_metadata",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "hero_animation_set",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "hero_full_body_or_pose_set",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "hero_orbwalker_portrait",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "intent_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "itch_page_graphics",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "main_menu_background",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "main_menu_ui_pack",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "mastery_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "mastery_vfx",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "merchant_character",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "music_combat",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "music_menu",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "music_shop",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "music_victory_defeat_summary",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "orb_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "qa_reports",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "rarity_badges",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "relic_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "result_screen_ui_pack",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "run_summary_background",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "screenshots",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "sfx_combat_core",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "sfx_shop",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "sfx_ui",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "shared_hud_chrome",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "shop_background",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "shop_transaction_vfx",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "shop_ui_pack",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "store_capsule_key_art",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "trailer_or_gif_capture",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "treasure_chest_icons",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "tutorial_onboarding_ui_pack",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "ui_motion_language",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   },
+                   {
+                       "asset_id":  "unlock_achievement_vfx",
+                       "integration_status":  "blocked_pending_approval",
+                       "target_runtime_path":  "needs_approval"
+                   }
+               ]
+}

@@ -1,0 +1,10 @@
+﻿{
+    "asset_id":  "result_screen_ui_pack",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
+    "prompt":  "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
+    "negative_constraints":  "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard",
+    "dimensions":  "1536x1024",
+    "status":  "candidate_generated_qa_pending"
+}

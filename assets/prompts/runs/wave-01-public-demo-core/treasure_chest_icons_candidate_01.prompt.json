@@ -1,0 +1,10 @@
+﻿{
+    "asset_id":  "treasure_chest_icons",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+    "prompt":  "Create a clean 2x2 candidate sheet of treasure chest reward icons for Orbwalker: Elemental Chest and Fire Chest, each in two variations. No readable text or labels. Polished stylized 2D game icon art, mobile-readable, ornate fantasy chests with elemental orb magic, no watermark, no casino imagery, no baked checkerboard.",
+    "negative_constraints":  "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard",
+    "dimensions":  "1254x1254",
+    "status":  "candidate_generated_qa_pending"
+}

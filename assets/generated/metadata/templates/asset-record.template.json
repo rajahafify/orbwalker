@@ -1,0 +1,22 @@
+﻿{
+  "asset_id": "<asset_id>",
+  "asset_name": "<asset_name>",
+  "asset_type": "<asset_type>",
+  "brief_path": "<brief_path>",
+  "candidate_paths": [],
+  "final_prompt": "",
+  "negative_prompt": "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard",
+  "generation_mode": "built-in imagegen unless explicitly changed",
+  "source_references": [],
+  "license_status": "needs_review",
+  "usage_rights": "needs_review",
+  "dimensions": "needs_generation_or_spec",
+  "export_format": "png for visual candidates; spec-only for audio",
+  "alpha_type": "needs_qa",
+  "transparent_background": "needs_brief_confirmation",
+  "qa_status": "not_started",
+  "review_status": "not_started",
+  "integration_status": "blocked_pending_approval",
+  "embedded_text": "none_or_needs_approval",
+  "notes": ""
+}

@@ -1,0 +1,10 @@
+{
+  "asset_id": "treasure_chest_icons",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_02.png",
+  "prompt": "Create a production-ready transparent PNG icon sheet for Orbwalker treasure chest rewards. Four fantasy treasure chest icons in a 2x2 layout: elemental treasure chest, fire treasure chest, and one alternate for each. Polished stylized 2D match-3 roguelike icon art, strong silhouette at mobile scale, transparent background, no backdrop, no checkerboard, no shadow plate, no text, no labels, no watermark, no casino imagery.",
+  "negative_constraints": "no watermark, no copyrighted characters, no casino imagery, no gore, no unapproved text, no baked checkerboard, no opaque background",
+  "dimensions": "1254x1254",
+  "status": "candidate_generated_alpha_failed"
+}

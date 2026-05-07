@@ -2320,3 +2320,13 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Asset inventory treasure chest terminology
 
 - Updated `assets.json` to use current treasure chest terminology for shop chest icons, shop UI/VFX, SFX cues, known gaps, and recommended asset batches, matching the runtime `treasure_chests` content and `treasure_chest_*` icon keys after the terminology rebase. (source: `assets.json`, `scripts/content/content_registry.gd`, `scripts/ui/visual_registry.gd`)
+
+## 2026-05-07 - Assetgen workspace restart
+
+- Recreated the governed `assets/` workspace from current `assets.json` using the assetgen workflow: draft art bible, prompt templates, 53 per-asset briefs, 53 metadata records, QA/checklist templates, approval manifests, rejection log template, and integration-prep records. Runtime resource integration remains explicitly blocked pending QA, human review, legal/license review, and approval. (source: `assets/README.md`, `assets/briefs/brief_manifest.json`, `assets/generated/metadata/assets.json`, `assets/qa/checklists/transparency_checklist.md`, `assets/integrated/runtime_integration_manifest.json`)
+
+## 2026-05-07 - Assetgen Wave 1 candidates
+
+- Started Wave 1 public-demo asset production inside the governed `assets/` workspace. Generated review-only candidate PNGs for treasure chest icons, result-screen UI, run-summary background, and itch.io key art; recorded prompt runs, metadata updates, QA stubs, and the Wave 1 status report. SFX and screenshots remain spec/capture-only in this pass, and runtime integration remains blocked pending QA, human review, legal/license review, and approval. (source: `assets/generated/candidates/wave-01-public-demo-core/`, `assets/prompts/runs/wave-01-public-demo-core/`, `assets/qa/reports/wave_01_public_demo_core_status.md`)
+- Recorded the treasure chest icon alpha failure across generated candidates and added a cleanup candidate with verified PNG alpha for review. Runtime integration remains blocked pending full QA and approval. (source: `assets/qa/reports/treasure_chest_icons.qa.md`)
+- Updated the assetgen workflow to use `game-studio:sprite-pipeline` for sprite sheets, animation strips, frame normalization, contact sheets, anchors, scale, and previews after image candidates exist, while keeping `imagegen` as the required generated image creation/editing path. (source: `resources/assetgen.workflow.md`, `wiki/assetgen-workflow.md`)

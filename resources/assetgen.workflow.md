@@ -9,6 +9,12 @@ All image creation or raster image editing in this workflow must use the Codex
 `imagegen` skill. Use the built-in `image_gen` tool path described by that skill
 unless the human explicitly asks for the skill's CLI fallback.
 
+For sprite sheets, animation strips, or frame-normalized 2D animation exports,
+use the available `game-studio:sprite-pipeline` skill after image candidates
+exist. This skill is for sprite normalization, contact sheets, anchors, scale,
+animation strip assembly, and preview packaging; it does not replace the
+`imagegen` requirement for creating or editing generated image candidates.
+
 ## Folder Structure
 
 ```text
@@ -63,7 +69,8 @@ Produce, verify, clean, and export assets.
 2. Save source prompt, model, seed, date, references, and generation settings.
 3. Run QA for style match, dimensions, readability, defects, transparency, and policy constraints.
 4. Clean alpha edges, halos, color spill, and baked shadows before approval.
-5. Export final assets in required formats, sizes, and naming convention.
+5. For sprite sheets or animation strips, run `game-studio:sprite-pipeline` to normalize frame size, anchor points, padding, scale, contact sheets, and preview outputs.
+6. Export final assets in required formats, sizes, and naming convention.
 
 ## Layer 3: Governance & Integration
 
@@ -144,6 +151,7 @@ Transparent assets must pass all checks before approval.
 
 - Matches art bible, palette, silhouette, scale, and intended use.
 - Meets required dimensions, padding, safe area, and export format.
+- Sprite sheets and animation strips have stable frame dimensions, anchors, scale, ordering, and preview/contact-sheet evidence.
 - No visible artifacts, warped geometry, broken outlines, unwanted blur, or compression damage.
 - No embedded text unless explicitly approved.
 - No unlicensed references, trademarks, likeness issues, or restricted content.

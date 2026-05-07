@@ -1,0 +1,1342 @@
+﻿{
+    "records":  [
+                    {
+                        "asset_id":  "app_icon",
+                        "asset_name":  "Application icon",
+                        "asset_type":  "icon",
+                        "group_id":  "brand_identity",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/app_icon.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "approved_asset_manifest",
+                        "asset_name":  "Approved production asset manifest",
+                        "asset_type":  "manifest",
+                        "group_id":  "asset_pipeline_and_metadata",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/approved_asset_manifest.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "art_bible",
+                        "asset_name":  "Production art bible",
+                        "asset_type":  "documentation",
+                        "group_id":  "asset_pipeline_and_metadata",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/art_bible.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "asset_briefs",
+                        "asset_name":  "Per-asset briefs",
+                        "asset_type":  "documentation_set",
+                        "group_id":  "asset_pipeline_and_metadata",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/asset_briefs.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "board_orb_clear_vfx",
+                        "asset_name":  "Orb clear, cascade, and combo VFX",
+                        "asset_type":  "vfx_set",
+                        "group_id":  "vfx",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/board_orb_clear_vfx.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "boot_splash",
+                        "asset_name":  "Boot splash screen image",
+                        "asset_type":  "splash",
+                        "group_id":  "brand_identity",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "boss_portraits",
+                        "asset_name":  "Boss portrait set",
+                        "asset_type":  "boss_portrait_set",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boss_portraits.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "collection_background",
+                        "asset_name":  "Collection/meta progression background",
+                        "asset_type":  "background",
+                        "group_id":  "screens",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "combat_background",
+                        "asset_name":  "Dungeon combat background",
+                        "asset_type":  "background",
+                        "group_id":  "screens",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_background.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "combat_enemy_stage_art",
+                        "asset_name":  "Wide enemy encounter stage/banner art",
+                        "asset_type":  "combat_stage_set",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "combat_ui_chrome_pack",
+                        "asset_name":  "Combat chrome texture pack",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_ui_chrome_pack.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "consumable_icons",
+                        "asset_name":  "Consumable scroll icons",
+                        "asset_type":  "icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/consumable_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "controls_visual",
+                        "asset_name":  "Controls/help visual",
+                        "asset_type":  "instructional_graphic",
+                        "group_id":  "marketing_and_store",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/controls_visual.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "enemy_animation_set",
+                        "asset_name":  "Enemy idle, intent, attack, block, hit, defeat animations",
+                        "asset_type":  "animation_set",
+                        "group_id":  "animation",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_animation_set.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "enemy_attack_vfx",
+                        "asset_name":  "Enemy attack, block, shield, and HP-hit VFX",
+                        "asset_type":  "vfx_set",
+                        "group_id":  "vfx",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "enemy_portraits",
+                        "asset_name":  "Normal enemy portrait set",
+                        "asset_type":  "enemy_portrait_set",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/enemy_portraits.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "equipment_icons",
+                        "asset_name":  "Equipment item icons",
+                        "asset_type":  "icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/equipment_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "game_title_logo",
+                        "asset_name":  "Orbwalker title/logo lockup",
+                        "asset_type":  "logo",
+                        "group_id":  "brand_identity",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/game_title_logo.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "generation_metadata",
+                        "asset_name":  "Generation metadata records",
+                        "asset_type":  "metadata_set",
+                        "group_id":  "asset_pipeline_and_metadata",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/generation_metadata.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "hero_animation_set",
+                        "asset_name":  "Hero idle, hurt, attack-cast, victory, defeat animations",
+                        "asset_type":  "animation_set",
+                        "group_id":  "animation",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_animation_set.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "hero_full_body_or_pose_set",
+                        "asset_name":  "Orbwalker full-body/key pose set",
+                        "asset_type":  "character_pose",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "hero_orbwalker_portrait",
+                        "asset_name":  "Orbwalker hero portrait",
+                        "asset_type":  "hero_portrait",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/hero_orbwalker_portrait.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "intent_icons",
+                        "asset_name":  "Enemy intent icon set",
+                        "asset_type":  "intent_icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/intent_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "itch_page_graphics",
+                        "asset_name":  "Itch.io page header, cover, thumbnail, and embed art",
+                        "asset_type":  "marketing_pack",
+                        "group_id":  "marketing_and_store",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.md",
+                        "candidate_paths":  [
+                                                "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "1672x941",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "qa_pending",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_requested_needs_visual_confirmation",
+                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "final_prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
+                        "generation_mode":  "built-in imagegen"
+                    },
+                    {
+                        "asset_id":  "main_menu_background",
+                        "asset_name":  "Main menu cavern/city background",
+                        "asset_type":  "background",
+                        "group_id":  "screens",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_background.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "main_menu_ui_pack",
+                        "asset_name":  "Main menu buttons, border, stats panel, and menu icons",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "mastery_icons",
+                        "asset_name":  "Six mastery card icons",
+                        "asset_type":  "mastery_icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "mastery_vfx",
+                        "asset_name":  "Elemental mastery beams, shells, and impact VFX",
+                        "asset_type":  "vfx_set",
+                        "group_id":  "vfx",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_vfx.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "merchant_character",
+                        "asset_name":  "Shop merchant character/header art",
+                        "asset_type":  "npc_portrait_or_header",
+                        "group_id":  "characters",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/merchant_character.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "music_combat",
+                        "asset_name":  "Combat music loop",
+                        "asset_type":  "music",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_combat.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "music_menu",
+                        "asset_name":  "Main menu music loop",
+                        "asset_type":  "music",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_menu.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "music_shop",
+                        "asset_name":  "Shop music loop",
+                        "asset_type":  "music",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_shop.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "music_victory_defeat_summary",
+                        "asset_name":  "Victory, defeat, and run-summary music stingers/loops",
+                        "asset_type":  "music",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "orb_icons",
+                        "asset_name":  "Six orb type icons/textures",
+                        "asset_type":  "orb_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/orb_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "qa_reports",
+                        "asset_name":  "Asset QA and transparency reports",
+                        "asset_type":  "qa_report_set",
+                        "group_id":  "asset_pipeline_and_metadata",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/qa_reports.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "rarity_badges",
+                        "asset_name":  "Common/uncommon/rare rarity badges",
+                        "asset_type":  "rarity_badge_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "relic_icons",
+                        "asset_name":  "Relic icons",
+                        "asset_type":  "icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/relic_icons.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "result_screen_ui_pack",
+                        "asset_name":  "Victory, defeat, boss reward, and run summary UI chrome",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/result_screen_ui_pack.brief.md",
+                        "candidate_paths":  [
+                                                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png"
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "1536x1024",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "qa_pending",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_requested_needs_visual_confirmation",
+                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "final_prompt":  "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
+                        "generation_mode":  "built-in imagegen"
+                    },
+                    {
+                        "asset_id":  "run_summary_background",
+                        "asset_name":  "Victory/defeat run-summary background",
+                        "asset_type":  "background",
+                        "group_id":  "screens",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.md",
+                        "candidate_paths":  [
+                                                "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "941x1672",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "qa_pending",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_requested_needs_visual_confirmation",
+                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "final_prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
+                        "generation_mode":  "built-in imagegen"
+                    },
+                    {
+                        "asset_id":  "screenshots",
+                        "asset_name":  "Curated screenshot pack",
+                        "asset_type":  "screenshot_pack",
+                        "group_id":  "marketing_and_store",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/screenshots.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_applicable_this_pass",
+                        "review_status":  "spec_pending",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created."
+                    },
+                    {
+                        "asset_id":  "sfx_combat_core",
+                        "asset_name":  "Combat core SFX",
+                        "asset_type":  "sfx_set",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_combat_core.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_applicable_this_pass",
+                        "review_status":  "spec_pending",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created."
+                    },
+                    {
+                        "asset_id":  "sfx_shop",
+                        "asset_name":  "Shop SFX",
+                        "asset_type":  "sfx_set",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_shop.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_applicable_this_pass",
+                        "review_status":  "spec_pending",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created."
+                    },
+                    {
+                        "asset_id":  "sfx_ui",
+                        "asset_name":  "Shared UI SFX",
+                        "asset_type":  "sfx_set",
+                        "group_id":  "audio",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/sfx_ui.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "spec_only_this_pass",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "shared_hud_chrome",
+                        "asset_name":  "Shared player HUD, HP bars, slot frames, and mastery panels",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "shop_background",
+                        "asset_name":  "Merchant shop background",
+                        "asset_type":  "background",
+                        "group_id":  "screens",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_background.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "shop_transaction_vfx",
+                        "asset_name":  "Shop buy, sell, reroll, treasure chest, and error feedback VFX",
+                        "asset_type":  "vfx_set",
+                        "group_id":  "vfx",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_transaction_vfx.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "shop_ui_pack",
+                        "asset_name":  "Shop card, offer, relic, reroll, treasure chest, and transaction UI pack",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_ui_pack.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "store_capsule_key_art",
+                        "asset_name":  "Store/page capsule or hero key art",
+                        "asset_type":  "marketing_art",
+                        "group_id":  "brand_identity",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/store_capsule_key_art.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "trailer_or_gif_capture",
+                        "asset_name":  "Short gameplay GIF/video capture",
+                        "asset_type":  "marketing_video",
+                        "group_id":  "marketing_and_store",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/trailer_or_gif_capture.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "treasure_chest_icons",
+                        "asset_name":  "Treasure chest icons",
+                        "asset_type":  "icon_set",
+                        "group_id":  "core_gameplay_icons",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/treasure_chest_icons.brief.md",
+                        "candidate_paths":  [
+                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_02.png",
+                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_03.png",
+                                                "assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png"
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "1254x1254",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "cleanup_candidate_has_binary_alpha",
+                        "transparent_background":  "cleanup_candidate_passes_basic_alpha_probe",
+                        "qa_status":  "qa_pending_alpha_cleanup_created",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_requested_needs_visual_confirmation",
+                        "notes":  "Candidate 01, 02, and 03 generated through built-in imagegen were opaque 24bpp PNGs with baked backgrounds/checkerboard. Cleanup candidate derived from candidate 03 removes edge-connected checkerboard pixels and passes basic alpha probe: Format32bppArgb, transparent corners, sampled alpha values 0 and 255. Full visual QA and human/legal approval still pending; runtime integration blocked.",
+                        "final_prompt":  "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
+                        "generation_mode":  "built-in imagegen"
+                    },
+                    {
+                        "asset_id":  "tutorial_onboarding_ui_pack",
+                        "asset_name":  "Tutorial, tooltip, first-run guidance, and control prompt UI",
+                        "asset_type":  "ui_pack",
+                        "group_id":  "ui_chrome",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "ui_motion_language",
+                        "asset_name":  "UI transition and feedback animation specifications",
+                        "asset_type":  "motion_spec",
+                        "group_id":  "animation",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/ui_motion_language.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    },
+                    {
+                        "asset_id":  "unlock_achievement_vfx",
+                        "asset_name":  "Meta unlock and achievement toast VFX",
+                        "asset_type":  "vfx_set",
+                        "group_id":  "vfx",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/unlock_achievement_vfx.brief.md",
+                        "candidate_paths":  [
+
+                                            ],
+                        "source_references":  [
+                                                  "assets.json",
+                                                  "resources/assetgen.workflow.md"
+                                              ],
+                        "license_status":  "needs_review",
+                        "usage_rights":  "needs_review",
+                        "dimensions":  "needs_generation_or_spec",
+                        "export_format":  "png_candidate",
+                        "alpha_type":  "needs_qa",
+                        "transparent_background":  "needs_brief_confirmation",
+                        "qa_status":  "not_started",
+                        "review_status":  "not_started",
+                        "integration_status":  "blocked_pending_approval",
+                        "embedded_text":  "none_or_needs_approval",
+                        "notes":  "Generated from current assets.json treasure chest terminology."
+                    }
+                ],
+    "generated_on":  "2026-05-07",
+    "asset_count":  53
+}

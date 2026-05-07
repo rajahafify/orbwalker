@@ -1,0 +1,27 @@
+﻿{
+    "asset_id":  "run_summary_background",
+    "asset_name":  "Victory/defeat run-summary background",
+    "asset_type":  "background",
+    "group_id":  "screens",
+    "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.md",
+    "candidate_paths":  [
+                            "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+                        ],
+    "source_references":  [
+                              "assets.json",
+                              "resources/assetgen.workflow.md"
+                          ],
+    "license_status":  "needs_review",
+    "usage_rights":  "needs_review",
+    "dimensions":  "941x1672",
+    "export_format":  "png_candidate",
+    "alpha_type":  "needs_qa",
+    "transparent_background":  "needs_brief_confirmation",
+    "qa_status":  "qa_pending",
+    "review_status":  "not_started",
+    "integration_status":  "blocked_pending_approval",
+    "embedded_text":  "none_requested_needs_visual_confirmation",
+    "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+    "final_prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
+    "generation_mode":  "built-in imagegen"
+}

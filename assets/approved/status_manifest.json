@@ -1,0 +1,487 @@
+﻿{
+    "approval_status":  "not_started",
+    "generated_on":  "2026-05-07",
+    "asset_count":  53,
+    "assets":  [
+                   {
+                       "asset_id":  "app_icon",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "approved_asset_manifest",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "art_bible",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "asset_briefs",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "board_orb_clear_vfx",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "boot_splash",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "boss_portraits",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "collection_background",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "combat_background",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "combat_enemy_stage_art",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "combat_ui_chrome_pack",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "consumable_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "controls_visual",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "enemy_animation_set",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "enemy_attack_vfx",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "enemy_portraits",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "equipment_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "game_title_logo",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "generation_metadata",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "hero_animation_set",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "hero_full_body_or_pose_set",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "hero_orbwalker_portrait",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "intent_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "itch_page_graphics",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
+                                           ]
+                   },
+                   {
+                       "asset_id":  "main_menu_background",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "main_menu_ui_pack",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "mastery_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "mastery_vfx",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "merchant_character",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "music_combat",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "music_menu",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "music_shop",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "music_victory_defeat_summary",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "orb_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "qa_reports",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "rarity_badges",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "relic_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "result_screen_ui_pack",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png"
+                                           ]
+                   },
+                   {
+                       "asset_id":  "run_summary_background",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+                                           ]
+                   },
+                   {
+                       "asset_id":  "screenshots",
+                       "approval_status":  "not_started",
+                       "review_status":  "spec_pending",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "sfx_combat_core",
+                       "approval_status":  "not_started",
+                       "review_status":  "spec_pending",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "sfx_shop",
+                       "approval_status":  "not_started",
+                       "review_status":  "spec_pending",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "sfx_ui",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "shared_hud_chrome",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "shop_background",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "shop_transaction_vfx",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "shop_ui_pack",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "store_capsule_key_art",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "trailer_or_gif_capture",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "treasure_chest_icons",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_02.png",
+                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_03.png",
+                                               "assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png"
+                                           ]
+                   },
+                   {
+                       "asset_id":  "tutorial_onboarding_ui_pack",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "ui_motion_language",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   },
+                   {
+                       "asset_id":  "unlock_achievement_vfx",
+                       "approval_status":  "not_started",
+                       "review_status":  "not_started",
+                       "integration_status":  "blocked_pending_approval",
+                       "candidate_paths":  [
+
+                                           ]
+                   }
+               ]
+}

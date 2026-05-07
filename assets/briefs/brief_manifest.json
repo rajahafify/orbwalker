@@ -1,0 +1,272 @@
+﻿{
+    "asset_count":  53,
+    "generated_on":  "2026-05-07",
+    "briefs":  [
+                   {
+                       "asset_id":  "app_icon",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/app_icon.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "approved_asset_manifest",
+                       "brief_path":  "assets/briefs/wave-03-governance-foundation/approved_asset_manifest.brief.md",
+                       "wave":  "wave-03-governance-foundation"
+                   },
+                   {
+                       "asset_id":  "art_bible",
+                       "brief_path":  "assets/briefs/wave-03-governance-foundation/art_bible.brief.md",
+                       "wave":  "wave-03-governance-foundation"
+                   },
+                   {
+                       "asset_id":  "asset_briefs",
+                       "brief_path":  "assets/briefs/wave-03-governance-foundation/asset_briefs.brief.md",
+                       "wave":  "wave-03-governance-foundation"
+                   },
+                   {
+                       "asset_id":  "board_orb_clear_vfx",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/board_orb_clear_vfx.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "boot_splash",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "boss_portraits",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boss_portraits.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "collection_background",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "combat_background",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_background.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "combat_enemy_stage_art",
+                       "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
+                       "wave":  "wave-02-runtime-art-alignment"
+                   },
+                   {
+                       "asset_id":  "combat_ui_chrome_pack",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_ui_chrome_pack.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "consumable_icons",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/consumable_icons.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "controls_visual",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/controls_visual.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "enemy_animation_set",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_animation_set.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "enemy_attack_vfx",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "enemy_portraits",
+                       "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/enemy_portraits.brief.md",
+                       "wave":  "wave-02-runtime-art-alignment"
+                   },
+                   {
+                       "asset_id":  "equipment_icons",
+                       "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/equipment_icons.brief.md",
+                       "wave":  "wave-02-runtime-art-alignment"
+                   },
+                   {
+                       "asset_id":  "game_title_logo",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/game_title_logo.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "generation_metadata",
+                       "brief_path":  "assets/briefs/wave-03-governance-foundation/generation_metadata.brief.md",
+                       "wave":  "wave-03-governance-foundation"
+                   },
+                   {
+                       "asset_id":  "hero_animation_set",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_animation_set.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "hero_full_body_or_pose_set",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "hero_orbwalker_portrait",
+                       "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/hero_orbwalker_portrait.brief.md",
+                       "wave":  "wave-02-runtime-art-alignment"
+                   },
+                   {
+                       "asset_id":  "intent_icons",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/intent_icons.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "itch_page_graphics",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "main_menu_background",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_background.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "main_menu_ui_pack",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "mastery_icons",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "mastery_vfx",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_vfx.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "merchant_character",
+                       "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/merchant_character.brief.md",
+                       "wave":  "wave-02-runtime-art-alignment"
+                   },
+                   {
+                       "asset_id":  "music_combat",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_combat.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "music_menu",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_menu.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "music_shop",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_shop.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "music_victory_defeat_summary",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "orb_icons",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/orb_icons.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "qa_reports",
+                       "brief_path":  "assets/briefs/wave-03-governance-foundation/qa_reports.brief.md",
+                       "wave":  "wave-03-governance-foundation"
+                   },
+                   {
+                       "asset_id":  "rarity_badges",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "relic_icons",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/relic_icons.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "result_screen_ui_pack",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/result_screen_ui_pack.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "run_summary_background",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "screenshots",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/screenshots.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "sfx_combat_core",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_combat_core.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "sfx_shop",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_shop.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "sfx_ui",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/sfx_ui.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "shared_hud_chrome",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "shop_background",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_background.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "shop_transaction_vfx",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_transaction_vfx.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "shop_ui_pack",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_ui_pack.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "store_capsule_key_art",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/store_capsule_key_art.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "trailer_or_gif_capture",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/trailer_or_gif_capture.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "treasure_chest_icons",
+                       "brief_path":  "assets/briefs/wave-01-public-demo-core/treasure_chest_icons.brief.md",
+                       "wave":  "wave-01-public-demo-core"
+                   },
+                   {
+                       "asset_id":  "tutorial_onboarding_ui_pack",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "ui_motion_language",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/ui_motion_language.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   },
+                   {
+                       "asset_id":  "unlock_achievement_vfx",
+                       "brief_path":  "assets/briefs/wave-04-remaining-production-assets/unlock_achievement_vfx.brief.md",
+                       "wave":  "wave-04-remaining-production-assets"
+                   }
+               ],
+    "source":  "assets.json"
+}
