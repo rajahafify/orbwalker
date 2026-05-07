@@ -52,7 +52,7 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
   - Screenshot issue: no clear lower slot for `+N DAMAGE/HEAL/ARMOR/GOLD`; feedback may feel like it appears on top of existing content.
   - Target behavior: each card has a clearly readable lower feedback lane.
   - Current refs: `scripts/ui/player_loadout_hud.gd:210-216`.
-  - Validation notes: runtime cards reserve `MasteryFeedback` at `Vector2(8, 190)` size `Vector2(140, 24)` below the level lane. Nonzero triggered feedback still needs turn-play validation under EM-12.
+  - Validation notes: runtime cards reserve `MasteryFeedback` at `Vector2(8, 190)` size `Vector2(140, 24)` below the level lane. Final public turn-play validation is transferred to ITCH-01/ITCH-08.
 
 - [x] EM-05 Outer frame and card borders visually collide
   - Screenshot issue: ornate panel frame, inner frame, and card borders stack tightly, especially along the top and bottom.
@@ -120,5 +120,6 @@ Track the current Elemental Mastery screenshot defects as concrete visual issues
 
 ## Cleanup Criteria
 
-- Remove this file after these issues are fixed and accepted.
-- If the final visual design becomes durable, summarize it in `docs/test_plan.md` and the relevant wiki pages.
+- [x] Issues are fixed and accepted for their original temporary tracker scope.
+- [x] Durable/final public visual acceptance is transferred to ITCH-01 and ITCH-08 in `docs/itch_readiness_tasks.md`.
+- [x] This file is retained only as historical evidence until a later archive/delete cleanup; it is not an active issue tracker.

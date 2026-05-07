@@ -82,7 +82,7 @@ Track the current screenshot-driven combat feedback polish pass. This file is te
     1. `git diff --check` passed.
     2. Godot MCP `play_scene` current scene passed and `get_godot_errors` reported `Session has no errors`.
     3. Godot MCP scene tree confirmed six `164x186` cards fit in `ElementalMasteryCards size=Vector2(1028,186)`.
-    4. Manual drag/cascade visual acceptance remains pending.
+    4. Final public drag/cascade visual acceptance is transferred to ITCH-01/ITCH-08.
 
 ## Effort Log
 
@@ -144,5 +144,6 @@ Track the current screenshot-driven combat feedback polish pass. This file is te
 
 ## Cleanup Criteria
 
-- Remove or archive this file after screenshot polish is accepted.
-- Before cleanup, ensure durable behavior notes are reflected in `docs/test_plan.md`, `wiki/features.md`, and `wiki/log.md` if the changes remain in the project.
+- [x] Screenshot-polish tasks are implemented/validated for their original temporary tracker scope.
+- [x] Durable public screenshot/readability acceptance is transferred to ITCH-01, ITCH-05, ITCH-07, and ITCH-08 in `docs/itch_readiness_tasks.md`.
+- [x] This file is retained only as historical evidence until a later archive/delete cleanup; it is not an active issue tracker.

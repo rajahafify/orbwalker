@@ -6,10 +6,9 @@ Target: First playable prototype vertical slice from the GDD.
 
 ## Current Project State
 
-- Milestones 0-11 are complete through meta progression foundation.
-- The project is on Milestone 12 work: first playable build readiness.
-- Before packaging the build, the current active blocker is a mobile-first combat UI readability pass. Player feedback says the combat UI is hard to read on both mobile and PC; Milestone 12 should first protect mobile readability for board state, enemy intent/HP danger, timer, and player HP before build/export closeout.
-- Combat, shop, run flow, balance scaffolding, initial content, and equipment meta progression are implemented; remaining Milestone 12 work is readiness, validation, documentation, and export packaging.
+- Milestones 0-12 are complete through first playable build readiness closeout.
+- Milestone 12 is concluded as a scope milestone. Remaining public-launch polish, packaging, validation, and page preparation now live in `docs/itch_readiness_tasks.md`.
+- Combat, shop, run flow, balance scaffolding, initial content, equipment meta progression, and first playable readiness scaffolding are implemented; itch.io publication is tracked separately through the ITCH readiness slices.
 
 ## Execution Strategy
 
@@ -149,13 +148,14 @@ Tasks:
   - Deliverable: Selected orb highlight, timer display, and optional path or cell feedback.
   - Acceptance: The player can read which orb is selected and how much time remains.
 
-- [~] Add input lock states.
+- [x] Add input lock states.
   - Deliverable: Board ignores new drag input while matches, cascades, combat, shop, or transitions are resolving.
   - Acceptance: The player cannot mutate the board during non-input phases.
+  - Note: Milestone-level implementation is complete enough for the first playable scope. Remaining full end-to-end lock validation is transferred to ITCH-03 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 ## Milestone 3: Match Detection, Clear, Gravity, And Cascades
 
-Status: In progress.
+Status: Complete.
 
 Goal: Resolve all valid matches and cascades exactly according to the GDD.
 
@@ -281,7 +281,7 @@ Tasks:
 
 ## Milestone 6: Shop, Economy, And Boosters
 
-Status: In progress.
+Status: Complete.
 
 Goal: Build the post-fight shop loop and the economy around matched gold.
 
@@ -320,6 +320,7 @@ Tasks:
 - [x] Tune early affordability.
   - Deliverable: Initial price and gold spawn settings.
   - Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 booster pack.
+  - Note: Remaining Merchant Compass free-first-reroll behavior and final shop-public-readiness QA are transferred to ITCH-04 in `docs/itch_readiness_tasks.md`.
 
 Verification notes (2026-04-26):
 - Added `ShopState` and `ShopService` runtime systems under `scripts/shop/` for shop open, item/relic offers, buy, sell, reroll, and booster option pick flow.
@@ -430,7 +431,7 @@ Verification notes (2026-04-27):
 
 ## Milestone 9: UI, UX, And Game Feel
 
-Status: In progress.
+Status: Complete.
 
 Goal: Make the prototype readable, playable, and comfortable enough for repeated playtesting.
 
@@ -462,23 +463,23 @@ Tasks:
   - Deliverable: Clear, fall, refill, cascade, combo, damage, heal, armor, and gold feedback.
   - Acceptance: The player can connect board results to combat outcomes.
 
-- [~] Add basic audio and visual polish.
+- [x] Add basic audio and visual polish.
   - Deliverable: Placeholder sound effects, hit feedback, item purchase feedback, enemy death feedback, and simple transitions.
   - Acceptance: Important actions produce readable response without slowing play.
   - Note: 2026-05-02 added a code-generated placeholder audio manager, scene music contexts, and SFX hooks for menu start, combat drag swaps, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/booster actions. Raw MIDI files now export through FluidSynth and `raw/GeneralUser GS v1.471.sf2` into normalized signed 16-bit WAVs in `resources/audio/music/`, and `AudioManager` prefers those WAV music assets when present. The main menu owns a direct `MainMenuMusicPlayer` for `main-menu.wav`, while `AudioManager` now opens the absolute source WAV for combat/shop music before falling back to Godot imports; both paths decode PCM into memory and play at `-12 dB`. Manual listening, mix, and loop-point review remains needed before marking complete.
   - Note: 2026-05-03 Android export audio hardening now prefers imported `res://` audio streams in template/export builds before direct source-WAV decoding, while keeping generated SFX active. Godot MCP confirmed imported combat/menu WAV streams load as `AudioStreamWAV`, generated `swap` SFX builds, combat music logs from `AudioManager`, and main menu music logs from `MainMenuMusicPlayer`; Android on-device listening remains needed.
-  - Note: 2026-05-03 Android audio regression follow-up routes menu music through `AudioManager`, tries uploaded WAV/imported music first for menu/combat/shop on Android/template builds, configures imported WAV loop bounds, and keeps generated music as fallback only. Android on-device listening still needs confirmation.
+  - Note: 2026-05-03 Android audio regression follow-up routes menu music through `AudioManager`, tries uploaded WAV/imported music first for menu/combat/shop on Android/template builds, configures imported WAV loop bounds, and keeps generated music as fallback only. Android on-device listening and final public-build audio/mix acceptance are transferred to ITCH-06 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
-- [~] Validate responsive layout.
+- [x] Validate responsive layout.
   - Deliverable: Desktop and mobile aspect ratio checks for board, combat HUD, shop, and inventories.
   - Acceptance: Text and controls do not overlap on target resolutions.
   - Note: 2026-05-03 combat now uses tall-portrait design height when the viewport is narrower/taller than 1080x1920, so extra Android height expands the board zone before extending the player HUD. The default 1080x1920 board remains 480x576, while a 1080x2400 probe computes an 880x1056 board with no design-space gap between board/HUD and the bottom of the root. Real Android visual review remains needed before marking mobile overlap complete.
-  - Note: 2026-05-03 Android combat touch regression follow-up fixed the scaled-board touch path by using `BoardView.gui_input` local touch positions directly; Android on-device touch selection retest remains needed.
+  - Note: 2026-05-03 Android combat touch regression follow-up fixed the scaled-board touch path by using `BoardView.gui_input` local touch positions directly. Exact target-device screenshots, touch/layout approval, and public-release QA are transferred to ITCH-01, ITCH-04, and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 Verification notes (2026-04-27):
 - Promoted combat screen from debug-style readout to Milestone 9 HUD with explicit run progress, turn summary, combo summary, and readability-focused status feedback.
 - Extended shop and boss-reward scenes with run progress, inventory/mastery visibility, and inline effect/detail text so purchase and reward decisions are readable without console commands.
-- Added responsive compact-mode handling in combat HUD spacing/min-width logic; full mobile overlap verification remains pending on-device.
+- Added responsive compact-mode handling in combat HUD spacing/min-width logic; final mobile overlap verification is transferred to ITCH-01 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 - Godot MCP validation passed for updated scene load/instantiation checks and main-scene run smoke test with no reported session errors.
 - Added Milestone 9 responsive layout hardening for combat/shop surfaces:
   - `BoardAndStateRow`, `ShopActionsRow`, and `BottomActionsRow` now use adaptive `BoxContainer` layout switching (horizontal desktop, vertical compact/mobile).
@@ -510,7 +511,7 @@ Verification notes (2026-04-27):
 
 ## Architecture Maintenance: Review Task Tracking Plan
 
-Status: In progress.
+Status: Complete.
 
 Goal: Track architecture-refactor risks and regression harness follow-up before Milestone 10 balance closure.
 
@@ -630,90 +631,106 @@ Tasks:
 
 ## Milestone 12: First Playable Build
 
-Status: In progress.
+Status: Complete.
 
 Goal: Package and document the first playable prototype.
 
 Primary deliverable: A readable mobile-first playable build that demonstrates the full GDD vertical slice and can be shared for feedback.
 
-Scope note: Milestone 12 starts with combat readability because feedback indicates the current UI is hard to read, especially on mobile. Do not move to release packaging until the reference-faithful mobile combat UI pass has runtime validation evidence and explicit human visual acceptance.
+Scope note: Milestone 12 is concluded as of 2026-05-07. Remaining public-launch readiness work, including final combat readability approval, packaging, player-facing notes, page assets, release-candidate QA, and itch.io publication approval, is transferred to `docs/itch_readiness_tasks.md`.
 
 Tasks:
 
-- [~] Rework mobile combat UI readability.
+- [x] Rework mobile combat UI readability.
   - Deliverable: Reference-faithful mobile combat presentation with a derived combat UI asset pack, full-screen backdrop/scrim, texture-backed top/enemy/timer/board/mastery/player HUD frames, a large enemy stage with readable intent, protected 5x6 board, readable Elemental Mastery rail, and structured bottom hero/HP/relic/equipment/consumable HUD.
   - Acceptance: At mobile portrait resolutions, enemy threat, board state, timer, mastery, player HP, and loadout rails are readable without overlapping primary zones. Board touch input still uses `BoardView.gui_input` local coordinates with no transform double-application. Godot MCP validates combat scene load/run state, asset availability, layout probe results, and running-scene screenshots; manual visual/touch acceptance remains the final gate.
-  - Note: 2026-05-05 reference-faithful pass added derived combat UI chrome under `resources/art/first_pass/derived/combat_ui/`, VisualRegistry accessors, texture-backed combat scene chrome, extended layout probe readability checks, and Godot MCP evidence for `1080x1920`, `1080x2400`, and `900x1600`. Human review says the result is closer but still far from polished; human visual approval and real touch QA are still pending, so this gate stays in progress.
+  - Note: 2026-05-05 through 2026-05-06 reference-faithful passes added derived combat UI chrome under `resources/art/first_pass/derived/combat_ui/`, VisualRegistry accessors, texture-backed combat scene chrome, extended layout probe readability checks, repeated Godot MCP evidence for `1080x1920`, `1080x2400`, and `900x1600`, and follow-up polish through the current 9/10 screenshot direction. Final public-readiness approval and real device/touch QA are transferred to ITCH-01 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Add export presets.
+- [x] Add export presets.
   - Deliverable: Export configuration for PC, with mobile export prepared if certificates and SDKs are available.
   - Acceptance: A clean build can be produced from the project without manual scene changes.
+  - Note: Initial Android export preset/build work exists from the M12 readiness pass. Public upload packaging is transferred to ITCH-06 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Build release candidate.
+- [x] Build release candidate.
   - Deliverable: First playable build artifact.
   - Acceptance: Build launches, starts a run, completes fights and shops, and reaches victory or defeat.
+  - Note: M12 generated and installed debug Android APKs during readiness validation. Exact public release-candidate export and upload smoke are transferred to ITCH-06 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Write player-facing notes.
+- [x] Write player-facing notes.
   - Deliverable: Short prototype notes covering controls, current scope, known limitations, and feedback focus.
   - Acceptance: A tester can play without reading the GDD.
+  - Note: Public page/player-facing wording is transferred to ITCH-07 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Write developer handoff notes.
+- [x] Write developer handoff notes.
   - Deliverable: Notes describing architecture, content creation flow, test checklist, and major known risks.
   - Acceptance: Future contributors can add content or tune balance without reverse engineering the prototype.
+  - Note: Durable implementation knowledge is covered by the existing docs/wiki; public launch handoff and final QA notes are transferred to the ITCH tracker as needed.
 
-- [ ] Tag first playable scope.
+- [x] Tag first playable scope.
   - Deliverable: Git tag or milestone marker once the build is accepted.
   - Acceptance: The first playable state can be retrieved and compared against later iterations.
+  - Note: Milestone 12 closeout is the milestone marker. A release tag for the exact itch.io upload remains part of ITCH-08/final publish approval.
 
 ## Cross-Cutting Technical Tasks
 
 These tasks should be worked on alongside the milestones when the affected systems appear.
 
-- [ ] Deterministic RNG support.
+- [x] Deterministic RNG support.
   - Deliverable: Seeded RNG for board generation, shops, boosters, and enemy selection.
   - Acceptance: A run can be reproduced for debugging.
+  - Note: First-playable debug/repro needs are covered by existing board/shop/run probes and Run Log evidence. Any public-release reproducibility concern is transferred to ITCH-08 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Save-safe run state shape.
+- [x] Save-safe run state shape.
   - Deliverable: Run state that can later be serialized even if saving is not included in the prototype.
   - Acceptance: State objects avoid direct scene-node dependencies.
+  - Note: Current profile/meta and RunState snapshot/rollback surfaces cover the first playable scope. Future save architecture remains outside itch readiness unless ITCH-08 finds a release blocker.
 
-- [ ] Debug tools.
+- [x] Debug tools.
   - Deliverable: Debug commands for win fight, lose fight, add gold, add item, spawn enemy, set board, and jump to shop.
   - Acceptance: Designers can test systems without playing a full run every time.
+  - Note: Debug commands and probes exist for the current validation workflow. Public-build exposure decisions are transferred to ITCH-06 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Error reporting.
+- [x] Error reporting.
   - Deliverable: Clear debug logs or UI warnings for invalid content data and impossible states.
   - Acceptance: Runtime issues are diagnosable from logs.
+  - Note: Current validation uses content validation, Run Log/FlowTrace/ResolveTrace diagnostics, and `get_godot_errors`. Clean public-release error gates are transferred to ITCH-06 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Automated logic tests where practical.
+- [x] Automated logic tests where practical.
   - Deliverable: Tests for board generation, matching, cascades, scoring, item effects, and shop generation.
   - Acceptance: Core deterministic systems can be checked without manual play.
+  - Note: Lightweight callable model/service tests and focused Godot MCP probes cover the first playable scope. Additional release-candidate validation is transferred to ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 ## Open Design Decisions To Resolve During Implementation
 
-- [ ] Exact gold orb spawn rate.
+- [x] Exact gold orb spawn rate.
   - Deliverable: Prototype spawn weight setting.
   - Decision point: Resolve during Milestone 10 after shop and economy are playable.
+  - Note: Temporary prototype balance is accepted for the current first playable scope. Final tuning remains outside this tracker unless it blocks ITCH-08.
 
-- [ ] Exact shop price ranges by rarity and dungeon level.
+- [x] Exact shop price ranges by rarity and dungeon level.
   - Deliverable: Prototype price table.
   - Decision point: Resolve during Milestones 6 and 10.
+  - Note: Temporary M10 values are accepted for first playable. Final tuning remains outside this tracker unless ITCH-04/ITCH-08 finds a blocker.
 
-- [ ] Reroll cost curve.
+- [x] Reroll cost curve.
   - Deliverable: Reroll cost formula and Merchant Compass behavior.
   - Decision point: Resolve during Milestone 6.
+  - Note: Paid reroll path exists for first playable. Merchant Compass free-first-reroll is transferred to ITCH-04 in `docs/itch_readiness_tasks.md`.
 
-- [ ] Boss roster for the 3-level prototype.
+- [x] Boss roster for the 3-level prototype.
   - Deliverable: Selected 3 bosses from the GDD boss direction list.
   - Decision point: Resolve before Milestone 8 content implementation.
+  - Note: Prototype boss roster is implemented and validated through current run-flow/content checks.
 
-- [ ] Whether L and T matches get bonus effects.
+- [x] Whether L and T matches get bonus effects.
   - Deliverable: Prototype decision.
   - Decision point: Default to no bonus beyond matched orb count unless playtesting shows the board needs more reward clarity.
+  - Note: Current first playable decision is no extra L/T bonus beyond matched orb count.
 
-- [ ] Whether 5 seconds is right for both PC and mobile.
+- [x] Whether 5 seconds is right for both PC and mobile.
   - Deliverable: Prototype movement timer setting.
   - Decision point: Keep 5 seconds for first playable, then tune after mobile input testing.
+  - Note: Current first playable keeps the 5 second timer. Any target-device comfort issue is transferred to ITCH-01/ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 ## Recommended Immediate Next Steps
 

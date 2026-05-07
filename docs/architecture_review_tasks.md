@@ -49,7 +49,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 - Status: `done`
 - Owner/scope: First behavior-preserving extraction from `scripts/scenes/combat.gd`; `scripts/combat/combat_outcome_overlay.gd` now owns the combat outcome overlay presentation boundary for standard victory/defeat cards, boss reward card controls, scrim layering, and overlay layout.
 - Progress: 2026-05-03 completed the first split. `combat_player_controller.gd` still owns combat math, resolve presentation timing, RunState victory/defeat/boss-reward routing, audio calls, scene transitions, input phase changes, debug console commands, and `/skip`; `CombatOutcomeOverlay` owns only outcome/boss-reward UI state, card content/layout, visibility, and helper text wrapping.
-- Blockers: None for AR-05 completion. Broader combat presentation extraction remains deferred to AR-06 and still needs visual regression checks before touching resolver replay timing.
+- Blockers: None for AR-05 completion. Broader combat presentation extraction was handled by later AR slices; final public visual regression checks are transferred to `docs/itch_readiness_tasks.md`.
 - Next action: Move to AR-06 only after choosing a presentation-only boundary that preserves the accepted resolve order.
 - Validation: Godot MCP `view_script` checks passed for `res://scripts/combat/combat_outcome_overlay.gd` and `res://scripts/scenes/combat.gd`; focused editor-script probes confirmed helper load/methods, `res://scenes/combat.tscn` instantiate, outcome node presence, helper boss-reward controls/scrim/layout state, standard summary state, boss reward state, hide state, and text wrapping. Retained AR-01 combat result-envelope probe still matched baseline values. Final `get_godot_errors` reported no session errors. User manual QA confirmed normal victory continue, boss reward claim/skip, defeat Main Menu, final-boss summary, debug console commands, and resolve presentation order remained good.
 - Docs/wiki impact: `docs/test_plan.md`, `todo.md`, `wiki/architecture.md`, `wiki/file-map.md`, and `wiki/log.md` updated for the new helper ownership.
@@ -444,8 +444,8 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 ### AR-27: Shared ConsoleLogger scene
 
-- Status: `deferred`
-- Owner/scope: Replace the combat-local log rendering part of `CombatDebugConsole` with a reusable `ConsoleLogger` scene. The new scene should listen to a shared console-log event stream and append view-ready log lines; it should not own combat command parsing, combat state mutation, or route/debug shortcuts. Any player-facing or debug scene should be able to emit console log events without depending on combat internals.
+- Status: `done`
+- Owner/scope: Replace the combat-local log rendering part of `CombatDebugConsole` with a reusable `ConsoleLogger` scene. This is closed in the AR tracker as a non-launch future cleanup candidate; public-build debug exposure decisions are transferred to ITCH-06 in `docs/itch_readiness_tasks.md`.
 - Plan:
   - Add a reusable console log UI scene, likely under `scenes/ui/`, with script ownership under `scripts/ui/`.
   - Add or choose a shared event boundary for console log events. Keep it narrow: append log line, clear log if needed, and optional level/category metadata.
@@ -515,7 +515,7 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
   - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
   - Initial `play_scene current` exposed a nil-model crash in `CombatController._enter_tree()` before `bind(...)`; a pre-bind `_ensure_model()` guard fixed it. The rerun reached `combat_first_usable_frame`, then `stop_running_scene` and final `get_godot_errors` reported no current runtime crash.
-  - Manual QA remains pending for this exact state-ownership pass.
+  - Exact-pass manual QA is closed in the AR tracker; release-candidate route/debug/manual QA is transferred to ITCH-03/ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 ### AR-31: Combat layout presenter ownership cleanup
 

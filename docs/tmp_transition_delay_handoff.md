@@ -80,7 +80,9 @@ This is diagnostic instrumentation, not the intended final transition architectu
 
 ## Next Diagnostic Step
 
-Use Godot MCP/editor-side probes, not headless Godot, to decide whether the remaining deferred orb cleanup should be converted into generated/imported orb assets.
+Status: transferred to ITCH-01, ITCH-03, and ITCH-08 in `docs/itch_readiness_tasks.md`.
+
+Use Godot MCP/editor-side probes, not headless Godot, to decide whether the remaining deferred orb cleanup should be converted into generated/imported orb assets during release-readiness QA.
 
 Suggested focused probes:
 
@@ -108,4 +110,4 @@ The acceptance target for the original temporary diagnostic step was a trace tha
 - Some non-target redirects still use Godot's standard `change_scene_to_file(...)`.
 - Existing integer-division warnings in Godot output predate this diagnostic work and are not currently tied to the transition stall.
 - Do not optimize audio for this issue unless new traces contradict the current evidence.
-- The deferred orb texture-map pass is still expensive because it keeps the runtime per-pixel cleanup path; a durable polish fix should move that cleanup into the asset pipeline.
+- The deferred orb texture-map/public feel check is now owned by ITCH release-readiness QA. This file is retained only as historical transition-diagnosis evidence, not as an active tracker.

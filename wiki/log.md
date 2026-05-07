@@ -2282,3 +2282,16 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Itch.io readiness tracker
 
 - Added `docs/itch_readiness_tasks.md` as the publish-readiness tracker for moving itch.io alpha/demo readiness from `7/10` to `10/10`, with focused `codex/itch-number-name` branch slices for combat readability, onboarding, run-loop stability, shop clarity, result polish, public build packaging, page/screenshot curation, and final release-candidate QA. (source: `docs/itch_readiness_tasks.md`, `launch-milestone.md`)
+
+## 2026-05-07 - Milestone 12 closeout
+
+- Concluded Milestone 12 as the first playable build-readiness scope milestone. Remaining public-launch work is intentionally transferred to `docs/itch_readiness_tasks.md`, including combat readability acceptance, exact public build packaging, itch.io page/screenshot preparation, and final release-candidate QA. This closeout is a scope handoff, not a claim that the itch.io publish gates have passed. (source: `todo.md`, `docs/test_plan.md`, `docs/itch_readiness_tasks.md`)
+
+## 2026-05-07 - Itch readiness backlog consolidation
+
+- Moved duplicated launch-readiness issues and missing-QA items from `todo.md`, `docs/test_plan.md`, `wiki/known-issues.md`, `wiki/open-questions.md`, temporary polish trackers, setup notes, and combat feedback notes into the `Transferred Readiness Backlog` section of `docs/itch_readiness_tasks.md`. Old sources now mark those entries as closed/transferred so the ITCH tracker is the single active owner for publish-readiness work. (source: `docs/itch_readiness_tasks.md`, `todo.md`, `docs/test_plan.md`, `wiki/known-issues.md`)
+
+## 2026-05-07 - Repository hygiene cleanup
+
+- Pruned local scratch `tmp/` captures, removed empty placeholder folders that are not tracked by git, ignored future `tmp/` scratch output, and deleted the broken root `test_elemental_mastery.tscn` testbed that referenced a missing debug script.
+- Updated the file map to reflect that runtime content is still dictionary-backed and that empty placeholder scene/content folders are no longer part of the current checkout layout.

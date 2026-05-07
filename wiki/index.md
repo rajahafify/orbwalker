@@ -17,7 +17,7 @@
 
 ## Current Goal
 
-- First playable prototype vertical slice: a 3-level run with board combat, shop flow, boss rewards, initial content, temporary balance, and Milestone 11 meta progression. The current major project focus is Milestone 12 first playable build readiness, starting with reference-faithful mobile combat UI readability before export packaging. Deeper economy/combat tuning should wait until post-meta and post-build-readiness evidence exists. (source: `todo.md`, `docs/test_plan.md`, `docs/game_design_document.md`, `docs/architecture_review_tasks.md`, `docs/milestone_10_balance_tasks.md`)
+- First playable prototype vertical slice: a 3-level run with board combat, shop flow, boss rewards, initial content, temporary balance, meta progression, and Milestone 12 readiness scaffolding is concluded. Current major project focus is the itch.io alpha/demo readiness tracker: combat readability acceptance, first-run clarity, full-loop stability, shop clarity, result polish, public build packaging, page/screenshot preparation, and final release-candidate QA. Deeper economy/combat tuning should wait until post-meta and post-build-readiness evidence exists. (source: `todo.md`, `docs/test_plan.md`, `docs/itch_readiness_tasks.md`, `launch-milestone.md`)
 
 ## Features
 

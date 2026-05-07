@@ -22,6 +22,26 @@ The itch.io alpha/demo is publish-ready when:
 - The build launches cleanly with correct title/icon/version and no accidental debug-only player path.
 - The itch.io page presents the game honestly as an alpha/demo with curated screenshots, controls, and known scope.
 
+## Transferred Readiness Backlog
+
+This section is the single active owner for launch-related open QA/issues moved out of older milestone, known-issue, and temporary trackers. The old sources should now read as transferred/closed there rather than as independent open work.
+
+| Source Item | New Owner | Status |
+| --- | --- | --- |
+| Board lock behavior during resolution and transitions. | ITCH-03, ITCH-08 | `not started` |
+| Full combat readability acceptance on mobile and PC, including target-viewport screenshot review and real touch drag QA. | ITCH-01, ITCH-08 | `not started` |
+| Shop Android/on-device QA and complete transaction click-through for buy, unaffordable buy, sell, reroll, and continue. | ITCH-04, ITCH-08 | `not started` |
+| Full route recovery and end-to-end run-loop QA after SceneRouter/rollback hardening. | ITCH-03, ITCH-08 | `not started` |
+| Board/orb visual pop-in and perceived Start Run feel on target hardware. | ITCH-01, ITCH-03, ITCH-08 | `not started` |
+| Merchant Compass free-first-reroll behavior. | ITCH-04 | `not started` |
+| Combat top-bar Back/Settings route hardening or explicit public-build decision. | ITCH-03, ITCH-06 | `not started` |
+| Known Godot reload diagnostics before relying on a clean `get_godot_errors` release gate. | ITCH-06, ITCH-08 | `not started` |
+| Android export hang workaround/public export hygiene. | ITCH-06 | `not started` |
+| Result/victory/defeat/final-summary screenshot polish and route checks. | ITCH-05, ITCH-08 | `not started` |
+| Player-facing notes, controls, known limitations, screenshots, and itch.io page copy. | ITCH-07 | `not started` |
+| Temporary tracker cleanup for accepted Elemental Mastery and combat feedback polish notes. | ITCH-07, ITCH-08 | `not started` |
+| Pre-drag mastery hover/manual visual QA across all six orb/card types and overlap/readability. | ITCH-01, ITCH-08 | `not started` |
+
 ## ITCH-01: Combat Readability Pass
 
 - Branch: `codex/itch-01-combat-readability`
@@ -193,4 +213,3 @@ The itch.io alpha/demo is publish-ready when:
   - Update `launch-milestone.md`.
   - Update `docs/test_plan.md`.
   - Update `wiki/log.md` if wiki pages changed.
-

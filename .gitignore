@@ -4,6 +4,7 @@
 .obsidian/
 .memsearch/
 logs/
+tmp/
 
 # Android export/build artifacts
 *.apk

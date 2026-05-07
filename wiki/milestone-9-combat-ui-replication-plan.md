@@ -49,7 +49,7 @@ Milestone 9 is mostly complete, but this plan defines the remaining combat UI/ga
 
 ## Open Questions
 
-- Whether the same visual hierarchy should be mirrored in shop and boss-reward scenes in a later Milestone 9 follow-up. (needs verification)
+- Closed/transferred: shop, boss reward, and result-surface public visual consistency is now owned by ITCH-04, ITCH-05, and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
 ## Related Pages
 

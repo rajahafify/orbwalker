@@ -18,7 +18,7 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 - Use `res://scenes/combat.tscn` for player-facing combat validation, `res://scenes/shop.tscn` for shop validation, `res://scenes/run_summary.tscn` for final summary validation, and focused Godot MCP editor-script probes for board resolver/combat envelope checks. The old board-debug scene has been removed. (source: `AGENTS.md`, `docs/test_plan.md`)
 - The repository contains the player-facing combat and shop scenes plus the final run summary flow scene. Boss relic rewards are selected inside the combat victory overlay; the old boss relic reward and shop placeholder scenes have been removed. (source: `scripts/core/run_state.gd`, `scripts/scenes/combat.gd`, `scenes/shop.tscn`, `scenes/run_summary.tscn`)
 - Project-local Codex defaults set the main/default model to `gpt-5.5` with `low` reasoning, the explorer custom agent to `gpt-5.5` with `medium` reasoning, and the worker custom agent to `gpt-5.3-coder` with `high` reasoning; milestone-style implementation prompts use this multi-agent workflow by default, and spawned subagents must be launched with explicit model overrides. (source: `AGENTS.md`, `.codex/config.toml`, `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, `.codex/agents/worker.toml`)
-- The checked sources do not define a separate CLI build or test script. Validation in this repo is currently documented as manual QA plus Godot MCP/editor-script checks. (needs verification)
+- Closed for current readiness: the repo currently relies on manual QA plus Godot MCP/editor-script checks. Public release-candidate validation is owned by ITCH-06/ITCH-08 in `docs/itch_readiness_tasks.md`.
 - AR-01 combat result-envelope regression can be rerun with `res://scripts/debug/ar01_combat_result_probe.gd`. It is disabled by default behind project setting `debug/ar01_combat_result_probe_enabled=false`; enable it only for the probe call, then turn it back off. (source: `scripts/debug/ar01_combat_result_probe.gd`, `docs/test_plan.md`)
 - New automated logic tests should live under `scripts/tests/` and use `*_test.gd` filenames. Keep them framework-free for now: expose a static or instance runner that can be called from Godot MCP `execute_editor_script`, return a structured pass/fail report, and use simple assertions or explicit failure collection. Retained probes under `scripts/debug/` are legacy validation helpers, not the preferred location for new tests. (source: `docs/test_plan.md`)
 - MIDI music sources can be rendered to Godot-ready WAV files with `python tools/audio/export_midi_to_wav.py`. The script defaults to the local FluidSynth binary at `C:\Users\Home\Downloads\orbwalker\fluidsynth-v2.5.4-win10-x64-cpp11\fluidsynth-v2.5.4-win10-x64-cpp11\bin\fluidsynth.exe` and `raw/GeneralUser GS v1.471.sf2`; override either path with `--fluidsynth` or `--soundfont`. (source: `tools/audio/export_midi_to_wav.py`, `raw/`)
@@ -42,8 +42,8 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 
 ## Open Questions
 
-- Whether a repo-local scripted build or test command should be added later. (needs verification)
-- Whether the Godot Android CLI export hang is caused by the Gradle build process, the enabled editor MCP plugin Android export warning, or Godot 4.6.2 console shutdown on Windows. (needs verification)
+- Closed for current readiness: a repo-local scripted build/test command is optional future tooling unless ITCH-06 requires it.
+- Transferred to ITCH-06: the Godot Android CLI export hang root-cause/workaround is now part of public build packaging readiness.
 
 ## Related Pages
 

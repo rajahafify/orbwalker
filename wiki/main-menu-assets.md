@@ -93,8 +93,8 @@ The mapped `menu.logo` path now points to the cleaned alpha logo variant to avoi
 
 ## Open Questions
 
-- Should main menu textures be migrated behind dedicated `VisualRegistry` accessors in a later cleanup pass. (needs verification)
-- Should the menu icon family stay in `resources/art/first_pass/menu/`, or be split into a future `resources/art/first_pass/derived/menu/` family if iteration continues? (needs verification)
+- Closed for launch readiness: main-menu texture cleanup is not an itch blocker unless ITCH-07 screenshot/page curation identifies it.
+- Closed for launch readiness: the menu icon folder split is a future asset-organization cleanup, not an active public-readiness issue.
 
 ## Related Pages
 

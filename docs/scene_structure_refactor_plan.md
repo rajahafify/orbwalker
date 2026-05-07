@@ -6,33 +6,28 @@ Scope: `res://scenes/` folder structure, screen ownership, and shared UI scene c
 
 ## Context
 
-The first playable game flow is now established: main menu, combat, shop, collection, and final run summary are the player-facing screens. The current `scenes/` folder layout still reflects earlier prototype growth rather than a finalized scene architecture.
+The first playable game flow is now established: main menu, combat, shop, collection, and final run summary are the player-facing screens. This plan is historical architecture guidance from before the flat player-facing scene cleanup; the current checkout has already pruned the empty placeholder scene folders.
 
 Current scene layout:
 
 ```text
 scenes/
-  main.tscn
-  board/
-    board.tscn
-  combat/
-    combat_player.tscn
-  flow/
-    collection.tscn
-    final_run_summary.tscn
-    shop_player.tscn
-  run/
-  shop/
+  collection.tscn
+  combat.tscn
+  main_menu.tscn
+  run_summary.tscn
+  shop.tscn
   ui/
+    board.tscn
     elemental_mastery_hud_variants.tscn
+    player_hud.tscn
 ```
 
 Observed mismatch:
 
-- `scenes/flow/` currently contains multiple full player-facing screens, not just transitional flow glue.
-- `scenes/shop/` exists but does not contain the player-facing shop scene.
-- `scenes/run/` exists but does not contain run summary or run-flow scene assets.
-- Shared UI surfaces such as the player HUD are still mostly code-built through `PlayerLoadoutHud`, not represented as a reusable scene/partial asset.
+- The older `scenes/flow/`, `scenes/shop/`, `scenes/run/`, `scenes/combat/`, and `scenes/board/` placeholder folders are gone from the current checkout.
+- Player-facing scenes currently live as flat root files under `scenes/`.
+- Shared UI surfaces now include reusable `scenes/ui/board.tscn` and `scenes/ui/player_hud.tscn`; remaining scene-structure work is a future taxonomy decision rather than an active cleanup blocker.
 
 ## Resolved HUD Preset Cleanup
 
