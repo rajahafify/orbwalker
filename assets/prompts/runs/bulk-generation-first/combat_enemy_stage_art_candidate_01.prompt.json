@@ -1,0 +1,9 @@
+﻿{
+    "asset_id":  "combat_enemy_stage_art",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png",
+    "prompt":  "Use case: stylized-concept; Asset type: combat enemy stage/banner art set for Orbwalker; Primary request: production candidate wide encounter stage/banner sheet for a fantasy match-3 roguelike. Subject: four wide horizontal encounter banners in a 2x2 sheet: cavern raider stage, shield guard stage, burning knight arena, prism vault arena. Each banner has an empty central/foreground area for portrait placement and UI overlays. Style/medium: polished stylized 2D game stage art, dark-fantasy dungeon, readable at mobile combat header size. Composition/framing: 2x2 sheet of wide banners, consistent horizon and camera height, no characters, no labels. Lighting/mood: tense dungeon encounter, clear environmental identity per banner. Color palette: cool stone, warm torch/gold, fire red/orange, prism cyan/violet, distinct but cohesive. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no UI controls, no characters.",
+    "dimensions":  "1672x941",
+    "status":  "generated_bulk_pending_qa"
+}

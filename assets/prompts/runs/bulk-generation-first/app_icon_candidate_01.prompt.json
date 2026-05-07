@@ -1,0 +1,9 @@
+{
+  "asset_id": "app_icon",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png",
+  "prompt": "Use case: logo-brand; Asset type: app icon for Orbwalker; Primary request: square production candidate application icon for a fantasy match-3 roguelike. Subject: a single iconic glowing elemental orb held in a small crescent of dark fantasy stone and gold, hinting at dungeon treasure and match-3 magic. Style/medium: polished stylized 2D game app icon, strong silhouette, high contrast, readable at small mobile size. Composition/framing: centered square icon, no text, no border text, no UI. Lighting/mood: premium magical glow, adventurous fantasy. Color palette: gold frame accents, dark stone, multicolor elemental orb core. Constraints: no readable text, no letters, no logo wordmark, no watermark, no copyrighted characters, no casino imagery, no gore, no tiny details that disappear at app-icon size.",
+  "dimensions": "1254x1254",
+  "status": "generated_qa_deferred"
+}

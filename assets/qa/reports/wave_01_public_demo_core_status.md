@@ -1,13 +1,13 @@
 ﻿# Wave 1 Public Demo Core Status
 
-Status: candidates_started_review_pending
+Status: wave_1_internal_qa_complete_mixed
 
 ## Generated Candidate Images
 
-- treasure_chest_icons: candidates 01, 02, and 03 generated; all generated PNGs failed alpha because they were opaque. Alpha cleanup candidate created at assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png and queued for full visual QA.
-- result_screen_ui_pack: assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png
-- run_summary_background: assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png
-- itch_page_graphics: assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png
+- treasure_chest_icons: internal QA passed for the alpha cleanup candidate at assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png. Generated candidates 01, 02, and 03 remain failed for alpha. Background evidence is recorded at assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png.
+- result_screen_ui_pack: cleanup_required. Candidate is a single concept-sheet PNG, not separated runtime UI chrome assets.
+- run_summary_background: internal QA passed as an opaque portrait background candidate.
+- itch_page_graphics: internal QA passed as wide marketing key art only; it is not gameplay screenshot evidence.
 
 ## Spec/Capture Only In This Pass
 
@@ -17,4 +17,4 @@ Status: candidates_started_review_pending
 
 ## Gate
 
-All generated candidates remain blocked from runtime integration pending QA, human review, legal/license review, and explicit approval.
+Human QA was skipped by instruction for this pass. Legal/license review, final approval, and runtime integration remain blocked for every Wave 1 asset.

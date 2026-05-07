@@ -1,4 +1,4 @@
-﻿# QA Report: treasure_chest_icons
+# QA Report: treasure_chest_icons
 
 Candidate paths:
 - assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png
@@ -7,17 +7,18 @@ Candidate paths:
 - assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png
 Metadata path: assets/generated/metadata/records/treasure_chest_icons.json
 Brief path: assets/briefs/wave-01-public-demo-core/treasure_chest_icons.brief.md
-Status: qa_pending_alpha_cleanup_created
+Status: review_pending
 
 ## Initial Automated Checks
 
 - Candidate file exists: yes
 - Dimensions recorded: 1254x1254 for all four current files
 - Runtime integration status: blocked_pending_approval
-- Human visual review: pending
+- Human visual review: skipped by human instruction (internal QA documentation only)
 - Legal/license/source review: pending
-- Embedded text check: no text visible in current candidates; still pending human visual review
-- Transparency/alpha check: generated candidates failed; cleanup candidate passes basic alpha probe
+- Embedded text check: no text visible in sampled candidates; legal/license gate still pending
+- Transparency/alpha check: generated candidates failed; cleanup candidate passes alpha probe
+- Transparency background evidence: `assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png` exists (628x628 contact sheet)
 
 ## Alpha Findings
 
@@ -28,6 +29,6 @@ Status: qa_pending_alpha_cleanup_created
 
 ## Cleanup Notes
 
-The cleanup file was derived from candidate_03 by removing only edge-connected checkerboard-like background pixels. This makes it suitable for the next visual QA pass, but it is not approved and must still be checked over white, black, gray, checkerboard, and representative game backgrounds.
+The cleanup file was derived from candidate_03 by removing only edge-connected checkerboard-like background pixels. The internal QA evidence now includes a white/black/gray/checkerboard contact sheet at `assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png`, so this candidate is moved to `review_pending` for governance review.
 
-Generated and cleaned as Wave 1 review candidates only. Do not copy into runtime resource paths until the full approval gate passes.
+Generated and cleaned as Wave 1 review candidates only. Human QA is skipped by instruction; legal/license review is still pending; runtime integration remains blocked.

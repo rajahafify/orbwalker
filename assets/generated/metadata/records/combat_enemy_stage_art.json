@@ -5,7 +5,7 @@
     "group_id":  "characters",
     "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
     "candidate_paths":  [
-
+                            "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
                         ],
     "source_references":  [
                               "assets.json",
@@ -13,13 +13,15 @@
                           ],
     "license_status":  "needs_review",
     "usage_rights":  "needs_review",
-    "dimensions":  "needs_generation_or_spec",
+    "dimensions":  "1672x941",
     "export_format":  "png_candidate",
-    "alpha_type":  "needs_qa",
-    "transparent_background":  "needs_brief_confirmation",
-    "qa_status":  "not_started",
-    "review_status":  "not_started",
+    "alpha_type":  "opaque_stage_sheet_candidate",
+    "transparent_background":  "false_bulk_candidate",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_or_needs_approval",
-    "notes":  "Generated from current assets.json treasure chest terminology."
+    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+    "final_prompt":  "Use case: stylized-concept; Asset type: combat enemy stage/banner art set for Orbwalker; Primary request: production candidate wide encounter stage/banner sheet for a fantasy match-3 roguelike. Subject: four wide horizontal encounter banners in a 2x2 sheet: cavern raider stage, shield guard stage, burning knight arena, prism vault arena. Each banner has an empty central/foreground area for portrait placement and UI overlays. Style/medium: polished stylized 2D game stage art, dark-fantasy dungeon, readable at mobile combat header size. Composition/framing: 2x2 sheet of wide banners, consistent horizon and camera height, no characters, no labels. Lighting/mood: tense dungeon encounter, clear environmental identity per banner. Color palette: cool stone, warm torch/gold, fire red/orange, prism cyan/violet, distinct but cohesive. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no UI controls, no characters.",
+    "generation_mode":  "built-in imagegen"
 }

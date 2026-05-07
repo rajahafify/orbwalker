@@ -1,0 +1,9 @@
+﻿{
+    "asset_id":  "controls_visual",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png",
+    "prompt":  "Use case: stylized-concept\nAsset type: controls/help visual for Orbwalker\nPrimary request: production candidate no-text instructional graphic showing drag-to-match orb controls for a fantasy match-3 roguelike.\nSubject: close-up fantasy game board with a finger/hand gesture dragging one elemental orb along a short path through adjacent orbs; include subtle arrows, highlight rings, and gesture trail but no words.\nStyle/medium: polished stylized 2D instructional game graphic, clear mobile readability.\nComposition/framing: vertical mobile-friendly help visual, board occupies lower two-thirds, gesture path is obvious, safe top area for later UI copy.\nLighting/mood: helpful, clean, approachable.\nColor palette: dark stone board, bright elemental orbs, teal/gold guidance highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid confusing multiple gestures.",
+    "dimensions":  "941x1672",
+    "status":  "generated_bulk_pending_qa"
+}

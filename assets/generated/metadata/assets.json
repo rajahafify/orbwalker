@@ -1,4 +1,4 @@
-﻿{
+{
     "records":  [
                     {
                         "asset_id":  "app_icon",
@@ -7,7 +7,7 @@
                         "group_id":  "brand_identity",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/app_icon.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -15,15 +15,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1254x1254",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "approved_asset_manifest",
@@ -132,7 +132,7 @@
                         "group_id":  "brand_identity",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -140,15 +140,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "boss_portraits",
@@ -182,7 +182,7 @@
                         "group_id":  "screens",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -190,15 +190,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "combat_background",
@@ -207,7 +207,7 @@
                         "group_id":  "screens",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_background.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -215,15 +215,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "combat_enemy_stage_art",
@@ -432,7 +432,7 @@
                         "group_id":  "brand_identity",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/game_title_logo.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -440,15 +440,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1774x887",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "generation_metadata",
@@ -532,7 +532,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/hero_orbwalker_portrait.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -540,15 +540,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1254x1254",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "intent_icons",
@@ -593,12 +593,12 @@
                         "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "qa_pending",
-                        "review_status":  "not_started",
+                        "transparent_background":  "false_verified_opaque_marketing_candidate",
+                        "qa_status":  "review_pending",
+                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "notes":  "Internal QA passed as wide illustrative page/key-art candidate. Probe shows 1672x941 Format24bppRgb with sampled alpha 255,255,255, matching full-background marketing usage; no visible text or watermark detected in sampled review. It is marketing art, not gameplay screenshot evidence. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
                         "final_prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -609,7 +609,7 @@
                         "group_id":  "screens",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_background.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -617,15 +617,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "main_menu_ui_pack",
@@ -945,12 +945,12 @@
                         "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "qa_pending",
-                        "review_status":  "not_started",
+                        "transparent_background":  "required_true_in_brief_but_not_met",
+                        "qa_status":  "cleanup_required",
+                        "review_status":  "internal_qa_failed_cleanup_required_human_qa_skipped",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "notes":  "Internal QA found candidate is a single 1536x1024 Format24bppRgb output and the generation prompt explicitly targets a two-panel concept sheet, not a production UI pack with separated victory/defeat/boss reward/run summary chrome pieces. Brief expects transparent isolated UI assets, so cleanup/redesign is required before review. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
                         "final_prompt":  "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -972,12 +972,12 @@
                         "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "qa_pending",
-                        "review_status":  "not_started",
+                        "transparent_background":  "false_verified_opaque_background_candidate",
+                        "qa_status":  "review_pending",
+                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+                        "notes":  "Internal QA passed as a full-screen opaque vertical run-summary background candidate. Probe shows 941x1672 Format24bppRgb with sampled alpha 255,255,255, which matches the brief expectation for non-transparent background art. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
                         "final_prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -1113,7 +1113,7 @@
                         "group_id":  "screens",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_background.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1121,15 +1121,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "shop_transaction_vfx",
@@ -1188,7 +1188,7 @@
                         "group_id":  "brand_identity",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/store_capsule_key_art.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1196,15 +1196,15 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "qa_status":  "generated_qa_deferred",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
                     },
                     {
                         "asset_id":  "trailer_or_gif_capture",
@@ -1245,7 +1245,8 @@
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.md",
+                                                  "assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png"
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
@@ -1253,11 +1254,11 @@
                         "export_format":  "png_candidate",
                         "alpha_type":  "cleanup_candidate_has_binary_alpha",
                         "transparent_background":  "cleanup_candidate_passes_basic_alpha_probe",
-                        "qa_status":  "qa_pending_alpha_cleanup_created",
-                        "review_status":  "not_started",
+                        "qa_status":  "review_pending",
+                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Candidate 01, 02, and 03 generated through built-in imagegen were opaque 24bpp PNGs with baked backgrounds/checkerboard. Cleanup candidate derived from candidate 03 removes edge-connected checkerboard pixels and passes basic alpha probe: Format32bppArgb, transparent corners, sampled alpha values 0 and 255. Full visual QA and human/legal approval still pending; runtime integration blocked.",
+                        "notes":  "Internal QA passed for cleanup candidate after alpha/background evidence review. Generated candidates 01-03 remain failed for alpha; cleanup candidate has real Format32bppArgb alpha and passes white, black, gray, and checkerboard checks documented in assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
                         "final_prompt":  "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
                         "generation_mode":  "built-in imagegen"
                     },

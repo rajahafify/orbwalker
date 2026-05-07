@@ -1,0 +1,9 @@
+{
+  "asset_id": "boot_splash",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png",
+  "prompt": "Use case: stylized-concept; Asset type: boot splash image for Orbwalker; Primary request: production candidate boot splash screen image for a fantasy match-3 roguelike. Scene/backdrop: dark stone vault doorway opening to a glowing elemental orb constellation, subtle treasure glints, calm dramatic composition. Subject: brand mood image only, no UI, no text. Style/medium: polished stylized 2D splash art, clean and cinematic. Composition/framing: 16:9 wide splash screen with centered focal glow and enough negative space for engine fade/logo overlay later. Lighting/mood: mysterious, premium, magical, quick-loading screen feel. Color palette: dark stone, gold, cyan, red, green, violet elemental accents. Constraints: no readable text, no logo, no watermark, no characters, no UI controls, no casino imagery, no gore.",
+  "dimensions": "1672x941",
+  "status": "generated_qa_deferred"
+}

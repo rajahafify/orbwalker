@@ -16,12 +16,12 @@
     "dimensions":  "1672x941",
     "export_format":  "png_candidate",
     "alpha_type":  "needs_qa",
-    "transparent_background":  "needs_brief_confirmation",
-    "qa_status":  "qa_pending",
-    "review_status":  "not_started",
+    "transparent_background":  "false_verified_opaque_marketing_candidate",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_requested_needs_visual_confirmation",
-    "notes":  "Wave 1 generated candidate copied from Codex generated_images into governed asset workspace; runtime integration blocked.",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
     "final_prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
     "generation_mode":  "built-in imagegen"
 }

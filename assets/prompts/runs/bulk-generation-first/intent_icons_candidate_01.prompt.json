@@ -1,0 +1,9 @@
+﻿{
+    "asset_id":  "intent_icons",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
+    "prompt":  "Use case: stylized-concept; Asset type: enemy intent icon set for Orbwalker; Primary request: production candidate compact HUD icon sheet for enemy intent states. Subject: four icons in a clean 2x2 sheet: attack sword/claw, block shield, attack-plus-block crossed weapon and shield, unknown/warning intent. Dark fantasy metal and gem accents. Style/medium: polished stylized 2D UI icons, extremely readable at small HUD scale. Composition/framing: 2x2 sheet, equal-size icons, centered, transparent-background cutout feel, no labels. Lighting/mood: clear tactical signal, high contrast. Color palette: attack red/orange, block blue/silver, combined purple/gold, warning amber. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid decorative clutter.",
+    "dimensions":  "1254x1254",
+    "status":  "generated_bulk_pending_qa"
+}

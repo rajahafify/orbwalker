@@ -1,0 +1,107 @@
+{
+    "schema_version":  1,
+    "mode":  "bulk_generation_first",
+    "generated_on":  "2026-05-07",
+    "source_inventory":  "assets.json",
+    "source_records_manifest":  "assets/generated/metadata/assets.json",
+    "policy":  {
+                   "qa_strategy":  "defer_single_batch_after_generation",
+                   "legal_license_status":  "blocked_until_deferred_qa_and_review",
+                   "final_approval_status":  "blocked_until_deferred_qa_and_review",
+                   "runtime_integration_status":  "blocked_until_deferred_qa_and_review"
+               },
+    "tooling":  {
+                    "image_candidates":  "imagegen",
+                    "sprite_animation_normalization":  "game-studio:sprite-pipeline_after_image_candidates",
+                    "audio_screenshot_video":  "non_image_capture_or_audio_tooling_or_spec_placeholders"
+                },
+    "counts":  {
+                   "total_records":  53,
+                   "image_candidate_records":  38,
+                   "sprite_pipeline_followup_records":  3,
+                   "external_tooling_or_placeholder_records":  9,
+                   "spec_only_placeholder_records":  6
+               },
+    "asset_ids":  {
+                      "image_candidate_via_imagegen":  [
+                                                           "app_icon",
+                                                           "board_orb_clear_vfx",
+                                                           "boot_splash",
+                                                           "boss_portraits",
+                                                           "collection_background",
+                                                           "combat_background",
+                                                           "combat_enemy_stage_art",
+                                                           "combat_ui_chrome_pack",
+                                                           "consumable_icons",
+                                                           "controls_visual",
+                                                           "enemy_animation_set",
+                                                           "enemy_attack_vfx",
+                                                           "enemy_portraits",
+                                                           "equipment_icons",
+                                                           "game_title_logo",
+                                                           "hero_animation_set",
+                                                           "hero_full_body_or_pose_set",
+                                                           "hero_orbwalker_portrait",
+                                                           "intent_icons",
+                                                           "itch_page_graphics",
+                                                           "main_menu_background",
+                                                           "main_menu_ui_pack",
+                                                           "mastery_icons",
+                                                           "mastery_vfx",
+                                                           "merchant_character",
+                                                           "orb_icons",
+                                                           "rarity_badges",
+                                                           "relic_icons",
+                                                           "result_screen_ui_pack",
+                                                           "run_summary_background",
+                                                           "shared_hud_chrome",
+                                                           "shop_background",
+                                                           "shop_transaction_vfx",
+                                                           "shop_ui_pack",
+                                                           "store_capsule_key_art",
+                                                           "treasure_chest_icons",
+                                                           "tutorial_onboarding_ui_pack",
+                                                           "unlock_achievement_vfx"
+                                                       ],
+                      "sprite_pipeline_after_imagegen":  [
+                                                             "enemy_animation_set",
+                                                             "hero_animation_set",
+                                                             "orb_icons"
+                                                         ],
+                      "external_tooling_or_spec_placeholder":  [
+                                                                   "music_combat",
+                                                                   "music_menu",
+                                                                   "music_shop",
+                                                                   "music_victory_defeat_summary",
+                                                                   "screenshots",
+                                                                   "sfx_combat_core",
+                                                                   "sfx_shop",
+                                                                   "sfx_ui",
+                                                                   "trailer_or_gif_capture"
+                                                               ],
+                      "spec_placeholder_only":  [
+                                                    "approved_asset_manifest",
+                                                    "art_bible",
+                                                    "asset_briefs",
+                                                    "generation_metadata",
+                                                    "qa_reports",
+                                                    "ui_motion_language"
+                                                ]
+                  },
+    "progress":  {
+                     "generated_candidate_records":  9,
+                     "remaining_image_candidate_records":  29,
+                     "generated_candidate_asset_ids":  [
+                                                           "app_icon",
+                                                           "boot_splash",
+                                                           "collection_background",
+                                                           "combat_background",
+                                                           "game_title_logo",
+                                                           "hero_orbwalker_portrait",
+                                                           "main_menu_background",
+                                                           "shop_background",
+                                                           "store_capsule_key_art"
+                                                       ],
+                     "last_metadata_sync":  "2026-05-07"
+                 }
+}

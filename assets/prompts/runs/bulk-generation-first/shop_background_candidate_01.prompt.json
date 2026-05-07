@@ -1,0 +1,9 @@
+{
+  "asset_id": "shop_background",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png",
+  "prompt": "Use case: stylized-concept; Asset type: shop background for Orbwalker; Primary request: production candidate merchant shop background for a fantasy match-3 roguelike. Scene/backdrop: cozy underground merchant stall carved into stone, shelves of relics, scrolls, glowing bottles, treasure chest display, warm lamps. Subject: environment only, no merchant character, no UI, no text. Style/medium: polished stylized 2D game background, clean fantasy shop art. Composition/framing: vertical mobile-friendly background with clear safe zones for shop offer cards and shared HUD, no clutter in central offer area. Lighting/mood: warm, inviting, slightly mysterious. Color palette: warm gold, amber lanterns, dark stone, muted purple cloth, small elemental color accents. Constraints: no readable text, no logo, no watermark, no characters, no UI overlays, no casino imagery, no gore.",
+  "dimensions": "941x1672",
+  "status": "generated_qa_deferred"
+}

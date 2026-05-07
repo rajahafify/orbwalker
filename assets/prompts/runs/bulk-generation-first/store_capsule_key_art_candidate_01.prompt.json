@@ -1,0 +1,9 @@
+{
+  "asset_id": "store_capsule_key_art",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png",
+  "prompt": "Use case: stylized-concept; Asset type: store capsule key art for Orbwalker, fantasy match-3 roguelike; Primary request: wide production candidate key art showing a lone orbwalker hero manipulating elemental orbs in a dungeon, with a looming enemy silhouette and treasure chest support elements. Scene/backdrop: ancient stone dungeon vault with readable depth, magical orb board energy in foreground, treasure glow at one side. Subject: hooded fantasy hero seen in dynamic three-quarter pose, one hand channeling elemental orb magic, enemy threat in distance. Style/medium: polished stylized 2D game key art, premium indie fantasy, clean shapes, mobile/store readable. Composition/framing: 16:9 wide banner with safe negative space near top-left and top-right for later logo/crops; no text. Lighting/mood: dramatic warm treasure light balanced with cool dungeon blue shadows. Color palette: varied elemental colors, gold accents, dark stone, not monochrome. Constraints: no readable text, no logo, no watermark, no copyrighted characters, no casino imagery, no gore, no UI overlay, no fake screenshot frame.",
+  "dimensions": "1672x941",
+  "status": "generated_qa_deferred"
+}

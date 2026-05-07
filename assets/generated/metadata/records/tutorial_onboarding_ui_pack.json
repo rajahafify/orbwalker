@@ -5,7 +5,7 @@
     "group_id":  "ui_chrome",
     "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
     "candidate_paths":  [
-
+                            "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png"
                         ],
     "source_references":  [
                               "assets.json",
@@ -13,13 +13,15 @@
                           ],
     "license_status":  "needs_review",
     "usage_rights":  "needs_review",
-    "dimensions":  "needs_generation_or_spec",
+    "dimensions":  "1536x1024",
     "export_format":  "png_candidate",
-    "alpha_type":  "needs_qa",
-    "transparent_background":  "needs_brief_confirmation",
-    "qa_status":  "not_started",
-    "review_status":  "not_started",
+    "alpha_type":  "needs_deferred_alpha_check",
+    "transparent_background":  "needs_deferred_qa",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_or_needs_approval",
-    "notes":  "Generated from current assets.json treasure chest terminology."
+    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+    "final_prompt":  "Use case: stylized-concept\nAsset type: tutorial and onboarding UI pack for Orbwalker\nPrimary request: production candidate UI component sheet for first-run guidance, tooltips, and control prompts.\nSubject: tooltip panel, compact tutorial callout frame, control prompt frame, finger/drag gesture icon, highlight ring, confirmation button frame, small warning/help badge.\nStyle/medium: polished stylized 2D fantasy UI chrome, clear mobile tutorial readability.\nComposition/framing: organized component sheet on neutral background, separated components with padding, no labels, no embedded instructional text.\nLighting/mood: helpful, calm, readable, less ornate than combat UI.\nColor palette: dark stone, soft gold, teal/cyan guidance highlights, muted parchment panel.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, keep icon gestures simple and universal.",
+    "generation_mode":  "built-in imagegen"
 }

@@ -1,0 +1,9 @@
+{
+  "asset_id": "game_title_logo",
+  "generated_on": "2026-05-07",
+  "generation_mode": "built-in imagegen",
+  "candidate_path": "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png",
+  "prompt": "Use case: logo-brand; Asset type: game title/logo lockup candidate for Orbwalker; Primary request: production candidate fantasy game title/logo lockup with the exact word ORBWALKER. Text (verbatim): \"ORBWALKER\". Subject: ornate title lettering with a subtle elemental orb mark integrated behind or above the word, fantasy dungeon treasure style. Style/medium: polished stylized game logo, vector-friendly painted wordmark concept, readable on mobile menu and store art. Composition/framing: centered horizontal lockup on simple dark neutral background, clear silhouette, no extra words. Lighting/mood: premium adventure, gold and elemental glow accents. Color palette: gold, stone charcoal, cyan/red/green/violet elemental highlights. Constraints: render only the exact word ORBWALKER, no subtitle, no extra letters, no watermark, no copyright characters, no casino imagery, no gore.",
+  "dimensions": "1774x887",
+  "status": "generated_qa_deferred"
+}

@@ -1,15 +1,15 @@
-﻿{
-    "approval_status":  "not_started",
+{
+    "approval_status":  "bulk_generation_first_generated_candidates_blocked_pending_deferred_qa_review",
     "generated_on":  "2026-05-07",
     "asset_count":  53,
     "assets":  [
                    {
                        "asset_id":  "app_icon",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
                                            ]
                    },
                    {
@@ -50,11 +50,11 @@
                    },
                    {
                        "asset_id":  "boot_splash",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
                                            ]
                    },
                    {
@@ -68,20 +68,20 @@
                    },
                    {
                        "asset_id":  "collection_background",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
                                            ]
                    },
                    {
                        "asset_id":  "combat_background",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
                                            ]
                    },
                    {
@@ -158,11 +158,11 @@
                    },
                    {
                        "asset_id":  "game_title_logo",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
                                            ]
                    },
                    {
@@ -194,11 +194,11 @@
                    },
                    {
                        "asset_id":  "hero_orbwalker_portrait",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
                                            ]
                    },
                    {
@@ -212,8 +212,8 @@
                    },
                    {
                        "asset_id":  "itch_page_graphics",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_pending_license_and_integration_approval",
+                       "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
@@ -221,11 +221,11 @@
                    },
                    {
                        "asset_id":  "main_menu_background",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
                                            ]
                    },
                    {
@@ -338,8 +338,8 @@
                    },
                    {
                        "asset_id":  "result_screen_ui_pack",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_cleanup_required",
+                       "review_status":  "internal_qa_failed_cleanup_required_human_qa_skipped",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png"
@@ -347,8 +347,8 @@
                    },
                    {
                        "asset_id":  "run_summary_background",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_pending_license_and_integration_approval",
+                       "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
@@ -401,11 +401,11 @@
                    },
                    {
                        "asset_id":  "shop_background",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
                                            ]
                    },
                    {
@@ -428,11 +428,11 @@
                    },
                    {
                        "asset_id":  "store_capsule_key_art",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_generated_qa_deferred",
+                       "review_status":  "not_started_bulk_generation_first",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
-
+                                               "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
                                            ]
                    },
                    {
@@ -446,8 +446,8 @@
                    },
                    {
                        "asset_id":  "treasure_chest_icons",
-                       "approval_status":  "not_started",
-                       "review_status":  "not_started",
+                       "approval_status":  "blocked_pending_license_and_integration_approval",
+                       "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
                        "integration_status":  "blocked_pending_approval",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",

@@ -1,0 +1,9 @@
+﻿{
+    "asset_id":  "consumable_icons",
+    "generated_on":  "2026-05-07",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
+    "prompt":  "Use case: stylized-concept\nAsset type: consumable scroll icon set for Orbwalker\nPrimary request: production candidate consumable icon sheet for elemental scrolls and tactical one-use items.\nSubject: eight fantasy consumable icons in a 4x2 sheet: fire scroll, ice scroll, earth scroll, healing scroll, armor ward scroll, gold charm scroll, reroll scroll, emergency escape scroll. Scrolls should have distinct seals and elemental effects.\nStyle/medium: polished stylized 2D game inventory icons, crisp mobile slot readability.\nComposition/framing: 4x2 sheet, equal-size icons, centered, transparent-background cutout feel, no labels.\nLighting/mood: magical utility items, clear elemental identity.\nColor palette: parchment, wax seals, fire orange, ice cyan, earth green, heart rose, silver armor, gold.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid tiny glyphs that resemble text.",
+    "dimensions":  "1448x1086",
+    "status":  "generated_bulk_pending_qa"
+}

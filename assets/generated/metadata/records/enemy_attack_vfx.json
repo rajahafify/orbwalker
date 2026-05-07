@@ -5,7 +5,7 @@
     "group_id":  "vfx",
     "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.md",
     "candidate_paths":  [
-
+                            "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png"
                         ],
     "source_references":  [
                               "assets.json",
@@ -13,13 +13,15 @@
                           ],
     "license_status":  "needs_review",
     "usage_rights":  "needs_review",
-    "dimensions":  "needs_generation_or_spec",
+    "dimensions":  "1774x887",
     "export_format":  "png_candidate",
-    "alpha_type":  "needs_qa",
-    "transparent_background":  "needs_brief_confirmation",
-    "qa_status":  "not_started",
-    "review_status":  "not_started",
+    "alpha_type":  "needs_deferred_alpha_check",
+    "transparent_background":  "needs_deferred_qa",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_or_needs_approval",
-    "notes":  "Generated from current assets.json treasure chest terminology."
+    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+    "final_prompt":  "Use case: stylized-concept\nAsset type: enemy attack VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for enemy attack, block, shield, and HP-hit feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: slash arc, heavy impact, shield block flash, armor crack, red damage burst, poison/dark swipe, stone shockwave, warning spike, enemy charge glow, small hit spark.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 5x2 sprite sheet, each effect centered with padding, no labels.\nLighting/mood: tactical enemy feedback, threatening but not gory.\nColor palette: red/orange impacts, blue/silver shields, dark violet enemy magic, white highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
+    "generation_mode":  "built-in imagegen"
 }

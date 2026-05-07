@@ -5,7 +5,7 @@
     "group_id":  "core_gameplay_icons",
     "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.md",
     "candidate_paths":  [
-
+                            "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png"
                         ],
     "source_references":  [
                               "assets.json",
@@ -13,13 +13,15 @@
                           ],
     "license_status":  "needs_review",
     "usage_rights":  "needs_review",
-    "dimensions":  "needs_generation_or_spec",
+    "dimensions":  "1271x1238",
     "export_format":  "png_candidate",
-    "alpha_type":  "needs_qa",
-    "transparent_background":  "needs_brief_confirmation",
-    "qa_status":  "not_started",
-    "review_status":  "not_started",
+    "alpha_type":  "needs_deferred_alpha_check",
+    "transparent_background":  "needs_deferred_qa",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_or_needs_approval",
-    "notes":  "Generated from current assets.json treasure chest terminology."
+    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+    "final_prompt":  "Use case: stylized-concept; Asset type: mastery card icon set for Orbwalker; Primary request: production candidate icon sheet for six elemental mastery card icons. Subject: six ornate card-like mastery emblems in a 3x2 sheet: fire mastery flame sigil, ice mastery crystal sigil, earth mastery leaf/stone sigil, heart mastery healing sigil, armor mastery shield sigil, gold mastery coin/crown sigil. Style/medium: polished stylized 2D fantasy game icons, premium card/relic feel, crisp mobile readability. Composition/framing: 3x2 sheet, equal-size emblems, centered, transparent-background cutout feel, no labels. Lighting/mood: magical and collectible, stronger prestige than basic orb icons. Color palette: element colors plus antique gold frames and dark backing. Constraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail.",
+    "generation_mode":  "built-in imagegen"
 }

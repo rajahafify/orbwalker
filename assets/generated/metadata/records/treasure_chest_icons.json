@@ -12,7 +12,8 @@
                         ],
     "source_references":  [
                               "assets.json",
-                              "resources/assetgen.workflow.md"
+                              "resources/assetgen.workflow.md",
+                              "assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png"
                           ],
     "license_status":  "needs_review",
     "usage_rights":  "needs_review",
@@ -20,11 +21,11 @@
     "export_format":  "png_candidate",
     "alpha_type":  "cleanup_candidate_has_binary_alpha",
     "transparent_background":  "cleanup_candidate_passes_basic_alpha_probe",
-    "qa_status":  "qa_pending_alpha_cleanup_created",
-    "review_status":  "not_started",
+    "qa_status":  "generated_bulk_pending_qa",
+    "review_status":  "not_started_bulk_generation_first",
     "integration_status":  "blocked_pending_approval",
     "embedded_text":  "none_requested_needs_visual_confirmation",
-    "notes":  "Candidate 01, 02, and 03 generated through built-in imagegen were opaque 24bpp PNGs with baked backgrounds/checkerboard. Cleanup candidate derived from candidate 03 removes edge-connected checkerboard pixels and passes basic alpha probe: Format32bppArgb, transparent corners, sampled alpha values 0 and 255. Full visual QA and human/legal approval still pending; runtime integration blocked.",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
     "final_prompt":  "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
     "generation_mode":  "built-in imagegen"
 }
