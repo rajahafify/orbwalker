@@ -1,27 +1,34 @@
 {
-    "asset_id":  "rarity_badges",
-    "asset_name":  "Common/uncommon/rare rarity badges",
-    "asset_type":  "rarity_badge_set",
-    "group_id":  "core_gameplay_icons",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "2172x724",
-    "export_format":  "png_candidate",
-    "alpha_type":  "alpha_sensitive_missing_real_alpha_cleanup_required",
-    "transparent_background":  "alpha_sensitive_no_real_alpha",
-    "qa_status":  "cleanup_required",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred transparency QA (2026-05-08): alpha-sensitive candidate is RGB/no real alpha in probe samples; cleanup is required before review or integration gates can reopen.",
-    "final_prompt":  "Use case: stylized-concept\nAsset type: rarity badge icon set for Orbwalker\nPrimary request: production candidate rarity badge sheet for item/commonness states.\nSubject: three compact fantasy badges in a horizontal sheet: common bronze/stone badge, uncommon silver/blue badge, rare gold/purple jewel badge. Each uses simple shape language and clear value hierarchy.\nStyle/medium: polished stylized 2D game UI icons, crisp mobile readability.\nComposition/framing: three equal badges centered in cells, transparent-background cutout feel, no labels.\nLighting/mood: collectible but restrained.\nColor palette: bronze, silver-blue, gold-purple, dark backing.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail.",
-    "generation_mode":  "built-in imagegen"
+    "asset_id": "rarity_badges",
+    "asset_name": "Common/uncommon/rare rarity badges",
+    "asset_type": "rarity_badge_set",
+    "group_id": "core_gameplay_icons",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
+        "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md",
+        "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
+        "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_04_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/rarity_badges_candidate_04_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract.py",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_04.full.json",
+        "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png"
+    ],
+    "license_status": "needs_review",
+    "usage_rights": "needs_review",
+    "dimensions": "1774x887",
+    "export_format": "png_rgba_candidate",
+    "alpha_type": "adaptive_chroma_key_real_alpha_pending_batch_qa",
+    "transparent_background": "adaptive_chroma_key_extracted_real_alpha_pending_batch_qa",
+    "qa_status": "review_pending",
+    "review_status": "human_visual_review_passed_pending_legal",
+    "integration_status": "blocked_pending_approval",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval.",
+    "final_prompt": "Use case: stylized-concept\nAsset type: rarity badge icon set for Orbwalker\nPrimary request: production candidate rarity badge sheet for item/commonness states.\nSubject: three compact fantasy badges in a horizontal sheet: common bronze/stone badge, uncommon silver/blue badge, rare gold/purple jewel badge. Each uses simple shape language and clear value hierarchy.\nStyle/medium: polished stylized 2D game UI icons, crisp mobile readability.\nComposition/framing: three equal badges centered in cells, transparent-background cutout feel, no labels.\nLighting/mood: collectible but restrained.\nColor palette: bronze, silver-blue, gold-purple, dark backing.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail.",
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
 }

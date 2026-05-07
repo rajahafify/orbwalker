@@ -1,0 +1,11 @@
+{
+    "asset_id": "tutorial_onboarding_ui_pack",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_05_chroma_key.png",
+    "prompt": "Use case: ui-mockup\nAsset type: tutorial onboarding UI component sheet for Matchatro/Orbwalker first-run guidance\nPrimary request: produce a 1536x1024 opaque chroma-key source sheet with separated tutorial components and strictly matte edges.\nScene/backdrop: perfectly flat solid #FF00FF background only, exact single color, no variation.\nSubject: large tutorial dialog frame, compact callout frame, control prompt frame, drag gesture icon, highlight ring marker, confirm action button frame, help badge, warning badge.\nStyle/medium: polished stylized 2D fantasy UI, readable and instructional, dark stone and muted parchment interiors with gold/steel trim and cyan accents.\nComposition/framing: clean organized sheet, consistent spacing, no overlap, no clipping.\nMaterials/textures: intentional interior surfaces only (stone, parchment, etched metal), never magenta placeholder fills.\nConstraints: no text, no labels, no logos, no watermark, no checkerboard, no gradient background, no textured background, no glow bloom, no outer glow, no drop shadows touching background, no particles/smoke, hard clean edges, no #FF00FF inside any component.\nAvoid: near-magenta tones inside assets; busy clutter; decorative effects extending into background.",
+    "key_background_hex": "#FF00FF",
+    "dimensions": "1536x1024",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

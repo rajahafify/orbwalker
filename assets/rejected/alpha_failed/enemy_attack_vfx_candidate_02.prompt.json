@@ -1,0 +1,9 @@
+{
+    "asset_id":  "enemy_attack_vfx",
+    "generated_on":  "2026-05-08",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_02.png",
+    "prompt":  "Use case: stylized-concept\nAsset type: enemy attack VFX sheet for Orbwalker\nPrimary request: create a production candidate sprite sheet for enemy attack, block, shield, and HP-hit feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: slash arc, heavy impact, shield block flash, armor crack, red damage burst, poison or dark swipe, stone shockwave, warning spike, enemy charge glow, small hit spark.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability.\nComposition/framing: 5x2 sprite sheet, each effect centered with padding.\nLighting/mood: tactical enemy feedback, threatening but not gory.\nColor palette: red and orange impacts, blue and silver shields, dark violet enemy magic, white highlights.\nConstraints: PNG with REAL transparent alpha background. Background must be truly transparent pixels in the exported file, not a simulated pattern. No checkerboard, no white/gray/black backdrop, no fake transparency preview grid, no rectangular matte, no frame, no panel, no labels, no text, no logo, no watermark, no gore, no casino imagery.",
+    "dimensions":  "1774x887",
+    "status":  "cleanup_required"
+}

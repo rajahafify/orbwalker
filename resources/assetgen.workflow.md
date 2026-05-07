@@ -108,6 +108,43 @@ Produce candidates first, then QA later as one batch in this mode.
 6. Keep outputs in generated/metadata + candidate form until QA/review gates
    are explicitly reopened.
 
+### Chroma-Key Transparency Fallback
+
+Use this fallback only when true-alpha image generation is unavailable or has
+repeatedly produced fake transparency, such as baked checkerboard or fully
+opaque PNGs. The fallback creates a temporary opaque source image with a flat
+key color, then derives the final transparent PNG through deterministic key
+extraction.
+
+Rules:
+
+1. Choose an asset-specific key color that is absent from the intended asset.
+   Prefer highly saturated synthetic colors:
+   - `#FF00FF` magenta for green, earth, heal, gold, silver, blue, and mixed
+     icon sheets.
+   - `#00FFFF` cyan for fire, red, orange, dark, and violet VFX sheets.
+   - Do not use a key color that appears in the asset palette, glows, particles,
+     seals, symbols, or highlights.
+2. Prompt for a perfectly flat solid key background. The prompt must forbid
+   gradients, checkerboards, texture, shadows, glow, smoke, particles, frames,
+   panels, antialias blending into the background, and use of the key color
+   inside the asset.
+3. Save the keyed opaque source as a generated candidate and record the key
+   color in prompt metadata.
+4. Run deterministic keyed-alpha extraction into
+   `assets/cleanup/chroma_keyed/` or another documented cleanup path. Exact key
+   pixels become alpha 0; near-key edge pixels may become partial alpha only
+   when they are background antialiasing.
+5. Reject the output if the background is not flat, if the key color appears
+   inside the asset body, if large matte rectangles remain, or if glow/particle
+   edges are visibly clipped.
+6. Promote only the extracted RGBA PNG, not the opaque keyed source, to active
+   candidate paths. Metadata must state the source key color, extraction script
+   or report, alpha status, and remaining review gates.
+
+This fallback does not approve an asset. It only creates a real-alpha candidate
+for deferred QA, human review, legal/license review, and integration gates.
+
 For non-image assets (audio, screenshot, video), record one of:
 
 - tooling-needed entries for capture/audio pipelines, or

@@ -1,0 +1,11 @@
+{
+    "asset_id": "shop_ui_pack",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_04_chroma_key.png",
+    "prompt": "Use case: ui-mockup\nAsset type: shop UI component pack for Orbwalker\nPrimary request: create an opaque chroma-key source sheet of reusable shop UI components.\nSubject: offer card frame, selected frame, disabled/unaffordable frame, sold-out overlay badge shape, relic slot frame, reroll button frame, treasure chest choice card frame, small transaction status badge.\nStyle/medium: polished stylized 2D fantasy UI chrome for mobile readability.\nComposition/framing: organized component sheet with clean spacing and padding; components only.\nScene/backdrop: perfectly flat solid magenta background #FF00FF only.\nColor palette: dark stone, warm gold, muted teal, silver accents, restrained red for disabled states, but no magenta key color.\nConstraints: one exact flat #FF00FF background; no checkerboard; no gradient; no texture; no shadows or glow touching background; no particles; no extra frame/panel/matte backdrop except the actual UI components themselves; no text; no watermark.\nAvoid: no #FF00FF or near-magenta tones inside any UI component artwork.",
+    "key_background_hex": "#FF00FF",
+    "dimensions": "1536x1024",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

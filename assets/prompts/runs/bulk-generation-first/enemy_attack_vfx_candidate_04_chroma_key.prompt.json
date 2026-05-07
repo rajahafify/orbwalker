@@ -1,0 +1,11 @@
+{
+    "asset_id": "enemy_attack_vfx",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_04_chroma_key.png",
+    "prompt": "Use case: stylized-concept\nAsset type: enemy attack VFX sheet for Orbwalker\nPrimary request: create a production candidate VFX sprite sheet for enemy attack, block, shield, and HP-hit feedback as an opaque chroma-key source image.\nSubject: ten compact VFX sprites in a 5x2 sheet: slash arc, heavy impact, shield block flash, armor crack, red damage burst, poison/dark swipe, stone shockwave, warning spike, enemy charge glow, small hit spark.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability.\nComposition/framing: 5x2 sprite sheet, each effect centered with padding, no clipping.\nColor palette: red and orange impacts, blue and silver shields, dark violet enemy magic, white highlights, but absolutely no cyan inside effects.\nScene/backdrop: perfectly flat solid cyan key background #00FFFF only.\nConstraints: exact one-color background #00FFFF; no checkerboard; no gradient; no texture; no vignette; no shadows touching background; no glow touching background; no particles touching background; no smoke touching background; no panel; no frame; no matte backdrop; no labels; no text; no logo; no watermark.\nAvoid: absolutely no #00FFFF or near-cyan key tones inside any VFX sprite content.",
+    "key_background_hex": "#00FFFF",
+    "dimensions": "1983x793",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

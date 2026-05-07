@@ -1,27 +1,41 @@
 {
-    "asset_id":  "tutorial_onboarding_ui_pack",
-    "asset_name":  "Tutorial, tooltip, first-run guidance, and control prompt UI",
-    "asset_type":  "ui_pack",
-    "group_id":  "ui_chrome",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "1536x1024",
-    "export_format":  "png_candidate",
-    "alpha_type":  "alpha_sensitive_missing_real_alpha_cleanup_required",
-    "transparent_background":  "alpha_sensitive_no_real_alpha",
-    "qa_status":  "cleanup_required",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred transparency QA (2026-05-08): alpha-sensitive candidate is RGB/no real alpha in probe samples; cleanup is required before review or integration gates can reopen.",
-    "final_prompt":  "Use case: stylized-concept\nAsset type: tutorial and onboarding UI pack for Orbwalker\nPrimary request: production candidate UI component sheet for first-run guidance, tooltips, and control prompts.\nSubject: tooltip panel, compact tutorial callout frame, control prompt frame, finger/drag gesture icon, highlight ring, confirmation button frame, small warning/help badge.\nStyle/medium: polished stylized 2D fantasy UI chrome, clear mobile tutorial readability.\nComposition/framing: organized component sheet on neutral background, separated components with padding, no labels, no embedded instructional text.\nLighting/mood: helpful, calm, readable, less ornate than combat UI.\nColor palette: dark stone, soft gold, teal/cyan guidance highlights, muted parchment panel.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, keep icon gestures simple and universal.",
-    "generation_mode":  "built-in imagegen"
+    "asset_id": "tutorial_onboarding_ui_pack",
+    "asset_name": "Tutorial, tooltip, first-run guidance, and control prompt UI",
+    "asset_type": "ui_pack",
+    "group_id": "ui_chrome",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
+        "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md",
+        "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
+        "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_04_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_04_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract.py",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_04.full.json",
+        "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png",
+        "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_05_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_05_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_05.ui_retry.json",
+        "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_06_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_06_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_06.remaining.json",
+        "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
+    ],
+    "license_status": "needs_review",
+    "usage_rights": "needs_review",
+    "dimensions": "1536x1024",
+    "export_format": "png_rgba_candidate",
+    "alpha_type": "soft_chroma_key_real_alpha_candidate_06_pending_review",
+    "transparent_background": "soft_chroma_key_extracted_real_alpha_candidate_06",
+    "qa_status": "review_pending",
+    "review_status": "human_visual_review_passed_pending_legal",
+    "integration_status": "blocked_pending_approval",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval.",
+    "final_prompt": "Use case: stylized-concept\nAsset type: Matchatro game UI tutorial onboarding pack source image for chroma-key extraction\nPrimary request: Regenerate tutorial_onboarding_ui_pack candidate_06 as a clean fantasy roguelite tutorial UI kit on one 1536x1024 canvas.\nScene/backdrop: perfectly flat solid chroma-key background color #FF00FF covering every background pixel. No checkerboard, no transparency, no gradient, no texture, no shadows on the background.\nSubject: separated tutorial/onboarding UI components: one large empty tutorial dialogue panel, one smaller hint panel, one compact input/control hint strip, a hand-tap gesture icon with arrow, a circular highlight ring, a confirm/continue button, one question badge, one warning badge. Dark stone panels with gold trim and cyan jewel accents matching existing Matchatro fantasy UI style.\nStyle/medium: polished hand-painted 2D game UI asset sheet, crisp edges, production-ready icons and panels.\nComposition/framing: components separated with generous gaps, no overlap, no cropping, no text labels or letters. Keep all objects fully inside canvas with 48 px safe margin.\nColor palette: black stone, dark charcoal, warm gold trim, cyan jewels, teal button fill, red/orange warning. Do not use magenta, pink, purple, or #FF00FF anywhere inside the UI components, glows, reflections, jewels, shadows, or antialiasing.\nLighting/mood: clean readable high fantasy UI, subtle internal highlights only on the assets.\nConstraints: opaque chroma-key source only; background must be flat #FF00FF; asset elements must not contain magenta or pink; no leftover magenta artifact inside any component; no embedded text, no watermark, no mockup screen, no poster layout.\nAvoid: transparent background request, checkerboard, gradients in background, key-color spill, magenta/pink/purple details, labels, words, numbers, UI text.",
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
 }

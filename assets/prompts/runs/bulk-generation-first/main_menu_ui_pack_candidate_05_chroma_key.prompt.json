@@ -1,0 +1,11 @@
+{
+    "asset_id": "main_menu_ui_pack",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_05_chroma_key.png",
+    "prompt": "Use case: ui-mockup\nAsset type: main menu UI chrome component sheet for Matchatro/Orbwalker\nPrimary request: produce a 1536x1024 opaque chroma-key source sprite sheet with separated main-menu UI components only.\nScene/backdrop: perfectly flat solid background color #FF00FF only, edge to edge, no variation.\nSubject: one large hero frame, one wide primary button frame, one wide secondary button frame, one medium stats/info panel frame, and six circular medallion icon frames for profile, settings, achievements, relic/chest, mastery, and best-run.\nStyle/medium: polished stylized 2D fantasy UI, dark stone and blackened steel with antique gold trim, subtle cyan jewel accents.\nComposition/framing: organized component sheet, components not touching each other, generous spacing, straight alignment rows, clean silhouette separation.\nMaterials/textures: intentional interior fills only (dark stone, carved slate, muted parchment insert where appropriate), never placeholder magenta fills.\nConstraints: no text, no labels, no logo, no watermark, no checkerboard, no gradient background, no textured background, no shadow or glow touching background, no particles or smoke, no #FF00FF inside any UI component.\nAvoid: magenta or near-magenta hues inside components; cluttered overlap; cropped components.",
+    "key_background_hex": "#FF00FF",
+    "dimensions": "1536x1024",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

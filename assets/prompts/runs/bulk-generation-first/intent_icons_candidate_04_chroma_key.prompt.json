@@ -1,0 +1,11 @@
+{
+    "asset_id": "intent_icons",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_04_chroma_key.png",
+    "prompt": "Use case: stylized-concept\nAsset type: enemy intent icon set for Orbwalker\nPrimary request: create a production candidate compact HUD icon sheet for enemy intent states as an opaque chroma-key source.\nSubject: four icons in a clean 2x2 sheet: attack sword or claw, block shield, attack-plus-block crossed weapon and shield, unknown warning intent.\nStyle/medium: polished stylized 2D UI icons, extremely readable at small HUD scale.\nComposition/framing: 2x2 sheet, equal-size icons, centered, high contrast, no clipping.\nColor palette: attack red and orange, block blue and silver, combined purple and gold, warning amber; no magenta inside icon art.\nScene/backdrop: perfectly flat solid magenta key background #FF00FF only.\nConstraints: one exact background color #FF00FF; no checkerboard; no gradient; no texture; no shadows touching background; no glow touching background; no particles touching background; no smoke touching background; no frame; no panel; no matte backdrop; no labels; no text; no logo; no watermark.\nAvoid: absolutely no #FF00FF or near-magenta key tones inside any icon.",
+    "key_background_hex": "#FF00FF",
+    "dimensions": "1254x1254",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

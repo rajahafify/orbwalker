@@ -1,0 +1,686 @@
+{
+  "tool": "alpha_cleanup_probe",
+  "mode": "deterministic_edge_connected_background_removal",
+  "output_dir": "assets/cleanup/alpha_fixed",
+  "parameters": {
+    "border_width": 6,
+    "border_percentile": 97.0,
+    "base_margin": 2.0,
+    "feather_width": 24.0,
+    "samples_per_axis": 97
+  },
+  "entries": [
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/board_orb_clear_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1402x1122",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        163,
+        163,
+        163
+      ],
+      "thresholds": {
+        "full_clear_distance": 19.9165,
+        "feather_end_distance": 43.9165,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 882189,
+        "partial_alpha_pixels": 158758,
+        "opaque_pixels": 532097,
+        "total_pixels": 1573044
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5320,
+        "partial_alpha_samples": 983,
+        "opaque_samples": 3106
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/combat_ui_chrome_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1024x1536",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        250,
+        250,
+        250
+      ],
+      "thresholds": {
+        "full_clear_distance": 13.5758,
+        "feather_end_distance": 37.5758,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 669644,
+        "partial_alpha_pixels": 22239,
+        "opaque_pixels": 880981,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4100,
+        "partial_alpha_samples": 108,
+        "opaque_samples": 5201
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/consumable_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1448x1086",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        245,
+        245,
+        245
+      ],
+      "thresholds": {
+        "full_clear_distance": 19.3205,
+        "feather_end_distance": 43.3205,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 853942,
+        "partial_alpha_pixels": 24296,
+        "opaque_pixels": 694290,
+        "total_pixels": 1572528
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5184,
+        "partial_alpha_samples": 143,
+        "opaque_samples": 4082
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/enemy_attack_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1774x887",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        250,
+        250,
+        250
+      ],
+      "thresholds": {
+        "full_clear_distance": 10.6603,
+        "feather_end_distance": 34.6603,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 958926,
+        "partial_alpha_pixels": 136023,
+        "opaque_pixels": 478589,
+        "total_pixels": 1573538
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5809,
+        "partial_alpha_samples": 793,
+        "opaque_samples": 2807
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/equipment_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        248,
+        248,
+        248
+      ],
+      "thresholds": {
+        "full_clear_distance": 17.0333,
+        "feather_end_distance": 41.0333,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 780125,
+        "partial_alpha_pixels": 7437,
+        "opaque_pixels": 785302,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4760,
+        "partial_alpha_samples": 38,
+        "opaque_samples": 4611
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/intent_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1254x1254",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        246,
+        246,
+        246
+      ],
+      "thresholds": {
+        "full_clear_distance": 20.4932,
+        "feather_end_distance": 44.4932,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 742885,
+        "partial_alpha_pixels": 9397,
+        "opaque_pixels": 820234,
+        "total_pixels": 1572516
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4526,
+        "partial_alpha_samples": 64,
+        "opaque_samples": 4819
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/main_menu_ui_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        64,
+        64,
+        65
+      ],
+      "thresholds": {
+        "full_clear_distance": 8.4031,
+        "feather_end_distance": 32.4031,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 652050,
+        "partial_alpha_pixels": 52909,
+        "opaque_pixels": 867905,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4021,
+        "partial_alpha_samples": 251,
+        "opaque_samples": 5137
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/mastery_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1271x1238",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        245,
+        245,
+        245
+      ],
+      "thresholds": {
+        "full_clear_distance": 20.4932,
+        "feather_end_distance": 44.4932,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 537636,
+        "partial_alpha_pixels": 5823,
+        "opaque_pixels": 1030039,
+        "total_pixels": 1573498
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3397,
+        "partial_alpha_samples": 25,
+        "opaque_samples": 5987
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/mastery_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1402x1122",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        158,
+        157,
+        157
+      ],
+      "thresholds": {
+        "full_clear_distance": 15.9284,
+        "feather_end_distance": 39.9284,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 822690,
+        "partial_alpha_pixels": 222816,
+        "opaque_pixels": 527538,
+        "total_pixels": 1573044
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4998,
+        "partial_alpha_samples": 1310,
+        "opaque_samples": 3101
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/orb_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        246,
+        246,
+        246
+      ],
+      "thresholds": {
+        "full_clear_distance": 20.4932,
+        "feather_end_distance": 44.4932,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 736617,
+        "partial_alpha_pixels": 5525,
+        "opaque_pixels": 830722,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4527,
+        "partial_alpha_samples": 16,
+        "opaque_samples": 4866
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/rarity_badges_candidate_01_alpha_fixed.png",
+      "dimensions": "2172x724",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        241,
+        241,
+        241
+      ],
+      "thresholds": {
+        "full_clear_distance": 26.2487,
+        "feather_end_distance": 50.2487,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 968496,
+        "partial_alpha_pixels": 786,
+        "opaque_pixels": 603246,
+        "total_pixels": 1572528
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5860,
+        "partial_alpha_samples": 8,
+        "opaque_samples": 3541
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/relic_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "2172x724",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        248,
+        248,
+        248
+      ],
+      "thresholds": {
+        "full_clear_distance": 14.1244,
+        "feather_end_distance": 38.1244,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 1006921,
+        "partial_alpha_pixels": 6176,
+        "opaque_pixels": 559431,
+        "total_pixels": 1572528
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 6101,
+        "partial_alpha_samples": 25,
+        "opaque_samples": 3283
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/result_screen_ui_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        0,
+        0,
+        0
+      ],
+      "thresholds": {
+        "full_clear_distance": 3.4142,
+        "feather_end_distance": 27.4142,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 288880,
+        "partial_alpha_pixels": 2582,
+        "opaque_pixels": 1281402,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 1848,
+        "partial_alpha_samples": 31,
+        "opaque_samples": 7530
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/shared_hud_chrome_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        248,
+        248,
+        248
+      ],
+      "thresholds": {
+        "full_clear_distance": 13.5758,
+        "feather_end_distance": 37.5758,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 562204,
+        "partial_alpha_pixels": 9562,
+        "opaque_pixels": 1001098,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3483,
+        "partial_alpha_samples": 59,
+        "opaque_samples": 5867
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/shop_transaction_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1774x887",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        129,
+        129,
+        129
+      ],
+      "thresholds": {
+        "full_clear_distance": 24.561,
+        "feather_end_distance": 48.561,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 1018795,
+        "partial_alpha_pixels": 152544,
+        "opaque_pixels": 402199,
+        "total_pixels": 1573538
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 6137,
+        "partial_alpha_samples": 926,
+        "opaque_samples": 2346
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/shop_ui_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        78,
+        79,
+        82
+      ],
+      "thresholds": {
+        "full_clear_distance": 11.8489,
+        "feather_end_distance": 35.8489,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 547833,
+        "partial_alpha_pixels": 38365,
+        "opaque_pixels": 986666,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3481,
+        "partial_alpha_samples": 225,
+        "opaque_samples": 5703
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/treasure_chest_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1254x1254",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        170,
+        170,
+        174
+      ],
+      "thresholds": {
+        "full_clear_distance": 17.0333,
+        "feather_end_distance": 41.0333,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 642207,
+        "partial_alpha_pixels": 15495,
+        "opaque_pixels": 914814,
+        "total_pixels": 1572516
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3953,
+        "partial_alpha_samples": 87,
+        "opaque_samples": 5369
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_02.png",
+      "output_path": "assets/cleanup/alpha_fixed/treasure_chest_icons_candidate_02_alpha_fixed.png",
+      "dimensions": "1254x1254",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        244,
+        244,
+        244
+      ],
+      "thresholds": {
+        "full_clear_distance": 21.0526,
+        "feather_end_distance": 45.0526,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 631314,
+        "partial_alpha_pixels": 9344,
+        "opaque_pixels": 931858,
+        "total_pixels": 1572516
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3874,
+        "partial_alpha_samples": 60,
+        "opaque_samples": 5475
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_03.png",
+      "output_path": "assets/cleanup/alpha_fixed/treasure_chest_icons_candidate_03_alpha_fixed.png",
+      "dimensions": "1254x1254",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        243,
+        243,
+        243
+      ],
+      "thresholds": {
+        "full_clear_distance": 22.7846,
+        "feather_end_distance": 46.7846,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 893298,
+        "partial_alpha_pixels": 8403,
+        "opaque_pixels": 670815,
+        "total_pixels": 1572516
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5416,
+        "partial_alpha_samples": 53,
+        "opaque_samples": 3940
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/tutorial_onboarding_ui_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        61,
+        61,
+        63
+      ],
+      "thresholds": {
+        "full_clear_distance": 14.7279,
+        "feather_end_distance": 38.7279,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 604951,
+        "partial_alpha_pixels": 226751,
+        "opaque_pixels": 741162,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3806,
+        "partial_alpha_samples": 1265,
+        "opaque_samples": 4338
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/unlock_achievement_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1774x887",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        248,
+        248,
+        248
+      ],
+      "thresholds": {
+        "full_clear_distance": 12.3923,
+        "feather_end_distance": 36.3923,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 865315,
+        "partial_alpha_pixels": 137435,
+        "opaque_pixels": 570788,
+        "total_pixels": 1573538
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5239,
+        "partial_alpha_samples": 816,
+        "opaque_samples": 3354
+      },
+      "warnings": [],
+      "exists": true
+    }
+  ]
+}

@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matchatro Asset Review</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #15171b;
+      --panel: #20242b;
+      --panel-2: #292e37;
+      --line: #3a414d;
+      --text: #edf1f7;
+      --muted: #aab3c2;
+      --accent: #6bd1ff;
+      --ok: #72d18b;
+      --warn: #f4c76b;
+      --info: #b9a7ff;
+      --danger: #ff7d7d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--line);
+      background: rgba(21, 23, 27, 0.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .divider {
+      width: 1px;
+      height: 28px;
+      margin: 0 2px;
+      background: var(--line);
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 8px 10px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.active {
+      border-color: var(--accent);
+      background: #183448;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    section {
+      margin: 0 0 34px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 14px;
+    }
+
+    article {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .asset-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .name {
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #0b0f14;
+      background: var(--ok);
+    }
+
+    .tag.review {
+      background: var(--warn);
+    }
+
+    .tag.sprite {
+      background: var(--info);
+    }
+
+    .tag.attention {
+      background: var(--danger);
+    }
+
+    article.priority {
+      border-color: color-mix(in srgb, var(--danger) 70%, var(--line));
+      box-shadow: 0 0 0 1px rgba(255, 125, 125, 0.18);
+    }
+
+    article.priority .asset-head {
+      background: #3a2429;
+    }
+
+    .preview {
+      min-height: 260px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+
+    .bg-checker {
+      background-color: #fff;
+      background-image:
+        linear-gradient(45deg, #c7c7c7 25%, transparent 25%),
+        linear-gradient(-45deg, #c7c7c7 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #c7c7c7 75%),
+        linear-gradient(-45deg, transparent 75%, #c7c7c7 75%);
+      background-size: 32px 32px;
+      background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+    }
+
+    .bg-white {
+      background: #fff;
+    }
+
+    .bg-black {
+      background: #000;
+    }
+
+    .bg-gray {
+      background: #858585;
+    }
+
+    .asset-img {
+      width: calc(var(--zoom, 1) * 100%);
+      max-width: none;
+      max-height: none;
+      image-rendering: auto;
+      display: block;
+    }
+
+    .notes {
+      border-top: 1px solid var(--line);
+      padding: 10px 12px 12px;
+      color: var(--muted);
+      min-height: 54px;
+    }
+
+    .path {
+      margin-top: 8px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 760px) {
+      .topbar,
+      .section-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      main {
+        padding: 12px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Matchatro Adaptive Chroma-Key Asset Review</h1>
+        <div class="meta">Review queue sorted by priority · items needing your attention first</div>
+      </div>
+      <div class="controls" aria-label="Preview background">
+        <button class="active" type="button" data-bg="bg-checker">Checker</button>
+        <button type="button" data-bg="bg-white">White</button>
+        <button type="button" data-bg="bg-black">Black</button>
+        <button type="button" data-bg="bg-gray">Gray</button>
+        <span class="divider" aria-hidden="true"></span>
+        <button type="button" data-zoom="out">Zoom -</button>
+        <button type="button" data-zoom="reset">100%</button>
+        <button type="button" data-zoom="in">Zoom +</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="content"></main>
+
+  <script>
+    const base = "cleanup/chroma_keyed_adaptive_all/";
+    let zoom = 1;
+
+    const groups = [
+      {
+        title: "Needs Your Decision First",
+        tag: "attention",
+        tagText: "Review",
+        priority: true,
+        items: []
+      },
+      {
+        title: "Fine To Proceed",
+        tag: "qa",
+        tagText: "Fine",
+        items: [
+          ["board_orb_clear_vfx", "board_orb_clear_vfx_candidate_04_adaptive_alpha.png", "Readable VFX sheet; continue ordinary deferred QA."],
+          ["combat_ui_chrome_pack", "combat_ui_chrome_pack_candidate_04_adaptive_alpha.png", "Accepted for the next review gate."],
+          ["consumable_icons", "consumable_icons_candidate_04_adaptive_alpha.png", "Readable scroll icon sheet; continue ordinary deferred QA."],
+          ["enemy_attack_vfx", "enemy_attack_vfx_candidate_04_adaptive_alpha.png", "Readable enemy VFX sheet; continue ordinary deferred QA."],
+          ["equipment_icons", "equipment_icons_candidate_04_adaptive_alpha.png", "Readable equipment icon sheet; continue ordinary deferred QA."],
+          ["intent_icons", "intent_icons_candidate_04_adaptive_alpha.png", "Readable intent badges; continue ordinary deferred QA."],
+          ["main_menu_ui_pack", "cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png", "Candidate_05 retry accepted as good."],
+          ["mastery_icons", "mastery_icons_candidate_04_adaptive_alpha.png", "Readable mastery icon sheet; continue ordinary deferred QA."],
+          ["mastery_vfx", "mastery_vfx_candidate_04_adaptive_alpha.png", "Readable mastery VFX sheet; continue ordinary deferred QA."],
+          ["orb_icons", "orb_icons_candidate_04_adaptive_alpha.png", "Readable orb icons; also a sprite-pipeline follow-up record."],
+          ["rarity_badges", "rarity_badges_candidate_04_adaptive_alpha.png", "Readable rarity badges; continue ordinary deferred QA."],
+          ["relic_icons", "relic_icons_candidate_04_adaptive_alpha.png", "Readable relic icon sheet; continue ordinary deferred QA."],
+          ["result_screen_ui_pack", "result_screen_ui_pack_candidate_04_adaptive_alpha.png", "Accepted for the next review gate."],
+          ["shared_hud_chrome", "cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png", "Candidate_05 retry accepted as good."],
+          ["shop_transaction_vfx", "shop_transaction_vfx_candidate_04_adaptive_alpha.png", "Accepted for the next review gate."],
+          ["shop_ui_pack", "shop_ui_pack_candidate_04_adaptive_alpha.png", "Accepted for the next review gate."],
+          ["treasure_chest_icons", "treasure_chest_icons_candidate_04_adaptive_alpha.png", "Readable chest icon sheet; continue ordinary deferred QA."],
+          ["tutorial_onboarding_ui_pack", "cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png", "Soft-alpha candidate accepted as good."],
+          ["hero_animation_set", "sprite_pipeline/candidate_07_soft_eroded_component/hero_animation_set/preview_strip_8col.png", "Soft-eroded real-alpha sprite preview accepted as good."],
+          ["enemy_animation_set", "sprite_pipeline/candidate_08_soft_eroded_component/enemy_animation_set/preview_strip_8col.png", "Soft-eroded real-alpha component sprite preview accepted as good."],
+          ["unlock_achievement_vfx", "unlock_achievement_vfx_candidate_04_adaptive_alpha.png", "Readable unlock VFX sheet; continue ordinary deferred QA."]
+        ]
+      },
+      {
+        title: "Previous Failed UI Candidates",
+        tag: "review",
+        tagText: "Old",
+        items: [
+          ["main_menu_ui_pack", "main_menu_ui_pack_candidate_04_adaptive_alpha.png", "Human review: needs another generation/cleanup pass."],
+          ["shared_hud_chrome", "shared_hud_chrome_candidate_04_adaptive_alpha.png", "Human review: needs another generation/cleanup pass."],
+          ["tutorial_onboarding_ui_pack", "tutorial_onboarding_ui_pack_candidate_04_adaptive_alpha.png", "Human review: needs another generation/cleanup pass."]
+        ]
+      },
+      {
+        title: "UI Retry Candidate 05",
+        tag: "review",
+        tagText: "Retry",
+        base: "cleanup/chroma_keyed_adaptive_ui_retry/",
+        items: [
+          ["main_menu_ui_pack", "main_menu_ui_pack_candidate_05_adaptive_alpha.png", "Retry output: cleaner spacing and more consistent chrome surfaces."],
+          ["shared_hud_chrome", "shared_hud_chrome_candidate_05_adaptive_alpha.png", "Retry output: less cluttered HUD hierarchy and improved readability."],
+          ["tutorial_onboarding_ui_pack", "tutorial_onboarding_ui_pack_candidate_05_adaptive_alpha.png", "Retry output: still rejected because one magenta artifact remains."]
+        ]
+      },
+      {
+        title: "Latest Regeneration",
+        tag: "review",
+        tagText: "New",
+        items: [
+          ["tutorial_onboarding_ui_pack", "cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png", "Soft key extraction removes disconnected magenta background inside the ring."],
+          ["hero_animation_set", "sprite_pipeline/candidate_07_soft_eroded_component/hero_animation_set/preview_strip_8col.png", "Transparent preview strip generated from soft-eroded real alpha."],
+          ["enemy_animation_set", "sprite_pipeline/candidate_08_soft_eroded_component/enemy_animation_set/preview_strip_8col.png", "Transparent preview strip generated from soft-eroded real alpha and component slicing."]
+        ]
+      },
+      {
+        title: "Previous Candidate 06 Animation Preview",
+        tag: "sprite",
+        tagText: "Old",
+        base: "sprite_pipeline/candidate_06/",
+        items: [
+          ["hero_animation_set", "hero_animation_set/preview_strip_8col.png", "Superseded by candidate_07."],
+          ["enemy_animation_set", "enemy_animation_set/preview_strip_8col.png", "Superseded by candidate_08 component slicing."]
+        ]
+      },
+      {
+        title: "Previous Sprite-Pipeline Preview",
+        tag: "sprite",
+        tagText: "Old",
+        base: "sprite_pipeline/candidate_04/",
+        items: [
+          ["hero_animation_set", "hero_animation_set/preview_strip_8col.png", "Rejected by visual review; needs regenerated animation source before another sprite pass."],
+          ["enemy_animation_set", "enemy_animation_set/preview_strip_8col.png", "Rejected by visual review; needs regenerated animation source before another sprite pass."]
+        ]
+      }
+    ];
+
+    const content = document.querySelector("#content");
+
+    function createAsset(group, item) {
+      const [name, file, note] = item;
+      const sourceBase = group.base || (file.includes("/") ? "" : base);
+      const article = document.createElement("article");
+      if (group.priority) {
+        article.classList.add("priority");
+      }
+
+      const head = document.createElement("div");
+      head.className = "asset-head";
+      head.innerHTML = `<div class="name">${name}</div><div class="tag ${group.tag}">${group.tagText}</div>`;
+
+      const preview = document.createElement("div");
+      preview.className = "preview bg-checker";
+      const img = document.createElement("img");
+      img.className = "asset-img";
+      img.src = sourceBase + file;
+      img.alt = name;
+      preview.appendChild(img);
+
+      const notes = document.createElement("div");
+      notes.className = "notes";
+      notes.innerHTML = `<div>${note}</div><div class="path">${sourceBase + file}</div>`;
+
+      article.append(head, preview, notes);
+      return article;
+    }
+
+    for (const group of groups) {
+      const section = document.createElement("section");
+      const head = document.createElement("div");
+      head.className = "section-head";
+      head.innerHTML = `<h2>${group.title}</h2><div class="count">${group.items.length} assets</div>`;
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      for (const item of group.items) {
+        grid.appendChild(createAsset(group, item));
+      }
+      section.append(head, grid);
+      content.appendChild(section);
+    }
+
+    document.querySelectorAll("button[data-bg]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("button[data-bg]").forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+        const bg = button.dataset.bg;
+        document.querySelectorAll(".preview").forEach((preview) => {
+          preview.classList.remove("bg-checker", "bg-white", "bg-black", "bg-gray");
+          preview.classList.add(bg);
+        });
+      });
+    });
+
+    function applyZoom() {
+      document.documentElement.style.setProperty("--zoom", zoom.toFixed(2));
+      const reset = document.querySelector('button[data-zoom="reset"]');
+      reset.textContent = `${Math.round(zoom * 100)}%`;
+    }
+
+    document.querySelectorAll("button[data-zoom]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.zoom;
+        if (action === "in") {
+          zoom = Math.min(3, zoom + 0.25);
+        } else if (action === "out") {
+          zoom = Math.max(0.5, zoom - 0.25);
+        } else {
+          zoom = 1;
+        }
+        applyZoom();
+      });
+    });
+
+    applyZoom();
+  </script>
+</body>
+</html>

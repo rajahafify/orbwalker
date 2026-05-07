@@ -1,434 +1,434 @@
 {
-    "asset_count":  53,
-    "generated_on":  "2026-05-08",
-    "assets":  [
-                   {
-                       "asset_id":  "app_icon",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/app_icon.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "approved_asset_manifest",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/approved_asset_manifest.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "art_bible",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/art_bible.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "asset_briefs",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/asset_briefs.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "board_orb_clear_vfx",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/board_orb_clear_vfx.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "boot_splash",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/boot_splash.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "boss_portraits",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/boss_portraits.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "collection_background",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/collection_background.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "combat_background",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/combat_background.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "combat_enemy_stage_art",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/combat_enemy_stage_art.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "combat_ui_chrome_pack",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/combat_ui_chrome_pack.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "consumable_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/consumable_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "controls_visual",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/controls_visual.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "enemy_animation_set",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/enemy_animation_set.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "enemy_attack_vfx",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/enemy_attack_vfx.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "enemy_portraits",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/enemy_portraits.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "equipment_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/equipment_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "game_title_logo",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/game_title_logo.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "generation_metadata",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/generation_metadata.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "hero_animation_set",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/hero_animation_set.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "hero_full_body_or_pose_set",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/hero_full_body_or_pose_set.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "hero_orbwalker_portrait",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/hero_orbwalker_portrait.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "intent_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/intent_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "itch_page_graphics",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/itch_page_graphics.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "main_menu_background",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/main_menu_background.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "main_menu_ui_pack",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/main_menu_ui_pack.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "mastery_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/mastery_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "mastery_vfx",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/mastery_vfx.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "merchant_character",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/merchant_character.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "music_combat",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/music_combat.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "music_menu",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/music_menu.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "music_shop",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/music_shop.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "music_victory_defeat_summary",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/music_victory_defeat_summary.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "orb_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/orb_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "qa_reports",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/qa_reports.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "rarity_badges",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/rarity_badges.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "relic_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/relic_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "result_screen_ui_pack",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/result_screen_ui_pack.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "run_summary_background",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/run_summary_background.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "screenshots",
-                       "qa_status":  "not_applicable_this_pass",
-                       "report_path":  "assets/qa/reports/screenshots.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "sfx_combat_core",
-                       "qa_status":  "not_applicable_this_pass",
-                       "report_path":  "assets/qa/reports/sfx_combat_core.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "sfx_shop",
-                       "qa_status":  "not_applicable_this_pass",
-                       "report_path":  "assets/qa/reports/sfx_shop.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "sfx_ui",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/sfx_ui.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "shared_hud_chrome",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/shared_hud_chrome.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "shop_background",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/shop_background.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "shop_transaction_vfx",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/shop_transaction_vfx.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "shop_ui_pack",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/shop_ui_pack.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "store_capsule_key_art",
-                       "qa_status":  "generated_bulk_pending_qa",
-                       "report_path":  "assets/qa/reports/store_capsule_key_art.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "trailer_or_gif_capture",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/trailer_or_gif_capture.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "treasure_chest_icons",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/treasure_chest_icons.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
-                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_02.png",
-                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_03.png",
-                                               "assets/cleanup/treasure_chest_icons_candidate_03_alpha_cleanup.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "tutorial_onboarding_ui_pack",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/tutorial_onboarding_ui_pack.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png"
-                                           ]
-                   },
-                   {
-                       "asset_id":  "ui_motion_language",
-                       "qa_status":  "not_started",
-                       "report_path":  "assets/qa/reports/ui_motion_language.qa.md",
-                       "candidate_paths":  [
-
-                                           ]
-                   },
-                   {
-                       "asset_id":  "unlock_achievement_vfx",
-                       "qa_status":  "cleanup_required",
-                       "report_path":  "assets/qa/reports/unlock_achievement_vfx.qa.md",
-                       "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png"
-                                           ]
-                   }
-               ],
-    "qa_status":  "bulk_generation_first_transparency_pass_recorded_alpha_sensitive_cleanup_required"
+    "asset_count": 53,
+    "generated_on": "2026-05-08Tassetgen-human-review-accepted",
+    "assets": [
+        {
+            "asset_id": "app_icon",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/app_icon.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "approved_asset_manifest",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/approved_asset_manifest.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "art_bible",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/art_bible.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "asset_briefs",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/asset_briefs.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "board_orb_clear_vfx",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/board_orb_clear_vfx.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "boot_splash",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/boot_splash.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "boss_portraits",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/boss_portraits.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "collection_background",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/collection_background.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "combat_background",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/combat_background.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "combat_enemy_stage_art",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/combat_enemy_stage_art.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "combat_ui_chrome_pack",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/combat_ui_chrome_pack.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "consumable_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/consumable_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "controls_visual",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/controls_visual.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "enemy_animation_set",
+            "qa_status": "cleanup_required",
+            "report_path": "assets/qa/reports/enemy_animation_set.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png",
+                "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
+            ],
+            "status": "review_pending",
+            "review_status": "human_visual_review_passed_pending_legal",
+            "integration_status": "blocked_pending_approval",
+            "notes": "2026-05-08 human review: candidate_08 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
+        },
+        {
+            "asset_id": "enemy_attack_vfx",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/enemy_attack_vfx.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "enemy_portraits",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/enemy_portraits.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "equipment_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/equipment_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "game_title_logo",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/game_title_logo.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "generation_metadata",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/generation_metadata.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "hero_animation_set",
+            "qa_status": "cleanup_required",
+            "report_path": "assets/qa/reports/hero_animation_set.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png",
+                "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png"
+            ],
+            "status": "review_pending",
+            "review_status": "human_visual_review_passed_pending_legal",
+            "integration_status": "blocked_pending_approval",
+            "notes": "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
+        },
+        {
+            "asset_id": "hero_full_body_or_pose_set",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/hero_full_body_or_pose_set.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "hero_orbwalker_portrait",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/hero_orbwalker_portrait.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "intent_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/intent_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "itch_page_graphics",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/itch_page_graphics.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "main_menu_background",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/main_menu_background.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "main_menu_ui_pack",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/main_menu_ui_pack.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "mastery_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/mastery_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "mastery_vfx",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/mastery_vfx.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "merchant_character",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/merchant_character.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "music_combat",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/music_combat.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "music_menu",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/music_menu.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "music_shop",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/music_shop.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "music_victory_defeat_summary",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/music_victory_defeat_summary.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "orb_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/orb_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "qa_reports",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/qa_reports.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "rarity_badges",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/rarity_badges.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "relic_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/relic_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "result_screen_ui_pack",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/result_screen_ui_pack.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "run_summary_background",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/run_summary_background.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "screenshots",
+            "qa_status": "not_applicable_this_pass",
+            "report_path": "assets/qa/reports/screenshots.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "sfx_combat_core",
+            "qa_status": "not_applicable_this_pass",
+            "report_path": "assets/qa/reports/sfx_combat_core.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "sfx_shop",
+            "qa_status": "not_applicable_this_pass",
+            "report_path": "assets/qa/reports/sfx_shop.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "sfx_ui",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/sfx_ui.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "shared_hud_chrome",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/shared_hud_chrome.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "shop_background",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/shop_background.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "shop_transaction_vfx",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/shop_transaction_vfx.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "shop_ui_pack",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/shop_ui_pack.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "store_capsule_key_art",
+            "qa_status": "generated_bulk_pending_qa",
+            "report_path": "assets/qa/reports/store_capsule_key_art.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
+            ]
+        },
+        {
+            "asset_id": "trailer_or_gif_capture",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/trailer_or_gif_capture.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "treasure_chest_icons",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/treasure_chest_icons.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png"
+            ]
+        },
+        {
+            "asset_id": "tutorial_onboarding_ui_pack",
+            "qa_status": "cleanup_required",
+            "report_path": "assets/qa/reports/tutorial_onboarding_ui_pack.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
+                "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
+            ],
+            "status": "review_pending",
+            "review_status": "human_visual_review_passed_pending_legal",
+            "integration_status": "blocked_pending_approval",
+            "notes": "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
+        },
+        {
+            "asset_id": "ui_motion_language",
+            "qa_status": "not_started",
+            "report_path": "assets/qa/reports/ui_motion_language.qa.md",
+            "candidate_paths": []
+        },
+        {
+            "asset_id": "unlock_achievement_vfx",
+            "qa_status": "review_pending",
+            "report_path": "assets/qa/reports/unlock_achievement_vfx.qa.md",
+            "candidate_paths": [
+                "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
+                "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
+            ]
+        }
+    ],
+    "qa_status": "bulk_generation_first_alpha_cleanup_candidates_recorded_pending_batch_qa"
 }

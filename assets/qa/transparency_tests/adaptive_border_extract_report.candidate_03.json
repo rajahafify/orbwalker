@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive/board_orb_clear_vfx_candidate_03_adaptive_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1160026,
+      "kept_pixels": 412502,
+      "alpha_zero": 1160026,
+      "alpha_partial": 0,
+      "alpha_opaque": 412502,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive/consumable_icons_candidate_03_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1025962,
+      "kept_pixels": 546902,
+      "alpha_zero": 1025962,
+      "alpha_partial": 0,
+      "alpha_opaque": 546902,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive/enemy_attack_vfx_candidate_03_adaptive_alpha.png",
+      "size": [
+        1774,
+        887
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1213697,
+      "kept_pixels": 359841,
+      "alpha_zero": 1213697,
+      "alpha_partial": 0,
+      "alpha_opaque": 359841,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive/mastery_vfx_candidate_03_adaptive_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1173042,
+      "kept_pixels": 399486,
+      "alpha_zero": 1173042,
+      "alpha_partial": 0,
+      "alpha_opaque": 399486,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

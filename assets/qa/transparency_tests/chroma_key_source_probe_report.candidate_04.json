@@ -1,0 +1,146 @@
+{
+  "results": [
+    {
+      "asset_id": "board_orb_clear_vfx",
+      "file": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_04_chroma_key.png",
+      "key_background_hex": "#00FFFF",
+      "size": [
+        1448,
+        1086
+      ],
+      "edge_non_key_pixels": 181,
+      "edge_total_pixels": 5064,
+      "edge_non_key_ratio": 0.035742,
+      "connected_background_pixels": 1121675,
+      "connected_background_ratio": 0.713294,
+      "exact_key_pixels_connected_background": 1001950,
+      "exact_key_pixels_outside_connected_background": 103,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "key_color_found_inside_asset_or_islands"
+      ]
+    },
+    {
+      "asset_id": "combat_ui_chrome_pack",
+      "file": "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_04_chroma_key.png",
+      "key_background_hex": "#FF00FF",
+      "size": [
+        1536,
+        1024
+      ],
+      "edge_non_key_pixels": 5116,
+      "edge_total_pixels": 5116,
+      "edge_non_key_ratio": 1.0,
+      "connected_background_pixels": 783916,
+      "connected_background_ratio": 0.4984,
+      "exact_key_pixels_connected_background": 44154,
+      "exact_key_pixels_outside_connected_background": 0,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key"
+      ]
+    },
+    {
+      "asset_id": "consumable_icons",
+      "file": "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_04_chroma_key.png",
+      "key_background_hex": "#FF00FF",
+      "size": [
+        1536,
+        1024
+      ],
+      "edge_non_key_pixels": 5116,
+      "edge_total_pixels": 5116,
+      "edge_non_key_ratio": 1.0,
+      "connected_background_pixels": 884543,
+      "connected_background_ratio": 0.562377,
+      "exact_key_pixels_connected_background": 1029,
+      "exact_key_pixels_outside_connected_background": 0,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key"
+      ]
+    },
+    {
+      "asset_id": "enemy_attack_vfx",
+      "file": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_04_chroma_key.png",
+      "key_background_hex": "#00FFFF",
+      "size": [
+        1983,
+        793
+      ],
+      "edge_non_key_pixels": 4558,
+      "edge_total_pixels": 5548,
+      "edge_non_key_ratio": 0.821557,
+      "connected_background_pixels": 1149023,
+      "connected_background_ratio": 0.730689,
+      "exact_key_pixels_connected_background": 29867,
+      "exact_key_pixels_outside_connected_background": 2,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key",
+        "key_color_found_inside_asset_or_islands"
+      ]
+    },
+    {
+      "asset_id": "equipment_icons",
+      "file": "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_04_chroma_key.png",
+      "key_background_hex": "#FF00FF",
+      "size": [
+        1536,
+        1024
+      ],
+      "edge_non_key_pixels": 5116,
+      "edge_total_pixels": 5116,
+      "edge_non_key_ratio": 1.0,
+      "connected_background_pixels": 1086431,
+      "connected_background_ratio": 0.690734,
+      "exact_key_pixels_connected_background": 190,
+      "exact_key_pixels_outside_connected_background": 32,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key",
+        "key_color_found_inside_asset_or_islands"
+      ]
+    },
+    {
+      "asset_id": "intent_icons",
+      "file": "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_04_chroma_key.png",
+      "key_background_hex": "#FF00FF",
+      "size": [
+        1254,
+        1254
+      ],
+      "edge_non_key_pixels": 5012,
+      "edge_total_pixels": 5012,
+      "edge_non_key_ratio": 1.0,
+      "connected_background_pixels": 1002154,
+      "connected_background_ratio": 0.637293,
+      "exact_key_pixels_connected_background": 204,
+      "exact_key_pixels_outside_connected_background": 0,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key"
+      ]
+    },
+    {
+      "asset_id": "main_menu_ui_pack",
+      "file": "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.png",
+      "key_background_hex": "#FF00FF",
+      "size": [
+        1536,
+        1024
+      ],
+      "edge_non_key_pixels": 5116,
+      "edge_total_pixels": 5116,
+      "edge_non_key_ratio": 1.0,
+      "connected_background_pixels": 635515,
+      "connected_background_ratio": 0.40405,
+      "exact_key_pixels_connected_background": 38,
+      "exact_key_pixels_outside_connected_background": 0,
+      "usable_for_adaptive_extraction": false,
+      "probe_notes": [
+        "edge_not_flat_key"
+      ]
+    }
+  ]
+}

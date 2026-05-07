@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_08_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_08/enemy_animation_set_candidate_08_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1189209,
+      "kept_pixels": 383655,
+      "alpha_zero": 1189209,
+      "alpha_partial": 0,
+      "alpha_opaque": 383655,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

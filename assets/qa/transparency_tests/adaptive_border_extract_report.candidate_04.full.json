@@ -1,0 +1,424 @@
+{
+  "results": [
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1138061,
+      "kept_pixels": 434467,
+      "alpha_zero": 1138061,
+      "alpha_partial": 0,
+      "alpha_opaque": 434467,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 788412,
+      "kept_pixels": 784452,
+      "alpha_zero": 788412,
+      "alpha_partial": 0,
+      "alpha_opaque": 784452,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 888525,
+      "kept_pixels": 684339,
+      "alpha_zero": 888525,
+      "alpha_partial": 0,
+      "alpha_opaque": 684339,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/enemy_animation_set_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1091557,
+      "kept_pixels": 481307,
+      "alpha_zero": 1091557,
+      "alpha_partial": 0,
+      "alpha_opaque": 481307,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1983,
+        793
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1159900,
+      "kept_pixels": 412619,
+      "alpha_zero": 1159900,
+      "alpha_partial": 0,
+      "alpha_opaque": 412619,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1092115,
+      "kept_pixels": 480749,
+      "alpha_zero": 1092115,
+      "alpha_partial": 0,
+      "alpha_opaque": 480749,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/hero_animation_set_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1093320,
+      "kept_pixels": 479544,
+      "alpha_zero": 1093320,
+      "alpha_partial": 0,
+      "alpha_opaque": 479544,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/intent_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1004667,
+      "kept_pixels": 567849,
+      "alpha_zero": 1004667,
+      "alpha_partial": 0,
+      "alpha_opaque": 567849,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/main_menu_ui_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 641213,
+      "kept_pixels": 931651,
+      "alpha_zero": 641213,
+      "alpha_partial": 0,
+      "alpha_opaque": 931651,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 817366,
+      "kept_pixels": 755498,
+      "alpha_zero": 817366,
+      "alpha_partial": 0,
+      "alpha_opaque": 755498,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1983,
+        793
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1159900,
+      "kept_pixels": 412619,
+      "alpha_zero": 1159900,
+      "alpha_partial": 0,
+      "alpha_opaque": 412619,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/orb_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 939544,
+      "kept_pixels": 633320,
+      "alpha_zero": 939544,
+      "alpha_partial": 0,
+      "alpha_opaque": 633320,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png",
+      "size": [
+        1774,
+        887
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1073428,
+      "kept_pixels": 500110,
+      "alpha_zero": 1073428,
+      "alpha_partial": 0,
+      "alpha_opaque": 500110,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/relic_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        2172,
+        724
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1093285,
+      "kept_pixels": 479243,
+      "alpha_zero": 1093285,
+      "alpha_partial": 0,
+      "alpha_opaque": 479243,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/result_screen_ui_pack_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 774769,
+      "kept_pixels": 798095,
+      "alpha_zero": 774769,
+      "alpha_partial": 0,
+      "alpha_opaque": 798095,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/shared_hud_chrome_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 780544,
+      "kept_pixels": 792320,
+      "alpha_zero": 780544,
+      "alpha_partial": 0,
+      "alpha_opaque": 792320,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1774,
+        887
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1159643,
+      "kept_pixels": 413895,
+      "alpha_zero": 1159643,
+      "alpha_partial": 0,
+      "alpha_opaque": 413895,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 756463,
+      "kept_pixels": 816401,
+      "alpha_zero": 756463,
+      "alpha_partial": 0,
+      "alpha_opaque": 816401,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/treasure_chest_icons_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 736201,
+      "kept_pixels": 836315,
+      "alpha_zero": 736201,
+      "alpha_partial": 0,
+      "alpha_opaque": 836315,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/tutorial_onboarding_ui_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 852132,
+      "kept_pixels": 720732,
+      "alpha_zero": 852132,
+      "alpha_partial": 0,
+      "alpha_opaque": 720732,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_04_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1774,
+        887
+      ],
+      "tolerance": 64,
+      "sample_stride": 24,
+      "removed_connected_background": 1098937,
+      "kept_pixels": 474601,
+      "alpha_zero": 1098937,
+      "alpha_partial": 0,
+      "alpha_opaque": 474601,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

@@ -1,27 +1,37 @@
 {
-    "asset_id":  "shared_hud_chrome",
-    "asset_name":  "Shared player HUD, HP bars, slot frames, and mastery panels",
-    "asset_type":  "ui_pack",
-    "group_id":  "ui_chrome",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "1536x1024",
-    "export_format":  "png_candidate",
-    "alpha_type":  "alpha_sensitive_missing_real_alpha_cleanup_required",
-    "transparent_background":  "alpha_sensitive_no_real_alpha",
-    "qa_status":  "cleanup_required",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred transparency QA (2026-05-08): alpha-sensitive candidate is RGB/no real alpha in probe samples; cleanup is required before review or integration gates can reopen.",
-    "final_prompt":  "Use case: stylized-concept\nAsset type: shared HUD chrome pack for Orbwalker\nPrimary request: production candidate UI component sheet for shared player HUD, HP bars, slots, and mastery panels.\nSubject: player HP bar frame and fill, enemy HP bar frame and fill, combo badge frame, equipment slot frame, consumable slot frame, mastery panel frame, mastery preview panel frame, compact panel frame.\nStyle/medium: polished stylized 2D fantasy UI chrome, readable at mobile HUD scale.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no embedded text.\nLighting/mood: clear operational UI, less decorative than menu, consistent with combat/shop.\nColor palette: dark stone, steel, antique gold, red/green HP fills, subtle elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament.",
-    "generation_mode":  "built-in imagegen"
+    "asset_id": "shared_hud_chrome",
+    "asset_name": "Shared player HUD, HP bars, slot frames, and mastery panels",
+    "asset_type": "ui_pack",
+    "group_id": "ui_chrome",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
+        "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md",
+        "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
+        "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract.py",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_04.full.json",
+        "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png",
+        "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_05_chroma_key.png",
+        "assets/prompts/runs/bulk-generation-first/shared_hud_chrome_candidate_05_chroma_key.prompt.json",
+        "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_05.ui_retry.json"
+    ],
+    "license_status": "needs_review",
+    "usage_rights": "needs_review",
+    "dimensions": "1536x1024",
+    "export_format": "png_rgba_candidate",
+    "alpha_type": "adaptive_chroma_key_real_alpha_ui_retry_pending_review",
+    "transparent_background": "adaptive_chroma_key_extracted_real_alpha_ui_retry",
+    "qa_status": "review_pending",
+    "review_status": "human_visual_review_passed_pending_legal",
+    "integration_status": "blocked_pending_approval",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval.",
+    "final_prompt": "Use case: stylized-concept\nAsset type: shared HUD chrome pack for Orbwalker\nPrimary request: production candidate UI component sheet for shared player HUD, HP bars, slots, and mastery panels.\nSubject: player HP bar frame and fill, enemy HP bar frame and fill, combo badge frame, equipment slot frame, consumable slot frame, mastery panel frame, mastery preview panel frame, compact panel frame.\nStyle/medium: polished stylized 2D fantasy UI chrome, readable at mobile HUD scale.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no embedded text.\nLighting/mood: clear operational UI, less decorative than menu, consistent with combat/shop.\nColor palette: dark stone, steel, antique gold, red/green HP fills, subtle elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament.",
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
 }

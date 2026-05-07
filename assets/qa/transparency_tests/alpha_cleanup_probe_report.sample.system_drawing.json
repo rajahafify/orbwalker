@@ -1,0 +1,29 @@
+[
+    {
+        "path":  "assets/cleanup/alpha_fixed/board_orb_clear_vfx_candidate_01_alpha_fixed.png",
+        "dimensions":  "1402x1122",
+        "pixel_format":  "Format32bppArgb",
+        "sampled":  9409,
+        "transparent_samples":  5340,
+        "partial_alpha_samples":  983,
+        "opaque_samples":  3086
+    },
+    {
+        "path":  "assets/cleanup/alpha_fixed/intent_icons_candidate_01_alpha_fixed.png",
+        "dimensions":  "1254x1254",
+        "pixel_format":  "Format32bppArgb",
+        "sampled":  9409,
+        "transparent_samples":  4539,
+        "partial_alpha_samples":  51,
+        "opaque_samples":  4819
+    },
+    {
+        "path":  "assets/cleanup/alpha_fixed/shop_ui_pack_candidate_01_alpha_fixed.png",
+        "dimensions":  "1536x1024",
+        "pixel_format":  "Format32bppArgb",
+        "sampled":  9409,
+        "transparent_samples":  3451,
+        "partial_alpha_samples":  217,
+        "opaque_samples":  5741
+    }
+]

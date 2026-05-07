@@ -1,0 +1,64 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_06_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_06/tutorial_onboarding_ui_pack_candidate_06_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 822050,
+      "kept_pixels": 750814,
+      "alpha_zero": 822050,
+      "alpha_partial": 0,
+      "alpha_opaque": 750814,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_06_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_06/hero_animation_set_candidate_06_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1157050,
+      "kept_pixels": 415814,
+      "alpha_zero": 1157050,
+      "alpha_partial": 0,
+      "alpha_opaque": 415814,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_06_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_06/enemy_animation_set_candidate_06_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1135841,
+      "kept_pixels": 437023,
+      "alpha_zero": 1135841,
+      "alpha_partial": 0,
+      "alpha_opaque": 437023,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/board_orb_clear_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1135534,
+      "kept_pixels": 436994,
+      "alpha_zero": 1135534,
+      "alpha_partial": 0,
+      "alpha_opaque": 436994,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 787954,
+      "kept_pixels": 784910,
+      "alpha_zero": 787954,
+      "alpha_partial": 0,
+      "alpha_opaque": 784910,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/consumable_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 888242,
+      "kept_pixels": 684622,
+      "alpha_zero": 888242,
+      "alpha_partial": 0,
+      "alpha_opaque": 684622,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/enemy_attack_vfx_candidate_04_adaptive_alpha.png",
+      "size": [
+        1983,
+        793
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1158114,
+      "kept_pixels": 414405,
+      "alpha_zero": 1158114,
+      "alpha_partial": 0,
+      "alpha_opaque": 414405,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/equipment_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1091816,
+      "kept_pixels": 481048,
+      "alpha_zero": 1091816,
+      "alpha_partial": 0,
+      "alpha_opaque": 481048,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/intent_icons_candidate_04_adaptive_alpha.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1004520,
+      "kept_pixels": 567996,
+      "alpha_zero": 1004520,
+      "alpha_partial": 0,
+      "alpha_opaque": 567996,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.png",
+      "output": "assets/qa/transparency_tests/adaptive_probe_candidate_04/main_menu_ui_pack_candidate_04_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 640987,
+      "kept_pixels": 931877,
+      "alpha_zero": 640987,
+      "alpha_partial": 0,
+      "alpha_opaque": 931877,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

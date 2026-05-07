@@ -1,0 +1,11 @@
+{
+    "asset_id": "enemy_animation_set",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_04_chroma_key.png",
+    "prompt": "Use case: stylized-concept\nAsset type: enemy animation source frame sheet for Orbwalker\nPrimary request: create an opaque chroma-key source sheet for enemy animation frames to be normalized later.\nSubject: same dungeon enemy across eight full-body frames in a 4x2 sheet: idle A, idle B, intent windup, attack strike, block guard, hit reaction, stagger, defeat collapse.\nStyle/medium: polished stylized 2D fantasy character sprite source art, strong combat readability.\nComposition/framing: equal-size cells with centered character and consistent padding, no clipping.\nScene/backdrop: perfectly flat solid cyan background #00FFFF only.\nColor palette: dark steel, worn leather, muted crimson cloth, amber highlights, violet/dark accents allowed except key cyan.\nConstraints: exact flat #00FFFF background only; no checkerboard; no gradient; no texture; no shadows/glow/particles touching background; no extra panel/frame/matte backdrop; no text; no watermark.\nAvoid: no #00FFFF or near-cyan tones inside any character artwork.",
+    "key_background_hex": "#00FFFF",
+    "dimensions": "1536x1024",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

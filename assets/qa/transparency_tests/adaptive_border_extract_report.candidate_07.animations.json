@@ -1,0 +1,44 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_07_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_07/hero_animation_set_candidate_07_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1166221,
+      "kept_pixels": 406643,
+      "alpha_zero": 1166221,
+      "alpha_partial": 0,
+      "alpha_opaque": 406643,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_07_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_candidate_07/enemy_animation_set_candidate_07_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 1094963,
+      "kept_pixels": 477901,
+      "alpha_zero": 1094963,
+      "alpha_partial": 0,
+      "alpha_opaque": 477901,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

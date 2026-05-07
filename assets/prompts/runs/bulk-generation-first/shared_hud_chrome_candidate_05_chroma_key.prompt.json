@@ -1,0 +1,11 @@
+{
+    "asset_id": "shared_hud_chrome",
+    "generated_on": "2026-05-08",
+    "generation_mode": "built-in imagegen",
+    "candidate_path": "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_05_chroma_key.png",
+    "prompt": "Use case: ui-mockup\nAsset type: shared HUD chrome component sheet for Matchatro/Orbwalker combat and shop overlays\nPrimary request: produce a 1536x1024 opaque chroma-key source sheet with clearly separated reusable HUD parts.\nScene/backdrop: perfectly flat solid #FF00FF background only, no variation.\nSubject: player HP bar frame with orb cap, enemy HP bar frame with enemy crest cap, compact combo badge frame, equipment slot frame, consumable slot frame, mastery preview panel frame, wide utility panel frame, small tooltip panel frame.\nStyle/medium: cohesive stylized 2D fantasy HUD chrome, dark stone/iron interiors with antique gold trim, restrained accent gems.\nComposition/framing: organized grid layout, consistent margins and spacing, no overlap, no clipping, each component isolated from others.\nMaterials/textures: interiors must look intentional (dark stone, brushed iron, muted parchment inserts where useful), never magenta placeholder fills.\nConstraints: no text, no labels, no logos, no watermark, no checkerboard, no gradient background, no textured background, no shadows or glow touching the background, no particles/smoke, no #FF00FF inside UI components.\nAvoid: horns/skulls that dominate readability; magenta or near-magenta in components; crowded composition.",
+    "key_background_hex": "#FF00FF",
+    "dimensions": "1536x1024",
+    "status": "generated_bulk_pending_qa",
+    "notes": "Opaque chroma-key fallback source candidate only; deterministic keyed-alpha extraction required before promotion."
+}

@@ -1,0 +1,9 @@
+{
+    "asset_id":  "mastery_vfx",
+    "generated_on":  "2026-05-08",
+    "generation_mode":  "built-in imagegen",
+    "candidate_path":  "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_02.png",
+    "prompt":  "Use case: stylized-concept\nAsset type: mastery VFX sheet for Orbwalker\nPrimary request: create a production candidate sprite sheet for elemental mastery beams, shells, and impact feedback.\nSubject: twelve small VFX sprites in a 4x3 sheet: fire beam, ice beam, earth beam, heart heal beam, armor shell, gold sparkle beam, hit impact, heal impact, shield pulse, coin burst, mastery charge ring, small trail particle.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability.\nComposition/framing: 4x3 sheet with each effect centered and padded.\nLighting/mood: clear source-to-target magic feedback without covering the board.\nColor palette: elemental colors, white highlights, gold accents.\nConstraints: PNG with REAL transparent alpha background. The final file must contain true alpha transparency around and between sprites. No checkerboard, no white/gray/black backdrop, no fake transparency preview grid, no rectangular matte, no frame, no panel, no labels, no text, no logo, no watermark, no gore, no casino imagery.",
+    "dimensions":  "1448x1086",
+    "status":  "cleanup_required"
+}

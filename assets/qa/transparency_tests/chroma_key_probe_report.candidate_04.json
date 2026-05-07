@@ -1,0 +1,129 @@
+{
+  "threshold_note": "near-key distance <=24 in RGB space",
+  "results": [
+    {
+      "asset_id": "mastery_icons",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_04_chroma_key.png",
+      "dimensions": "1536x1024",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.9992,
+      "background_near_key_ratio": 0.5134,
+      "connected_background_ratio": 0.5133,
+      "stray_near_key_ratio": 0.000165,
+      "border_std_rgb": [
+        1.958,
+        2.038,
+        1.499
+      ],
+      "usable_for_adaptive_extraction": true,
+      "reasons": []
+    },
+    {
+      "asset_id": "mastery_vfx",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_04_chroma_key.png",
+      "dimensions": "1983x793",
+      "declared_key_hex": "#00FFFF",
+      "border_key_near_ratio": 1.0,
+      "background_near_key_ratio": 0.7262,
+      "connected_background_ratio": 0.7254,
+      "stray_near_key_ratio": 0.000872,
+      "border_std_rgb": [
+        0.576,
+        0.991,
+        0.585
+      ],
+      "usable_for_adaptive_extraction": true,
+      "reasons": []
+    },
+    {
+      "asset_id": "orb_icons",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/orb_icons_candidate_04_chroma_key.png",
+      "dimensions": "1536x1024",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.9824,
+      "background_near_key_ratio": 0.5932,
+      "connected_background_ratio": 0.5932,
+      "stray_near_key_ratio": 1e-06,
+      "border_std_rgb": [
+        1.853,
+        1.911,
+        1.622
+      ],
+      "usable_for_adaptive_extraction": true,
+      "reasons": []
+    },
+    {
+      "asset_id": "rarity_badges",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_04_chroma_key.png",
+      "dimensions": "1774x887",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.9999,
+      "background_near_key_ratio": 0.68,
+      "connected_background_ratio": 0.68,
+      "stray_near_key_ratio": 4e-06,
+      "border_std_rgb": [
+        1.551,
+        2.233,
+        1.373
+      ],
+      "usable_for_adaptive_extraction": true,
+      "reasons": []
+    },
+    {
+      "asset_id": "relic_icons",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/relic_icons_candidate_04_chroma_key.png",
+      "dimensions": "2172x724",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.8928,
+      "background_near_key_ratio": 0.6484,
+      "connected_background_ratio": 0.6427,
+      "stray_near_key_ratio": 0.00568,
+      "border_std_rgb": [
+        1.589,
+        2.263,
+        1.967
+      ],
+      "usable_for_adaptive_extraction": false,
+      "reasons": [
+        "border_not_consistently_key_color"
+      ]
+    },
+    {
+      "asset_id": "result_screen_ui_pack",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/result_screen_ui_pack_candidate_04_chroma_key.png",
+      "dimensions": "1536x1024",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.9606,
+      "background_near_key_ratio": 0.4743,
+      "connected_background_ratio": 0.4727,
+      "stray_near_key_ratio": 0.001683,
+      "border_std_rgb": [
+        1.748,
+        1.951,
+        1.674
+      ],
+      "usable_for_adaptive_extraction": true,
+      "reasons": []
+    },
+    {
+      "asset_id": "shared_hud_chrome",
+      "path": "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.png",
+      "dimensions": "1536x1024",
+      "declared_key_hex": "#FF00FF",
+      "border_key_near_ratio": 0.9405,
+      "background_near_key_ratio": 0.5362,
+      "connected_background_ratio": 0.4791,
+      "stray_near_key_ratio": 0.057117,
+      "border_std_rgb": [
+        1.757,
+        1.996,
+        1.878
+      ],
+      "usable_for_adaptive_extraction": false,
+      "reasons": [
+        "border_not_consistently_key_color",
+        "key_like_pixels_inside_asset"
+      ]
+    }
+  ]
+}

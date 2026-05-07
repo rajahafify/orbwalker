@@ -1,0 +1,64 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_05_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 724877,
+      "kept_pixels": 847987,
+      "alpha_zero": 724877,
+      "alpha_partial": 0,
+      "alpha_opaque": 847987,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_05_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 796830,
+      "kept_pixels": 776034,
+      "alpha_zero": 796830,
+      "alpha_partial": 0,
+      "alpha_opaque": 776034,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_05_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed_adaptive_ui_retry/tutorial_onboarding_ui_pack_candidate_05_adaptive_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "tolerance": 58,
+      "sample_stride": 24,
+      "removed_connected_background": 818615,
+      "kept_pixels": 754249,
+      "alpha_zero": 818615,
+      "alpha_partial": 0,
+      "alpha_opaque": 754249,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "warnings": []
+    }
+  ]
+}

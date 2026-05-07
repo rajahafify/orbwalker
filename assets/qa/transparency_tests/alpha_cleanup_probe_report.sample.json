@@ -1,0 +1,110 @@
+{
+  "tool": "alpha_cleanup_probe",
+  "mode": "deterministic_edge_connected_background_removal",
+  "output_dir": "assets/cleanup/alpha_fixed",
+  "parameters": {
+    "border_width": 6,
+    "border_percentile": 97.0,
+    "base_margin": 2.0,
+    "feather_width": 24.0,
+    "samples_per_axis": 97
+  },
+  "entries": [
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/board_orb_clear_vfx_candidate_01_alpha_fixed.png",
+      "dimensions": "1402x1122",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        163,
+        163,
+        163
+      ],
+      "thresholds": {
+        "full_clear_distance": 19.9165,
+        "feather_end_distance": 43.9165,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 882189,
+        "partial_alpha_pixels": 158758,
+        "opaque_pixels": 532097,
+        "total_pixels": 1573044
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 5320,
+        "partial_alpha_samples": 983,
+        "opaque_samples": 3106
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/intent_icons_candidate_01_alpha_fixed.png",
+      "dimensions": "1254x1254",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        246,
+        246,
+        246
+      ],
+      "thresholds": {
+        "full_clear_distance": 20.4932,
+        "feather_end_distance": 44.4932,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 742885,
+        "partial_alpha_pixels": 9397,
+        "opaque_pixels": 820234,
+        "total_pixels": 1572516
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 4526,
+        "partial_alpha_samples": 64,
+        "opaque_samples": 4819
+      },
+      "warnings": [],
+      "exists": true
+    },
+    {
+      "input_path": "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
+      "output_path": "assets/cleanup/alpha_fixed/shop_ui_pack_candidate_01_alpha_fixed.png",
+      "dimensions": "1536x1024",
+      "pixel_format": "RGBA (equivalent real alpha)",
+      "background_color_rgb": [
+        78,
+        79,
+        82
+      ],
+      "thresholds": {
+        "full_clear_distance": 11.8489,
+        "feather_end_distance": 35.8489,
+        "border_percentile": 97.0,
+        "base_margin": 2.0,
+        "feather_width": 24.0
+      },
+      "full_pixel_counts": {
+        "transparent_pixels": 547833,
+        "partial_alpha_pixels": 38365,
+        "opaque_pixels": 986666,
+        "total_pixels": 1572864
+      },
+      "sample_counts": {
+        "sampled": 9409,
+        "transparent_samples": 3481,
+        "partial_alpha_samples": 225,
+        "opaque_samples": 5703
+      },
+      "warnings": [],
+      "exists": true
+    }
+  ]
+}

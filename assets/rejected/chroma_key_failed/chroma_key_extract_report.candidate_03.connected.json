@@ -1,0 +1,124 @@
+{
+  "results": [
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed/board_orb_clear_vfx_candidate_03_chroma_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "key_rgb": [
+        255,
+        0,
+        255
+      ],
+      "exact_tolerance": 6,
+      "feather_tolerance": 42,
+      "key_pixels": 4528,
+      "feather_pixels": 1104709,
+      "opaque_pixels": 463291,
+      "alpha_zero": 7226,
+      "alpha_partial": 1101988,
+      "alpha_opaque": 463314,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "non_key_edge_pixels": 5064,
+      "connected_background_pixels": 1109237,
+      "warnings": [
+        "source_edges_not_flat_key"
+      ]
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed/consumable_icons_candidate_03_chroma_alpha.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "key_rgb": [
+        255,
+        0,
+        255
+      ],
+      "exact_tolerance": 6,
+      "feather_tolerance": 42,
+      "key_pixels": 3974,
+      "feather_pixels": 1018656,
+      "opaque_pixels": 550234,
+      "alpha_zero": 6370,
+      "alpha_partial": 1016259,
+      "alpha_opaque": 550235,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "non_key_edge_pixels": 5116,
+      "connected_background_pixels": 1022630,
+      "warnings": [
+        "source_edges_not_flat_key"
+      ]
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed/enemy_attack_vfx_candidate_03_chroma_alpha.png",
+      "size": [
+        1774,
+        887
+      ],
+      "key_rgb": [
+        0,
+        255,
+        255
+      ],
+      "exact_tolerance": 6,
+      "feather_tolerance": 42,
+      "key_pixels": 1051802,
+      "feather_pixels": 152833,
+      "opaque_pixels": 368903,
+      "alpha_zero": 1099494,
+      "alpha_partial": 105128,
+      "alpha_opaque": 368916,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "non_key_edge_pixels": 555,
+      "connected_background_pixels": 1204635,
+      "warnings": [
+        "source_edges_not_flat_key"
+      ]
+    },
+    {
+      "source": "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_03_chroma_key.png",
+      "output": "assets/cleanup/chroma_keyed/mastery_vfx_candidate_03_chroma_alpha.png",
+      "size": [
+        1448,
+        1086
+      ],
+      "key_rgb": [
+        255,
+        0,
+        255
+      ],
+      "exact_tolerance": 6,
+      "feather_tolerance": 42,
+      "key_pixels": 164,
+      "feather_pixels": 1111312,
+      "opaque_pixels": 461052,
+      "alpha_zero": 211,
+      "alpha_partial": 1111245,
+      "alpha_opaque": 461072,
+      "alpha_minmax": [
+        0,
+        255
+      ],
+      "non_key_edge_pixels": 5064,
+      "connected_background_pixels": 1111476,
+      "warnings": [
+        "source_edges_not_flat_key"
+      ]
+    }
+  ]
+}
