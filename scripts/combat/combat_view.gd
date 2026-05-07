@@ -277,6 +277,63 @@ func apply_loadout_rail_layout() -> void:
 		_player_loadout_hud.apply_loadout_rail_layout(_equipment_icons, EQUIPMENT_RAIL_RECT, _consumable_icons, CONSUMABLE_RAIL_RECT)
 
 
+func render_player_loadout(payload: Dictionary, deferred_layout: bool = true) -> void:
+	if _player_loadout_hud == null:
+		return
+	_player_loadout_hud.update_player_data(payload)
+	apply_loadout_rail_layout()
+	if deferred_layout:
+		call_deferred("apply_loadout_rail_layout")
+
+
+func handle_player_hud_global_click(global_position: Vector2) -> bool:
+	if _player_loadout_hud == null:
+		return false
+	return bool(_player_loadout_hud.handle_global_click(global_position))
+
+
+func hide_player_hud_slot_popover() -> void:
+	if _player_loadout_hud == null:
+		return
+	_player_loadout_hud.hide_slot_detail_popover()
+
+
+func lookup_player_hud_content_definition(item_id: String) -> Dictionary:
+	if _player_loadout_hud == null:
+		return {}
+	return _player_loadout_hud.lookup_content_definition(item_id)
+
+
+func clear_hovered_combat_mastery() -> void:
+	if _player_loadout_hud == null or _elemental_mastery_cards == null:
+		return
+	_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
+
+
+func set_hovered_combat_mastery(orb_id: int) -> void:
+	if _player_loadout_hud == null or _elemental_mastery_cards == null:
+		return
+	_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, orb_id)
+
+
+func clear_combat_mastery_feedback() -> void:
+	if _player_loadout_hud == null or _elemental_mastery_cards == null:
+		return
+	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+
+
+func set_combat_mastery_feedback(orb_id: int, total: int) -> void:
+	if _player_loadout_hud == null or _elemental_mastery_cards == null:
+		return
+	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, total)
+
+
+func clear_combat_mastery_hover_ui() -> void:
+	if _player_loadout_hud == null or _elemental_mastery_cards == null:
+		return
+	_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
+
+
 func apply_visual_chrome(player_hud_nodes: Dictionary, style_config: Dictionary) -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_visual_chrome(
 		{

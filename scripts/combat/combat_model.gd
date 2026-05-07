@@ -129,6 +129,53 @@ func stage_hud_values(values: Dictionary) -> void:
 		_staged_hud_values[key] = int(values[key])
 
 
+func stage_enemy_damage_step(raw_damage: int, current_enemy_hp: int, current_enemy_block: int) -> void:
+	if raw_damage <= 0:
+		return
+	var staged_block := maxi(0, staged_hud_value("enemy_turn_block", current_enemy_block))
+	var staged_hp := maxi(0, staged_hud_value("enemy_hp", current_enemy_hp))
+	var blocked := mini(staged_block, raw_damage)
+	var hp_damage := maxi(0, raw_damage - blocked)
+	stage_hud_values({
+		"enemy_turn_block": staged_block - blocked,
+		"enemy_hp": maxi(0, staged_hp - hp_damage),
+	})
+
+
+func stage_enemy_result(enemy_hp: int, enemy_block: int) -> void:
+	stage_hud_values({
+		"enemy_hp": maxi(0, enemy_hp),
+		"enemy_turn_block": maxi(0, enemy_block),
+	})
+
+
+func stage_player_hp(value: int, max_hp: int) -> void:
+	stage_hud_values({"player_hp": clampi(value, 0, maxi(0, max_hp))})
+
+
+func stage_player_armor(value: int) -> void:
+	stage_hud_values({"player_armor": maxi(0, value)})
+
+
+func stage_player_block_step(blocked_by_armor: int, current_player_armor: int) -> void:
+	if blocked_by_armor <= 0:
+		return
+	var staged_armor := maxi(0, staged_hud_value("player_armor", current_player_armor))
+	var consumed_armor := mini(blocked_by_armor, staged_armor)
+	stage_player_armor(staged_armor - consumed_armor)
+
+
+func stage_gold(value: int) -> void:
+	stage_hud_values({"player_gold": maxi(0, value)})
+
+
+func stage_player_final(player_hp: int, player_armor: int) -> void:
+	stage_hud_values({
+		"player_hp": maxi(0, player_hp),
+		"player_armor": maxi(0, player_armor),
+	})
+
+
 func clear_hud_staging() -> void:
 	_staged_hud_values.clear()
 
@@ -159,6 +206,17 @@ func add_combat_mastery_preview_total(orb_id: int, amount: int) -> int:
 
 func release_combat_mastery_feedback(orb_id: int) -> void:
 	_combat_mastery_preview_totals.erase(orb_id)
+
+
+func consume_active_combat_mastery_feedback(ordered_orb_ids: Array) -> Array[int]:
+	var released_orb_ids: Array[int] = []
+	for raw_orb_id in ordered_orb_ids:
+		var orb_id := int(raw_orb_id)
+		if combat_mastery_preview_total(orb_id) <= 0:
+			continue
+		release_combat_mastery_feedback(orb_id)
+		released_orb_ids.append(orb_id)
+	return released_orb_ids
 
 
 func combat_mastery_preview_total(orb_id: int) -> int:

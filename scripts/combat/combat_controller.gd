@@ -123,6 +123,7 @@ const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_pr
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
+const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
@@ -223,6 +224,7 @@ var _resolve_presenter: Variant = null
 var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
+var _combat_consumable_service: Variant = null
 var _host: Control = null
 var _model = null
 var _view = null
@@ -356,6 +358,12 @@ func _ready() -> void:
 		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
 	if _hud_presenter == null:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+	if _combat_consumable_service == null:
+		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
+		_combat_consumable_service.bind({
+			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
+		})
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
@@ -707,7 +715,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_try_use_first_consumable()
 			_host.get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position):
+		var handled_click := false
+		if _view != null and _view.has_method("handle_player_hud_global_click"):
+			handled_click = bool(_view.handle_player_hud_global_click((event as InputEventMouseButton).position))
+		elif _player_loadout_hud != null:
+			handled_click = bool(_player_loadout_hud.handle_global_click((event as InputEventMouseButton).position))
+		if handled_click:
 			_host.get_viewport().set_input_as_handled()
 
 
@@ -834,14 +847,19 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 		return
 	var item_id := String(slots[slot_index])
 	var item_content: Dictionary = {}
-	if _player_loadout_hud != null:
+	if _view != null and _view.has_method("lookup_player_hud_content_definition"):
+		item_content = _view.lookup_player_hud_content_definition(item_id)
+	elif _player_loadout_hud != null:
 		item_content = _player_loadout_hud.lookup_content_definition(item_id)
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
 	var display_name := String(item_content.get("display_name", item_id))
 	if bool(result.get("ok", false)):
 		_status_label.text = "Sold %s for gold. Gold %d." % [display_name, RunState.run_gold]
 		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])
-		_player_loadout_hud.hide_slot_detail_popover()
+		if _view != null and _view.has_method("hide_player_hud_slot_popover"):
+			_view.hide_player_hud_slot_popover()
+		elif _player_loadout_hud != null:
+			_player_loadout_hud.hide_slot_detail_popover()
 	else:
 		var reason := String(result.get("reason", "unknown_error"))
 		_status_label.text = "Sell failed: %s" % reason
@@ -850,18 +868,15 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 
 
 func _apply_consumable_effects(effects: Array) -> int:
-	var total_converted := 0
-	for raw_effect in effects:
-		var effect: Dictionary = raw_effect
-		var operation := String(effect.get("operation", ""))
-		if operation != "convert_random_orbs":
-			continue
-		var value: Dictionary = effect.get("value", {})
-		var target_orb_id := int(value.get("target_orb_id", -1))
-		var count := int(value.get("count", 0))
-		if _board_controller != null:
-			total_converted += _board_controller.convert_random_non_target_orbs(target_orb_id, count, _consumable_rng)
-	return total_converted
+	if _combat_consumable_service == null:
+		return 0
+	return int(_combat_consumable_service.apply_effects(effects, _consumable_rng))
+
+
+func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
+	if _board_controller == null:
+		return 0
+	return int(_board_controller.convert_random_non_target_orbs(target_orb_id, count, rng))
 
 
 func _process(delta: float) -> void:
@@ -897,12 +912,16 @@ func _set_hovered_board_orb_id(orb_id: int) -> void:
 	if _model.hovered_board_orb_id() == normalized_orb_id:
 		return
 	_model.set_hovered_board_orb_id(normalized_orb_id)
-	if _player_loadout_hud == null:
-		return
 	if _model.hovered_board_orb_id() < 0:
-		_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
+		if _view != null and _view.has_method("clear_hovered_combat_mastery"):
+			_view.clear_hovered_combat_mastery()
+		elif _player_loadout_hud != null:
+			_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
 		return
-	_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, _model.hovered_board_orb_id())
+	if _view != null and _view.has_method("set_hovered_combat_mastery"):
+		_view.set_hovered_combat_mastery(_model.hovered_board_orb_id())
+	elif _player_loadout_hud != null:
+		_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, _model.hovered_board_orb_id())
 
 
 func _is_hoverable_combat_orb(orb_id: int) -> bool:
@@ -920,9 +939,10 @@ func _is_hoverable_combat_orb(orb_id: int) -> bool:
 
 func _clear_combat_mastery_hover_state() -> void:
 	_model.clear_hovered_board_orb_id()
-	if _player_loadout_hud == null:
-		return
-	_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
+	if _view != null and _view.has_method("clear_combat_mastery_hover_ui"):
+		_view.clear_combat_mastery_hover_ui()
+	elif _player_loadout_hud != null:
+		_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
 
 
 func _build_combat_mastery_hover_payload(progression_snapshot: Dictionary) -> Dictionary:
@@ -1664,7 +1684,7 @@ func _wait_combat_speed(base_seconds: float) -> void:
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
-	if _elemental_mastery_cards == null or _player_state == null:
+	if _player_state == null:
 		return
 	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
 	if not OrbType.is_valid_id(orb_id):
@@ -1673,35 +1693,49 @@ func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	if amount <= 0:
 		return
 	var next_total: int = _model.add_combat_mastery_preview_total(orb_id, amount)
-	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, next_total)
+	if _view != null and _view.has_method("set_combat_mastery_feedback"):
+		_view.set_combat_mastery_feedback(orb_id, next_total)
+	elif _player_loadout_hud != null:
+		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, next_total)
 
 
 func _reset_combat_mastery_preview() -> void:
 	_model.reset_combat_mastery_preview()
-	if _elemental_mastery_cards != null:
+	if _view != null and _view.has_method("clear_combat_mastery_feedback"):
+		_view.clear_combat_mastery_feedback()
+	elif _player_loadout_hud != null:
 		_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
 
 
 func _sync_combat_mastery_preview_totals() -> void:
-	if _elemental_mastery_cards == null:
+	var use_view: bool = _view != null and _view.has_method("set_combat_mastery_feedback")
+	if not use_view and _player_loadout_hud == null:
 		return
 	for orb_id in OrbType.ALL_TYPES:
 		var total: int = _model.combat_mastery_preview_total(int(orb_id))
-		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), total)
+		if use_view:
+			_view.set_combat_mastery_feedback(int(orb_id), total)
+		else:
+			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), total)
 
 
 func _release_combat_mastery_feedback(orb_id: int) -> void:
-	if _elemental_mastery_cards == null or not OrbType.is_valid_id(orb_id):
+	if not OrbType.is_valid_id(orb_id):
 		return
 	_model.release_combat_mastery_feedback(orb_id)
-	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, 0)
+	if _view != null and _view.has_method("set_combat_mastery_feedback"):
+		_view.set_combat_mastery_feedback(orb_id, 0)
+	elif _player_loadout_hud != null:
+		_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, 0)
 
 
 func _release_remaining_combat_mastery_feedback() -> void:
-	for orb_id in OrbType.ALL_TYPES:
-		if _model.combat_mastery_preview_total(int(orb_id)) <= 0:
-			continue
-		_release_combat_mastery_feedback(int(orb_id))
+	var use_view: bool = _view != null and _view.has_method("set_combat_mastery_feedback")
+	for orb_id in _model.consume_active_combat_mastery_feedback(OrbType.ALL_TYPES):
+		if use_view:
+			_view.set_combat_mastery_feedback(int(orb_id), 0)
+		elif _player_loadout_hud != null:
+			_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, int(orb_id), 0)
 		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1959,65 +1993,54 @@ func _capture_hud_stage_values() -> Dictionary:
 		"player_armor": int(_player_state.armor),
 	}
 
-
-func _stage_hud_values(values: Dictionary) -> void:
-	if not _model.is_hud_staging_active():
+func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
+	if _enemy_state == null or raw_damage <= 0 or not _model.is_hud_staging_active():
 		return
-	_model.stage_hud_values(values)
+	_model.stage_enemy_damage_step(raw_damage, int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
 	_update_hud()
 
 
-func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
-	if _enemy_state == null or raw_damage <= 0:
-		return
-	var staged_block := maxi(0, _model.staged_hud_value("enemy_turn_block", int(_enemy_state.current_turn_block)))
-	var staged_hp := maxi(0, _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp)))
-	var blocked := mini(staged_block, raw_damage)
-	var hp_damage := maxi(0, raw_damage - blocked)
-	_stage_hud_values({
-		"enemy_turn_block": staged_block - blocked,
-		"enemy_hp": maxi(0, staged_hp - hp_damage),
-	})
-
-
 func _stage_hud_enemy_result() -> void:
-	if _enemy_state == null:
+	if _enemy_state == null or not _model.is_hud_staging_active():
 		return
-	_stage_hud_values({
-		"enemy_hp": int(_enemy_state.current_hp),
-		"enemy_turn_block": int(_enemy_state.current_turn_block),
-	})
+	_model.stage_enemy_result(int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
+	_update_hud()
 
 
 func _stage_hud_player_hp(value: int) -> void:
-	if _player_state == null:
+	if _player_state == null or not _model.is_hud_staging_active():
 		return
-	_stage_hud_values({"player_hp": clampi(value, 0, int(_player_state.max_hp))})
+	_model.stage_player_hp(value, int(_player_state.max_hp))
+	_update_hud()
 
 
 func _stage_hud_player_armor(value: int) -> void:
-	_stage_hud_values({"player_armor": maxi(0, value)})
+	if not _model.is_hud_staging_active():
+		return
+	_model.stage_player_armor(value)
+	_update_hud()
 
 
 func _stage_hud_player_block_step(blocked_by_armor: int) -> void:
-	if blocked_by_armor <= 0:
+	if blocked_by_armor <= 0 or not _model.is_hud_staging_active():
 		return
-	var staged_armor := maxi(0, _model.staged_hud_value("player_armor", int(_player_state.armor if _player_state != null else 0)))
-	var consumed_armor := mini(blocked_by_armor, staged_armor)
-	_stage_hud_player_armor(staged_armor - consumed_armor)
+	var current_player_armor := int(_player_state.armor if _player_state != null else 0)
+	_model.stage_player_block_step(blocked_by_armor, current_player_armor)
+	_update_hud()
 
 
 func _stage_hud_gold(value: int) -> void:
-	_stage_hud_values({"player_gold": maxi(0, value)})
+	if not _model.is_hud_staging_active():
+		return
+	_model.stage_gold(value)
+	_update_hud()
 
 
 func _stage_hud_player_final() -> void:
-	if _player_state == null:
+	if _player_state == null or not _model.is_hud_staging_active():
 		return
-	_stage_hud_values({
-		"player_hp": int(_player_state.current_hp),
-		"player_armor": int(_player_state.armor),
-	})
+	_model.stage_player_final(int(_player_state.current_hp), int(_player_state.armor))
+	_update_hud()
 
 
 func _should_show_intent_damage_preview() -> bool:
@@ -2197,7 +2220,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 			visible_player_hp,
 			visible_player_armor
 		)
-	_player_loadout_hud.update_player_data({
+	var loadout_payload := {
 		"player_state": _player_state,
 		"progression": progression_snapshot,
 		"hero_portrait": _visuals.hero_portrait(),
@@ -2208,9 +2231,13 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"intent_damage_preview": intent_preview,
 		"combat_mastery_feedback_totals": _model.combat_mastery_preview_totals_snapshot(),
 		"combat_mastery_hover_payload": _build_combat_mastery_hover_payload(progression_snapshot),
-	})
-	_apply_loadout_rail_layout()
-	call_deferred("_apply_loadout_rail_layout")
+	}
+	if _view != null and _view.has_method("render_player_loadout"):
+		_view.render_player_loadout(loadout_payload, true)
+	elif _player_loadout_hud != null:
+		_player_loadout_hud.update_player_data(loadout_payload)
+		_apply_loadout_rail_layout()
+		call_deferred("_apply_loadout_rail_layout")
 
 	_relic_row.visible = false
 	_mastery_strip.visible = false
