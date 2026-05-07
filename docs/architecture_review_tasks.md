@@ -498,3 +498,21 @@ Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
   - Follow-up parser-crash fix removed invalid no-op compatibility statements and explicitly typed the `_view.apply_combat_layout(...)` result in `combat_controller.gd`; Godot MCP `play_scene current` reached `combat_first_usable_frame` and resolve trace output. User manual QA passed after the fix.
   - Compatibility cleanup follow-up validation passed `git status --short --branch`, `git diff --check` with the existing CRLF warning only, static searches for no-op assignments/untyped `_view` inference/private view-node calls/removed wrapper definitions, Godot MCP script loads, scene instantiate probes, retained AR-01 envelope probe, focused board local-coordinate/touch drag probe, `play_scene current`, resolve trace through match flash/clear/gravity/refill/final commit, `stop_running_scene`, and final `get_godot_errors` with no current crash. The editor session still reported stale unused-variable reload warnings, including declarations already removed by the follow-up patch.
   - User manual QA passed on 2026-05-07 for the compatibility cleanup follow-up, covering real drag, resolve animation feel, enemy intent/block preview hover rendering, victory/defeat/boss reward routes, and debug commands.
+
+### AR-30: CombatModel scene-local state ownership
+
+- Status: `done`
+- Owner/scope: Continued the combat MVC refactor by moving scene-local mutable bookkeeping from `CombatController` into `CombatModel`. This pass intentionally kept `PlayerState`, `EnemyState`, `BoardModel`, `CombatStateMachine`, `RunState`, content registry state, resolver math, and replay timing outside `CombatModel`.
+- Progress: 2026-05-07 completed the model ownership pass. `CombatModel` now owns input phase, external lock reason, `combat_speed`, FlowTrace route id, pending next-scene path, outcome transition lock, hovered board orb id, staged HUD replay values, combat mastery preview totals/token, and resolve trace active/origin/pass bookkeeping behind small methods. `CombatController` now calls model methods for those scene-local transitions and remains the owner of combat setup, resolver kickoff, board binding, audio, debug callbacks, RunState/FlowTrace side effects, route actions, and replay/VFX timing decisions.
+- Preserve:
+  - Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, `combat_speed`, debug command names, board-local `BoardView.gui_input` coordinates, and visible resolve/replay timing.
+  - Existing `CombatView` rendering ownership and presenter/helper boundaries.
+- Validation:
+  - Review gate accepted at `8.1/10`; score is capped because `CombatController` remains large, broad UI/presenter boundary refs remain, the editor session still reports reload-warning noise, and the full manual route/debug QA gate has not been rerun for this exact pass.
+  - `git status --short --branch` confirmed `codex/milestone-12`; `git diff --check` passed with the existing CRLF normalization warning only.
+  - Static searches confirmed moved state is no longer declared as controller-owned fields and model access is through method calls rather than direct public property mutation.
+  - Godot MCP `get_project_info` reported Godot `4.6.2-stable`; `view_script` passed for `combat_model.gd`, `combat_controller.gd`, `combat_view.gd`, `combat_resolve_presenter.gd`, `combat_vfx_presenter.gd`, and `board_controller.gd`.
+  - Scene instantiate probe passed for `res://scenes/combat.tscn`, `res://scenes/main_menu.tscn`, `res://scenes/shop.tscn`, and `res://scenes/run_summary.tscn`.
+  - Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.
+  - Initial `play_scene current` exposed a nil-model crash in `CombatController._enter_tree()` before `bind(...)`; a pre-bind `_ensure_model()` guard fixed it. The rerun reached `combat_first_usable_frame`, then `stop_running_scene` and final `get_godot_errors` reported no current runtime crash.
+  - Manual QA remains pending for this exact state-ownership pass.
