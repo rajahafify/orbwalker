@@ -153,8 +153,8 @@ const _DERIVED_ORB_FILENAME_BY_ID := {
 }
 
 const _STABLE_PLACEHOLDER_ICON_COLORS := {
-	"booster_elemental": Color(0.90, 0.34, 0.16, 1.0),
-	"booster_fire": Color(0.90, 0.34, 0.16, 1.0),
+	"treasure_chest_elemental": Color(0.90, 0.34, 0.16, 1.0),
+	"treasure_chest_fire": Color(0.90, 0.34, 0.16, 1.0),
 }
 
 var _warned_keys: Dictionary = {}
@@ -402,7 +402,7 @@ func mastery_impact_texture(kind: String) -> Texture2D:
 
 func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
 	var normalized_key := icon_key.strip_edges().to_lower()
-	if normalized_key == "booster_fire" or normalized_key == "booster_elemental":
+	if normalized_key == "treasure_chest_fire" or normalized_key == "treasure_chest_elemental":
 		return menu_mastery_icon(OrbType.Id.FIRE)
 	var concrete_icon := _load_derived_icon(normalized_key)
 	if concrete_icon != null and not _looks_like_checkerboard_texture(concrete_icon):

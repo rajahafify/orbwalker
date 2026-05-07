@@ -280,12 +280,12 @@ func _run_log_shop_action_details(action: String, request: Dictionary, result: D
 	var selected_offer := _run_log_find_selected_offer(request, shop_before_snapshot, gold_before)
 	if not selected_offer.is_empty():
 		details["selected_offer"] = selected_offer
-	var selected_option := _run_log_find_selected_booster_option(request, shop_before_snapshot)
+	var selected_option := _run_log_find_selected_treasure_chest_option(request, shop_before_snapshot)
 	if not selected_option.is_empty():
-		details["selected_booster_option"] = selected_option
+		details["selected_treasure_chest_option"] = selected_option
 
 	var result_payload: Dictionary = Dictionary(result.get("result", {}))
-	var granted := run_log_sanitize_booster_option(Dictionary(result_payload.get("granted", {})))
+	var granted := run_log_sanitize_treasure_chest_option(Dictionary(result_payload.get("granted", {})))
 	if not granted.is_empty():
 		details["granted"] = granted
 	var replacement: Dictionary = Dictionary(result_payload.get("replacement", {}))
@@ -313,20 +313,20 @@ func _run_log_find_selected_offer(request: Dictionary, shop_snapshot: Dictionary
 	return {}
 
 
-func _run_log_find_selected_booster_option(request: Dictionary, shop_snapshot: Dictionary) -> Dictionary:
+func _run_log_find_selected_treasure_chest_option(request: Dictionary, shop_snapshot: Dictionary) -> Dictionary:
 	if not request.has("option_index"):
 		return {}
 	var option_index := int(request.get("option_index", -1))
-	var options: Array = Array(shop_snapshot.get("pending_booster_options", []))
+	var options: Array = Array(shop_snapshot.get("pending_treasure_chest_options", []))
 	if option_index < 0 or option_index >= options.size():
 		return {}
-	return run_log_sanitize_booster_option(Dictionary(options[option_index]), option_index)
+	return run_log_sanitize_treasure_chest_option(Dictionary(options[option_index]), option_index)
 
 
 func run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
 	var item_offers: Array[Dictionary] = []
 	var item_type_counts := {}
-	var has_booster_offer := false
+	var has_treasure_chest_offer := false
 	for raw_offer in Array(shop_snapshot.get("item_offers", [])):
 		var offer := run_log_sanitize_shop_offer(Dictionary(raw_offer), gold_value)
 		if offer.is_empty():
@@ -334,14 +334,14 @@ func run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) 
 		item_offers.append(offer)
 		var offer_type := String(offer.get("type", ""))
 		item_type_counts[offer_type] = int(item_type_counts.get(offer_type, 0)) + 1
-		if offer_type == "booster":
-			has_booster_offer = true
+		if offer_type == "treasure_chest":
+			has_treasure_chest_offer = true
 
 	var relic_offer := run_log_sanitize_shop_relic_offer(Dictionary(shop_snapshot.get("relic_offer", {})), gold_value)
-	var booster_options: Array[Dictionary] = []
+	var treasure_chest_options: Array[Dictionary] = []
 	var option_index := 0
-	for raw_option in Array(shop_snapshot.get("pending_booster_options", [])):
-		booster_options.append(run_log_sanitize_booster_option(Dictionary(raw_option), option_index))
+	for raw_option in Array(shop_snapshot.get("pending_treasure_chest_options", [])):
+		treasure_chest_options.append(run_log_sanitize_treasure_chest_option(Dictionary(raw_option), option_index))
 		option_index += 1
 
 	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
@@ -350,15 +350,15 @@ func run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) 
 		"dungeon_level": int(shop_snapshot.get("dungeon_level", _owner.dungeon_level)),
 		"item_offers": item_offers,
 		"item_type_counts": item_type_counts,
-		"has_booster_offer": has_booster_offer,
+		"has_treasure_chest_offer": has_treasure_chest_offer,
 		"has_relic_offer": not relic_offer.is_empty(),
 		"relic_offer": relic_offer,
 		"reroll_count": int(shop_snapshot.get("reroll_count", 0)),
 		"reroll_cost": reroll_cost,
 		"can_afford_reroll": gold_value >= reroll_cost,
-		"pending_booster_option_count": booster_options.size(),
-		"pending_booster_options": booster_options,
-		"pending_booster_offer_id": String(shop_snapshot.get("pending_booster_offer_id", "")),
+		"pending_treasure_chest_option_count": treasure_chest_options.size(),
+		"pending_treasure_chest_options": treasure_chest_options,
+		"pending_treasure_chest_offer_id": String(shop_snapshot.get("pending_treasure_chest_offer_id", "")),
 		"skipped": bool(shop_snapshot.get("skipped", false)),
 	}
 
@@ -391,7 +391,7 @@ func run_log_sanitize_shop_relic_offer(offer: Dictionary, gold_value: int) -> Di
 	return relic_offer
 
 
-func run_log_sanitize_booster_option(option: Dictionary, option_index: int = -1) -> Dictionary:
+func run_log_sanitize_treasure_chest_option(option: Dictionary, option_index: int = -1) -> Dictionary:
 	if option.is_empty():
 		return {}
 	var out := {

@@ -153,8 +153,8 @@ func _connect_view_signals() -> void:
 	_view.sell_pressed.connect(_on_sell_pressed)
 	_view.continue_pressed.connect(_on_continue_pressed)
 	_view.main_menu_pressed.connect(_on_main_menu_pressed)
-	_view.booster_option_pressed.connect(_choose_booster_option)
-	_view.skip_booster_pressed.connect(_skip_pending_booster)
+	_view.treasure_chest_option_pressed.connect(_choose_treasure_chest_option)
+	_view.skip_treasure_chest_pressed.connect(_skip_pending_treasure_chest)
 	_view.equipment_slot_selected.connect(_select_equipment_slot)
 	_view.consumable_slot_selected.connect(_select_consumable_slot)
 	_view.hud_sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
@@ -239,11 +239,11 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 	_refresh_ui()
 
 
-func _choose_booster_option(index: int) -> void:
+func _choose_treasure_chest_option(index: int) -> void:
 	if not _model.try_begin_shop_action():
 		return
 	_clear_inventory_focus()
-	var result: Dictionary = RunState.choose_booster_option(index)
+	var result: Dictionary = RunState.choose_treasure_chest_option(index)
 	_play_shop_result_sfx(result, "purchase")
 	if not bool(result.get("ok", false)) and _is_full_slot_reason(String(result.get("reason", ""))):
 		_set_status("No free slot for this reward. Sell from the loadout HUD, then pick again, or press Skip.", false)
@@ -252,11 +252,11 @@ func _choose_booster_option(index: int) -> void:
 	_refresh_ui()
 
 
-func _skip_pending_booster() -> void:
+func _skip_pending_treasure_chest() -> void:
 	if not _model.try_begin_shop_action():
 		return
 	_clear_inventory_focus()
-	var result: Dictionary = RunState.discard_pending_booster_options()
+	var result: Dictionary = RunState.discard_pending_treasure_chest_options()
 	_play_shop_result_sfx(result, "ui_cancel")
 	var message := _result_message("Skip chest reward", result)
 	if bool(result.get("ok", false)):

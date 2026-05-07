@@ -9,8 +9,8 @@ var item_offers: Array[Dictionary] = []
 var relic_offer: Dictionary = {}
 var reroll_count: int = 0
 var reroll_cost: int = 0
-var pending_booster_options: Array[Dictionary] = []
-var pending_booster_offer_id: String = ""
+var pending_treasure_chest_options: Array[Dictionary] = []
+var pending_treasure_chest_offer_id: String = ""
 var offer_sequence: int = 1
 var skipped: bool = false
 
@@ -22,8 +22,8 @@ func reset_for_new_run() -> void:
 	relic_offer = {}
 	reroll_count = 0
 	reroll_cost = 0
-	pending_booster_options.clear()
-	pending_booster_offer_id = ""
+	pending_treasure_chest_options.clear()
+	pending_treasure_chest_offer_id = ""
 	offer_sequence = 1
 	skipped = false
 
@@ -33,16 +33,16 @@ func open_for_level(level: int) -> void:
 	dungeon_level = maxi(1, level)
 	item_offers.clear()
 	reroll_count = 0
-	pending_booster_options.clear()
-	pending_booster_offer_id = ""
+	pending_treasure_chest_options.clear()
+	pending_treasure_chest_offer_id = ""
 	skipped = false
 
 
 func close_shop(mark_skipped: bool = false) -> void:
 	active = false
 	skipped = mark_skipped
-	pending_booster_options.clear()
-	pending_booster_offer_id = ""
+	pending_treasure_chest_options.clear()
+	pending_treasure_chest_offer_id = ""
 
 
 func next_offer_id(prefix: String) -> String:
@@ -59,7 +59,7 @@ func to_snapshot() -> Dictionary:
 		"relic_offer": relic_offer.duplicate(true),
 		"reroll_count": reroll_count,
 		"reroll_cost": reroll_cost,
-		"pending_booster_options": pending_booster_options.duplicate(true),
-		"pending_booster_offer_id": pending_booster_offer_id,
+		"pending_treasure_chest_options": pending_treasure_chest_options.duplicate(true),
+		"pending_treasure_chest_offer_id": pending_treasure_chest_offer_id,
 		"skipped": skipped,
 	}

@@ -416,7 +416,7 @@ Tasks:
   - Acceptance: Each boss has a previewed identity, readable moveset, and a distinct build or execution pressure.
 
 - [x] Implement content pool rules.
-  - Deliverable: Shop and booster pools by rarity, category, orb type, and current dungeon level.
+  - Deliverable: Shop and treasure chest pools by rarity, category, orb type, and current dungeon level.
   - Acceptance: Random generation produces valid content and avoids duplicates where the GDD requires no duplicates.
 
 Verification notes (2026-04-27):
@@ -427,7 +427,7 @@ Verification notes (2026-04-27):
 - Added item/relic `combat_modifiers` and integrated them into turn resolution via `RunState.current_combat_modifiers()` and `CombatStateMachine`.
 - Added content pool level gating (`min_level`, `max_level`) for shop/relic generation and maintained no-duplicate offer selection.
 - Added placeholder content presentation fields (`description`, `icon_key`) and surfaced item description text in shop offer buttons.
-- Milestone 8 QA execution completed via Godot MCP editor-script checks: mastery/consumable resolution paths, equipment buy/equip/sell/resolve flows, relic buy/resolve flows, enemy/boss run-sequence coverage, and shop/booster pool-rule checks all passed with no reported failures.
+- Milestone 8 QA execution completed via Godot MCP editor-script checks: mastery/consumable resolution paths, equipment buy/equip/sell/resolve flows, relic buy/resolve flows, enemy/boss run-sequence coverage, and shop/treasure chest pool-rule checks all passed with no reported failures.
 
 ## Milestone 9: UI, UX, And Game Feel
 
@@ -452,7 +452,7 @@ Tasks:
   - Acceptance: Item effect text is visible before buying, using, or selling.
 
 - [x] Implement shop UI.
-  - Deliverable: Shop offers, prices, buy buttons, reroll, sell controls, booster opening view, and skip shop.
+  - Deliverable: Shop offers, prices, buy buttons, reroll, sell controls, treasure chest opening view, and skip shop.
   - Acceptance: The player can complete all shop actions without debug input.
 
 - [x] Implement boss and dungeon UI.
@@ -466,7 +466,7 @@ Tasks:
 - [x] Add basic audio and visual polish.
   - Deliverable: Placeholder sound effects, hit feedback, item purchase feedback, enemy death feedback, and simple transitions.
   - Acceptance: Important actions produce readable response without slowing play.
-  - Note: 2026-05-02 added a code-generated placeholder audio manager, scene music contexts, and SFX hooks for menu start, combat drag swaps, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/booster actions. Raw MIDI files now export through FluidSynth and `raw/GeneralUser GS v1.471.sf2` into normalized signed 16-bit WAVs in `resources/audio/music/`, and `AudioManager` prefers those WAV music assets when present. The main menu owns a direct `MainMenuMusicPlayer` for `main-menu.wav`, while `AudioManager` now opens the absolute source WAV for combat/shop music before falling back to Godot imports; both paths decode PCM into memory and play at `-12 dB`. Manual listening, mix, and loop-point review remains needed before marking complete.
+  - Note: 2026-05-02 added a code-generated placeholder audio manager, scene music contexts, and SFX hooks for menu start, combat drag swaps, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/treasure chest actions. Raw MIDI files now export through FluidSynth and `raw/GeneralUser GS v1.471.sf2` into normalized signed 16-bit WAVs in `resources/audio/music/`, and `AudioManager` prefers those WAV music assets when present. The main menu owns a direct `MainMenuMusicPlayer` for `main-menu.wav`, while `AudioManager` now opens the absolute source WAV for combat/shop music before falling back to Godot imports; both paths decode PCM into memory and play at `-12 dB`. Manual listening, mix, and loop-point review remains needed before marking complete.
   - Note: 2026-05-03 Android export audio hardening now prefers imported `res://` audio streams in template/export builds before direct source-WAV decoding, while keeping generated SFX active. Godot MCP confirmed imported combat/menu WAV streams load as `AudioStreamWAV`, generated `swap` SFX builds, combat music logs from `AudioManager`, and main menu music logs from `MainMenuMusicPlayer`; Android on-device listening remains needed.
   - Note: 2026-05-03 Android audio regression follow-up routes menu music through `AudioManager`, tries uploaded WAV/imported music first for menu/combat/shop on Android/template builds, configures imported WAV loop bounds, and keeps generated music as fallback only. Android on-device listening and final public-build audio/mix acceptance are transferred to ITCH-06 and ITCH-08 in `docs/itch_readiness_tasks.md`.
 
@@ -486,7 +486,7 @@ Verification notes (2026-04-27):
   - Combat status/state labels now use autowrap to reduce clipping risk in narrow layouts.
 - Godot MCP post-change checks passed for script parse state, `res://scenes/main_menu.tscn` run smoke, and shop scene load/instantiate.
 - 2026-05-02 dungeon playthrough fix: shared `PlayerLoadoutHud` footer now includes owned relics for combat and shop, with compact icon overflow for tight space.
-- 2026-05-02 shop generation follow-up: shop stock and booster equipment options filter out already-equipped equipment, consumables can be sold from a unified non-clipped inventory popover, owned relics sit between the HP panel and the equipment/consumable rows, and the popover dismisses when inventory focus is lost.
+- 2026-05-02 shop generation follow-up: shop stock and treasure chest equipment options filter out already-equipped equipment, consumables can be sold from a unified non-clipped inventory popover, owned relics sit between the HP panel and the equipment/consumable rows, and the popover dismisses when inventory focus is lost.
 - Milestone 9 graphical asset integration pass (combat + shop) is now wired through a dedicated visual registry and player-facing scenes:
   - Added `scripts/ui/visual_registry.gd` and `resources/visual/first_pass_asset_map.json` as the centralized texture lookup/mapping contract (backgrounds, enemy portraits, orb/intent/rarity/mastery/item atlases, and VFX sheet hooks with fallbacks).
   - Added player-facing scene routes:
@@ -570,8 +570,8 @@ Tasks:
   - Note: 2026-05-05 M10-03 added temporary prototype levers for starting gold, Gold orb spawn access, shop price/reroll multipliers, fight base rewards, and enemy HP/damage multipliers while keeping default parity until tuning tasks changed values.
 
 - [x] Tune early gold access.
-  - Deliverable: Temporary prototype settings for gold orb value/spawn rate, starting gold, fight rewards, shop prices, or booster affordability.
-  - Acceptance: After the first enemy, a normal playtest run can usually buy at least one item, booster, consumable, or useful shop option.
+  - Deliverable: Temporary prototype settings for gold orb value/spawn rate, starting gold, fight rewards, shop prices, or treasure chest affordability.
+  - Acceptance: After the first enemy, a normal playtest run can usually buy at least one item, treasure chest, consumable, or useful shop option.
   - Note: 2026-05-05 M10-04 set temporary fixed fight base rewards to `10/12/14` by dungeon level, kept Gold spawn/shop/reroll multipliers neutral, and later M10-06 made the first shop guarantee affordable `Shortsword` damage access at the `10` gold floor.
 
 - [x] Tune early combat survivability.
@@ -582,7 +582,7 @@ Tasks:
 - [x] Tune item and relic test access.
   - Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and treasure chests practical to inspect during repeated runs.
   - Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.
-  - Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one booster when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second booster unless needed. The first level-1 shop now guarantees affordable damage equipment (`Shortsword`) instead of `Coin Purse`; `Shortsword` price is `10`. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.
+  - Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one treasure chest when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second treasure chest unless needed. The first level-1 shop now guarantees affordable damage equipment (`Shortsword`) instead of `Coin Purse`; `Shortsword` price is `10`. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.
 
 - [x] Record first-pass balance assumptions.
   - Deliverable: Short notes in `docs/test_plan.md` or relevant wiki pages describing temporary balance values, what they are meant to test, and what is intentionally not final.
@@ -622,7 +622,7 @@ Tasks:
 - [x] Connect meta progression to content access.
   - Deliverable: Equipment, relic, mastery, consumable, hero, or dungeon content can be gated or expanded by meta state.
   - Acceptance: Unlocks affect future runs in an understandable way without breaking current shop/combat flows.
-  - Note: Locked equipment variants are filtered from shop and booster pools; lower unlocked rarities can still roll, and only one equipment item per family can be equipped.
+  - Note: Locked equipment variants are filtered from shop and treasure chest pools; lower unlocked rarities can still roll, and only one equipment item per family can be equipped.
 
 - [x] Validate meta progression with the temporary balance layer.
   - Deliverable: Playtest notes showing how meta progress changes run difficulty, item access, and economy pressure.

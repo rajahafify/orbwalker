@@ -281,8 +281,8 @@ The player buys a pack, opens it, sees 3 generated options, and picks 1.
 
 Treasure chest types:
 
-- Element booster: generates items tied to a specific orb type, such as Fire, Ice, Earth, Heart, Armor, or Gold.
-- Category booster: generates items from a category, such as 3 equipment, 3 mastery cards, or 3 consumables.
+- Element treasure chest: generates items tied to a specific orb type, such as Fire, Ice, Earth, Heart, Armor, or Gold.
+- Category treasure chest: generates items from a category, such as 3 equipment, 3 mastery cards, or 3 consumables.
 
 Treasure chests can produce:
 
@@ -290,7 +290,7 @@ Treasure chests can produce:
 - Mastery cards.
 - Consumables.
 
-Relics are not part of normal booster pools unless a specific future pack allows it.
+Relics are not part of normal treasure chest pools unless a specific future pack allows it.
 
 ## Equipment
 

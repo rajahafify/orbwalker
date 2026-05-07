@@ -97,7 +97,7 @@ Ownership intent:
 - `scripts/combat/`: combat state machine, scoring, enemy intent resolution, and combat-specific effect timing.
 - `scripts/content/`: content resource classes, registry, validation, and effect definitions.
 - `scripts/run/`: run state, dungeon sequence, victory, defeat, and transition ownership.
-- `scripts/shop/`: shop generation, pricing, reroll, purchase, sell, and booster opening.
+- `scripts/shop/`: shop generation, pricing, reroll, purchase, sell, and treasure chest opening.
 - `scripts/ui/`: presentation components that read state and send commands but do not own gameplay rules.
 - `scripts/debug/`: debug-only tools for seeds, board layouts, test fights, and run manipulation.
 
@@ -189,7 +189,7 @@ Planned runtime models:
   - Owns active enemy HP, current intent index, current block for the turn, special boss state, and any temporary modifiers.
 
 - `ShopState`
-  - Owns active shop inventory: random item slots, booster offers, relic offer, reroll count, pricing snapshot, buy/sell availability, and shop exit state.
+  - Owns active shop inventory: random item slots, treasure chest offers, relic offer, reroll count, pricing snapshot, buy/sell availability, and shop exit state.
 
 - `ContentRegistry`
   - Owns dictionary-backed default content, loaded content pools, validation results, shop pool snapshots, and shop pricing configuration. Other systems request content by ID, type, rarity, tag, category, or unlock state through registry methods, which return duplicated dictionaries for caller safety. `content_contract_snapshot()` records the current collection schema and migration boundary. (source: `scripts/content/content_registry.gd`)
@@ -251,7 +251,7 @@ Recommended effect hooks:
 - `on_item_bought`
 - `on_item_sold`
 - `on_consumable_used`
-- `on_booster_opened`
+- `on_treasure_chest_opened`
 - `on_boss_reward`
 
 Milestone boundary note:

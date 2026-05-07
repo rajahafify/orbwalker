@@ -72,7 +72,7 @@ scenes/
       elemental_mastery_panel.tscn
     overlays/
       combat_outcome_overlay.tscn
-      booster_choice_overlay.tscn
+      treasure_chest_choice_overlay.tscn
   dev/
     elemental_mastery_hud_variants.tscn
 ```
@@ -220,5 +220,5 @@ Acceptance:
 
 - Should `player_hud_section.tscn` contain only layout nodes, with `PlayerLoadoutHud` continuing as the controller/helper, or should the script move onto the scene root?
 - Should Elemental Mastery remain part of the Player HUD component, or become a separate shared component mounted adjacent to the Player HUD by combat and shop?
-- Should overlays such as booster choice and combat outcome become `.tscn` component scenes now, or remain code-built until the screen folder migration is complete?
+- Should overlays such as treasure chest choice and combat outcome become `.tscn` component scenes now, or remain code-built until the screen folder migration is complete?
 - Should the final folder use `screens/` and `components/`, or shorter domain folders such as `combat/`, `shop/`, `shared/`, and `dev/`?

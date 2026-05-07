@@ -14,7 +14,7 @@ func run_all() -> Dictionary:
 	_run_case("merchant_backdrop_covers_summary_and_detail", _test_merchant_backdrop_covers_summary_and_detail, failures)
 	_run_case("action_row_connected_to_hud", _test_action_row_connected_to_hud, failures)
 	_run_case("stock_cards_fit", _test_stock_cards_fit, failures)
-	_run_case("treasure_chest_labels_replace_booster_copy", _test_treasure_chest_labels_replace_booster_copy, failures)
+	_run_case("treasure_chest_labels_use_chest_copy", _test_treasure_chest_labels_use_chest_copy, failures)
 	_run_case("scene_facade_matches_shop_view_probe", _test_scene_facade_matches_shop_view_probe, failures)
 
 	return {
@@ -109,7 +109,7 @@ func _test_stock_cards_fit() -> String:
 	return ""
 
 
-func _test_treasure_chest_labels_replace_booster_copy() -> String:
+func _test_treasure_chest_labels_use_chest_copy() -> String:
 	var probe := _probe_snapshot()
 	var terminology: Dictionary = probe.get("treasure_chest_terminology", {})
 	if String(terminology.get("pending_state_badge", "")) != "CHEST FIRST":
@@ -118,12 +118,12 @@ func _test_treasure_chest_labels_replace_booster_copy() -> String:
 		return "Expected pending price badge to say WAIT CHEST."
 	if String(terminology.get("overlay_title", "")) != "Choose One Treasure Chest Reward":
 		return "Expected overlay title to use Treasure Chest wording."
-	if String(terminology.get("overlay_hint", "")).findn("booster") >= 0:
-		return "Expected overlay hint not to use booster copy."
+	if String(terminology.get("overlay_hint", "")).findn("treasure_chest") >= 0:
+		return "Expected overlay hint not to expose internal treasure_chest copy."
 	if String(terminology.get("offer_type_label", "")) != "TREASURE CHEST":
-		return "Expected offer type label to say TREASURE CHEST while internal type remains booster."
-	if String(terminology.get("internal_offer_type", "")) != "booster":
-		return "Expected internal shop offer type to remain booster for behavior compatibility."
+		return "Expected offer type label to say TREASURE CHEST."
+	if String(terminology.get("internal_offer_type", "")) != "treasure_chest":
+		return "Expected internal shop offer type to be treasure_chest."
 	return ""
 
 

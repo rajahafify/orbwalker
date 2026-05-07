@@ -2299,3 +2299,8 @@ Append-only history of wiki operations.
 
 - Renamed the public shop/content terminology from booster/booster pack to treasure chest/chest while preserving the existing internal `booster` type, state keys, service methods, and log fields for behavior compatibility. Added lightweight terminology tests for content display copy and shop view labels. (source: `scripts/content/content_registry.gd`, `scripts/shop/shop_view.gd`, `scripts/shop/shop_controller.gd`, `scripts/tests/content_registry_terminology_test.gd`, `scripts/tests/shop_view_layout_test.gd`)
 - User manual QA passed on 2026-05-07; `docs/test_plan.md` records the focused Godot MCP terminology tests and acceptance evidence. (source: `docs/test_plan.md`)
+
+## [2026-05-07] code-change | Treasure Chest Runtime Terminology
+
+- Renamed live runtime/API terminology from `booster` to `treasure_chest` across content registry collections and ids, shop state/service/model/view/controller, RunState wrappers, run-log payload/reporting keys, visual icon keys, tests, and current docs/wiki. Historical logs and dated evidence retain older wording where they describe past behavior. (source: `scripts/content/content_registry.gd`, `scripts/shop/shop_state.gd`, `scripts/shop/shop_service.gd`, `scripts/core/run_state.gd`, `scripts/core/run_logger.gd`, `scripts/core/run_log_reporter.gd`, `scripts/shop/shop_view.gd`, `wiki/features.md`)
+- Validation used Godot MCP script reloads, focused terminology tests, a cache-ignored shop chest transaction smoke, tracked non-historical search evidence, and user manual QA acceptance; `docs/test_plan.md` records the exact checks and caveats. (source: `docs/test_plan.md`, `scripts/tests/content_registry_terminology_test.gd`, `scripts/tests/shop_view_layout_test.gd`)

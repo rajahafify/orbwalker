@@ -116,7 +116,7 @@ This section is the single active owner for launch-related open QA/issues moved 
 - Goal: The shop should be understandable without external explanation.
 - Acceptance:
   - It is obvious what can be bought, what is unaffordable, what is sold out, and what Continue does.
-  - Buy, sell, reroll, booster, relic, and continue actions have clear visual feedback.
+  - Buy, sell, reroll, treasure chest, relic, and continue actions have clear visual feedback.
   - Player loadout sell flow is discoverable and does not leave stale selection/popover state.
   - Disabled and sold-out states are readable but not visually dominant.
   - The shared bottom HUD does not overlap shop actions or obscure important info.

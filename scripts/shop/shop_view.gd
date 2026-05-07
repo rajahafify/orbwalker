@@ -7,8 +7,8 @@ signal reroll_pressed
 signal sell_pressed
 signal continue_pressed
 signal main_menu_pressed
-signal booster_option_pressed(index: int)
-signal skip_booster_pressed
+signal treasure_chest_option_pressed(index: int)
+signal skip_treasure_chest_pressed
 signal equipment_slot_selected(index: int)
 signal consumable_slot_selected(index: int)
 signal hud_sell_slot_requested(slot_type: String, slot_index: int)
@@ -130,12 +130,12 @@ var _mastery_strip: Panel
 var _mastery_root: Control
 var _mastery_label: Label
 var _mastery_icons: Control
-var _booster_overlay: ColorRect
-var _booster_modal: Panel
-var _booster_title_label: Label
-var _booster_hint_label: Label
-var _booster_option_buttons: Array[Button] = []
-var _skip_booster_button: Button
+var _treasure_chest_overlay: ColorRect
+var _treasure_chest_modal: Panel
+var _treasure_chest_title_label: Label
+var _treasure_chest_hint_label: Label
+var _treasure_chest_option_buttons: Array[Button] = []
+var _skip_treasure_chest_button: Button
 
 var _visuals
 var _player_loadout_hud
@@ -214,20 +214,20 @@ func _create_ui() -> void:
 	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
 
 	_bind_shared_player_hud_scene()
-	_booster_overlay = ColorRect.new()
-	_booster_overlay.name = "BoosterOverlay"
-	_booster_overlay.visible = false
-	_booster_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_layout_root.add_child(_booster_overlay)
-	_booster_modal = _make_panel("BoosterModal", _booster_overlay)
-	_booster_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
-	_booster_title_label = _make_label("BoosterTitleLabel", _booster_modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_booster_hint_label = _make_label("BoosterHintLabel", _booster_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_treasure_chest_overlay = ColorRect.new()
+	_treasure_chest_overlay.name = "TreasureChestOverlay"
+	_treasure_chest_overlay.visible = false
+	_treasure_chest_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_layout_root.add_child(_treasure_chest_overlay)
+	_treasure_chest_modal = _make_panel("TreasureChestModal", _treasure_chest_overlay)
+	_treasure_chest_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
+	_treasure_chest_title_label = _make_label("TreasureChestTitleLabel", _treasure_chest_modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_treasure_chest_hint_label = _make_label("TreasureChestHintLabel", _treasure_chest_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	for index in 3:
-		var button := _make_button("BoosterOptionButton%d" % (index + 1), _booster_modal, "")
-		_booster_option_buttons.append(button)
-	_skip_booster_button = _make_button("SkipBoosterButton", _booster_modal, "Skip")
-	_skip_booster_button.visible = false
+		var button := _make_button("TreasureChestOptionButton%d" % (index + 1), _treasure_chest_modal, "")
+		_treasure_chest_option_buttons.append(button)
+	_skip_treasure_chest_button = _make_button("SkipTreasureChestButton", _treasure_chest_modal, "Skip")
+	_skip_treasure_chest_button.visible = false
 
 
 func _bind_shared_player_hud_scene() -> void:
@@ -292,9 +292,9 @@ func _connect_signals() -> void:
 	_main_menu_button.pressed.connect(_emit_main_menu_pressed)
 	_help_button.pressed.connect(_on_help_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
-	for index in _booster_option_buttons.size():
-		_booster_option_buttons[index].pressed.connect(func(): emit_signal("booster_option_pressed", index))
-	_skip_booster_button.pressed.connect(_emit_skip_booster_pressed)
+	for index in _treasure_chest_option_buttons.size():
+		_treasure_chest_option_buttons[index].pressed.connect(func(): emit_signal("treasure_chest_option_pressed", index))
+	_skip_treasure_chest_button.pressed.connect(_emit_skip_treasure_chest_pressed)
 	_player_loadout_hud.equipment_slot_selected.connect(_emit_equipment_slot_selected)
 	_player_loadout_hud.consumable_slot_selected.connect(_emit_consumable_slot_selected)
 	_player_loadout_hud.sell_slot_requested.connect(_emit_hud_sell_slot_requested)
@@ -303,8 +303,8 @@ func _connect_signals() -> void:
 func render(snapshot: Dictionary) -> void:
 	var shop_snapshot: Dictionary = snapshot.get("shop", {})
 	var progression_snapshot: Dictionary = snapshot.get("progression", {})
-	var pending_options: Array = snapshot.get("pending_booster_options", [])
-	var booster_pending := bool(snapshot.get("booster_pending", false))
+	var pending_options: Array = snapshot.get("pending_treasure_chest_options", [])
+	var treasure_chest_pending := bool(snapshot.get("treasure_chest_pending", false))
 
 	_run_progress_label.text = "Dungeon %d-%d Shop" % [int(snapshot.get("dungeon_level", 1)), int(snapshot.get("shop_ordinal", 1))]
 	_boss_preview_label.text = "Boss preview: %s" % String(snapshot.get("boss_preview", "-"))
@@ -317,24 +317,24 @@ func render(snapshot: Dictionary) -> void:
 		if index >= item_offers.size():
 			_render_empty_offer_card(_offer_cards[index])
 		else:
-			_render_offer_card(_offer_cards[index], Dictionary(item_offers[index]), booster_pending)
+			_render_offer_card(_offer_cards[index], Dictionary(item_offers[index]), treasure_chest_pending)
 
-	_render_relic_card(Dictionary(shop_snapshot.get("relic_offer", {})), booster_pending)
-	_render_action_row(shop_snapshot, booster_pending)
+	_render_relic_card(Dictionary(shop_snapshot.get("relic_offer", {})), treasure_chest_pending)
+	_render_action_row(shop_snapshot, treasure_chest_pending)
 	_render_build_panel(snapshot)
 	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
-	_render_booster_overlay(pending_options)
+	_render_treasure_chest_overlay(pending_options)
 	apply_layout()
 
 
-func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) -> void:
+func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending: bool) -> void:
 	_clear_children(card)
 	card.text = ""
 	var rarity := String(offer.get("rarity", "common")).to_lower()
 	var sold_out := bool(offer.get("sold_out", false))
 	var price := int(offer.get("price", 0))
 	var affordable := bool(offer.get("affordable", false))
-	var disabled := sold_out or booster_pending or not affordable
+	var disabled := sold_out or treasure_chest_pending or not affordable
 	card.disabled = disabled
 	card.modulate = Color(0.52, 0.52, 0.56, 0.90) if disabled else Color.WHITE
 	card.tooltip_text = ""
@@ -352,13 +352,13 @@ func _render_offer_card(card: Button, offer: Dictionary, booster_pending: bool) 
 	icon.position = Vector2(22, 14)
 	icon.size = Vector2(200, 118)
 	_make_dynamic_label(root, String(offer.get("description", "No details available.")), OFFER_DESC_RECT, INK_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_price_badge(root, OFFER_PRICE_RECT, _price_text(price, sold_out, affordable, booster_pending), disabled)
+	_make_price_badge(root, OFFER_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
 	var state_text := ""
 	var state_color := NEGATIVE_COLOR
 	if sold_out:
 		state_text = "SOLD OUT"
 		state_color = NEGATIVE_COLOR
-	elif booster_pending:
+	elif treasure_chest_pending:
 		state_text = "CHEST FIRST"
 		state_color = GOLD_COLOR
 	elif not affordable:
@@ -380,7 +380,7 @@ func _render_empty_offer_card(card: Button) -> void:
 	_make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
 
 
-func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
+func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -> void:
 	_clear_children(_relic_card)
 	_relic_card.text = ""
 	if relic_offer.is_empty():
@@ -397,7 +397,7 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 	var price := int(relic_offer.get("price", 0))
 	var sold_out := bool(relic_offer.get("sold_out", false))
 	var affordable := bool(relic_offer.get("affordable", false))
-	var disabled := sold_out or booster_pending or not affordable
+	var disabled := sold_out or treasure_chest_pending or not affordable
 	_relic_card.disabled = disabled
 	_relic_card.modulate = Color(0.52, 0.52, 0.56, 0.90) if disabled else Color.WHITE
 	_relic_card.tooltip_text = ""
@@ -414,25 +414,25 @@ func _render_relic_card(relic_offer: Dictionary, booster_pending: bool) -> void:
 	_make_dynamic_label(root, "%s RELIC" % rarity.to_upper(), RELIC_TIER_RECT, _rarity_color(rarity), 21)
 	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, _rarity_color(rarity), 31, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_make_dynamic_label(root, String(relic_offer.get("description", "No details available.")), RELIC_DESC_RECT, INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, booster_pending), disabled)
+	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
 	if sold_out:
 		_make_state_badge(root, RELIC_STATE_RECT, "SOLD OUT", NEGATIVE_COLOR, 18)
-	elif booster_pending:
+	elif treasure_chest_pending:
 		_make_state_badge(root, RELIC_STATE_RECT, "CHEST FIRST", GOLD_COLOR, 18)
 	elif not affordable:
 		_make_state_badge(root, RELIC_STATE_RECT, "NOT ENOUGH GOLD", NEGATIVE_COLOR, 18)
 
 
-func _render_action_row(shop_snapshot: Dictionary, booster_pending: bool) -> void:
+func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
 	var active := bool(shop_snapshot.get("active", false))
 	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
 	_reroll_button.text = "REROLL\nFREE" if reroll_cost <= 0 else "REROLL\nCost %d G" % reroll_cost
-	_reroll_button.disabled = booster_pending or not active or not bool(shop_snapshot.get("reroll_enabled", false))
+	_reroll_button.disabled = treasure_chest_pending or not active or not bool(shop_snapshot.get("reroll_enabled", false))
 	_action_hint_label.text = "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover."
 	_sell_equipment_button.visible = false
 	_sell_equipment_button.disabled = true
 	_continue_button.text = "CONTINUE\nLeave Shop"
-	_continue_button.disabled = booster_pending
+	_continue_button.disabled = treasure_chest_pending
 
 func _render_build_panel(snapshot: Dictionary) -> void:
 	var progression_snapshot: Dictionary = snapshot.get("progression", {})
@@ -453,19 +453,19 @@ func _render_elemental_mastery_panel(mastery_levels: Dictionary) -> void:
 	_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
 
 
-func _render_booster_overlay(pending_options: Array) -> void:
+func _render_treasure_chest_overlay(pending_options: Array) -> void:
 	var overlay_visible := not pending_options.is_empty()
-	_booster_overlay.visible = overlay_visible
-	_booster_modal.visible = overlay_visible
+	_treasure_chest_overlay.visible = overlay_visible
+	_treasure_chest_modal.visible = overlay_visible
 	if not overlay_visible:
-		_skip_booster_button.visible = false
+		_skip_treasure_chest_button.visible = false
 		return
-	_booster_title_label.text = "Choose One Treasure Chest Reward"
-	_booster_hint_label.text = "Pick one option now, or press Skip to continue shopping."
-	for button in _booster_option_buttons:
+	_treasure_chest_title_label.text = "Choose One Treasure Chest Reward"
+	_treasure_chest_hint_label.text = "Pick one option now, or press Skip to continue shopping."
+	for button in _treasure_chest_option_buttons:
 		button.visible = true
-	for index in _booster_option_buttons.size():
-		var button := _booster_option_buttons[index]
+	for index in _treasure_chest_option_buttons.size():
+		var button := _treasure_chest_option_buttons[index]
 		_clear_children(button)
 		button.text = ""
 		if index >= pending_options.size():
@@ -480,13 +480,13 @@ func _render_booster_overlay(pending_options: Array) -> void:
 		_make_dynamic_label(root, String(option.get("type", "option")).replace("_", " ").to_upper(), Rect2(Vector2(14, 8), Vector2(180, 22)), MUTED_COLOR, 14, HORIZONTAL_ALIGNMENT_CENTER)
 		_make_dynamic_label(root, String(option.get("display_name", "Option")), Rect2(Vector2(14, 36), Vector2(180, 54)), INK_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER, true)
 		var content := _lookup_content_definition(String(option.get("content_id", "")))
-		var icon := _make_texture("BoosterOptionIcon", root)
+		var icon := _make_texture("TreasureChestOptionIcon", root)
 		icon.texture = _visuals.icon_for_key(String(content.get("icon_key", "")))
 		icon.position = Vector2(58, 98)
 		icon.size = Vector2(92, 86)
 		_make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_skip_booster_button.visible = true
-	_skip_booster_button.disabled = false
+	_skip_treasure_chest_button.visible = true
+	_skip_treasure_chest_button.disabled = false
 
 
 
@@ -550,8 +550,8 @@ func _on_settings_pressed() -> void:
 	set_status("Settings is visual-only in this prototype build.", true)
 
 
-func _emit_skip_booster_pressed() -> void:
-	emit_signal("skip_booster_pressed")
+func _emit_skip_treasure_chest_pressed() -> void:
+	emit_signal("skip_treasure_chest_pressed")
 
 
 func _emit_equipment_slot_selected(index: int) -> void:
@@ -574,10 +574,10 @@ func _offer_tooltip(offer: Dictionary) -> String:
 	return "%s\n%s\nPrice: %d gold" % [String(offer.get("display_name", "Offer")), String(offer.get("description", "")), int(offer.get("price", 0))]
 
 
-func _price_text(price: int, sold_out: bool, affordable: bool, booster_pending: bool) -> String:
+func _price_text(price: int, sold_out: bool, affordable: bool, treasure_chest_pending: bool) -> String:
 	if sold_out:
 		return "SOLD OUT"
-	if booster_pending:
+	if treasure_chest_pending:
 		return "WAIT CHEST"
 	if not affordable:
 		return "NEED %dG" % price
@@ -585,7 +585,7 @@ func _price_text(price: int, sold_out: bool, affordable: bool, booster_pending: 
 
 
 func _offer_type_label(offer_type: String) -> String:
-	if offer_type == "booster":
+	if offer_type == "treasure_chest":
 		return "TREASURE CHEST"
 	return offer_type.replace("_", " ").to_upper()
 
@@ -660,13 +660,13 @@ func apply_layout() -> void:
 
 	_player_loadout_hud.update_player_hud_layout()
 
-	_apply_rect(_booster_overlay, Rect2(Vector2.ZERO, Vector2(DESIGN_SIZE.x, 1080.0)))
-	_apply_rect(_booster_modal, Rect2(Vector2(152, 382), Vector2(776, 420)))
-	_apply_rect(_booster_title_label, Rect2(Vector2(0, 30), Vector2(776, 42)))
-	_apply_rect(_booster_hint_label, Rect2(Vector2(80, 82), Vector2(616, 42)))
-	for index in _booster_option_buttons.size():
-		_apply_rect(_booster_option_buttons[index], Rect2(Vector2(46 + float(index) * 238.0, 150), Vector2(208, 236)))
-	_apply_rect(_skip_booster_button, Rect2(Vector2(302, 340), Vector2(172, 54)))
+	_apply_rect(_treasure_chest_overlay, Rect2(Vector2.ZERO, Vector2(DESIGN_SIZE.x, 1080.0)))
+	_apply_rect(_treasure_chest_modal, Rect2(Vector2(152, 382), Vector2(776, 420)))
+	_apply_rect(_treasure_chest_title_label, Rect2(Vector2(0, 30), Vector2(776, 42)))
+	_apply_rect(_treasure_chest_hint_label, Rect2(Vector2(80, 82), Vector2(616, 42)))
+	for index in _treasure_chest_option_buttons.size():
+		_apply_rect(_treasure_chest_option_buttons[index], Rect2(Vector2(46 + float(index) * 238.0, 150), Vector2(208, 236)))
+	_apply_rect(_skip_treasure_chest_button, Rect2(Vector2(302, 340), Vector2(172, 54)))
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
@@ -724,8 +724,8 @@ func _apply_visual_chrome() -> void:
 	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
 	_crest_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32, Vector4(8, 6, 8, 6)))
 	_gold_pill.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8, Vector4(8, 6, 8, 6)))
-	_booster_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
-	_booster_overlay.color = Color(0.0, 0.0, 0.0, 0.44)
+	_treasure_chest_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
+	_treasure_chest_overlay.color = Color(0.0, 0.0, 0.0, 0.44)
 
 	_apply_button_chrome(_main_menu_button, Color(0.13, 0.09, 0.05, 0.95), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
 	_apply_button_chrome(_help_button, Color(0.10, 0.12, 0.18, 0.95), Color(0.38, 0.55, 0.82, 1.0), Color(0.14, 0.18, 0.26, 0.98))
@@ -733,13 +733,13 @@ func _apply_visual_chrome() -> void:
 	_apply_button_chrome(_reroll_button, Color(0.05, 0.17, 0.27, 0.96), Color(0.31, 0.62, 0.84, 1.0), Color(0.08, 0.24, 0.36, 0.98))
 	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
 	_apply_button_chrome(_continue_button, Color(0.12, 0.30, 0.06, 0.96), Color(0.54, 0.78, 0.24, 1.0), Color(0.18, 0.40, 0.08, 0.98))
-	_apply_button_chrome(_skip_booster_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
+	_apply_button_chrome(_skip_treasure_chest_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
 
-	for label in [_title_label, _gold_label, _stock_title_label, _booster_title_label, _merchant_header_label]:
+	for label in [_title_label, _gold_label, _stock_title_label, _treasure_chest_title_label, _merchant_header_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for label in [_run_progress_label, _boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title, _booster_hint_label]:
+	for label in [_run_progress_label, _boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title, _treasure_chest_hint_label]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
 	_detail_label.add_theme_color_override("font_color", INK_COLOR)
 	_action_hint_label.add_theme_color_override("font_color", GOLD_COLOR)
@@ -747,7 +747,7 @@ func _apply_visual_chrome() -> void:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for button in [_main_menu_button, _help_button, _settings_button, _reroll_button, _sell_equipment_button, _continue_button, _skip_booster_button]:
+	for button in [_main_menu_button, _help_button, _settings_button, _reroll_button, _sell_equipment_button, _continue_button, _skip_treasure_chest_button]:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 24)
 	_main_menu_button.add_theme_font_size_override("font_size", 22)
@@ -821,7 +821,7 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"overlay_title": "Choose One Treasure Chest Reward",
 			"overlay_hint": "Pick one option now, or press Skip to continue shopping.",
 			"offer_type_label": "TREASURE CHEST",
-			"internal_offer_type": "booster",
+			"internal_offer_type": "treasure_chest",
 		},
 		"stock_relic_gap": int(RELIC_PANEL_RECT.position.y - stock_bottom),
 		"relic_action_gap": int(ACTION_ROW_RECT.position.y - relic_bottom),

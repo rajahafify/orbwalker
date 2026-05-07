@@ -47,10 +47,10 @@ func selected_slot_kind(progression_snapshot: Dictionary) -> String:
 func snapshot() -> Dictionary:
 	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var pending_options: Array = shop_snapshot.get("pending_booster_options", [])
-	var booster_pending := not pending_options.is_empty()
+	var pending_options: Array = shop_snapshot.get("pending_treasure_chest_options", [])
+	var treasure_chest_pending := not pending_options.is_empty()
 	_validate_selected_slots(progression_snapshot)
-	_enrich_shop_snapshot(shop_snapshot, booster_pending)
+	_enrich_shop_snapshot(shop_snapshot, treasure_chest_pending)
 	return {
 		"shop": shop_snapshot,
 		"progression": progression_snapshot,
@@ -59,8 +59,8 @@ func snapshot() -> Dictionary:
 		"dungeon_level": RunState.dungeon_level,
 		"shop_ordinal": maxi(1, RunState.current_shop_ordinal_in_level()),
 		"boss_preview": RunState.current_level_boss_name(),
-		"pending_booster_options": pending_options,
-		"booster_pending": booster_pending,
+		"pending_treasure_chest_options": pending_options,
+		"treasure_chest_pending": treasure_chest_pending,
 		"selected_equipment_slot": selected_equipment_slot,
 		"selected_consumable_slot": selected_consumable_slot,
 		"status_message": status_message,
@@ -69,7 +69,7 @@ func snapshot() -> Dictionary:
 	}
 
 
-func offer_enabled_state(offer: Dictionary, booster_pending: bool) -> Dictionary:
+func offer_enabled_state(offer: Dictionary, treasure_chest_pending: bool) -> Dictionary:
 	var sold_out := bool(offer.get("sold_out", false))
 	var price := int(offer.get("price", 0))
 	var affordable := RunState.can_afford(price)
@@ -77,14 +77,14 @@ func offer_enabled_state(offer: Dictionary, booster_pending: bool) -> Dictionary
 		"sold_out": sold_out,
 		"price": price,
 		"affordable": affordable,
-		"disabled": sold_out or booster_pending or not affordable,
+		"disabled": sold_out or treasure_chest_pending or not affordable,
 	}
 
 
-func reroll_enabled(shop_snapshot: Dictionary, booster_pending: bool) -> bool:
+func reroll_enabled(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> bool:
 	return (
 		bool(shop_snapshot.get("active", false))
-		and not booster_pending
+		and not treasure_chest_pending
 		and RunState.can_afford(int(shop_snapshot.get("reroll_cost", 0)))
 	)
 
@@ -106,16 +106,16 @@ func _validate_selected_slots(progression_snapshot: Dictionary) -> void:
 		selected_consumable_slot = -1
 
 
-func _enrich_shop_snapshot(shop_snapshot: Dictionary, booster_pending: bool) -> void:
+func _enrich_shop_snapshot(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
 	var item_offers: Array = []
 	for raw_offer in shop_snapshot.get("item_offers", []):
 		var offer := Dictionary(raw_offer).duplicate(true)
-		offer.merge(offer_enabled_state(offer, booster_pending), true)
+		offer.merge(offer_enabled_state(offer, treasure_chest_pending), true)
 		item_offers.append(offer)
 	shop_snapshot["item_offers"] = item_offers
 
 	var relic_offer := Dictionary(shop_snapshot.get("relic_offer", {})).duplicate(true)
 	if not relic_offer.is_empty():
-		relic_offer.merge(offer_enabled_state(relic_offer, booster_pending), true)
+		relic_offer.merge(offer_enabled_state(relic_offer, treasure_chest_pending), true)
 	shop_snapshot["relic_offer"] = relic_offer
-	shop_snapshot["reroll_enabled"] = reroll_enabled(shop_snapshot, booster_pending)
+	shop_snapshot["reroll_enabled"] = reroll_enabled(shop_snapshot, treasure_chest_pending)

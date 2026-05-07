@@ -158,12 +158,12 @@ func _shop_action_details_summary(details: Dictionary) -> String:
 	var selected_offer: Dictionary = details.get("selected_offer", {})
 	if not selected_offer.is_empty():
 		parts.append("selected=%s" % _shop_offer_summary(selected_offer, bool(selected_offer.get("owned", false))))
-	var selected_option: Dictionary = details.get("selected_booster_option", {})
+	var selected_option: Dictionary = details.get("selected_treasure_chest_option", {})
 	if not selected_option.is_empty():
-		parts.append("selected_booster=%s" % _booster_option_summary(selected_option))
+		parts.append("selected_treasure_chest=%s" % _treasure_chest_option_summary(selected_option))
 	var granted: Dictionary = details.get("granted", {})
 	if not granted.is_empty():
-		parts.append("granted=%s" % _booster_option_summary(granted))
+		parts.append("granted=%s" % _treasure_chest_option_summary(granted))
 	var purchased_offer: Dictionary = details.get("purchased_offer", {})
 	if not purchased_offer.is_empty():
 		parts.append("purchased=%s" % _shop_offer_summary(purchased_offer, bool(purchased_offer.get("owned", false))))
@@ -192,10 +192,10 @@ func _shop_snapshot_summary(shop: Dictionary) -> String:
 		int(shop.get("reroll_cost", 0)),
 		"yes" if bool(shop.get("can_afford_reroll", false)) else "no",
 	])
-	var pending_count := int(shop.get("pending_booster_option_count", 0))
-	parts.append("booster_opts=%d" % pending_count)
+	var pending_count := int(shop.get("pending_treasure_chest_option_count", 0))
+	parts.append("treasure_chest_opts=%d" % pending_count)
 	if pending_count > 0:
-		parts.append("booster_list=%s" % _booster_option_list_summary(shop.get("pending_booster_options", [])))
+		parts.append("treasure_chest_list=%s" % _treasure_chest_option_list_summary(shop.get("pending_treasure_chest_options", [])))
 	return "; ".join(parts)
 
 
@@ -211,13 +211,13 @@ func _shop_offer_list_summary(offers: Array) -> String:
 	return ", ".join(parts)
 
 
-func _booster_option_list_summary(options: Array) -> String:
+func _treasure_chest_option_list_summary(options: Array) -> String:
 	if options.is_empty():
 		return "none"
 	var parts: Array[String] = []
 	var limit := mini(options.size(), 4)
 	for idx in range(limit):
-		parts.append(_booster_option_summary(Dictionary(options[idx])))
+		parts.append(_treasure_chest_option_summary(Dictionary(options[idx])))
 	if options.size() > limit:
 		parts.append("+%d more" % (options.size() - limit))
 	return ", ".join(parts)
@@ -245,7 +245,7 @@ func _shop_offer_summary(offer: Dictionary, include_owned: bool = false) -> Stri
 	]
 
 
-func _booster_option_summary(option: Dictionary) -> String:
+func _treasure_chest_option_summary(option: Dictionary) -> String:
 	if option.is_empty():
 		return "none"
 	var content_id := String(option.get("content_id", ""))

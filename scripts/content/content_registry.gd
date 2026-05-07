@@ -4,7 +4,7 @@ class_name ContentRegistry
 const EQUIPMENT := "equipment"
 const CONSUMABLES := "consumables"
 const MASTERY_CARDS := "mastery_cards"
-const BOOSTERS := "boosters"
+const TREASURE_CHESTS := "treasure_chests"
 const RELICS := "relics"
 const ENEMIES := "enemies"
 const BOSSES := "bosses"
@@ -52,8 +52,8 @@ func get_mastery_card(card_id: String) -> Dictionary:
 	return _get_indexed(MASTERY_CARDS, card_id)
 
 
-func get_booster(booster_id: String) -> Dictionary:
-	return _get_indexed(BOOSTERS, booster_id)
+func get_treasure_chest(treasure_chest_id: String) -> Dictionary:
+	return _get_indexed(TREASURE_CHESTS, treasure_chest_id)
 
 
 func get_relic(relic_id: String) -> Dictionary:
@@ -72,8 +72,8 @@ func list_mastery_cards() -> Array[Dictionary]:
 	return _collection_index_values(MASTERY_CARDS)
 
 
-func list_boosters() -> Array[Dictionary]:
-	return _collection_index_values(BOOSTERS)
+func list_treasure_chests() -> Array[Dictionary]:
+	return _collection_index_values(TREASURE_CHESTS)
 
 
 func list_relics() -> Array[Dictionary]:
@@ -100,9 +100,9 @@ func shop_item_pool(dungeon_level: int, run_state: Variant = null) -> Array[Dict
 	for item in list_mastery_cards():
 		if _is_level_allowed(item, level):
 			pool.append({"type": "mastery_card", "id": String(item.get("id", ""))})
-	for item in list_boosters():
+	for item in list_treasure_chests():
 		if _is_level_allowed(item, level):
-			pool.append({"type": "booster", "id": String(item.get("id", ""))})
+			pool.append({"type": "treasure_chest", "id": String(item.get("id", ""))})
 	return pool
 
 
@@ -187,7 +187,7 @@ func content_contract_snapshot() -> Dictionary:
 				"required_fields": ["id", "display_name", "description", "icon_key", "effects"],
 				"common_optional_fields": ["rarity", "target_orb_id", "base_price", "min_level", "max_level", "amount"],
 			},
-			BOOSTERS: {
+			TREASURE_CHESTS: {
 				"required_fields": ["id", "display_name", "description", "icon_key", "effects"],
 				"common_optional_fields": ["rarity", "target_orb_id", "base_price", "min_level", "max_level", "option_count"],
 			},
@@ -232,7 +232,7 @@ func validate_player_state_content() -> Array[Dictionary]:
 		if equipment_id != "":
 			known_equipment_ids[equipment_id] = true
 
-	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS, ENEMIES, BOSSES]:
+	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, TREASURE_CHESTS, RELICS, ENEMIES, BOSSES]:
 		var entries: Array = _player_state_content.get(collection_name, [])
 		var seen_ids := {}
 		for raw_entry in entries:
@@ -278,7 +278,7 @@ func validate_player_state_content() -> Array[Dictionary]:
 
 func _rebuild_index() -> void:
 	_index.clear()
-	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, BOOSTERS, RELICS, ENEMIES, BOSSES]:
+	for collection_name in [EQUIPMENT, CONSUMABLES, MASTERY_CARDS, TREASURE_CHESTS, RELICS, ENEMIES, BOSSES]:
 		_index[collection_name] = {}
 		var entries: Array = _player_state_content.get(collection_name, [])
 		for raw_entry in entries:
@@ -559,12 +559,12 @@ func _build_default_content() -> Dictionary:
 			_make_mastery_card("armor_mastery", "Armor Mastery", "common", OrbType.Id.ARMOR, 12, "mastery_armor"),
 			_make_mastery_card("gold_mastery", "Gold Mastery", "uncommon", OrbType.Id.GOLD, 16, "mastery_gold", 2),
 		],
-		BOOSTERS: [
+		TREASURE_CHESTS: [
 			{
-				"id": "elemental_booster",
+				"id": "elemental_treasure_chest",
 				"display_name": "Elemental Chest",
 				"description": "Choose 1 of 3 elemental-focused treasures.",
-				"icon_key": "booster_elemental",
+				"icon_key": "treasure_chest_elemental",
 				"rarity": "common",
 				"target_orb_id": -1,
 				"option_count": 3,
@@ -574,10 +574,10 @@ func _build_default_content() -> Dictionary:
 				"effects": [],
 			},
 			{
-				"id": "fire_booster",
+				"id": "fire_treasure_chest",
 				"display_name": "Fire Chest",
 				"description": "Choose 1 of 3 Fire-aligned treasures.",
-				"icon_key": "booster_fire",
+				"icon_key": "treasure_chest_fire",
 				"rarity": "common",
 				"target_orb_id": OrbType.Id.FIRE,
 				"option_count": 3,

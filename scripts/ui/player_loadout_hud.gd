@@ -1296,7 +1296,7 @@ func lookup_content_definition(content_id: String) -> Dictionary:
 	value = registry.get_mastery_card(content_id)
 	if not value.is_empty():
 		return value
-	value = registry.get_booster(content_id)
+	value = registry.get_treasure_chest(content_id)
 	if not value.is_empty():
 		return value
 	return {

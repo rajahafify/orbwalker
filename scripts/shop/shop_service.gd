@@ -4,7 +4,7 @@ class_name ShopService
 const ITEM_TYPE_EQUIPMENT := "equipment"
 const ITEM_TYPE_CONSUMABLE := "consumable"
 const ITEM_TYPE_MASTERY_CARD := "mastery_card"
-const ITEM_TYPE_BOOSTER := "booster"
+const ITEM_TYPE_TREASURE_CHEST := "treasure_chest"
 const ITEM_TYPE_RELIC := "relic"
 
 const DEFAULT_PRICING := {
@@ -41,8 +41,8 @@ func reroll_shop_items(run_state: Node) -> Dictionary:
 	var shop = run_state.ensure_shop_state()
 	if not shop.active:
 		return _result(shop, run_state.run_gold, false, "shop_not_active")
-	if not shop.pending_booster_options.is_empty():
-		return _result(shop, run_state.run_gold, false, "booster_pick_required")
+	if not shop.pending_treasure_chest_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "treasure_chest_pick_required")
 	if not run_state.spend_gold(shop.reroll_cost):
 		return _result(shop, run_state.run_gold, false, "insufficient_gold")
 
@@ -57,8 +57,8 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 	var shop = run_state.ensure_shop_state()
 	if not shop.active:
 		return _result(shop, run_state.run_gold, false, "shop_not_active")
-	if not shop.pending_booster_options.is_empty():
-		return _result(shop, run_state.run_gold, false, "booster_pick_required")
+	if not shop.pending_treasure_chest_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "treasure_chest_pick_required")
 
 	var item_index := _find_offer_index(shop.item_offers, offer_id)
 	if item_index >= 0:
@@ -141,56 +141,56 @@ func sell_consumable_item(run_state: Node, slot_index: int) -> Dictionary:
 	}
 
 
-func choose_booster_option(run_state: Node, option_index: int) -> Dictionary:
+func choose_treasure_chest_option(run_state: Node, option_index: int) -> Dictionary:
 	var content = run_state.ensure_content_registry()
 	var shop = run_state.ensure_shop_state()
 	if not shop.active:
 		return _result(shop, run_state.run_gold, false, "shop_not_active")
-	if shop.pending_booster_options.is_empty():
-		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
-	if option_index < 0 or option_index >= shop.pending_booster_options.size():
-		return _result(shop, run_state.run_gold, false, "invalid_booster_option")
-	var option: Dictionary = shop.pending_booster_options[option_index]
-	var apply_result := _apply_booster_option(run_state, content, option)
+	if shop.pending_treasure_chest_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_treasure_chest_options")
+	if option_index < 0 or option_index >= shop.pending_treasure_chest_options.size():
+		return _result(shop, run_state.run_gold, false, "invalid_treasure_chest_option")
+	var option: Dictionary = shop.pending_treasure_chest_options[option_index]
+	var apply_result := _apply_treasure_chest_option(run_state, content, option)
 	if not bool(apply_result.get("ok", false)):
-		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "booster_apply_failed")))
-	shop.pending_booster_options.clear()
-	shop.pending_booster_offer_id = ""
+		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "treasure_chest_apply_failed")))
+	shop.pending_treasure_chest_options.clear()
+	shop.pending_treasure_chest_offer_id = ""
 	return _result(shop, run_state.run_gold, true, "", {
 		"granted": option,
 	})
 
 
-func replace_pending_booster_option(run_state: Node, option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
+func replace_pending_treasure_chest_option(run_state: Node, option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
 	var content = run_state.ensure_content_registry()
 	var shop = run_state.ensure_shop_state()
 	if not shop.active:
 		return _result(shop, run_state.run_gold, false, "shop_not_active")
-	if shop.pending_booster_options.is_empty():
-		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
-	if option_index < 0 or option_index >= shop.pending_booster_options.size():
-		return _result(shop, run_state.run_gold, false, "invalid_booster_option")
-	var option: Dictionary = shop.pending_booster_options[option_index]
+	if shop.pending_treasure_chest_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_treasure_chest_options")
+	if option_index < 0 or option_index >= shop.pending_treasure_chest_options.size():
+		return _result(shop, run_state.run_gold, false, "invalid_treasure_chest_option")
+	var option: Dictionary = shop.pending_treasure_chest_options[option_index]
 	var option_type := String(option.get("type", ""))
 	if option_type != ITEM_TYPE_EQUIPMENT and option_type != ITEM_TYPE_CONSUMABLE:
 		return _result(shop, run_state.run_gold, false, "unsupported_replacement_option")
-	var apply_result := _apply_booster_option_to_slot(run_state, content, option, slot_index, sell_replaced)
+	var apply_result := _apply_treasure_chest_option_to_slot(run_state, content, option, slot_index, sell_replaced)
 	if not bool(apply_result.get("ok", false)):
-		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "booster_replace_failed")))
-	shop.pending_booster_options.clear()
-	shop.pending_booster_offer_id = ""
+		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "treasure_chest_replace_failed")))
+	shop.pending_treasure_chest_options.clear()
+	shop.pending_treasure_chest_offer_id = ""
 	return _result(shop, run_state.run_gold, true, "", {
 		"granted": option,
 		"replacement": apply_result.get("result", {}),
 	})
 
 
-func discard_pending_booster_options(run_state: Node) -> Dictionary:
+func discard_pending_treasure_chest_options(run_state: Node) -> Dictionary:
 	var shop = run_state.ensure_shop_state()
-	if shop.pending_booster_options.is_empty():
-		return _result(shop, run_state.run_gold, false, "no_pending_booster_options")
-	shop.pending_booster_options.clear()
-	shop.pending_booster_offer_id = ""
+	if shop.pending_treasure_chest_options.is_empty():
+		return _result(shop, run_state.run_gold, false, "no_pending_treasure_chest_options")
+	shop.pending_treasure_chest_options.clear()
+	shop.pending_treasure_chest_offer_id = ""
 	return _result(shop, run_state.run_gold, true, "", {
 		"discarded": true,
 	})
@@ -214,13 +214,13 @@ func _apply_offer(run_state: Node, content, shop, offer: Dictionary) -> Dictiona
 				int(mastery_data.get("target_orb_id", -1)),
 				int(mastery_data.get("amount", 1))
 			)
-		ITEM_TYPE_BOOSTER:
-			var booster_data: Dictionary = content.get_booster(content_id)
-			shop.pending_booster_offer_id = String(offer.get("offer_id", ""))
-			shop.pending_booster_options = _generate_booster_options(run_state, content, booster_data)
+		ITEM_TYPE_TREASURE_CHEST:
+			var treasure_chest_data: Dictionary = content.get_treasure_chest(content_id)
+			shop.pending_treasure_chest_offer_id = String(offer.get("offer_id", ""))
+			shop.pending_treasure_chest_options = _generate_treasure_chest_options(run_state, content, treasure_chest_data)
 			return {
-				"ok": not shop.pending_booster_options.is_empty(),
-				"reason": "" if not shop.pending_booster_options.is_empty() else "booster_generated_no_options",
+				"ok": not shop.pending_treasure_chest_options.is_empty(),
+				"reason": "" if not shop.pending_treasure_chest_options.is_empty() else "treasure_chest_generated_no_options",
 			}
 		ITEM_TYPE_RELIC:
 			return progression_service.add_relic(progression_state, content_id, content)
@@ -231,7 +231,7 @@ func _apply_offer(run_state: Node, content, shop, offer: Dictionary) -> Dictiona
 			}
 
 
-func _apply_booster_option(run_state: Node, content, option: Dictionary) -> Dictionary:
+func _apply_treasure_chest_option(run_state: Node, content, option: Dictionary) -> Dictionary:
 	var progression_state = run_state.ensure_player_progression_state()
 	var progression_service = run_state.ensure_player_progression_service()
 	var option_type := String(option.get("type", ""))
@@ -251,11 +251,11 @@ func _apply_booster_option(run_state: Node, content, option: Dictionary) -> Dict
 		_:
 			return {
 				"ok": false,
-				"reason": "unsupported_booster_option",
+				"reason": "unsupported_treasure_chest_option",
 			}
 
 
-func _apply_booster_option_to_slot(run_state: Node, content, option: Dictionary, slot_index: int, sell_replaced: bool) -> Dictionary:
+func _apply_treasure_chest_option_to_slot(run_state: Node, content, option: Dictionary, slot_index: int, sell_replaced: bool) -> Dictionary:
 	var progression_state = run_state.ensure_player_progression_state()
 	var progression_service = run_state.ensure_player_progression_service()
 	var option_type := String(option.get("type", ""))
@@ -361,18 +361,18 @@ func _generate_item_offers(run_state: Node, content, level: int) -> Array[Dictio
 	if not guaranteed_entry.is_empty():
 		selected_entries.append(guaranteed_entry)
 		pool = _pool_without_entry(pool, guaranteed_entry)
-	if selected_entries.size() < 3 and _entries_include_type(pool, ITEM_TYPE_BOOSTER) and not _entries_include_type(selected_entries, ITEM_TYPE_BOOSTER):
-		var guaranteed_booster := _pick_random_entry_of_type(pool, ITEM_TYPE_BOOSTER)
-		if not guaranteed_booster.is_empty():
-			selected_entries.append(guaranteed_booster)
-			pool = _pool_without_entry(pool, guaranteed_booster)
+	if selected_entries.size() < 3 and _entries_include_type(pool, ITEM_TYPE_TREASURE_CHEST) and not _entries_include_type(selected_entries, ITEM_TYPE_TREASURE_CHEST):
+		var guaranteed_treasure_chest := _pick_random_entry_of_type(pool, ITEM_TYPE_TREASURE_CHEST)
+		if not guaranteed_treasure_chest.is_empty():
+			selected_entries.append(guaranteed_treasure_chest)
+			pool = _pool_without_entry(pool, guaranteed_treasure_chest)
 	while selected_entries.size() < 3:
-		var has_booster_selected := _entries_include_type(selected_entries, ITEM_TYPE_BOOSTER)
-		var allow_booster := not has_booster_selected or not _entries_include_non_booster(pool)
+		var has_treasure_chest_selected := _entries_include_type(selected_entries, ITEM_TYPE_TREASURE_CHEST)
+		var allow_treasure_chest := not has_treasure_chest_selected or not _entries_include_non_treasure_chest(pool)
 		var weighted_entry := _pick_weighted_entry(
 			pool,
 			_count_entries_of_type(selected_entries, ITEM_TYPE_CONSUMABLE) < 1,
-			allow_booster
+			allow_treasure_chest
 		)
 		if weighted_entry.is_empty():
 			break
@@ -465,10 +465,10 @@ func _entries_include_type(entries: Array, target_type: String) -> bool:
 	return false
 
 
-func _entries_include_non_booster(entries: Array) -> bool:
+func _entries_include_non_treasure_chest(entries: Array) -> bool:
 	for raw_entry in entries:
 		var entry: Dictionary = Dictionary(raw_entry)
-		if String(entry.get("type", "")) != ITEM_TYPE_BOOSTER:
+		if String(entry.get("type", "")) != ITEM_TYPE_TREASURE_CHEST:
 			return true
 	return false
 
@@ -493,14 +493,14 @@ func _pick_random_entry_of_type(pool: Array[Dictionary], target_type: String) ->
 	return Dictionary(candidates[_rng.randi_range(0, candidates.size() - 1)]).duplicate(true)
 
 
-func _pick_weighted_entry(pool: Array[Dictionary], allow_consumable: bool, allow_booster: bool = true) -> Dictionary:
+func _pick_weighted_entry(pool: Array[Dictionary], allow_consumable: bool, allow_treasure_chest: bool = true) -> Dictionary:
 	var weighted_candidates: Array = []
 	var total_weight := 0
 	for entry in pool:
 		var entry_type := String(entry.get("type", ""))
 		if entry_type == ITEM_TYPE_CONSUMABLE and not allow_consumable:
 			continue
-		if entry_type == ITEM_TYPE_BOOSTER and not allow_booster:
+		if entry_type == ITEM_TYPE_TREASURE_CHEST and not allow_treasure_chest:
 			continue
 		var weight := _entry_type_weight(entry_type)
 		if weight <= 0:
@@ -529,7 +529,7 @@ func _entry_type_weight(entry_type: String) -> int:
 			return 3
 		ITEM_TYPE_CONSUMABLE:
 			return 1
-		ITEM_TYPE_BOOSTER:
+		ITEM_TYPE_TREASURE_CHEST:
 			return 1
 		_:
 			return 1
@@ -574,10 +574,10 @@ func _entry_is_damage_equipment(content, entry: Dictionary) -> bool:
 	return false
 
 
-func _generate_booster_options(run_state: Node, content, booster_data: Dictionary) -> Array[Dictionary]:
+func _generate_treasure_chest_options(run_state: Node, content, treasure_chest_data: Dictionary) -> Array[Dictionary]:
 	var candidates: Array[Dictionary] = []
 	var options: Array[Dictionary] = []
-	var target_orb_id := int(booster_data.get("target_orb_id", -1))
+	var target_orb_id := int(treasure_chest_data.get("target_orb_id", -1))
 	var equipped_ids := _equipped_equipment_ids(run_state)
 
 	for item in content.list_equipment():
@@ -613,7 +613,7 @@ func _generate_booster_options(run_state: Node, content, booster_data: Dictionar
 	if candidates.is_empty():
 		return options
 
-	var selected := _pick_random_entries(candidates, int(booster_data.get("option_count", 3)))
+	var selected := _pick_random_entries(candidates, int(treasure_chest_data.get("option_count", 3)))
 	for item in selected:
 		options.append(item)
 	return options
@@ -664,8 +664,8 @@ func _content_by_type(content, entry_type: String, content_id: String) -> Dictio
 			return content.get_consumable(content_id)
 		ITEM_TYPE_MASTERY_CARD:
 			return content.get_mastery_card(content_id)
-		ITEM_TYPE_BOOSTER:
-			return content.get_booster(content_id)
+		ITEM_TYPE_TREASURE_CHEST:
+			return content.get_treasure_chest(content_id)
 		_:
 			return {}
 

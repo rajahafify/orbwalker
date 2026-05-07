@@ -603,20 +603,20 @@ func sell_consumable_item(slot_index: int) -> Dictionary:
 	return result
 
 
-func choose_booster_option(option_index: int) -> Dictionary:
+func choose_treasure_chest_option(option_index: int) -> Dictionary:
 	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
 	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().choose_booster_option(self, option_index)
-	_run_log_shop_action("choose_booster", result, {"option_index": option_index}, shop_before, gold_before)
+	var result: Dictionary = ensure_shop_service().choose_treasure_chest_option(self, option_index)
+	_run_log_shop_action("choose_treasure_chest", result, {"option_index": option_index}, shop_before, gold_before)
 	return result
 
 
-func replace_pending_booster_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
+func replace_pending_treasure_chest_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
 	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
 	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().replace_pending_booster_option(self, option_index, slot_index, sell_replaced)
+	var result: Dictionary = ensure_shop_service().replace_pending_treasure_chest_option(self, option_index, slot_index, sell_replaced)
 	_run_log_shop_action(
-		"replace_booster_option",
+		"replace_treasure_chest_option",
 		result,
 		{
 			"option_index": option_index,
@@ -629,11 +629,11 @@ func replace_pending_booster_option(option_index: int, slot_index: int, sell_rep
 	return result
 
 
-func discard_pending_booster_options() -> Dictionary:
+func discard_pending_treasure_chest_options() -> Dictionary:
 	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
 	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().discard_pending_booster_options(self)
-	_run_log_shop_action("skip_booster", result, {}, shop_before, gold_before)
+	var result: Dictionary = ensure_shop_service().discard_pending_treasure_chest_options(self)
+	_run_log_shop_action("skip_treasure_chest", result, {}, shop_before, gold_before)
 	return result
 
 
@@ -832,8 +832,8 @@ func _restore_shop_state_for_transition(snapshot: Dictionary) -> void:
 	state.relic_offer = Dictionary(snapshot.get("relic_offer", {})).duplicate(true)
 	state.reroll_count = maxi(0, int(snapshot.get("reroll_count", state.reroll_count)))
 	state.reroll_cost = maxi(0, int(snapshot.get("reroll_cost", state.reroll_cost)))
-	state.pending_booster_options = Array(snapshot.get("pending_booster_options", [])).duplicate(true)
-	state.pending_booster_offer_id = String(snapshot.get("pending_booster_offer_id", state.pending_booster_offer_id))
+	state.pending_treasure_chest_options = Array(snapshot.get("pending_treasure_chest_options", [])).duplicate(true)
+	state.pending_treasure_chest_offer_id = String(snapshot.get("pending_treasure_chest_offer_id", state.pending_treasure_chest_offer_id))
 	state.offer_sequence = maxi(1, int(snapshot.get("offer_sequence", state.offer_sequence)))
 	state.skipped = bool(snapshot.get("skipped", state.skipped))
 
@@ -1327,8 +1327,8 @@ func _run_log_sanitize_shop_relic_offer(offer: Dictionary, gold_value: int) -> D
 	return _ensure_run_logger().run_log_sanitize_shop_relic_offer(offer, gold_value)
 
 
-func _run_log_sanitize_booster_option(option: Dictionary, option_index: int = -1) -> Dictionary:
-	return _ensure_run_logger().run_log_sanitize_booster_option(option, option_index)
+func _run_log_sanitize_treasure_chest_option(option: Dictionary, option_index: int = -1) -> Dictionary:
+	return _ensure_run_logger().run_log_sanitize_treasure_chest_option(option, option_index)
 
 
 func _run_log_next_shop_ordinal() -> int:
