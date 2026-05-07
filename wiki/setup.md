@@ -20,6 +20,7 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 - Project-local Codex defaults set the main/default model to `gpt-5.5` with `low` reasoning, the explorer custom agent to `gpt-5.5` with `medium` reasoning, and the worker custom agent to `gpt-5.3-coder` with `high` reasoning; milestone-style implementation prompts use this multi-agent workflow by default, and spawned subagents must be launched with explicit model overrides. (source: `AGENTS.md`, `.codex/config.toml`, `.codex/agents/default.toml`, `.codex/agents/explorer.toml`, `.codex/agents/worker.toml`)
 - The checked sources do not define a separate CLI build or test script. Validation in this repo is currently documented as manual QA plus Godot MCP/editor-script checks. (needs verification)
 - AR-01 combat result-envelope regression can be rerun with `res://scripts/debug/ar01_combat_result_probe.gd`. It is disabled by default behind project setting `debug/ar01_combat_result_probe_enabled=false`; enable it only for the probe call, then turn it back off. (source: `scripts/debug/ar01_combat_result_probe.gd`, `docs/test_plan.md`)
+- New automated logic tests should live under `scripts/tests/` and use `*_test.gd` filenames. Keep them framework-free for now: expose a static or instance runner that can be called from Godot MCP `execute_editor_script`, return a structured pass/fail report, and use simple assertions or explicit failure collection. Retained probes under `scripts/debug/` are legacy validation helpers, not the preferred location for new tests. (source: `docs/test_plan.md`)
 - MIDI music sources can be rendered to Godot-ready WAV files with `python tools/audio/export_midi_to_wav.py`. The script defaults to the local FluidSynth binary at `C:\Users\Home\Downloads\orbwalker\fluidsynth-v2.5.4-win10-x64-cpp11\fluidsynth-v2.5.4-win10-x64-cpp11\bin\fluidsynth.exe` and `raw/GeneralUser GS v1.471.sf2`; override either path with `--fluidsynth` or `--soundfont`. (source: `tools/audio/export_midi_to_wav.py`, `raw/`)
 - Android debug export currently uses the Godot 4.6.2 console executable and the `Android` export preset:
   - `& 'C:\Users\Home\Desktop\Godot\Godot_v4.6.2-stable_win64_console.exe' --path 'D:\godot\matchatro' --export-debug Android 'D:\godot\matchatro\Orbwalker.apk'`
@@ -33,6 +34,7 @@ The project is a Godot 4.6 game named `Orbwalker`. The main scene is `res://scen
 - `.codex/agents/` - project-local Codex custom agent definitions
 - `scenes/main_menu.tscn` - boot scene
 - `scripts/debug/ar01_combat_result_probe.gd` - feature-flagged AR-01 combat envelope regression probe
+- `scripts/tests/*_test.gd` - preferred convention for new automated logic tests and lightweight callable runners for current MVC models plus combat state-machine invariants
 - `docs/test_plan.md` - manual QA checklist
 - `docs/system_architecture.md` - architecture and setup context
 - `tools/audio/export_midi_to_wav.py` - MIDI-to-WAV export helper for music assets

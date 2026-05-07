@@ -2236,3 +2236,15 @@ Append-only history of wiki operations.
 ## 2026-05-07 - Code review known-issues capture
 
 - Recorded two review follow-ups in [[known-issues]]: combat top-bar Back/Settings still bypass hardened FlowTrace/prepared-scene routing, and current combat scene smoke reports enum reload diagnostics around combat input-phase enum/int conversion. (source: `scripts/combat/combat_controller.gd`, `wiki/known-issues.md`)
+
+## 2026-05-07 - Test naming convention
+
+- Recorded the preferred convention for new lightweight automated logic tests: place them under `scripts/tests/` with `*_test.gd` filenames, callable from Godot MCP/editor scripts or debug tooling with structured pass/fail reports. Retained historical probes under `scripts/debug/` remain legacy validation helpers until deliberately migrated. (source: `docs/test_plan.md`, `wiki/file-map.md`, `wiki/setup.md`)
+
+## 2026-05-07 - Lightweight combat tests
+
+- Added framework-free callable tests for `CombatModel` and `CombatStateMachine` under `scripts/tests/`, covering scene-local model state, HUD staging, mastery feedback bookkeeping, resolve trace state, combat phase transitions, lethal victory intent skip, enemy block, armor blocking/cleanup, healing clamp, debug-local gold, and nonlethal turn advancement. Godot MCP reports both new runners passing and the existing board resolver runner still passing. (source: `scripts/tests/combat_model_test.gd`, `scripts/tests/combat_state_machine_test.gd`, `docs/test_plan.md`)
+
+## 2026-05-07 - Full model test coverage
+
+- Added framework-free callable tests for the remaining current MVC models under `scripts/tests/`: `BoardModel`, `MainMenuModel`, `ShopModel`, `CollectionModel`, and `RunSummaryModel`. Together with the existing combat runners, every model script now has a lightweight structured `run_all()` validation surface callable through Godot MCP/editor scripts. (source: `scripts/tests/board_model_test.gd`, `scripts/tests/main_menu_model_test.gd`, `scripts/tests/shop_model_test.gd`, `scripts/tests/collection_model_test.gd`, `scripts/tests/run_summary_model_test.gd`, `docs/test_plan.md`)
