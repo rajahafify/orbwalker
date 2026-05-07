@@ -17,13 +17,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "1254x1254",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_icon_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: logo-brand; Asset type: app icon for Orbwalker; Primary request: square production candidate application icon for a fantasy match-3 roguelike. Subject: a single iconic glowing elemental orb held in a small crescent of dark fantasy stone and gold, hinting at dungeon treasure and match-3 magic. Style/medium: polished stylized 2D game app icon, strong silhouette, high contrast, readable at small mobile size. Composition/framing: centered square icon, no text, no border text, no UI. Lighting/mood: premium magical glow, adventurous fantasy. Color palette: gold frame accents, dark stone, multicolor elemental orb core. Constraints: no readable text, no letters, no logo wordmark, no watermark, no copyrighted characters, no casino imagery, no gore, no tiny details that disappear at app-icon size.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "approved_asset_manifest",
@@ -107,7 +109,7 @@
                         "group_id":  "vfx",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/board_orb_clear_vfx.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -115,15 +117,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1402x1122",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: board orb clear VFX sheet for Orbwalker\nPrimary request: production candidate transparent-style sprite sheet for match-3 orb clear, cascade, and combo feedback.\nSubject: twelve small VFX sprites in a 4x3 sheet: fire burst, ice shards, earth leaves/rocks, heart heal sparkle, armor shield flash, gold coin sparkle, generic orb pop, combo ring, cascade streak, small impact star, dust puff, magic trail.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, not too noisy.\nComposition/framing: 4x3 sprite sheet, each effect centered with padding, transparent-background cutout feel, no labels.\nLighting/mood: energetic but board-readable.\nColor palette: elemental colors plus gold and white highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid huge opaque backgrounds.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "boot_splash",
@@ -142,13 +146,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: boot splash image for Orbwalker; Primary request: production candidate boot splash screen image for a fantasy match-3 roguelike. Scene/backdrop: dark stone vault doorway opening to a glowing elemental orb constellation, subtle treasure glints, calm dramatic composition. Subject: brand mood image only, no UI, no text. Style/medium: polished stylized 2D splash art, clean and cinematic. Composition/framing: 16:9 wide splash screen with centered focal glow and enough negative space for engine fade/logo overlay later. Lighting/mood: mysterious, premium, magical, quick-loading screen feel. Color palette: dark stone, gold, cyan, red, green, violet elemental accents. Constraints: no readable text, no logo, no watermark, no characters, no UI controls, no casino imagery, no gore.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "boss_portraits",
@@ -157,7 +163,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boss_portraits.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -165,15 +171,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "2172x724",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_portrait_sheet_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: boss portrait set for Orbwalker; Primary request: production candidate boss portrait sheet with three distinct boss portraits for a fantasy match-3 roguelike. Subject: three bust portraits in a horizontal sheet: Iron Gate massive shielded stone/iron guardian, Burning Knight flame-armored boss, Prism Warden crystal-and-light arcane boss. Style/medium: polished stylized 2D game portrait art, premium dark fantasy, high threat, crisp silhouette. Composition/framing: 3 portrait cells, consistent scale and angle, simple dark neutral backdrop, no labels. Lighting/mood: imposing boss reveal, dramatic rim light, not horror. Color palette: iron gray/gold, fire orange/red, prism cyan/violet/white highlights. Constraints: no readable text, no labels, no logo, no watermark, no gore, no copyrighted characters, no casino imagery, each boss must be visually distinct.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "collection_background",
@@ -192,13 +200,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: collection/meta progression background for Orbwalker; Primary request: production candidate collection background for meta progression and unlock screens. Scene/backdrop: quiet arcane archive and treasure vault, shelves of relics, elemental plaques, sealed alcoves, soft magical dust. Subject: environment only, no characters, no UI, no text. Style/medium: polished stylized 2D fantasy game background, refined and readable. Composition/framing: vertical mobile-friendly screen with calm central display space for collection cards and unlock panels. Lighting/mood: contemplative, rewarding, magical, less intense than combat. Color palette: deep stone, muted indigo, warm gold, small elemental highlights. Constraints: no readable text, no logo, no watermark, no characters, no UI overlay, no casino imagery, no gore.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "combat_background",
@@ -217,13 +227,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: combat background for Orbwalker; Primary request: production candidate dungeon combat background for a fantasy match-3 roguelike. Scene/backdrop: deep stone dungeon arena with elemental carvings, distant archway, subtle enemy-stage depth, no active characters. Subject: environment only, designed to sit behind board, enemy panel, and HUD. Style/medium: polished stylized 2D game background, clean painterly fantasy. Composition/framing: vertical mobile-friendly background with a darker low-detail central zone for combat UI and board readability. Lighting/mood: tense adventure, cool blue stone shadows, small warm torch accents. Color palette: charcoal stone, blue-violet shadows, small gold/orange fire highlights, restrained effects. Constraints: no text, no logo, no watermark, no characters, no UI frame, no casino imagery, no gore, avoid high-detail clutter in the center.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "combat_enemy_stage_art",
@@ -232,7 +244,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -240,15 +252,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_stage_sheet_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: combat enemy stage/banner art set for Orbwalker; Primary request: production candidate wide encounter stage/banner sheet for a fantasy match-3 roguelike. Subject: four wide horizontal encounter banners in a 2x2 sheet: cavern raider stage, shield guard stage, burning knight arena, prism vault arena. Each banner has an empty central/foreground area for portrait placement and UI overlays. Style/medium: polished stylized 2D game stage art, dark-fantasy dungeon, readable at mobile combat header size. Composition/framing: 2x2 sheet of wide banners, consistent horizon and camera height, no characters, no labels. Lighting/mood: tense dungeon encounter, clear environmental identity per banner. Color palette: cool stone, warm torch/gold, fire red/orange, prism cyan/violet, distinct but cohesive. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no UI controls, no characters.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "combat_ui_chrome_pack",
@@ -257,7 +271,7 @@
                         "group_id":  "ui_chrome",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_ui_chrome_pack.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -265,15 +279,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1024x1536",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: combat UI chrome pack for Orbwalker\nPrimary request: production candidate UI component sheet for combat frames, rails, slots, timer pieces, and dividers.\nSubject: combat top bar frame, enemy panel frame, board frame, mastery rail, player vitals frame, equipment slot, consumable slot, timer track, divider strip, corner ornament.\nStyle/medium: polished stylized 2D fantasy UI chrome, dark stone, blackened steel, antique gold trim, crisp mobile readability.\nComposition/framing: organized component sheet on neutral background, separated components with padding, no labels, no embedded text.\nLighting/mood: tactical, sturdy, restrained.\nColor palette: charcoal stone, steel, gold, subtle blue/violet highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no excessive ornament.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "consumable_icons",
@@ -282,7 +298,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/consumable_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -290,15 +306,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1448x1086",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: consumable scroll icon set for Orbwalker\nPrimary request: production candidate consumable icon sheet for elemental scrolls and tactical one-use items.\nSubject: eight fantasy consumable icons in a 4x2 sheet: fire scroll, ice scroll, earth scroll, healing scroll, armor ward scroll, gold charm scroll, reroll scroll, emergency escape scroll. Scrolls should have distinct seals and elemental effects.\nStyle/medium: polished stylized 2D game inventory icons, crisp mobile slot readability.\nComposition/framing: 4x2 sheet, equal-size icons, centered, transparent-background cutout feel, no labels.\nLighting/mood: magical utility items, clear elemental identity.\nColor palette: parchment, wax seals, fire orange, ice cyan, earth green, heart rose, silver armor, gold.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid tiny glyphs that resemble text.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "controls_visual",
@@ -307,7 +325,7 @@
                         "group_id":  "marketing_and_store",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/controls_visual.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -315,15 +333,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_instructional_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: controls/help visual for Orbwalker\nPrimary request: production candidate no-text instructional graphic showing drag-to-match orb controls for a fantasy match-3 roguelike.\nSubject: close-up fantasy game board with a finger/hand gesture dragging one elemental orb along a short path through adjacent orbs; include subtle arrows, highlight rings, and gesture trail but no words.\nStyle/medium: polished stylized 2D instructional game graphic, clear mobile readability.\nComposition/framing: vertical mobile-friendly help visual, board occupies lower two-thirds, gesture path is obvious, safe top area for later UI copy.\nLighting/mood: helpful, clean, approachable.\nColor palette: dark stone board, bright elemental orbs, teal/gold guidance highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid confusing multiple gestures.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "enemy_animation_set",
@@ -357,7 +377,7 @@
                         "group_id":  "vfx",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -365,15 +385,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1774x887",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: enemy attack VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for enemy attack, block, shield, and HP-hit feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: slash arc, heavy impact, shield block flash, armor crack, red damage burst, poison/dark swipe, stone shockwave, warning spike, enemy charge glow, small hit spark.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 5x2 sprite sheet, each effect centered with padding, no labels.\nLighting/mood: tactical enemy feedback, threatening but not gory.\nColor palette: red/orange impacts, blue/silver shields, dark violet enemy magic, white highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "enemy_portraits",
@@ -382,7 +404,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/enemy_portraits.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -390,15 +412,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_portrait_sheet_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: normal enemy portrait set for Orbwalker; Primary request: production candidate enemy portrait sheet with six distinct normal enemy portraits for a fantasy match-3 roguelike. Subject: six bust portraits in a 3x2 sheet: Striker agile blade raider, Defender heavy shield guard, Charger horned brute, Ruin Lancer spear fighter, Vault Executioner armored axe enemy, Goldbound Keeper treasure-guardian enemy. Style/medium: polished stylized 2D game portrait art, dark-fantasy adventure, crisp silhouettes, mobile HUD readable. Composition/framing: 3x2 portrait sheet, each enemy centered in its cell, consistent scale and camera angle, simple dark neutral backdrop, no labels. Lighting/mood: threatening but not horror, cool dungeon shadows with warm rim highlights. Color palette: charcoal stone, blackened steel, antique gold accents, distinct accent color per enemy. Constraints: no readable text, no labels, no logo, no watermark, no gore, no copyrighted characters, no casino imagery, keep each silhouette distinct.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "equipment_icons",
@@ -407,7 +431,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/equipment_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -415,15 +439,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: equipment icon set for Orbwalker\nPrimary request: production candidate equipment icon sheet for current equipment variants.\nSubject: fifteen fantasy equipment icons in a clean 5x3 sheet: shortsword, buckler, coin purse, healing charm, leather gloves, twin blades, tower shield, merchant scales, hearth amulet, war banner, ruby brooch, champion plate, royal seal, mirror charm, battle drum.\nStyle/medium: polished stylized 2D game inventory icons, crisp silhouettes, mobile slot readable.\nComposition/framing: 5x3 icon sheet, equal-size centered items, transparent-background cutout feel, no labels.\nLighting/mood: collectible RPG equipment, clear item identity.\nColor palette: steel, leather, gold, ruby, parchment, warm highlights, varied but cohesive.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid tiny detail and duplicated silhouettes.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "game_title_logo",
@@ -442,13 +468,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "1774x887",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_logo_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
-                        "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "embedded_text":  "needs_deferred_text_qa",
+                        "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. Legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: logo-brand; Asset type: game title/logo lockup candidate for Orbwalker; Primary request: production candidate fantasy game title/logo lockup with the exact word ORBWALKER. Text (verbatim): \"ORBWALKER\". Subject: ornate title lettering with a subtle elemental orb mark integrated behind or above the word, fantasy dungeon treasure style. Style/medium: polished stylized game logo, vector-friendly painted wordmark concept, readable on mobile menu and store art. Composition/framing: centered horizontal lockup on simple dark neutral background, clear silhouette, no extra words. Lighting/mood: premium adventure, gold and elemental glow accents. Color palette: gold, stone charcoal, cyan/red/green/violet elemental highlights. Constraints: render only the exact word ORBWALKER, no subtitle, no extra letters, no watermark, no copyright characters, no casino imagery, no gore.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "generation_metadata",
@@ -482,7 +510,7 @@
                         "group_id":  "animation",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_animation_set.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -490,15 +518,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "sprite_pipeline_followup_needed",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first source frame candidate created with built-in imagegen. Sprite-pipeline normalization, QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: hero animation source frame sheet for Orbwalker\nPrimary request: production candidate source frame sheet for hero animation normalization later with sprite-pipeline.\nSubject: the same hooded orbwalker hero in eight consistent full-body source frames: idle 1, idle 2, orb-cast windup, orb-cast release, hurt, guard/block, victory, defeat/kneel. Same costume, proportions, and camera angle across all frames.\nStyle/medium: polished stylized 2D game character sprite/pose art, clean silhouette, animation-source friendly.\nComposition/framing: 4x2 sheet, full-body frames centered in equal cells, simple neutral background, no labels.\nLighting/mood: readable gameplay animation source, not final runtime integration.\nColor palette: dark cloak, leather, antique gold trim, cyan/orange elemental glow accents.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid cropped limbs; keep character identity consistent across frames.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "hero_full_body_or_pose_set",
@@ -507,7 +537,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -515,15 +545,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1704x923",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_pose_sheet_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: full-body hero pose set for Orbwalker; Primary request: production candidate full-body/key pose sheet for the Orbwalker hero. Subject: same hooded adventurer-mage orbwalker in four clear poses: neutral idle, orb-casting attack, hurt/guarded, victory stance. Dark leather and cloth outfit, subtle gold trim, elemental orb magic. Style/medium: polished stylized 2D game character art, consistent proportions, clean silhouette. Composition/framing: four full-body poses on one sheet, evenly spaced, simple neutral background, no UI. Lighting/mood: readable, heroic, magical. Color palette: dark cloak, gold trim, elemental cyan/orange/multicolor glow accents. Constraints: no readable text, no labels, no logo, no watermark, no copyrighted characters, no gore, no casino imagery, avoid cropped feet or hands.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "hero_orbwalker_portrait",
@@ -542,13 +574,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "1254x1254",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: hero portrait for Orbwalker; Primary request: production candidate hero bust portrait for the Orbwalker player character in a fantasy match-3 roguelike. Subject: hooded adventurer-mage orbwalker, confident but approachable, wearing dark leather and cloth with subtle gold trim, one hand holding a small glowing elemental orb. Style/medium: polished stylized 2D game character portrait, clean silhouette, mobile HUD readable. Composition/framing: bust portrait, three-quarter view, transparent-background cutout feel on simple neutral backdrop, no UI. Lighting/mood: heroic, magical, restrained, readable. Color palette: dark cloak, gold trim, cyan/orange elemental glow accents. Constraints: no readable text, no logo, no watermark, no copyrighted characters, no gore, no casino imagery, no excessive detail that fails at small portrait size.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "intent_icons",
@@ -557,7 +591,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/intent_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -565,15 +599,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1254x1254",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: enemy intent icon set for Orbwalker; Primary request: production candidate compact HUD icon sheet for enemy intent states. Subject: four icons in a clean 2x2 sheet: attack sword/claw, block shield, attack-plus-block crossed weapon and shield, unknown/warning intent. Dark fantasy metal and gem accents. Style/medium: polished stylized 2D UI icons, extremely readable at small HUD scale. Composition/framing: 2x2 sheet, equal-size icons, centered, transparent-background cutout feel, no labels. Lighting/mood: clear tactical signal, high contrast. Color palette: attack red/orange, block blue/silver, combined purple/gold, warning amber. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid decorative clutter.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "itch_page_graphics",
@@ -594,11 +630,11 @@
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "false_verified_opaque_marketing_candidate",
-                        "qa_status":  "review_pending",
-                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Internal QA passed as wide illustrative page/key-art candidate. Probe shows 1672x941 Format24bppRgb with sampled alpha 255,255,255, matching full-background marketing usage; no visible text or watermark detected in sampled review. It is marketing art, not gameplay screenshot evidence. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
+                        "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
                         "final_prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -619,13 +655,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: main menu background for Orbwalker; Primary request: production candidate main-menu cavern/city background for a fantasy match-3 roguelike. Scene/backdrop: ancient underground cavern opening into a distant magical city gate, stone arches, faint elemental crystals, subtle treasure hints. Subject: environment only, no characters, no UI, no text. Style/medium: polished stylized 2D game background, painterly but clean, readable behind menu buttons. Composition/framing: vertical mobile-friendly scene with a calm central safe area and darker edges for UI contrast. Lighting/mood: inviting fantasy adventure, cool cave shadows with warm city/gold highlights. Color palette: dark stone, teal/cyan crystals, warm gold lanterns, restrained saturation. Constraints: no text, no logo, no watermark, no characters, no UI controls, no casino imagery, no gore.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "main_menu_ui_pack",
@@ -634,7 +672,7 @@
                         "group_id":  "ui_chrome",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -642,15 +680,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: main menu UI chrome pack for Orbwalker\nPrimary request: production candidate UI kit sheet for main menu buttons, frames, stats panels, and menu icons.\nSubject: a clean UI component sheet containing primary button, secondary button, outer border frame, stats panel frame, small icon medallions for profile/settings/achievements/relics/mastery/best run.\nStyle/medium: polished stylized 2D fantasy UI chrome, dark stone, beveled metal, antique gold trim, mobile readable.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no text baked into buttons.\nLighting/mood: premium but restrained menu UI.\nColor palette: charcoal stone, blackened steel, antique gold, subtle cyan/violet elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament that hurts readability.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "mastery_icons",
@@ -659,7 +699,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -667,15 +707,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1271x1238",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: mastery card icon set for Orbwalker; Primary request: production candidate icon sheet for six elemental mastery card icons. Subject: six ornate card-like mastery emblems in a 3x2 sheet: fire mastery flame sigil, ice mastery crystal sigil, earth mastery leaf/stone sigil, heart mastery healing sigil, armor mastery shield sigil, gold mastery coin/crown sigil. Style/medium: polished stylized 2D fantasy game icons, premium card/relic feel, crisp mobile readability. Composition/framing: 3x2 sheet, equal-size emblems, centered, transparent-background cutout feel, no labels. Lighting/mood: magical and collectible, stronger prestige than basic orb icons. Color palette: element colors plus antique gold frames and dark backing. Constraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "mastery_vfx",
@@ -684,7 +726,7 @@
                         "group_id":  "vfx",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_vfx.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -692,15 +734,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1402x1122",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: mastery VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for elemental mastery beams, shells, and impact feedback.\nSubject: twelve small VFX sprites in a 4x3 sheet: fire beam, ice beam, earth beam, heart heal beam, armor shell, gold sparkle beam, hit impact, heal impact, shield pulse, coin burst, mastery charge ring, small trail particle.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 4x3 sheet, effects centered with padding, no labels.\nLighting/mood: clear source-to-target magic feedback without covering the board.\nColor palette: elemental colors, white highlights, gold accents.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "merchant_character",
@@ -709,7 +753,7 @@
                         "group_id":  "characters",
                         "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/merchant_character.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -717,15 +761,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1537x1023",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "opaque_character_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: merchant character/header art for Orbwalker shop; Primary request: production candidate merchant NPC portrait/header art for a fantasy match-3 roguelike shop. Subject: friendly mysterious dungeon merchant, middle-aged fantasy shopkeeper with layered robes, coin charms, small relics and scrolls, warm expression, hands presenting a glowing item. Style/medium: polished stylized 2D game character art, mobile readable, matching fantasy shop background. Composition/framing: waist-up portrait/header composition, centered, simple neutral backdrop, no UI. Lighting/mood: warm, trustworthy, magical, slightly mischievous. Color palette: amber gold, deep purple cloth, dark stone neutrals, small cyan magical accent. Constraints: no readable text, no labels, no logo, no watermark, no copyrighted characters, no gore, no casino imagery.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "music_combat",
@@ -834,7 +880,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/orb_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -842,15 +888,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Sprite-pipeline follow-up may normalize individual orbs after QA.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: orb icon/texture set for Orbwalker; Primary request: production candidate icon sheet for six match-3 board orb types. Subject: six circular orb icons in a clean 3x2 sheet: fire, ice, earth, heart, armor, gold. Each orb should have distinct symbol language and color while sharing the same beveled jewel style. Style/medium: polished stylized 2D game icons, crisp mobile readability, fantasy gem/orb materials. Composition/framing: 3x2 sheet, equal-size icons, centered in cells, transparent-background cutout feel, no labels. Lighting/mood: bright readable gameplay pieces with strong silhouettes. Color palette: fire ruby/orange, ice cyan/blue, earth moss/green, heart rose, armor silver, gold yellow. Constraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail; each orb must read at small board scale.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "qa_reports",
@@ -884,7 +932,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -892,15 +940,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "2172x724",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: rarity badge icon set for Orbwalker\nPrimary request: production candidate rarity badge sheet for item/commonness states.\nSubject: three compact fantasy badges in a horizontal sheet: common bronze/stone badge, uncommon silver/blue badge, rare gold/purple jewel badge. Each uses simple shape language and clear value hierarchy.\nStyle/medium: polished stylized 2D game UI icons, crisp mobile readability.\nComposition/framing: three equal badges centered in cells, transparent-background cutout feel, no labels.\nLighting/mood: collectible but restrained.\nColor palette: bronze, silver-blue, gold-purple, dark backing.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, avoid tiny detail.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "relic_icons",
@@ -909,7 +959,7 @@
                         "group_id":  "core_gameplay_icons",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/relic_icons.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -917,15 +967,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "2172x724",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: relic icon set for Orbwalker\nPrimary request: production candidate relic icon sheet for boss/shop relics.\nSubject: five fantasy relic icons in a horizontal sheet: molten mantle, golden idol, crown of chains, merchant compass, prism sigil relic. Each relic should have a distinct silhouette and premium magical feel.\nStyle/medium: polished stylized 2D game relic icons, crisp inventory readability.\nComposition/framing: five equal icon cells, centered objects, transparent-background cutout feel, no labels.\nLighting/mood: rare treasure reward, magical but readable.\nColor palette: antique gold, obsidian, fire orange, chain steel, compass brass, prism cyan/violet.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no tiny illegible ornament.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "result_screen_ui_pack",
@@ -946,11 +998,11 @@
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "required_true_in_brief_but_not_met",
-                        "qa_status":  "cleanup_required",
-                        "review_status":  "internal_qa_failed_cleanup_required_human_qa_skipped",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Internal QA found candidate is a single 1536x1024 Format24bppRgb output and the generation prompt explicitly targets a two-panel concept sheet, not a production UI pack with separated victory/defeat/boss reward/run summary chrome pieces. Brief expects transparent isolated UI assets, so cleanup/redesign is required before review. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
+                        "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
                         "final_prompt":  "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -973,11 +1025,11 @@
                         "export_format":  "png_candidate",
                         "alpha_type":  "needs_qa",
                         "transparent_background":  "false_verified_opaque_background_candidate",
-                        "qa_status":  "review_pending",
-                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Internal QA passed as a full-screen opaque vertical run-summary background candidate. Probe shows 941x1672 Format24bppRgb with sampled alpha 255,255,255, which matches the brief expectation for non-transparent background art. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
+                        "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
                         "final_prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -1088,7 +1140,7 @@
                         "group_id":  "ui_chrome",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1096,15 +1148,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: shared HUD chrome pack for Orbwalker\nPrimary request: production candidate UI component sheet for shared player HUD, HP bars, slots, and mastery panels.\nSubject: player HP bar frame and fill, enemy HP bar frame and fill, combo badge frame, equipment slot frame, consumable slot frame, mastery panel frame, mastery preview panel frame, compact panel frame.\nStyle/medium: polished stylized 2D fantasy UI chrome, readable at mobile HUD scale.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no embedded text.\nLighting/mood: clear operational UI, less decorative than menu, consistent with combat/shop.\nColor palette: dark stone, steel, antique gold, red/green HP fills, subtle elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "shop_background",
@@ -1123,13 +1177,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "941x1672",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: shop background for Orbwalker; Primary request: production candidate merchant shop background for a fantasy match-3 roguelike. Scene/backdrop: cozy underground merchant stall carved into stone, shelves of relics, scrolls, glowing bottles, treasure chest display, warm lamps. Subject: environment only, no merchant character, no UI, no text. Style/medium: polished stylized 2D game background, clean fantasy shop art. Composition/framing: vertical mobile-friendly background with clear safe zones for shop offer cards and shared HUD, no clutter in central offer area. Lighting/mood: warm, inviting, slightly mysterious. Color palette: warm gold, amber lanterns, dark stone, muted purple cloth, small elemental color accents. Constraints: no readable text, no logo, no watermark, no characters, no UI overlays, no casino imagery, no gore.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "shop_transaction_vfx",
@@ -1138,7 +1194,7 @@
                         "group_id":  "vfx",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_transaction_vfx.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1146,15 +1202,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1774x887",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: shop transaction VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for shop buy, sell, reroll, treasure chest, and error feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: buy sparkle, denied red pulse, sell coin swirl, reroll magic spin, treasure chest open burst, treasure pick glow, continue shimmer, small error spark, item acquired flash, gold spend trail.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 5x2 sprite sheet, centered effects with padding, no labels.\nLighting/mood: merchant shop feedback, satisfying but restrained.\nColor palette: gold, amber, red error, teal magic, white highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "shop_ui_pack",
@@ -1163,7 +1221,7 @@
                         "group_id":  "ui_chrome",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_ui_pack.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1171,15 +1229,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: shop UI pack for Orbwalker\nPrimary request: production candidate UI component sheet for shop cards, offers, relic slots, reroll, treasure chest choice, and transaction states.\nSubject: shop offer card frame, affordable state, unaffordable/disabled state, sold-out overlay, selected frame, relic offer frame, reroll button frame, treasure chest choice panel, small error feedback badge.\nStyle/medium: polished stylized 2D fantasy shop UI chrome, mobile/touch readable.\nComposition/framing: organized component sheet on neutral background, separated components with padding, no labels, no embedded text.\nLighting/mood: merchant shop warmth, clear states.\nColor palette: dark stone, warm amber, antique gold, muted purple cloth, red disabled/error accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no tiny illegible ornament.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "store_capsule_key_art",
@@ -1198,13 +1258,15 @@
                         "usage_rights":  "needs_review",
                         "dimensions":  "1672x941",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "generated_qa_deferred",
+                        "alpha_type":  "opaque_background_candidate",
+                        "transparent_background":  "false_bulk_candidate",
+                        "qa_status":  "generated_bulk_pending_qa",
                         "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept; Asset type: store capsule key art for Orbwalker, fantasy match-3 roguelike; Primary request: wide production candidate key art showing a lone orbwalker hero manipulating elemental orbs in a dungeon, with a looming enemy silhouette and treasure chest support elements. Scene/backdrop: ancient stone dungeon vault with readable depth, magical orb board energy in foreground, treasure glow at one side. Subject: hooded fantasy hero seen in dynamic three-quarter pose, one hand channeling elemental orb magic, enemy threat in distance. Style/medium: polished stylized 2D game key art, premium indie fantasy, clean shapes, mobile/store readable. Composition/framing: 16:9 wide banner with safe negative space near top-left and top-right for later logo/crops; no text. Lighting/mood: dramatic warm treasure light balanced with cool dungeon blue shadows. Color palette: varied elemental colors, gold accents, dark stone, not monochrome. Constraints: no readable text, no logo, no watermark, no copyrighted characters, no casino imagery, no gore, no UI overlay, no fake screenshot frame.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "trailer_or_gif_capture",
@@ -1254,11 +1316,11 @@
                         "export_format":  "png_candidate",
                         "alpha_type":  "cleanup_candidate_has_binary_alpha",
                         "transparent_background":  "cleanup_candidate_passes_basic_alpha_probe",
-                        "qa_status":  "review_pending",
-                        "review_status":  "internal_qa_passed_human_qa_skipped_license_pending",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_requested_needs_visual_confirmation",
-                        "notes":  "Internal QA passed for cleanup candidate after alpha/background evidence review. Generated candidates 01-03 remain failed for alpha; cleanup candidate has real Format32bppArgb alpha and passes white, black, gray, and checkerboard checks documented in assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png. Human QA skipped by instruction; legal/license review still pending; runtime integration blocked.",
+                        "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist.",
                         "final_prompt":  "Create a production game asset PNG with ACTUAL transparent alpha background: four separate fantasy treasure chest icon variants arranged in a 2x2 sheet, with empty transparent space around each icon. Use polished stylized 2D mobile game icon art for a fantasy match-3 roguelike. Variants: elemental treasure chest with neutral elemental gem magic, fire treasure chest with warm flame accents, plus one alternate for each. No text, no labels, no logo, no watermark, no frame, no shadow touching the image edges, no gray background, no white background, no checkerboard background, no transparency preview grid, no baked backdrop. The file itself must have alpha transparency outside the chest artwork.",
                         "generation_mode":  "built-in imagegen"
                     },
@@ -1269,7 +1331,7 @@
                         "group_id":  "ui_chrome",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1277,15 +1339,17 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1536x1024",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: tutorial and onboarding UI pack for Orbwalker\nPrimary request: production candidate UI component sheet for first-run guidance, tooltips, and control prompts.\nSubject: tooltip panel, compact tutorial callout frame, control prompt frame, finger/drag gesture icon, highlight ring, confirmation button frame, small warning/help badge.\nStyle/medium: polished stylized 2D fantasy UI chrome, clear mobile tutorial readability.\nComposition/framing: organized component sheet on neutral background, separated components with padding, no labels, no embedded instructional text.\nLighting/mood: helpful, calm, readable, less ornate than combat UI.\nColor palette: dark stone, soft gold, teal/cyan guidance highlights, muted parchment panel.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, keep icon gestures simple and universal.",
+                        "generation_mode":  "built-in imagegen"
                     },
                     {
                         "asset_id":  "ui_motion_language",
@@ -1319,7 +1383,7 @@
                         "group_id":  "vfx",
                         "brief_path":  "assets/briefs/wave-04-remaining-production-assets/unlock_achievement_vfx.brief.md",
                         "candidate_paths":  [
-
+                                                "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
@@ -1327,17 +1391,19 @@
                                               ],
                         "license_status":  "needs_review",
                         "usage_rights":  "needs_review",
-                        "dimensions":  "needs_generation_or_spec",
+                        "dimensions":  "1774x887",
                         "export_format":  "png_candidate",
-                        "alpha_type":  "needs_qa",
-                        "transparent_background":  "needs_brief_confirmation",
-                        "qa_status":  "not_started",
-                        "review_status":  "not_started",
+                        "alpha_type":  "needs_deferred_alpha_check",
+                        "transparent_background":  "needs_deferred_qa",
+                        "qa_status":  "generated_bulk_pending_qa",
+                        "review_status":  "not_started_bulk_generation_first",
                         "integration_status":  "blocked_pending_approval",
                         "embedded_text":  "none_or_needs_approval",
-                        "notes":  "Generated from current assets.json treasure chest terminology."
+                        "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. Deferred QA must check whether checkerboard is baked and whether real alpha cleanup is needed.",
+                        "final_prompt":  "Use case: stylized-concept\nAsset type: unlock and achievement VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for meta unlock, achievement toast, and reward celebration feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: unlock burst, achievement toast sparkle, relic reveal glow, mastery unlock ring, star pop, gold confetti, soft pulse halo, progress flare, reward beam, small celebratory trail.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 5x2 sprite sheet, centered effects with padding, no labels.\nLighting/mood: celebratory, rewarding, restrained enough for UI overlays.\nColor palette: gold, white, teal, violet, warm amber highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
+                        "generation_mode":  "built-in imagegen"
                     }
                 ],
-    "generated_on":  "2026-05-07",
+    "generated_on":  "2026-05-08",
     "asset_count":  53
 }

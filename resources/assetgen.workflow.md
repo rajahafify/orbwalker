@@ -11,8 +11,12 @@ review, final approval, and runtime integration remain blocked until that later
 QA/review pass is complete.
 
 All image creation or raster image editing in this workflow must use the Codex
-`imagegen` skill. Use the built-in `image_gen` tool path described by that skill
-unless the human explicitly asks for the skill's CLI fallback.
+`imagegen` skill. Read that skill's `SKILL.md` first, then call the available
+in-chat image generation tool exposed to the agent by Codex. Do not try to run
+`image_gen`, `imagegen`, or any similarly named command in PowerShell, Bash, or
+another CLI; those names are not shell executables in this workflow. Use a CLI
+fallback only when the human explicitly asks for the skill's CLI fallback and
+the skill documentation provides one.
 
 For sprite sheets, animation strips, or frame-normalized 2D animation exports,
 use the available `game-studio:sprite-pipeline` skill after image candidates
@@ -85,7 +89,9 @@ Maintain a single source of truth before production begins.
 
 **Worker ownership:** assign a separate worker subagent to generate, QA, clean,
 and export candidates from the approved Layer 1 inputs. This worker must use the
-Codex `imagegen` skill for all generated raster asset creation or editing.
+Codex `imagegen` skill for all generated raster asset creation or editing. The
+worker should invoke the Codex-provided image generation tool from the agent
+tool interface, not from the local shell.
 
 Produce candidates first, then QA later as one batch in this mode.
 

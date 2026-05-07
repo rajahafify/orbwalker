@@ -4,7 +4,7 @@
 
 **Sources**: `resources/assetgen.workflow.md`
 
-**Last updated**: 2026-05-07
+**Last updated**: 2026-05-08
 
 ---
 
@@ -19,7 +19,7 @@ The proposed asset workspace is organized under an `assets/` folder with separat
 The workflow has three layers:
 
 - Creative control: the art bible, asset briefs, prompt templates, style rules, palette rules, transparency requirements, and negative constraints define what may be generated.
-- Asset production: candidates are generated from approved briefs for all image-capable records in the current `assets.json` wave first, generation settings are recorded, sprite normalization runs after image candidates exist, and QA/cleanup are deferred into one later batch. All generated image candidate creation or editing must use the Codex `imagegen` skill, using the built-in `image_gen` tool path unless the human explicitly asks for the skill's CLI fallback. Sprite sheets, animation strips, and frame-normalized animation exports should use the available `game-studio:sprite-pipeline` skill after image candidates exist, for frame sizing, anchors, scale normalization, contact sheets, and preview packaging.
+- Asset production: candidates are generated from approved briefs for all image-capable records in the current `assets.json` wave first, generation settings are recorded, sprite normalization runs after image candidates exist, and QA/cleanup are deferred into one later batch. All generated image candidate creation or editing must use the Codex `imagegen` skill: read the skill instructions, then call the Codex-provided in-chat image generation tool from the agent tool interface. Do not run `image_gen`, `imagegen`, or similar names in PowerShell/Bash/CLI; those are not shell executables for this workflow. Sprite sheets, animation strips, and frame-normalized animation exports should use the available `game-studio:sprite-pipeline` skill after image candidates exist, for frame sizing, anchors, scale normalization, contact sheets, and preview packaging.
 - Governance and integration: in `bulk_generation_first`, this layer stays blocked while QA is deferred. Human review checks gameplay fit and brand consistency, legal/policy review checks rights and unsafe content, and only approved assets are copied into the production repository or engine surface after deferred QA and review gates reopen. (source: `resources/assetgen.workflow.md`)
 
 Audio, screenshot, and video assets are not imagegen outputs; they require non-image capture/audio tooling or explicit spec placeholders until that tooling is requested. (source: `resources/assetgen.workflow.md`)
@@ -45,6 +45,10 @@ A generated asset may enter production only when all of these are true:
 - Transparent assets passed alpha and halo checks. (source: `resources/assetgen.workflow.md`)
 
 Under `bulk_generation_first`, legal/license clearance, final approval, and runtime integration remain blocked until the deferred QA batch has completed and review outcomes are recorded. (source: `resources/assetgen.workflow.md`)
+
+## Current Bulk Generation Status
+
+As of the 2026-05-08 metadata sync, the root production inventory still contains 53 asset records and the bulk plan routes 38 records through image generation. Candidate PNGs and per-record metadata are present for 37 of those 38 image-generation records; `enemy_animation_set` remains the only planned image-generation record without a candidate file. The aggregate metadata, QA status manifest, approval status manifest, and bulk-generation progress block are synced from the per-record metadata files. QA, legal/license review, human review, final approval, and runtime integration remain blocked by the `bulk_generation_first` gate until the deferred QA batch is completed. (source: `assets.json`, `assets/generated/metadata/assets.json`, `assets/generated/metadata/bulk_generation_plan.json`, `assets/qa/reports/qa_status_manifest.json`, `assets/approved/status_manifest.json`)
 
 ## Relationship To Existing Assets
 
