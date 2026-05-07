@@ -47,6 +47,7 @@ var _enemy_debug_label: Label = null
 var _intent_label: Label = null
 var _phase_label: Label = null
 var _combat_log_text: RichTextLabel = null
+var _console_input: LineEdit = null
 var _next_button: Button = null
 var _back_button: Button = null
 var _debug_toggle_button: Button = null
@@ -73,6 +74,8 @@ var _board_frame: PanelContainer = null
 var _board_panel: Control = null
 var _board_shadow: Panel = null
 var _outcome_summary_panel: Panel = null
+var _outcome_summary_root: Control = null
+var _outcome_text_column: Control = null
 var _outcome_title_label: Label = null
 var _outcome_body_label: Label = null
 var _player_hud_section: Panel = null
@@ -171,6 +174,107 @@ func set_dependencies(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud", _player_loadout_hud)
 	_debug_console = dependencies.get("debug_console", _debug_console)
 	_outcome_overlay = dependencies.get("outcome_overlay", _outcome_overlay)
+
+
+func set_status_text(text: String) -> void:
+	if _status_label != null:
+		_status_label.text = text
+
+
+func set_status_color(color: Color) -> void:
+	if _status_label != null:
+		_status_label.modulate = color
+
+
+func set_turn_summary_text(text: String) -> void:
+	if _turn_summary_label != null:
+		_turn_summary_label.text = text
+
+
+func turn_summary_text() -> String:
+	if _turn_summary_label == null:
+		return ""
+	return _turn_summary_label.text
+
+
+func pulse_turn_summary(tint: Color) -> void:
+	if _turn_summary_label == null:
+		return
+	_turn_summary_label.modulate = tint
+	_turn_summary_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+
+func debug_console_nodes() -> Dictionary:
+	return {
+		"combat_log_text": _combat_log_text,
+		"console_input": _console_input,
+	}
+
+
+func connect_debug_console_submit(on_submitted: Callable) -> void:
+	if _console_input == null or not _console_input.visible:
+		return
+	if _console_input.text_submitted.is_connected(on_submitted):
+		return
+	_console_input.text_submitted.connect(on_submitted)
+
+
+func set_debug_toggle_button_visible(visible: bool) -> void:
+	if _debug_toggle_button != null:
+		_debug_toggle_button.visible = visible
+
+
+func set_debug_overlay_visible(visible: bool) -> void:
+	if _debug_overlay != null:
+		_debug_overlay.visible = visible
+	if _debug_console != null:
+		_debug_console.set_overlay_visible(visible)
+
+
+func toggle_debug_overlay() -> bool:
+	var visible := not is_debug_overlay_visible()
+	set_debug_overlay_visible(visible)
+	return visible
+
+
+func is_debug_overlay_visible() -> bool:
+	if _debug_overlay == null:
+		return false
+	return _debug_overlay.visible
+
+
+func outcome_overlay_nodes() -> Dictionary:
+	return {
+		"layout_root": _layout_root,
+		"summary_panel": _outcome_summary_panel,
+		"summary_root": _outcome_summary_root,
+		"text_column": _outcome_text_column,
+		"title_label": _outcome_title_label,
+		"body_label": _outcome_body_label,
+		"next_button": _next_button,
+	}
+
+
+func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary) -> void:
+	if outcome_overlay == null:
+		return
+	outcome_overlay.bind(outcome_overlay_nodes(), config)
+
+
+func set_outcome_body_text(text: String) -> void:
+	if _outcome_body_label != null:
+		_outcome_body_label.text = text
+
+
+func set_outcome_next_button_disabled(disabled: bool) -> void:
+	if _next_button != null:
+		_next_button.disabled = disabled
+
+
+func next_button_text() -> String:
+	if _next_button == null:
+		return ""
+	return _next_button.text
 
 
 func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:

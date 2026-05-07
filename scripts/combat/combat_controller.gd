@@ -4,20 +4,8 @@ class_name CombatController
 var _board: Control
 var _board_view: BoardView
 var _background: TextureRect
-var _status_label: Label
-var _turn_summary_label: Label
-var _combat_log_text: RichTextLabel
-var _console_input: LineEdit
-var _next_button: Button
-var _debug_toggle_button: Button
 var _layout_root: Control
 var _board_panel: Control
-var _outcome_summary_panel: Panel
-var _outcome_summary_root: Control
-var _outcome_text_column: Control
-var _outcome_title_label: Label
-var _outcome_body_label: Label
-var _debug_overlay: PanelContainer
 var _title_label: Label
 var _hint_label: Label
 
@@ -317,10 +305,7 @@ func _ready() -> void:
 		}
 	)
 	_debug_console.bind(
-		{
-			"combat_log_text": _combat_log_text,
-			"console_input": _console_input,
-		},
+		_view.debug_console_nodes() if _view != null else {},
 		{
 			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
 			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
@@ -372,11 +357,12 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
 	_create_new_board()
 	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id_value())
-	_debug_overlay.visible = false
-	_debug_toggle_button.visible = false
-	if _console_input.visible:
-		_console_input.text_submitted.connect(_on_console_input_text_submitted)
-	_debug_console.set_overlay_visible(false)
+	if _view != null:
+		_view.set_debug_overlay_visible(false)
+		_view.set_debug_toggle_button_visible(false)
+		_view.connect_debug_console_submit(Callable(self, "_on_console_input_text_submitted"))
+	elif _debug_console != null:
+		_debug_console.set_overlay_visible(false)
 	_host.get_viewport().size_changed.connect(_on_viewport_size_changed)
 	if _view != null:
 		_view.set_vfx_layer_visible(true)
@@ -503,8 +489,8 @@ func _initialize_combat_state() -> void:
 		_refresh_character_portraits()
 		_refresh_build_icon_rows(_progression_state.to_snapshot())
 		_show_boss_reward_summary("Boss defeated.")
-		_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
-		_status_label.modulate = STATUS_COLOR_WARNING
+		_set_status_text("Boss defeated. Choose a boss relic or skip before continuing.")
+		_set_status_color(STATUS_COLOR_WARNING)
 		RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _flow_trace_route_id_value())
 		return
 	if not RunState.is_current_step_fight():
@@ -573,12 +559,12 @@ func _begin_turn_preview() -> void:
 	_set_input_phase(InputPhase.PLAYER_INPUT)
 	_model.clear_pending_next_scene_path()
 	_hide_outcome_summary()
-	_turn_summary_label.text = "Turn Summary: Awaiting move."
-	_status_label.text = "%s | Turn %d." % [
+	_set_turn_summary_text("Turn Summary: Awaiting move.")
+	_set_status_text("%s | Turn %d." % [
 		RunState.level_sequence_label(),
 		_combat.turn_index,
-	]
-	_status_label.modulate = STATUS_COLOR_NEUTRAL
+	])
+	_set_status_color(STATUS_COLOR_NEUTRAL)
 	_update_hud()
 	_clear_combat_mastery_hover_state()
 	_append_combat_log(
@@ -623,9 +609,8 @@ func _on_debug_toggle_button_pressed() -> void:
 
 
 func _toggle_debug_overlay() -> void:
-	_debug_overlay.visible = not _debug_overlay.visible
-	if _debug_console != null:
-		_debug_console.set_overlay_visible(_debug_overlay.visible)
+	if _view != null:
+		_view.toggle_debug_overlay()
 	_update_hud()
 
 
@@ -649,11 +634,11 @@ func _on_run_tests_button_pressed() -> void:
 	var runner: Variant = BOARD_RESOLVER_TEST_RUNNER_SCRIPT.new()
 	var report: Dictionary = runner.run_all()
 	if report.passed:
-		_status_label.text = "Resolver tests passed (%d/%d)." % [report.total, report.total]
+		_set_status_text("Resolver tests passed (%d/%d)." % [report.total, report.total])
 		print("[Board Resolver Tests] Passed %d/%d." % [report.total, report.total])
 		return
 
-	_status_label.text = "Resolver tests failed (%d/%d). See output." % [report.failed, report.total]
+	_set_status_text("Resolver tests failed (%d/%d). See output." % [report.failed, report.total])
 	push_warning("Board resolver tests failed:\n%s" % "\n".join(report.failures))
 
 
@@ -671,11 +656,11 @@ func _on_add_test_equipment_button_pressed() -> void:
 
 	var result: Dictionary = progression_service.equip_item(progression_state, candidate_item_id, content)
 	if bool(result.get("ok", false)):
-		_status_label.text = "Added test equipment: %s" % candidate_item_id
+		_set_status_text("Added test equipment: %s" % candidate_item_id)
 		_append_combat_log("Debug add equipment OK: %s" % candidate_item_id)
 	else:
 		var reason := String(result.get("reason", "unknown_error"))
-		_status_label.text = "Add test equipment failed: %s" % reason
+		_set_status_text("Add test equipment failed: %s" % reason)
 		_append_combat_log("Debug add equipment failed: %s" % reason)
 	_update_hud()
 
@@ -686,11 +671,11 @@ func _on_add_test_consumable_button_pressed() -> void:
 	var content: Variant = RunState.ensure_content_registry()
 	var result: Dictionary = progression_service.add_consumable(progression_state, TEST_CONSUMABLE_ID, content)
 	if bool(result.get("ok", false)):
-		_status_label.text = "Added test consumable: %s" % TEST_CONSUMABLE_ID
+		_set_status_text("Added test consumable: %s" % TEST_CONSUMABLE_ID)
 		_append_combat_log("Debug add consumable OK: %s" % TEST_CONSUMABLE_ID)
 	else:
 		var reason := String(result.get("reason", "unknown_error"))
-		_status_label.text = "Add test consumable failed: %s" % reason
+		_set_status_text("Add test consumable failed: %s" % reason)
 		_append_combat_log("Debug add consumable failed: %s" % reason)
 	_update_hud()
 
@@ -703,7 +688,7 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 	if _combat == null or _combat.is_fight_over():
 		return
 	if _input_phase_value() != InputPhase.PLAYER_INPUT:
-		_status_label.text = "Consumables can only be used during player input."
+		_set_status_text("Consumables can only be used during player input.")
 		return
 
 	var progression_state: Variant = RunState.ensure_player_progression_state()
@@ -712,7 +697,7 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 	var use_result: Dictionary = progression_service.use_consumable(progression_state, slot_index, content)
 	if not bool(use_result.get("ok", false)):
 		var reason := String(use_result.get("reason", "unknown_error"))
-		_status_label.text = "Use consumable failed: %s" % reason
+		_set_status_text("Use consumable failed: %s" % reason)
 		_append_combat_log("Use consumable failed: %s" % reason)
 		_update_hud()
 		return
@@ -727,7 +712,7 @@ func _try_use_consumable_slot(slot_index: int) -> void:
 		_board_view.set_board_presentation_model(_board_model)
 	if _board_controller != null:
 		_board_controller.refresh_match_glow()
-	_status_label.text = "Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total]
+	_set_status_text("Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
 	_append_combat_log("Consumable used: %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
 	_update_hud()
 
@@ -736,7 +721,7 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var slots: Array = progression_snapshot.get("equipment_slots", []) if slot_type == "equipment" else progression_snapshot.get("consumable_slots", [])
 	if slot_index < 0 or slot_index >= slots.size() or String(slots[slot_index]) == "":
-		_status_label.text = "Sell failed: select an occupied equipment or consumable slot first."
+		_set_status_text("Sell failed: select an occupied equipment or consumable slot first.")
 		_append_combat_log("Sell failed: no occupied loadout slot selected.")
 		return
 	var item_id := String(slots[slot_index])
@@ -746,13 +731,13 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
 	var display_name := String(item_content.get("display_name", item_id))
 	if bool(result.get("ok", false)):
-		_status_label.text = "Sold %s for gold. Gold %d." % [display_name, RunState.run_gold]
+		_set_status_text("Sold %s for gold. Gold %d." % [display_name, RunState.run_gold])
 		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])
 		if _view != null:
 			_view.hide_player_hud_slot_popover()
 	else:
 		var reason := String(result.get("reason", "unknown_error"))
-		_status_label.text = "Sell failed: %s" % reason
+		_set_status_text("Sell failed: %s" % reason)
 		_append_combat_log("Sell %s failed: %s" % [display_name, reason])
 	_update_hud()
 
@@ -845,8 +830,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		_clear_combat_mastery_hover_state()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		_sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
-		_status_label.text = "Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id)
-		_status_label.modulate = STATUS_COLOR_NEUTRAL
+		_set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
+		_set_status_color(STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
 		_end_drag(bool(result.get("timed_out", false)))
@@ -856,9 +841,9 @@ func _create_new_board() -> void:
 	var board_seed := _resolve_seed()
 	_set_board_seed(board_seed)
 	if _combat != null and not _combat.is_fight_over():
-		_status_label.text = "Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index]
+		_set_status_text("Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index])
 	else:
-		_status_label.text = "Seed: %d | Fight complete." % board_seed
+		_set_status_text("Seed: %d | Fight complete." % board_seed)
 
 
 func _resolve_seed() -> int:
@@ -871,7 +856,7 @@ func _print_board_model() -> void:
 	print("\n[Board Debug] Seed=", board_seed)
 	print(debug_text)
 	_print_board_model_to_console()
-	_status_label.text = "Printed board for seed %d to output." % board_seed
+	_set_status_text("Printed board for seed %d to output." % board_seed)
 
 
 func _set_board_seed(board_seed: int) -> void:
@@ -901,7 +886,33 @@ func _on_console_input_text_submitted(text: String) -> void:
 
 
 func _console_set_status_text(message: String) -> void:
-	_status_label.text = message
+	_set_status_text(message)
+
+
+func _set_status_text(message: String) -> void:
+	if _view != null:
+		_view.set_status_text(message)
+
+
+func _set_status_color(color: Color) -> void:
+	if _view != null:
+		_view.set_status_color(color)
+
+
+func _set_turn_summary_text(text: String) -> void:
+	if _view != null:
+		_view.set_turn_summary_text(text)
+
+
+func _turn_summary_text() -> String:
+	if _view == null:
+		return ""
+	return _view.turn_summary_text()
+
+
+func _pulse_turn_summary(tint: Color) -> void:
+	if _view != null:
+		_view.pulse_turn_summary(tint)
 
 
 func _console_on_skip_success() -> void:
@@ -985,8 +996,8 @@ func _end_drag(timed_out: bool) -> void:
 	var move_end_reason := "released"
 	if timed_out:
 		move_end_reason = "timer expired"
-	_status_label.text = "Move ended: %s. Locking input for resolve phase." % move_end_reason
-	_status_label.modulate = STATUS_COLOR_WARNING
+	_set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
+	_set_status_color(STATUS_COLOR_WARNING)
 	var resolve_trace_origin_usec := Time.get_ticks_usec()
 	_model.begin_resolve_trace(resolve_trace_origin_usec, _resolve_trace_enabled())
 	_resolve_trace(
@@ -1100,10 +1111,10 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_append_turn_log(turn_log)
 		if RunState.is_current_step_boss_reward():
 			_model.clear_pending_next_scene_path()
-			_status_label.text = "Boss defeated. Choose a boss relic or skip before continuing."
+			_set_status_text("Boss defeated. Choose a boss relic or skip before continuing.")
 			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
 			_show_boss_reward_summary(_turn_log_presenter.build_victory_gold_summary(turn_log, transition))
-			_turn_summary_label.text = "Turn Summary: Boss victory. Choose a relic."
+			_set_turn_summary_text("Turn Summary: Boss victory. Choose a relic.")
 			RunState.flow_trace_mark("combat_boss_reward_available", {}, _flow_trace_route_id_value())
 		else:
 			var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
@@ -1117,18 +1128,18 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 					"combat_before_final_summary_change_scene"
 				)
 				return
-			_status_label.text = _turn_log_presenter.build_victory_status(turn_log, transition) + " Press Continue."
+			_set_status_text(_turn_log_presenter.build_victory_status(turn_log, transition) + " Press Continue.")
 			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
 			_model.set_pending_next_scene_path(next_scene)
 			_show_outcome_summary("Victory", _turn_log_presenter.build_victory_gold_summary(turn_log, transition), true)
-			_turn_summary_label.text = "Turn Summary: Victory. Press Continue."
+			_set_turn_summary_text("Turn Summary: Victory. Press Continue.")
 			RunState.flow_trace_mark(
 				"combat_continue_available",
 				{"button_text": "Continue"},
 				_flow_trace_route_id_value(),
 				next_scene
 			)
-		_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
+		_pulse_turn_summary(STATUS_COLOR_POSITIVE)
 		return
 
 	if _combat.phase == COMBAT_PHASE_DEFEAT:
@@ -1136,26 +1147,26 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		var defeat_cause: String = _turn_log_presenter.build_defeat_cause(String(_enemy_state.display_name if _enemy_state != null else "Enemy"), turn_log)
 		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
 		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_status_label.text = _turn_log_presenter.build_defeat_status(turn_log) + " Run Summary available."
+		_set_status_text(_turn_log_presenter.build_defeat_status(turn_log) + " Run Summary available.")
 		_append_turn_log(turn_log)
 		_append_combat_log("Outcome: Defeat. Waiting for Run Summary button.")
 		_model.set_pending_next_scene_path(String(defeat_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY)))
 		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Run Summary")
-		_turn_summary_label.text = "Turn Summary: Defeat. Run Summary available."
+		_set_turn_summary_text("Turn Summary: Defeat. Run Summary available.")
 		RunState.flow_trace_mark(
 			"combat_continue_available",
 			{"button_text": "Run Summary"},
 			_flow_trace_route_id_value(),
 			_model.pending_next_scene_path()
 		)
-		_pulse_label(_turn_summary_label, STATUS_COLOR_NEGATIVE)
+		_pulse_turn_summary(STATUS_COLOR_NEGATIVE)
 		return
 
-	_status_label.text = _turn_log_presenter.build_turn_summary_status(turn_log)
+	_set_status_text(_turn_log_presenter.build_turn_summary_status(turn_log))
 	_play_turn_result_sfx(turn_log)
-	_status_label.modulate = STATUS_COLOR_POSITIVE
-	_turn_summary_label.text = "Turn Summary: %s" % _turn_log_presenter.build_turn_summary_status(turn_log)
-	_pulse_label(_turn_summary_label, STATUS_COLOR_POSITIVE)
+	_set_status_color(STATUS_COLOR_POSITIVE)
+	_set_turn_summary_text("Turn Summary: %s" % _turn_log_presenter.build_turn_summary_status(turn_log))
+	_pulse_turn_summary(STATUS_COLOR_POSITIVE)
 	_append_turn_log(turn_log)
 	_begin_turn_preview()
 
@@ -1163,13 +1174,13 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 func _on_next_button_pressed() -> void:
 	if _outcome_overlay != null and _outcome_overlay.is_boss_reward_pending():
 		_audio_play_sfx("error")
-		_status_label.text = "Choose a boss relic or skip the reward before continuing."
+		_set_status_text("Choose a boss relic or skip the reward before continuing.")
 		return
 	if _model.pending_next_scene_path() == "":
 		return
 	RunState.flow_trace_mark(
 		"combat_next_button_pressed",
-		{"button_text": _next_button.text},
+		{"button_text": _view.next_button_text() if _view != null else ""},
 		_flow_trace_route_id_value(),
 		_model.pending_next_scene_path()
 	)
@@ -1219,18 +1230,10 @@ func _audio_manager_node() -> Node:
 
 
 func _bind_outcome_overlay() -> void:
-	if _outcome_overlay == null:
+	if _outcome_overlay == null or _view == null:
 		return
-	_outcome_overlay.bind(
-		{
-			"layout_root": _layout_root,
-			"summary_panel": _outcome_summary_panel,
-			"summary_root": _outcome_summary_root,
-			"text_column": _outcome_text_column,
-			"title_label": _outcome_title_label,
-			"body_label": _outcome_body_label,
-			"next_button": _next_button,
-		},
+	_view.bind_outcome_overlay(
+		_outcome_overlay,
 		{
 			"outcome_summary_rect": OUTCOME_SUMMARY_RECT,
 			"boss_reward_summary_rect": BOSS_REWARD_SUMMARY_RECT,
@@ -1298,7 +1301,8 @@ func _show_boss_reward_summary(body: String) -> void:
 		]
 		button.disabled = false
 	if options.is_empty():
-		_outcome_body_label.text = "%s\nNo boss relic options generated. Use Skip Relic to continue." % body
+		if _view != null:
+			_view.set_outcome_body_text("%s\nNo boss relic options generated. Use Skip Relic to continue." % body)
 		for button in boss_reward_buttons:
 			button.visible = false
 			button.disabled = true
@@ -1306,7 +1310,8 @@ func _show_boss_reward_summary(body: String) -> void:
 		if skip_button != null:
 			skip_button.visible = true
 			skip_button.disabled = false
-		_next_button.disabled = true
+		if _view != null:
+			_view.set_outcome_next_button_disabled(true)
 
 
 func _claim_boss_reward_option(index: int) -> void:
@@ -1314,7 +1319,7 @@ func _claim_boss_reward_option(index: int) -> void:
 		return
 	var result: Dictionary = RunState.claim_boss_relic_reward(index)
 	if not bool(result.get("ok", false)):
-		_status_label.text = "Boss relic claim failed: %s" % String(result.get("reason", "unknown"))
+		_set_status_text("Boss relic claim failed: %s" % String(result.get("reason", "unknown")))
 		return
 	var transition: Dictionary = RunState.advance_after_boss_reward()
 	_outcome_overlay.set_boss_reward_pending(false)
@@ -1336,7 +1341,7 @@ func _skip_boss_reward_option() -> void:
 		return
 	var skip_result: Dictionary = RunState.skip_boss_relic_reward()
 	if not bool(skip_result.get("ok", false)):
-		_status_label.text = "Boss relic skip failed: %s" % String(skip_result.get("reason", "unknown"))
+		_set_status_text("Boss relic skip failed: %s" % String(skip_result.get("reason", "unknown")))
 		return
 	var transition: Dictionary = RunState.advance_after_boss_reward()
 	_outcome_overlay.set_boss_reward_pending(false)
@@ -1402,9 +1407,8 @@ func _handle_combat_scene_change_failure(target_scene: String, route_id: String,
 	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 	var button_text := "Run Summary" if target_scene.find("run_summary") >= 0 else "Continue"
 	_show_outcome_summary("Transition Failed", "Could not open the next scene.\n%s" % failure_reason, true, button_text)
-	if _status_label != null and is_instance_valid(_status_label):
-		_status_label.text = "Transition failed: %s" % failure_reason
-		_status_label.modulate = STATUS_COLOR_NEGATIVE
+	_set_status_text("Transition failed: %s" % failure_reason)
+	_set_status_color(STATUS_COLOR_NEGATIVE)
 	_append_combat_log("Scene transition failed from %s to %s: %s" % [source, target_scene, failure_reason])
 	RunState.flow_trace_mark(
 		"combat_scene_change_failed",
@@ -1460,7 +1464,7 @@ func _set_input_phase(phase: InputPhase) -> void:
 			if _board_controller != null:
 				_board_controller.set_input_enabled(false)
 			if _ensure_model().external_lock_reason() != "":
-				_status_label.text = "Input locked: %s" % _ensure_model().external_lock_reason()
+				_set_status_text("Input locked: %s" % _ensure_model().external_lock_reason())
 	_sync_model_state()
 
 
@@ -1841,7 +1845,7 @@ func _hud_snapshot_input_data() -> Dictionary:
 		"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
 		"heart_orb_id": int(OrbType.Id.HEART),
 		"gold_orb_id": int(OrbType.Id.GOLD),
-		"turn_summary_text": _turn_summary_label.text,
+		"turn_summary_text": _turn_summary_text(),
 		"format_intent_compact": Callable(_turn_log_presenter, "format_intent_compact") if _turn_log_presenter != null else Callable(),
 	}
 
@@ -1935,17 +1939,17 @@ func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
 	var hp_loss := maxi(0, int(preview.get("hp_loss", 0)))
 	if attack <= 0:
 		return
-	_status_label.text = "%s | Incoming %d (Block %d, HP Loss %d)." % [
+	_set_status_text("%s | Incoming %d (Block %d, HP Loss %d)." % [
 		RunState.level_sequence_label(),
 		attack,
 		blocked,
 		hp_loss,
-	]
-	_status_label.modulate = STATUS_COLOR_WARNING
+	])
+	_set_status_color(STATUS_COLOR_WARNING)
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _debug_format_intent(intent)
+			_set_turn_summary_text(_debug_format_intent(intent))
 	_start_enemy_intent_hover_emphasis("attack")
 
 
@@ -1955,15 +1959,15 @@ func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
 	var blocked := maxi(0, int(preview.get("blocked", 0)))
 	if blocked <= 0:
 		return
-	_status_label.text = "%s | Incoming attack blocked by %d armor." % [
+	_set_status_text("%s | Incoming attack blocked by %d armor." % [
 		RunState.level_sequence_label(),
 		blocked,
-	]
-	_status_label.modulate = STATUS_COLOR_WARNING
+	])
+	_set_status_color(STATUS_COLOR_WARNING)
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _debug_format_intent(intent)
+			_set_turn_summary_text(_debug_format_intent(intent))
 	_start_enemy_intent_hover_emphasis("block")
 
 
@@ -1975,15 +1979,15 @@ func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
 	var block := maxi(0, int(preview.get("block", 0)))
 	if block <= 0:
 		return
-	_status_label.text = "%s | Enemy will gain %d block." % [
+	_set_status_text("%s | Enemy will gain %d block." % [
 		RunState.level_sequence_label(),
 		block,
-	]
-	_status_label.modulate = STATUS_COLOR_WARNING
+	])
+	_set_status_color(STATUS_COLOR_WARNING)
 	if _enemy_state != null:
 		var intent := _enemy_state.get_current_intent()
 		if not intent.is_empty():
-			_turn_summary_label.text = _debug_format_intent(intent)
+			_set_turn_summary_text(_debug_format_intent(intent))
 	_start_enemy_intent_hover_emphasis("block")
 
 
@@ -2008,12 +2012,12 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 	if amount <= 0:
 		return
 	if kind == "attack":
-		_status_label.text = "%s | Enemy intent: Attack %d." % [RunState.level_sequence_label(), amount]
+		_set_status_text("%s | Enemy intent: Attack %d." % [RunState.level_sequence_label(), amount])
 	elif kind == "block":
-		_status_label.text = "%s | Enemy intent: Block %d." % [RunState.level_sequence_label(), amount]
+		_set_status_text("%s | Enemy intent: Block %d." % [RunState.level_sequence_label(), amount])
 	else:
-		_status_label.text = "%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))]
-	_status_label.modulate = STATUS_COLOR_WARNING
+		_set_status_text("%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))])
+	_set_status_color(STATUS_COLOR_WARNING)
 	_start_enemy_intent_hover_emphasis(kind)
 
 
@@ -2248,13 +2252,8 @@ func _spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, 
 
 func _on_resolver_match_found(groups: Array) -> void:
 	_audio_play_sfx("match")
-	_status_label.text = "Matches found: %d group(s)." % groups.size()
-	_status_label.modulate = STATUS_COLOR_WARNING
-
-
-func _pulse_label(target: Label, tint: Color) -> void:
-	target.modulate = tint
-	target.modulate = STATUS_COLOR_NEUTRAL
+	_set_status_text("Matches found: %d group(s)." % groups.size())
+	_set_status_color(STATUS_COLOR_WARNING)
 
 
 func _on_viewport_size_changed() -> void:
