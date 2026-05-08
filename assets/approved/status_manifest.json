@@ -1,487 +1,791 @@
-{
-    "approval_status": "bulk_generation_first_alpha_cleanup_recorded_review_and_integration_blocked",
-    "generated_on": "2026-05-08Tassetgen-human-review-accepted",
-    "asset_count": 53,
-    "assets": [
-        {
-            "asset_id": "app_icon",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "approved_asset_manifest",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "art_bible",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "asset_briefs",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "board_orb_clear_vfx",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "boot_splash",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "boss_portraits",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "collection_background",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "combat_background",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "combat_enemy_stage_art",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "combat_ui_chrome_pack",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "consumable_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "controls_visual",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "enemy_animation_set",
-            "approval_status": "blocked_sprite_visual_review_failed",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png",
-                "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
-            ],
-            "qa_status": "review_pending",
-            "license_status": "needs_review",
-            "usage_rights": "needs_review",
-            "notes": "2026-05-08 human review: candidate_08 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
-        },
-        {
-            "asset_id": "enemy_attack_vfx",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "enemy_portraits",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "equipment_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "game_title_logo",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "generation_metadata",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "hero_animation_set",
-            "approval_status": "blocked_sprite_visual_review_failed",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png",
-                "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png"
-            ],
-            "qa_status": "review_pending",
-            "license_status": "needs_review",
-            "usage_rights": "needs_review",
-            "notes": "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
-        },
-        {
-            "asset_id": "hero_full_body_or_pose_set",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "hero_orbwalker_portrait",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "intent_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "itch_page_graphics",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "main_menu_background",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "main_menu_ui_pack",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "mastery_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "mastery_vfx",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "merchant_character",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "music_combat",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "music_menu",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "music_shop",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "music_victory_defeat_summary",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "orb_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "qa_reports",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "rarity_badges",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "relic_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "result_screen_ui_pack",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "run_summary_background",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "screenshots",
-            "approval_status": "not_applicable_this_pass",
-            "review_status": "spec_pending",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "sfx_combat_core",
-            "approval_status": "not_applicable_this_pass",
-            "review_status": "spec_pending",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "sfx_shop",
-            "approval_status": "not_applicable_this_pass",
-            "review_status": "spec_pending",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "sfx_ui",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "shared_hud_chrome",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "shop_background",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "shop_transaction_vfx",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "shop_ui_pack",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "store_capsule_key_art",
-            "approval_status": "blocked_generated_bulk_pending_deferred_qa",
-            "review_status": "not_started_bulk_generation_first",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
-            ]
-        },
-        {
-            "asset_id": "trailer_or_gif_capture",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "treasure_chest_icons",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png"
-            ]
-        },
-        {
-            "asset_id": "tutorial_onboarding_ui_pack",
-            "approval_status": "blocked_needs_another_pass",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
-                "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
-            ],
-            "qa_status": "review_pending",
-            "license_status": "needs_review",
-            "usage_rights": "needs_review",
-            "notes": "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval."
-        },
-        {
-            "asset_id": "ui_motion_language",
-            "approval_status": "not_started",
-            "review_status": "not_started",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": []
-        },
-        {
-            "asset_id": "unlock_achievement_vfx",
-            "approval_status": "blocked_pending_legal_license_review",
-            "review_status": "human_visual_review_passed_pending_legal",
-            "integration_status": "blocked_pending_approval",
-            "candidate_paths": [
-                "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
-                "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
-            ]
-        }
-    ]
+﻿{
+    "approval_status":  "approved",
+    "generated_on":  "2026-05-08Tassetgen-approved",
+    "asset_count":  53,
+    "assets":  [
+                   {
+                       "asset_id":  "app_icon",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "approved_asset_manifest",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "art_bible",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "asset_briefs",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "board_orb_clear_vfx",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "boot_splash",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "boss_portraits",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "collection_background",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "combat_background",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "combat_enemy_stage_art",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "combat_ui_chrome_pack",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "consumable_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "controls_visual",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "enemy_animation_set",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "notes":  "2026-05-08 human review: candidate_08 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "approval_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "enemy_attack_vfx",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "enemy_portraits",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "equipment_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "game_title_logo",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "integrated_main_menu",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. 2026-05-08 human approval: asset cleared for integration. Main-menu runtime test integration completed with deterministic dark-background alpha cleanup and asset-map wiring; broader runtime rollout remains pending. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+                       "integration_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "generation_metadata",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "hero_animation_set",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "notes":  "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "approval_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "hero_full_body_or_pose_set",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "hero_orbwalker_portrait",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "intent_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "itch_page_graphics",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "main_menu_background",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "integrated_main_menu",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration accepted by human visual review; runtime map points to resources/art/assetgen/main_menu/main_menu_background_candidate_01.png. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+                       "integrated_paths":  [
+                                                "resources/art/assetgen/main_menu/main_menu_background_candidate_01.png",
+                                                "resources/visual/first_pass_asset_map.json"
+                                            ],
+                       "integration_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "main_menu_ui_pack",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "integrated_main_menu",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration: candidate_05 alpha sheet deterministically sliced into runtime menu chrome/icon PNGs and wired through resources/visual/first_pass_asset_map.json. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+                       "integrated_paths":  [
+                                                "resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05.png",
+                                                "resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05.png",
+                                                "resources/visual/first_pass_asset_map.json",
+                                                "tools/asset_tools/extract_assetgen_main_menu_ui.py"
+                                            ],
+                       "integration_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "mastery_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "mastery_vfx",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "merchant_character",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "music_combat",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "music_menu",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "music_shop",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "music_victory_defeat_summary",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "orb_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "qa_reports",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "rarity_badges",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "relic_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "result_screen_ui_pack",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "run_summary_background",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "screenshots",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "sfx_combat_core",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "sfx_shop",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "sfx_ui",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "shared_hud_chrome",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "shop_background",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "shop_transaction_vfx",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "shop_ui_pack",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "store_capsule_key_art",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "trailer_or_gif_capture",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "treasure_chest_icons",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "tutorial_onboarding_ui_pack",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "notes":  "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "approval_date":  "2026-05-08"
+                   },
+                   {
+                       "asset_id":  "ui_motion_language",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   },
+                   {
+                       "asset_id":  "unlock_achievement_vfx",
+                       "approval_status":  "approved",
+                       "review_status":  "approved",
+                       "integration_status":  "approved_pending_integration",
+                       "candidate_paths":  [
+                                               "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
+                                               "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
+                                           ],
+                       "qa_status":  "approved",
+                       "license_status":  "approved",
+                       "usage_rights":  "approved",
+                       "approval_date":  "2026-05-08",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                   }
+               ]
 }

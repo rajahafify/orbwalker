@@ -39,8 +39,6 @@ var _stat_icons: Array = []
 var _stat_titles: Array = []
 var _stat_values: Array = []
 
-var _primary_button_texture: Texture2D = null
-var _secondary_button_texture: Texture2D = null
 var _stats_panel_texture: Texture2D = null
 
 func bind(root_nodes: Dictionary) -> void:
@@ -86,6 +84,9 @@ func configure_ui_nodes(host: Control) -> void:
 	_logo_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 	_outer_border_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	_outer_border_texture.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
+	_menu_button_column.alignment = BoxContainer.ALIGNMENT_CENTER
+	_generate_log_toggle.visible = false
+	_element_row.visible = false
 
 	for icon_node in _element_icons:
 		var icon := icon_node as TextureRect
@@ -114,8 +115,6 @@ func apply_textures(paths: Dictionary) -> void:
 	_background_texture.texture = _safe_load_texture(String(paths.get("background", "")), "main_menu_background")
 	_logo_texture.texture = _safe_load_texture(String(paths.get("logo", "")), "main_menu_logo")
 	_outer_border_texture.texture = _safe_load_texture(String(paths.get("outer_border", "")), "main_menu_outer_border")
-	_primary_button_texture = _safe_load_texture(String(paths.get("button_primary", "")), "main_menu_button_primary")
-	_secondary_button_texture = _safe_load_texture(String(paths.get("button_secondary", "")), "main_menu_button_secondary")
 	_stats_panel_texture = _safe_load_texture(String(paths.get("stats_panel", "")), "main_menu_stats_panel")
 
 	var element_paths: Array = Array(paths.get("element_icons", []))
@@ -178,15 +177,15 @@ func apply_chrome_styles() -> void:
 	if _stats_panel_texture != null:
 		_stats_panel.add_theme_stylebox_override("panel", _make_texture_style(_stats_panel_texture, 0.0, 26.0, 18.0, 0.0))
 
-	_apply_menu_button_style(_start_run_button, _primary_button_texture, true, false)
-	_apply_menu_button_style(_generate_log_toggle, _secondary_button_texture, false, false)
-	_apply_menu_button_style(_continue_button, _secondary_button_texture, false, true)
-	_apply_menu_button_style(_collection_button, _secondary_button_texture, false, false)
-	_apply_menu_button_style(_settings_button, _secondary_button_texture, false, true)
-	_apply_menu_button_style(_quit_button, _secondary_button_texture, false, true)
-	_apply_footer_button_style(_profile_button, _secondary_button_texture)
-	_apply_footer_button_style(_achievements_button, _secondary_button_texture)
-	_apply_footer_button_style(_footer_settings_button, _secondary_button_texture)
+	_apply_menu_button_style(_start_run_button, true, false)
+	_apply_menu_button_style(_generate_log_toggle, false, false)
+	_apply_menu_button_style(_continue_button, false, true)
+	_apply_menu_button_style(_collection_button, false, false)
+	_apply_menu_button_style(_settings_button, false, true)
+	_apply_menu_button_style(_quit_button, false, true)
+	_apply_footer_button_style(_profile_button)
+	_apply_footer_button_style(_achievements_button)
+	_apply_footer_button_style(_footer_settings_button)
 	_apply_profile_overlay_style()
 
 	_set_label_style(_version_label, Color(0.86, 0.73, 0.46, 0.96), Color(0.05, 0.06, 0.10, 0.95), 2)
@@ -214,8 +213,8 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_set_control_rect(_overlay_tint, Rect2(Vector2.ZERO, viewport_size))
 	_set_control_rect(_outer_frame, Rect2(Vector2.ZERO, viewport_size))
 	_set_control_rect(_outer_border_texture, _inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)))
-	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.01, 0.025, 0.98, 0.17))
-	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.40, 0.22, 0.57, 0.34))
+	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.00, 0.085, 1.00, 0.24))
+	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.21, 0.33, 0.58, 0.33))
 	_set_control_rect(_element_row, _rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12))
 	_set_control_rect(_stats_panel, _rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14))
 	_set_control_rect(_footer_actions, _rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077))
@@ -232,7 +231,7 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_footer_actions.add_theme_constant_override("separation", int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))))
 
 	var menu_button_min_height := int(round(viewport_size.y * 0.052))
-	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
+	for button in [_start_run_button, _continue_button, _collection_button, _settings_button, _quit_button]:
 		button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
@@ -333,78 +332,48 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 	_status_label.add_theme_font_size_override("font_size", status_size)
 
 
-func _apply_menu_button_style(button: Button, texture: Texture2D, is_primary: bool, is_disabled: bool) -> void:
-	if texture != null:
-		var normal := _make_texture_style(texture, 0.0, 56.0, 24.0, 0.0)
-		var hover := _make_texture_style(texture, 0.0, 56.0, 24.0, 0.0)
-		var pressed := _make_texture_style(texture, 0.0, 56.0, 24.0, 0.0)
-		var focus := _make_texture_style(texture, 0.0, 56.0, 24.0, 0.0)
-		var disabled := _make_texture_style(texture, 0.0, 56.0, 24.0, 0.0)
-		hover.modulate_color = Color(1.05, 1.05, 1.05, 1.0)
-		pressed.modulate_color = Color(0.90, 0.90, 0.90, 1.0)
-		focus.modulate_color = Color(1.03, 1.03, 1.03, 1.0)
-		disabled.modulate_color = Color(0.60, 0.60, 0.60, 0.86)
-		button.add_theme_stylebox_override("normal", normal)
-		button.add_theme_stylebox_override("hover", hover)
-		button.add_theme_stylebox_override("pressed", pressed)
-		button.add_theme_stylebox_override("focus", focus)
-		button.add_theme_stylebox_override("disabled", disabled)
-	else:
-		var border_color := Color(0.61, 0.47, 0.21, 0.95)
-		var fill_color := Color(0.05, 0.11, 0.19, 0.96)
-		if is_primary:
-			border_color = Color(0.88, 0.68, 0.33, 0.99)
-			fill_color = Color(0.07, 0.17, 0.30, 0.98)
-		button.add_theme_stylebox_override("normal", _make_panel_style(fill_color, border_color, 2, 10))
-		button.add_theme_stylebox_override("hover", _make_panel_style(fill_color.lightened(0.12), border_color, 2, 10))
-		button.add_theme_stylebox_override("pressed", _make_panel_style(fill_color.darkened(0.10), border_color, 2, 10))
-		button.add_theme_stylebox_override("focus", _make_panel_style(fill_color.lightened(0.08), border_color, 2, 10))
-		button.add_theme_stylebox_override("disabled", _make_panel_style(fill_color.darkened(0.18), border_color.darkened(0.22), 2, 10))
-
-	var font_color := Color(0.89, 0.77, 0.52, 1.0)
-	var hover_color := Color(0.96, 0.86, 0.62, 1.0)
+func _apply_menu_button_style(button: Button, is_primary: bool, is_disabled: bool) -> void:
+	var fill_color := Color(0.055, 0.085, 0.13, 0.96)
+	var border_color := Color(0.29, 0.38, 0.49, 0.96)
 	if is_primary:
-		font_color = Color(0.96, 0.87, 0.66, 1.0)
-		hover_color = Color(0.98, 0.91, 0.74, 1.0)
+		fill_color = Color(0.07, 0.11, 0.17, 0.98)
+		border_color = Color(0.43, 0.57, 0.72, 0.98)
+	button.add_theme_stylebox_override("normal", _make_panel_style(fill_color, border_color, 2, 10))
+	button.add_theme_stylebox_override("hover", _make_panel_style(fill_color.lightened(0.10), border_color.lightened(0.10), 2, 10))
+	button.add_theme_stylebox_override("pressed", _make_panel_style(fill_color.darkened(0.12), border_color, 2, 10))
+	button.add_theme_stylebox_override("focus", _make_panel_style(fill_color.lightened(0.08), border_color.lightened(0.08), 2, 10))
+	button.add_theme_stylebox_override("disabled", _make_panel_style(fill_color.darkened(0.24), border_color.darkened(0.18), 2, 10))
+
+	var font_color := Color(0.90, 0.94, 0.98, 1.0)
+	var hover_color := Color(0.95, 0.98, 1.0, 1.0)
+	if is_primary:
+		font_color = Color(0.96, 0.98, 1.0, 1.0)
+		hover_color = Color(1.0, 1.0, 1.0, 1.0)
 	button.add_theme_color_override("font_color", font_color)
 	button.add_theme_color_override("font_hover_color", hover_color)
-	button.add_theme_color_override("font_pressed_color", Color(0.84, 0.71, 0.47, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(0.84, 0.90, 0.98, 1.0))
 	button.add_theme_color_override("font_focus_color", hover_color)
-	button.add_theme_color_override("font_disabled_color", Color(0.72, 0.62, 0.43, 0.80))
+	button.add_theme_color_override("font_disabled_color", Color(0.62, 0.70, 0.79, 0.84))
 	button.add_theme_color_override("font_outline_color", Color(0.03, 0.04, 0.07, 0.96))
 	button.add_theme_constant_override("outline_size", 2)
 	button.add_theme_constant_override("h_separation", 10)
 	button.modulate = Color(1.0, 1.0, 1.0, (0.92 if is_disabled else 1.0))
 
 
-func _apply_footer_button_style(button: Button, texture: Texture2D) -> void:
-	if texture != null:
-		var normal := _make_texture_style(texture, 0.0, 48.0, 18.0, 0.0)
-		var hover := _make_texture_style(texture, 0.0, 48.0, 18.0, 0.0)
-		var pressed := _make_texture_style(texture, 0.0, 48.0, 18.0, 0.0)
-		var focus := _make_texture_style(texture, 0.0, 48.0, 18.0, 0.0)
-		var disabled := _make_texture_style(texture, 0.0, 48.0, 18.0, 0.0)
-		hover.modulate_color = Color(1.03, 1.03, 1.03, 1.0)
-		pressed.modulate_color = Color(0.90, 0.90, 0.90, 1.0)
-		focus.modulate_color = Color(1.03, 1.03, 1.03, 1.0)
-		disabled.modulate_color = Color(0.58, 0.58, 0.58, 0.86)
-		button.add_theme_stylebox_override("normal", normal)
-		button.add_theme_stylebox_override("hover", hover)
-		button.add_theme_stylebox_override("pressed", pressed)
-		button.add_theme_stylebox_override("focus", focus)
-		button.add_theme_stylebox_override("disabled", disabled)
-	else:
-		button.add_theme_stylebox_override("normal", _make_panel_style(Color(0.03, 0.07, 0.12, 0.90), Color(0.50, 0.38, 0.18, 0.85), 1, 10))
-		button.add_theme_stylebox_override("hover", _make_panel_style(Color(0.05, 0.10, 0.16, 0.94), Color(0.62, 0.47, 0.22, 0.90), 1, 10))
-		button.add_theme_stylebox_override("pressed", _make_panel_style(Color(0.02, 0.05, 0.10, 0.94), Color(0.46, 0.35, 0.16, 0.90), 1, 10))
-		button.add_theme_stylebox_override("focus", _make_panel_style(Color(0.05, 0.10, 0.16, 0.94), Color(0.62, 0.47, 0.22, 0.90), 1, 10))
-		button.add_theme_stylebox_override("disabled", _make_panel_style(Color(0.03, 0.07, 0.12, 0.90), Color(0.50, 0.38, 0.18, 0.85), 1, 10))
+func _apply_footer_button_style(button: Button) -> void:
+	var fill_color := Color(0.045, 0.075, 0.115, 0.94)
+	var border_color := Color(0.24, 0.33, 0.42, 0.92)
+	button.add_theme_stylebox_override("normal", _make_panel_style(fill_color, border_color, 1, 10))
+	button.add_theme_stylebox_override("hover", _make_panel_style(fill_color.lightened(0.08), border_color.lightened(0.12), 1, 10))
+	button.add_theme_stylebox_override("pressed", _make_panel_style(fill_color.darkened(0.10), border_color, 1, 10))
+	button.add_theme_stylebox_override("focus", _make_panel_style(fill_color.lightened(0.08), border_color.lightened(0.10), 1, 10))
+	button.add_theme_stylebox_override("disabled", _make_panel_style(fill_color.darkened(0.20), border_color.darkened(0.16), 1, 10))
 
-	button.add_theme_color_override("font_color", Color(0.88, 0.77, 0.55, 0.98))
-	button.add_theme_color_override("font_hover_color", Color(0.95, 0.86, 0.66, 1.0))
-	button.add_theme_color_override("font_pressed_color", Color(0.81, 0.70, 0.50, 0.98))
-	button.add_theme_color_override("font_focus_color", Color(0.95, 0.86, 0.66, 1.0))
-	button.add_theme_color_override("font_disabled_color", Color(0.72, 0.62, 0.44, 0.80))
+	button.add_theme_color_override("font_color", Color(0.86, 0.92, 0.98, 0.98))
+	button.add_theme_color_override("font_hover_color", Color(0.93, 0.97, 1.0, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(0.80, 0.88, 0.96, 0.98))
+	button.add_theme_color_override("font_focus_color", Color(0.93, 0.97, 1.0, 1.0))
+	button.add_theme_color_override("font_disabled_color", Color(0.61, 0.69, 0.76, 0.80))
 	button.add_theme_color_override("font_outline_color", Color(0.03, 0.04, 0.07, 0.96))
 	button.add_theme_color_override("icon_normal_color", Color(1.0, 1.0, 1.0, 0.94))
 	button.add_theme_color_override("icon_disabled_color", Color(0.72, 0.72, 0.72, 0.62))
@@ -422,8 +391,8 @@ func _apply_profile_overlay_style() -> void:
 		if label != null:
 			_set_label_style(label, Color(0.95, 0.88, 0.72, 1.0), Color(0.04, 0.03, 0.02, 0.96), 2)
 	_set_label_style(_profile_title_label, Color(1.0, 0.78, 0.30, 1.0), Color(0.04, 0.03, 0.02, 0.96), 3)
-	_apply_menu_button_style(_reset_profile_button, _secondary_button_texture, false, false)
-	_apply_menu_button_style(_close_profile_button, _secondary_button_texture, false, false)
+	_apply_menu_button_style(_reset_profile_button, false, false)
+	_apply_menu_button_style(_close_profile_button, false, false)
 
 
 func _set_label_style(label: Label, color: Color, outline_color: Color, outline_size: int) -> void:

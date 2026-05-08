@@ -11,17 +11,19 @@
                               "assets.json",
                               "resources/assetgen.workflow.md"
                           ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
+    "license_status":  "approved",
+    "usage_rights":  "approved",
     "dimensions":  "1774x887",
     "export_format":  "png_candidate",
     "alpha_type":  "opaque_logo_candidate",
     "transparent_background":  "false_bulk_candidate",
-    "qa_status":  "generated_bulk_pending_qa",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
+    "qa_status":  "approved",
+    "review_status":  "approved",
+    "integration_status":  "integrated_main_menu",
     "embedded_text":  "needs_deferred_text_qa",
-    "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. Legal/license review, final approval, and runtime integration deferred until all candidates exist.",
+    "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. 2026-05-08 human approval: asset cleared for integration. Main-menu runtime test integration completed with deterministic dark-background alpha cleanup and asset-map wiring; broader runtime rollout remains pending. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
     "final_prompt":  "Use case: logo-brand; Asset type: game title/logo lockup candidate for Orbwalker; Primary request: production candidate fantasy game title/logo lockup with the exact word ORBWALKER. Text (verbatim): \"ORBWALKER\". Subject: ornate title lettering with a subtle elemental orb mark integrated behind or above the word, fantasy dungeon treasure style. Style/medium: polished stylized game logo, vector-friendly painted wordmark concept, readable on mobile menu and store art. Composition/framing: centered horizontal lockup on simple dark neutral background, clear silhouette, no extra words. Lighting/mood: premium adventure, gold and elemental glow accents. Color palette: gold, stone charcoal, cyan/red/green/violet elemental highlights. Constraints: render only the exact word ORBWALKER, no subtitle, no extra letters, no watermark, no copyright characters, no casino imagery, no gore.",
-    "generation_mode":  "built-in imagegen"
+    "generation_mode":  "built-in imagegen",
+    "approval_date":  "2026-05-08",
+    "integration_date":  "2026-05-08"
 }

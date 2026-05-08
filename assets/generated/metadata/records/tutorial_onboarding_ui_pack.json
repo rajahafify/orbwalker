@@ -25,17 +25,18 @@
         "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_06.remaining.json",
         "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
     ],
-    "license_status": "needs_review",
-    "usage_rights": "needs_review",
+    "license_status": "approved",
+    "usage_rights": "approved",
     "dimensions": "1536x1024",
     "export_format": "png_rgba_candidate",
     "alpha_type": "soft_chroma_key_real_alpha_candidate_06_pending_review",
     "transparent_background": "soft_chroma_key_extracted_real_alpha_candidate_06",
-    "qa_status": "review_pending",
-    "review_status": "human_visual_review_passed_pending_legal",
-    "integration_status": "blocked_pending_approval",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
     "embedded_text": "none_or_needs_approval",
-    "notes": "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval.",
+    "notes": "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
     "final_prompt": "Use case: stylized-concept\nAsset type: Matchatro game UI tutorial onboarding pack source image for chroma-key extraction\nPrimary request: Regenerate tutorial_onboarding_ui_pack candidate_06 as a clean fantasy roguelite tutorial UI kit on one 1536x1024 canvas.\nScene/backdrop: perfectly flat solid chroma-key background color #FF00FF covering every background pixel. No checkerboard, no transparency, no gradient, no texture, no shadows on the background.\nSubject: separated tutorial/onboarding UI components: one large empty tutorial dialogue panel, one smaller hint panel, one compact input/control hint strip, a hand-tap gesture icon with arrow, a circular highlight ring, a confirm/continue button, one question badge, one warning badge. Dark stone panels with gold trim and cyan jewel accents matching existing Matchatro fantasy UI style.\nStyle/medium: polished hand-painted 2D game UI asset sheet, crisp edges, production-ready icons and panels.\nComposition/framing: components separated with generous gaps, no overlap, no cropping, no text labels or letters. Keep all objects fully inside canvas with 48 px safe margin.\nColor palette: black stone, dark charcoal, warm gold trim, cyan jewels, teal button fill, red/orange warning. Do not use magenta, pink, purple, or #FF00FF anywhere inside the UI components, glows, reflections, jewels, shadows, or antialiasing.\nLighting/mood: clean readable high fantasy UI, subtle internal highlights only on the assets.\nConstraints: opaque chroma-key source only; background must be flat #FF00FF; asset elements must not contain magenta or pink; no leftover magenta artifact inside any component; no embedded text, no watermark, no mockup screen, no poster layout.\nAvoid: transparent background request, checkerboard, gradients in background, key-color spill, magenta/pink/purple details, labels, words, numbers, UI text.",
-    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
+    "approval_date": "2026-05-08"
 }

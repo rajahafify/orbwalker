@@ -1,27 +1,28 @@
-﻿{
-    "asset_id":  "collection_background",
-    "asset_name":  "Collection/meta progression background",
-    "asset_type":  "background",
-    "group_id":  "screens",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "941x1672",
-    "export_format":  "png_candidate",
-    "alpha_type":  "opaque_background_candidate",
-    "transparent_background":  "false_bulk_candidate",
-    "qa_status":  "generated_bulk_pending_qa",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
-    "final_prompt":  "Use case: stylized-concept; Asset type: collection/meta progression background for Orbwalker; Primary request: production candidate collection background for meta progression and unlock screens. Scene/backdrop: quiet arcane archive and treasure vault, shelves of relics, elemental plaques, sealed alcoves, soft magical dust. Subject: environment only, no characters, no UI, no text. Style/medium: polished stylized 2D fantasy game background, refined and readable. Composition/framing: vertical mobile-friendly screen with calm central display space for collection cards and unlock panels. Lighting/mood: contemplative, rewarding, magical, less intense than combat. Color palette: deep stone, muted indigo, warm gold, small elemental highlights. Constraints: no readable text, no logo, no watermark, no characters, no UI overlay, no casino imagery, no gore.",
-    "generation_mode":  "built-in imagegen"
+{
+    "asset_id": "collection_background",
+    "asset_name": "Collection/meta progression background",
+    "asset_type": "background",
+    "group_id": "screens",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md"
+    ],
+    "license_status": "approved",
+    "usage_rights": "approved",
+    "dimensions": "941x1672",
+    "export_format": "png_candidate",
+    "alpha_type": "opaque_background_candidate",
+    "transparent_background": "false_bulk_candidate",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+    "final_prompt": "Use case: stylized-concept; Asset type: collection/meta progression background for Orbwalker; Primary request: production candidate collection background for meta progression and unlock screens. Scene/backdrop: quiet arcane archive and treasure vault, shelves of relics, elemental plaques, sealed alcoves, soft magical dust. Subject: environment only, no characters, no UI, no text. Style/medium: polished stylized 2D fantasy game background, refined and readable. Composition/framing: vertical mobile-friendly screen with calm central display space for collection cards and unlock panels. Lighting/mood: contemplative, rewarding, magical, less intense than combat. Color palette: deep stone, muted indigo, warm gold, small elemental highlights. Constraints: no readable text, no logo, no watermark, no characters, no UI overlay, no casino imagery, no gore.",
+    "generation_mode": "built-in imagegen",
+    "approval_date": "2026-05-08"
 }

@@ -93,4 +93,4 @@ The remaining three blocked assets were regenerated with the transparency fallba
 
 The extraction report records no warnings for candidate_06. `tutorial_onboarding_ui_pack` remains on candidate_06 for review. The animation sets were then refined again: `hero_animation_set` now uses candidate_07, and `enemy_animation_set` now uses candidate_08 with component-based sprite slicing to avoid split-frame artifacts.
 
-After soft-key extraction and sprite-preview cleanup, the human accepted all three remaining outputs as good. They are visually accepted for the next review gate, but they are not approved or integrated; legal/license review and final approval remain blocked.
+After soft-key extraction and sprite-preview cleanup, the human accepted all three remaining outputs as good. On 2026-05-08, the human approved the assetgen batch for integration. Runtime integration has not been performed yet.

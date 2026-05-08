@@ -1,0 +1,148 @@
+{
+  "source": "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png",
+  "source_size": [
+    1536,
+    1024
+  ],
+  "source_alpha_minmax": [
+    0,
+    255
+  ],
+  "cleanup": {
+    "edge_connected_magenta_spill_removed_pixels": {
+      "main_menu_border_outer_candidate_05.png": 5,
+      "main_menu_stats_panel_candidate_05.png": 99,
+      "main_menu_button_secondary_candidate_05.png": 6,
+      "main_menu_button_primary_candidate_05.png": 4,
+      "main_menu_icon_profile_candidate_05.png": 10,
+      "main_menu_icon_settings_candidate_05.png": 12,
+      "main_menu_icon_achievements_candidate_05.png": 18,
+      "main_menu_icon_relic_chest_candidate_05.png": 6,
+      "main_menu_icon_mastery_progress_candidate_05.png": 19,
+      "main_menu_icon_best_run_candidate_05.png": 13
+    }
+  },
+  "outputs": {
+    "main_menu_border_outer_candidate_05.png": {
+      "bbox": [
+        53,
+        32,
+        937,
+        509
+      ],
+      "pixel_count": 354773,
+      "mean_luma": 44.2645,
+      "output": "resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png"
+    },
+    "main_menu_button_primary_candidate_05.png": {
+      "bbox": [
+        793,
+        527,
+        1491,
+        716
+      ],
+      "pixel_count": 94351,
+      "mean_luma": 121.7571,
+      "output": "resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png"
+    },
+    "main_menu_button_secondary_candidate_05.png": {
+      "bbox": [
+        37,
+        524,
+        766,
+        716
+      ],
+      "pixel_count": 100704,
+      "mean_luma": 53.3967,
+      "output": "resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png"
+    },
+    "main_menu_icon_achievements_candidate_05.png": {
+      "bbox": [
+        542,
+        736,
+        739,
+        957
+      ],
+      "pixel_count": 28501,
+      "mean_luma": 56.2221,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05.png"
+    },
+    "main_menu_icon_best_run_candidate_05.png": {
+      "bbox": [
+        1296,
+        737,
+        1493,
+        957
+      ],
+      "pixel_count": 28471,
+      "mean_luma": 56.104,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05.png"
+    },
+    "main_menu_icon_mastery_progress_candidate_05.png": {
+      "bbox": [
+        1044,
+        736,
+        1241,
+        958
+      ],
+      "pixel_count": 28428,
+      "mean_luma": 56.3006,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05.png"
+    },
+    "main_menu_icon_profile_candidate_05.png": {
+      "bbox": [
+        39,
+        737,
+        235,
+        957
+      ],
+      "pixel_count": 28273,
+      "mean_luma": 57.144,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05.png"
+    },
+    "main_menu_icon_relic_chest_candidate_05.png": {
+      "bbox": [
+        793,
+        736,
+        990,
+        957
+      ],
+      "pixel_count": 28315,
+      "mean_luma": 55.9639,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05.png"
+    },
+    "main_menu_icon_settings_candidate_05.png": {
+      "bbox": [
+        292,
+        736,
+        488,
+        957
+      ],
+      "pixel_count": 28336,
+      "mean_luma": 56.4514,
+      "output": "resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05.png"
+    },
+    "main_menu_stats_panel_candidate_05.png": {
+      "bbox": [
+        1021,
+        125,
+        1417,
+        498
+      ],
+      "pixel_count": 127835,
+      "mean_luma": 48.2229,
+      "output": "resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png"
+    }
+  },
+  "semantic_outputs": {
+    "main_menu_icon_achievements_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05_semantic.png",
+    "main_menu_icon_best_run_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05_semantic.png",
+    "main_menu_icon_mastery_progress_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05_semantic.png",
+    "main_menu_icon_profile_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05_semantic.png",
+    "main_menu_icon_relic_chest_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05_semantic.png",
+    "main_menu_icon_settings_candidate_05.png": "resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05_semantic.png"
+  },
+  "optional_outputs": {
+    "stats_panel_frame_only": "resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05_frame_only.png"
+  }
+}

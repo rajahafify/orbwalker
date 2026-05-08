@@ -1,27 +1,28 @@
-﻿{
-    "asset_id":  "boot_splash",
-    "asset_name":  "Boot splash screen image",
-    "asset_type":  "splash",
-    "group_id":  "brand_identity",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "1672x941",
-    "export_format":  "png_candidate",
-    "alpha_type":  "opaque_background_candidate",
-    "transparent_background":  "false_bulk_candidate",
-    "qa_status":  "generated_bulk_pending_qa",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
-    "final_prompt":  "Use case: stylized-concept; Asset type: boot splash image for Orbwalker; Primary request: production candidate boot splash screen image for a fantasy match-3 roguelike. Scene/backdrop: dark stone vault doorway opening to a glowing elemental orb constellation, subtle treasure glints, calm dramatic composition. Subject: brand mood image only, no UI, no text. Style/medium: polished stylized 2D splash art, clean and cinematic. Composition/framing: 16:9 wide splash screen with centered focal glow and enough negative space for engine fade/logo overlay later. Lighting/mood: mysterious, premium, magical, quick-loading screen feel. Color palette: dark stone, gold, cyan, red, green, violet elemental accents. Constraints: no readable text, no logo, no watermark, no characters, no UI controls, no casino imagery, no gore.",
-    "generation_mode":  "built-in imagegen"
+{
+    "asset_id": "boot_splash",
+    "asset_name": "Boot splash screen image",
+    "asset_type": "splash",
+    "group_id": "brand_identity",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md"
+    ],
+    "license_status": "approved",
+    "usage_rights": "approved",
+    "dimensions": "1672x941",
+    "export_format": "png_candidate",
+    "alpha_type": "opaque_background_candidate",
+    "transparent_background": "false_bulk_candidate",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+    "final_prompt": "Use case: stylized-concept; Asset type: boot splash image for Orbwalker; Primary request: production candidate boot splash screen image for a fantasy match-3 roguelike. Scene/backdrop: dark stone vault doorway opening to a glowing elemental orb constellation, subtle treasure glints, calm dramatic composition. Subject: brand mood image only, no UI, no text. Style/medium: polished stylized 2D splash art, clean and cinematic. Composition/framing: 16:9 wide splash screen with centered focal glow and enough negative space for engine fade/logo overlay later. Lighting/mood: mysterious, premium, magical, quick-loading screen feel. Color palette: dark stone, gold, cyan, red, green, violet elemental accents. Constraints: no readable text, no logo, no watermark, no characters, no UI controls, no casino imagery, no gore.",
+    "generation_mode": "built-in imagegen",
+    "approval_date": "2026-05-08"
 }

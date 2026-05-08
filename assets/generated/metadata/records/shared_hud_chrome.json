@@ -21,17 +21,18 @@
         "assets/prompts/runs/bulk-generation-first/shared_hud_chrome_candidate_05_chroma_key.prompt.json",
         "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_05.ui_retry.json"
     ],
-    "license_status": "needs_review",
-    "usage_rights": "needs_review",
+    "license_status": "approved",
+    "usage_rights": "approved",
     "dimensions": "1536x1024",
     "export_format": "png_rgba_candidate",
     "alpha_type": "adaptive_chroma_key_real_alpha_ui_retry_pending_review",
     "transparent_background": "adaptive_chroma_key_extracted_real_alpha_ui_retry",
-    "qa_status": "review_pending",
-    "review_status": "human_visual_review_passed_pending_legal",
-    "integration_status": "blocked_pending_approval",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
     "embedded_text": "none_or_needs_approval",
-    "notes": "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval.",
+    "notes": "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
     "final_prompt": "Use case: stylized-concept\nAsset type: shared HUD chrome pack for Orbwalker\nPrimary request: production candidate UI component sheet for shared player HUD, HP bars, slots, and mastery panels.\nSubject: player HP bar frame and fill, enemy HP bar frame and fill, combo badge frame, equipment slot frame, consumable slot frame, mastery panel frame, mastery preview panel frame, compact panel frame.\nStyle/medium: polished stylized 2D fantasy UI chrome, readable at mobile HUD scale.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no embedded text.\nLighting/mood: clear operational UI, less decorative than menu, consistent with combat/shop.\nColor palette: dark stone, steel, antique gold, red/green HP fills, subtle elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament.",
-    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
+    "approval_date": "2026-05-08"
 }

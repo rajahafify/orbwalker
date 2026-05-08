@@ -18,17 +18,18 @@
         "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_04.full.json",
         "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png"
     ],
-    "license_status": "needs_review",
-    "usage_rights": "needs_review",
+    "license_status": "approved",
+    "usage_rights": "approved",
     "dimensions": "1774x887",
     "export_format": "png_rgba_candidate",
     "alpha_type": "adaptive_chroma_key_real_alpha_pending_batch_qa",
     "transparent_background": "adaptive_chroma_key_extracted_real_alpha_pending_batch_qa",
-    "qa_status": "review_pending",
-    "review_status": "human_visual_review_passed_pending_legal",
-    "integration_status": "blocked_pending_approval",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
     "embedded_text": "none_or_needs_approval",
-    "notes": "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval.",
+    "notes": "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
     "final_prompt": "Use case: stylized-concept\nAsset type: shop transaction VFX sheet for Orbwalker\nPrimary request: production candidate VFX sprite sheet for shop buy, sell, reroll, treasure chest, and error feedback.\nSubject: ten compact VFX sprites in a 5x2 sheet: buy sparkle, denied red pulse, sell coin swirl, reroll magic spin, treasure chest open burst, treasure pick glow, continue shimmer, small error spark, item acquired flash, gold spend trail.\nStyle/medium: polished stylized 2D game VFX sprites, crisp mobile readability, transparent-style cutouts.\nComposition/framing: 5x2 sprite sheet, centered effects with padding, no labels.\nLighting/mood: merchant shop feedback, satisfying but restrained.\nColor palette: gold, amber, red error, teal magic, white highlights.\nConstraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, avoid opaque full backgrounds.",
-    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
+    "approval_date": "2026-05-08"
 }

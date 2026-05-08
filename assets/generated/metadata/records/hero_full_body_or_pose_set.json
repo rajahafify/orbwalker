@@ -1,27 +1,28 @@
-﻿{
-    "asset_id":  "hero_full_body_or_pose_set",
-    "asset_name":  "Orbwalker full-body/key pose set",
-    "asset_type":  "character_pose",
-    "group_id":  "characters",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
-    "candidate_paths":  [
-                            "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
-                        ],
-    "source_references":  [
-                              "assets.json",
-                              "resources/assetgen.workflow.md"
-                          ],
-    "license_status":  "needs_review",
-    "usage_rights":  "needs_review",
-    "dimensions":  "1704x923",
-    "export_format":  "png_candidate",
-    "alpha_type":  "opaque_pose_sheet_candidate",
-    "transparent_background":  "false_bulk_candidate",
-    "qa_status":  "generated_bulk_pending_qa",
-    "review_status":  "not_started_bulk_generation_first",
-    "integration_status":  "blocked_pending_approval",
-    "embedded_text":  "none_or_needs_approval",
-    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist.",
-    "final_prompt":  "Use case: stylized-concept; Asset type: full-body hero pose set for Orbwalker; Primary request: production candidate full-body/key pose sheet for the Orbwalker hero. Subject: same hooded adventurer-mage orbwalker in four clear poses: neutral idle, orb-casting attack, hurt/guarded, victory stance. Dark leather and cloth outfit, subtle gold trim, elemental orb magic. Style/medium: polished stylized 2D game character art, consistent proportions, clean silhouette. Composition/framing: four full-body poses on one sheet, evenly spaced, simple neutral background, no UI. Lighting/mood: readable, heroic, magical. Color palette: dark cloak, gold trim, elemental cyan/orange/multicolor glow accents. Constraints: no readable text, no labels, no logo, no watermark, no copyrighted characters, no gore, no casino imagery, avoid cropped feet or hands.",
-    "generation_mode":  "built-in imagegen"
+{
+    "asset_id": "hero_full_body_or_pose_set",
+    "asset_name": "Orbwalker full-body/key pose set",
+    "asset_type": "character_pose",
+    "group_id": "characters",
+    "brief_path": "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
+    "candidate_paths": [
+        "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
+    ],
+    "source_references": [
+        "assets.json",
+        "resources/assetgen.workflow.md"
+    ],
+    "license_status": "approved",
+    "usage_rights": "approved",
+    "dimensions": "1704x923",
+    "export_format": "png_candidate",
+    "alpha_type": "opaque_pose_sheet_candidate",
+    "transparent_background": "false_bulk_candidate",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
+    "embedded_text": "none_or_needs_approval",
+    "notes": "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+    "final_prompt": "Use case: stylized-concept; Asset type: full-body hero pose set for Orbwalker; Primary request: production candidate full-body/key pose sheet for the Orbwalker hero. Subject: same hooded adventurer-mage orbwalker in four clear poses: neutral idle, orb-casting attack, hurt/guarded, victory stance. Dark leather and cloth outfit, subtle gold trim, elemental orb magic. Style/medium: polished stylized 2D game character art, consistent proportions, clean silhouette. Composition/framing: four full-body poses on one sheet, evenly spaced, simple neutral background, no UI. Lighting/mood: readable, heroic, magical. Color palette: dark cloak, gold trim, elemental cyan/orange/multicolor glow accents. Constraints: no readable text, no labels, no logo, no watermark, no copyrighted characters, no gore, no casino imagery, avoid cropped feet or hands.",
+    "generation_mode": "built-in imagegen",
+    "approval_date": "2026-05-08"
 }

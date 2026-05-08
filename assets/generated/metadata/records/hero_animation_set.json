@@ -35,17 +35,18 @@
         "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png",
         "assets/sprite_pipeline/candidate_07_soft_eroded_component/hero_animation_set/preview_strip_8col.png"
     ],
-    "license_status": "needs_review",
-    "usage_rights": "needs_review",
+    "license_status": "approved",
+    "usage_rights": "approved",
     "dimensions": "1536x1024",
     "export_format": "png_rgba_candidate",
     "alpha_type": "soft_chroma_key_eroded_real_alpha_sprite_pipeline_pending_review",
     "transparent_background": "soft_chroma_key_eroded_real_alpha_sprite_pipeline",
-    "qa_status": "review_pending",
-    "review_status": "human_visual_review_passed_pending_legal",
-    "integration_status": "blocked_pending_approval",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
     "embedded_text": "none_or_needs_approval",
-    "notes": "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval.",
+    "notes": "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
     "final_prompt": "Use case: stylized-concept\nAsset type: Matchatro hero_animation_set chroma-key source sheet for sprite pipeline\nPrimary request: Create a clean complete 8-frame hero wizard animation source sheet on one 1536x1024 canvas, arranged in exact 4 columns by 2 rows. This is a source sheet for deterministic chroma-key extraction and sprite normalization.\nScene/backdrop: perfectly flat solid chroma-key background color #FF00FF covering every background pixel. No checkerboard, no transparency, no gradient, no texture, no scenery, no shadows on the background.\nSubject: same hooded hero spellcaster in every frame, front-facing three-quarter view, dark navy hooded robe, warm gold trim, small blue gem and small blue magic orb. Eight readable full-body poses: idle, ready, windup, cast, recoil, recover, guard, idle return. Keep the same character, same outfit, same silhouette family, same scale, same facing direction across all frames.\nStyle/medium: polished hand-painted 2D fantasy game sprite sheet, crisp contours, clean cel-painted highlights, production asset tone.\nComposition/framing: exact 4x2 row-major sheet. Each frame occupies a 384x512 slot with the full body centered horizontally and feet aligned near the same bottom baseline. Leave clear magenta background between frames. No frame dividers, no white bars, no cropped limbs, no overlapping frames. Every full body fits inside its slot with at least 36 px padding. Magic effects must be small and stay close to the hands inside the same slot.\nColor palette: dark navy, charcoal, warm gold, leather brown, saturated blue magic. Do not use #FF00FF, magenta, pink, or purple inside the character body, antialias edges, glows, or particles.\nLighting/mood: readable heroic spell-cast motion, game-scale clarity.\nConstraints: opaque chroma-key source only; exact 4 columns by 2 rows; flat #FF00FF background; no transparency request; no checkerboard; no labels; no text; no watermark; no poster composition; no extra characters; no duplicated detached body parts; no cropped frames; no large projectile or vortex effects.\nAvoid: key-color spill, background texture, frame borders, white separator bars, severed limbs, inconsistent costume, huge effects that leave the slot, side-facing poses, close-up portraits, cropped magic effects.",
-    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
+    "approval_date": "2026-05-08"
 }

@@ -18,17 +18,18 @@
         "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_04.full.json",
         "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png"
     ],
-    "license_status": "needs_review",
-    "usage_rights": "needs_review",
+    "license_status": "approved",
+    "usage_rights": "approved",
     "dimensions": "1536x1024",
     "export_format": "png_rgba_candidate",
     "alpha_type": "adaptive_chroma_key_real_alpha_pending_batch_qa",
     "transparent_background": "adaptive_chroma_key_extracted_real_alpha_pending_batch_qa",
-    "qa_status": "review_pending",
-    "review_status": "human_visual_review_passed_pending_legal",
-    "integration_status": "blocked_pending_approval",
+    "qa_status": "approved",
+    "review_status": "approved",
+    "integration_status": "approved_pending_integration",
     "embedded_text": "none_requested_needs_visual_confirmation",
-    "notes": "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval.",
+    "notes": "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
     "final_prompt": "Create a two-panel concept sheet for Orbwalker result screens: victory/run-complete and defeat/run-ended backgrounds with matching ornate UI framing. No readable text. Mobile portrait friendly, central safe areas for stats and buttons, dark fantasy stone/metal/gold style.",
-    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction"
+    "generation_mode": "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
+    "approval_date": "2026-05-08"
 }
