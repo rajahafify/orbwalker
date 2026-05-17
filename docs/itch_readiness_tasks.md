@@ -4,6 +4,8 @@ Purpose: track the remaining work needed to move the current `itch.io demo / alp
 
 Source launch snapshot: `launch-milestone.md`
 
+Current active handoff tracker: `docs/current_work_tasks.md`
+
 Status values: `not started`, `in progress`, `blocked`, `done`, `deferred`.
 
 Branch naming rule: each readiness task should be worked on a focused branch named `codex/itch-number-name`, for example `codex/itch-01-combat-readability`.
