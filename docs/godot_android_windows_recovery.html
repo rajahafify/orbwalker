@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Godot Android Windows Recovery</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.55;
+      margin: 2rem auto;
+      max-width: 880px;
+      color: #1f2933;
+    }
+    code, pre {
+      background: #f4f6f8;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+    }
+    code { padding: 0.1rem 0.25rem; }
+    pre { padding: 1rem; overflow-x: auto; }
+    h1, h2 { line-height: 1.2; }
+  </style>
+</head>
+<body>
+  <h1>Godot Android Windows Recovery</h1>
+  <p>
+    This note records the Windows reformat recovery performed for the Godot 4.6.3 project at
+    <code>D:\godot\matchatro</code>. The main failures were missing Android SDK/JDK tooling,
+    stale Godot editor paths from the previous Windows user, mismatched Godot export templates,
+    and generated Android build assets being indexed as normal project resources.
+  </p>
+
+  <h2>Installed Tooling</h2>
+  <ul>
+    <li>Temurin JDK 17: <code>C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot</code></li>
+    <li>Android SDK: <code>C:\Android\Sdk</code></li>
+    <li>Android command-line tools: <code>C:\Android\Sdk\cmdline-tools\latest</code></li>
+    <li>Android platform-tools / ADB: <code>C:\Android\Sdk\platform-tools</code></li>
+    <li>Android SDK platforms: <code>android-35</code>, <code>android-36</code></li>
+    <li>Android build-tools: <code>35.0.1</code>, <code>36.1.0</code></li>
+    <li>Godot export templates: <code>%APPDATA%\Godot\export_templates\4.6.3.stable</code></li>
+    <li>Git for Windows 2.54.0</li>
+  </ul>
+
+  <h2>Godot Editor Settings</h2>
+  <p>
+    Godot was still pointing to old paths under <code>C:\Users\Home\scoop\...</code>.
+    The editor settings were updated in <code>%APPDATA%\Godot\editor_settings-4.6.tres</code>:
+  </p>
+  <pre><code>export/android/java_sdk_path = "C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot"
+export/android/android_sdk_path = "C:\Android\Sdk"
+export/android/debug_keystore = "C:/Users/Raja Hafify/AppData/Roaming/Godot/keystores/debug.keystore"</code></pre>
+
+  <h2>Android Build Template</h2>
+  <p>
+    The project Android build template had been generated for Godot 4.6.2 while the editor was
+    running Godot 4.6.3. The active <code>android/build</code> folder was refreshed from the
+    Godot 4.6.3 <code>android_source.zip</code> export template.
+  </p>
+  <p>
+    The old backup was moved outside the project tree so Godot cannot scan it:
+  </p>
+  <pre><code>D:\godot\matchatro_android_backups\build_backup_4.6.2_20260521_164355</code></pre>
+
+  <h2>Generated Android Assets Cleanup</h2>
+  <p>
+    Godot had indexed generated files under <code>res://android/build/...</code>, causing:
+  </p>
+  <ul>
+    <li>Duplicate <code>project.godot</code> warnings</li>
+    <li>Duplicate UID warnings for copied assets</li>
+    <li>Duplicate <code>class_name</code> parse errors from exported <code>.gdc</code> files</li>
+    <li>Duplicate GDAI GDExtension singleton and editor plugin registration errors</li>
+  </ul>
+  <p>
+    The fix was to restore <code>D:\godot\matchatro\android\build\.gdignore</code>, remove
+    generated Android intermediates/assets from the active Android build folder, and rebuild
+    Godot's generated cache files under <code>.godot</code>.
+  </p>
+
+  <h2>Verification</h2>
+  <p>Useful commands for future checks:</p>
+  <pre><code>java -version
+adb version
+sdkmanager --list_installed
+
+cd D:\godot\matchatro\android\build
+.\gradlew.bat assembleDebug --no-daemon
+
+"C:\Users\Raja Hafify\Downloads\Godot_v4.6.3-stable_win64.exe\Godot_v4.6.3-stable_win64_console.exe" --headless --editor --path "D:\godot\matchatro" --quit</code></pre>
+  <p>
+    After cleanup, <code>.godot\extension_list.cfg</code> contained only the real GDAI extension:
+  </p>
+  <pre><code>res://addons/gdai-mcp-plugin-godot/gdai_mcp_plugin.gdextension</code></pre>
+</body>
+</html>
