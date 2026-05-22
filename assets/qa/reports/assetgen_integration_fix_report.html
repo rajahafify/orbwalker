@@ -49,7 +49,7 @@ th { background:#efe5d2; }
 <body>
 <header>
   <h1>AssetGen Integration Fix Report</h1>
-  <p>Generated 2026-05-22 20:43:05 local time. Updated 2026-05-22 21:15 local time with final color separation and mipmap closure.</p>
+  <p>Generated 2026-05-22 20:43:05 local time. Updated 2026-05-22 21:15 local time with final color separation and mipmap closure. Updated again after final matched-orb glow tuning.</p>
   <p>Runtime APIs preserved: VisualRegistry.orb_texture(), icon_for_key(), clean_icon_for_key(), and hero_portrait().</p>
 </header>
 <div class="layout">
@@ -57,7 +57,7 @@ th { background:#efe5d2; }
   <a href="#p0-runtime-assets"><span>P0</span>Runtime Asset Preparation</a><a href="#p0-orbs-glow"><span>P0</span>Orb Sizing And Match Glow</a><a href="#p1-hero-alpha"><span>P1</span>Hero Portrait Transparency</a><a href="#p1-shop-reward-icons"><span>P1</span>Shop And Reward Icon Crops</a><a href="#p1-color-mipmap-closure"><span>P1</span>Color And Mipmap Closure</a><a href="#p2-filtering"><span>P2</span>Texture Filtering Consistency</a><a href="#p3-report"><span>P3</span>Fix Report And QA Evidence</a>
 </nav>
 <main>
-  <div class="note"><strong>Verification summary:</strong> Python builder completed with 65 runtime icon entries and 0 manifest warnings. Godot headless preview rendering completed. Godot MCP captured main menu with Generate Log visible and combat board after Start Run. Final closure restored original orb interiors, recolored only the outer orb rings for fire/ice/armor separation, retained mipmapped linear filtering, and reverified combat through Godot MCP.</div>
+  <div class="note"><strong>Verification summary:</strong> Python builder completed with 65 runtime icon entries and 0 manifest warnings. Godot headless preview rendering completed. Godot MCP captured main menu with Generate Log visible and combat board after Start Run. Final closure restored original orb interiors, recolored only the outer orb rings for fire/ice/armor separation, retained mipmapped linear filtering, and finalized matched-orb glow as a fast orb-shaped pulse with a tight edge highlight.</div>
   <div class="summary"><div><strong>6</strong><span>orbs</span></div><div><strong>6</strong><span>mastery</span></div><div><strong>15</strong><span>equipment</span></div><div><strong>8</strong><span>consumables</span></div><div><strong>4</strong><span>treasure_chests</span></div><div><strong>5</strong><span>relics</span></div><div><strong>12</strong><span>enemies</span></div><div><strong>1</strong><span>heroes</span></div><div><strong>65</strong><span>icons</span></div></div>
   <section id="p1-color-mipmap-closure" class="finding p1">
     <div class="finding-head"><span class="badge">P1</span><h2>Color And Mipmap Closure</h2><span class="status">Fixed</span></div>
@@ -1373,11 +1373,20 @@ index a168e96..1570eab 100644
   <dl>
     <dt>Problem</dt><dd>Board orbs appeared too small/padded or touched the wrong visual footprint, and match indication read like a cell overlay rather than an orb glow.</dd>
     <dt>Root cause</dt><dd>The board could still fall back to raw atlas cells with transparent padding. Glow was tuned against padded cells and applied as a broad cell treatment.</dd>
-    <dt>Fix summary</dt><dd>VisualRegistry now resolves runtime orb PNGs first. BoardView draws a soft colored halo behind matching orbs plus a tinted enlarged orb texture, with linear filtering and a much lower match flash alpha.</dd>
+    <dt>Fix summary</dt><dd>VisualRegistry now resolves runtime orb PNGs first. BoardView removed the broad cell halo and now uses an orb-shaped pulse: a tight 1.10x edge highlight, strong internal brightness, colored inner glow, warm core glow, and transparent match flash.</dd>
     <dt>Changed files/assets</dt><dd>scripts/ui/visual_registry.gd; scripts/board/board_view.gd; resources/art/assetgen/runtime/orbs/*.png</dd>
-    <dt>Verification result</dt><dd>Godot MCP combat screenshot captured after Start Run. Board orbs visually fill cells without touching borders. FlowTrace: after_scene_attach attach_ms=155 (&lt;1000ms), combat_after_texture_map delta_ms=12 (&lt;100ms).</dd>
+    <dt>Verification result</dt><dd>Godot MCP combat screenshot captured after Start Run. Board orbs visually fill cells without touching borders. FlowTrace: after_scene_attach attach_ms=155 (&lt;1000ms), combat_after_texture_map delta_ms=12 (&lt;100ms). Final glow tuning accepted after manual review; BoardView Godot --check-only passed.</dd>
   </dl>
   <div class="evidence-grid"><figure><img src="assetgen_verify_orbs.png" alt="Orb Sizing And Match Glow evidence"><figcaption>assetgen_verify_orbs.png</figcaption></figure><figure><img src="../../../resources/art/assetgen/runtime/previews/runtime_orbs_contact.png" alt="Orb Sizing And Match Glow evidence"><figcaption>../../../resources/art/assetgen/runtime/previews/runtime_orbs_contact.png</figcaption></figure></div>
+  <h3>Final Glow Tuning</h3>
+  <pre><code>BoardView matched-orb glow now uses:
+- match_flash_color alpha: 0.0
+- matched_orb_pulse_period: 1.35s
+- matched_orb_edge_glow_scale: 1.10x
+- matched_orb_glow_alpha: 1.0
+- matched_orb_glow_brightness: 1.25
+
+The highlight is a texture-shaped edge pass, not a cell fill.</code></pre>
   <h3>Scoped Diff</h3>
   <pre><code>diff --git a/scripts/board/board_view.gd b/scripts/board/board_view.gd
 index c45ad62..beafd42 100644
