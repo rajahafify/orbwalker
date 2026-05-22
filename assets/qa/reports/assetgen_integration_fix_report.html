@@ -49,16 +49,66 @@ th { background:#efe5d2; }
 <body>
 <header>
   <h1>AssetGen Integration Fix Report</h1>
-  <p>Generated 2026-05-22 20:43:05 local time. Updated 2026-05-22 21:15 local time with final color separation and mipmap closure. Updated again after final matched-orb glow tuning.</p>
+  <p>Generated 2026-05-22 20:43:05 local time. Updated 2026-05-22 21:15 local time with final color separation and mipmap closure. Updated again after final matched-orb glow tuning. Updated 2026-05-22 22:29 local time with attack VFX cleanup.</p>
   <p>Runtime APIs preserved: VisualRegistry.orb_texture(), icon_for_key(), clean_icon_for_key(), and hero_portrait().</p>
 </header>
 <div class="layout">
 <nav>
-  <a href="#p0-runtime-assets"><span>P0</span>Runtime Asset Preparation</a><a href="#p0-orbs-glow"><span>P0</span>Orb Sizing And Match Glow</a><a href="#p1-hero-alpha"><span>P1</span>Hero Portrait Transparency</a><a href="#p1-shop-reward-icons"><span>P1</span>Shop And Reward Icon Crops</a><a href="#p1-color-mipmap-closure"><span>P1</span>Color And Mipmap Closure</a><a href="#p2-filtering"><span>P2</span>Texture Filtering Consistency</a><a href="#p3-report"><span>P3</span>Fix Report And QA Evidence</a>
+  <a href="#p0-runtime-assets"><span>P0</span>Runtime Asset Preparation</a><a href="#p0-orbs-glow"><span>P0</span>Orb Sizing And Match Glow</a><a href="#p1-hero-alpha"><span>P1</span>Hero Portrait Transparency</a><a href="#p1-shop-reward-icons"><span>P1</span>Shop And Reward Icon Crops</a><a href="#p1-color-mipmap-closure"><span>P1</span>Color And Mipmap Closure</a><a href="#p2-filtering"><span>P2</span>Texture Filtering Consistency</a><a href="#p2-attack-vfx-cleanup"><span>P2</span>Attack VFX Cleanup</a><a href="#p3-report"><span>P3</span>Fix Report And QA Evidence</a>
 </nav>
 <main>
-  <div class="note"><strong>Verification summary:</strong> Python builder completed with 65 runtime icon entries and 0 manifest warnings. Godot headless preview rendering completed. Godot MCP captured main menu with Generate Log visible and combat board after Start Run. Final closure restored original orb interiors, recolored only the outer orb rings for fire/ice/armor separation, retained mipmapped linear filtering, and finalized matched-orb glow as a fast orb-shaped pulse with a tight edge highlight.</div>
+  <div class="note"><strong>Verification summary:</strong> Python builder completed with 65 runtime icon entries and 0 manifest warnings. Godot headless preview rendering completed. Godot MCP captured main menu with Generate Log visible and combat board after Start Run. Final closure restored original orb interiors, recolored only the outer orb rings for fire/ice/armor separation, retained mipmapped linear filtering, finalized matched-orb glow as a fast orb-shaped pulse with a tight edge highlight, and fixed lingering player attack block/hit pulse cleanup.</div>
   <div class="summary"><div><strong>6</strong><span>orbs</span></div><div><strong>6</strong><span>mastery</span></div><div><strong>15</strong><span>equipment</span></div><div><strong>8</strong><span>consumables</span></div><div><strong>4</strong><span>treasure_chests</span></div><div><strong>5</strong><span>relics</span></div><div><strong>12</strong><span>enemies</span></div><div><strong>1</strong><span>heroes</span></div><div><strong>65</strong><span>icons</span></div></div>
+  <section id="p2-attack-vfx-cleanup" class="finding p2">
+    <div class="finding-head"><span class="badge">P2</span><h2>Attack VFX Cleanup</h2><span class="status">Fixed</span></div>
+    <dl>
+      <dt>Problem</dt><dd>A blue circular overlay could remain on the Orbwalker portrait after the player blocked an enemy attack, making the hero look like the portrait had a broken pasted-on blue circle.</dd>
+      <dt>Root cause</dt><dd>The armor block impact spawned two visuals: a texture impact that faded correctly and a separate EnemyAttackPulse panel that had no cleanup tween. The pulse could survive after turn replay ended.</dd>
+      <dt>Fix summary</dt><dd>Added a shared pulse cleanup tween that fades, gently scales, and queue_frees block and hit impact pulses. Retuned the block pulse to be smaller, less opaque, and more shield-flash-like.</dd>
+      <dt>Changed files/assets</dt><dd>scripts/combat/combat_vfx_presenter.gd; assets/qa/reports/assetgen_integration_fix_report.html</dd>
+      <dt>Verification result</dt><dd>Godot headless script check passed for scripts/combat/combat_vfx_presenter.gd. Scoped diff confirms both block and hit pulses now call _tween_pulse_cleanup().</dd>
+    </dl>
+    <h3>Scoped Diff</h3>
+    <pre><code>diff --git a/scripts/combat/combat_vfx_presenter.gd b/scripts/combat/combat_vfx_presenter.gd
+index 5683396..a984240 100644
+--- a/scripts/combat/combat_vfx_presenter.gd
++++ b/scripts/combat/combat_vfx_presenter.gd
+@@ -186,12 +186,14 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
+
+ func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
+     spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
+-    _spawn_enemy_attack_pulse(target_global, Vector2(72, 72), Color(0.74, 0.9, 1.0, 0.36), Color(0.86, 0.95, 1.0, 0.94), 6, 118)
++    var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(62, 62), Color(0.30, 0.48, 0.72, 0.18), Color(0.78, 0.88, 1.0, 0.78), 4, 118)
++    _tween_pulse_cleanup(pulse, lifetime, Vector2(1.16, 1.16))
+
+
+ func spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float = 0.32, hp_damage: int = 0) -> void:
+     spawn_replay_impact(target_global, "damage", Vector2(90, 90), lifetime, hp_damage)
+-    _spawn_enemy_attack_pulse(target_global, Vector2(76, 76), Color(1.0, 0.38, 0.32, 0.34), Color(1.0, 0.58, 0.48, 0.96), 6, 118)
++    var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(70, 70), Color(1.0, 0.38, 0.32, 0.28), Color(1.0, 0.58, 0.48, 0.86), 5, 118)
++    _tween_pulse_cleanup(pulse, lifetime, Vector2(1.18, 1.18))
+@@ -478,3 +480,20 @@ func _tween_fade_cleanup(control: Control, lifetime: float) -> void:
+         if is_instance_valid(control):
+             control.queue_free()
+     )
++
++
++func _tween_pulse_cleanup(control: Control, lifetime: float, target_scale: Vector2 = Vector2(1.12, 1.12)) -> void:
++    if control == null:
++        return
++    var duration := maxf(0.08, lifetime)
++    if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
++        control.queue_free()
++        return
++    var tween := _timer_owner.create_tween()
++    tween.set_parallel(true)
++    tween.tween_property(control, "scale", target_scale, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
++    tween.tween_property(control, "modulate:a", 0.0, duration).set_delay(duration * 0.22)
++    tween.finished.connect(func() -> void:
++        if is_instance_valid(control):
++            control.queue_free()
++    )</code></pre>
+  </section>
   <section id="p1-color-mipmap-closure" class="finding p1">
     <div class="finding-head"><span class="badge">P1</span><h2>Color And Mipmap Closure</h2><span class="status">Fixed</span></div>
     <dl>

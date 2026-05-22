@@ -186,12 +186,14 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
 
 func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
 	spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
-	_spawn_enemy_attack_pulse(target_global, Vector2(72, 72), Color(0.74, 0.9, 1.0, 0.36), Color(0.86, 0.95, 1.0, 0.94), 6, 118)
+	var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(62, 62), Color(0.30, 0.48, 0.72, 0.18), Color(0.78, 0.88, 1.0, 0.78), 4, 118)
+	_tween_pulse_cleanup(pulse, lifetime, Vector2(1.16, 1.16))
 
 
 func spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float = 0.32, hp_damage: int = 0) -> void:
 	spawn_replay_impact(target_global, "damage", Vector2(90, 90), lifetime, hp_damage)
-	_spawn_enemy_attack_pulse(target_global, Vector2(76, 76), Color(1.0, 0.38, 0.32, 0.34), Color(1.0, 0.58, 0.48, 0.96), 6, 118)
+	var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(70, 70), Color(1.0, 0.38, 0.32, 0.28), Color(1.0, 0.58, 0.48, 0.86), 5, 118)
+	_tween_pulse_cleanup(pulse, lifetime, Vector2(1.18, 1.18))
 
 
 func mastery_impact_kind(orb_id: int) -> String:
@@ -474,6 +476,23 @@ func _tween_fade_cleanup(control: Control, lifetime: float) -> void:
 		return
 	var tween := _timer_owner.create_tween()
 	tween.tween_property(control, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(control):
+			control.queue_free()
+	)
+
+
+func _tween_pulse_cleanup(control: Control, lifetime: float, target_scale: Vector2 = Vector2(1.12, 1.12)) -> void:
+	if control == null:
+		return
+	var duration := maxf(0.08, lifetime)
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		control.queue_free()
+		return
+	var tween := _timer_owner.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(control, "scale", target_scale, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "modulate:a", 0.0, duration).set_delay(duration * 0.22)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(control):
 			control.queue_free()
