@@ -3,7 +3,7 @@ class_name RunSummaryView
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
-const BACKGROUND_PATH := "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
+const BACKGROUND_PATH := "res://resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png"
 
 const COLOR_PANEL := Color(0.07, 0.055, 0.045, 0.94)
 const COLOR_PANEL_EDGE := Color(0.86, 0.63, 0.24, 1.0)

@@ -1,102 +1,135 @@
 {
-  "backgrounds": {
-    "combat": "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png",
-    "shop": "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png",
-    "main_menu": "res://resources/art/assetgen/main_menu/main_menu_background_candidate_01.png"
-  },
-  "enemy_portraits": {
-    "cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-    "cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
-    "ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
-    "ruin_lancer": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-    "vault_executioner": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
-    "goldbound_keeper": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
-    "training_goblin": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-    "iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
-    "burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
-    "prism_warden": "res://resources/art/first_pass/enemies/boss_prism_warden.png"
-  },
-  "hero_portraits": {
-    "default": "res://resources/art/first_pass/heroes/hero_orbwalker.png",
-    "orbwalker": "res://resources/art/first_pass/heroes/hero_orbwalker.png"
-  },
-  "sheets": {
-    "orbs": "res://resources/art/first_pass/sheets/orb_icon_set_v1.png",
-    "intents": "res://resources/art/first_pass/sheets/intent_badge_set_v1.png",
-    "rarity": "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png",
-    "mastery": "res://resources/art/first_pass/sheets/mastery_icon_set_v1.png",
-    "items": "res://resources/art/first_pass/sheets/item_icon_seed_set_v1.png",
-    "frames": "res://resources/art/first_pass/ui/ui_frame_kit_v1.png",
-    "bars": "res://resources/art/first_pass/ui/bar_kit_v1.png",
-    "shop_cards": "res://resources/art/first_pass/ui/shop_card_kit_v1.png",
-    "vfx": "res://resources/art/first_pass/vfx/vfx_sprite_sheet_v1.png"
-  },
-  "derived_icons": {
-    "equipment_shortsword": "res://resources/art/first_pass/derived/icons/equipment_shortsword.png",
-    "equipment_buckler": "res://resources/art/first_pass/derived/icons/equipment_buckler.png",
-    "equipment_coin_purse": "res://resources/art/first_pass/derived/icons/equipment_coin_purse.png",
-    "equipment_healing_charm": "res://resources/art/first_pass/derived/icons/equipment_healing_charm.png",
-    "equipment_ember_ring": "res://resources/art/first_pass/derived/icons/equipment_ember_ring.png",
-    "equipment_frost_ring": "res://resources/art/first_pass/derived/icons/equipment_frost_ring.png",
-    "equipment_stone_ring": "res://resources/art/first_pass/derived/icons/equipment_stone_ring.png",
-    "equipment_leather_gloves": "res://resources/art/first_pass/derived/icons/equipment_leather_gloves.png",
-    "equipment_iron_helm": "res://resources/art/first_pass/derived/icons/equipment_iron_helm.png",
-    "equipment_combo_lens": "res://resources/art/first_pass/derived/icons/equipment_combo_lens.png",
-    "equipment_twin_blades": "res://resources/art/first_pass/derived/icons/equipment_twin_blades.png",
-    "equipment_war_banner": "res://resources/art/first_pass/derived/icons/equipment_war_banner.png",
-    "equipment_tower_shield": "res://resources/art/first_pass/derived/icons/equipment_tower_shield.png",
-    "equipment_merchant_scales": "res://resources/art/first_pass/derived/icons/equipment_merchant_scales.png",
-    "equipment_battle_drum": "res://resources/art/first_pass/derived/icons/equipment_battle_drum.png",
-    "equipment_earthbreaker_maul": "res://resources/art/first_pass/derived/icons/equipment_earthbreaker_maul.png",
-    "equipment_hearth_amulet": "res://resources/art/first_pass/derived/icons/equipment_hearth_amulet.png",
-    "equipment_alchemist_gloves": "res://resources/art/first_pass/derived/icons/equipment_alchemist_gloves.png",
-    "equipment_training_manual": "res://resources/art/first_pass/derived/icons/equipment_training_manual.png",
-    "equipment_mirror_charm": "res://resources/art/first_pass/derived/icons/equipment_mirror_charm.png",
-    "equipment_ruby_brooch": "res://resources/art/first_pass/derived/icons/equipment_ruby_brooch.png",
-    "equipment_sapphire_brooch": "res://resources/art/first_pass/derived/icons/equipment_sapphire_brooch.png",
-    "equipment_emerald_brooch": "res://resources/art/first_pass/derived/icons/equipment_emerald_brooch.png",
-    "equipment_royal_seal": "res://resources/art/first_pass/derived/icons/equipment_royal_seal.png",
-    "equipment_champion_plate": "res://resources/art/first_pass/derived/icons/equipment_champion_plate.png",
-    "consumable_fire_scroll": "res://resources/art/first_pass/derived/icons/consumable_fire_scroll.png",
-    "consumable_ice_scroll": "res://resources/art/first_pass/derived/icons/consumable_ice_scroll.png",
-    "consumable_earth_scroll": "res://resources/art/first_pass/derived/icons/consumable_earth_scroll.png",
-    "consumable_heart_scroll": "res://resources/art/first_pass/derived/icons/consumable_heart_scroll.png",
-    "consumable_armor_scroll": "res://resources/art/first_pass/derived/icons/consumable_armor_scroll.png",
-    "consumable_gold_scroll": "res://resources/art/first_pass/derived/icons/consumable_gold_scroll.png",
-    "relic_deep_pockets": "res://resources/art/first_pass/derived/icons/relic_deep_pockets.png",
-    "relic_stalwart_mantle": "res://resources/art/first_pass/derived/icons/relic_stalwart_mantle.png",
-    "relic_golden_idol": "res://resources/art/first_pass/derived/icons/relic_golden_idol.png",
-    "relic_crown_of_chains": "res://resources/art/first_pass/derived/icons/relic_crown_of_chains.png",
-    "relic_merchant_compass": "res://resources/art/first_pass/derived/icons/relic_merchant_compass.png",
-    "mastery_fire": "res://resources/art/first_pass/derived/icons/mastery_fire.png",
-    "mastery_ice": "res://resources/art/first_pass/derived/icons/mastery_ice.png",
-    "mastery_earth": "res://resources/art/first_pass/derived/icons/mastery_earth.png",
-    "mastery_heart": "res://resources/art/first_pass/derived/icons/mastery_heart.png",
-    "mastery_armor": "res://resources/art/first_pass/derived/icons/mastery_armor.png",
-    "mastery_gold": "res://resources/art/first_pass/derived/icons/mastery_gold.png"
-  },
-  "menu": {
-    "background": "res://resources/art/assetgen/main_menu/main_menu_background_candidate_01.png",
-    "logo": "res://resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png",
-    "outer_border": "res://resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png",
-    "button_primary": "res://resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png",
-    "button_secondary": "res://resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png",
-    "stats_panel": "res://resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png",
-    "menu_icons": {
-      "relics_unlocked": "res://resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05_semantic.png",
-      "mastery_progress": "res://resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05_semantic.png",
-      "best_run": "res://resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05_semantic.png",
-      "profile": "res://resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05_semantic.png",
-      "achievements": "res://resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05_semantic.png",
-      "settings": "res://resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05_semantic.png"
-    },
-    "reused_mastery_icons": {
-      "fire": "res://resources/art/first_pass/derived/icons/mastery_fire.png",
-      "ice": "res://resources/art/first_pass/derived/icons/mastery_ice.png",
-      "earth": "res://resources/art/first_pass/derived/icons/mastery_earth.png",
-      "heart": "res://resources/art/first_pass/derived/icons/mastery_heart.png",
-      "armor": "res://resources/art/first_pass/derived/icons/mastery_armor.png",
-      "gold": "res://resources/art/first_pass/derived/icons/mastery_gold.png"
-    }
-  }
+    "backgrounds":  {
+                        "combat":  "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png",
+                        "shop":  "res://resources/art/assetgen/backgrounds/shop_background_candidate_01.png",
+                        "main_menu":  "res://resources/art/assetgen/main_menu/main_menu_background_candidate_01.png",
+                        "collection":  "res://resources/art/assetgen/backgrounds/collection_background_candidate_01.png",
+                        "run_summary":  "res://resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png"
+                    },
+    "enemy_portraits":  {
+                            "cavern_striker":  "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+                            "cavern_defender":  "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+                            "ash_hunter":  "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+                            "ruin_lancer":  "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+                            "vault_executioner":  "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+                            "goldbound_keeper":  "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+                            "training_goblin":  "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+                            "iron_gate":  "res://resources/art/first_pass/enemies/boss_iron_gate.png",
+                            "burning_knight":  "res://resources/art/first_pass/enemies/boss_burning_knight.png",
+                            "prism_warden":  "res://resources/art/first_pass/enemies/boss_prism_warden.png"
+                        },
+    "hero_portraits":  {
+                           "default":  "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png",
+                           "orbwalker":  "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png"
+                       },
+    "sheets":  {
+                   "orbs":  "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+                   "intents":  "res://resources/art/assetgen/sheets/intent_icons_candidate_04_adaptive_alpha.png",
+                   "rarity":  "res://resources/art/assetgen/sheets/rarity_badges_candidate_04_adaptive_alpha.png",
+                   "mastery":  "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+                   "items":  "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+                   "frames":  "res://resources/art/first_pass/ui/ui_frame_kit_v1.png",
+                   "bars":  "res://resources/art/first_pass/ui/bar_kit_v1.png",
+                   "shop_cards":  "res://resources/art/first_pass/ui/shop_card_kit_v1.png",
+                   "vfx":  "res://resources/art/assetgen/vfx/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
+               },
+    "derived_icons":  {
+                          "equipment_shortsword":  "res://resources/art/first_pass/derived/icons/equipment_shortsword.png",
+                          "equipment_buckler":  "res://resources/art/first_pass/derived/icons/equipment_buckler.png",
+                          "equipment_coin_purse":  "res://resources/art/first_pass/derived/icons/equipment_coin_purse.png",
+                          "equipment_healing_charm":  "res://resources/art/first_pass/derived/icons/equipment_healing_charm.png",
+                          "equipment_ember_ring":  "res://resources/art/first_pass/derived/icons/equipment_ember_ring.png",
+                          "equipment_frost_ring":  "res://resources/art/first_pass/derived/icons/equipment_frost_ring.png",
+                          "equipment_stone_ring":  "res://resources/art/first_pass/derived/icons/equipment_stone_ring.png",
+                          "equipment_leather_gloves":  "res://resources/art/first_pass/derived/icons/equipment_leather_gloves.png",
+                          "equipment_iron_helm":  "res://resources/art/first_pass/derived/icons/equipment_iron_helm.png",
+                          "equipment_combo_lens":  "res://resources/art/first_pass/derived/icons/equipment_combo_lens.png",
+                          "equipment_twin_blades":  "res://resources/art/first_pass/derived/icons/equipment_twin_blades.png",
+                          "equipment_war_banner":  "res://resources/art/first_pass/derived/icons/equipment_war_banner.png",
+                          "equipment_tower_shield":  "res://resources/art/first_pass/derived/icons/equipment_tower_shield.png",
+                          "equipment_merchant_scales":  "res://resources/art/first_pass/derived/icons/equipment_merchant_scales.png",
+                          "equipment_battle_drum":  "res://resources/art/first_pass/derived/icons/equipment_battle_drum.png",
+                          "equipment_earthbreaker_maul":  "res://resources/art/first_pass/derived/icons/equipment_earthbreaker_maul.png",
+                          "equipment_hearth_amulet":  "res://resources/art/first_pass/derived/icons/equipment_hearth_amulet.png",
+                          "equipment_alchemist_gloves":  "res://resources/art/first_pass/derived/icons/equipment_alchemist_gloves.png",
+                          "equipment_training_manual":  "res://resources/art/first_pass/derived/icons/equipment_training_manual.png",
+                          "equipment_mirror_charm":  "res://resources/art/first_pass/derived/icons/equipment_mirror_charm.png",
+                          "equipment_ruby_brooch":  "res://resources/art/first_pass/derived/icons/equipment_ruby_brooch.png",
+                          "equipment_sapphire_brooch":  "res://resources/art/first_pass/derived/icons/equipment_sapphire_brooch.png",
+                          "equipment_emerald_brooch":  "res://resources/art/first_pass/derived/icons/equipment_emerald_brooch.png",
+                          "equipment_royal_seal":  "res://resources/art/first_pass/derived/icons/equipment_royal_seal.png",
+                          "equipment_champion_plate":  "res://resources/art/first_pass/derived/icons/equipment_champion_plate.png",
+                          "consumable_fire_scroll":  "res://resources/art/first_pass/derived/icons/consumable_fire_scroll.png",
+                          "consumable_ice_scroll":  "res://resources/art/first_pass/derived/icons/consumable_ice_scroll.png",
+                          "consumable_earth_scroll":  "res://resources/art/first_pass/derived/icons/consumable_earth_scroll.png",
+                          "consumable_heart_scroll":  "res://resources/art/first_pass/derived/icons/consumable_heart_scroll.png",
+                          "consumable_armor_scroll":  "res://resources/art/first_pass/derived/icons/consumable_armor_scroll.png",
+                          "consumable_gold_scroll":  "res://resources/art/first_pass/derived/icons/consumable_gold_scroll.png",
+                          "relic_deep_pockets":  "res://resources/art/first_pass/derived/icons/relic_deep_pockets.png",
+                          "relic_stalwart_mantle":  "res://resources/art/first_pass/derived/icons/relic_stalwart_mantle.png",
+                          "relic_golden_idol":  "res://resources/art/first_pass/derived/icons/relic_golden_idol.png",
+                          "relic_crown_of_chains":  "res://resources/art/first_pass/derived/icons/relic_crown_of_chains.png",
+                          "relic_merchant_compass":  "res://resources/art/first_pass/derived/icons/relic_merchant_compass.png",
+                          "mastery_fire":  "res://resources/art/first_pass/derived/icons/mastery_fire.png",
+                          "mastery_ice":  "res://resources/art/first_pass/derived/icons/mastery_ice.png",
+                          "mastery_earth":  "res://resources/art/first_pass/derived/icons/mastery_earth.png",
+                          "mastery_heart":  "res://resources/art/first_pass/derived/icons/mastery_heart.png",
+                          "mastery_armor":  "res://resources/art/first_pass/derived/icons/mastery_armor.png",
+                          "mastery_gold":  "res://resources/art/first_pass/derived/icons/mastery_gold.png"
+                      },
+    "menu":  {
+                 "background":  "res://resources/art/assetgen/main_menu/main_menu_background_candidate_01.png",
+                 "logo":  "res://resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png",
+                 "outer_border":  "res://resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png",
+                 "button_primary":  "res://resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png",
+                 "button_secondary":  "res://resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png",
+                 "stats_panel":  "res://resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png",
+                 "menu_icons":  {
+                                    "relics_unlocked":  "res://resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05_semantic.png",
+                                    "mastery_progress":  "res://resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05_semantic.png",
+                                    "best_run":  "res://resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05_semantic.png",
+                                    "profile":  "res://resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05_semantic.png",
+                                    "achievements":  "res://resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05_semantic.png",
+                                    "settings":  "res://resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05_semantic.png"
+                                },
+                 "reused_mastery_icons":  {
+                                              "fire":  "res://resources/art/first_pass/derived/icons/mastery_fire.png",
+                                              "ice":  "res://resources/art/first_pass/derived/icons/mastery_ice.png",
+                                              "earth":  "res://resources/art/first_pass/derived/icons/mastery_earth.png",
+                                              "heart":  "res://resources/art/first_pass/derived/icons/mastery_heart.png",
+                                              "armor":  "res://resources/art/first_pass/derived/icons/mastery_armor.png",
+                                              "gold":  "res://resources/art/first_pass/derived/icons/mastery_gold.png"
+                                          }
+             },
+    "assetgen":  {
+                     "system":  {
+                                    "app_icon":  "res://resources/art/assetgen/system/app_icon_candidate_01.png",
+                                    "boot_splash":  "res://resources/art/assetgen/system/boot_splash_candidate_01.png"
+                                },
+                     "backgrounds":  {
+                                         "combat_enemy_stage_art":  "res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
+                                     },
+                     "characters":  {
+                                        "hero_full_body_or_pose_set":  "res://resources/art/assetgen/characters/hero_full_body_or_pose_set_candidate_01.png",
+                                        "merchant_character":  "res://resources/art/assetgen/characters/merchant_character_candidate_01.png"
+                                    },
+                     "enemies":  {
+                                     "enemy_portraits":  "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+                                     "boss_portraits":  "res://resources/art/assetgen/enemies/boss_portraits_candidate_01.png"
+                                 },
+                     "vfx":  {
+                                 "board_orb_clear":  "res://resources/art/assetgen/vfx/board_orb_clear_vfx_candidate_04_adaptive_alpha.png",
+                                 "enemy_attack":  "res://resources/art/assetgen/vfx/enemy_attack_vfx_candidate_04_adaptive_alpha.png",
+                                 "mastery":  "res://resources/art/assetgen/vfx/mastery_vfx_candidate_04_adaptive_alpha.png",
+                                 "shop_transaction":  "res://resources/art/assetgen/vfx/shop_transaction_vfx_candidate_04_adaptive_alpha.png",
+                                 "unlock_achievement":  "res://resources/art/assetgen/vfx/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
+                             },
+                     "marketing":  {
+                                       "itch_page_graphics":  "res://resources/art/assetgen/marketing/itch_page_graphics_key_art_candidate_01.png",
+                                       "store_capsule_key_art":  "res://resources/art/assetgen/marketing/store_capsule_key_art_candidate_01.png"
+                                   },
+                     "specs":  {
+                                   "controls_visual":  "res://resources/art/assetgen/specs/controls_visual_candidate_01.png"
+                               }
+                 }
 }

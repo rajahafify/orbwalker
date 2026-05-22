@@ -52,9 +52,9 @@ func run_log_export_text() -> String:
 	return reporter.build_text_report(run_log_snapshot())
 
 
-func run_log_export_markdown() -> String:
+func run_log_export_html() -> String:
 	var reporter = RUN_LOG_REPORTER_SCRIPT.new()
-	return reporter.build_markdown_report(run_log_snapshot())
+	return reporter.build_html_report(run_log_snapshot())
 
 
 func run_log_last_export_snapshot() -> Dictionary:
@@ -185,7 +185,7 @@ func run_log_export_to_disk(export_dir: String) -> void:
 	var base_name := "%s_%s" % [run_slug, started_slug]
 
 	_run_log_write_export_file(base_name + ".json", run_log_export_json(true), "json", export_dir)
-	_run_log_write_export_file(base_name + ".md", run_log_export_markdown(), "markdown", export_dir)
+	_run_log_write_export_file(base_name + ".html", run_log_export_html(), "html", export_dir)
 	_run_log_write_export_file(base_name + ".txt", run_log_export_text(), "text", export_dir)
 
 

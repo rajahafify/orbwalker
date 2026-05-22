@@ -482,8 +482,8 @@ func _render_treasure_chest_overlay(pending_options: Array) -> void:
 		var content := _lookup_content_definition(String(option.get("content_id", "")))
 		var icon := _make_texture("TreasureChestOptionIcon", root)
 		icon.texture = _visuals.icon_for_key(String(content.get("icon_key", "")))
-		icon.position = Vector2(58, 98)
-		icon.size = Vector2(92, 86)
+		icon.position = Vector2(42, 92)
+		icon.size = Vector2(124, 104)
 		_make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
 	_skip_treasure_chest_button.visible = true
 	_skip_treasure_chest_button.disabled = false
@@ -901,6 +901,7 @@ func _make_texture(node_name: String, parent: Node) -> TextureRect:
 	texture.name = node_name
 	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 	texture.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(texture)
 	return texture

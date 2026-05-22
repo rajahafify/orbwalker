@@ -196,7 +196,7 @@ func _cleanup_intent_preview_tweens() -> void:
 		_intent_hp_danger_fill.visible = false
 	if _intent_armor_risk_rect != null and is_instance_valid(_intent_armor_risk_rect):
 		_intent_armor_risk_rect.visible = false
-		_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.68)
 	_intent_damage_preview.clear()
 
@@ -264,9 +264,10 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_label
 
 		var icon := TextureRect.new()
 		icon.name = "SlotIcon"
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		icon.position = Vector2((SLOT_SIZE.x - ICON_INNER_SIZE.x) * 0.5, (SLOT_SIZE.y - ICON_INNER_SIZE.y) * 0.5)
 		icon.size = ICON_INNER_SIZE
 		icon.custom_minimum_size = ICON_INNER_SIZE
@@ -389,8 +390,9 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		icon.custom_minimum_size = MASTERY_ICON_INNER_SIZE
 		icon.size = MASTERY_ICON_INNER_SIZE
 		icon.position = Vector2((MASTERY_SLOT_SIZE.x - MASTERY_ICON_INNER_SIZE.x) * 0.5, (MASTERY_SLOT_SIZE.y - MASTERY_ICON_INNER_SIZE.y) * 0.5)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 		icon.texture = _visual_registry().mastery_icon(orb_id)
 		var level := int(mastery_levels.get(orb_id, 0))
 		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
@@ -404,8 +406,8 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		amount_label.position = Vector2(52.0, 0.0)
 		amount_label.size = Vector2(28.0, MASTERY_SLOT_SIZE.y)
 		amount_label.custom_minimum_size = amount_label.size
-		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 		amount_label.add_theme_font_size_override("font_size", 24)
 		amount_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
 		amount_label.add_theme_constant_override("outline_size", 2)
@@ -443,7 +445,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		var card := Control.new()
 		card.name = _combat_mastery_card_name(orb_id)
 		card.clip_contents = true
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
+		card.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 		card.size = card_size
 		card.position = Vector2(start_x + float(index) * (card_size.x + card_gap), 0.0)
 
@@ -451,22 +453,22 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		panel.name = "CardPanel"
 		panel.custom_minimum_size = card_size
 		panel.size = card_size
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
 
 		var card_background := TextureRect.new()
 		card_background.name = "CardTexture"
-		card_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card_background.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		card_background.position = Vector2.ZERO
 		card_background.size = card_size
-		card_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		card_background.stretch_mode = TextureRect.STRETCH_SCALE
+		card_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		card_background.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 		card_background.texture = _visual_registry().mastery_card_texture(orb_id)
 		card_background.modulate = Color(1.0, 1.0, 1.0, 0.18)
 
 		var activation_glow := ColorRect.new()
 		activation_glow.name = "ActivationGlow"
-		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		activation_glow.position = Vector2(4.0, 4.0)
 		activation_glow.size = card_size - Vector2(8.0, 8.0)
 		var activation_accent := OrbType.color(orb_id)
@@ -478,8 +480,9 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		icon.custom_minimum_size = icon_size
 		icon.size = icon_size
 		icon.position = Vector2((card_size.x - icon_size.x) * 0.5, 2.0 if compact_mode else 2.0)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
 
 		var feedback_label := Label.new()
@@ -489,8 +492,8 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		feedback_label.size = Vector2(card_size.x - 4.0, 16.0 if compact_mode else 14.0)
 		feedback_label.add_theme_font_size_override("font_size", 12 if compact_mode else 15)
 		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.58, 0.90))
-		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 		feedback_label.add_theme_constant_override("outline_size", 2)
 		feedback_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.98))
 		if feedback_value > 0:
@@ -502,14 +505,14 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 
 		var activation_frame := Panel.new()
 		activation_frame.name = "ActivationFrame"
-		activation_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		activation_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		activation_frame.position = Vector2.ZERO
 		activation_frame.size = card_size
 		activation_frame.visible = false
 
 		var hover_highlight := ColorRect.new()
 		hover_highlight.name = "HoverHighlight"
-		hover_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hover_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		hover_highlight.position = Vector2(2.0, 2.0)
 		hover_highlight.size = card_size - Vector2(4.0, 4.0)
 		hover_highlight.color = Color(1.0, 1.0, 1.0, 0.0)
@@ -517,7 +520,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 
 		var hover_frame := Panel.new()
 		hover_frame.name = "HoverFrame"
-		hover_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hover_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		hover_frame.position = Vector2.ZERO
 		hover_frame.size = card_size
 		hover_frame.visible = false
@@ -794,7 +797,7 @@ func _ensure_mastery_detail_bubble() -> void:
 	_mastery_detail_bubble.name = "MasteryDetailBubble"
 	_mastery_detail_bubble.visible = false
 	_mastery_detail_bubble.z_index = int(_hud_nodes.get("popover_z_index", 210))
-	_mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	parent.add_child(_mastery_detail_bubble)
 
 	_mastery_detail_title = Label.new()
@@ -811,7 +814,7 @@ func _ensure_mastery_detail_bubble() -> void:
 
 	_mastery_detail_modifiers = Label.new()
 	_mastery_detail_modifiers.name = "MasteryDetailModifiers"
-	_mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 	_mastery_detail_bubble.add_child(_mastery_detail_modifiers)
 
 	_apply_mastery_detail_popover_chrome()
@@ -828,14 +831,14 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
 	_apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
-	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
-	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
-	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
-	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 
 
 func _show_mastery_detail(orb_id: int, anchor_card: Control = null) -> void:
@@ -1009,7 +1012,7 @@ func _mastery_source_key(source_type: String, source_id: String) -> String:
 func _add_mastery_source_highlight(slot: Control, slot_size: Vector2) -> void:
 	var highlight := Panel.new()
 	highlight.name = "MasterySourceHighlight"
-	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	highlight.position = Vector2.ZERO
 	highlight.size = slot_size
 	highlight.custom_minimum_size = slot_size
@@ -1077,9 +1080,10 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 
 		var icon := TextureRect.new()
 		icon.name = "RelicIcon"
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		icon.position = Vector2((RELIC_SLOT_SIZE.x - RELIC_ICON_SIZE.x) * 0.5, (RELIC_SLOT_SIZE.y - RELIC_ICON_SIZE.y) * 0.5)
 		icon.size = RELIC_ICON_SIZE
 		icon.custom_minimum_size = RELIC_ICON_SIZE
@@ -1412,8 +1416,8 @@ func _apply_progressbar_flat_style(bar: ProgressBar, fill_color: Color) -> void:
 func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
 	if label == null:
 		return
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_constant_override("outline_size", 2)
@@ -1444,7 +1448,7 @@ func _ensure_intent_damage_preview_nodes() -> void:
 			_player_armor_overshield_rect = ColorRect.new()
 			_player_armor_overshield_rect.name = "PlayerArmorOvershieldFill"
 			_player_armor_overshield_rect.color = Color(0.86, 0.90, 0.94, 0.46)
-			_player_armor_overshield_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_player_armor_overshield_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 			_player_armor_overshield_rect.visible = false
 		if _player_armor_overshield_rect.get_parent() != hp_bar:
 			var existing_overshield_parent := _player_armor_overshield_rect.get_parent()
@@ -1455,10 +1459,10 @@ func _ensure_intent_damage_preview_nodes() -> void:
 			_intent_hp_danger_button = Button.new()
 			_intent_hp_danger_button.name = "HpDangerPreviewButton"
 			_intent_hp_danger_button.text = ""
-			_intent_hp_danger_button.focus_mode = Control.FOCUS_NONE
+			_intent_hp_danger_button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 			_intent_hp_danger_button.visible = false
-			_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			_intent_hp_danger_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+			_intent_hp_danger_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
 			var clear_style := StyleBoxEmpty.new()
 			_intent_hp_danger_button.add_theme_stylebox_override("normal", clear_style)
 			_intent_hp_danger_button.add_theme_stylebox_override("hover", clear_style)
@@ -1475,7 +1479,7 @@ func _ensure_intent_damage_preview_nodes() -> void:
 			_intent_hp_danger_empty = ColorRect.new()
 			_intent_hp_danger_empty.name = "HpDangerPreviewEmpty"
 			_intent_hp_danger_empty.color = Color(0.04, 0.07, 0.10, 1.0)
-			_intent_hp_danger_empty.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_hp_danger_empty.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 			_intent_hp_danger_empty.visible = false
 		if _intent_hp_danger_empty.get_parent() != _intent_hp_danger_button:
 			var existing_empty_parent := _intent_hp_danger_empty.get_parent()
@@ -1486,7 +1490,7 @@ func _ensure_intent_damage_preview_nodes() -> void:
 			_intent_hp_danger_fill = ColorRect.new()
 			_intent_hp_danger_fill.name = "HpDangerPreviewFill"
 			_intent_hp_danger_fill.color = Color(1.0, 0.02, 0.02, 1.0)
-			_intent_hp_danger_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_hp_danger_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 			_intent_hp_danger_fill.visible = false
 		if _intent_hp_danger_fill.get_parent() != _intent_hp_danger_button:
 			var existing_fill_parent := _intent_hp_danger_fill.get_parent()
@@ -1499,7 +1503,7 @@ func _ensure_intent_damage_preview_nodes() -> void:
 			_intent_armor_risk_rect = ColorRect.new()
 			_intent_armor_risk_rect.name = "PlayerBlockIntentPreviewFill"
 			_intent_armor_risk_rect.color = Color(0.86, 0.90, 0.94, 0.68)
-			_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 			_intent_armor_risk_rect.visible = false
 			_intent_armor_risk_rect.mouse_entered.connect(_on_intent_block_preview_hovered)
 			_intent_armor_risk_rect.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
@@ -1535,7 +1539,7 @@ func _layout_player_armor_overshield(armor: int) -> void:
 func _layout_intent_damage_preview() -> void:
 	if _intent_hp_danger_button != null and is_instance_valid(_intent_hp_danger_button):
 		_intent_hp_danger_button.visible = false
-		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
 		_intent_hp_danger_fill.visible = false
 	if _intent_hp_danger_empty != null and is_instance_valid(_intent_hp_danger_empty):
@@ -1571,7 +1575,7 @@ func _layout_intent_damage_preview() -> void:
 		_intent_hp_danger_button.position = Vector2(segment_x, 0.0)
 		_intent_hp_danger_button.size = Vector2(segment_width, bar_height)
 		_intent_hp_danger_button.visible = true
-		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 		_intent_hp_danger_empty.visible = true
 		_intent_hp_danger_empty.position = Vector2.ZERO
 		_intent_hp_danger_empty.size = _intent_hp_danger_button.size
@@ -1600,7 +1604,7 @@ func _layout_player_block_intent_preview(blocked: int) -> void:
 	_intent_armor_risk_rect.visible = true
 	_intent_armor_risk_rect.position = Vector2.ZERO
 	_intent_armor_risk_rect.size = Vector2(preview_width, hp_bar.size.y)
-	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 	_start_player_block_intent_preview_pulse()
 
 
@@ -1627,7 +1631,7 @@ func _set_armor_risk_highlight(enabled: bool) -> void:
 	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
 		return
 	_intent_armor_risk_rect.visible = enabled
-	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+	_intent_armor_risk_rect.mouse_filter = (Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE) as Control.MouseFilter
 	if enabled:
 		_start_player_block_intent_preview_pulse()
 		return
@@ -1671,7 +1675,7 @@ func _make_slot(index: int, filled: bool, slot_label: String, selectable_label: 
 		button.text = ""
 		button.size = SLOT_SIZE
 		button.custom_minimum_size = SLOT_SIZE
-		button.focus_mode = Control.FOCUS_NONE
+		button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 		button.disabled = not filled
 		var selected := false
 		if slot_label == "equipment":
@@ -1736,15 +1740,15 @@ func _make_badge_label(text: String, slot_size: Vector2) -> Label:
 	var amount_label := Label.new()
 	amount_label.name = "SlotBadge"
 	amount_label.text = text
-	amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
+	amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM as VerticalAlignment
 	amount_label.add_theme_font_size_override("font_size", 21)
 	amount_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.34, 1.0))
 	amount_label.add_theme_constant_override("outline_size", 3)
 	amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
 	amount_label.position = Vector2.ZERO
 	amount_label.size = slot_size
-	amount_label.anchors_preset = Control.PRESET_FULL_RECT
+	amount_label.anchors_preset = Control.PRESET_FULL_RECT as Control.LayoutPreset
 	return amount_label
 
 
@@ -1760,7 +1764,7 @@ func _ensure_slot_detail_popover() -> void:
 	_slot_detail_bubble.name = "SlotDetailBubble"
 	_slot_detail_bubble.visible = false
 	_slot_detail_bubble.z_index = int(_hud_nodes.get("popover_z_index", 210))
-	_slot_detail_bubble.mouse_filter = Control.MOUSE_FILTER_STOP
+	_slot_detail_bubble.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 	parent.add_child(_slot_detail_bubble)
 
 	_slot_detail_title = Label.new()
@@ -1770,8 +1774,8 @@ func _ensure_slot_detail_popover() -> void:
 
 	_slot_detail_description = Label.new()
 	_slot_detail_description.name = "SlotDetailDescription"
-	_slot_detail_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_slot_detail_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	_slot_detail_description.clip_text = true
 	_slot_detail_bubble.add_child(_slot_detail_description)
 
@@ -1793,10 +1797,10 @@ func _apply_slot_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 	_apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
-	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
-	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	_slot_detail_sell_button.add_theme_font_size_override("font_size", 26)
 	_slot_detail_sell_button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78, 1.0))
 	var normal := _button_stylebox(Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0))

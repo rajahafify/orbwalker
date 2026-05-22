@@ -85,7 +85,7 @@ func configure_ui_nodes(host: Control) -> void:
 	_outer_border_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	_outer_border_texture.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 	_menu_button_column.alignment = BoxContainer.ALIGNMENT_CENTER
-	_generate_log_toggle.visible = false
+	_generate_log_toggle.visible = true
 	_element_row.visible = false
 
 	for icon_node in _element_icons:
@@ -231,7 +231,7 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_footer_actions.add_theme_constant_override("separation", int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))))
 
 	var menu_button_min_height := int(round(viewport_size.y * 0.052))
-	for button in [_start_run_button, _continue_button, _collection_button, _settings_button, _quit_button]:
+	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
 		button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)

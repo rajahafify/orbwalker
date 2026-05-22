@@ -10,11 +10,11 @@ class_name BoardView
 @export var orb_scale_in_cell: float = 0.74
 @export var selected_cell_color: Color = Color("#f7f2a6")
 @export var path_cell_color: Color = Color("#cfd7ff")
-@export var match_flash_color: Color = Color(1.0, 1.0, 1.0, 0.16)
-@export var glow_halo_scale: float = 1.42
-@export var glow_halo_alpha: float = 0.30
-@export var glow_core_alpha: float = 0.20
-@export var glow_core_brightness_add: float = 0.30
+@export var match_flash_color: Color = Color(1.0, 0.94, 0.48, 0.04)
+@export var glow_halo_scale: float = 1.22
+@export var glow_halo_alpha: float = 0.24
+@export var matched_orb_glow_scale: float = 1.12
+@export var matched_orb_glow_alpha: float = 0.42
 
 var selected_cell: Vector2i = Vector2i(-1, -1):
 	set(value):
@@ -53,6 +53,7 @@ var _suppressed_cells: Dictionary = {}
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 	resized.connect(queue_redraw)
 	set_process(true)
 
@@ -106,12 +107,38 @@ func _draw() -> void:
 			if cell_frame_texture != null:
 				draw_texture_rect(cell_frame_texture, rect, false, cell_frame_tint)
 
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			var pos := board_rect.position + Vector2(
+				column * (cell_size + cell_spacing),
+				row * (cell_size + cell_spacing)
+			)
+			var rect := Rect2(pos, Vector2(cell_size, cell_size))
 			var orb_id := board_model.get_cell(column, row)
 			var cell_index: int = _cell_index(column, row)
 			var is_selected_cell := selected_cell == Vector2i(column, row) and drag_orb_id >= 0
 			var is_suppressed: bool = _suppressed_cells.has(cell_index)
+			var is_glowing := _glow_cells.has(cell_index)
+			if is_glowing and not is_selected_cell and not is_suppressed and OrbType.is_valid_id(orb_id):
+				var base_glow_color := OrbType.color(orb_id)
+				var halo_color := base_glow_color
+				halo_color.a = glow_halo_alpha
+				draw_circle(rect.get_center(), cell_radius * glow_halo_scale, halo_color)
+
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			var pos := board_rect.position + Vector2(
+				column * (cell_size + cell_spacing),
+				row * (cell_size + cell_spacing)
+			)
+			var rect := Rect2(pos, Vector2(cell_size, cell_size))
+			var orb_id := board_model.get_cell(column, row)
+			var cell_index: int = _cell_index(column, row)
+			var is_selected_cell := selected_cell == Vector2i(column, row) and drag_orb_id >= 0
+			var is_suppressed: bool = _suppressed_cells.has(cell_index)
+			var is_glowing := _glow_cells.has(cell_index)
 			if not is_selected_cell and not is_suppressed and OrbType.is_valid_id(orb_id):
-				_draw_orb_sprite(rect.get_center(), cell_radius, orb_id)
+				_draw_orb_sprite(rect.get_center(), cell_radius, orb_id, 1.0, is_glowing)
 
 			if selected_cell == Vector2i(column, row):
 				draw_rect(rect.grow(-2.0), selected_cell_color, false, 2.0)
@@ -120,21 +147,6 @@ func _draw() -> void:
 
 			if _flash_cells.has(cell_index):
 				draw_rect(rect.grow(-4.0), match_flash_color)
-
-			if _glow_cells.has(cell_index):
-				# Shiny orb-specific glow: soft colored halo + brighter core tint.
-				var base_glow_color := OrbType.color(orb_id)
-				var halo_color := base_glow_color
-				halo_color.a = glow_halo_alpha
-				draw_circle(rect.get_center(), cell_radius * glow_halo_scale, halo_color)
-
-				var core_glow_color := Color(
-					clampf(base_glow_color.r + glow_core_brightness_add, 0.0, 1.0),
-					clampf(base_glow_color.g + glow_core_brightness_add, 0.0, 1.0),
-					clampf(base_glow_color.b + glow_core_brightness_add, 0.0, 1.0),
-					glow_core_alpha
-				)
-				draw_circle(rect.get_center(), cell_radius * 1.02, core_glow_color)
 
 	for overlay in _overlay_orbs:
 		var duration: float = maxf(0.001, float(overlay.duration))
@@ -152,10 +164,10 @@ func _draw() -> void:
 		var orb_id: int = int(overlay.orb_id)
 		if not OrbType.is_valid_id(orb_id):
 			continue
-		_draw_orb_sprite(orb_pos, cell_radius * orb_scale, orb_id, alpha)
+		_draw_orb_sprite(orb_pos, cell_radius * orb_scale, orb_id, alpha, false)
 
 	if drag_orb_id >= 0:
-		_draw_orb_sprite(drag_pointer_position, cell_radius, drag_orb_id)
+		_draw_orb_sprite(drag_pointer_position, cell_radius, drag_orb_id, 1.0, false)
 
 
 func clear_animations() -> void:
@@ -422,7 +434,7 @@ func set_orb_texture_map(texture_map: Dictionary) -> void:
 	queue_redraw()
 
 
-func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float = 1.0) -> void:
+func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float = 1.0, glowing: bool = false) -> void:
 	var texture: Texture2D = orb_texture_map.get(orb_id, null)
 	if texture == null:
 		var orb_color := OrbType.color(orb_id)
@@ -432,7 +444,21 @@ func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float 
 
 	var sprite_size := Vector2(radius * 2.0, radius * 2.0)
 	var rect := Rect2(center - sprite_size * 0.5, sprite_size)
-	draw_texture_rect(texture, rect, false, Color(1.0, 1.0, 1.0, alpha))
+	if glowing:
+		var outer_glow_size := sprite_size * (matched_orb_glow_scale + 0.18)
+		var outer_glow_rect := Rect2(center - outer_glow_size * 0.5, outer_glow_size)
+		var outer_glow_color := OrbType.color(orb_id).lightened(0.65)
+		outer_glow_color.a = matched_orb_glow_alpha * 0.34 * alpha
+		draw_texture_rect(texture, outer_glow_rect, false, outer_glow_color)
+
+		var glow_size := sprite_size * matched_orb_glow_scale
+		var glow_rect := Rect2(center - glow_size * 0.5, glow_size)
+		var glow_color := OrbType.color(orb_id).lightened(0.45)
+		glow_color.a = matched_orb_glow_alpha * alpha
+		draw_texture_rect(texture, glow_rect, false, glow_color)
+		draw_texture_rect(texture, rect, false, Color(1.16, 1.13, 1.06, alpha))
+	else:
+		draw_texture_rect(texture, rect, false, Color(1.04, 1.03, 1.01, alpha))
 
 
 func _add_overlay_orb(

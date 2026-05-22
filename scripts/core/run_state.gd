@@ -322,7 +322,7 @@ func run_contract_snapshot() -> Dictionary:
 			"run_log_snapshot",
 			"run_log_export_json",
 			"run_log_export_text",
-			"run_log_export_markdown",
+			"run_log_export_html",
 			"run_log_last_export_snapshot",
 			"run_log_last_export_paths",
 			"log_turn_result",
@@ -1080,8 +1080,8 @@ func run_log_export_text() -> String:
 	return _ensure_run_logger().run_log_export_text()
 
 
-func run_log_export_markdown() -> String:
-	return _ensure_run_logger().run_log_export_markdown()
+func run_log_export_html() -> String:
+	return _ensure_run_logger().run_log_export_html()
 
 
 func run_log_last_export_snapshot() -> Dictionary:

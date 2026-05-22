@@ -1,0 +1,2558 @@
+{
+  "categories": {
+    "consumables": {
+      "consumable_armor_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5013,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_armor_scroll.png",
+        "sha256": "904e9d95810647d6bf2478bc673bf5c7ee63222a5fb9a2505f3d6c6b09444e7c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 4
+      },
+      "consumable_earth_scroll": {
+        "alpha_bbox": [
+          48,
+          14,
+          335,
+          370
+        ],
+        "coverage": 0.5113,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_earth_scroll.png",
+        "sha256": "a97e37b7f3234d6be9fb7587d56c0892f7cc7bcefe9d055bb009913b654c88b8",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 2
+      },
+      "consumable_fire_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5031,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_fire_scroll.png",
+        "sha256": "87d389e191a3cb8f274631fd147da37a289ef5c2f5d83f3efd245ba6a73fb411",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 0
+      },
+      "consumable_gold_scroll": {
+        "alpha_bbox": [
+          46,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5077,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_gold_scroll.png",
+        "sha256": "7d1552b863d26a0f266feb346327a2196240ae9dd3d379791e3ce96eddfe824e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 5
+      },
+      "consumable_heart_scroll": {
+        "alpha_bbox": [
+          63,
+          14,
+          320,
+          370
+        ],
+        "coverage": 0.4931,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_heart_scroll.png",
+        "sha256": "6d3b5e75a32ee4876747d1297a3cfa49b384ad902eabcb2e884b22cdc6321901",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 3
+      },
+      "consumable_ice_scroll": {
+        "alpha_bbox": [
+          48,
+          14,
+          336,
+          370
+        ],
+        "coverage": 0.5051,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_ice_scroll.png",
+        "sha256": "bfc835eb9fbbbf766ad6e5d807313291341bdc76fe30708a873f5cd6d2e23e04",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 1
+      },
+      "consumable_reroll_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          336,
+          370
+        ],
+        "coverage": 0.5063,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_reroll_scroll.png",
+        "sha256": "afda132d00451c20005bbbdac960924c0d56dbb08f497534a4e95c1a2c052c70",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 6
+      },
+      "consumable_speed_scroll": {
+        "alpha_bbox": [
+          58,
+          14,
+          325,
+          370
+        ],
+        "coverage": 0.4991,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_speed_scroll.png",
+        "sha256": "8cc5df8d5234cf85e46453feed6bee695703352cb4c38f94ef9ab326d85635b6",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 7
+      }
+    },
+    "enemies": {
+      "boss_burning_knight": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_burning_knight.png",
+        "sha256": "3e151dc155f2642838856266468275215971c925adfabd7d6a525a4a411df345",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
+        "source_index": 0
+      },
+      "boss_iron_gate": {
+        "alpha_bbox": [
+          8,
+          54,
+          376,
+          330
+        ],
+        "coverage": 0.6888,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_iron_gate.png",
+        "sha256": "186e8164fd02680a1ccb29ddd1350cef9ae63f1b0d58c483e7264ee367419d00",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
+        "source_index": 0
+      },
+      "boss_prism_warden": {
+        "alpha_bbox": [
+          8,
+          54,
+          376,
+          330
+        ],
+        "coverage": 0.6888,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_prism_warden.png",
+        "sha256": "983df254de156c81f4dec90255b161a3cd2adbde69c3cbb7e88cb92428256278",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_prism_warden.png",
+        "source_index": 0
+      },
+      "enemy_ash_hunter": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_ash_hunter.png",
+        "sha256": "8976efc64a67fe23a1b6126e6f2da65cd977b002b55aa283e084604fcf8e6b04",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+        "source_index": 0
+      },
+      "enemy_cavern_defender": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png",
+        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+        "source_index": 0
+      },
+      "enemy_cavern_striker": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png",
+        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+        "source_index": 0
+      },
+      "enemy_charger": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_charger.png",
+        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+        "source_index": 0
+      },
+      "enemy_defender": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_defender.png",
+        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+        "source_index": 0
+      },
+      "enemy_goldbound_keeper": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_goldbound_keeper.png",
+        "sha256": "dc7b3ffe9455ec731d53c92b3047b5b67acbcf68145ef944b8d34fc887cfefcd",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+        "source_index": 0
+      },
+      "enemy_ruin_lancer": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_ruin_lancer.png",
+        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+        "source_index": 0
+      },
+      "enemy_striker": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_striker.png",
+        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+        "source_index": 0
+      },
+      "enemy_vault_executioner": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_vault_executioner.png",
+        "sha256": "4ffa358fd413a43096aa2dac8ed2ac0ab2a16c7718e06219687bf8669c89121a",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+        "source_index": 0
+      }
+    },
+    "equipment": {
+      "equipment_battle_drum": {
+        "alpha_bbox": [
+          80,
+          73,
+          303,
+          310
+        ],
+        "coverage": 0.2894,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_battle_drum.png",
+        "sha256": "a80ad1b9a08462786142238d5b9669ebba0da0de0fafb048b40761e2a8874db3",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 14
+      },
+      "equipment_buckler": {
+        "alpha_bbox": [
+          84,
+          76,
+          300,
+          308
+        ],
+        "coverage": 0.2663,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler.png",
+        "sha256": "e767bf89cb489d18553c59770b545ff9055becbd97f3a89f4fd2da0bc2d5b2a2",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 1
+      },
+      "equipment_champion_plate": {
+        "alpha_bbox": [
+          63,
+          70,
+          321,
+          313
+        ],
+        "coverage": 0.2908,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_champion_plate.png",
+        "sha256": "56463541d4d28f2ab8f55ec5a1d3a5674584bd1efa0e9072d2def42c8d815811",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 11
+      },
+      "equipment_coin_purse": {
+        "alpha_bbox": [
+          84,
+          75,
+          299,
+          308
+        ],
+        "coverage": 0.2506,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse.png",
+        "sha256": "ad955c710774e7d6e3fdeaa3ce11c55ffb1eb0340230d9c8c55537d95a222eaa",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 2
+      },
+      "equipment_ember_ring": {
+        "alpha_bbox": [
+          111,
+          67,
+          273,
+          317
+        ],
+        "coverage": 0.1673,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ember_ring.png",
+        "sha256": "c0a8fd118826a543870a2c0e79039890f63011f90a8a7a1b06dd97e09e330488",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 8
+      },
+      "equipment_healing_charm": {
+        "alpha_bbox": [
+          114,
+          70,
+          269,
+          314
+        ],
+        "coverage": 0.156,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
+        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 3
+      },
+      "equipment_leather_gloves": {
+        "alpha_bbox": [
+          82,
+          80,
+          301,
+          304
+        ],
+        "coverage": 0.2508,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves.png",
+        "sha256": "ff2708cdc56dde52a1afc92c6054d200df8cd088da520975d3fe68dfc5b8ebe5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 4
+      },
+      "equipment_merchant_scales": {
+        "alpha_bbox": [
+          67,
+          69,
+          316,
+          314
+        ],
+        "coverage": 0.2097,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_merchant_scales.png",
+        "sha256": "90d37e6dc9092ea85037fbbfab879aaa5caf78a01f7e248546cbf2a30d85e8b9",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 7
+      },
+      "equipment_mirror_charm": {
+        "alpha_bbox": [
+          106,
+          72,
+          277,
+          312
+        ],
+        "coverage": 0.1791,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_mirror_charm.png",
+        "sha256": "b3a2d015689964fd0beed225fa9ccafb7f8f5086a1de49cf2eef0e1488c10f87",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 13
+      },
+      "equipment_royal_seal": {
+        "alpha_bbox": [
+          82,
+          63,
+          301,
+          320
+        ],
+        "coverage": 0.2564,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_royal_seal.png",
+        "sha256": "f6b54f13551016cdd5c4b438bc4a42fdd1fa15a32838e255eca37812ba231127",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 12
+      },
+      "equipment_ruby_brooch": {
+        "alpha_bbox": [
+          90,
+          70,
+          293,
+          314
+        ],
+        "coverage": 0.1753,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ruby_brooch.png",
+        "sha256": "cd0c5bfc0d0c76f42f8f116c0e1bbfc93beee120fba996f7717e3bed65e2260b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 10
+      },
+      "equipment_shortsword": {
+        "alpha_bbox": [
+          87,
+          68,
+          297,
+          316
+        ],
+        "coverage": 0.1053,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword.png",
+        "sha256": "0b4fda1e66dd8bd437e358e1d5e09c658e849b50514f070058f70239d7173704",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 0
+      },
+      "equipment_tower_shield": {
+        "alpha_bbox": [
+          96,
+          67,
+          288,
+          316
+        ],
+        "coverage": 0.2242,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_tower_shield.png",
+        "sha256": "64bb3c4a55ef1be4358b5e15bd0f2f862444ae9ec14cf84f31ac6ef790e710a9",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 6
+      },
+      "equipment_twin_blades": {
+        "alpha_bbox": [
+          89,
+          74,
+          295,
+          309
+        ],
+        "coverage": 0.1564,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_twin_blades.png",
+        "sha256": "c22dfbec710d420e1e555a204f84e686d0b18906df94e4951c392961e520a810",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 5
+      },
+      "equipment_war_banner": {
+        "alpha_bbox": [
+          89,
+          52,
+          295,
+          331
+        ],
+        "coverage": 0.2346,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_war_banner.png",
+        "sha256": "48a2984ef661f2304b8c58428d158cab57a0376c793a0069b08d48c0e55b22d6",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 9
+      }
+    },
+    "heroes": {
+      "hero_orbwalker": {
+        "alpha_bbox": [
+          10,
+          11,
+          502,
+          500
+        ],
+        "background_removed": "edge_connected_bright_neutral",
+        "coverage": 0.5889,
+        "path": "res://resources/art/assetgen/runtime/heroes/hero_orbwalker.png",
+        "sha256": "8f20e69d811517f37ffacb06ed60794342a4393d2d9973dc5f60b343f01353aa",
+        "size": [
+          512,
+          512
+        ],
+        "source": "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png",
+        "source_index": 0
+      }
+    },
+    "icons": {
+      "armor": {
+        "alpha_bbox": [
+          14,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6944,
+        "path": "res://resources/art/assetgen/runtime/orbs/armor.png",
+        "ring_grade": "armor",
+        "sha256": "cc9fab415ba043e81bc75d620e9c4a98bc9bf17e7b07769999d3fde50ac0a853",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
+      },
+      "boss_burning_knight": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_burning_knight.png",
+        "sha256": "3e151dc155f2642838856266468275215971c925adfabd7d6a525a4a411df345",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
+        "source_index": 0
+      },
+      "boss_iron_gate": {
+        "alpha_bbox": [
+          8,
+          54,
+          376,
+          330
+        ],
+        "coverage": 0.6888,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_iron_gate.png",
+        "sha256": "186e8164fd02680a1ccb29ddd1350cef9ae63f1b0d58c483e7264ee367419d00",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
+        "source_index": 0
+      },
+      "boss_prism_warden": {
+        "alpha_bbox": [
+          8,
+          54,
+          376,
+          330
+        ],
+        "coverage": 0.6888,
+        "path": "res://resources/art/assetgen/runtime/enemies/boss_prism_warden.png",
+        "sha256": "983df254de156c81f4dec90255b161a3cd2adbde69c3cbb7e88cb92428256278",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/boss_prism_warden.png",
+        "source_index": 0
+      },
+      "consumable_armor_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5013,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_armor_scroll.png",
+        "sha256": "904e9d95810647d6bf2478bc673bf5c7ee63222a5fb9a2505f3d6c6b09444e7c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 4
+      },
+      "consumable_earth_scroll": {
+        "alpha_bbox": [
+          48,
+          14,
+          335,
+          370
+        ],
+        "coverage": 0.5113,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_earth_scroll.png",
+        "sha256": "a97e37b7f3234d6be9fb7587d56c0892f7cc7bcefe9d055bb009913b654c88b8",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 2
+      },
+      "consumable_fire_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5031,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_fire_scroll.png",
+        "sha256": "87d389e191a3cb8f274631fd147da37a289ef5c2f5d83f3efd245ba6a73fb411",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 0
+      },
+      "consumable_gold_scroll": {
+        "alpha_bbox": [
+          46,
+          14,
+          337,
+          370
+        ],
+        "coverage": 0.5077,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_gold_scroll.png",
+        "sha256": "7d1552b863d26a0f266feb346327a2196240ae9dd3d379791e3ce96eddfe824e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 5
+      },
+      "consumable_heart_scroll": {
+        "alpha_bbox": [
+          63,
+          14,
+          320,
+          370
+        ],
+        "coverage": 0.4931,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_heart_scroll.png",
+        "sha256": "6d3b5e75a32ee4876747d1297a3cfa49b384ad902eabcb2e884b22cdc6321901",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 3
+      },
+      "consumable_ice_scroll": {
+        "alpha_bbox": [
+          48,
+          14,
+          336,
+          370
+        ],
+        "coverage": 0.5051,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_ice_scroll.png",
+        "sha256": "bfc835eb9fbbbf766ad6e5d807313291341bdc76fe30708a873f5cd6d2e23e04",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 1
+      },
+      "consumable_reroll_scroll": {
+        "alpha_bbox": [
+          47,
+          14,
+          336,
+          370
+        ],
+        "coverage": 0.5063,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_reroll_scroll.png",
+        "sha256": "afda132d00451c20005bbbdac960924c0d56dbb08f497534a4e95c1a2c052c70",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 6
+      },
+      "consumable_speed_scroll": {
+        "alpha_bbox": [
+          58,
+          14,
+          325,
+          370
+        ],
+        "coverage": 0.4991,
+        "path": "res://resources/art/assetgen/runtime/consumables/consumable_speed_scroll.png",
+        "sha256": "8cc5df8d5234cf85e46453feed6bee695703352cb4c38f94ef9ab326d85635b6",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          4,
+          2
+        ],
+        "source_index": 7
+      },
+      "earth": {
+        "alpha_bbox": [
+          13,
+          10,
+          371,
+          374
+        ],
+        "coverage": 0.7007,
+        "path": "res://resources/art/assetgen/runtime/orbs/earth.png",
+        "sha256": "74052fc67ef8bf645d7cc49c23127a5fd6bebb48e46b999a4a0b77896f5d5fdb",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 2
+      },
+      "enemy_ash_hunter": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_ash_hunter.png",
+        "sha256": "8976efc64a67fe23a1b6126e6f2da65cd977b002b55aa283e084604fcf8e6b04",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
+        "source_index": 0
+      },
+      "enemy_cavern_defender": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png",
+        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+        "source_index": 0
+      },
+      "enemy_cavern_striker": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png",
+        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+        "source_index": 0
+      },
+      "enemy_charger": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_charger.png",
+        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+        "source_index": 0
+      },
+      "enemy_defender": {
+        "alpha_bbox": [
+          69,
+          8,
+          314,
+          376
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_defender.png",
+        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
+        "source_index": 0
+      },
+      "enemy_goldbound_keeper": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_goldbound_keeper.png",
+        "sha256": "dc7b3ffe9455ec731d53c92b3047b5b67acbcf68145ef944b8d34fc887cfefcd",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+        "source_index": 0
+      },
+      "enemy_ruin_lancer": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_ruin_lancer.png",
+        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
+        "source_index": 0
+      },
+      "enemy_striker": {
+        "alpha_bbox": [
+          8,
+          69,
+          376,
+          314
+        ],
+        "coverage": 0.6114,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_striker.png",
+        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
+        "source_index": 0
+      },
+      "enemy_vault_executioner": {
+        "alpha_bbox": [
+          62,
+          77,
+          322,
+          307
+        ],
+        "coverage": 0.4055,
+        "path": "res://resources/art/assetgen/runtime/enemies/enemy_vault_executioner.png",
+        "sha256": "4ffa358fd413a43096aa2dac8ed2ac0ab2a16c7718e06219687bf8669c89121a",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
+        "source_index": 0
+      },
+      "equipment_alchemist_gloves": {
+        "alias_of": "equipment_leather_gloves",
+        "alpha_bbox": [
+          82,
+          80,
+          301,
+          304
+        ],
+        "coverage": 0.2508,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves.png",
+        "sha256": "ff2708cdc56dde52a1afc92c6054d200df8cd088da520975d3fe68dfc5b8ebe5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 4
+      },
+      "equipment_battle_drum": {
+        "alpha_bbox": [
+          80,
+          73,
+          303,
+          310
+        ],
+        "coverage": 0.2894,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_battle_drum.png",
+        "sha256": "a80ad1b9a08462786142238d5b9669ebba0da0de0fafb048b40761e2a8874db3",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 14
+      },
+      "equipment_buckler": {
+        "alpha_bbox": [
+          84,
+          76,
+          300,
+          308
+        ],
+        "coverage": 0.2663,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler.png",
+        "sha256": "e767bf89cb489d18553c59770b545ff9055becbd97f3a89f4fd2da0bc2d5b2a2",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 1
+      },
+      "equipment_champion_plate": {
+        "alpha_bbox": [
+          63,
+          70,
+          321,
+          313
+        ],
+        "coverage": 0.2908,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_champion_plate.png",
+        "sha256": "56463541d4d28f2ab8f55ec5a1d3a5674584bd1efa0e9072d2def42c8d815811",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 11
+      },
+      "equipment_coin_purse": {
+        "alpha_bbox": [
+          84,
+          75,
+          299,
+          308
+        ],
+        "coverage": 0.2506,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse.png",
+        "sha256": "ad955c710774e7d6e3fdeaa3ce11c55ffb1eb0340230d9c8c55537d95a222eaa",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 2
+      },
+      "equipment_combo_lens": {
+        "alias_of": "equipment_merchant_scales",
+        "alpha_bbox": [
+          67,
+          69,
+          316,
+          314
+        ],
+        "coverage": 0.2097,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_merchant_scales.png",
+        "sha256": "90d37e6dc9092ea85037fbbfab879aaa5caf78a01f7e248546cbf2a30d85e8b9",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 7
+      },
+      "equipment_earthbreaker_maul": {
+        "alias_of": "equipment_shortsword",
+        "alpha_bbox": [
+          87,
+          68,
+          297,
+          316
+        ],
+        "coverage": 0.1053,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword.png",
+        "sha256": "0b4fda1e66dd8bd437e358e1d5e09c658e849b50514f070058f70239d7173704",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 0
+      },
+      "equipment_ember_ring": {
+        "alpha_bbox": [
+          111,
+          67,
+          273,
+          317
+        ],
+        "coverage": 0.1673,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ember_ring.png",
+        "sha256": "c0a8fd118826a543870a2c0e79039890f63011f90a8a7a1b06dd97e09e330488",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 8
+      },
+      "equipment_emerald_brooch": {
+        "alias_of": "equipment_ruby_brooch",
+        "alpha_bbox": [
+          90,
+          70,
+          293,
+          314
+        ],
+        "coverage": 0.1753,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ruby_brooch.png",
+        "sha256": "cd0c5bfc0d0c76f42f8f116c0e1bbfc93beee120fba996f7717e3bed65e2260b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 10
+      },
+      "equipment_frost_ring": {
+        "alias_of": "equipment_ember_ring",
+        "alpha_bbox": [
+          111,
+          67,
+          273,
+          317
+        ],
+        "coverage": 0.1673,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ember_ring.png",
+        "sha256": "c0a8fd118826a543870a2c0e79039890f63011f90a8a7a1b06dd97e09e330488",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 8
+      },
+      "equipment_healing_charm": {
+        "alpha_bbox": [
+          114,
+          70,
+          269,
+          314
+        ],
+        "coverage": 0.156,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
+        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 3
+      },
+      "equipment_hearth_amulet": {
+        "alias_of": "equipment_healing_charm",
+        "alpha_bbox": [
+          114,
+          70,
+          269,
+          314
+        ],
+        "coverage": 0.156,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
+        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 3
+      },
+      "equipment_leather_gloves": {
+        "alpha_bbox": [
+          82,
+          80,
+          301,
+          304
+        ],
+        "coverage": 0.2508,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves.png",
+        "sha256": "ff2708cdc56dde52a1afc92c6054d200df8cd088da520975d3fe68dfc5b8ebe5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 4
+      },
+      "equipment_merchant_scales": {
+        "alpha_bbox": [
+          67,
+          69,
+          316,
+          314
+        ],
+        "coverage": 0.2097,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_merchant_scales.png",
+        "sha256": "90d37e6dc9092ea85037fbbfab879aaa5caf78a01f7e248546cbf2a30d85e8b9",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 7
+      },
+      "equipment_mirror_charm": {
+        "alpha_bbox": [
+          106,
+          72,
+          277,
+          312
+        ],
+        "coverage": 0.1791,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_mirror_charm.png",
+        "sha256": "b3a2d015689964fd0beed225fa9ccafb7f8f5086a1de49cf2eef0e1488c10f87",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 13
+      },
+      "equipment_royal_seal": {
+        "alpha_bbox": [
+          82,
+          63,
+          301,
+          320
+        ],
+        "coverage": 0.2564,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_royal_seal.png",
+        "sha256": "f6b54f13551016cdd5c4b438bc4a42fdd1fa15a32838e255eca37812ba231127",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 12
+      },
+      "equipment_ruby_brooch": {
+        "alpha_bbox": [
+          90,
+          70,
+          293,
+          314
+        ],
+        "coverage": 0.1753,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ruby_brooch.png",
+        "sha256": "cd0c5bfc0d0c76f42f8f116c0e1bbfc93beee120fba996f7717e3bed65e2260b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 10
+      },
+      "equipment_sapphire_brooch": {
+        "alias_of": "equipment_ruby_brooch",
+        "alpha_bbox": [
+          90,
+          70,
+          293,
+          314
+        ],
+        "coverage": 0.1753,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_ruby_brooch.png",
+        "sha256": "cd0c5bfc0d0c76f42f8f116c0e1bbfc93beee120fba996f7717e3bed65e2260b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 10
+      },
+      "equipment_shortsword": {
+        "alpha_bbox": [
+          87,
+          68,
+          297,
+          316
+        ],
+        "coverage": 0.1053,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword.png",
+        "sha256": "0b4fda1e66dd8bd437e358e1d5e09c658e849b50514f070058f70239d7173704",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 0
+      },
+      "equipment_stone_ring": {
+        "alias_of": "equipment_healing_charm",
+        "alpha_bbox": [
+          114,
+          70,
+          269,
+          314
+        ],
+        "coverage": 0.156,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
+        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 3
+      },
+      "equipment_tower_shield": {
+        "alpha_bbox": [
+          96,
+          67,
+          288,
+          316
+        ],
+        "coverage": 0.2242,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_tower_shield.png",
+        "sha256": "64bb3c4a55ef1be4358b5e15bd0f2f862444ae9ec14cf84f31ac6ef790e710a9",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 6
+      },
+      "equipment_training_manual": {
+        "alias_of": "equipment_royal_seal",
+        "alpha_bbox": [
+          82,
+          63,
+          301,
+          320
+        ],
+        "coverage": 0.2564,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_royal_seal.png",
+        "sha256": "f6b54f13551016cdd5c4b438bc4a42fdd1fa15a32838e255eca37812ba231127",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 12
+      },
+      "equipment_twin_blades": {
+        "alpha_bbox": [
+          89,
+          74,
+          295,
+          309
+        ],
+        "coverage": 0.1564,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_twin_blades.png",
+        "sha256": "c22dfbec710d420e1e555a204f84e686d0b18906df94e4951c392961e520a810",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 5
+      },
+      "equipment_war_banner": {
+        "alpha_bbox": [
+          89,
+          52,
+          295,
+          331
+        ],
+        "coverage": 0.2346,
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_war_banner.png",
+        "sha256": "48a2984ef661f2304b8c58428d158cab57a0376c793a0069b08d48c0e55b22d6",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          3
+        ],
+        "source_index": 9
+      },
+      "fire": {
+        "alpha_bbox": [
+          14,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6949,
+        "path": "res://resources/art/assetgen/runtime/orbs/fire.png",
+        "ring_grade": "fire",
+        "sha256": "bad2030a1608879922c08efd751b88dc24ece22a52216c4ce4658e7c1396c48c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 0
+      },
+      "gold": {
+        "alpha_bbox": [
+          13,
+          10,
+          371,
+          374
+        ],
+        "coverage": 0.6979,
+        "path": "res://resources/art/assetgen/runtime/orbs/gold.png",
+        "sha256": "4ad18ae57227209359923141e4ec4a49ea378759f6a6f56d445d8bc56c6e93ad",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
+      },
+      "heart": {
+        "alpha_bbox": [
+          14,
+          10,
+          369,
+          374
+        ],
+        "coverage": 0.6927,
+        "path": "res://resources/art/assetgen/runtime/orbs/heart.png",
+        "sha256": "8cb36b306ef005f5495b4fa33a9bffdca4df4f0f1d6f96666d9b55d03725940a",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
+      },
+      "ice": {
+        "alpha_bbox": [
+          13,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6968,
+        "path": "res://resources/art/assetgen/runtime/orbs/ice.png",
+        "ring_grade": "ice",
+        "sha256": "00e4dc5b171ba3f0130816ec5bc6eb454535c7050492447be9ff5e23c92a609d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 1
+      },
+      "mastery_armor": {
+        "alpha_bbox": [
+          19,
+          14,
+          365,
+          370
+        ],
+        "coverage": 0.5333,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_armor.png",
+        "sha256": "219be6890ab00569722777e7982e8eef5edd2b0eb3b722c01c72b8e437bf473d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
+      },
+      "mastery_earth": {
+        "alpha_bbox": [
+          38,
+          14,
+          346,
+          370
+        ],
+        "coverage": 0.4885,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_earth.png",
+        "sha256": "f04a5b82bf3937908e9efd563a690e83a2f555b939941f2d9519ff6cf54f68a0",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 2
+      },
+      "mastery_fire": {
+        "alpha_bbox": [
+          34,
+          14,
+          349,
+          370
+        ],
+        "coverage": 0.4702,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_fire.png",
+        "sha256": "4839bea454bdebf5ef95f9f6bbf9034acd081d808524c1e7ecb2ea6a7a19a1c7",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 0
+      },
+      "mastery_gold": {
+        "alpha_bbox": [
+          27,
+          14,
+          357,
+          370
+        ],
+        "coverage": 0.4857,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_gold.png",
+        "sha256": "95fe7129fb38e5b8ac68e4e646ce9c42ad5e4782c1699b59b7d622dd3423f460",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
+      },
+      "mastery_heart": {
+        "alpha_bbox": [
+          39,
+          14,
+          345,
+          370
+        ],
+        "coverage": 0.4858,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_heart.png",
+        "sha256": "8e0ca7950b6422137ec6ace31f3981518dcec395f76513beb7950866620a0120",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
+      },
+      "mastery_ice": {
+        "alpha_bbox": [
+          25,
+          14,
+          359,
+          370
+        ],
+        "coverage": 0.4598,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_ice.png",
+        "sha256": "dff22ad0eb3ebd97d14f8153c155afbad7b56fbbbe042c0f9ff049bfe18a9fc5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 1
+      },
+      "relic_crown_of_chains": {
+        "alpha_bbox": [
+          19,
+          12,
+          365,
+          372
+        ],
+        "coverage": 0.5703,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_crown_of_chains.png",
+        "sha256": "1c4bb9ca4033442cac88a6e5ad0b6cddfd0377eb0d137c8c385643197f704d2d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 2
+      },
+      "relic_deep_pockets": {
+        "alpha_bbox": [
+          46,
+          12,
+          338,
+          372
+        ],
+        "coverage": 0.3798,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_deep_pockets.png",
+        "sha256": "4ce264ed48d05c17e83b4eefbecba01348f569b81391ffc71732ec07e2ef8ec8",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 4
+      },
+      "relic_golden_idol": {
+        "alpha_bbox": [
+          63,
+          12,
+          320,
+          372
+        ],
+        "coverage": 0.4528,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_golden_idol.png",
+        "sha256": "4d574421c831b853baae3ccadfa8126be60a128c89d4eb6bf9d1e546080cda80",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 1
+      },
+      "relic_merchant_compass": {
+        "alpha_bbox": [
+          41,
+          12,
+          343,
+          372
+        ],
+        "coverage": 0.4328,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_merchant_compass.png",
+        "sha256": "ccc4c0fdaecbc1198df47b2d36cf350e24f848473d8068a7c48480ac2301e48d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 3
+      },
+      "relic_stalwart_mantle": {
+        "alpha_bbox": [
+          16,
+          12,
+          367,
+          372
+        ],
+        "coverage": 0.5679,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_stalwart_mantle.png",
+        "sha256": "6eef33422e3f373ac5123fa55534914d4b8c86aea43b74bae01166eda2316ba3",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 0
+      },
+      "treasure_chest_earth": {
+        "alpha_bbox": [
+          10,
+          28,
+          374,
+          355
+        ],
+        "coverage": 0.6402,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_earth.png",
+        "sha256": "31b487c616675dd80eadceabc9304ee72bb084540e9b5e5ca50e59b6d07e349b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 2
+      },
+      "treasure_chest_elemental": {
+        "alpha_bbox": [
+          10,
+          29,
+          374,
+          355
+        ],
+        "coverage": 0.6599,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_elemental.png",
+        "sha256": "298ba94e403f5a3ffad54fcc31dd2fc33ff52a6219f46be6dbc89a3ce4f8e0f5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 0
+      },
+      "treasure_chest_fire": {
+        "alpha_bbox": [
+          10,
+          17,
+          374,
+          367
+        ],
+        "coverage": 0.6472,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_fire.png",
+        "sha256": "04164ed870f794555d6489d1a3e41b5772f85beac5c9f083106dbc55565ddb4d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 1
+      },
+      "treasure_chest_shadow": {
+        "alpha_bbox": [
+          10,
+          36,
+          374,
+          347
+        ],
+        "coverage": 0.6315,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_shadow.png",
+        "sha256": "89742c792c28650d7f3d048089a2966ce759a9c039bb13c446b89e54fe48c006",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 3
+      }
+    },
+    "mastery": {
+      "mastery_armor": {
+        "alpha_bbox": [
+          19,
+          14,
+          365,
+          370
+        ],
+        "coverage": 0.5333,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_armor.png",
+        "sha256": "219be6890ab00569722777e7982e8eef5edd2b0eb3b722c01c72b8e437bf473d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
+      },
+      "mastery_earth": {
+        "alpha_bbox": [
+          38,
+          14,
+          346,
+          370
+        ],
+        "coverage": 0.4885,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_earth.png",
+        "sha256": "f04a5b82bf3937908e9efd563a690e83a2f555b939941f2d9519ff6cf54f68a0",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 2
+      },
+      "mastery_fire": {
+        "alpha_bbox": [
+          34,
+          14,
+          349,
+          370
+        ],
+        "coverage": 0.4702,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_fire.png",
+        "sha256": "4839bea454bdebf5ef95f9f6bbf9034acd081d808524c1e7ecb2ea6a7a19a1c7",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 0
+      },
+      "mastery_gold": {
+        "alpha_bbox": [
+          27,
+          14,
+          357,
+          370
+        ],
+        "coverage": 0.4857,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_gold.png",
+        "sha256": "95fe7129fb38e5b8ac68e4e646ce9c42ad5e4782c1699b59b7d622dd3423f460",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
+      },
+      "mastery_heart": {
+        "alpha_bbox": [
+          39,
+          14,
+          345,
+          370
+        ],
+        "coverage": 0.4858,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_heart.png",
+        "sha256": "8e0ca7950b6422137ec6ace31f3981518dcec395f76513beb7950866620a0120",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
+      },
+      "mastery_ice": {
+        "alpha_bbox": [
+          25,
+          14,
+          359,
+          370
+        ],
+        "coverage": 0.4598,
+        "path": "res://resources/art/assetgen/runtime/mastery/mastery_ice.png",
+        "sha256": "dff22ad0eb3ebd97d14f8153c155afbad7b56fbbbe042c0f9ff049bfe18a9fc5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 1
+      }
+    },
+    "orbs": {
+      "armor": {
+        "alpha_bbox": [
+          14,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6944,
+        "path": "res://resources/art/assetgen/runtime/orbs/armor.png",
+        "ring_grade": "armor",
+        "sha256": "cc9fab415ba043e81bc75d620e9c4a98bc9bf17e7b07769999d3fde50ac0a853",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
+      },
+      "earth": {
+        "alpha_bbox": [
+          13,
+          10,
+          371,
+          374
+        ],
+        "coverage": 0.7007,
+        "path": "res://resources/art/assetgen/runtime/orbs/earth.png",
+        "sha256": "74052fc67ef8bf645d7cc49c23127a5fd6bebb48e46b999a4a0b77896f5d5fdb",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 2
+      },
+      "fire": {
+        "alpha_bbox": [
+          14,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6949,
+        "path": "res://resources/art/assetgen/runtime/orbs/fire.png",
+        "ring_grade": "fire",
+        "sha256": "bad2030a1608879922c08efd751b88dc24ece22a52216c4ce4658e7c1396c48c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 0
+      },
+      "gold": {
+        "alpha_bbox": [
+          13,
+          10,
+          371,
+          374
+        ],
+        "coverage": 0.6979,
+        "path": "res://resources/art/assetgen/runtime/orbs/gold.png",
+        "sha256": "4ad18ae57227209359923141e4ec4a49ea378759f6a6f56d445d8bc56c6e93ad",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
+      },
+      "heart": {
+        "alpha_bbox": [
+          14,
+          10,
+          369,
+          374
+        ],
+        "coverage": 0.6927,
+        "path": "res://resources/art/assetgen/runtime/orbs/heart.png",
+        "sha256": "8cb36b306ef005f5495b4fa33a9bffdca4df4f0f1d6f96666d9b55d03725940a",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
+      },
+      "ice": {
+        "alpha_bbox": [
+          13,
+          10,
+          370,
+          374
+        ],
+        "coverage": 0.6968,
+        "path": "res://resources/art/assetgen/runtime/orbs/ice.png",
+        "ring_grade": "ice",
+        "sha256": "00e4dc5b171ba3f0130816ec5bc6eb454535c7050492447be9ff5e23c92a609d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 1
+      }
+    },
+    "relics": {
+      "relic_crown_of_chains": {
+        "alpha_bbox": [
+          19,
+          12,
+          365,
+          372
+        ],
+        "coverage": 0.5703,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_crown_of_chains.png",
+        "sha256": "1c4bb9ca4033442cac88a6e5ad0b6cddfd0377eb0d137c8c385643197f704d2d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 2
+      },
+      "relic_deep_pockets": {
+        "alpha_bbox": [
+          46,
+          12,
+          338,
+          372
+        ],
+        "coverage": 0.3798,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_deep_pockets.png",
+        "sha256": "4ce264ed48d05c17e83b4eefbecba01348f569b81391ffc71732ec07e2ef8ec8",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 4
+      },
+      "relic_golden_idol": {
+        "alpha_bbox": [
+          63,
+          12,
+          320,
+          372
+        ],
+        "coverage": 0.4528,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_golden_idol.png",
+        "sha256": "4d574421c831b853baae3ccadfa8126be60a128c89d4eb6bf9d1e546080cda80",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 1
+      },
+      "relic_merchant_compass": {
+        "alpha_bbox": [
+          41,
+          12,
+          343,
+          372
+        ],
+        "coverage": 0.4328,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_merchant_compass.png",
+        "sha256": "ccc4c0fdaecbc1198df47b2d36cf350e24f848473d8068a7c48480ac2301e48d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 3
+      },
+      "relic_stalwart_mantle": {
+        "alpha_bbox": [
+          16,
+          12,
+          367,
+          372
+        ],
+        "coverage": 0.5679,
+        "path": "res://resources/art/assetgen/runtime/relics/relic_stalwart_mantle.png",
+        "sha256": "6eef33422e3f373ac5123fa55534914d4b8c86aea43b74bae01166eda2316ba3",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          5,
+          1
+        ],
+        "source_index": 0
+      }
+    },
+    "treasure_chests": {
+      "treasure_chest_earth": {
+        "alpha_bbox": [
+          10,
+          28,
+          374,
+          355
+        ],
+        "coverage": 0.6402,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_earth.png",
+        "sha256": "31b487c616675dd80eadceabc9304ee72bb084540e9b5e5ca50e59b6d07e349b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 2
+      },
+      "treasure_chest_elemental": {
+        "alpha_bbox": [
+          10,
+          29,
+          374,
+          355
+        ],
+        "coverage": 0.6599,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_elemental.png",
+        "sha256": "298ba94e403f5a3ffad54fcc31dd2fc33ff52a6219f46be6dbc89a3ce4f8e0f5",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 0
+      },
+      "treasure_chest_fire": {
+        "alpha_bbox": [
+          10,
+          17,
+          374,
+          367
+        ],
+        "coverage": 0.6472,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_fire.png",
+        "sha256": "04164ed870f794555d6489d1a3e41b5772f85beac5c9f083106dbc55565ddb4d",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 1
+      },
+      "treasure_chest_shadow": {
+        "alpha_bbox": [
+          10,
+          36,
+          374,
+          347
+        ],
+        "coverage": 0.6315,
+        "path": "res://resources/art/assetgen/runtime/treasure_chests/treasure_chest_shadow.png",
+        "sha256": "89742c792c28650d7f3d048089a2966ce759a9c039bb13c446b89e54fe48c006",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+        "source_grid": [
+          2,
+          2
+        ],
+        "source_index": 3
+      }
+    }
+  },
+  "generated_at_utc": "2026-05-22T13:09:41.053413+00:00",
+  "import_settings": {
+    "checked_png_imports": 60,
+    "enabled_mipmaps": 0,
+    "texture_filter": "linear_with_mipmaps"
+  },
+  "previews": {
+    "hero": {
+      "alpha_bbox": [
+        0,
+        0,
+        188,
+        216
+      ],
+      "coverage": 1.0,
+      "path": "res://resources/art/assetgen/runtime/previews/runtime_hero_contact.png",
+      "sha256": "05c08a110b081c366809cb628f42525a09d36f2cdfbc43c45c97ff8bc0e2fe85",
+      "size": [
+        188,
+        216
+      ],
+      "title": "Runtime Hero"
+    },
+    "icons": {
+      "alpha_bbox": [
+        0,
+        0,
+        1058,
+        2236
+      ],
+      "coverage": 1.0,
+      "path": "res://resources/art/assetgen/runtime/previews/runtime_icons_contact.png",
+      "sha256": "7974a5a98e76f5436bcb0a95d8ddc2c2c9d98c69423dd68a2894d001b0428919",
+      "size": [
+        1058,
+        2236
+      ],
+      "title": "Runtime Icons"
+    },
+    "orbs": {
+      "alpha_bbox": [
+        0,
+        0,
+        1058,
+        216
+      ],
+      "coverage": 1.0,
+      "path": "res://resources/art/assetgen/runtime/previews/runtime_orbs_contact.png",
+      "sha256": "6b78392f5f3f0e45b18566ac0031737e60d1622612235752251c26b951e09524",
+      "size": [
+        1058,
+        216
+      ],
+      "title": "Runtime Orbs"
+    }
+  },
+  "runtime_root": "res://resources/art/assetgen/runtime",
+  "warnings": []
+}

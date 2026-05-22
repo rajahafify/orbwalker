@@ -13,8 +13,8 @@ config_version=5
 config/name="Orbwalker"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
-boot_splash/image="res://raw/spash.png"
-config/icon="res://icon.svg"
+boot_splash/image="res://resources/art/assetgen/system/boot_splash_candidate_01.png"
+config/icon="res://resources/art/assetgen/system/app_icon_candidate_01.png"
 
 [autoload]
 

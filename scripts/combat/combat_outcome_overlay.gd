@@ -336,6 +336,7 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 	button.add_child(icon)
 
 	var name_label := Label.new()

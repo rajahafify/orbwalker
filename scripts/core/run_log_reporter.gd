@@ -16,25 +16,38 @@ func build_text_report(snapshot: Dictionary) -> String:
 	return "\n".join(lines)
 
 
-func build_markdown_report(snapshot: Dictionary) -> String:
+func build_html_report(snapshot: Dictionary) -> String:
 	var lines: Array[String] = []
-	lines.append("# Run Log Report")
-	lines.append("")
-	lines.append("- Run ID: `%s`" % String(snapshot.get("run_id", "")))
-	lines.append("- Started: `%s`" % String(snapshot.get("started_iso", "")))
-	lines.append("- Result: `%s`" % _result_label(snapshot))
-	lines.append("- Level Reached: `%d`" % int(snapshot.get("dungeon_level", 0)))
-	lines.append("- Gold: `%d`" % int(snapshot.get("run_gold", 0)))
-	lines.append("- Events: `%d`" % int(snapshot.get("event_count", 0)))
-	lines.append("")
-	lines.append("## Timeline")
-	lines.append("")
+	lines.append("<!doctype html>")
+	lines.append("<html lang=\"en\">")
+	lines.append("<head>")
+	lines.append("<meta charset=\"utf-8\">")
+	lines.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
+	lines.append("<title>Run Log Report</title>")
+	lines.append("<style>")
+	lines.append("body{margin:0;background:#f7f8fb;color:#18202a;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}")
+	lines.append("main{max-width:960px;margin:32px auto;padding:32px;background:#fff;border:1px solid #d9dee7;border-radius:12px}")
+	lines.append("h1{margin-top:0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0}.card{padding:12px;border:1px solid #d9dee7;border-radius:8px;background:#eef4ff}.event{padding:10px 0;border-bottom:1px solid #d9dee7}code{background:#eef1f5;padding:.12em .35em;border-radius:4px}")
+	lines.append("</style>")
+	lines.append("</head>")
+	lines.append("<body><main>")
+	lines.append("<h1>Run Log Report</h1>")
+	lines.append("<section class=\"summary\">")
+	lines.append(_html_summary_card("Run ID", String(snapshot.get("run_id", ""))))
+	lines.append(_html_summary_card("Started", String(snapshot.get("started_iso", ""))))
+	lines.append(_html_summary_card("Result", _result_label(snapshot)))
+	lines.append(_html_summary_card("Level Reached", str(int(snapshot.get("dungeon_level", 0)))))
+	lines.append(_html_summary_card("Gold", str(int(snapshot.get("run_gold", 0)))))
+	lines.append(_html_summary_card("Events", str(int(snapshot.get("event_count", 0)))))
+	lines.append("</section>")
+	lines.append("<h2>Timeline</h2>")
 	var events: Array = snapshot.get("events", [])
 	if events.is_empty():
-		lines.append("- (none)")
+		lines.append("<p>(none)</p>")
 	else:
 		for entry in events:
-			lines.append("- %s" % _event_text_line(Dictionary(entry)))
+			lines.append("<div class=\"event\"><code>%s</code></div>" % _html_escape(_event_text_line(Dictionary(entry))))
+	lines.append("</main></body></html>")
 	return "\n".join(lines)
 
 
@@ -52,6 +65,17 @@ func _summary_line(snapshot: Dictionary) -> String:
 		int(snapshot.get("run_gold", 0)),
 		int(snapshot.get("event_count", 0)),
 	]
+
+
+func _html_summary_card(label: String, value: String) -> String:
+	return "<div class=\"card\"><strong>%s</strong><br><code>%s</code></div>" % [
+		_html_escape(label),
+		_html_escape(value),
+	]
+
+
+func _html_escape(value: String) -> String:
+	return value.xml_escape()
 
 
 func _result_label(snapshot: Dictionary) -> String:

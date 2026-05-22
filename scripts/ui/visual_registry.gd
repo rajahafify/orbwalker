@@ -1,8 +1,8 @@
 extends RefCounted
 class_name VisualRegistry
 
-const PATH_COMBAT_BACKGROUND := "res://resources/art/first_pass/backgrounds/combat_bg_dungeon_01.png"
-const PATH_SHOP_BACKGROUND := "res://resources/art/first_pass/backgrounds/shop_bg_merchant_01.png"
+const PATH_COMBAT_BACKGROUND := "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
+const PATH_SHOP_BACKGROUND := "res://resources/art/assetgen/backgrounds/shop_background_candidate_01.png"
 const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := [
 	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
 	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header.png",
@@ -10,11 +10,12 @@ const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := [
 	"res://resources/art/first_pass/backgrounds/shop_merchant_header.png",
 	"res://resources/art/first_pass/backgrounds/merchant_header.png",
 ]
-const PATH_ORB_SHEET := "res://resources/art/first_pass/sheets/orb_icon_set_v1.png"
-const PATH_INTENT_SHEET := "res://resources/art/first_pass/sheets/intent_badge_set_v1.png"
-const PATH_RARITY_SHEET := "res://resources/art/first_pass/sheets/rarity_badge_set_v1.png"
-const PATH_MASTERY_SHEET := "res://resources/art/first_pass/sheets/mastery_icon_set_v1.png"
-const PATH_ITEM_SHEET := "res://resources/art/first_pass/sheets/item_icon_seed_set_v1.png"
+const PATH_ORB_SHEET := "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png"
+const PATH_INTENT_SHEET := "res://resources/art/assetgen/sheets/intent_icons_candidate_04_adaptive_alpha.png"
+const PATH_RARITY_SHEET := "res://resources/art/assetgen/sheets/rarity_badges_candidate_04_adaptive_alpha.png"
+const PATH_MASTERY_SHEET := "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png"
+const PATH_ITEM_SHEET := "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png"
+const PATH_RELIC_SHEET := "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png"
 const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
 const PATH_DERIVED_ORB_DIR := "res://resources/art/first_pass/derived/orbs"
 const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
@@ -25,8 +26,10 @@ const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
 const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
 const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
 const PATH_UI_SHOP_CARD_SHEET := "res://resources/art/first_pass/ui/shop_card_kit_v1.png"
-const PATH_VFX_SHEET := "res://resources/art/first_pass/vfx/vfx_sprite_sheet_v1.png"
-const PATH_HERO_PORTRAIT := "res://resources/art/first_pass/heroes/hero_orbwalker.png"
+const PATH_VFX_SHEET := "res://resources/art/assetgen/vfx/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
+const PATH_HERO_PORTRAIT := "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png"
+const PATH_FALLBACK_HERO_PORTRAIT := "res://resources/art/first_pass/heroes/hero_orbwalker.png"
+const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.json"
 
 const _INTENT_INDEX_BY_TYPE := {
 	0: 0, # ATTACK
@@ -77,37 +80,40 @@ const _ICON_INDEX_BY_KEY := {
 	"equipment_coin_purse": 2,
 	"equipment_healing_charm": 3,
 	"equipment_stone_ring": 3,
-	"equipment_ember_ring": 4,
-	"equipment_frost_ring": 5,
-	"equipment_leather_gloves": 1,
+	"equipment_ember_ring": 8,
+	"equipment_frost_ring": 8,
+	"equipment_leather_gloves": 4,
 	"equipment_iron_helm": 1,
 	"equipment_combo_lens": 7,
-	"equipment_twin_blades": 0,
-	"equipment_war_banner": 2,
-	"equipment_tower_shield": 1,
-	"equipment_merchant_scales": 2,
-	"equipment_battle_drum": 4,
-	"equipment_earthbreaker_maul": 8,
+	"equipment_twin_blades": 5,
+	"equipment_war_banner": 9,
+	"equipment_tower_shield": 6,
+	"equipment_merchant_scales": 7,
+	"equipment_battle_drum": 14,
+	"equipment_earthbreaker_maul": 0,
 	"equipment_hearth_amulet": 3,
-	"equipment_alchemist_gloves": 2,
-	"equipment_training_manual": 8,
-	"equipment_mirror_charm": 3,
-	"equipment_ruby_brooch": 4,
-	"equipment_sapphire_brooch": 5,
-	"equipment_emerald_brooch": 8,
-	"equipment_royal_seal": 11,
-	"equipment_champion_plate": 10,
+	"equipment_alchemist_gloves": 4,
+	"equipment_training_manual": 12,
+	"equipment_mirror_charm": 13,
+	"equipment_ruby_brooch": 10,
+	"equipment_sapphire_brooch": 10,
+	"equipment_emerald_brooch": 10,
+	"equipment_royal_seal": 12,
+	"equipment_champion_plate": 11,
 	"consumable_fire_scroll": 6,
 	"consumable_ice_scroll": 7,
 	"consumable_earth_scroll": 8,
 	"consumable_heart_scroll": 3,
 	"consumable_armor_scroll": 1,
 	"consumable_gold_scroll": 2,
-	"relic_deep_pockets": 2,
-	"relic_crown_of_chains": 9,
-	"relic_merchant_compass": 9,
-	"relic_stalwart_mantle": 10,
-	"relic_golden_idol": 11,
+}
+
+const _RELIC_INDEX_BY_KEY := {
+	"relic_stalwart_mantle": 0,
+	"relic_golden_idol": 1,
+	"relic_crown_of_chains": 2,
+	"relic_merchant_compass": 3,
+	"relic_deep_pockets": 4,
 }
 
 const _MASTERY_ORB_BY_ICON_KEY := {
@@ -151,6 +157,14 @@ const _DERIVED_ORB_FILENAME_BY_ID := {
 	OrbType.Id.ARMOR: "orb_armor_clean.png",
 	OrbType.Id.GOLD: "orb_gold_clean.png",
 }
+const _RUNTIME_ORB_KEY_BY_ID := {
+	OrbType.Id.FIRE: "fire",
+	OrbType.Id.ICE: "ice",
+	OrbType.Id.EARTH: "earth",
+	OrbType.Id.HEART: "heart",
+	OrbType.Id.ARMOR: "armor",
+	OrbType.Id.GOLD: "gold",
+}
 
 const _STABLE_PLACEHOLDER_ICON_COLORS := {
 	"treasure_chest_elemental": Color(0.90, 0.34, 0.16, 1.0),
@@ -167,11 +181,14 @@ var _intent_textures: Dictionary = {}
 var _rarity_textures: Dictionary = {}
 var _mastery_textures: Dictionary = {}
 var _icon_textures: Dictionary = {}
+var _relic_textures: Dictionary = {}
 var _derived_icon_textures: Dictionary = {}
 var _derived_hud_textures: Dictionary = {}
 var _derived_chrome_textures: Dictionary = {}
 var _derived_combat_ui_textures: Dictionary = {}
 var _vfx_textures: Dictionary = {}
+var _runtime_manifest: Dictionary = {}
+var _runtime_texture_cache: Dictionary = {}
 
 var _combat_background: Texture2D
 var _shop_background: Texture2D
@@ -189,7 +206,9 @@ var _intent_textures_built := false
 var _rarity_textures_built := false
 var _mastery_textures_built := false
 var _icon_textures_built := false
+var _relic_textures_built := false
 var _vfx_textures_built := false
+var _runtime_manifest_loaded := false
 
 
 func _init() -> void:
@@ -294,7 +313,7 @@ func intent_badge(intent_type: int) -> Texture2D:
 		_warn_missing("intent_type:%d" % intent_type)
 		return placeholder_texture("intent_missing")
 	var texture: Texture2D = _intent_textures.get(index, null)
-	if texture != null and not _looks_like_checkerboard_texture(texture):
+	if texture != null:
 		return texture
 	return null
 
@@ -313,6 +332,11 @@ func rarity_badge(rarity: String) -> Texture2D:
 
 
 func mastery_icon(orb_id: int) -> Texture2D:
+	var runtime_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
+	if runtime_key != "":
+		var runtime_texture := _runtime_texture("mastery", runtime_key)
+		if runtime_texture != null:
+			return runtime_texture
 	_ensure_mastery_textures()
 	return _mastery_textures.get(orb_id, placeholder_texture("mastery_missing"))
 
@@ -323,8 +347,11 @@ func menu_mastery_icon(orb_id: int) -> Texture2D:
 	var icon_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
 	if icon_key == "":
 		return placeholder_texture("mastery_missing")
+	var runtime_icon := _runtime_icon_texture(icon_key)
+	if runtime_icon != null:
+		return runtime_icon
 	var menu_icon := _load_derived_icon(icon_key)
-	if menu_icon != null and not _looks_like_checkerboard_texture(menu_icon):
+	if menu_icon != null:
 		return menu_icon
 	var fallback := mastery_icon(orb_id)
 	return fallback if fallback != null else placeholder_texture("mastery_missing")
@@ -402,26 +429,34 @@ func mastery_impact_texture(kind: String) -> Texture2D:
 
 func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
 	var normalized_key := icon_key.strip_edges().to_lower()
-	if normalized_key == "treasure_chest_fire" or normalized_key == "treasure_chest_elemental":
-		return menu_mastery_icon(OrbType.Id.FIRE)
-	var concrete_icon := _load_derived_icon(normalized_key)
-	if concrete_icon != null and not _looks_like_checkerboard_texture(concrete_icon):
-		return concrete_icon
+	var runtime_icon := _runtime_icon_texture(normalized_key)
+	if runtime_icon != null:
+		return runtime_icon
 	if _MASTERY_ORB_BY_ICON_KEY.has(normalized_key):
 		return mastery_icon(int(_MASTERY_ORB_BY_ICON_KEY[normalized_key]))
+	var relic_index := int(_RELIC_INDEX_BY_KEY.get(normalized_key, -1))
+	if relic_index >= 0:
+		_ensure_relic_textures()
+		var relic_texture: Texture2D = _relic_textures.get(relic_index, null)
+		if relic_texture != null:
+			return relic_texture
+	var concrete_icon := _load_derived_icon(normalized_key)
+	if concrete_icon != null:
+		return concrete_icon
+	var index := int(_ICON_INDEX_BY_KEY.get(normalized_key, -1))
+	if index >= 0:
+		_ensure_icon_textures()
+		var atlas_texture: Texture2D = _icon_textures.get(index, null)
+		if atlas_texture != null:
+			return atlas_texture
 	if _STABLE_PLACEHOLDER_ICON_COLORS.has(normalized_key):
 		var placeholder_color: Color = _STABLE_PLACEHOLDER_ICON_COLORS[normalized_key]
 		return placeholder_texture("stable_icon_%s" % normalized_key, placeholder_color)
-	var index := int(_ICON_INDEX_BY_KEY.get(normalized_key, -1))
 	if index < 0:
 		if use_placeholder:
 			_warn_missing("icon_key:%s" % icon_key)
 			return placeholder_texture("icon_missing")
 		return null
-	_ensure_icon_textures()
-	var fallback_texture: Texture2D = _icon_textures.get(index, null)
-	if fallback_texture != null and not _looks_like_checkerboard_texture(fallback_texture):
-		return fallback_texture
 	if use_placeholder:
 		return placeholder_texture("icon_missing")
 	return null
@@ -615,14 +650,14 @@ func clean_hud_texture(key: String) -> Texture2D:
 	var texture := hud_texture(key, false)
 	if texture == null:
 		return null
-	return null if _looks_like_checkerboard_texture(texture) else texture
+	return texture
 
 
 func clean_chrome_texture(key: String) -> Texture2D:
 	var texture := chrome_texture(key, false)
 	if texture == null:
 		return null
-	return null if _looks_like_checkerboard_texture(texture) else texture
+	return texture
 
 
 func vfx_texture(effect_name: String) -> Texture2D:
@@ -653,7 +688,11 @@ func _ensure_hero_portrait() -> void:
 	if _hero_portrait_loaded:
 		return
 	_hero_portrait_loaded = true
-	_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
+	_hero_portrait = _runtime_texture("heroes", "hero_orbwalker")
+	if _hero_portrait == null:
+		_hero_portrait = _safe_load_texture(PATH_FALLBACK_HERO_PORTRAIT, "hero_portrait_fallback")
+	if _hero_portrait == null:
+		_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
 
 
 func _ensure_shop_merchant_header_texture() -> void:
@@ -713,6 +752,13 @@ func _ensure_icon_textures() -> void:
 	_build_icon_textures()
 
 
+func _ensure_relic_textures() -> void:
+	if _relic_textures_built:
+		return
+	_relic_textures_built = true
+	_build_relic_textures()
+
+
 func _ensure_vfx_textures() -> void:
 	if _vfx_textures_built:
 		return
@@ -721,14 +767,17 @@ func _ensure_vfx_textures() -> void:
 
 
 func _build_orb_textures() -> void:
+	if _try_build_runtime_orb_textures():
+		return
 	if _try_build_derived_orb_textures():
 		return
 	var sheet := _safe_load_texture(PATH_ORB_SHEET, "orb_sheet")
 	if sheet == null:
 		return
-	var orb_count := 6
-	var slice_width := float(sheet.get_width()) / float(orb_count)
-	var orb_ids := [
+	var columns := 3
+	var cell_width := float(sheet.get_width()) / float(columns)
+	var cell_height := float(sheet.get_height()) / 2.0
+	var orb_ids: Array[int] = [
 		OrbType.Id.FIRE,
 		OrbType.Id.ICE,
 		OrbType.Id.EARTH,
@@ -736,9 +785,29 @@ func _build_orb_textures() -> void:
 		OrbType.Id.ARMOR,
 		OrbType.Id.GOLD,
 	]
-	for index in orb_count:
-		var region := Rect2(slice_width * index, 0.0, slice_width, float(sheet.get_height()))
-		_orb_textures[orb_ids[index]] = _processed_orb_region(sheet, region)
+	for index in orb_ids.size():
+		var column := index % columns
+		var row := int(floor(float(index) / float(columns)))
+		var region := Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
+		var orb_id := int(orb_ids[index])
+		_orb_textures[orb_id] = _atlas_region(sheet, region)
+	if _orb_textures.size() < orb_ids.size():
+		_try_build_derived_orb_textures()
+
+
+func _try_build_runtime_orb_textures() -> bool:
+	var loaded_orbs: Dictionary = {}
+	for orb_id in _RUNTIME_ORB_KEY_BY_ID.keys():
+		var runtime_key := String(_RUNTIME_ORB_KEY_BY_ID[orb_id])
+		var texture := _runtime_texture("orbs", runtime_key)
+		if texture == null:
+			return false
+		loaded_orbs[orb_id] = texture
+	if loaded_orbs.size() != _RUNTIME_ORB_KEY_BY_ID.size():
+		return false
+	for orb_id in loaded_orbs.keys():
+		_orb_textures[orb_id] = loaded_orbs[orb_id]
+	return true
 
 
 func _try_build_derived_orb_textures() -> bool:
@@ -783,9 +852,10 @@ func _build_mastery_textures() -> void:
 	var sheet := _safe_load_texture(PATH_MASTERY_SHEET, "mastery_sheet")
 	if sheet == null:
 		return
-	var count := 6
-	var slice_width := float(sheet.get_width()) / float(count)
-	var orb_ids := [
+	var columns := 3
+	var cell_width := float(sheet.get_width()) / float(columns)
+	var cell_height := float(sheet.get_height()) / 2.0
+	var orb_ids: Array[int] = [
 		OrbType.Id.FIRE,
 		OrbType.Id.ICE,
 		OrbType.Id.EARTH,
@@ -793,15 +863,18 @@ func _build_mastery_textures() -> void:
 		OrbType.Id.ARMOR,
 		OrbType.Id.GOLD,
 	]
-	for index in count:
-		_mastery_textures[orb_ids[index]] = _atlas_region(sheet, Rect2(slice_width * index, 0.0, slice_width, float(sheet.get_height())))
+	for index in orb_ids.size():
+		var column := index % columns
+		var row := int(floor(float(index) / float(columns)))
+		var orb_id := int(orb_ids[index])
+		_mastery_textures[orb_id] = _atlas_region(sheet, Rect2(cell_width * column, cell_height * row, cell_width, cell_height))
 
 
 func _build_icon_textures() -> void:
 	var sheet := _safe_load_texture(PATH_ITEM_SHEET, "item_sheet")
 	if sheet == null:
 		return
-	var columns := 4
+	var columns := 5
 	var rows := 3
 	var cell_width := float(sheet.get_width()) / float(columns)
 	var cell_height := float(sheet.get_height()) / float(rows)
@@ -816,6 +889,16 @@ func _build_icon_textures() -> void:
 			)
 			_icon_textures[atlas_index] = _atlas_region(sheet, region)
 			atlas_index += 1
+
+
+func _build_relic_textures() -> void:
+	var sheet := _safe_load_texture(PATH_RELIC_SHEET, "relic_sheet")
+	if sheet == null:
+		return
+	var columns := 5
+	var cell_width := float(sheet.get_width()) / float(columns)
+	for index in columns:
+		_relic_textures[index] = _atlas_region(sheet, Rect2(cell_width * index, 0.0, cell_width, float(sheet.get_height())))
 
 
 func _build_vfx_textures() -> void:
@@ -868,6 +951,49 @@ func _atlas_region(sheet: Texture2D, region: Rect2) -> AtlasTexture:
 	return atlas
 
 
+func _processed_icon_region(sheet: Texture2D, region: Rect2, remove_baked_checker: bool = false) -> Texture2D:
+	var source_image: Image = sheet.get_image()
+	if source_image == null:
+		return _atlas_region(sheet, region)
+
+	var x0 := int(floor(region.position.x))
+	var y0 := int(floor(region.position.y))
+	var w := int(floor(region.size.x))
+	var h := int(floor(region.size.y))
+	if w <= 0 or h <= 0:
+		return _atlas_region(sheet, region)
+
+	var cropped := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			var c := source_image.get_pixel(x0 + x, y0 + y)
+			if _is_checker_pixel(c) or (remove_baked_checker and _is_bright_neutral_background_candidate(c)):
+				c.a = 0.0
+			cropped.set_pixel(x, y, c)
+
+	_clear_edge_checker_noise(cropped)
+	if not remove_baked_checker:
+		_clear_edge_sampled_background(cropped)
+	_keep_significant_icon_components(cropped)
+	var bounds := _content_bounds(cropped)
+	var min_x := int(bounds.x)
+	var min_y := int(bounds.y)
+	var max_x := int(bounds.z)
+	var max_y := int(bounds.w)
+	if max_x >= min_x and max_y >= min_y:
+		var padding := 4
+		var trim_left := maxi(0, min_x - padding)
+		var trim_top := maxi(0, min_y - padding)
+		var trim_right := mini(w - 1, max_x + padding)
+		var trim_bottom := mini(h - 1, max_y + padding)
+		cropped = cropped.get_region(Rect2i(
+			Vector2i(trim_left, trim_top),
+			Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)
+		))
+
+	return ImageTexture.create_from_image(cropped)
+
+
 func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 	var source_image: Image = sheet.get_image()
 	if source_image == null:
@@ -881,36 +1007,26 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 		return _atlas_region(sheet, region)
 
 	var cropped := Image.create(w, h, false, Image.FORMAT_RGBA8)
-	var center := Vector2((w - 1) * 0.5, (h - 1) * 0.5)
-	var radius := minf(float(w), float(h)) * 0.43
-	var radius_sq := radius * radius
-	var min_x := w
-	var min_y := h
-	var max_x := -1
-	var max_y := -1
 	for y in h:
 		for x in w:
 			var c := source_image.get_pixel(x0 + x, y0 + y)
-			var p := Vector2(float(x), float(y))
-			var delta := p - center
-			# Keep only the orb footprint; source sheet contains baked checkerboard outside the orb.
-			if delta.length_squared() > radius_sq:
+			if _is_checker_pixel(c):
 				c.a = 0.0
-			elif _is_checker_pixel(c):
-				c.a = 0.0
+			elif c.a > 0.01:
+				c = _tone_map_board_orb_color(c)
 			cropped.set_pixel(x, y, c)
-			if c.a > 0.01:
-				min_x = mini(min_x, x)
-				min_y = mini(min_y, y)
-				max_x = maxi(max_x, x)
-				max_y = maxi(max_y, y)
 
 	_clear_edge_checker_noise(cropped)
 	_keep_primary_orb_component(cropped)
 
 	# Trim transparent borders so the orb fills BoardView cells instead of appearing tiny.
+	var bounds := _content_bounds(cropped)
+	var min_x := int(bounds.x)
+	var min_y := int(bounds.y)
+	var max_x := int(bounds.z)
+	var max_y := int(bounds.w)
 	if max_x >= min_x and max_y >= min_y:
-		var padding := 1
+		var padding := 4
 		var trim_left := maxi(0, min_x - padding)
 		var trim_top := maxi(0, min_y - padding)
 		var trim_right := mini(w - 1, max_x + padding)
@@ -921,6 +1037,36 @@ func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
 		cropped = cropped.get_region(trim_rect)
 
 	return ImageTexture.create_from_image(cropped)
+
+
+func _content_bounds(image: Image) -> Vector4i:
+	var min_x := image.get_width()
+	var min_y := image.get_height()
+	var max_x := -1
+	var max_y := -1
+	for y in image.get_height():
+		for x in image.get_width():
+			var c := image.get_pixel(x, y)
+			if c.a <= 0.01:
+				continue
+			min_x = mini(min_x, x)
+			min_y = mini(min_y, y)
+			max_x = maxi(max_x, x)
+			max_y = maxi(max_y, y)
+	return Vector4i(min_x, min_y, max_x, max_y)
+
+
+func _tone_map_board_orb_color(c: Color) -> Color:
+	var alpha := c.a
+	var luminance := c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722
+	var saturation_factor := 1.04
+	var brightness_factor := 0.94
+	var floor_lift := 0.025
+	c.r = clampf(lerpf(luminance, c.r, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
+	c.g = clampf(lerpf(luminance, c.g, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
+	c.b = clampf(lerpf(luminance, c.b, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
+	c.a = alpha
+	return c
 
 
 func _keep_primary_orb_component(image: Image) -> void:
@@ -1004,6 +1150,93 @@ func _keep_primary_orb_component(image: Image) -> void:
 					image.set_pixel(x, y, cc)
 
 
+func _keep_significant_icon_components(image: Image) -> void:
+	var width: int = image.get_width()
+	var height: int = image.get_height()
+	if width <= 0 or height <= 0:
+		return
+
+	var visited := PackedByteArray()
+	visited.resize(width * height)
+	var labels := PackedInt32Array()
+	labels.resize(width * height)
+	var component_sizes: Array[int] = []
+	var component_centers: Array[Vector2] = []
+	var component_index := 0
+
+	for y in range(height):
+		for x in range(width):
+			var idx := y * width + x
+			if visited[idx] == 1:
+				continue
+			var c := image.get_pixel(x, y)
+			if c.a <= 0.01:
+				visited[idx] = 1
+				continue
+
+			component_index += 1
+			var size := 0
+			var sum := Vector2.ZERO
+			var queue: Array[Vector2i] = [Vector2i(x, y)]
+			visited[idx] = 1
+			labels[idx] = component_index
+			while not queue.is_empty():
+				var p: Vector2i = queue.pop_back()
+				size += 1
+				sum += Vector2(float(p.x), float(p.y))
+				for n in [Vector2i(p.x - 1, p.y), Vector2i(p.x + 1, p.y), Vector2i(p.x, p.y - 1), Vector2i(p.x, p.y + 1)]:
+					if n.x < 0 or n.x >= width or n.y < 0 or n.y >= height:
+						continue
+					var n_idx: int = n.y * width + n.x
+					if visited[n_idx] == 1:
+						continue
+					visited[n_idx] = 1
+					var nc := image.get_pixel(n.x, n.y)
+					if nc.a <= 0.01:
+						continue
+					labels[n_idx] = component_index
+					queue.append(n)
+
+			component_sizes.append(size)
+			component_centers.append(sum / float(maxi(1, size)))
+
+	if component_index <= 1:
+		return
+
+	var max_size := 0
+	for size in component_sizes:
+		max_size = maxi(max_size, size)
+	if max_size <= 0:
+		return
+
+	var keep_labels := {}
+	var center := Vector2(float(width) * 0.5, float(height) * 0.5)
+	var max_distance := center.length()
+	for i in range(component_sizes.size()):
+		var size_ratio := float(component_sizes[i]) / float(max_size)
+		var distance_ratio := component_centers[i].distance_to(center) / maxf(1.0, max_distance)
+		if size_ratio >= 0.18 or (size_ratio >= 0.08 and distance_ratio <= 0.45):
+			keep_labels[i + 1] = true
+
+	if keep_labels.is_empty():
+		var largest_label := 1
+		var largest_size := component_sizes[0]
+		for i in range(1, component_sizes.size()):
+			if component_sizes[i] > largest_size:
+				largest_size = component_sizes[i]
+				largest_label = i + 1
+		keep_labels[largest_label] = true
+
+	for y in range(height):
+		for x in range(width):
+			var idx := y * width + x
+			if labels[idx] != 0 and not keep_labels.has(labels[idx]):
+				var cc := image.get_pixel(x, y)
+				if cc.a > 0.01:
+					cc.a = 0.0
+					image.set_pixel(x, y, cc)
+
+
 func _is_checker_pixel(c: Color) -> bool:
 	var rg_diff := absf(c.r - c.g)
 	var gb_diff := absf(c.g - c.b)
@@ -1065,27 +1298,152 @@ func _clear_edge_checker_noise(image: Image) -> void:
 		stack.append(Vector2i(x, y + 1))
 
 
-func _looks_like_checkerboard_texture(texture: Texture2D) -> bool:
-	var image := texture.get_image()
-	if image == null:
-		return false
-	var width := image.get_width()
-	var height := image.get_height()
+func _clear_edge_sampled_background(image: Image) -> void:
+	var width: int = image.get_width()
+	var height: int = image.get_height()
 	if width <= 0 or height <= 0:
-		return false
+		return
 
-	var checker_hits := 0
-	var sample_count := 0
-	var x_step := maxi(1, int(floor(float(width) / 16.0)))
-	var y_step := maxi(1, int(floor(float(height) / 16.0)))
-	for y in range(0, height, y_step):
-		for x in range(0, width, x_step):
-			sample_count += 1
-			if _is_checker_pixel(image.get_pixel(x, y)):
-				checker_hits += 1
-	if sample_count == 0:
+	var samples: Array[Color] = []
+	for x in range(width):
+		_add_unique_background_sample(samples, image.get_pixel(x, 0))
+		_add_unique_background_sample(samples, image.get_pixel(x, height - 1))
+	for y in range(height):
+		_add_unique_background_sample(samples, image.get_pixel(0, y))
+		_add_unique_background_sample(samples, image.get_pixel(width - 1, y))
+	if samples.is_empty():
+		return
+
+	var visited := PackedByteArray()
+	visited.resize(width * height)
+	var stack: Array[Vector2i] = []
+	for x in range(width):
+		stack.append(Vector2i(x, 0))
+		stack.append(Vector2i(x, height - 1))
+	for y in range(height):
+		stack.append(Vector2i(0, y))
+		stack.append(Vector2i(width - 1, y))
+
+	while not stack.is_empty():
+		var p: Vector2i = stack.pop_back()
+		if p.x < 0 or p.x >= width or p.y < 0 or p.y >= height:
+			continue
+		var index := p.y * width + p.x
+		if visited[index] == 1:
+			continue
+		visited[index] = 1
+		var c := image.get_pixel(p.x, p.y)
+		if not _matches_sampled_background(c, samples):
+			continue
+		c.a = 0.0
+		image.set_pixel(p.x, p.y, c)
+		stack.append(Vector2i(p.x - 1, p.y))
+		stack.append(Vector2i(p.x + 1, p.y))
+		stack.append(Vector2i(p.x, p.y - 1))
+		stack.append(Vector2i(p.x, p.y + 1))
+
+
+func _add_unique_background_sample(samples: Array[Color], c: Color) -> void:
+	if c.a <= 0.01:
+		return
+	if not _is_neutral_background_candidate(c):
+		return
+	for sample in samples:
+		if _color_distance_rgb(c, sample) <= 0.08:
+			return
+	if samples.size() < 6:
+		samples.append(c)
+
+
+func _matches_sampled_background(c: Color, samples: Array[Color]) -> bool:
+	if c.a <= 0.01:
 		return false
-	return float(checker_hits) / float(sample_count) > 0.28
+	if not _is_neutral_background_candidate(c):
+		return false
+	for sample in samples:
+		if _color_distance_rgb(c, sample) <= 0.10:
+			return true
+	return false
+
+
+func _is_neutral_background_candidate(c: Color) -> bool:
+	var rg_diff := absf(c.r - c.g)
+	var gb_diff := absf(c.g - c.b)
+	var rb_diff := absf(c.r - c.b)
+	var brightness := (c.r + c.g + c.b) / 3.0
+	return rg_diff <= 0.08 and gb_diff <= 0.08 and rb_diff <= 0.08 and (brightness <= 0.18 or brightness >= 0.72)
+
+
+func _is_bright_neutral_background_candidate(c: Color) -> bool:
+	if c.a <= 0.01:
+		return false
+	var rg_diff := absf(c.r - c.g)
+	var gb_diff := absf(c.g - c.b)
+	var rb_diff := absf(c.r - c.b)
+	var brightness := (c.r + c.g + c.b) / 3.0
+	return rg_diff <= 0.08 and gb_diff <= 0.08 and rb_diff <= 0.08 and brightness >= 0.72
+
+
+func _color_distance_rgb(a: Color, b: Color) -> float:
+	var dr := a.r - b.r
+	var dg := a.g - b.g
+	var db := a.b - b.b
+	return sqrt(dr * dr + dg * dg + db * db)
+
+
+func _runtime_icon_texture(icon_key: String) -> Texture2D:
+	return _runtime_texture("icons", icon_key.strip_edges().to_lower())
+
+
+func _runtime_texture(category: String, key: String) -> Texture2D:
+	if category == "" or key == "":
+		return null
+	_ensure_runtime_manifest()
+	if _runtime_manifest.is_empty():
+		return null
+	var categories := Dictionary(_runtime_manifest.get("categories", {}))
+	var category_entries := Dictionary(categories.get(category, {}))
+	var entry := Dictionary(category_entries.get(key, {}))
+	var path := String(entry.get("path", ""))
+	if path == "":
+		return null
+	if _runtime_texture_cache.has(path):
+		return _runtime_texture_cache[path]
+	var texture := _load_runtime_png_texture(path, "runtime:%s:%s" % [category, key])
+	if texture != null:
+		_runtime_texture_cache[path] = texture
+	return texture
+
+
+func _ensure_runtime_manifest() -> void:
+	if _runtime_manifest_loaded:
+		return
+	_runtime_manifest_loaded = true
+	if not FileAccess.file_exists(PATH_RUNTIME_MANIFEST):
+		return
+	var file := FileAccess.open(PATH_RUNTIME_MANIFEST, FileAccess.READ)
+	if file == null:
+		_warn_missing("runtime_manifest")
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		_runtime_manifest = parsed
+	else:
+		_warn_missing("runtime_manifest_parse")
+
+
+func _load_runtime_png_texture(path: String, key: String) -> Texture2D:
+	var loaded: Variant = load(path)
+	var imported_texture := loaded as Texture2D
+	if imported_texture != null:
+		return imported_texture
+	if FileAccess.file_exists(path):
+		var image := Image.new()
+		var load_error := image.load(path)
+		if load_error == OK:
+			return ImageTexture.create_from_image(image)
+	_warn_missing("texture_path:%s" % key)
+	return null
 
 
 func _safe_load_texture(path: String, key: String) -> Texture2D:
