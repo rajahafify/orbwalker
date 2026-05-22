@@ -1,6 +1,10 @@
 extends RefCounted
 class_name CombatStateMachineTest
 
+const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
+const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
+const PLAYER_STATE_SCRIPT := preload("res://scripts/combat/player_state.gd")
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
@@ -11,11 +15,12 @@ func run_all() -> Dictionary:
 	_run_case("player_armor_blocks_enemy_attack_before_hp_and_expires", _test_player_armor_blocks_enemy_attack_before_hp_and_expires, failures)
 	_run_case("heart_healing_clamps_to_max_hp", _test_heart_healing_clamps_to_max_hp, failures)
 	_run_case("gold_gain_updates_local_debug_gold_and_player_gold", _test_gold_gain_updates_local_debug_gold_and_player_gold, failures)
+	_run_case("armor_matches_ignore_combo_damage_scaling", _test_armor_matches_ignore_combo_damage_scaling, failures)
 	_run_case("nonlethal_turn_advances_intent_and_returns_to_preview", _test_nonlethal_turn_advances_intent_and_returns_to_preview, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 8,
+		"total": 9,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -133,6 +138,20 @@ func _test_gold_gain_updates_local_debug_gold_and_player_gold() -> String:
 	return ""
 
 
+func _test_armor_matches_ignore_combo_damage_scaling() -> String:
+	var fixture := _fixture(50, 50, 100, [{"type": EnemyState.IntentType.BLOCK, "attack": 0, "block": 0, "label": "Wait"}])
+	var combat: CombatStateMachine = fixture.combat
+	combat.begin_player_input()
+	var turn_log: Dictionary = combat.resolve_player_turn(_resolve_result({OrbType.Id.ARMOR: 3}, 3))
+	if int(turn_log.get("armor_base", -1)) != 3:
+		return "Expected armor_base to be 3 from three armor orbs."
+	if int(turn_log.get("armor_gained", -1)) != 3:
+		return "Expected armor gain to stay 3 instead of being multiplied by combo."
+	if not is_equal_approx(float(turn_log.get("damage_combo_multiplier", 0.0)), 3.0):
+		return "Expected damage multiplier to remain available for elemental damage."
+	return ""
+
+
 func _test_nonlethal_turn_advances_intent_and_returns_to_preview() -> String:
 	var intents := [
 		{"type": EnemyState.IntentType.ATTACK, "attack": 0, "block": 0, "label": "Wait"},
@@ -163,7 +182,7 @@ func _fixture(
 	intents: Array = [],
 	initial_gold: int = 0
 ) -> Dictionary:
-	var player := PlayerState.new()
+	var player: PlayerState = PLAYER_STATE_SCRIPT.new()
 	player.max_hp = player_max_hp
 	player.current_hp = player_current_hp
 	player.armor = 0
@@ -171,7 +190,7 @@ func _fixture(
 	player.increase_combo_modifier = 0
 	player.more_combo_modifier = 1.0
 
-	var enemy := EnemyState.new()
+	var enemy: EnemyState = ENEMY_STATE_SCRIPT.new()
 	enemy.configure_from_blueprint({
 		"enemy_id": "combat_test_enemy",
 		"display_name": "Combat Test Enemy",
@@ -182,7 +201,7 @@ func _fixture(
 		],
 	})
 
-	var combat := CombatStateMachine.new()
+	var combat: CombatStateMachine = COMBAT_STATE_MACHINE_SCRIPT.new()
 	combat.set_debug_hooks({
 		"use_local_gold": true,
 		"initial_gold": initial_gold,

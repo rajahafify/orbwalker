@@ -488,6 +488,12 @@ func set_combat_mastery_feedback(orb_id: int, total: int) -> void:
 	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, total)
 
 
+func pulse_combat_modifier_sources(sources: Array) -> void:
+	if _player_loadout_hud == null:
+		return
+	_player_loadout_hud.pulse_modifier_sources(sources)
+
+
 func clear_combat_mastery_hover_ui() -> void:
 	if _player_loadout_hud == null or _elemental_mastery_cards == null:
 		return

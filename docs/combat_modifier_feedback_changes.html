@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combat Modifier Feedback Changes</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #091019;
+      --panel: #101923;
+      --panel-2: #142130;
+      --text: #e7edf5;
+      --muted: #aab6c6;
+      --gold: #d6a93a;
+      --line: #304158;
+      --ok: #66d28f;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 40px 24px 56px;
+    }
+
+    h1, h2 {
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(30px, 5vw, 46px);
+      color: var(--gold);
+    }
+
+    h2 {
+      margin-top: 28px;
+      font-size: 22px;
+    }
+
+    p {
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+
+    section {
+      margin-top: 24px;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    ul {
+      margin: 14px 0 0;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    code {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 14px;
+      color: #031108;
+      background: var(--ok);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Combat Modifier Feedback Changes</h1>
+    <p>
+      This note records the combat feedback and calculation changes made for the
+      mastery strip, item timing, and armor combo behavior.
+    </p>
+
+    <section>
+      <h2>Mastery Feedback</h2>
+      <p>
+        The mastery strip now uses the matched orb boxes as the calculation
+        surface. When a match resolves, the relevant mastery box changes from
+        the icon view into a centered numeric value and pops as the value
+        changes.
+      </p>
+      <ul>
+        <li>Match values update as combo order changes, so later combo steps show their current scaled contribution.</li>
+        <li>Fire, Ice, and Earth keep combo scaling in the preview and result flow.</li>
+        <li>Armor displays its unscaled match armor value instead of inheriting damage combo scaling.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Item Modifier Timing</h2>
+      <p>
+        Equipment and relics now animate when they affect a calculation. The
+        timing is based on the modifier type so the player can see why a value
+        changed at the moment it contributes.
+      </p>
+      <ul>
+        <li>Orb value bonuses and combo-count effects animate during match and combo preview timing.</li>
+        <li>Flat damage, heal, and gold bonuses animate near the end of the resolution flow before the matching result VFX.</li>
+        <li>Start-turn armor animates before enemy attack replay when the turn has incoming attack context.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Armor Rule Fix</h2>
+      <p>
+        Armor matches intentionally do not use the damage combo multiplier.
+        The resolver, preview calculation, source highlighting, and combat log
+        formula now follow the same rule.
+      </p>
+      <ul>
+        <li><code>CombatStateMachine</code> resolves Armor matches with a multiplier of <code>1.0</code>.</li>
+        <li><code>CombatController</code> previews Armor feedback without combo scaling.</li>
+        <li><code>CombatTurnLogPresenter</code> reports armor as the matched armor total instead of a damage-multiplied formula.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Verification</h2>
+      <p>
+        The targeted combat regression coverage confirms Armor remains
+        unscaled while Fire still responds to combo scaling and item effects.
+      </p>
+      <ul>
+        <li>Godot MCP combat test harness: <code>CombatStateMachineTest.new().run_all()</code> passed.</li>
+        <li>Preview assertion: Armor 3-match at combo 3 remains <code>3</code>.</li>
+        <li>Preview assertion: Fire match still scales with combo and bonus sources.</li>
+        <li><code>git diff --check</code> passed for the touched combat and HUD scripts.</li>
+      </ul>
+      <span class="status">Verified</span>
+    </section>
+  </main>
+</body>
+</html>

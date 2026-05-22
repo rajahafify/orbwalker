@@ -204,6 +204,13 @@ func add_combat_mastery_preview_total(orb_id: int, amount: int) -> int:
 	return next_total
 
 
+func set_combat_mastery_preview_total(orb_id: int, amount: int) -> void:
+	if amount <= 0:
+		_combat_mastery_preview_totals.erase(orb_id)
+		return
+	_combat_mastery_preview_totals[orb_id] = amount
+
+
 func release_combat_mastery_feedback(orb_id: int) -> void:
 	_combat_mastery_preview_totals.erase(orb_id)
 

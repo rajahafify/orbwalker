@@ -323,14 +323,12 @@ func _build_turn_log_detailed_lines(turn_log: Dictionary, context: Dictionary) -
 		]
 	)
 	lines.append(
-		"Armor: armor_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; armor_from_matches = round(armor_base * damage_multiplier) = round(%d * %.2f) = %d; total_armor_gain = armor_from_matches + prep_armor_bonus = %d + %d = %d." % [
+		"Armor: armor_base = matched_orbs * (1 + mastery + orb_bonus) = %d * (1 + %d + %d) = %d; armor_from_matches = armor_base = %d; total_armor_gain = armor_from_matches + prep_armor_bonus = %d + %d = %d." % [
 			armor_orbs,
 			armor_mastery,
 			armor_orb_bonus,
 			armor_base,
 			armor_base,
-			damage_combo_multiplier,
-			armor_from_matches,
 			armor_from_matches,
 			prep_armor_added,
 			total_armor_gain,

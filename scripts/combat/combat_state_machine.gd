@@ -99,7 +99,7 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 
 	phase = Phase.PLAYER_EFFECTS
 	var heart_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.HEART, 0)), OrbType.Id.HEART, 1.0, orb_bonus_by_id)
-	var armor_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.ARMOR, 0)), OrbType.Id.ARMOR, damage_combo_multiplier, orb_bonus_by_id)
+	var armor_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.ARMOR, 0)), OrbType.Id.ARMOR, 1.0, orb_bonus_by_id)
 	var gold_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.GOLD, 0)), OrbType.Id.GOLD, 1.0, orb_bonus_by_id)
 	var fire_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.FIRE, 0)), OrbType.Id.FIRE, damage_combo_multiplier, orb_bonus_by_id)
 	var ice_result := _scaled_orb_total(int(matched_counts.get(OrbType.Id.ICE, 0)), OrbType.Id.ICE, damage_combo_multiplier, orb_bonus_by_id)

@@ -27,6 +27,9 @@ const COMBAT_MASTERY_ICON_SIZE := Vector2(82, 82)
 const COMBAT_MASTERY_COMPACT_CARD_SIZE := Vector2(102, 76)
 const COMBAT_MASTERY_COMPACT_CARD_GAP := 2.0
 const COMBAT_MASTERY_COMPACT_ICON_SIZE := Vector2(58, 58)
+const COMBAT_MASTERY_FEEDBACK_NUMBER_FONT_SIZE := 42
+const COMBAT_MASTERY_COMPACT_FEEDBACK_NUMBER_FONT_SIZE := 34
+const COMBAT_MASTERY_FEEDBACK_POP_SECONDS := 0.18
 const COMBAT_MASTERY_ACTIVATION_BASE_ALPHA := 0.14
 const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
 const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
@@ -34,6 +37,9 @@ const COMBAT_MASTERY_HOVER_ALPHA := 0.20
 const COMBAT_MASTERY_HOVER_BORDER_ALPHA := 0.90
 const MASTERY_SOURCE_HIGHLIGHT_ALPHA := 0.22
 const MASTERY_SOURCE_HIGHLIGHT_BORDER_ALPHA := 0.94
+const MODIFIER_SOURCE_WIGGLE_SECONDS := 0.30
+const MODIFIER_SOURCE_WIGGLE_DEGREES := 6.0
+const MODIFIER_SOURCE_WIGGLE_SCALE := 1.08
 const COMBAT_MASTERY_ORDER: Array[int] = [
 	OrbType.Id.FIRE,
 	OrbType.Id.ICE,
@@ -479,7 +485,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		icon.name = "MasteryIcon"
 		icon.custom_minimum_size = icon_size
 		icon.size = icon_size
-		icon.position = Vector2((card_size.x - icon_size.x) * 0.5, 2.0 if compact_mode else 2.0)
+		icon.position = Vector2((card_size.x - icon_size.x) * 0.5, (card_size.y - icon_size.y) * 0.5)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
@@ -487,21 +493,21 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 
 		var feedback_label := Label.new()
 		feedback_label.name = "MasteryFeedback"
-		feedback_label.text = _combat_mastery_feedback_text_for_display(orb_id, feedback_value, compact_mode)
-		feedback_label.position = Vector2(2.0, 58.0 if compact_mode else 82.0)
-		feedback_label.size = Vector2(card_size.x - 4.0, 16.0 if compact_mode else 14.0)
-		feedback_label.add_theme_font_size_override("font_size", 12 if compact_mode else 15)
-		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.58, 0.90))
+		feedback_label.text = _combat_mastery_feedback_number_text(feedback_value)
+		feedback_label.position = Vector2.ZERO
+		feedback_label.size = card_size
+		feedback_label.add_theme_font_size_override(
+			"font_size",
+			COMBAT_MASTERY_COMPACT_FEEDBACK_NUMBER_FONT_SIZE if compact_mode else COMBAT_MASTERY_FEEDBACK_NUMBER_FONT_SIZE
+		)
+		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.62, 1.0))
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+		feedback_label.pivot_offset = card_size * 0.5
 		feedback_label.add_theme_constant_override("outline_size", 2)
 		feedback_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.98))
-		if feedback_value > 0:
-			feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0)
-			feedback_label.visible = true
-		else:
-			feedback_label.visible = false
-			feedback_label.modulate = Color(1.0, 1.0, 1.0, 0.38)
+		feedback_label.visible = feedback_value > 0
+		feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
 
 		var activation_frame := Panel.new()
 		activation_frame.name = "ActivationFrame"
@@ -557,11 +563,13 @@ func set_combat_mastery_feedback(row: Control, orb_id: int, feedback_value: int)
 	var feedback_label: Label = panel.get_node_or_null("MasteryFeedback") as Label
 	if feedback_label == null:
 		return
-	var compact_mode := card.size.y <= COMBAT_MASTERY_COMPACT_CARD_SIZE.y + 1.0
-	var feedback_text := _combat_mastery_feedback_text_for_display(orb_id, feedback_value, compact_mode)
+	var previous_text := feedback_label.text
+	var feedback_text := _combat_mastery_feedback_number_text(feedback_value)
 	feedback_label.text = feedback_text
-	feedback_label.visible = feedback_text != ""
+	feedback_label.visible = feedback_value > 0
 	feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
+	if feedback_value > 0 and previous_text != feedback_text:
+		_pulse_combat_mastery_feedback_label(feedback_label)
 	_apply_combat_mastery_activation(card, orb_id, feedback_value, true)
 
 
@@ -589,46 +597,29 @@ func clear_combat_mastery_hover_ui(row: Control) -> void:
 	_clear_mastery_source_highlights()
 
 
-func _combat_mastery_feedback_text(orb_id: int, value: int) -> String:
-	if value <= 0:
-		return ""
-	var feedback_kind: String = ""
-	match orb_id:
-		OrbType.Id.FIRE:
-			feedback_kind = "DAMAGE"
-		OrbType.Id.ICE:
-			feedback_kind = "DAMAGE"
-		OrbType.Id.EARTH:
-			feedback_kind = "DAMAGE"
-		OrbType.Id.HEART:
-			feedback_kind = "HEAL"
-		OrbType.Id.ARMOR:
-			feedback_kind = "ARMOR"
-		OrbType.Id.GOLD:
-			feedback_kind = "GOLD"
-		_:
-			return ""
-	return "+%d %s" % [value, feedback_kind]
+func pulse_modifier_sources(sources: Array) -> void:
+	for raw_source in sources:
+		var source: Dictionary = raw_source
+		var source_type := String(source.get("source_type", ""))
+		var source_id := String(source.get("source_id", ""))
+		if source_type == "" or source_id == "":
+			continue
+		var source_slot := _find_modifier_source_slot(source_type, source_id)
+		_pulse_modifier_source_slot(source_slot)
 
 
-func _combat_mastery_feedback_text_for_display(orb_id: int, value: int, compact_mode: bool) -> String:
-	if not compact_mode:
-		return _combat_mastery_feedback_text(orb_id, value)
+func _combat_mastery_feedback_number_text(value: int) -> String:
 	if value <= 0:
 		return ""
-	var feedback_kind := ""
-	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
-			feedback_kind = "DMG"
-		OrbType.Id.HEART:
-			feedback_kind = "HP"
-		OrbType.Id.ARMOR:
-			feedback_kind = "AR"
-		OrbType.Id.GOLD:
-			feedback_kind = "G"
-		_:
-			return ""
-	return "+%d %s" % [value, feedback_kind]
+	return str(value)
+
+
+func _pulse_combat_mastery_feedback_label(feedback_label: Label) -> void:
+	if feedback_label == null or not feedback_label.is_inside_tree():
+		return
+	feedback_label.scale = Vector2(1.18, 1.18)
+	var tween := feedback_label.create_tween()
+	tween.tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
@@ -664,10 +655,19 @@ func _apply_combat_mastery_activation(card: Control, orb_id: int, feedback_value
 		return
 	var glow := panel.get_node_or_null("ActivationGlow") as ColorRect
 	var frame := panel.get_node_or_null("ActivationFrame") as Panel
+	var card_background := panel.get_node_or_null("CardTexture") as TextureRect
+	var icon := panel.get_node_or_null("MasteryIcon") as TextureRect
+	var feedback_label := panel.get_node_or_null("MasteryFeedback") as Label
 	var active := feedback_value > 0
 	var tier := _combat_mastery_activation_tier(feedback_value)
 	var accent := OrbType.color(orb_id)
 	panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id, tier))
+	if card_background != null:
+		card_background.modulate = Color(1.0, 1.0, 1.0, 0.08 if active else 0.18)
+	if icon != null:
+		icon.visible = not active
+	if feedback_label != null:
+		feedback_label.visible = active
 	if glow != null:
 		glow.color = Color(accent.r, accent.g, accent.b, _combat_mastery_activation_alpha(tier) if active else 0.0)
 		glow.visible = active
@@ -696,7 +696,7 @@ func _pulse_combat_mastery_activation(glow: ColorRect, frame: Panel, tier: int) 
 	var target: Control = glow
 	if target == null:
 		target = frame
-	if target == null or tier <= 0 or target.get_tree() == null:
+	if target == null or tier <= 0 or not target.is_inside_tree():
 		return
 	var pulse_alpha := 0.16 + 0.05 * float(tier)
 	var tween := target.create_tween()
@@ -1009,6 +1009,47 @@ func _mastery_source_key(source_type: String, source_id: String) -> String:
 	return "%s:%s" % [source_type, source_id]
 
 
+func _find_modifier_source_slot(source_type: String, source_id: String) -> Control:
+	var rows := {
+		"equipment": _hud_nodes.get("equipment_icons") as Control,
+		"relic": _hud_nodes.get("relic_icons") as Control,
+	}
+	var row := rows.get(source_type, null) as Control
+	if row == null:
+		return null
+	for child in row.get_children():
+		var slot := child as Control
+		if slot == null:
+			continue
+		if String(slot.get_meta("content_type", "")) != source_type:
+			continue
+		if String(slot.get_meta("content_id", "")) == source_id:
+			return slot
+	return null
+
+
+func _pulse_modifier_source_slot(slot: Control) -> void:
+	if slot == null or not slot.is_inside_tree():
+		return
+	if slot.has_meta("modifier_wiggle_tween"):
+		var old_tween: Variant = slot.get_meta("modifier_wiggle_tween")
+		if old_tween is Tween and is_instance_valid(old_tween):
+			(old_tween as Tween).kill()
+	slot.pivot_offset = slot.size * 0.5
+	slot.rotation_degrees = 0.0
+	slot.scale = Vector2.ONE
+	var tween := slot.create_tween()
+	slot.set_meta("modifier_wiggle_tween", tween)
+	tween.set_parallel(true)
+	tween.tween_property(slot, "scale", Vector2(MODIFIER_SOURCE_WIGGLE_SCALE, MODIFIER_SOURCE_WIGGLE_SCALE), MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.18)
+	tween.chain().tween_property(slot, "rotation_degrees", MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.28)
+	tween.chain().tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES * 0.45, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.22)
+	tween.chain().set_parallel(true)
+	tween.tween_property(slot, "rotation_degrees", 0.0, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30)
+	tween.tween_property(slot, "scale", Vector2.ONE, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30)
+
+
 func _add_mastery_source_highlight(slot: Control, slot_size: Vector2) -> void:
 	var highlight := Panel.new()
 	highlight.name = "MasterySourceHighlight"
@@ -1040,9 +1081,7 @@ func _source_affects_orb_mastery(orb_id: int, modifiers: Dictionary) -> bool:
 				or int(modifiers.get("combo_flat_bonus", 0)) != 0 \
 				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0)
 		OrbType.Id.ARMOR:
-			return int(modifiers.get("start_turn_armor", 0)) != 0 \
-				or int(modifiers.get("combo_flat_bonus", 0)) != 0 \
-				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0)
+			return int(modifiers.get("start_turn_armor", 0)) != 0
 		OrbType.Id.HEART:
 			return int(modifiers.get("flat_heal_bonus", 0)) != 0
 		OrbType.Id.GOLD:

@@ -129,6 +129,8 @@ var _combat_consumable_service: Variant = null
 var _host: Control = null
 var _model = null
 var _view = null
+var _combat_mastery_preview_base_amounts: Dictionary = {}
+var _combat_mastery_preview_modifiers: Dictionary = {}
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
@@ -1567,15 +1569,17 @@ func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
 	if not OrbType.is_valid_id(orb_id):
 		return
-	var amount := _preview_match_feedback_value(group, combo_value)
-	if amount <= 0:
+	var base_amount := _preview_match_base_feedback_value(group)
+	if base_amount <= 0:
 		return
-	var next_total: int = _model.add_combat_mastery_preview_total(orb_id, amount)
-	if _view != null:
-		_view.set_combat_mastery_feedback(orb_id, next_total)
+	_combat_mastery_preview_base_amounts[orb_id] = int(_combat_mastery_preview_base_amounts.get(orb_id, 0)) + base_amount
+	_pulse_combat_modifier_sources(_preview_modifier_sources_for_orb(orb_id))
+	_sync_combat_mastery_preview_for_combo(combo_value)
 
 
 func _reset_combat_mastery_preview() -> void:
+	_combat_mastery_preview_base_amounts.clear()
+	_combat_mastery_preview_modifiers = _current_combat_modifiers_snapshot()
 	_model.reset_combat_mastery_preview()
 	if _view != null:
 		_view.clear_combat_mastery_feedback()
@@ -1592,6 +1596,7 @@ func _sync_combat_mastery_preview_totals() -> void:
 func _release_combat_mastery_feedback(orb_id: int) -> void:
 	if not OrbType.is_valid_id(orb_id):
 		return
+	_combat_mastery_preview_base_amounts.erase(orb_id)
 	_model.release_combat_mastery_feedback(orb_id)
 	if _view != null:
 		_view.set_combat_mastery_feedback(orb_id, 0)
@@ -1601,6 +1606,7 @@ func _release_remaining_combat_mastery_feedback() -> void:
 	if _view == null:
 		return
 	for orb_id in _model.consume_active_combat_mastery_feedback(OrbType.ALL_TYPES):
+		_combat_mastery_preview_base_amounts.erase(int(orb_id))
 		_view.set_combat_mastery_feedback(int(orb_id), 0)
 		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1609,18 +1615,111 @@ func _release_remaining_combat_mastery_feedback() -> void:
 
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
 	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
+	var base_amount := _preview_match_base_feedback_value(group)
+	return _project_combat_mastery_feedback_value(orb_id, base_amount, combo_value)
+
+
+func _preview_match_base_feedback_value(group: Dictionary) -> int:
+	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
 	if not OrbType.is_valid_id(orb_id) or _player_state == null:
 		return 0
 	var cells: Array = group.get("cells", [])
 	var matched_count := cells.size()
 	if matched_count <= 0:
 		return 0
-	var base_amount := matched_count * _player_state.orb_value(orb_id)
+	var orb_bonus_by_id: Dictionary = _combat_mastery_preview_modifiers.get("orb_bonus_by_id", {})
+	var orb_value := _player_state.orb_value(orb_id) + int(orb_bonus_by_id.get(orb_id, 0))
+	return matched_count * maxi(0, orb_value)
+
+
+func _sync_combat_mastery_preview_for_combo(combo_value: int) -> void:
+	for raw_orb_id in OrbType.ALL_TYPES:
+		var orb_id := int(raw_orb_id)
+		var base_amount := int(_combat_mastery_preview_base_amounts.get(orb_id, 0))
+		var projected_amount := _project_combat_mastery_feedback_value(orb_id, base_amount, combo_value)
+		_model.set_combat_mastery_preview_total(orb_id, projected_amount)
+		if _view != null:
+			_view.set_combat_mastery_feedback(orb_id, projected_amount)
+
+
+func _project_combat_mastery_feedback_value(orb_id: int, base_amount: int, combo_value: int) -> int:
+	if base_amount <= 0 or not OrbType.is_valid_id(orb_id) or _player_state == null:
+		return 0
 	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH, OrbType.Id.ARMOR:
-			return int(round(float(base_amount) * _player_state.combo_multiplier(combo_value)))
+		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
+			var combo_flat_bonus := int(_combat_mastery_preview_modifiers.get("combo_flat_bonus", 0))
+			var combo_multiplier_mult := maxf(0.0, float(_combat_mastery_preview_modifiers.get("combo_multiplier_mult", 1.0)))
+			return int(round(float(base_amount) * _player_state.combo_multiplier(combo_value + combo_flat_bonus) * combo_multiplier_mult))
 		_:
 			return base_amount
+
+
+func _current_combat_modifiers_snapshot() -> Dictionary:
+	var modifiers := RunState.current_combat_modifiers()
+	return modifiers.duplicate(true)
+
+
+func _preview_modifier_sources_for_orb(orb_id: int) -> Array[Dictionary]:
+	var sources: Array[Dictionary] = []
+	sources.append_array(_modifier_sources_for_orb_bonus(orb_id))
+	match orb_id:
+		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
+			sources.append_array(_modifier_sources_for_combo_scaling())
+	return _unique_modifier_sources(sources)
+
+
+func _modifier_sources_for_orb_bonus(orb_id: int) -> Array[Dictionary]:
+	var sources: Array[Dictionary] = []
+	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
+		var source: Dictionary = raw_source
+		var modifiers: Dictionary = source.get("combat_modifiers", {})
+		var orb_bonus_by_id: Dictionary = modifiers.get("orb_bonus_by_id", {})
+		if int(orb_bonus_by_id.get(orb_id, 0)) != 0:
+			sources.append(source)
+	return sources
+
+
+func _modifier_sources_for_combo_scaling() -> Array[Dictionary]:
+	var sources: Array[Dictionary] = []
+	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
+		var source: Dictionary = raw_source
+		var modifiers: Dictionary = source.get("combat_modifiers", {})
+		if int(modifiers.get("combo_flat_bonus", 0)) != 0 \
+				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0):
+			sources.append(source)
+	return sources
+
+
+func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
+	var sources: Array[Dictionary] = []
+	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
+		var source: Dictionary = raw_source
+		var modifiers: Dictionary = source.get("combat_modifiers", {})
+		if key == "combo_multiplier_mult":
+			if not is_equal_approx(float(modifiers.get(key, 1.0)), 1.0):
+				sources.append(source)
+			continue
+		if int(modifiers.get(key, 0)) != 0:
+			sources.append(source)
+	return _unique_modifier_sources(sources)
+
+
+func _unique_modifier_sources(sources: Array[Dictionary]) -> Array[Dictionary]:
+	var unique_sources: Array[Dictionary] = []
+	var seen := {}
+	for source in sources:
+		var source_key := "%s:%s" % [String(source.get("source_type", "")), String(source.get("source_id", ""))]
+		if seen.has(source_key):
+			continue
+		seen[source_key] = true
+		unique_sources.append(source)
+	return unique_sources
+
+
+func _pulse_combat_modifier_sources(sources: Array[Dictionary]) -> void:
+	if sources.is_empty() or _view == null:
+		return
+	_view.pulse_combat_modifier_sources(sources)
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
@@ -1638,6 +1737,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var heart_heal := int(turn_log.get("healed", 0))
 	var armor_gain := int(turn_log.get("armor_gained", 0))
 	var gold_gain := int(turn_log.get("gold_gained", 0))
+	var flat_damage_bonus := int(turn_log.get("flat_damage_bonus", 0))
+	var prep_armor_added := int(turn_log.get("prep_armor_added", 0))
+	var applied_flat_heal_bonus := maxi(0, heart_heal - int(turn_log.get("heart_base", 0)))
+	var applied_flat_gold_bonus := maxi(0, gold_gain - int(turn_log.get("gold_base", 0)))
 	var enemy_target: Vector2 = Vector2.ZERO
 	var player_target: Vector2 = Vector2.ZERO
 	if _view != null:
@@ -1650,6 +1753,12 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var player_lifetime := _combat_speed_duration(0.45)
 	var gold_lifetime := _combat_speed_duration(0.55)
 	var label_lifetime := _combat_speed_duration(0.72)
+
+	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
+		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
+		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
+		if not _can_continue_after_async_wait():
+			return
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
@@ -1705,6 +1814,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_stage_hud_enemy_result()
 
 	if heart_heal > 0:
+		if applied_flat_heal_bonus > 0:
+			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _modifier_sources_for_key("flat_heal_bonus"))
+			if not _can_continue_after_async_wait():
+				return
 		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime, heart_heal)
@@ -1731,6 +1844,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
+		if applied_flat_gold_bonus > 0:
+			await _apply_end_modifier_feedback(OrbType.Id.GOLD, applied_flat_gold_bonus, _modifier_sources_for_key("flat_gold_bonus"))
+			if not _can_continue_after_async_wait():
+				return
 		var staged_gold_before_gain: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
@@ -1745,6 +1862,11 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	await _release_remaining_combat_mastery_feedback()
 	if not _can_continue_after_async_wait():
 		return
+	var enemy_attack_resolution: Dictionary = turn_log.get("enemy_attack_resolution", {})
+	if prep_armor_added > 0 and int(enemy_attack_resolution.get("incoming", 0)) > 0:
+		await _apply_end_modifier_feedback(OrbType.Id.ARMOR, prep_armor_added, _modifier_sources_for_key("start_turn_armor"))
+		if not _can_continue_after_async_wait():
+			return
 	await _replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
 	if not _can_continue_after_async_wait():
 		return
@@ -1752,6 +1874,17 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if not _can_continue_after_async_wait():
 		return
 	_reset_combat_mastery_preview()
+
+
+func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
+	if amount <= 0 or not OrbType.is_valid_id(orb_id):
+		return
+	_pulse_combat_modifier_sources(sources)
+	var next_total: int = int(_model.combat_mastery_preview_total(orb_id)) + amount
+	_model.set_combat_mastery_preview_total(orb_id, next_total)
+	if _view != null:
+		_view.set_combat_mastery_feedback(orb_id, next_total)
+	await _wait_combat_speed(0.16)
 
 
 func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
@@ -2162,6 +2295,33 @@ func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
 			selected_orb = int(orb_id)
 	if selected_count <= 0:
 		return OrbType.Id.FIRE
+	return selected_orb
+
+
+func _dominant_damage_orb_for_turn(turn_log: Dictionary) -> int:
+	var selected_orb: int = OrbType.Id.FIRE
+	var selected_amount: int = -1
+	var damage_by_orb := {
+		OrbType.Id.FIRE: int(turn_log.get("fire_damage", 0)),
+		OrbType.Id.ICE: int(turn_log.get("ice_damage", 0)),
+		OrbType.Id.EARTH: int(turn_log.get("earth_damage", 0)),
+	}
+	for raw_orb_id in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
+		var orb_id := int(raw_orb_id)
+		var amount := int(damage_by_orb.get(orb_id, 0))
+		if amount > selected_amount:
+			selected_amount = amount
+			selected_orb = orb_id
+	if selected_amount > 0:
+		return selected_orb
+	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
+	selected_amount = -1
+	for raw_orb_id in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
+		var orb_id := int(raw_orb_id)
+		var amount := int(matched_counts.get(orb_id, 0))
+		if amount > selected_amount:
+			selected_amount = amount
+			selected_orb = orb_id
 	return selected_orb
 
 
