@@ -173,14 +173,15 @@
     "enemies": {
       "boss_burning_knight": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_burning_knight.png",
-        "sha256": "3e151dc155f2642838856266468275215971c925adfabd7d6a525a4a411df345",
+        "sha256": "d8f5e0025fa3f77c0a6570029738b6d2648906b9bf4e01529bafb9ada7f49099",
         "size": [
           384,
           384
@@ -190,14 +191,15 @@
       },
       "boss_iron_gate": {
         "alpha_bbox": [
-          8,
-          54,
-          376,
-          330
+          9,
+          63,
+          374,
+          329
         ],
-        "coverage": 0.6888,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5881,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_iron_gate.png",
-        "sha256": "186e8164fd02680a1ccb29ddd1350cef9ae63f1b0d58c483e7264ee367419d00",
+        "sha256": "df2c5b8442596ad1a4e3c5a8ec83f86cf91a0d15d23934cb66debda1d1a711af",
         "size": [
           384,
           384
@@ -207,14 +209,15 @@
       },
       "boss_prism_warden": {
         "alpha_bbox": [
-          8,
-          54,
-          376,
-          330
+          9,
+          63,
+          374,
+          329
         ],
-        "coverage": 0.6888,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5881,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_prism_warden.png",
-        "sha256": "983df254de156c81f4dec90255b161a3cd2adbde69c3cbb7e88cb92428256278",
+        "sha256": "e3a7f1e8f85998ea30fdb8a83061ce71a7152e8971a69e22915c64ad0d78faf7",
         "size": [
           384,
           384
@@ -224,14 +227,15 @@
       },
       "enemy_ash_hunter": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_ash_hunter.png",
-        "sha256": "8976efc64a67fe23a1b6126e6f2da65cd977b002b55aa283e084604fcf8e6b04",
+        "sha256": "23d15f715a208448bfa12b5751325c7fb4942e94fe87c6e02bd81156e036d2d1",
         "size": [
           384,
           384
@@ -241,14 +245,15 @@
       },
       "enemy_cavern_defender": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png",
-        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "sha256": "7055d3bf0de2db43ed613421178d2fe1dc0de0cf97567b171466c67bb030d094",
         "size": [
           384,
           384
@@ -258,14 +263,15 @@
       },
       "enemy_cavern_striker": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png",
-        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "sha256": "269633f996e03729a5825f65accf970f59a48c9eb6b0bad12bb2d9283287ab71",
         "size": [
           384,
           384
@@ -275,31 +281,37 @@
       },
       "enemy_charger": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          23,
+          8,
+          360,
+          376
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.4997,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_charger.png",
-        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "sha256": "3ca067c5796090f418d05779d33ea73146dd8caf5cc0c5a8169335c0d548479a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
       },
       "enemy_defender": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_defender.png",
-        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "sha256": "7055d3bf0de2db43ed613421178d2fe1dc0de0cf97567b171466c67bb030d094",
         "size": [
           384,
           384
@@ -309,48 +321,59 @@
       },
       "enemy_goldbound_keeper": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          8,
+          16,
+          376,
+          367
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.581,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_goldbound_keeper.png",
-        "sha256": "dc7b3ffe9455ec731d53c92b3047b5b67acbcf68145ef944b8d34fc887cfefcd",
+        "sha256": "b1dd5c474abf892bd8ceef140d2c4a46c5d2fd5f0c73f45ebfc850324d4948af",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
       },
       "enemy_ruin_lancer": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          23,
+          8,
+          360,
+          376
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.4997,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_ruin_lancer.png",
-        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "sha256": "3ca067c5796090f418d05779d33ea73146dd8caf5cc0c5a8169335c0d548479a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
       },
       "enemy_striker": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_striker.png",
-        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "sha256": "269633f996e03729a5825f65accf970f59a48c9eb6b0bad12bb2d9283287ab71",
         "size": [
           384,
           384
@@ -360,20 +383,25 @@
       },
       "enemy_vault_executioner": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          8,
+          17,
+          376,
+          367
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.5856,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_vault_executioner.png",
-        "sha256": "4ffa358fd413a43096aa2dac8ed2ac0ab2a16c7718e06219687bf8669c89121a",
+        "sha256": "57633009a3ad1e1ed7241d1cf474e44aa61fcac9866a758185211af68fbb912a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
       }
     },
     "equipment": {
@@ -738,14 +766,15 @@
       },
       "boss_burning_knight": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_burning_knight.png",
-        "sha256": "3e151dc155f2642838856266468275215971c925adfabd7d6a525a4a411df345",
+        "sha256": "d8f5e0025fa3f77c0a6570029738b6d2648906b9bf4e01529bafb9ada7f49099",
         "size": [
           384,
           384
@@ -755,14 +784,15 @@
       },
       "boss_iron_gate": {
         "alpha_bbox": [
-          8,
-          54,
-          376,
-          330
+          9,
+          63,
+          374,
+          329
         ],
-        "coverage": 0.6888,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5881,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_iron_gate.png",
-        "sha256": "186e8164fd02680a1ccb29ddd1350cef9ae63f1b0d58c483e7264ee367419d00",
+        "sha256": "df2c5b8442596ad1a4e3c5a8ec83f86cf91a0d15d23934cb66debda1d1a711af",
         "size": [
           384,
           384
@@ -772,14 +802,15 @@
       },
       "boss_prism_warden": {
         "alpha_bbox": [
-          8,
-          54,
-          376,
-          330
+          9,
+          63,
+          374,
+          329
         ],
-        "coverage": 0.6888,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5881,
         "path": "res://resources/art/assetgen/runtime/enemies/boss_prism_warden.png",
-        "sha256": "983df254de156c81f4dec90255b161a3cd2adbde69c3cbb7e88cb92428256278",
+        "sha256": "e3a7f1e8f85998ea30fdb8a83061ce71a7152e8971a69e22915c64ad0d78faf7",
         "size": [
           384,
           384
@@ -978,14 +1009,15 @@
       },
       "enemy_ash_hunter": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_ash_hunter.png",
-        "sha256": "8976efc64a67fe23a1b6126e6f2da65cd977b002b55aa283e084604fcf8e6b04",
+        "sha256": "23d15f715a208448bfa12b5751325c7fb4942e94fe87c6e02bd81156e036d2d1",
         "size": [
           384,
           384
@@ -995,14 +1027,15 @@
       },
       "enemy_cavern_defender": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png",
-        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "sha256": "7055d3bf0de2db43ed613421178d2fe1dc0de0cf97567b171466c67bb030d094",
         "size": [
           384,
           384
@@ -1012,14 +1045,15 @@
       },
       "enemy_cavern_striker": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png",
-        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "sha256": "269633f996e03729a5825f65accf970f59a48c9eb6b0bad12bb2d9283287ab71",
         "size": [
           384,
           384
@@ -1029,31 +1063,37 @@
       },
       "enemy_charger": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          23,
+          8,
+          360,
+          376
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.4997,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_charger.png",
-        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "sha256": "3ca067c5796090f418d05779d33ea73146dd8caf5cc0c5a8169335c0d548479a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
       },
       "enemy_defender": {
         "alpha_bbox": [
-          69,
-          8,
-          314,
-          376
+          70,
+          20,
+          313,
+          375
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5225,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_defender.png",
-        "sha256": "48bea64615bd3c9183bd52f38f0d725cf60af711875784ef39dd0e07f937f407",
+        "sha256": "7055d3bf0de2db43ed613421178d2fe1dc0de0cf97567b171466c67bb030d094",
         "size": [
           384,
           384
@@ -1063,48 +1103,59 @@
       },
       "enemy_goldbound_keeper": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          8,
+          16,
+          376,
+          367
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.581,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_goldbound_keeper.png",
-        "sha256": "dc7b3ffe9455ec731d53c92b3047b5b67acbcf68145ef944b8d34fc887cfefcd",
+        "sha256": "b1dd5c474abf892bd8ceef140d2c4a46c5d2fd5f0c73f45ebfc850324d4948af",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 5
       },
       "enemy_ruin_lancer": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          23,
+          8,
+          360,
+          376
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.4997,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_ruin_lancer.png",
-        "sha256": "621567be3abac1892210a8d2d78a91e772e22ab10de321444d21ebf8585ab613",
+        "sha256": "3ca067c5796090f418d05779d33ea73146dd8caf5cc0c5a8169335c0d548479a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 3
       },
       "enemy_striker": {
         "alpha_bbox": [
-          8,
-          69,
-          376,
-          314
+          9,
+          77,
+          374,
+          313
         ],
-        "coverage": 0.6114,
+        "background_removed": "soft_stage_matte",
+        "coverage": 0.5212,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_striker.png",
-        "sha256": "d17ca337141d0045ae4415b1ff0d01fed2bc1cb60a0622ff519edbddfcb6e88e",
+        "sha256": "269633f996e03729a5825f65accf970f59a48c9eb6b0bad12bb2d9283287ab71",
         "size": [
           384,
           384
@@ -1114,20 +1165,25 @@
       },
       "enemy_vault_executioner": {
         "alpha_bbox": [
-          62,
-          77,
-          322,
-          307
+          8,
+          17,
+          376,
+          367
         ],
-        "coverage": 0.4055,
+        "background_removed": "edge_connected_dark_neutral",
+        "coverage": 0.5856,
         "path": "res://resources/art/assetgen/runtime/enemies/enemy_vault_executioner.png",
-        "sha256": "4ffa358fd413a43096aa2dac8ed2ac0ab2a16c7718e06219687bf8669c89121a",
+        "sha256": "57633009a3ad1e1ed7241d1cf474e44aa61fcac9866a758185211af68fbb912a",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
-        "source_index": 0
+        "source": "res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png",
+        "source_grid": [
+          3,
+          2
+        ],
+        "source_index": 4
       },
       "equipment_alchemist_gloves": {
         "alias_of": "equipment_leather_gloves",
@@ -2497,7 +2553,7 @@
       }
     }
   },
-  "generated_at_utc": "2026-05-22T13:09:41.053413+00:00",
+  "generated_at_utc": "2026-05-22T15:15:13.666477+00:00",
   "import_settings": {
     "checked_png_imports": 60,
     "enabled_mipmaps": 0,
@@ -2529,7 +2585,7 @@
       ],
       "coverage": 1.0,
       "path": "res://resources/art/assetgen/runtime/previews/runtime_icons_contact.png",
-      "sha256": "7974a5a98e76f5436bcb0a95d8ddc2c2c9d98c69423dd68a2894d001b0428919",
+      "sha256": "59e92672950dc740c82af4cedaa1e2f27c7c37b79bcb05469b1f07c5f0c30b87",
       "size": [
         1058,
         2236

@@ -1,0 +1,180 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combat Enemy Stage Visual Report</title>
+<style>body{margin:0;font:14px/1.45 Segoe UI,Arial,sans-serif;background:#111820;color:#edf3f8}header{padding:24px 28px;background:#071018;border-bottom:3px solid #c58b2b}h1{margin:0 0 6px;font-size:28px}.summary{color:#d7c9aa}.doc{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;padding:20px 20px 0}.doc section{background:#18232d;border:1px solid #344253;border-radius:8px;padding:14px}.doc h2{font-size:16px;margin:0 0 8px;color:#f3cc73}.doc ul{margin:0;padding-left:18px}.doc li{margin:4px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;padding:20px}.card{background:#18232d;border:1px solid #344253;border-radius:8px;overflow:hidden}.card.fail{border-color:#c94d4d}.preview{display:block;width:100%;height:auto;background:#05080b}.body{padding:12px 14px}.ok{color:#8be28b}.failtext{color:#ff9b9b}dl{display:grid;grid-template-columns:110px 1fr;gap:5px 10px;margin:10px 0 0}dt{color:#d7c9aa}dd{margin:0;overflow-wrap:anywhere}code{font-family:Consolas,monospace}</style></head><body>
+<header><h1>Combat Enemy Stage Visual Report</h1><div class="summary">13 enemies checked, 0 fallback/missing/placeholder failures.</div></header>
+<div class="doc">
+<section><h2>Implemented Fixes</h2><ul>
+<li>Enemy figures resolve through runtime manifest keys before legacy portrait fallbacks.</li>
+<li>Combat top stage uses the per-enemy combat stage texture path.</li>
+<li>Enemy visual profiles apply figure scale, offset, mipmapped filtering, and contact shadow.</li>
+<li>Placeholder-grade enemy sources are flagged as QA failures.</li>
+</ul></section>
+<section><h2>Asset Corrections</h2><ul>
+<li>Ruin Lancer, Vault Executioner, Goldbound Keeper, and Charger runtime art are sliced from the AssetGen enemy portrait sheet.</li>
+<li>Boss and first-pass portrait composites use a soft stage matte to reduce rectangular backdrop edges.</li>
+<li>Generated previews below show each enemy over its resolved combat stage.</li>
+</ul></section>
+<section><h2>Verification</h2><ul>
+<li>Report generator fails on missing stage textures, missing figures, fallbacks, or placeholder-like runtime enemy sources.</li>
+<li>Expected result for this pass is zero fallback/missing/placeholder failures.</li>
+<li>Lower combat board, mastery strip, player HUD, loadout rails, and matched-orb behavior were not changed by this pass.</li>
+</ul></section>
+</div>
+<main class="grid">
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/cavern_striker.png" alt="cavern_striker preview">
+<div class="body"><strong>cavern_striker</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>cavern_striker</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_cavern_striker</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_0</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/cavern_defender.png" alt="cavern_defender preview">
+<div class="body"><strong>cavern_defender</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>cavern_defender</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_cavern_defender</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_cavern_defender.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/ash_hunter.png" alt="ash_hunter preview">
+<div class="body"><strong>ash_hunter</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>ash_hunter</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_ash_hunter</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_ash_hunter.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_ash_hunter.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_2</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/ruin_lancer.png" alt="ruin_lancer preview">
+<div class="body"><strong>ruin_lancer</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>ruin_lancer</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_ruin_lancer</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_ruin_lancer.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png</code></dd>
+<dt>Cleanup</dt><dd><code>edge_connected_dark_neutral</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/vault_executioner.png" alt="vault_executioner preview">
+<div class="body"><strong>vault_executioner</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>vault_executioner</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_vault_executioner</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_vault_executioner.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png</code></dd>
+<dt>Cleanup</dt><dd><code>edge_connected_dark_neutral</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/goldbound_keeper.png" alt="goldbound_keeper preview">
+<div class="body"><strong>goldbound_keeper</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>goldbound_keeper</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_goldbound_keeper</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_goldbound_keeper.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png</code></dd>
+<dt>Cleanup</dt><dd><code>edge_connected_dark_neutral</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/iron_gate.png" alt="iron_gate preview">
+<div class="body"><strong>iron_gate</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>iron_gate</code></dd>
+<dt>Runtime key</dt><dd><code>boss_iron_gate</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/boss_iron_gate.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/boss_iron_gate.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/burning_knight.png" alt="burning_knight preview">
+<div class="body"><strong>burning_knight</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>burning_knight</code></dd>
+<dt>Runtime key</dt><dd><code>boss_burning_knight</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/boss_burning_knight.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/boss_burning_knight.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_2</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/prism_warden.png" alt="prism_warden preview">
+<div class="body"><strong>prism_warden</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>prism_warden</code></dd>
+<dt>Runtime key</dt><dd><code>boss_prism_warden</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/boss_prism_warden.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/boss_prism_warden.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_3</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/training_goblin.png" alt="training_goblin preview">
+<div class="body"><strong>training_goblin</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>cavern_striker</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_cavern_striker</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_0</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/striker.png" alt="striker preview">
+<div class="body"><strong>striker</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>cavern_striker</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_cavern_striker</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_cavern_striker.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_0</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/defender.png" alt="defender preview">
+<div class="body"><strong>defender</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>cavern_defender</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_cavern_defender</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_cavern_defender.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/first_pass/enemies/enemy_cavern_defender.png</code></dd>
+<dt>Cleanup</dt><dd><code>soft_stage_matte</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+<section class="card">
+<img class="preview" src="combat_enemy_stage_previews/charger.png" alt="charger preview">
+<div class="body"><strong>charger</strong> <span class="ok">OK</span>
+<dl>
+<dt>Normalized</dt><dd><code>ruin_lancer</code></dd>
+<dt>Runtime key</dt><dd><code>enemy_charger</code></dd>
+<dt>Sprite</dt><dd><code>res://resources/art/assetgen/runtime/enemies/enemy_charger.png</code></dd>
+<dt>Source</dt><dd><code>res://resources/art/assetgen/enemies/enemy_portraits_candidate_01.png</code></dd>
+<dt>Cleanup</dt><dd><code>edge_connected_dark_neutral</code></dd>
+<dt>Stage</dt><dd><code>res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png#cell_1</code></dd>
+<dt>Fallback</dt><dd>sprite=false, stage=false, placeholder=false</dd>
+</dl></div></section>
+</main></body></html>

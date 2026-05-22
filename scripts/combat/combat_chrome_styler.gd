@@ -64,11 +64,20 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if enemy_stage_backdrop is TextureRect:
 		(enemy_stage_backdrop as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		(enemy_stage_backdrop as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
+		(enemy_stage_backdrop as TextureRect).texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 		(enemy_stage_backdrop as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.94)
+	var enemy_ground_shadow: Variant = nodes.get("enemy_ground_shadow", null)
+	if enemy_ground_shadow is Panel:
+		var shadow_style := StyleBoxFlat.new()
+		shadow_style.bg_color = Color(0.0, 0.0, 0.0, 0.34)
+		shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+		shadow_style.set_corner_radius_all(999)
+		(enemy_ground_shadow as Panel).add_theme_stylebox_override("panel", shadow_style)
 	var enemy_portrait: Variant = nodes.get("enemy_portrait", null)
 	if enemy_portrait is TextureRect:
 		(enemy_portrait as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		(enemy_portrait as TextureRect).stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+		(enemy_portrait as TextureRect).texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 		(enemy_portrait as TextureRect).modulate = Color(1.0, 1.0, 1.0, 1.0)
 		(enemy_portrait as TextureRect).material = null
 	var enemy_text_scrim: Variant = nodes.get("enemy_text_scrim", null)

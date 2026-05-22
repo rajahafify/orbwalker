@@ -146,6 +146,14 @@ ENEMY_ICON_SOURCES = {
     "boss_prism_warden": FIRST_PASS / "enemies" / "boss_prism_warden.png",
 }
 
+ENEMY_PORTRAIT_SHEET = ASSETGEN / "enemies" / "enemy_portraits_candidate_01.png"
+ENEMY_SHEET_SOURCES = {
+    "enemy_charger": {"source": ENEMY_PORTRAIT_SHEET, "grid": (3, 2), "index": 3},
+    "enemy_ruin_lancer": {"source": ENEMY_PORTRAIT_SHEET, "grid": (3, 2), "index": 3},
+    "enemy_vault_executioner": {"source": ENEMY_PORTRAIT_SHEET, "grid": (3, 2), "index": 4},
+    "enemy_goldbound_keeper": {"source": ENEMY_PORTRAIT_SHEET, "grid": (3, 2), "index": 5},
+}
+
 
 def rel_res(path: Path) -> str:
     return "res://" + path.relative_to(ROOT).as_posix()
@@ -185,6 +193,22 @@ def is_bright_neutral(pixel: tuple[int, int, int, int]) -> bool:
     return max(r, g, b) - min(r, g, b) <= 34 and (r + g + b) / 3.0 >= 178
 
 
+def is_dark_neutral_portrait_background(pixel: tuple[int, int, int, int], local_contrast: float) -> bool:
+    r, g, b, a = pixel
+    if a <= 12:
+        return False
+    max_channel = max(r, g, b)
+    min_channel = min(r, g, b)
+    brightness = (r + g + b) / 3.0
+    saturation = (max_channel - min_channel) / float(max(1, max_channel))
+    return brightness <= 74.0 and saturation <= 0.36 and local_contrast <= 18.0
+
+
+def pixel_luma(pixel: tuple[int, int, int, int]) -> float:
+    r, g, b, _a = pixel
+    return r * 0.299 + g * 0.587 + b * 0.114
+
+
 def clear_edge_connected_background(image: Image.Image) -> Image.Image:
     rgba = image.convert("RGBA")
     width, height = rgba.size
@@ -200,6 +224,51 @@ def clear_edge_connected_background(image: Image.Image) -> Image.Image:
             return
         visited[index] = 1
         if is_bright_neutral(px[x, y]):
+            q.append((x, y))
+
+    for edge_x in range(width):
+        enqueue(edge_x, 0)
+        enqueue(edge_x, height - 1)
+    for edge_y in range(height):
+        enqueue(0, edge_y)
+        enqueue(width - 1, edge_y)
+
+    while q:
+        x, y = q.pop()
+        r, g, b, _a = px[x, y]
+        px[x, y] = (r, g, b, 0)
+        enqueue(x + 1, y)
+        enqueue(x - 1, y)
+        enqueue(x, y + 1)
+        enqueue(x, y - 1)
+    return rgba
+
+
+def clear_edge_connected_dark_portrait_background(image: Image.Image) -> Image.Image:
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    px = rgba.load()
+    visited = bytearray(width * height)
+    q: deque[tuple[int, int]] = deque()
+
+    def local_contrast(x: int, y: int) -> float:
+        min_luma = 255.0
+        max_luma = 0.0
+        for sample_y in range(max(0, y - 1), min(height, y + 2)):
+            for sample_x in range(max(0, x - 1), min(width, x + 2)):
+                luma = pixel_luma(px[sample_x, sample_y])
+                min_luma = min(min_luma, luma)
+                max_luma = max(max_luma, luma)
+        return max_luma - min_luma
+
+    def enqueue(x: int, y: int) -> None:
+        if x < 0 or y < 0 or x >= width or y >= height:
+            return
+        index = y * width + x
+        if visited[index]:
+            return
+        visited[index] = 1
+        if is_dark_neutral_portrait_background(px[x, y], local_contrast(x, y)):
             q.append((x, y))
 
     for edge_x in range(width):
@@ -304,6 +373,45 @@ def trim_and_center(image: Image.Image, canvas: int, padding: int) -> Image.Imag
     return out
 
 
+def smoothstep(edge0: float, edge1: float, value: float) -> float:
+    if edge0 == edge1:
+        return 1.0 if value >= edge1 else 0.0
+    t = max(0.0, min(1.0, (value - edge0) / (edge1 - edge0)))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def apply_enemy_stage_matte(image: Image.Image) -> Image.Image:
+    """Soften baked portrait-scene edges until dedicated cutout art exists."""
+    rgba = image.convert("RGBA")
+    width, height = rgba.size
+    bbox = alpha_bbox(rgba)
+    if bbox is None:
+        return rgba
+    min_x, min_y, max_x, max_y = bbox
+    bbox_w = max(1, max_x - min_x)
+    bbox_h = max(1, max_y - min_y)
+    px = rgba.load()
+    center_x = (min_x + max_x - 1) * 0.5
+    center_y = min_y + bbox_h * 0.52
+    radius_x = bbox_w * 0.48
+    radius_y = bbox_h * 0.47
+    edge_fade = max(18.0, min(bbox_w, bbox_h) * 0.10)
+    for y in range(min_y, max_y):
+        for x in range(min_x, max_x):
+            r, g, b, a = px[x, y]
+            if a <= 0:
+                continue
+            edge_distance = min(x - min_x, y - min_y, max_x - 1 - x, max_y - 1 - y)
+            edge_factor = smoothstep(0.0, edge_fade, float(edge_distance))
+            dx = abs((x + 0.5 - center_x) / radius_x)
+            dy = abs((y + 0.5 - center_y) / radius_y)
+            superellipse = (dx ** 4.0 + dy ** 4.0) ** 0.25
+            vignette_factor = 1.0 - smoothstep(0.84, 1.04, superellipse)
+            alpha_factor = min(edge_factor, vignette_factor)
+            px[x, y] = (r, g, b, clamp_channel(a * alpha_factor))
+    return rgba
+
+
 def clamp_channel(value: float) -> int:
     return max(0, min(255, round(value)))
 
@@ -396,14 +504,32 @@ def build_sheet_category(name: str, spec: dict, icon_entries: dict, manifest: di
 def build_enemy_icons(icon_entries: dict, manifest: dict) -> None:
     entries: dict = {}
     for key, source in ENEMY_ICON_SOURCES.items():
-        if not source.exists():
-            manifest["warnings"].append(f"Missing enemy icon source for {key}: {source}")
+        sheet_spec = ENEMY_SHEET_SOURCES.get(key)
+        source_path = Path(sheet_spec["source"]) if sheet_spec else source
+        if not source_path.exists():
+            manifest["warnings"].append(f"Missing enemy icon source for {key}: {source_path}")
             continue
-        with Image.open(source) as raw:
-            runtime = trim_and_center(raw.convert("RGBA"), CANVAS_ICON, 8)
+        entry_meta = {"source": rel_res(source_path), "source_index": 0}
+        if sheet_spec:
+            columns, rows = sheet_spec["grid"]
+            source_index = int(sheet_spec["index"])
+            with Image.open(source_path) as raw:
+                region = sheet_region(raw.convert("RGBA"), columns, rows, source_index)
+                cleaned = clear_edge_connected_dark_portrait_background(region)
+                runtime = trim_and_center(cleaned, CANVAS_ICON, 8)
+            entry_meta.update({
+                "source_index": source_index,
+                "source_grid": [columns, rows],
+                "background_removed": "edge_connected_dark_neutral",
+            })
+        else:
+            with Image.open(source_path) as raw:
+                runtime = trim_and_center(raw.convert("RGBA"), CANVAS_ICON, 8)
+                runtime = apply_enemy_stage_matte(runtime)
+            entry_meta["background_removed"] = "soft_stage_matte"
         out_path = OUT_ROOT / "enemies" / f"{key}.png"
         entry = save_png(runtime, out_path)
-        entry.update({"source": rel_res(source), "source_index": 0})
+        entry.update(entry_meta)
         entries[key] = entry
         icon_entries[key] = entry
     manifest["categories"]["enemies"] = entries

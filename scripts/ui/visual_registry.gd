@@ -2,6 +2,7 @@ extends RefCounted
 class_name VisualRegistry
 
 const PATH_COMBAT_BACKGROUND := "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
+const PATH_COMBAT_ENEMY_STAGE_SHEET := "res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
 const PATH_SHOP_BACKGROUND := "res://resources/art/assetgen/backgrounds/shop_background_candidate_01.png"
 const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := [
 	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
@@ -63,7 +64,55 @@ const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
 	"training_goblin": "cavern_striker",
 	"striker": "cavern_striker",
 	"defender": "cavern_defender",
-	"charger": "ash_hunter",
+	"charger": "ruin_lancer",
+}
+
+const _RUNTIME_ENEMY_ALIAS_BY_ID := {
+	"training_goblin": "enemy_cavern_striker",
+	"striker": "enemy_cavern_striker",
+	"defender": "enemy_cavern_defender",
+	"charger": "enemy_charger",
+	"cavern_striker": "enemy_cavern_striker",
+	"cavern_defender": "enemy_cavern_defender",
+	"ash_hunter": "enemy_ash_hunter",
+	"ruin_lancer": "enemy_ruin_lancer",
+	"vault_executioner": "enemy_vault_executioner",
+	"goldbound_keeper": "enemy_goldbound_keeper",
+	"iron_gate": "boss_iron_gate",
+	"burning_knight": "boss_burning_knight",
+	"prism_warden": "boss_prism_warden",
+}
+
+const _PLACEHOLDER_RUNTIME_ENEMY_KEYS := {
+	"enemy_charger": true,
+	"enemy_ruin_lancer": true,
+	"enemy_vault_executioner": true,
+	"enemy_goldbound_keeper": true,
+}
+
+const _COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID := {
+	"cavern_striker": 0,
+	"cavern_defender": 1,
+	"ash_hunter": 2,
+	"ruin_lancer": 1,
+	"vault_executioner": 1,
+	"goldbound_keeper": 1,
+	"iron_gate": 1,
+	"burning_knight": 2,
+	"prism_warden": 3,
+}
+
+const _ENEMY_VISUAL_PROFILES := {
+	"default": {"scale": 1.0, "offset": Vector2.ZERO, "shadow_scale": 1.0, "shadow_alpha": 0.34},
+	"cavern_striker": {"scale": 0.98, "offset": Vector2(0.0, 4.0), "shadow_scale": 0.92, "shadow_alpha": 0.30},
+	"cavern_defender": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.96, "shadow_alpha": 0.32},
+	"ash_hunter": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.95, "shadow_alpha": 0.31},
+	"ruin_lancer": {"scale": 1.02, "offset": Vector2(0.0, -2.0), "shadow_scale": 0.98, "shadow_alpha": 0.32},
+	"vault_executioner": {"scale": 1.04, "offset": Vector2(0.0, -4.0), "shadow_scale": 1.02, "shadow_alpha": 0.34},
+	"goldbound_keeper": {"scale": 1.04, "offset": Vector2(0.0, -2.0), "shadow_scale": 1.04, "shadow_alpha": 0.34},
+	"iron_gate": {"scale": 1.16, "offset": Vector2(0.0, -18.0), "shadow_scale": 1.22, "shadow_alpha": 0.38},
+	"burning_knight": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.36},
+	"prism_warden": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.35},
 }
 
 const _ENEMY_STAGE_BACKGROUND_PATHS := {
@@ -176,6 +225,7 @@ var _placeholder_cache: Dictionary = {}
 var _enemy_portrait_textures: Dictionary = {}
 var _enemy_stage_background_textures: Dictionary = {}
 var _enemy_sprite_textures: Dictionary = {}
+var _combat_enemy_stage_textures: Dictionary = {}
 var _orb_textures: Dictionary = {}
 var _intent_textures: Dictionary = {}
 var _rarity_textures: Dictionary = {}
@@ -191,6 +241,7 @@ var _runtime_manifest: Dictionary = {}
 var _runtime_texture_cache: Dictionary = {}
 
 var _combat_background: Texture2D
+var _combat_enemy_stage_sheet: Texture2D
 var _shop_background: Texture2D
 var _shop_merchant_header: Texture2D
 var _hero_portrait: Texture2D
@@ -270,6 +321,12 @@ func enemy_sprite(enemy_id: String) -> Texture2D:
 	var normalized_id := _normalized_enemy_visual_id(enemy_id)
 	if _enemy_sprite_textures.has(normalized_id):
 		return _enemy_sprite_textures[normalized_id]
+	var runtime_key := _runtime_enemy_key(enemy_id)
+	var runtime_texture := _runtime_texture("enemies", runtime_key)
+	if runtime_texture != null:
+		_enemy_sprite_textures[normalized_id] = runtime_texture
+		return runtime_texture
+	_warn_missing("runtime_enemy:%s:%s" % [normalized_id, runtime_key])
 	var path := String(_ENEMY_SPRITE_PATHS.get(normalized_id, ""))
 	if path != "":
 		var loaded := _safe_load_texture(path, "enemy_sprite:%s" % normalized_id)
@@ -279,6 +336,49 @@ func enemy_sprite(enemy_id: String) -> Texture2D:
 	var fallback := enemy_portrait(normalized_id)
 	_enemy_sprite_textures[normalized_id] = fallback
 	return fallback
+
+
+func enemy_visual_profile(enemy_id: String) -> Dictionary:
+	var normalized_id := _normalized_enemy_visual_id(enemy_id)
+	var profile := Dictionary(_ENEMY_VISUAL_PROFILES.get(normalized_id, _ENEMY_VISUAL_PROFILES["default"])).duplicate(true)
+	var offset: Variant = profile.get("offset", Vector2.ZERO)
+	if not (offset is Vector2):
+		profile["offset"] = Vector2.ZERO
+	return profile
+
+
+func combat_enemy_visual_debug_info(enemy_id: String) -> Dictionary:
+	var normalized_id := _normalized_enemy_visual_id(enemy_id)
+	var runtime_key := _runtime_enemy_key(enemy_id)
+	var runtime_entry := _runtime_texture_entry("enemies", runtime_key)
+	var stage_key := "combat_stage_%s" % normalized_id
+	var stage_path := _combat_stage_sheet_debug_path(normalized_id)
+	var stage_fallback := false
+	if stage_path == "":
+		stage_path = _derived_texture_path(PATH_DERIVED_COMBAT_UI_DIR, stage_key)
+	if stage_path == "":
+		stage_path = _derived_texture_path(PATH_DERIVED_COMBAT_UI_DIR, "combat_stage_fallback")
+		stage_fallback = stage_path != ""
+	var sprite_path := String(runtime_entry.get("path", ""))
+	var sprite_fallback := sprite_path == "" or not _resource_or_file_exists(sprite_path)
+	if sprite_fallback:
+		sprite_path = String(_ENEMY_SPRITE_PATHS.get(normalized_id, ""))
+	if sprite_path == "":
+		sprite_path = String(_ENEMY_PORTRAIT_PATHS.get(normalized_id, ""))
+	return {
+		"enemy_id": enemy_id,
+		"normalized_id": normalized_id,
+		"runtime_key": runtime_key,
+		"sprite_path": sprite_path,
+		"sprite_source": String(runtime_entry.get("source", "")),
+		"sprite_background_removed": String(runtime_entry.get("background_removed", "")),
+		"sprite_placeholder_like": _runtime_enemy_placeholder_like(runtime_key, runtime_entry),
+		"sprite_fallback": sprite_fallback,
+		"stage_key": stage_key,
+		"stage_path": stage_path,
+		"stage_fallback": stage_fallback,
+		"profile": enemy_visual_profile(enemy_id),
+	}
 
 
 func hero_portrait() -> Texture2D:
@@ -521,6 +621,9 @@ func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
 	var normalized_id := enemy_id.strip_edges().to_lower()
 	if _COMBAT_STAGE_ALIAS_BY_ENEMY_ID.has(normalized_id):
 		normalized_id = String(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID[normalized_id])
+	var stage_sheet_texture := _combat_stage_sheet_texture(normalized_id)
+	if stage_sheet_texture != null:
+		return stage_sheet_texture
 	var stage_texture := combat_ui_texture("combat_stage_%s" % normalized_id, false)
 	if stage_texture != null:
 		return stage_texture
@@ -540,6 +643,57 @@ func _normalized_enemy_visual_id(enemy_id: String) -> String:
 	if _COMBAT_STAGE_ALIAS_BY_ENEMY_ID.has(normalized_id):
 		normalized_id = String(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID[normalized_id])
 	return normalized_id
+
+
+func _runtime_enemy_key(enemy_id: String) -> String:
+	var normalized_id := enemy_id.strip_edges().to_lower()
+	if _RUNTIME_ENEMY_ALIAS_BY_ID.has(normalized_id):
+		return String(_RUNTIME_ENEMY_ALIAS_BY_ID[normalized_id])
+	if normalized_id.begins_with("boss_") or normalized_id.begins_with("enemy_"):
+		return normalized_id
+	return "enemy_%s" % normalized_id
+
+
+func _runtime_enemy_placeholder_like(runtime_key: String, runtime_entry: Dictionary) -> bool:
+	if bool(runtime_entry.get("placeholder_like", false)):
+		return true
+	var source := String(runtime_entry.get("source", ""))
+	if not _PLACEHOLDER_RUNTIME_ENEMY_KEYS.has(runtime_key):
+		return false
+	return source.begins_with("res://resources/art/first_pass/enemies/")
+
+
+func _combat_stage_sheet_texture(normalized_id: String) -> Texture2D:
+	if _combat_enemy_stage_textures.has(normalized_id):
+		return _combat_enemy_stage_textures[normalized_id]
+	var index := int(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID.get(normalized_id, -1))
+	if index < 0:
+		return null
+	if _combat_enemy_stage_sheet == null:
+		_combat_enemy_stage_sheet = _safe_load_texture(PATH_COMBAT_ENEMY_STAGE_SHEET, "combat_enemy_stage_sheet")
+	if _combat_enemy_stage_sheet == null:
+		return null
+	var columns := 2
+	var rows := 2
+	var column := index % columns
+	var row := int(floor(float(index) / float(columns)))
+	var cell_width := float(_combat_enemy_stage_sheet.get_width()) / float(columns)
+	var cell_height := float(_combat_enemy_stage_sheet.get_height()) / float(rows)
+	var stage_texture := _atlas_region(
+		_combat_enemy_stage_sheet,
+		Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
+	)
+	_combat_enemy_stage_textures[normalized_id] = stage_texture
+	return stage_texture
+
+
+func _combat_stage_sheet_debug_path(normalized_id: String) -> String:
+	var index := int(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID.get(normalized_id, -1))
+	if index < 0:
+		return ""
+	if ResourceLoader.exists(PATH_COMBAT_ENEMY_STAGE_SHEET) or FileAccess.file_exists(PATH_COMBAT_ENEMY_STAGE_SHEET):
+		return "%s#cell_%d" % [PATH_COMBAT_ENEMY_STAGE_SHEET, index]
+	return ""
 
 
 func combat_intent_badge_texture(kind: String) -> Texture2D:
@@ -920,6 +1074,19 @@ func _load_derived_icon(icon_key: String) -> Texture2D:
 	if _derived_icon_textures.has(icon_key):
 		return _derived_icon_textures[icon_key]
 	return _load_derived_texture(PATH_DERIVED_ICON_DIR, icon_key, _derived_icon_textures)
+
+
+func _derived_texture_path(base_path: String, key: String) -> String:
+	if base_path == "" or key == "":
+		return ""
+	var path := "%s/%s.png" % [base_path, key]
+	if _resource_or_file_exists(path):
+		return path
+	return ""
+
+
+func _resource_or_file_exists(path: String) -> bool:
+	return ResourceLoader.exists(path) or FileAccess.file_exists(path)
 
 
 func _load_derived_texture(base_path: String, key: String, cache: Dictionary) -> Texture2D:
@@ -1395,15 +1562,21 @@ func _runtime_icon_texture(icon_key: String) -> Texture2D:
 	return _runtime_texture("icons", icon_key.strip_edges().to_lower())
 
 
+func _runtime_texture_entry(category: String, key: String) -> Dictionary:
+	if category == "" or key == "":
+		return {}
+	_ensure_runtime_manifest()
+	if _runtime_manifest.is_empty():
+		return {}
+	var categories := Dictionary(_runtime_manifest.get("categories", {}))
+	var category_entries := Dictionary(categories.get(category, {}))
+	return Dictionary(category_entries.get(key, {}))
+
+
 func _runtime_texture(category: String, key: String) -> Texture2D:
 	if category == "" or key == "":
 		return null
-	_ensure_runtime_manifest()
-	if _runtime_manifest.is_empty():
-		return null
-	var categories := Dictionary(_runtime_manifest.get("categories", {}))
-	var category_entries := Dictionary(categories.get(category, {}))
-	var entry := Dictionary(category_entries.get(key, {}))
+	var entry := _runtime_texture_entry(category, key)
 	var path := String(entry.get("path", ""))
 	if path == "":
 		return null

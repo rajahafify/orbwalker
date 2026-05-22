@@ -28,6 +28,7 @@ func build_hud_snapshot(data: Dictionary) -> Dictionary:
 			"top_level_text": top_level_text,
 			"top_enemy_step_text": top_enemy_step_text,
 			"top_gold_text": top_gold_text,
+			"enemy_id": String(data.get("enemy_id", "")),
 			"enemy_name_text": String(data.get("enemy_name_text", "Enemy")),
 			"enemy_hp": enemy_hp,
 			"enemy_max_hp": enemy_max_hp,
@@ -66,6 +67,7 @@ func build_snapshot(data: Dictionary) -> Dictionary:
 	var level_text := String(data.get("top_level_text", "Level"))
 	var enemy_step_text := String(data.get("top_enemy_step_text", "Fight"))
 	var gold_text := String(data.get("top_gold_text", "Gold 0"))
+	var enemy_id := String(data.get("enemy_id", ""))
 	var enemy_name_text := String(data.get("enemy_name_text", "Enemy"))
 	var enemy_hp := int(data.get("enemy_hp", 0))
 	var enemy_max_hp := maxi(1, int(data.get("enemy_max_hp", 1)))
@@ -94,6 +96,7 @@ func build_snapshot(data: Dictionary) -> Dictionary:
 			"gold_text": gold_text,
 		},
 		"enemy_stage": {
+			"enemy_id": enemy_id,
 			"enemy_name_text": enemy_name_text,
 			"enemy_hp_text": enemy_hp_text,
 			"enemy_stage_texture": enemy_stage_texture,

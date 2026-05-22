@@ -1792,7 +1792,7 @@ func _hud_snapshot_input_data() -> Dictionary:
 	var enemy_stage_texture: Texture2D = null
 	var enemy_portrait_texture: Texture2D = null
 	if _visuals != null:
-		enemy_stage_texture = _visuals.enemy_stage_background(_enemy_state.enemy_id)
+		enemy_stage_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
 		enemy_portrait_texture = _visuals.enemy_sprite(_enemy_state.enemy_id)
 	if enemy_portrait_texture == null and _visuals != null:
 		enemy_portrait_texture = _visuals.enemy_sprite("cavern_striker")
@@ -1811,6 +1811,7 @@ func _hud_snapshot_input_data() -> Dictionary:
 		"max_dungeon_levels": int(RunState.MAX_DUNGEON_LEVELS),
 		"current_step_key": String(RunState.current_step_key),
 		"player_gold": player_gold,
+		"enemy_id": String(_enemy_state.enemy_id),
 		"enemy_name_text": _enemy_state.display_name,
 		"enemy_hp": enemy_hp,
 		"enemy_max_hp": int(_enemy_state.max_hp),

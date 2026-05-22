@@ -60,6 +60,7 @@ var _enemy_panel_root: Control = null
 var _intent_row: HBoxContainer = null
 var _enemy_stage: Control = null
 var _enemy_stage_backdrop: TextureRect = null
+var _enemy_ground_shadow: Panel = null
 var _enemy_text_scrim: ColorRect = null
 var _enemy_hp_row: Control = null
 var _enemy_name_label: Label = null
@@ -156,6 +157,7 @@ var _enemy_block_preview_fill: ColorRect = null
 var _enemy_block_preview_pulse_tween: Tween = null
 var _enemy_block_intent_preview: Dictionary = {}
 var _enemy_intent_entries: Array[Dictionary] = []
+var _current_enemy_visual_id := "cavern_striker"
 
 
 func bind(root_nodes: Dictionary) -> void:
@@ -337,6 +339,7 @@ func set_top_bar_text(level_text: String, hint_text: String) -> void:
 
 func setup_rendering_helpers() -> void:
 	_ensure_enemy_stage_backdrop_node()
+	_ensure_enemy_ground_shadow_node()
 	_ensure_enemy_text_scrim_node()
 	_ensure_enemy_block_preview_nodes()
 
@@ -357,6 +360,7 @@ func bind_layout_presenter() -> void:
 		"intent_row": _intent_row,
 		"enemy_stage": _enemy_stage,
 		"enemy_stage_backdrop": _enemy_stage_backdrop,
+		"enemy_ground_shadow": _enemy_ground_shadow,
 		"enemy_text_scrim": _enemy_text_scrim,
 		"enemy_hp_row": _enemy_hp_row,
 		"intent_badge": _intent_badge,
@@ -416,6 +420,7 @@ func apply_combat_layout(viewport_size: Vector2, timer_seconds: float, timer_sta
 	_layout_board_panel_rect = layout_result.get("layout_board_panel_rect", _layout_board_panel_rect)
 	_layout_player_hud_section_rect = layout_result.get("layout_player_hud_section_rect", _layout_player_hud_section_rect)
 	sync_timer_display(timer_seconds, timer_state)
+	_apply_enemy_visual_profile(_current_enemy_visual_id)
 	_layout_enemy_block_intent_preview()
 	return layout_result
 
@@ -498,6 +503,7 @@ func apply_visual_chrome(style_config: Dictionary) -> void:
 			"top_bar": _top_bar,
 			"enemy_panel": _enemy_panel,
 			"enemy_stage_backdrop": _enemy_stage_backdrop,
+			"enemy_ground_shadow": _enemy_ground_shadow,
 			"enemy_text_scrim": _enemy_text_scrim,
 			"enemy_portrait": _enemy_portrait,
 			"enemy_hp_row": _enemy_hp_row,
@@ -595,15 +601,17 @@ func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) ->
 
 func refresh_character_portraits(enemy_id: String) -> void:
 	_ensure_enemy_stage_backdrop_node()
+	_ensure_enemy_ground_shadow_node()
 	var resolved_enemy_id := enemy_id.strip_edges()
 	if resolved_enemy_id == "":
 		resolved_enemy_id = "cavern_striker"
+	_current_enemy_visual_id = resolved_enemy_id
 
 	var backdrop_texture: Texture2D = null
 	if _visuals != null:
-		backdrop_texture = _visuals.enemy_stage_background(resolved_enemy_id)
+		backdrop_texture = _visuals.combat_enemy_stage_texture(resolved_enemy_id)
 		if backdrop_texture == null:
-			backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+			backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
 	if backdrop_texture == null:
 		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
@@ -619,6 +627,7 @@ func refresh_character_portraits(enemy_id: String) -> void:
 		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_figure_texture
 	_enemy_portrait.visible = true
+	_apply_enemy_visual_profile(resolved_enemy_id)
 
 	var hero_texture: Texture2D = null
 	if _visuals != null:
@@ -721,11 +730,14 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_intent_label.text = ""
 	_intent_label.visible = false
 	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
+	var enemy_id := String(snapshot.get("enemy_id", _current_enemy_visual_id))
+	if enemy_id.strip_edges() != "":
+		_current_enemy_visual_id = enemy_id.strip_edges()
 	var enemy_stage_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
 		var backdrop_texture: Texture2D = enemy_stage_texture
 		if backdrop_texture == null and _visuals != null:
-			backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+			backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
 		if backdrop_texture == null:
 			backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 		_enemy_stage_backdrop.texture = backdrop_texture
@@ -737,6 +749,7 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_figure_texture
 	_enemy_portrait.visible = true
+	_apply_enemy_visual_profile(_current_enemy_visual_id)
 	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
 	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
 	_enemy_name_label.text = String(snapshot.get("enemy_name_text", "Enemy"))
@@ -1002,7 +1015,7 @@ func _ensure_placeholder_visuals() -> void:
 	_primary_intent_text_column.visible = false
 	var backdrop_texture: Texture2D = null
 	if _visuals != null:
-		backdrop_texture = _visuals.enemy_stage_background("cavern_striker")
+		backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
 	if backdrop_texture == null:
 		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
@@ -1041,6 +1054,68 @@ func _ensure_enemy_stage_backdrop_node() -> void:
 	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	_enemy_stage_backdrop.visible = true
 	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
+
+
+func _ensure_enemy_ground_shadow_node() -> void:
+	if _enemy_stage == null:
+		return
+	if _enemy_ground_shadow != null and is_instance_valid(_enemy_ground_shadow):
+		if _enemy_ground_shadow.get_parent() != _enemy_stage:
+			var existing_parent := _enemy_ground_shadow.get_parent()
+			if existing_parent != null:
+				existing_parent.remove_child(_enemy_ground_shadow)
+			_enemy_stage.add_child(_enemy_ground_shadow)
+		return
+	var existing := _enemy_stage.get_node_or_null("EnemyGroundShadow")
+	if existing is Panel:
+		_enemy_ground_shadow = existing as Panel
+	else:
+		_enemy_ground_shadow = Panel.new()
+		_enemy_ground_shadow.name = "EnemyGroundShadow"
+		_enemy_stage.add_child(_enemy_ground_shadow)
+	_enemy_ground_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_enemy_ground_shadow.z_index = 1
+	_enemy_ground_shadow.visible = true
+
+
+func _apply_enemy_visual_profile(enemy_id: String) -> void:
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	var stage_size := _enemy_stage.size if _enemy_stage != null else Vector2.ZERO
+	if stage_size.x <= 0.0 or stage_size.y <= 0.0:
+		stage_size = _layout_enemy_panel_rect.size
+	var profile := {}
+	if _visuals != null and _visuals.has_method("enemy_visual_profile"):
+		profile = Dictionary(_visuals.enemy_visual_profile(enemy_id))
+	var scale := float(profile.get("scale", 1.0))
+	var offset: Vector2 = profile.get("offset", Vector2.ZERO)
+	var shadow_scale := float(profile.get("shadow_scale", 1.0))
+	var shadow_alpha := float(profile.get("shadow_alpha", 0.34))
+
+	_enemy_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
+	_enemy_portrait.position = offset
+	_enemy_portrait.size = stage_size
+	_enemy_portrait.pivot_offset = stage_size * 0.5
+	_enemy_portrait.scale = Vector2(scale, scale)
+	_enemy_portrait.z_index = 2
+	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
+		_enemy_stage_backdrop.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
+	if _enemy_text_scrim != null and is_instance_valid(_enemy_text_scrim):
+		_enemy_text_scrim.z_index = 3
+
+	_ensure_enemy_ground_shadow_node()
+	if _enemy_ground_shadow == null or not is_instance_valid(_enemy_ground_shadow):
+		return
+	var shadow_size := Vector2(stage_size.x * 0.36 * shadow_scale, maxf(30.0, stage_size.y * 0.11 * shadow_scale))
+	_enemy_ground_shadow.position = Vector2((stage_size.x - shadow_size.x) * 0.5, stage_size.y * 0.73)
+	_enemy_ground_shadow.size = shadow_size
+	_enemy_ground_shadow.z_index = 1
+	_enemy_ground_shadow.visible = _enemy_portrait.visible
+	var shadow_style := StyleBoxFlat.new()
+	shadow_style.bg_color = Color(0.0, 0.0, 0.0, clampf(shadow_alpha, 0.0, 0.65))
+	shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	shadow_style.set_corner_radius_all(999)
+	_enemy_ground_shadow.add_theme_stylebox_override("panel", shadow_style)
 
 
 func _ensure_enemy_text_scrim_node() -> void:

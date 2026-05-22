@@ -321,7 +321,7 @@ func _apply_enemy_panel_layout() -> void:
 	if enemy_text_scrim != null:
 		enemy_text_scrim.position = Vector2(18.0, ENEMY_HP_ROW_RECT.position.y + 2.0)
 		enemy_text_scrim.size = Vector2(638.0, 116.0)
-		enemy_text_scrim.z_index = 2
+		enemy_text_scrim.z_index = 3
 	var enemy_panel := _control("enemy_panel")
 	if enemy_panel != null:
 		enemy_panel.clip_contents = true
