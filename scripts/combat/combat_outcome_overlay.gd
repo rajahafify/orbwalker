@@ -174,7 +174,7 @@ func sync_layout(board_panel_rect: Rect2) -> void:
 		_apply_design_rect(_outcome_summary_panel, _config.get("boss_reward_summary_rect", Rect2(Vector2(80, 520), Vector2(920, 540))))
 		layout_boss_reward()
 	else:
-		var outcome_summary_rect: Rect2 = _config.get("outcome_summary_rect", Rect2(Vector2(224, 224), Vector2(600, 372)))
+		var outcome_summary_rect: Rect2 = _config.get("outcome_summary_rect", Rect2(Vector2(144, 168), Vector2(760, 452)))
 		var standard_rect := Rect2(board_panel_rect.position + outcome_summary_rect.position, outcome_summary_rect.size)
 		_apply_design_rect(_outcome_summary_panel, standard_rect)
 		layout_standard()
@@ -184,18 +184,18 @@ func sync_layout(board_panel_rect: Rect2) -> void:
 func layout_standard() -> void:
 	if _outcome_summary_root == null or _outcome_text_column == null or _outcome_title_label == null or _outcome_body_label == null or _next_button == null or _outcome_summary_panel == null:
 		return
-	_outcome_summary_root.position = Vector2(40.0, 34.0)
-	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(80.0, 68.0)
+	_outcome_summary_root.position = Vector2(48.0, 40.0)
+	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(96.0, 80.0)
 	_outcome_text_column.position = Vector2.ZERO
-	_outcome_text_column.size = Vector2(_outcome_summary_root.size.x, 168.0)
+	_outcome_text_column.size = Vector2(_outcome_summary_root.size.x, 244.0)
 	_outcome_title_label.custom_minimum_size = Vector2.ZERO
 	_outcome_body_label.custom_minimum_size = Vector2.ZERO
 	_outcome_title_label.position = Vector2.ZERO
-	_outcome_title_label.size = Vector2(_outcome_text_column.size.x, 72.0)
-	_outcome_body_label.position = Vector2(0.0, 90.0)
-	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 132.0)
-	_next_button.position = Vector2((_outcome_summary_root.size.x - 220.0) * 0.5, 236.0)
-	_next_button.size = Vector2(220.0, 64.0)
+	_outcome_title_label.size = Vector2(_outcome_text_column.size.x, 92.0)
+	_outcome_body_label.position = Vector2(0.0, 112.0)
+	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 146.0)
+	_next_button.position = Vector2((_outcome_summary_root.size.x - 340.0) * 0.5, _outcome_summary_root.size.y - 92.0)
+	_next_button.size = Vector2(340.0, 82.0)
 
 
 func layout_boss_reward() -> void:

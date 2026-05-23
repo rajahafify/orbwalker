@@ -314,7 +314,7 @@ static func apply_board_focus_theme(board_shadow: Variant, outcome_summary_panel
 	if outcome_title_label != null:
 		outcome_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 		outcome_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-		outcome_title_label.add_theme_font_size_override("font_size", 46)
+		outcome_title_label.add_theme_font_size_override("font_size", 58)
 		outcome_title_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
 		outcome_title_label.add_theme_constant_override("outline_size", 3)
 		outcome_title_label.add_theme_color_override("font_outline_color", Color(0.01, 0.02, 0.03, 0.92))
@@ -325,11 +325,11 @@ static func apply_board_focus_theme(board_shadow: Variant, outcome_summary_panel
 		outcome_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
 		outcome_body_label.clip_text = true
 		outcome_body_label.custom_minimum_size = Vector2.ZERO
-		outcome_body_label.add_theme_font_size_override("font_size", 24)
+		outcome_body_label.add_theme_font_size_override("font_size", 30)
 		outcome_body_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.48, 1.0))
 
 	if next_button != null:
-		next_button.add_theme_font_size_override("font_size", 22)
+		next_button.add_theme_font_size_override("font_size", 30)
 
 
 static func apply_debug_overlay_theme(status_label: Variant, enemy_debug_label: Variant, combat_log_text: Variant, debug_console: Variant, debug_text_font_size: int, debug_input_font_size: int, debug_input_height: float) -> void:
