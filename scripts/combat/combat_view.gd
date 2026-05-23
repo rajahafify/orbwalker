@@ -294,6 +294,17 @@ func player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	return _control_target_global(_player_portrait, vertical_bias)
 
 
+func player_hp_bar_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
+	return _control_target_global(_player_hp_bar, vertical_bias)
+
+
+func player_hp_bar_vfx_size() -> Vector2:
+	if _player_hp_bar == null:
+		return Vector2.ZERO
+	var rect := _player_hp_bar.get_global_rect()
+	return rect.size
+
+
 func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Variant, timer_owner: Node) -> Dictionary:
 	var resolved_visual_registry: Variant = visual_registry if visual_registry != null else _visuals
 	var resolved_player_loadout_hud: Variant = player_loadout_hud if player_loadout_hud != null else _player_loadout_hud
@@ -875,8 +886,8 @@ func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
 	button.text = String(entry.get("label", _intent_entry_label(kind, amount)))
 	button.custom_minimum_size = INTENT_BUBBLE_SIZE
 	button.size = INTENT_BUBBLE_SIZE
-	button.focus_mode = Control.FocusMode.FOCUS_NONE
-	button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND
+	button.focus_mode = Control.FocusMode.FOCUS_NONE as Control.FocusMode
+	button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND as Control.CursorShape
 	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
 	button.set_meta("intent_kind", kind)
 	button.add_theme_font_size_override("font_size", 24)
@@ -923,8 +934,8 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_button = Control.new()
 		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
-		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND
+		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND as Control.CursorShape
 		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_node_hovered)
 		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
 	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
@@ -936,7 +947,7 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		_enemy_block_preview_fill = ColorRect.new()
 		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
 		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 0.68)
-		_enemy_block_preview_fill.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_fill.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		_enemy_block_preview_fill.visible = false
 	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
 		var existing_fill_parent := _enemy_block_preview_fill.get_parent()
@@ -954,7 +965,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_ensure_enemy_block_preview_nodes()
 	if _enemy_block_preview_button != null and is_instance_valid(_enemy_block_preview_button):
 		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
 		_enemy_block_preview_fill.visible = false
 	_stop_enemy_block_preview_pulse()
@@ -975,7 +986,7 @@ func _layout_enemy_block_intent_preview() -> void:
 	_enemy_block_preview_button.position = _enemy_hp_bar.position
 	_enemy_block_preview_button.size = Vector2(preview_width, _enemy_hp_bar.size.y)
 	_enemy_block_preview_button.visible = true
-	_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_STOP
+	_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_STOP as Control.MouseFilter
 	_enemy_block_preview_fill.position = Vector2.ZERO
 	_enemy_block_preview_fill.size = _enemy_block_preview_button.size
 	_enemy_block_preview_fill.visible = true
@@ -1054,9 +1065,9 @@ func _ensure_enemy_stage_backdrop_node() -> void:
 		_enemy_stage_backdrop = TextureRect.new()
 		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
 		_enemy_stage.add_child(_enemy_stage_backdrop)
-	_enemy_stage_backdrop.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
-	_enemy_stage_backdrop.expand_mode = TextureRect.ExpandMode.EXPAND_IGNORE_SIZE
-	_enemy_stage_backdrop.stretch_mode = TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED
+	_enemy_stage_backdrop.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_enemy_stage_backdrop.expand_mode = TextureRect.ExpandMode.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	_enemy_stage_backdrop.stretch_mode = TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
 	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	_enemy_stage_backdrop.visible = true
 	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
@@ -1141,7 +1152,7 @@ func _ensure_enemy_text_scrim_node() -> void:
 		_enemy_text_scrim = ColorRect.new()
 		_enemy_text_scrim.name = "EnemyTextScrim"
 		_enemy_stage.add_child(_enemy_text_scrim)
-	_enemy_text_scrim.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+	_enemy_text_scrim.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_enemy_text_scrim.color = Color(0.02, 0.04, 0.06, 0.72)
 	_enemy_text_scrim.visible = true
 

@@ -201,6 +201,20 @@
         linear-gradient(180deg, #283c54, #141b25 68%, #080b10);
     }
 
+    .bar-target {
+      top: 58%;
+      width: 172px;
+      height: 42px;
+      border-radius: 10px;
+      background:
+        linear-gradient(90deg, rgba(216, 45, 52, 0.96), rgba(202, 38, 48, 0.96)),
+        linear-gradient(180deg, #3c4657, #131924);
+      box-shadow:
+        0 18px 34px rgba(0,0,0,0.62),
+        0 0 0 3px rgba(255,255,255,0.10),
+        inset 0 8px 16px rgba(255,255,255,0.13);
+    }
+
     .amount {
       position: absolute;
       left: 50%;
@@ -503,13 +517,13 @@
       </article>
       <article class="tile heal" data-kind="heal" data-prefix="+">
         <canvas data-effect="heal"></canvas>
-        <div class="target player-target"></div>
+        <div class="target bar-target"></div>
         <div class="amount"><span data-amount>+28</span></div>
         <div class="nameplate"><h2>Healing</h2><span class="tag">refresh lift</span></div>
       </article>
       <article class="tile armor" data-kind="armor" data-prefix="+">
         <canvas data-effect="armor"></canvas>
-        <div class="target player-target"></div>
+        <div class="target bar-target"></div>
         <div class="amount"><span data-amount>+28</span></div>
         <div class="nameplate"><h2>Armor Gain</h2><span class="tag">block shell</span></div>
       </article>
@@ -564,13 +578,13 @@
       </div>
       <aside class="notes">
         <h3>What Changed In-Game</h3>
-        <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. The isolated cards above show the impact texture target; the combat mock shows the timing pass.</p>
+        <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. Top-tier results also add a screen-wide pulse so huge numbers feel huge instead of just showing a larger local burst.</p>
         <div class="spec-list">
           <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire builds hot at the mastery, launches as a flame mass, then bursts on the enemy.</span></div>
           <div class="spec" style="color:var(--ice)"><span class="dot"></span><span>Ice gathers as cold breath and crystals, breezes forward, then shatters.</span></div>
           <div class="spec" style="color:var(--earth)"><span class="dot"></span><span>Earth rumbles under the mastery, slithers along the ground, then pulses with stone.</span></div>
-          <div class="spec" style="color:var(--heart)"><span class="dot"></span><span>Healing rises upward with refreshing green streams and soft motes.</span></div>
-          <div class="spec" style="color:var(--armor)"><span class="dot"></span><span>Armor creates a blue-white shield shell with blocking impact streaks.</span></div>
+          <div class="spec" style="color:var(--heart)"><span class="dot"></span><span>Healing now lands on the HP bar with refreshing green streams and soft motes.</span></div>
+          <div class="spec" style="color:var(--armor)"><span class="dot"></span><span>Armor now lands on the HP bar, flashes a blue-white blocking shell, and lingers there briefly.</span></div>
           <div class="spec" style="color:var(--gold)"><span class="dot"></span><span>Gold rewards rain coins down around the player target.</span></div>
         </div>
       </aside>
@@ -597,7 +611,11 @@
         </article>
         <article class="change-card">
           <h4>Intensity Scaling</h4>
-          <p>Higher result numbers increase tier, size, lifetime, brightness, particle count, and cast density while keeping board and target readability intact.</p>
+          <p>Higher result numbers increase tier, size, lifetime, brightness, particle count, cast density, and at the top tier trigger a screen-wide elemental layer.</p>
+        </article>
+        <article class="change-card">
+          <h4>Runtime Follow-Up</h4>
+          <p>Healing and armor gain now aim at the player HP bar instead of the portrait. Armor adds a short-lived shield linger over the bar, and signature-tier results add a low-opacity screen-wide elemental layer.</p>
         </article>
         <article class="change-card">
           <h4>Validation</h4>

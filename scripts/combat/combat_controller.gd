@@ -1746,11 +1746,21 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var applied_flat_gold_bonus := maxi(0, gold_gain - int(turn_log.get("gold_base", 0)))
 	var enemy_target: Vector2 = Vector2.ZERO
 	var player_target: Vector2 = Vector2.ZERO
+	var player_hp_target: Vector2 = Vector2.ZERO
+	var player_hp_impact_size := Vector2(180, 76)
 	if _view != null:
 		enemy_target = _view.enemy_vfx_target_global(0.48)
 		player_target = _view.player_vfx_target_global(0.64)
+		player_hp_target = _view.player_hp_bar_vfx_target_global(0.50)
+		var hp_bar_size: Vector2 = _view.player_hp_bar_vfx_size()
+		if hp_bar_size.x > 0.0 and hp_bar_size.y > 0.0:
+			player_hp_impact_size = Vector2(
+				clampf(hp_bar_size.x * 0.58, 180.0, 420.0),
+				clampf(hp_bar_size.y * 1.90, 76.0, 130.0)
+			)
+	if player_hp_target == Vector2.ZERO:
+		player_hp_target = player_target
 	var enemy_impact_size := Vector2(84, 84)
-	var player_impact_size := Vector2(84, 84)
 	var gold_impact_size := Vector2(70, 70)
 	var damage_lifetime := _combat_speed_duration(0.42)
 	var player_lifetime := _combat_speed_duration(0.45)
@@ -1808,9 +1818,9 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 				return
 		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
 		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(player_target, "heart", player_impact_size, player_lifetime, heart_heal)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.HEART, player_target, player_lifetime)
-			vfx_presenter.spawn_result_label("+%d HP" % heart_heal, player_target, "heal", label_lifetime, Vector2(0, -46), heart_heal)
+			vfx_presenter.spawn_replay_impact(player_hp_target, "heart", player_hp_impact_size, player_lifetime, heart_heal)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.HEART, player_hp_target, player_lifetime)
+			vfx_presenter.spawn_result_label("+%d HP" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -54), heart_heal)
 		_play_mastery_effect_sfx("heal")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
@@ -1821,9 +1831,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if armor_gain > 0:
 		var staged_armor_before_gain: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
 		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(player_target, "armor", player_impact_size, player_lifetime, armor_gain)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, player_target, player_lifetime)
-			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, player_target, "armor", label_lifetime, Vector2(0, -46), armor_gain)
+			vfx_presenter.spawn_replay_impact(player_hp_target, "armor", player_hp_impact_size, player_lifetime, armor_gain)
+			vfx_presenter.spawn_armor_bar_linger(player_hp_target, player_hp_impact_size, player_lifetime, armor_gain)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, player_hp_target, player_lifetime)
+			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, player_hp_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
 		_play_mastery_effect_sfx("armor")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():

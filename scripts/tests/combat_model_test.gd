@@ -1,6 +1,9 @@
 extends RefCounted
 class_name CombatModelTest
 
+const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
+const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
@@ -13,10 +16,11 @@ func run_all() -> Dictionary:
 	_run_case("resolve_trace_begin_pass_end_state", _test_resolve_trace_begin_pass_end_state, failures)
 	_run_case("post_match_vfx_registry_exposes_distinct_results", _test_post_match_vfx_registry_exposes_distinct_results, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
+	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 9,
+		"total": 10,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -171,7 +175,7 @@ func _test_resolve_trace_begin_pass_end_state() -> String:
 
 
 func _test_post_match_vfx_registry_exposes_distinct_results() -> String:
-	var registry := VisualRegistry.new()
+	var registry = VISUAL_REGISTRY_SCRIPT.new()
 	var required_kinds: Array[String] = ["fire", "ice", "earth", "gold", "heart", "armor", "damage", "heal", "block"]
 	var seen_rids := {}
 	for kind in required_kinds:
@@ -186,7 +190,7 @@ func _test_post_match_vfx_registry_exposes_distinct_results() -> String:
 
 
 func _test_post_match_vfx_speed_scale_slows_lifetime() -> String:
-	var presenter := CombatVfxPresenter.new()
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	var slowed := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
 	presenter.set_post_match_vfx_speed_scale(1.0)
 	var baseline := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
@@ -196,4 +200,17 @@ func _test_post_match_vfx_speed_scale_slows_lifetime() -> String:
 		return "Expected default post-match VFX lifetime to be slower than baseline speed."
 	if slowed_lifetime < baseline_lifetime * 1.6:
 		return "Expected default post-match VFX lifetime to be noticeably slower."
+	return ""
+
+
+func _test_post_match_vfx_top_tier_becomes_screen_wide() -> String:
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	if presenter.replay_result_is_screen_wide("fire", 15):
+		return "Expected Fire 15 to stay below the screen-wide tier."
+	if not presenter.replay_result_is_screen_wide("fire", 16):
+		return "Expected Fire 16 to become screen-wide."
+	if not presenter.replay_result_is_screen_wide("gold", 10):
+		return "Expected Gold 10 to become screen-wide."
+	if presenter.replay_result_is_screen_wide("heart", 3):
+		return "Expected small Heart healing to stay local."
 	return ""

@@ -24,8 +24,10 @@ const RESULT_VFX_TIER_LIFETIME_SCALES := [1.0, 1.07, 1.14, 1.22]
 const RESULT_VFX_TIER_ALPHA := [0.84, 0.91, 0.97, 1.0]
 const RESULT_VFX_TIER_BRIGHTNESS := [1.0, 1.07, 1.14, 1.22]
 const DEFAULT_POST_MATCH_VFX_SPEED_SCALE := 0.55
+const POST_MATCH_SCREEN_EVENT_Z_INDEX := 120
 const POST_MATCH_EFFECT_Z_INDEX := 124
 const POST_MATCH_CAST_Z_INDEX := 128
+const POST_MATCH_BAR_LINGER_Z_INDEX := 131
 const POST_MATCH_EFFECT_FRONT_Z_INDEX := 132
 const ENEMY_ATTACK_CUE_SIZE := Vector2(88, 88)
 const ENEMY_ATTACK_BOLT_SIZE := Vector2(44, 44)
@@ -86,6 +88,17 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 	_spawn_stylized_replay_effect(global_center, _result_vfx_kind_key(impact_kind), profile_size, profile_lifetime, result_amount, tier_index)
 
 
+func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
+	if global_center == Vector2.ZERO:
+		return
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
+	var intensity := _replay_effect_intensity(result_amount, tier_index)
+	var duration := _post_match_vfx_lifetime(maxf(0.60, lifetime) * (1.70 + float(tier_index) * 0.16))
+	_spawn_armor_bar_linger_effect(global_center, draw_size, duration, intensity)
+
+
 func replay_result_impact_profile(impact_kind: String, result_amount: int, base_draw_size: Vector2, base_lifetime: float) -> Dictionary:
 	var tier := replay_result_vfx_tier(impact_kind, result_amount)
 	var tier_index := _result_vfx_tier_index(tier)
@@ -120,6 +133,11 @@ func replay_result_vfx_tier(impact_kind: String, result_amount: int) -> int:
 func result_vfx_size_scale(impact_kind: String, result_amount: int) -> float:
 	var tier := replay_result_vfx_tier(impact_kind, result_amount)
 	return RESULT_VFX_TIER_SIZE_SCALES[_result_vfx_tier_index(tier)]
+
+
+func replay_result_is_screen_wide(impact_kind: String, result_amount: int) -> bool:
+	var tier := replay_result_vfx_tier(impact_kind, result_amount)
+	return _result_vfx_tier_index(tier) >= RESULT_VFX_TIER_SIZE_SCALES.size() - 1
 
 
 func _post_match_vfx_lifetime(lifetime: float) -> float:
@@ -284,6 +302,8 @@ func _spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, d
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
+	if replay_result_is_screen_wide(clean_kind, result_amount):
+		_spawn_screen_wide_replay_event(global_center, clean_kind, lifetime, intensity)
 	_spawn_replay_signature_sprite(global_center, clean_kind, draw_size, lifetime, intensity)
 	match clean_kind:
 		"fire":
@@ -432,6 +452,413 @@ func _spawn_damage_replay_effect(global_center: Vector2, draw_size: Vector2, lif
 	for i in range(slash_count):
 		var offset := Vector2(0.0, (float(i) - float(slash_count - 1) * 0.5) * 16.0)
 		_spawn_replay_streak(global_center, -0.44, draw_size.x * (0.62 + float(intensity) * 0.04), 9.0 + float(intensity) * 1.6, Color(1.0, 0.42, 0.34, 0.92), lifetime * 0.55, float(i) * 0.028, offset)
+
+
+func _spawn_armor_bar_linger_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	var base_size := Vector2(maxf(180.0, draw_size.x), maxf(58.0, draw_size.y))
+	var shell_size := Vector2(
+		base_size.x * (1.08 + float(intensity) * 0.028),
+		base_size.y * (1.04 + float(intensity) * 0.025)
+	)
+	_spawn_local_effect_panel(
+		"ArmorBarShieldLinger",
+		center_local,
+		shell_size,
+		Color(0.15, 0.36, 0.76, 0.16),
+		Color(0.86, 0.96, 1.0, 0.94),
+		5 + mini(intensity, 6),
+		14,
+		POST_MATCH_BAR_LINGER_Z_INDEX,
+		lifetime,
+		Vector2(1.03, 1.06)
+	)
+	_spawn_local_effect_panel(
+		"ArmorBarShieldGlass",
+		center_local + Vector2(0.0, -shell_size.y * 0.08),
+		Vector2(shell_size.x * 0.92, shell_size.y * 0.42),
+		Color(0.76, 0.92, 1.0, 0.12),
+		Color(0.92, 0.98, 1.0, 0.50),
+		2,
+		999,
+		POST_MATCH_BAR_LINGER_Z_INDEX + 1,
+		lifetime * 0.82,
+		Vector2(1.04, 0.82),
+		lifetime * 0.05
+	)
+	var pulse_count := 2 + mini(intensity, 5)
+	for i in range(pulse_count):
+		_spawn_local_effect_panel(
+			"ArmorBarShieldPulse",
+			center_local,
+			shell_size * (0.88 + float(i) * 0.055),
+			Color(0.22, 0.60, 1.0, 0.08),
+			Color(0.88, 0.98, 1.0, 0.62),
+			2 + mini(intensity, 4),
+			16,
+			POST_MATCH_BAR_LINGER_Z_INDEX,
+			lifetime * 0.58,
+			Vector2(1.10 + float(i) * 0.05, 1.18 + float(i) * 0.03),
+			lifetime * (0.12 + float(i) * 0.09)
+		)
+	var block_count := 5 + intensity * 2
+	for i in range(block_count):
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var y := (float(i) / float(maxi(1, block_count - 1)) - 0.5) * shell_size.y * 0.54
+		var start := center_local + Vector2(side * shell_size.x * 0.50, y)
+		_spawn_local_effect_panel(
+			"ArmorBarShieldBlockSpark",
+			start,
+			Vector2(34 + intensity * 4, 6 + intensity),
+			Color(0.84, 0.96, 1.0, 0.72),
+			Color(0.96, 1.0, 1.0, 0.86),
+			1,
+			999,
+			POST_MATCH_BAR_LINGER_Z_INDEX + 1,
+			lifetime * 0.42,
+			Vector2(0.58, 0.62),
+			lifetime * 0.10 + float(i % 5) * lifetime * 0.036,
+			Vector2(-side * (28.0 + float(intensity) * 4.0), sin(float(i)) * 6.0),
+			0.0,
+			0.0 if side < 0.0 else PI
+		)
+
+
+func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String, lifetime: float, intensity: int) -> void:
+	var layer_size := _vfx_layer_size()
+	if layer_size.x <= 1.0 or layer_size.y <= 1.0:
+		return
+	clean_kind = _result_vfx_kind_key(clean_kind)
+	var colors := _result_effect_colors(clean_kind)
+	var accent: Color = colors.get("accent", Color.WHITE)
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	var dark: Color = colors.get("dark", accent.darkened(0.45))
+	var duration := maxf(0.50, lifetime * 0.98)
+	var screen_center := layer_size * 0.5
+	var impact_local := _global_to_vfx_local(global_center)
+	var max_dim := maxf(layer_size.x, layer_size.y)
+	_spawn_local_effect_panel(
+		"PostMatchScreenFlash",
+		screen_center,
+		layer_size * 1.08,
+		Color(accent.r, accent.g, accent.b, 0.07),
+		Color(core.r, core.g, core.b, 0.10),
+		1,
+		0,
+		POST_MATCH_SCREEN_EVENT_Z_INDEX,
+		duration * 0.58,
+		Vector2(1.0, 1.0)
+	)
+	_spawn_local_effect_panel(
+		"PostMatchScreenShockwave",
+		impact_local,
+		Vector2(max_dim * 0.58, max_dim * 0.58),
+		Color(accent.r, accent.g, accent.b, 0.06),
+		Color(core.r, core.g, core.b, 0.56),
+		5 + mini(intensity, 8),
+		999,
+		POST_MATCH_SCREEN_EVENT_Z_INDEX + 1,
+		duration * 0.82,
+		Vector2(2.20, 2.20),
+		duration * 0.04
+	)
+	for i in range(3):
+		var lane_y := (float(i) - 1.0) * layer_size.y * 0.16
+		_spawn_local_effect_panel(
+			"PostMatchScreenSweep",
+			screen_center + Vector2(0.0, lane_y),
+			Vector2(max_dim * 1.46, 10.0 + float(intensity) * 1.9),
+			Color(accent.r, accent.g, accent.b, 0.15),
+			Color(core.r, core.g, core.b, 0.48),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.54,
+			Vector2(1.08, 0.42),
+			duration * (0.05 + float(i) * 0.055),
+			Vector2((float(i) - 1.0) * 26.0, -12.0 + float(i) * 10.0),
+			0.0,
+			-0.23 + float(i) * 0.22
+		)
+	match clean_kind:
+		"fire":
+			_spawn_screen_fire_event(layer_size, duration, intensity, accent, core)
+		"ice":
+			_spawn_screen_ice_event(layer_size, duration, intensity, accent, core)
+		"earth":
+			_spawn_screen_earth_event(layer_size, impact_local, duration, intensity, accent, core, dark)
+		"heart":
+			_spawn_screen_heal_event(layer_size, duration, intensity, accent, core)
+		"armor":
+			_spawn_screen_armor_event(layer_size, duration, intensity, accent, core)
+		"gold":
+			_spawn_screen_gold_event(layer_size, duration, intensity, accent, core)
+		"damage":
+			_spawn_screen_damage_event(layer_size, duration, intensity, accent, core)
+
+
+func _spawn_screen_fire_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var column_count := 7 + intensity * 2
+	for i in range(column_count):
+		var x := (float(i) + 0.5) / float(column_count) * layer_size.x + sin(float(i) * 1.8) * 18.0
+		var height := layer_size.y * (0.22 + 0.025 * float(i % 4) + 0.018 * float(intensity))
+		_spawn_local_effect_panel(
+			"PostMatchScreenFireColumn",
+			Vector2(x, layer_size.y + height * 0.28),
+			Vector2(18 + intensity * 3, height),
+			Color(1.0, 0.18, 0.03, 0.28),
+			Color(core.r, core.g, core.b, 0.70),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.78,
+			Vector2(0.58, 1.10),
+			duration * (0.06 + float(i % 5) * 0.018),
+			Vector2(sin(float(i) * 2.4) * 26.0, -layer_size.y * (0.30 + float(i % 3) * 0.04)),
+			0.18,
+			sin(float(i)) * 0.12
+		)
+	var spark_count := 18 + intensity * 5
+	for i in range(spark_count):
+		var start := Vector2(layer_size.x * (float(i % 11) + 0.5) / 11.0, layer_size.y * (0.18 + 0.08 * float(i % 7)))
+		_spawn_local_effect_panel(
+			"PostMatchScreenFireSpark",
+			start,
+			Vector2(6 + intensity, 12 + intensity * 2),
+			Color(accent.r, accent.g, accent.b, 0.68),
+			Color(core.r, core.g, core.b, 0.84),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.52,
+			Vector2(0.46, 0.62),
+			float(i % 6) * duration * 0.020,
+			Vector2(sin(float(i) * 1.3) * 28.0, -70.0 - float(intensity) * 8.0),
+			0.45,
+			-0.25 + sin(float(i)) * 0.26
+		)
+
+
+func _spawn_screen_ice_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var breeze_count := 8 + intensity * 2
+	for i in range(breeze_count):
+		var y := layer_size.y * (0.12 + float(i) / float(maxi(1, breeze_count - 1)) * 0.76)
+		var side := -1.0 if i % 2 == 0 else 1.0
+		_spawn_local_effect_panel(
+			"PostMatchScreenIceBreeze",
+			Vector2(layer_size.x * (0.50 - side * 0.34), y),
+			Vector2(layer_size.x * (0.52 + float(i % 3) * 0.05), 5 + intensity),
+			Color(accent.r, accent.g, accent.b, 0.18),
+			Color(core.r, core.g, core.b, 0.64),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.70,
+			Vector2(1.16, 0.46),
+			duration * (0.05 + float(i % 4) * 0.030),
+			Vector2(side * layer_size.x * 0.24, sin(float(i)) * 16.0),
+			0.0,
+			sin(float(i)) * 0.08
+		)
+	var shard_count := 16 + intensity * 4
+	for i in range(shard_count):
+		var x := layer_size.x * (float(i % 9) + 0.5) / 9.0
+		var y := layer_size.y * (0.12 + float(i % 7) * 0.11)
+		_spawn_local_effect_panel(
+			"PostMatchScreenIceShard",
+			Vector2(x, y),
+			Vector2(7 + intensity, 24 + intensity * 3),
+			Color(core.r, core.g, core.b, 0.62),
+			Color(0.94, 1.0, 1.0, 0.90),
+			1,
+			4,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.58,
+			Vector2(0.48, 0.78),
+			float(i % 7) * duration * 0.018,
+			Vector2(sin(float(i) * 1.7) * 35.0, 26.0 + float(i % 4) * 8.0),
+			0.55,
+			sin(float(i)) * 0.36
+		)
+
+
+func _spawn_screen_earth_event(layer_size: Vector2, impact_local: Vector2, duration: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
+	var crack_count := 6 + intensity
+	for i in range(crack_count):
+		var y := clampf(impact_local.y + (float(i) - float(crack_count - 1) * 0.5) * 42.0, layer_size.y * 0.18, layer_size.y * 0.86)
+		_spawn_local_effect_panel(
+			"PostMatchScreenEarthCrack",
+			Vector2(layer_size.x * 0.5, y),
+			Vector2(layer_size.x * (0.72 + float(i % 3) * 0.08), 8 + intensity),
+			Color(dark.r, dark.g, dark.b, 0.42),
+			Color(core.r, core.g, core.b, 0.58),
+			1,
+			5,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.62,
+			Vector2(1.16, 0.58),
+			duration * (0.05 + float(i) * 0.030),
+			Vector2(sin(float(i) * 2.0) * 22.0, 0.0),
+			0.04,
+			sin(float(i)) * 0.10
+		)
+	var stone_count := 14 + intensity * 4
+	for i in range(stone_count):
+		var x := layer_size.x * (float(i % 10) + 0.5) / 10.0
+		var y := layer_size.y * (0.50 + float(i % 5) * 0.075)
+		_spawn_local_effect_panel(
+			"PostMatchScreenEarthStone",
+			Vector2(x, y),
+			Vector2(18 + intensity * 3, 12 + intensity * 2),
+			Color(accent.r, accent.g, accent.b, 0.34),
+			Color(core.r, core.g, core.b, 0.66),
+			1,
+			5,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.50,
+			Vector2(0.62, 0.54),
+			float(i % 6) * duration * 0.020,
+			Vector2(sin(float(i) * 1.8) * 16.0, -28.0 - float(i % 3) * 8.0),
+			0.18
+		)
+
+
+func _spawn_screen_heal_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var stream_count := 9 + intensity * 2
+	for i in range(stream_count):
+		var x := layer_size.x * (float(i) + 0.5) / float(stream_count)
+		var height := layer_size.y * (0.24 + float(i % 4) * 0.035)
+		_spawn_local_effect_panel(
+			"PostMatchScreenHealStream",
+			Vector2(x, layer_size.y * 0.78),
+			Vector2(8 + intensity, height),
+			Color(accent.r, accent.g, accent.b, 0.20),
+			Color(core.r, core.g, core.b, 0.58),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.74,
+			Vector2(0.50, 1.12),
+			duration * (0.04 + float(i % 5) * 0.026),
+			Vector2(sin(float(i) * 1.4) * 20.0, -layer_size.y * 0.26),
+			0.0
+		)
+	var mote_count := 18 + intensity * 5
+	for i in range(mote_count):
+		var start := Vector2(layer_size.x * (float(i % 12) + 0.5) / 12.0, layer_size.y * (0.38 + float(i % 6) * 0.075))
+		_spawn_local_effect_panel(
+			"PostMatchScreenHealMote",
+			start,
+			Vector2(8 + intensity, 8 + intensity),
+			Color(core.r, core.g, core.b, 0.58),
+			Color(accent.r, accent.g, accent.b, 0.72),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.64,
+			Vector2(0.48, 0.48),
+			float(i % 7) * duration * 0.018,
+			Vector2(sin(float(i) * 2.2) * 26.0, -58.0 - float(intensity) * 5.0)
+		)
+
+
+func _spawn_screen_armor_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var screen_center := layer_size * 0.5
+	_spawn_local_effect_panel(
+		"PostMatchScreenArmorShell",
+		screen_center,
+		layer_size * Vector2(0.92, 0.86),
+		Color(accent.r, accent.g, accent.b, 0.07),
+		Color(core.r, core.g, core.b, 0.44),
+		5 + mini(intensity, 6),
+		22,
+		POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+		duration * 0.76,
+		Vector2(1.03, 1.05),
+		duration * 0.02
+	)
+	for i in range(4):
+		var side_x := -1.0 if i < 2 else 1.0
+		var side_y := -1.0 if i % 2 == 0 else 1.0
+		_spawn_local_effect_panel(
+			"PostMatchScreenArmorBrace",
+			screen_center + Vector2(side_x * layer_size.x * 0.36, side_y * layer_size.y * 0.28),
+			Vector2(layer_size.x * 0.24, 8 + intensity),
+			Color(core.r, core.g, core.b, 0.36),
+			Color(0.96, 1.0, 1.0, 0.72),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.52,
+			Vector2(0.64, 0.52),
+			duration * (0.08 + float(i) * 0.036),
+			Vector2(-side_x * 32.0, -side_y * 12.0),
+			0.0,
+			side_y * 0.42
+		)
+
+
+func _spawn_screen_gold_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var coin_count := 28 + intensity * 6
+	for i in range(coin_count):
+		var x := layer_size.x * (float(i % 13) + 0.5) / 13.0 + sin(float(i) * 1.9) * 18.0
+		var y := -32.0 - float(i % 5) * 22.0
+		_spawn_local_effect_panel(
+			"PostMatchScreenGoldCoin",
+			Vector2(x, y),
+			Vector2(13 + intensity * 2, 18 + intensity * 2),
+			Color(accent.r, accent.g, accent.b, 0.82),
+			Color(core.r, core.g, core.b, 0.92),
+			2,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 1.05,
+			Vector2(0.74, 0.74),
+			float(i % 9) * duration * 0.022,
+			Vector2(sin(float(i) * 2.7) * 30.0, layer_size.y * (0.72 + float(i % 4) * 0.07)),
+			0.95
+		)
+	var sparkle_count := 14 + intensity * 4
+	for i in range(sparkle_count):
+		var center := Vector2(layer_size.x * (float(i % 8) + 0.5) / 8.0, layer_size.y * (0.18 + float(i % 6) * 0.12))
+		_spawn_local_effect_panel(
+			"PostMatchScreenGoldSpark",
+			center,
+			Vector2(36 + intensity * 4, 4 + intensity),
+			Color(core.r, core.g, core.b, 0.46),
+			Color(1.0, 1.0, 0.78, 0.78),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			duration * 0.48,
+			Vector2(0.52, 0.46),
+			float(i % 5) * duration * 0.026,
+			Vector2.ZERO,
+			0.0,
+			float(i) * 0.72
+		)
+
+
+func _spawn_screen_damage_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var slash_count := 5 + intensity
+	for i in range(slash_count):
+		var y := layer_size.y * (0.16 + float(i) / float(maxi(1, slash_count - 1)) * 0.68)
+		_spawn_local_effect_panel(
+			"PostMatchScreenDamageSlash",
+			Vector2(layer_size.x * 0.5, y),
+			Vector2(layer_size.x * (0.58 + float(i % 3) * 0.06), 11 + intensity),
+			Color(accent.r, accent.g, accent.b, 0.24),
+			Color(core.r, core.g, core.b, 0.54),
+			1,
+			999,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
+			duration * 0.50,
+			Vector2(1.08, 0.52),
+			duration * (0.05 + float(i) * 0.040),
+			Vector2(sin(float(i) * 1.6) * 26.0, 0.0),
+			0.0,
+			-0.44 + sin(float(i)) * 0.18
+		)
 
 
 func _spawn_replay_ring(global_center: Vector2, ring_size: Vector2, fill: Color, border: Color, border_width: int, lifetime: float, target_scale: Vector2, delay: float) -> void:
@@ -783,7 +1210,7 @@ func _spawn_mastery_cast_spool(source_local: Vector2, orb_id: int, lifetime: flo
 			)
 
 
-func _spawn_mastery_fire_spool(source_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+func _spawn_mastery_fire_spool(source_local: Vector2, duration: float, intensity: int, _accent: Color, core: Color) -> void:
 	var tongue_count := 5 + intensity
 	for i in range(tongue_count):
 		var lane := (float(i) / float(maxi(1, tongue_count - 1)) - 0.5) * (54.0 + float(intensity) * 4.0)
@@ -930,7 +1357,7 @@ func _spawn_mastery_cast_travel(source_local: Vector2, target_local: Vector2, or
 			_spawn_mastery_generic_launch(source_local, delta, angle, distance, duration, delay, intensity, accent, core)
 
 
-func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
+func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	_spawn_local_effect_panel(
 		"MasteryFireProjectile",
 		source_local,
@@ -1017,7 +1444,7 @@ func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction:
 		)
 
 
-func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
+func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
 	var segment_count := 10 + intensity * 3
 	for i in range(segment_count):
 		var progress := float(i) / float(maxi(1, segment_count - 1))
@@ -1062,7 +1489,7 @@ func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, directio
 			)
 
 
-func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
+func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	_spawn_local_effect_panel(
 		"MasteryGenericLaunch",
 		source_local,
@@ -1098,6 +1525,68 @@ func _spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector
 	panel.add_theme_stylebox_override("panel", _effect_stylebox(fill, border, border_width, corner_radius))
 	_vfx_layer.add_child(panel)
 	_tween_effect_cleanup(panel, lifetime, target_scale, delay, move_offset, spin, 1.0, move_ease)
+
+
+func _result_effect_colors(clean_kind: String) -> Dictionary:
+	match _result_vfx_kind_key(clean_kind):
+		"fire":
+			return {
+				"accent": Color(1.0, 0.24, 0.04, 1.0),
+				"core": Color(1.0, 0.88, 0.36, 1.0),
+				"dark": Color(0.65, 0.07, 0.01, 1.0),
+			}
+		"ice":
+			return {
+				"accent": Color(0.42, 0.88, 1.0, 1.0),
+				"core": Color(0.88, 1.0, 1.0, 1.0),
+				"dark": Color(0.08, 0.38, 0.70, 1.0),
+			}
+		"earth":
+			return {
+				"accent": Color(0.56, 0.94, 0.30, 1.0),
+				"core": Color(0.88, 1.0, 0.42, 1.0),
+				"dark": Color(0.22, 0.38, 0.14, 1.0),
+			}
+		"heart":
+			return {
+				"accent": Color(0.32, 1.0, 0.52, 1.0),
+				"core": Color(0.82, 1.0, 0.78, 1.0),
+				"dark": Color(0.08, 0.44, 0.18, 1.0),
+			}
+		"armor":
+			return {
+				"accent": Color(0.58, 0.82, 1.0, 1.0),
+				"core": Color(0.92, 0.98, 1.0, 1.0),
+				"dark": Color(0.12, 0.28, 0.56, 1.0),
+			}
+		"gold":
+			return {
+				"accent": Color(1.0, 0.72, 0.12, 1.0),
+				"core": Color(1.0, 0.96, 0.48, 1.0),
+				"dark": Color(0.62, 0.34, 0.04, 1.0),
+			}
+		"damage":
+			return {
+				"accent": Color(1.0, 0.22, 0.16, 1.0),
+				"core": Color(1.0, 0.58, 0.44, 1.0),
+				"dark": Color(0.54, 0.04, 0.02, 1.0),
+			}
+	return {
+		"accent": Color(1.0, 1.0, 1.0, 1.0),
+		"core": Color(1.0, 1.0, 1.0, 1.0),
+		"dark": Color(0.35, 0.35, 0.35, 1.0),
+	}
+
+
+func _vfx_layer_size() -> Vector2:
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return Vector2.ZERO
+	var layer_size := _vfx_layer.size
+	if layer_size.x <= 1.0 or layer_size.y <= 1.0:
+		var viewport := _vfx_layer.get_viewport()
+		if viewport != null:
+			layer_size = viewport.get_visible_rect().size
+	return layer_size
 
 
 func _mastery_cast_colors(orb_id: int) -> Dictionary:
