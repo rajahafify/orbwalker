@@ -1893,7 +1893,8 @@ func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_targ
 			return false
 	if vfx_presenter != null:
 		var impact_kind := _mastery_impact_kind(orb_id)
-		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, enemy_impact_size, damage_lifetime, damage_amount)
+		var resolved_impact_size := _enemy_result_impact_size(orb_id, enemy_impact_size, damage_amount, vfx_presenter)
+		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
 		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
 	_play_mastery_effect_sfx("damage")
 	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
@@ -1902,6 +1903,25 @@ func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_targ
 	_stage_hud_enemy_damage_step(damage_amount)
 	_release_combat_mastery_feedback(orb_id)
 	return true
+
+
+func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int, vfx_presenter: Variant) -> Vector2:
+	if orb_id != OrbType.Id.FIRE or _view == null or not _view.has_method("enemy_vfx_size"):
+		return fallback_size
+	if vfx_presenter == null or not vfx_presenter.has_method("replay_result_is_screen_wide"):
+		return fallback_size
+	if not bool(vfx_presenter.replay_result_is_screen_wide("fire", amount)):
+		return fallback_size
+	var enemy_size: Vector2 = _view.enemy_vfx_size()
+	if enemy_size.x <= 1.0 or enemy_size.y <= 1.0:
+		return fallback_size
+	var scale := 1.0
+	if vfx_presenter != null and vfx_presenter.has_method("result_vfx_size_scale"):
+		scale = maxf(1.0, float(vfx_presenter.result_vfx_size_scale("fire", amount)))
+	return Vector2(
+		maxf(fallback_size.x, enemy_size.x / scale),
+		maxf(fallback_size.y, enemy_size.y / scale)
+	)
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:

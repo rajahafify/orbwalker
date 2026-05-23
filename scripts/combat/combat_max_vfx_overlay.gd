@@ -153,10 +153,11 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 	var accent: Color = colors.get("accent", Color.WHITE)
 	var core: Color = colors.get("core", Color.WHITE)
 	var max_size := maxf(draw_size.x, draw_size.y)
-	var base_size := max_size * (2.25 + float(intensity) * 0.22)
+	var basis_size := _replay_impact_basis_size(kind, draw_size, max_size)
+	var base_size := basis_size * (2.25 + float(intensity) * 0.22)
 	var duration := maxf(0.32, lifetime * 1.10)
 	if _status_vfx_available():
-		_spawn_status_replay_recipe(kind, center, max_size, base_size, duration, intensity, screen_wide)
+		_spawn_status_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
 		_spawn_light(center, core, 2.9 + float(intensity) * 0.38, base_size * 1.24, duration * 0.76)
 		return true
 	if _elemental_magic_available() and _should_use_elemental_magic(kind):
@@ -482,14 +483,14 @@ func _tornado_scene() -> PackedScene:
 	return _external_scene("tornado", TORNADO_VFX_SCENE_PATH)
 
 
-func _spawn_status_replay_recipe(kind: String, center: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
+func _spawn_status_replay_recipe(kind: String, center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
 	var clean_kind := _clean_kind(kind)
 	var status_size := Vector2(base_size, base_size) * (1.36 if screen_wide else 0.86)
 	var colors := _kind_colors(clean_kind)
 	var core: Color = colors.get("core", Color.WHITE)
 	var accent: Color = colors.get("accent", Color.WHITE)
 	if clean_kind == "fire":
-		_spawn_fire_replay_layers(center, max_size, base_size, duration, intensity, screen_wide)
+		_spawn_fire_replay_layers(center, draw_size, max_size, base_size, duration, intensity, screen_wide)
 		return
 	_spawn_atmospheric_replay_layer(clean_kind, center, max_size, base_size, duration, intensity, screen_wide)
 	match clean_kind:
@@ -542,52 +543,83 @@ func _fire_vfx_tier(intensity: int, screen_wide: bool = false) -> int:
 	return 1
 
 
-func _spawn_fire_replay_layers(center: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
+func _replay_impact_basis_size(kind: String, draw_size: Vector2, fallback_size: float) -> float:
+	if _clean_kind(kind) != "fire":
+		return fallback_size
+	if draw_size.x <= 1.0 or draw_size.y <= 1.0:
+		return fallback_size
+	var wide_ratio := maxf(draw_size.x, draw_size.y) / maxf(1.0, minf(draw_size.x, draw_size.y))
+	if wide_ratio < 1.45:
+		return fallback_size
+	var geometric_size := sqrt(draw_size.x * draw_size.y) * 0.64
+	var short_side_size := minf(draw_size.x, draw_size.y) * 1.18
+	return maxf(96.0, maxf(geometric_size, short_side_size))
+
+
+func _spawn_fire_replay_layers(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
 	var tier := _fire_vfx_tier(intensity, screen_wide)
-	var layer_intensity := maxi(3, intensity)
-	var impact_extent := maxf(170.0, base_size * (0.70 + float(tier) * 0.12))
+	var layer_intensity := intensity if tier == 1 else maxi(3, intensity)
+	var wide_target := draw_size.x > draw_size.y * 1.35
+	var fire_center := center + Vector2(0.0, draw_size.y * (0.20 if wide_target else 0.0))
+	var impact_extent := maxf(124.0, base_size * 0.54) if tier == 1 else maxf(170.0, base_size * (0.70 + float(tier) * 0.12))
 	var impact_size := Vector2(impact_extent, impact_extent)
-	var aura_size := Vector2(
-		maxf(230.0, base_size * (1.05 + float(tier) * 0.20)),
-		maxf(135.0, base_size * (0.54 + float(tier) * 0.06))
+	var area_cover_size := Vector2(
+		maxf(draw_size.x * 1.04, impact_extent * (0.88 if wide_target else 1.0)),
+		maxf(draw_size.y * (1.86 if wide_target else 1.10), impact_extent * (0.58 if wide_target else 0.54))
 	)
-	_spawn_atmospheric_flipbook("embers", center, aura_size, duration * 1.22, Color(1.0, 0.48, 0.18, 0.48), 0.0, Vector2(0.0, -max_size * 0.08), 1.08, 0.35, 0.0, 1)
-	_spawn_status_flipbook("burn", center, impact_size * 0.62, duration * 0.96, Color(1.0, 0.72, 0.22, 0.72), 0.0, Vector2.ZERO, 1.18, 1.8, 0.04, 1)
-	_spawn_flame_scene(center + Vector2(0.0, max_size * 0.05), impact_size * 0.92, duration * 1.00, layer_intensity, 0.02, Vector2(0.0, -max_size * 0.08), 2.0, 0.96)
-	_spawn_pack_layer("impact_01", center, "fire", impact_size * 0.86, duration * 0.64, layer_intensity, 0.06, 0.10, 2.6, 0.72)
-	_spawn_pack_layer("hit_01", center + Vector2(max_size * 0.12, -max_size * 0.10), "fire", impact_size * 0.50, duration * 0.48, layer_intensity, 0.13, -0.28, 2.9, 0.58)
-	_spawn_burst_particles("fire", center, maxf(max_size * 1.30, impact_extent * 0.62), duration * 0.88, layer_intensity)
-	_spawn_fire_spark_spray(center, maxf(max_size * 1.20, impact_extent * 0.58), duration * 0.78, layer_intensity, 0.02, tier)
-	_spawn_light(center, Color(1.0, 0.56, 0.14, 1.0), 3.0 + float(layer_intensity) * 0.36, impact_extent * 1.08, duration * 0.72)
+	var aura_size := Vector2(
+		maxf(area_cover_size.x, base_size * (1.05 + float(tier) * 0.20)),
+		maxf(area_cover_size.y, base_size * (0.54 + float(tier) * 0.06))
+	)
+	var area_alpha := 0.30 if wide_target else 0.48
+	_spawn_atmospheric_flipbook("fog", fire_center, area_cover_size * Vector2(1.06, 1.18), duration * 1.20, Color(1.0, 0.12, 0.03, 0.16 if wide_target else 0.22), 0.0, Vector2(0.0, -max_size * 0.04), 1.03, 0.15, 0.0, 1)
+	_spawn_atmospheric_flipbook("embers", fire_center, aura_size, duration * 1.22, Color(1.0, 0.48, 0.18, area_alpha), 0.0, Vector2(0.0, -max_size * 0.08), 1.08, 0.35, 0.0, 1)
+	if wide_target:
+		var base_center := center + Vector2(0.0, draw_size.y * 0.48)
+		_spawn_atmospheric_flipbook("fog", base_center, area_cover_size * Vector2(1.04, 0.82), duration * 1.24, Color(1.0, 0.08, 0.02, 0.18), 0.02, Vector2(0.0, -draw_size.y * 0.20), 1.04, 0.55, 0.0, 1)
+		_spawn_atmospheric_flipbook("embers", base_center, area_cover_size * Vector2(1.02, 0.72), duration * 1.12, Color(1.0, 0.26, 0.04, 0.28), 0.05, Vector2(0.0, -draw_size.y * 0.24), 1.02, 0.80, 0.0, 2)
+	_spawn_status_flipbook("burn", fire_center, impact_size * 0.62, duration * 0.96, Color(1.0, 0.72, 0.22, 0.72), 0.0, Vector2.ZERO, 1.18, 1.8, 0.04, 1)
+	if not wide_target:
+		_spawn_flame_scene(fire_center + Vector2(0.0, max_size * 0.05), impact_size * 0.92, duration * 1.00, layer_intensity, 0.02, Vector2(0.0, -max_size * 0.08), 2.0, 0.96)
+	var weak_impact_scale := 0.72 if tier == 1 else 1.0
+	_spawn_pack_layer("impact_01", fire_center, "fire", impact_size * (0.86 * weak_impact_scale), duration * 0.64, layer_intensity, 0.06, 0.10, 2.6, 0.56 if tier == 1 else 0.72)
+	_spawn_pack_layer("hit_01", fire_center + Vector2(max_size * 0.09, -max_size * 0.08), "fire", impact_size * (0.50 * weak_impact_scale), duration * 0.48, layer_intensity, 0.13, -0.28, 2.9, 0.42 if tier == 1 else 0.58)
+	_spawn_burst_particles("fire", fire_center, maxf(max_size * 0.78, impact_extent * 0.52) if tier == 1 else maxf(max_size * 1.30, impact_extent * 0.62), duration * 0.88, layer_intensity)
+	_spawn_fire_spark_spray(fire_center, maxf(max_size * 0.74, impact_extent * 0.48) if tier == 1 else maxf(max_size * 1.20, impact_extent * 0.58), duration * 0.78, layer_intensity, 0.02, tier)
+	_spawn_light(fire_center, Color(1.0, 0.56, 0.14, 1.0), (2.0 + float(layer_intensity) * 0.24) if tier == 1 else (3.0 + float(layer_intensity) * 0.36), impact_extent * (0.86 if tier == 1 else 1.08), duration * 0.72)
 	if tier == 1:
-		_spawn_fireball_impact_layers(center, impact_size, duration, layer_intensity, max_size)
+		_spawn_fireball_impact_layers(fire_center, impact_size, duration, layer_intensity, max_size)
 	if tier >= 2:
-		_spawn_atmospheric_flipbook("embers", center + Vector2(0.0, -max_size * 0.16), aura_size * Vector2(1.22, 0.82), duration * 1.06, Color(1.0, 0.28, 0.06, 0.36), duration * 0.03, Vector2(0.0, -max_size * 0.10), 1.03, 0.60, 0.04, 1)
-		_spawn_atmospheric_flipbook("embers", center + Vector2(-max_size * 0.18, -max_size * 0.04), impact_size * Vector2(1.05, 0.60), duration * 0.76, Color(1.0, 0.42, 0.12, 0.30), duration * 0.08, Vector2(max_size * 0.30, -max_size * 0.04), 0.88, 1.2, -0.10, 1)
-		_spawn_status_flipbook("rage", center + Vector2(0.0, -max_size * 0.12), impact_size * 0.38, duration * 0.74, Color(1.0, 0.30, 0.08, 0.48), duration * 0.08, Vector2.ZERO, 1.10, 2.4, 0.10, 1)
-		_spawn_pack_layer("hit_01", center + Vector2(-max_size * 0.12, max_size * 0.02), "fire", impact_size * 0.62, duration * 0.54, layer_intensity + 1, 0.17, 0.34, 3.0, 0.52)
-		_spawn_burst_particles("fire", center, maxf(max_size * 1.75, impact_extent * 0.82), duration * 0.76, layer_intensity + 1)
-		_spawn_fire_spark_spray(center, maxf(max_size * 1.60, impact_extent * 0.76), duration * 0.72, layer_intensity + 1, duration * 0.08, tier)
+		_spawn_atmospheric_flipbook("embers", fire_center + Vector2(0.0, -max_size * 0.16), aura_size * Vector2(1.22, 0.82), duration * 1.06, Color(1.0, 0.28, 0.06, 0.36), duration * 0.03, Vector2(0.0, -max_size * 0.10), 1.03, 0.60, 0.04, 1)
+		_spawn_atmospheric_flipbook("embers", fire_center + Vector2(-max_size * 0.18, -max_size * 0.04), impact_size * Vector2(1.05, 0.60), duration * 0.76, Color(1.0, 0.42, 0.12, 0.30), duration * 0.08, Vector2(max_size * 0.30, -max_size * 0.04), 0.88, 1.2, -0.10, 1)
+		_spawn_status_flipbook("rage", fire_center + Vector2(0.0, -max_size * 0.12), impact_size * 0.38, duration * 0.74, Color(1.0, 0.30, 0.08, 0.48), duration * 0.08, Vector2.ZERO, 1.10, 2.4, 0.10, 1)
+		_spawn_pack_layer("hit_01", fire_center + Vector2(-max_size * 0.12, max_size * 0.02), "fire", impact_size * 0.62, duration * 0.54, layer_intensity + 1, 0.17, 0.34, 3.0, 0.52)
+		_spawn_burst_particles("fire", fire_center, maxf(max_size * 1.75, impact_extent * 0.82), duration * 0.76, layer_intensity + 1)
+		_spawn_fire_spark_spray(fire_center, maxf(max_size * 1.60, impact_extent * 0.76), duration * 0.72, layer_intensity + 1, duration * 0.08, tier)
 	if tier >= 3:
-		var wide_size := Vector2(maxf(320.0, base_size * 1.36), maxf(240.0, base_size * 1.02))
-		_spawn_fire_aurora_layer(center, duration * 1.36, intensity, 0.0, 1.0)
-		_spawn_fire_screen_ember_field(center + Vector2(0.0, _vfx_layer_size().y * 0.20), duration * 1.18, layer_intensity + 1, 0.0, 0.82)
-		_spawn_fire_meteor_impact_layers(center, wide_size, duration, layer_intensity, 0.0)
-		_spawn_atmospheric_flipbook("embers", center + Vector2(0.0, -max_size * 0.22), wide_size * Vector2(1.12, 0.54), duration * 1.22, Color(1.0, 0.24, 0.04, 0.42), 0.02, Vector2(0.0, -max_size * 0.14), 1.04, -0.4, 0.0, 2)
-		_spawn_flame_scene(center + Vector2(0.0, max_size * 0.06), wide_size * Vector2(0.92, 0.82), duration * 1.18, layer_intensity + 2, 0.04, Vector2(0.0, -max_size * 0.08), 2.6, 1.0)
-		_spawn_pack_layer("big_impact_01", center, "fire", wide_size * 0.92, duration * 0.84, layer_intensity + 2, 0.08, 0.06, 3.3, 0.74)
-		_spawn_burst_particles("fire", center, maxf(base_size * 1.12, max_size * 3.0), duration * 0.94, layer_intensity + 2)
-		_spawn_fire_spark_spray(center, maxf(base_size * 0.98, max_size * 2.60), duration * 0.92, layer_intensity + 2, duration * 0.04, tier)
-		_spawn_light(center, Color(1.0, 0.32, 0.06, 1.0), 4.2 + float(layer_intensity) * 0.42, wide_size.x * 0.62, duration * 0.82)
+		var wide_size := Vector2(maxf(area_cover_size.x, base_size * 1.24), maxf(area_cover_size.y * 1.18, base_size * 0.88))
+		if not wide_target:
+			_spawn_fire_aurora_layer(fire_center, duration * 1.36, intensity, 0.0, 0.50)
+			_spawn_fire_screen_ember_field(fire_center + Vector2(0.0, _vfx_layer_size().y * 0.20), duration * 1.18, layer_intensity + 1, 0.0, 0.36)
+		_spawn_fire_meteor_impact_layers(fire_center, wide_size, duration, layer_intensity, 0.0, wide_target)
+		_spawn_atmospheric_flipbook("embers", fire_center + Vector2(0.0, -max_size * 0.06), wide_size * Vector2(1.06, 0.80), duration * 1.22, Color(1.0, 0.24, 0.04, 0.24 if wide_target else 0.34), 0.02, Vector2(0.0, -max_size * 0.08), 1.04, -0.4, 0.0, 2)
+		if not wide_target:
+			_spawn_flame_scene(fire_center + Vector2(0.0, max_size * 0.10), wide_size * Vector2(0.82, 0.92), duration * 1.18, layer_intensity + 2, 0.04, Vector2(0.0, -max_size * 0.06), 2.6, 0.92)
+			_spawn_pack_layer("big_impact_01", fire_center, "fire", wide_size * Vector2(0.82, 0.96), duration * 0.84, layer_intensity + 2, 0.08, 0.06, 3.3, 0.68)
+		else:
+			_spawn_fire_fragmented_impact_cluster(fire_center, wide_size * Vector2(0.92, 0.68), duration * 0.78, layer_intensity + 2, duration * 0.08, 0.62)
+		_spawn_burst_particles("fire", fire_center, maxf(base_size * 1.12, max_size * 3.0), duration * 0.94, layer_intensity + 2)
+		_spawn_fire_spark_spray(fire_center, maxf(base_size * 0.98, max_size * 2.60), duration * 0.92, layer_intensity + 2, duration * 0.04, tier)
+		_spawn_light(fire_center, Color(1.0, 0.32, 0.06, 1.0), 4.2 + float(layer_intensity) * 0.42, wide_size.x * 0.62, duration * 0.82)
 
 
 func _spawn_fire_cast_layers(source: Vector2, target: Vector2, delta: Vector2, spool_size: Vector2, spool_duration: float, travel_duration: float, launch_delay: float, intensity: int, core: Color) -> void:
 	var tier := _fire_vfx_tier(intensity)
-	var layer_intensity := maxi(3, intensity)
+	var layer_intensity := intensity if tier == 1 else maxi(3, intensity)
 	var angle := delta.angle()
 	var normal := Vector2(-delta.y, delta.x).normalized()
 	var source_size := spool_size * (1.02 + float(tier) * 0.12)
-	var impact_extent := maxf(190.0, maxf(source_size.x, source_size.y) * (1.10 + float(tier) * 0.16))
+	var impact_extent := maxf(142.0, maxf(source_size.x, source_size.y) * 0.72) if tier == 1 else maxf(190.0, maxf(source_size.x, source_size.y) * (1.10 + float(tier) * 0.16))
 	var impact_size := Vector2(impact_extent, impact_extent)
 	var impact_delay := launch_delay + travel_duration * 0.82
 	_spawn_light(source, core, 3.8 + float(layer_intensity) * 0.36, source_size.x * 2.05, spool_duration * 1.24)
@@ -604,14 +636,15 @@ func _spawn_fire_cast_layers(source: Vector2, target: Vector2, delta: Vector2, s
 	_spawn_status_flipbook("burn", source, Vector2(142 + layer_intensity * 18, 92 + layer_intensity * 9), travel_duration * 1.04, Color(1.0, 0.58, 0.18, 0.50), launch_delay, delta, 0.84, 2.3, angle, 1)
 	if tier == 1:
 		_spawn_fireball_spell_layers(source, target, delta, source_size, impact_size, launch_delay, travel_duration, layer_intensity, angle)
-	_spawn_flame_scene(target, impact_size * 0.82, travel_duration * 1.18, layer_intensity, impact_delay, Vector2.ZERO, 2.8, 0.96)
-	_spawn_pack_layer("impact_01", target, "fire", impact_size * 0.72, travel_duration * 0.66, layer_intensity, impact_delay + travel_duration * 0.03, angle, 3.0, 0.68)
-	_spawn_status_flipbook("rage", target + Vector2(0.0, -impact_extent * 0.06), impact_size * 0.34, travel_duration * 0.90, Color(1.0, 0.30, 0.08, 0.48), impact_delay + travel_duration * 0.02, Vector2.ZERO, 1.12, 3.2, angle, 1)
-	_spawn_burst_particles("fire", target, impact_extent * 0.62, travel_duration * 0.82, layer_intensity)
-	_spawn_fire_spark_spray(target, impact_extent * 0.68, travel_duration * 0.78, layer_intensity, impact_delay, tier)
-	_spawn_light(target, Color(1.0, 0.46, 0.10, 1.0), 3.2 + float(layer_intensity) * 0.34, impact_extent * 1.12, travel_duration * 0.78)
+	if tier < 3:
+		_spawn_flame_scene(target, impact_size * (0.58 if tier == 1 else 0.82), travel_duration * 1.18, layer_intensity, impact_delay, Vector2.ZERO, 2.8, 0.62 if tier == 1 else 0.96)
+	_spawn_pack_layer("impact_01", target, "fire", impact_size * (0.52 if tier == 1 else 0.72), travel_duration * 0.66, layer_intensity, impact_delay + travel_duration * 0.03, angle, 3.0, 0.44 if tier == 1 else 0.68)
+	_spawn_status_flipbook("rage", target + Vector2(0.0, -impact_extent * 0.06), impact_size * (0.24 if tier == 1 else 0.34), travel_duration * 0.90, Color(1.0, 0.30, 0.08, 0.30 if tier == 1 else 0.48), impact_delay + travel_duration * 0.02, Vector2.ZERO, 1.06 if tier == 1 else 1.12, 3.2, angle, 1)
+	_spawn_burst_particles("fire", target, impact_extent * (0.42 if tier == 1 else 0.62), travel_duration * 0.82, layer_intensity)
+	_spawn_fire_spark_spray(target, impact_extent * (0.46 if tier == 1 else 0.68), travel_duration * 0.78, layer_intensity, impact_delay, tier)
+	_spawn_light(target, Color(1.0, 0.46, 0.10, 1.0), (2.2 + float(layer_intensity) * 0.24) if tier == 1 else (3.2 + float(layer_intensity) * 0.34), impact_extent * (0.86 if tier == 1 else 1.12), travel_duration * 0.78)
 	if tier >= 2:
-		_spawn_fire_screen_ember_field(source + delta * 0.50, travel_duration * 1.22, layer_intensity, launch_delay + travel_duration * 0.03, 0.90)
+		_spawn_fire_screen_ember_field(source + delta * 0.50, travel_duration * 1.22, layer_intensity, launch_delay + travel_duration * 0.03, 0.28)
 		_spawn_atmospheric_flipbook("embers", source + delta * 0.50 + normal * 12.0, Vector2(delta.length() * 1.04, 118.0 + float(layer_intensity) * 12.0), travel_duration * 1.18, Color(1.0, 0.30, 0.06, 0.36), launch_delay + travel_duration * 0.04, Vector2.ZERO, 0.98, 1.05, angle + 0.04, 1)
 		_spawn_atmospheric_flipbook("embers", source + delta * 0.52 - normal * 12.0, Vector2(delta.length() * 0.88, 88.0 + float(layer_intensity) * 8.0), travel_duration * 0.92, Color(1.0, 0.46, 0.14, 0.30), launch_delay + travel_duration * 0.12, Vector2.ZERO, 0.92, 1.15, angle - 0.05, 1)
 		_spawn_beam_effect(source + normal * 8.0, delta - normal * 6.0, "fire", travel_duration * 0.90, layer_intensity + 1, launch_delay + travel_duration * 0.04, 0.82 + float(tier) * 0.08)
@@ -619,19 +652,19 @@ func _spawn_fire_cast_layers(source: Vector2, target: Vector2, delta: Vector2, s
 		_spawn_burst_particles("fire", target, impact_extent * 0.82, travel_duration * 0.76, layer_intensity + 1)
 		_spawn_fire_spark_spray(target, impact_extent * 0.86, travel_duration * 0.72, layer_intensity + 1, impact_delay + travel_duration * 0.06, tier)
 	if tier >= 3:
-		var aurora_delay := maxf(0.0, launch_delay * 0.62)
-		_spawn_fire_aurora_layer(target, spool_duration * 0.55 + travel_duration * 1.24, intensity, aurora_delay, 1.0)
-		_spawn_fire_meteor_attack_layers(target, launch_delay, travel_duration, layer_intensity, impact_size)
+		var meteor_target := target
+		var meteor_impact_size := impact_size * Vector2(1.65, 1.28)
+		meteor_target = target + Vector2(0.0, impact_extent * 0.12)
+		_spawn_fire_meteor_attack_layers(meteor_target, launch_delay, travel_duration, layer_intensity, meteor_impact_size)
 		_spawn_beam_effect(source, delta, "fire", travel_duration * 1.12, layer_intensity + 2, launch_delay, 1.78)
 		for lane_index in [-1, 1]:
 			var lane := normal * float(lane_index) * 14.0
 			_spawn_beam_effect(source + lane, delta - lane * 0.40, "fire", travel_duration * 0.94, layer_intensity + 1, launch_delay + 0.04, 1.02)
-		_spawn_atmospheric_flipbook("embers", source + delta * 0.50, Vector2(delta.length() * 1.22, 178.0 + float(layer_intensity) * 15.0), travel_duration * 1.28, Color(1.0, 0.20, 0.04, 0.42), launch_delay, Vector2.ZERO, 1.04, 0.72, angle, 2)
-		_spawn_flame_scene(target + Vector2(0.0, impact_extent * 0.02), impact_size * 1.34, travel_duration * 1.26, layer_intensity + 2, impact_delay, Vector2.ZERO, 3.3, 1.0)
-		_spawn_pack_layer("big_impact_01", target, "fire", impact_size * 1.10, travel_duration * 0.82, layer_intensity + 2, impact_delay + travel_duration * 0.04, angle, 3.5, 0.76)
-		_spawn_burst_particles("fire", target, impact_extent * 1.08, travel_duration * 0.92, layer_intensity + 2)
-		_spawn_fire_spark_spray(target, impact_extent * 1.16, travel_duration * 0.90, layer_intensity + 2, impact_delay + travel_duration * 0.04, tier)
-		_spawn_light(target, Color(1.0, 0.28, 0.04, 1.0), 4.6 + float(layer_intensity) * 0.42, impact_extent * 1.72, travel_duration * 0.90)
+		_spawn_atmospheric_flipbook("embers", source + delta * 0.50, Vector2(delta.length() * 0.92, 126.0 + float(layer_intensity) * 9.0), travel_duration * 1.16, Color(1.0, 0.20, 0.04, 0.30), launch_delay, Vector2.ZERO, 1.02, 0.72, angle, 1)
+		_spawn_fire_fragmented_impact_cluster(meteor_target, meteor_impact_size * Vector2(0.88, 0.72), travel_duration * 0.76, layer_intensity + 2, impact_delay + travel_duration * 0.04, 0.72, angle)
+		_spawn_burst_particles("fire", meteor_target, maxf(impact_extent * 1.08, meteor_impact_size.y * 0.74), travel_duration * 0.92, layer_intensity + 2)
+		_spawn_fire_spark_spray(meteor_target, maxf(impact_extent * 1.16, meteor_impact_size.y * 0.82), travel_duration * 0.90, layer_intensity + 2, impact_delay + travel_duration * 0.04, tier)
+		_spawn_light(meteor_target, Color(1.0, 0.28, 0.04, 1.0), 4.6 + float(layer_intensity) * 0.42, meteor_impact_size.x * 0.88, travel_duration * 0.90)
 	_spawn_camera_kick(delta.normalized() * (6.0 + float(layer_intensity) * (1.15 + float(tier) * 0.18)), impact_delay)
 
 
@@ -695,31 +728,59 @@ func _spawn_fire_meteor_attack_layers(target: Vector2, launch_delay: float, trav
 		return
 	var meteor_delay := launch_delay + travel_duration * 0.12
 	var descent_time := travel_duration * 1.02
-	var sky_center := Vector2(layer_size.x * 0.5, clampf(target.y, layer_size.y * 0.08, layer_size.y * 0.40))
-	_spawn_fire_screen_ember_field(target + Vector2(0.0, layer_size.y * 0.18), travel_duration * 1.24, intensity, meteor_delay, 1.08)
-	_spawn_atmospheric_flipbook("fog", layer_size * 0.5, Vector2(layer_size.x * 1.18, layer_size.y * 1.12), descent_time * 1.10, Color(1.0, 0.10, 0.02, 0.26), meteor_delay, Vector2(0.0, -layer_size.y * 0.02), 1.02, -1.20, 0.0, 1)
-	_spawn_atmospheric_flipbook("embers", sky_center + Vector2(0.0, layer_size.y * 0.18), Vector2(layer_size.x * 1.24, layer_size.y * 0.92), descent_time * 1.14, Color(1.0, 0.16, 0.02, 0.52), meteor_delay, Vector2(0.0, -layer_size.y * 0.04), 1.04, -0.20, 0.0, 2)
 	for i in range(3):
-		var offset_x := (float(i) - 1.0) * layer_size.x * 0.20
-		var start := Vector2(target.x + offset_x - layer_size.x * 0.16, -layer_size.y * (0.08 + float(i) * 0.035))
-		var end := target + Vector2(offset_x * 0.32, layer_size.y * (0.10 + float(i) * 0.02))
+		var offset_x := (float(i) - 1.0) * impact_size.x * 0.24
+		var start := Vector2(target.x + offset_x - impact_size.x * 0.22, maxf(0.0, target.y - impact_size.y * (1.35 + float(i) * 0.10)))
+		var end := target + Vector2(offset_x * 0.22, impact_size.y * (0.08 + float(i) * 0.02))
 		var move := end - start
-		var size := Vector2(layer_size.x * (0.24 + float(i) * 0.04), layer_size.y * 0.16)
+		var size := Vector2(impact_size.x * (0.32 + float(i) * 0.04), impact_size.y * 0.24)
 		var streak_delay := meteor_delay + travel_duration * (0.06 + float(i) * 0.07)
 		_spawn_elemental_effect("projectile", start, "fire", size, descent_time * (0.78 + float(i) * 0.08), intensity + 1, streak_delay, move, move.angle() - PI, 2.6, 0.74)
 		_spawn_status_flipbook("burn", start, size * Vector2(0.86, 0.62), descent_time * (0.70 + float(i) * 0.08), Color(1.0, 0.36, 0.06, 0.44), streak_delay + 0.02, move, 0.62, 2.8, move.angle(), 1)
-	_spawn_fire_meteor_impact_layers(target, impact_size * 1.26, travel_duration * 1.08, intensity + 2, launch_delay + travel_duration * 0.82)
+	_spawn_fire_meteor_impact_layers(target, impact_size * 1.26, travel_duration * 1.08, intensity + 2, launch_delay + travel_duration * 0.82, true)
 
 
-func _spawn_fire_meteor_impact_layers(center: Vector2, impact_size: Vector2, duration: float, intensity: int, delay: float) -> void:
+func _spawn_fire_meteor_impact_layers(center: Vector2, impact_size: Vector2, duration: float, intensity: int, delay: float, fragmented_wide: bool = false) -> void:
 	var extent := maxf(impact_size.x, impact_size.y)
-	_spawn_atmospheric_flipbook("embers", center + Vector2(0.0, -extent * 0.18), impact_size * Vector2(1.28, 0.72), duration * 0.92, Color(1.0, 0.20, 0.03, 0.46), delay, Vector2(0.0, extent * 0.10), 0.88, 2.6, 0.0, 2)
-	_spawn_status_flipbook("rage", center + Vector2(0.0, -extent * 0.10), impact_size * 0.72, duration * 0.82, Color(1.0, 0.20, 0.03, 0.54), delay + duration * 0.04, Vector2.ZERO, 1.12, 3.2, 0.0, 1)
-	_spawn_elemental_effect("area", center, "fire", impact_size * 1.22, duration * 1.24, intensity, delay + duration * 0.06, Vector2.ZERO, 0.0, 3.0, 0.96)
-	_spawn_pack_layer("big_impact_01", center, "fire", impact_size * 1.16, duration * 0.88, intensity, delay + duration * 0.08, 0.0, 3.8, 0.84)
-	_spawn_flame_scene(center + Vector2(0.0, extent * 0.05), impact_size * 1.42, duration * 1.22, intensity, delay + duration * 0.08, Vector2.ZERO, 3.5, 1.0)
-	_spawn_fire_spark_spray(center, extent * 1.18, duration * 0.92, intensity, delay + duration * 0.10, 3)
-	_spawn_light(center, Color(1.0, 0.18, 0.02, 1.0), 5.2 + float(intensity) * 0.42, extent * 1.80, duration * 0.90)
+	var vertical_target := impact_size.x > impact_size.y * 1.35
+	var base_center := center + Vector2(0.0, impact_size.y * (0.22 if vertical_target else 0.08))
+	_spawn_atmospheric_flipbook("fog", base_center + Vector2(0.0, impact_size.y * 0.10), impact_size * Vector2(0.78, 0.58), duration * 1.06, Color(1.0, 0.08, 0.02, 0.12 if vertical_target else 0.18), delay + duration * 0.02, Vector2(0.0, -impact_size.y * 0.08), 1.02, 2.2, 0.0, 1)
+	_spawn_atmospheric_flipbook("embers", base_center + Vector2(0.0, -impact_size.y * 0.08), impact_size * Vector2(0.92, 0.72), duration * 0.84, Color(1.0, 0.20, 0.03, 0.22 if vertical_target else 0.32), delay, Vector2(0.0, impact_size.y * 0.04), 0.94, 2.6, 0.0, 1)
+	_spawn_status_flipbook("rage", base_center + Vector2(0.0, -impact_size.y * 0.12), impact_size * Vector2(0.62, 0.78), duration * 0.82, Color(1.0, 0.20, 0.03, 0.46 if vertical_target else 0.54), delay + duration * 0.04, Vector2.ZERO, 1.12, 3.2, 0.0, 1)
+	if fragmented_wide or vertical_target:
+		_spawn_fire_fragmented_impact_cluster(base_center, impact_size, duration, intensity, delay + duration * 0.06, 0.78)
+	else:
+		_spawn_elemental_effect("area", base_center, "fire", impact_size * Vector2(0.82, 0.86), duration * 1.08, intensity, delay + duration * 0.06, Vector2.ZERO, 0.0, 3.0, 0.78)
+		_spawn_pack_layer("big_impact_01", base_center, "fire", impact_size * Vector2(0.76, 0.80), duration * 0.78, intensity, delay + duration * 0.08, 0.0, 3.8, 0.66)
+	_spawn_fire_spark_spray(base_center, extent * 1.18, duration * 0.92, intensity, delay + duration * 0.10, 3)
+	_spawn_light(base_center, Color(1.0, 0.18, 0.02, 1.0), 5.2 + float(intensity) * 0.42, extent * 1.80, duration * 0.90)
+
+
+func _spawn_fire_fragmented_impact_cluster(center: Vector2, draw_size: Vector2, duration: float, intensity: int, delay: float, alpha_scale: float = 1.0, rotation: float = 0.0) -> void:
+	var width := maxf(120.0, draw_size.x)
+	var height := maxf(110.0, draw_size.y)
+	var burst_base := clampf(height * 0.44, 92.0, 190.0)
+	var offsets := [
+		Vector2(-width * 0.34, -height * 0.12),
+		Vector2(-width * 0.13, height * 0.02),
+		Vector2(width * 0.12, -height * 0.08),
+		Vector2(width * 0.32, height * 0.04),
+		Vector2(0.0, height * 0.15),
+	]
+	for i in range(offsets.size()):
+		var progress := float(i) / float(maxi(1, offsets.size() - 1))
+		var burst_center: Vector2 = center + offsets[i]
+		var burst_size := Vector2(
+			burst_base * (1.08 + sin(float(i) * 1.7) * 0.12),
+			burst_base * (0.78 + cos(float(i) * 1.3) * 0.10)
+		)
+		var burst_delay := delay + duration * (0.02 + progress * 0.10)
+		var burst_rotation := rotation + (-0.24 + progress * 0.48)
+		_spawn_pack_layer("impact_01", burst_center, "fire", burst_size, duration * 0.46, intensity, burst_delay, burst_rotation, 3.7, 0.46 * alpha_scale)
+		_spawn_pack_layer("hit_01", burst_center + Vector2(0.0, -burst_base * 0.10), "fire", burst_size * 0.58, duration * 0.36, intensity + 1, burst_delay + duration * 0.04, burst_rotation * 0.7, 3.9, 0.42 * alpha_scale)
+		_spawn_status_flipbook("burn", burst_center, burst_size * Vector2(0.78, 0.58), duration * 0.68, Color(1.0, 0.44, 0.08, 0.32 * alpha_scale), burst_delay, Vector2(0.0, -height * 0.04), 0.98, 3.2, burst_rotation, 1)
+	_spawn_status_flipbook("rage", center + Vector2(0.0, -height * 0.04), Vector2(width * 0.58, height * 0.36), duration * 0.76, Color(1.0, 0.16, 0.02, 0.26 * alpha_scale), delay + duration * 0.05, Vector2.ZERO, 1.04, 3.1, rotation, 1)
+	_spawn_atmospheric_flipbook("embers", center + Vector2(0.0, -height * 0.10), Vector2(width * 0.92, height * 0.46), duration * 0.86, Color(1.0, 0.30, 0.05, 0.24 * alpha_scale), delay + duration * 0.02, Vector2(0.0, -height * 0.08), 0.98, 2.8, rotation, 1)
 
 
 func _spawn_fire_screen_ember_field(center: Vector2, lifetime: float, intensity: int, delay: float, alpha_scale: float) -> void:

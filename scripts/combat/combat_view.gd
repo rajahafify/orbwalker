@@ -290,6 +290,13 @@ func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	return _control_target_global(_enemy_portrait, vertical_bias)
 
 
+func enemy_vfx_size() -> Vector2:
+	if _enemy_portrait == null:
+		return Vector2.ZERO
+	var rect := _enemy_portrait.get_global_rect()
+	return rect.size
+
+
 func player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	return _control_target_global(_player_portrait, vertical_bias)
 
