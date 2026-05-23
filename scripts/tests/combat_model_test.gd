@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatModelTest
 
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
+const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
 
@@ -15,13 +16,17 @@ func run_all() -> Dictionary:
 	_run_case("mastery_preview_accumulates_releases_consumes_and_resets", _test_mastery_preview_accumulates_releases_consumes_and_resets, failures)
 	_run_case("resolve_trace_begin_pass_end_state", _test_resolve_trace_begin_pass_end_state, failures)
 	_run_case("post_match_vfx_registry_exposes_distinct_results", _test_post_match_vfx_registry_exposes_distinct_results, failures)
+	_run_case("raw_pack_combat_vfx_scenes_are_available", _test_raw_pack_combat_vfx_scenes_are_available, failures)
+	_run_case("new_raw_status_and_scene_vfx_assets_are_available", _test_new_raw_status_and_scene_vfx_assets_are_available, failures)
+	_run_case("combat_vfx_presenter_forces_max_mode", _test_combat_vfx_presenter_forces_max_mode, failures)
+	_run_case("post_match_vfx_runtime_primitives_are_capped", _test_post_match_vfx_runtime_primitives_are_capped, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
 	_run_case("board_lock_visual_state_captures_pointer_input", _test_board_lock_visual_state_captures_pointer_input, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 11,
+		"total": 15,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -187,6 +192,99 @@ func _test_post_match_vfx_registry_exposes_distinct_results() -> String:
 		if kind in ["fire", "ice", "earth", "gold", "heart", "armor", "damage"] and seen_rids.has(rid):
 			return "Expected %s post-match texture to be visually distinct." % kind
 		seen_rids[rid] = kind
+	return ""
+
+
+func _test_raw_pack_combat_vfx_scenes_are_available() -> String:
+	var scene_paths: Array[String] = [
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/hit/vfx_hit_01.tscn",
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/hit/vfx_hit_02.tscn",
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/impact/vfx_impact_01.tscn",
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/impact/vfx_impact_02.tscn",
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/big_impact/vfx_big_impact_01.tscn",
+		"res://assets/BinbunVFX_Vol2/StylizedHitFX/effects/big_impact/vfx_big_impact_02.tscn",
+		"res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/cast/vfx_fire_cast_01.tscn",
+		"res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/projectile/vfx_fire_projectile_01.tscn",
+		"res://assets/BinbunVFX_Vol2/ElementalMagicFX/effects/area/vfx_fire_area_01.tscn",
+	]
+	for path in scene_paths:
+		if not ResourceLoader.exists(path):
+			return "Expected raw VFX pack scene at %s." % path
+		var scene := load(path) as PackedScene
+		if scene == null:
+			return "Expected raw VFX pack scene to load at %s." % path
+	return ""
+
+
+func _test_new_raw_status_and_scene_vfx_assets_are_available() -> String:
+	var overlay = COMBAT_MAX_VFX_OVERLAY_SCRIPT.new()
+	var status_paths: Dictionary = overlay.required_status_sheet_paths()
+	for key in ["burn", "freeze", "poison", "heal", "shield", "blessed", "armor", "regen", "haste"]:
+		var path := String(status_paths.get(key, ""))
+		if path == "":
+			return "Expected status sheet path for %s." % key
+		var texture := load(path) as Texture2D
+		var size := Vector2i.ZERO
+		if texture != null:
+			size = Vector2i(texture.get_width(), texture.get_height())
+		else:
+			var image := Image.new()
+			if image.load(path) != OK:
+				return "Expected Vivid status sheet to load at %s." % path
+			size = Vector2i(image.get_width(), image.get_height())
+		if size.x < 256 or size.y < 256:
+			return "Expected Vivid status sheet to expose a 4x4 64px atlas at %s." % path
+	var atmospheric_paths: Dictionary = overlay.required_atmospheric_sheet_paths()
+	for key in ["embers", "snow", "wind", "magic_wind", "godrays", "meteor", "tornado", "frost"]:
+		var atmospheric_path := String(atmospheric_paths.get(key, ""))
+		if atmospheric_path == "":
+			return "Expected atmospheric sheet path for %s." % key
+		var atmospheric_texture := load(atmospheric_path) as Texture2D
+		var atmospheric_size := Vector2i.ZERO
+		if atmospheric_texture != null:
+			atmospheric_size = Vector2i(atmospheric_texture.get_width(), atmospheric_texture.get_height())
+		else:
+			var atmospheric_image := Image.new()
+			if atmospheric_image.load(atmospheric_path) != OK:
+				return "Expected Alenia atmospheric sheet to load at %s." % atmospheric_path
+			atmospheric_size = Vector2i(atmospheric_image.get_width(), atmospheric_image.get_height())
+		if atmospheric_size.x < 15360 or atmospheric_size.y < 180:
+			return "Expected Alenia atmospheric sheet to expose a 48x 320x180 atlas at %s." % atmospheric_path
+	var scene_paths: Dictionary = overlay.external_scene_paths()
+	for key in ["flame", "beam", "shield", "tornado"]:
+		var path := String(scene_paths.get(key, ""))
+		if path == "":
+			return "Expected imported scene path for %s." % key
+		if not ResourceLoader.exists(path):
+			return "Expected imported VFX scene at %s." % path
+		var scene := load(path) as PackedScene
+		if scene == null:
+			return "Expected imported VFX scene to load at %s." % path
+	return ""
+
+
+func _test_combat_vfx_presenter_forces_max_mode() -> String:
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	if not presenter.max_combat_vfx_forced():
+		return "Expected Max combat VFX to be forced for this polish pass."
+	return ""
+
+
+func _test_post_match_vfx_runtime_primitives_are_capped() -> String:
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	var caps := presenter.post_match_runtime_vfx_caps()
+	if int(caps.get("max_particles_per_burst", 0)) > 72:
+		return "Expected phone-first particle bursts to stay capped."
+	if int(caps.get("max_screen_rays", 0)) > 18:
+		return "Expected screen ray count to stay capped."
+	var keys: Array = caps.get("texture_keys", [])
+	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield"]:
+		if not keys.has(key):
+			return "Expected runtime VFX texture key %s." % key
+		if presenter.post_match_runtime_texture(key) == null:
+			return "Expected generated runtime VFX texture for %s." % key
+	if presenter.post_match_runtime_particle_count(8, 2.0) > int(caps.get("max_particles_per_burst", 0)):
+		return "Expected high multiplier particle request to obey the burst cap."
 	return ""
 
 

@@ -1,12 +1,17 @@
 extends RefCounted
 class_name CombatVfxPresenter
 
+const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
+
 var _vfx_layer: Control
 var _visual_registry: Variant
 var _player_loadout_hud: Variant
 var _elemental_mastery_cards: Control
 var _timer_owner: Node
+var _max_vfx_overlay: Variant
 var _post_match_additive_material: CanvasItemMaterial
+var _post_match_runtime_material: ShaderMaterial
+var _post_match_runtime_textures: Dictionary = {}
 var _post_match_vfx_speed_scale := DEFAULT_POST_MATCH_VFX_SPEED_SCALE
 
 const RESULT_VFX_TIER_THRESHOLDS := {
@@ -29,6 +34,21 @@ const POST_MATCH_EFFECT_Z_INDEX := 124
 const POST_MATCH_CAST_Z_INDEX := 128
 const POST_MATCH_BAR_LINGER_Z_INDEX := 131
 const POST_MATCH_EFFECT_FRONT_Z_INDEX := 132
+const FORCE_MAX_COMBAT_VFX := true
+const POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST := 72
+const POST_MATCH_MAX_SCREEN_RAYS := 18
+const POST_MATCH_MAX_SIMULTANEOUS_RUNTIME_EMITTERS := 10
+const POST_MATCH_RUNTIME_TEXTURE_KEYS: Array[String] = [
+	"soft_glow",
+	"ray",
+	"spark",
+	"smoke",
+	"coin",
+	"ripple",
+	"shard",
+	"shield",
+]
+const POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS := [0, 12, 16, 20, 24, 29, 34, 39, 44]
 const ENEMY_ATTACK_CUE_SIZE := Vector2(88, 88)
 const ENEMY_ATTACK_BOLT_SIZE := Vector2(44, 44)
 const ENEMY_ATTACK_BEAM_THICKNESS := 10.0
@@ -40,6 +60,8 @@ func bind(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud")
 	_elemental_mastery_cards = dependencies.get("elemental_mastery_cards") as Control
 	_timer_owner = dependencies.get("timer_owner") as Node
+	_max_vfx_overlay = COMBAT_MAX_VFX_OVERLAY_SCRIPT.new()
+	_max_vfx_overlay.bind(dependencies)
 
 
 func set_post_match_vfx_speed_scale(speed_scale: float) -> void:
@@ -57,6 +79,8 @@ func spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, 
 
 func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
 	if texture == null or _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color):
 		return
 	var sprite := TextureRect.new()
 	sprite.texture = texture
@@ -76,16 +100,20 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
 	if global_center == Vector2.ZERO or _visual_registry == null:
 		return
-	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
-	if impact_texture == null:
-		impact_texture = _visual_registry.vfx_texture("orb_clear")
 	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime)
 	var profile_size: Vector2 = profile.get("draw_size", draw_size)
 	var profile_lifetime := float(profile.get("lifetime", lifetime))
 	var profile_color: Color = profile.get("modulate_color", Color(1.0, 1.0, 1.0, 0.92))
 	var tier_index := int(profile.get("tier_index", 0))
+	var clean_kind := _result_vfx_kind_key(impact_kind)
+	var intensity := _replay_effect_intensity(result_amount, tier_index)
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
+		return
+	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
+	if impact_texture == null:
+		impact_texture = _visual_registry.vfx_texture("orb_clear")
 	spawn_vfx_texture(impact_texture, global_center, profile_size, profile_lifetime, profile_color)
-	_spawn_stylized_replay_effect(global_center, _result_vfx_kind_key(impact_kind), profile_size, profile_lifetime, result_amount, tier_index)
+	_spawn_stylized_replay_effect(global_center, clean_kind, profile_size, profile_lifetime, result_amount, tier_index)
 
 
 func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
@@ -96,6 +124,8 @@ func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime
 	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
 	var duration := _post_match_vfx_lifetime(maxf(0.60, lifetime) * (1.70 + float(tier_index) * 0.16))
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_armor_linger(global_center, draw_size, duration, intensity):
+		return
 	_spawn_armor_bar_linger_effect(global_center, draw_size, duration, intensity)
 
 
@@ -140,6 +170,35 @@ func replay_result_is_screen_wide(impact_kind: String, result_amount: int) -> bo
 	return _result_vfx_tier_index(tier) >= RESULT_VFX_TIER_SIZE_SCALES.size() - 1
 
 
+func post_match_runtime_vfx_caps() -> Dictionary:
+	return {
+		"max_particles_per_burst": POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST,
+		"max_screen_rays": POST_MATCH_MAX_SCREEN_RAYS,
+		"max_simultaneous_emitters": POST_MATCH_MAX_SIMULTANEOUS_RUNTIME_EMITTERS,
+		"texture_keys": POST_MATCH_RUNTIME_TEXTURE_KEYS.duplicate(),
+	}
+
+
+func post_match_runtime_texture(key: String) -> Texture2D:
+	return _runtime_vfx_texture(key)
+
+
+func max_combat_vfx_forced() -> bool:
+	return FORCE_MAX_COMBAT_VFX
+
+
+func max_combat_vfx_available() -> bool:
+	return _use_max_combat_vfx()
+
+
+func _use_max_combat_vfx() -> bool:
+	return FORCE_MAX_COMBAT_VFX and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+
+
+func post_match_runtime_particle_count(intensity: int, multiplier: float = 1.0) -> int:
+	return _runtime_particle_count(intensity, multiplier)
+
+
 func _post_match_vfx_lifetime(lifetime: float) -> float:
 	return lifetime / maxf(0.25, _post_match_vfx_speed_scale)
 
@@ -157,14 +216,16 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
 	label.add_theme_font_size_override("font_size", int(round(42.0 * label_scale)))
-	label.add_theme_color_override("font_color", _result_label_color(kind))
-	label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.03, 0.95))
-	label.add_theme_constant_override("outline_size", int(round(8.0 * label_scale)))
+	label.add_theme_color_override("font_color", _result_label_color(kind, true))
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
+	label.add_theme_constant_override("outline_size", int(round(11.0 * label_scale)))
 	label.custom_minimum_size = Vector2(240, 70) * label_scale
 	label.size = label.custom_minimum_size
 	label.pivot_offset = label.size * 0.5
-	label.z_index = 130
+	label.z_index = 500
+	label.z_as_relative = false
 	_vfx_layer.add_child(label)
+	label.move_to_front()
 	var local_center := _global_to_vfx_local(global_center) + offset
 	label.position = local_center - label.size * 0.5
 	_tween_result_label_cleanup(label, lifetime)
@@ -173,6 +234,8 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 
 func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> void:
 	if source_global == Vector2.ZERO:
+		return
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_cue(source_global, lifetime):
 		return
 	var cue := _spawn_enemy_attack_pulse(source_global, ENEMY_ATTACK_CUE_SIZE, Color(1.0, 0.45, 0.38, 0.30), Color(1.0, 0.58, 0.42, 0.95), 7, 114)
 	if cue == null:
@@ -193,6 +256,8 @@ func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> v
 
 func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, lifetime: float = 0.28) -> void:
 	if source_global == Vector2.ZERO or target_global == Vector2.ZERO:
+		return
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_travel(source_global, target_global, lifetime):
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
@@ -221,12 +286,16 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
 
 
 func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_impact(target_global, true, blocked_amount, lifetime):
+		return
 	spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
 	var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(62, 62), Color(0.30, 0.48, 0.72, 0.18), Color(0.78, 0.88, 1.0, 0.78), 4, 118)
 	_tween_pulse_cleanup(pulse, lifetime, Vector2(1.16, 1.16))
 
 
 func spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float = 0.32, hp_damage: int = 0) -> void:
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_impact(target_global, false, hp_damage, lifetime):
+		return
 	spawn_replay_impact(target_global, "damage", Vector2(90, 90), lifetime, hp_damage)
 	var pulse := _spawn_enemy_attack_pulse(target_global, Vector2(70, 70), Color(1.0, 0.38, 0.32, 0.28), Color(1.0, 0.58, 0.48, 0.86), 5, 118)
 	_tween_pulse_cleanup(pulse, lifetime, Vector2(1.18, 1.18))
@@ -304,6 +373,7 @@ func _spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, d
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
 	if replay_result_is_screen_wide(clean_kind, result_amount):
 		_spawn_screen_wide_replay_event(global_center, clean_kind, lifetime, intensity)
+	_spawn_runtime_impact_stack(global_center, clean_kind, draw_size, lifetime, intensity)
 	_spawn_replay_signature_sprite(global_center, clean_kind, draw_size, lifetime, intensity)
 	match clean_kind:
 		"fire":
@@ -370,9 +440,12 @@ func _spawn_replay_signature_sprite(global_center: Vector2, clean_kind: String, 
 
 func _spawn_fire_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
 	var ring_size := draw_size * 1.08
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchFireHeatBloom", "soft_glow", center_local, draw_size * (2.15 + float(intensity) * 0.18), Color(1.0, 0.16, 0.02, 0.32), lifetime * 0.92, Vector2(1.22, 1.22), 0.0, Vector2.ZERO, -0.10, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchFireHeatHaze", "smoke", center_local + Vector2(0.0, -draw_size.y * 0.06), draw_size * (1.62 + float(intensity) * 0.12), Color(1.0, 0.42, 0.08, 0.26), lifetime * 1.02, Vector2(1.44, 1.12), lifetime * 0.06, Vector2(0.0, -draw_size.y * 0.16), 0.18, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 	_spawn_replay_ring(global_center, ring_size, Color(1.0, 0.16, 0.02, 0.20), Color(1.0, 0.74, 0.22, 0.95), 7 + intensity, lifetime * 0.86, Vector2(1.35 + float(intensity) * 0.10, 1.35 + float(intensity) * 0.10), 0.0)
 	_spawn_replay_ring(global_center, ring_size * 0.62, Color(1.0, 0.72, 0.10, 0.24), Color(1.0, 0.95, 0.54, 0.85), 4 + intensity, lifetime * 0.58, Vector2(1.18, 1.18), 0.0)
-	var count := 12 + intensity * 7
+	var count := _runtime_particle_count(intensity, 1.22)
 	for i in range(count):
 		var angle := -PI * 0.35 + TAU * float(i) / float(count)
 		var length := draw_size.x * (0.22 + 0.035 * float((i % 4) + intensity))
@@ -383,8 +456,11 @@ func _spawn_fire_replay_effect(global_center: Vector2, draw_size: Vector2, lifet
 
 
 func _spawn_ice_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchIceColdBloom", "soft_glow", center_local, draw_size * (1.92 + float(intensity) * 0.12), Color(0.22, 0.76, 1.0, 0.30), lifetime * 0.94, Vector2(1.12, 1.20), 0.0, Vector2.ZERO, 0.06, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchIceMist", "smoke", center_local + Vector2(0.0, -draw_size.y * 0.04), draw_size * (1.72 + float(intensity) * 0.10), Color(0.68, 0.96, 1.0, 0.30), lifetime * 1.08, Vector2(1.42, 0.88), lifetime * 0.04, Vector2(0.0, 12.0 + float(intensity) * 2.0), -0.08, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_replay_ring(global_center, draw_size * 0.98, Color(0.12, 0.72, 1.0, 0.12), Color(0.70, 0.96, 1.0, 0.98), 5 + intensity, lifetime * 0.74, Vector2(1.18 + float(intensity) * 0.06, 1.18 + float(intensity) * 0.06), 0.0)
-	var count := 9 + intensity * 6
+	var count := _runtime_particle_count(intensity, 1.05)
 	for i in range(count):
 		var angle := TAU * float(i) / float(count) + 0.14
 		var length := draw_size.x * (0.24 + 0.03 * float(intensity + (i % 3)))
@@ -396,8 +472,11 @@ func _spawn_ice_replay_effect(global_center: Vector2, draw_size: Vector2, lifeti
 
 
 func _spawn_earth_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchEarthRunicBloom", "soft_glow", center_local, draw_size * (1.86 + float(intensity) * 0.12), Color(0.38, 1.0, 0.18, 0.22), lifetime * 0.94, Vector2(1.20, 0.94), 0.0, Vector2.ZERO, 0.04, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchEarthDust", "smoke", center_local + Vector2(0.0, draw_size.y * 0.08), draw_size * (1.72 + float(intensity) * 0.12), Color(0.52, 0.82, 0.34, 0.24), lifetime * 1.04, Vector2(1.42, 0.72), lifetime * 0.04, Vector2(0.0, -draw_size.y * 0.10), 0.05, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_replay_ring(global_center, draw_size * 1.06, Color(0.16, 0.58, 0.18, 0.16), Color(0.74, 1.0, 0.30, 0.92), 6 + intensity, lifetime * 0.88, Vector2(1.30 + float(intensity) * 0.06, 1.18 + float(intensity) * 0.04), 0.0)
-	var count := 8 + intensity * 6
+	var count := _runtime_particle_count(intensity, 1.06)
 	for i in range(count):
 		var angle := TAU * float(i) / float(count)
 		var travel := Vector2(cos(angle) * 0.75, sin(angle) * 0.48 - 0.08) * draw_size.x * (0.18 + float(intensity) * 0.025)
@@ -408,8 +487,11 @@ func _spawn_earth_replay_effect(global_center: Vector2, draw_size: Vector2, life
 
 
 func _spawn_heal_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchHealFreshBloom", "soft_glow", center_local, draw_size * (1.92 + float(intensity) * 0.14), Color(0.42, 1.0, 0.54, 0.28), lifetime * 1.08, Vector2(1.08, 1.36), 0.0, Vector2(0.0, -draw_size.y * 0.12), 0.0, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchHealRipple", "ripple", center_local, draw_size * (1.10 + float(intensity) * 0.07), Color(0.88, 1.0, 0.78, 0.82), lifetime * 0.76, Vector2(1.36, 1.58), lifetime * 0.04, Vector2(0.0, -draw_size.y * 0.10), 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 	_spawn_replay_ring(global_center, draw_size * 1.00, Color(0.18, 1.0, 0.40, 0.13), Color(0.74, 1.0, 0.78, 0.94), 5 + intensity, lifetime * 0.92, Vector2(1.18, 1.42 + float(intensity) * 0.08), 0.0)
-	var stream_count := 7 + intensity * 5
+	var stream_count := _runtime_particle_count(intensity, 0.96)
 	for i in range(stream_count):
 		var x_offset := (float(i) / float(maxi(1, stream_count - 1)) - 0.5) * draw_size.x * 0.72
 		var start := Vector2(x_offset, draw_size.y * 0.20)
@@ -420,9 +502,12 @@ func _spawn_heal_replay_effect(global_center: Vector2, draw_size: Vector2, lifet
 
 
 func _spawn_armor_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchArmorShellGlow", "shield", center_local, draw_size * Vector2(1.32 + float(intensity) * 0.06, 1.54 + float(intensity) * 0.08), Color(0.52, 0.80, 1.0, 0.48), lifetime * 0.96, Vector2(1.06, 1.10), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchArmorRefraction", "ripple", center_local, draw_size * (1.28 + float(intensity) * 0.08), Color(0.90, 0.98, 1.0, 0.76), lifetime * 0.68, Vector2(1.22, 1.28), lifetime * 0.03, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 1)
 	_spawn_replay_shield(global_center, draw_size * Vector2(0.92, 1.16), Color(0.18, 0.46, 0.84, 0.18), Color(0.82, 0.94, 1.0, 0.98), 7 + intensity, lifetime * 0.88)
 	_spawn_replay_ring(global_center, draw_size * 0.86, Color(0.22, 0.58, 1.0, 0.10), Color(0.76, 0.90, 1.0, 0.86), 4 + intensity, lifetime * 0.58, Vector2(1.12, 1.12), 0.0)
-	var hit_count := 4 + intensity * 3
+	var hit_count := _runtime_particle_count(intensity, 0.46)
 	for i in range(hit_count):
 		var y_offset := (float(i) / float(maxi(1, hit_count - 1)) - 0.5) * draw_size.y * 0.55
 		var side := -1.0 if i % 2 == 0 else 1.0
@@ -432,23 +517,27 @@ func _spawn_armor_replay_effect(global_center: Vector2, draw_size: Vector2, life
 
 
 func _spawn_gold_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchGoldRewardBloom", "soft_glow", center_local, draw_size * (2.0 + float(intensity) * 0.14), Color(1.0, 0.68, 0.10, 0.34), lifetime * 0.98, Vector2(1.16, 1.16), 0.0, Vector2.ZERO, 0.12, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_replay_ring(global_center, draw_size * 0.92, Color(1.0, 0.74, 0.10, 0.14), Color(1.0, 0.92, 0.32, 0.98), 5 + intensity, lifetime * 0.74, Vector2(1.18, 1.18), 0.0)
-	var coin_count := 14 + intensity * 6
+	var coin_count := _runtime_particle_count(intensity, 1.18)
 	for i in range(coin_count):
 		var x_offset := (float(i % 9) / 8.0 - 0.5) * draw_size.x * (1.10 + float(intensity) * 0.08)
 		var y_offset := -draw_size.y * (0.90 + 0.12 * float(i % 4))
 		var travel := Vector2(sin(float(i) * 1.13) * 18.0, draw_size.y * (1.00 + float(intensity) * 0.07))
 		var delay := float(i) * 0.018
 		_spawn_replay_coin(global_center, Vector2(x_offset, y_offset), travel, Vector2(15 + intensity * 2, 18 + intensity * 2), lifetime * 1.15, delay)
-	var sparkle_count := 5 + intensity * 4
+	var sparkle_count := _runtime_particle_count(intensity, 0.54)
 	for i in range(sparkle_count):
 		var angle := TAU * float(i) / float(sparkle_count)
 		_spawn_replay_streak(global_center, angle, draw_size.x * 0.22, 4.0 + float(intensity), Color(1.0, 0.96, 0.45, 0.88), lifetime * 0.56, float(i % 4) * 0.012)
 
 
 func _spawn_damage_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchDamageBloom", "soft_glow", center_local, draw_size * (1.76 + float(intensity) * 0.12), Color(1.0, 0.12, 0.08, 0.26), lifetime * 0.78, Vector2(1.18, 1.10), 0.0, Vector2.ZERO, -0.08, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_replay_ring(global_center, draw_size * 0.92, Color(1.0, 0.08, 0.06, 0.13), Color(1.0, 0.40, 0.28, 0.92), 5 + intensity, lifetime * 0.64, Vector2(1.22 + float(intensity) * 0.05, 1.22 + float(intensity) * 0.05), 0.0)
-	var slash_count := 2 + intensity
+	var slash_count := mini(2 + intensity, POST_MATCH_MAX_SCREEN_RAYS)
 	for i in range(slash_count):
 		var offset := Vector2(0.0, (float(i) - float(slash_count - 1) * 0.5) * 16.0)
 		_spawn_replay_streak(global_center, -0.44, draw_size.x * (0.62 + float(intensity) * 0.04), 9.0 + float(intensity) * 1.6, Color(1.0, 0.42, 0.34, 0.92), lifetime * 0.55, float(i) * 0.028, offset)
@@ -461,6 +550,9 @@ func _spawn_armor_bar_linger_effect(global_center: Vector2, draw_size: Vector2, 
 		base_size.x * (1.08 + float(intensity) * 0.028),
 		base_size.y * (1.04 + float(intensity) * 0.025)
 	)
+	_spawn_runtime_sprite_local("ArmorBarShieldBloom", "soft_glow", center_local, shell_size * Vector2(1.22, 1.72), Color(0.34, 0.68, 1.0, 0.22), lifetime, Vector2(1.08, 1.12), 0.0, Vector2.ZERO, 0.0, POST_MATCH_BAR_LINGER_Z_INDEX - 1)
+	_spawn_runtime_sprite_local("ArmorBarShieldRuntimeShell", "shield", center_local, shell_size * Vector2(1.08, 1.36), Color(0.78, 0.92, 1.0, 0.50), lifetime * 0.96, Vector2(1.04, 1.08), 0.0, Vector2.ZERO, 0.0, POST_MATCH_BAR_LINGER_Z_INDEX + 1)
+	_spawn_runtime_sprite_local("ArmorBarShieldRefraction", "ray", center_local + Vector2(0.0, -shell_size.y * 0.18), Vector2(shell_size.x * 0.96, 16.0 + float(intensity) * 2.0), Color(0.92, 0.98, 1.0, 0.62), lifetime * 0.58, Vector2(0.82, 0.42), lifetime * 0.12, Vector2(18.0, 0.0), 0.0, POST_MATCH_BAR_LINGER_Z_INDEX + 2)
 	_spawn_local_effect_panel(
 		"ArmorBarShieldLinger",
 		center_local,
@@ -544,6 +636,8 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 	if offensive:
 		flash_center = Vector2(layer_size.x * 0.5, event_focus.y)
 		flash_size = Vector2(layer_size.x * 1.10, layer_size.y * 0.58)
+	_spawn_runtime_sprite_local("PostMatchScreenRuntimeBloom", "soft_glow", flash_center, flash_size * Vector2(1.18, 1.08), Color(accent.r, accent.g, accent.b, 0.13), duration * 0.66, Vector2(1.08, 1.04), 0.0, Vector2.ZERO, 0.0, POST_MATCH_SCREEN_EVENT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchScreenRuntimeDistortion", "smoke", event_focus, Vector2(max_dim * 0.82, max_dim * (0.36 if offensive else 0.54)), Color(core.r, core.g, core.b, 0.13), duration * 0.68, Vector2(1.18, 1.06), duration * 0.04, Vector2(0.0, -layer_size.y * (0.03 if offensive else 0.01)), 0.05, POST_MATCH_SCREEN_EVENT_Z_INDEX + 1)
 	_spawn_local_effect_panel(
 		"PostMatchScreenFlash",
 		flash_center,
@@ -569,6 +663,31 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 		Vector2(2.20, 2.20),
 		duration * 0.04
 	)
+	var screen_ray_count := mini(POST_MATCH_MAX_SCREEN_RAYS, 5 + intensity)
+	for i in range(screen_ray_count):
+		var progress := float(i) / float(maxi(1, screen_ray_count - 1))
+		var ray_y := lerpf(layer_size.y * 0.12, layer_size.y * 0.88, progress)
+		var ray_angle := -0.36 + sin(float(i) * 1.7) * 0.34
+		var ray_center := Vector2(layer_size.x * 0.50, ray_y)
+		var ray_delay := duration * (0.04 + float(i % 6) * 0.026)
+		if offensive:
+			ray_y = clampf(event_focus.y + (progress - 0.5) * layer_size.y * 0.36, layer_size.y * 0.08, layer_size.y * 0.52)
+			ray_center = Vector2(layer_size.x * 0.50, ray_y)
+			ray_angle = -0.18 + sin(float(i) * 1.9) * 0.22
+		_spawn_runtime_sprite_local(
+			"PostMatchScreenLightRay",
+			"ray",
+			ray_center,
+			Vector2(max_dim * (1.08 + float(i % 3) * 0.10), 9.0 + float(intensity) * 1.8),
+			Color(core.r, core.g, core.b, 0.34),
+			duration * 0.52,
+			Vector2(1.10, 0.36),
+			ray_delay,
+			Vector2(sin(float(i)) * 30.0, -12.0 if offensive else -4.0),
+			0.0,
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
+			ray_angle
+		)
 	for i in range(3):
 		var lane_center := screen_center + Vector2(0.0, (float(i) - 1.0) * layer_size.y * 0.16)
 		var lane_move := Vector2((float(i) - 1.0) * 26.0, -12.0 + float(i) * 10.0)
@@ -616,7 +735,7 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 func _spawn_screen_fire_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
 	var top_y := maxf(layer_size.y * 0.08, focus_local.y - layer_size.y * 0.15)
 	var bottom_y := minf(layer_size.y * 0.48, focus_local.y + layer_size.y * 0.13)
-	var column_count := 7 + intensity * 3
+	var column_count := mini(7 + intensity * 3, POST_MATCH_MAX_SCREEN_RAYS)
 	for i in range(column_count):
 		var x := (float(i) + 0.5) / float(column_count) * layer_size.x + sin(float(i) * 1.8) * 18.0
 		var y := lerpf(top_y, bottom_y, float(i % 5) / 4.0)
@@ -637,7 +756,7 @@ func _spawn_screen_fire_event(layer_size: Vector2, focus_local: Vector2, duratio
 			0.18,
 			sin(float(i)) * 0.12
 		)
-	var spark_count := 18 + intensity * 5
+	var spark_count := _runtime_particle_count(intensity, 1.05)
 	for i in range(spark_count):
 		var start_y := lerpf(top_y, bottom_y, float(i % 7) / 6.0)
 		var start := Vector2(layer_size.x * (float(i % 11) + 0.5) / 11.0, start_y)
@@ -662,7 +781,7 @@ func _spawn_screen_fire_event(layer_size: Vector2, focus_local: Vector2, duratio
 func _spawn_screen_ice_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
 	var top_y := maxf(layer_size.y * 0.08, focus_local.y - layer_size.y * 0.17)
 	var bottom_y := minf(layer_size.y * 0.48, focus_local.y + layer_size.y * 0.16)
-	var breeze_count := 8 + intensity * 3
+	var breeze_count := mini(8 + intensity * 3, POST_MATCH_MAX_SCREEN_RAYS)
 	for i in range(breeze_count):
 		var y := lerpf(top_y, bottom_y, float(i) / float(maxi(1, breeze_count - 1)))
 		var side := -1.0 if i % 2 == 0 else 1.0
@@ -682,7 +801,7 @@ func _spawn_screen_ice_event(layer_size: Vector2, focus_local: Vector2, duration
 			0.0,
 			sin(float(i)) * 0.08
 		)
-	var shard_count := 16 + intensity * 4
+	var shard_count := _runtime_particle_count(intensity, 0.98)
 	for i in range(shard_count):
 		var x := layer_size.x * (float(i % 9) + 0.5) / 9.0
 		var y := lerpf(top_y, bottom_y, float(i % 7) / 6.0)
@@ -724,7 +843,7 @@ func _spawn_screen_earth_event(layer_size: Vector2, impact_local: Vector2, durat
 			0.04,
 			sin(float(i)) * 0.10
 		)
-	var stone_count := 14 + intensity * 4
+	var stone_count := _runtime_particle_count(intensity, 0.92)
 	for i in range(stone_count):
 		var x := layer_size.x * (float(i % 10) + 0.5) / 10.0
 		var y := clampf(impact_local.y + layer_size.y * (0.04 + float(i % 5) * 0.035), layer_size.y * 0.14, layer_size.y * 0.54)
@@ -746,7 +865,7 @@ func _spawn_screen_earth_event(layer_size: Vector2, impact_local: Vector2, durat
 
 
 func _spawn_screen_heal_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
-	var stream_count := 9 + intensity * 2
+	var stream_count := mini(9 + intensity * 2, POST_MATCH_MAX_SCREEN_RAYS)
 	for i in range(stream_count):
 		var x := layer_size.x * (float(i) + 0.5) / float(stream_count)
 		var height := layer_size.y * (0.24 + float(i % 4) * 0.035)
@@ -765,7 +884,7 @@ func _spawn_screen_heal_event(layer_size: Vector2, duration: float, intensity: i
 			Vector2(sin(float(i) * 1.4) * 20.0, -layer_size.y * 0.26),
 			0.0
 		)
-	var mote_count := 18 + intensity * 5
+	var mote_count := _runtime_particle_count(intensity, 1.08)
 	for i in range(mote_count):
 		var start := Vector2(layer_size.x * (float(i % 12) + 0.5) / 12.0, layer_size.y * (0.38 + float(i % 6) * 0.075))
 		_spawn_local_effect_panel(
@@ -821,7 +940,7 @@ func _spawn_screen_armor_event(layer_size: Vector2, duration: float, intensity: 
 
 
 func _spawn_screen_gold_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
-	var coin_count := 28 + intensity * 6
+	var coin_count := _runtime_particle_count(intensity, 1.45)
 	for i in range(coin_count):
 		var x := layer_size.x * (float(i % 13) + 0.5) / 13.0 + sin(float(i) * 1.9) * 18.0
 		var y := -32.0 - float(i % 5) * 22.0
@@ -840,7 +959,7 @@ func _spawn_screen_gold_event(layer_size: Vector2, duration: float, intensity: i
 			Vector2(sin(float(i) * 2.7) * 30.0, layer_size.y * (0.72 + float(i % 4) * 0.07)),
 			0.95
 		)
-	var sparkle_count := 14 + intensity * 4
+	var sparkle_count := _runtime_particle_count(intensity, 0.86)
 	for i in range(sparkle_count):
 		var center := Vector2(layer_size.x * (float(i % 8) + 0.5) / 8.0, layer_size.y * (0.18 + float(i % 6) * 0.12))
 		_spawn_local_effect_panel(
@@ -864,7 +983,7 @@ func _spawn_screen_gold_event(layer_size: Vector2, duration: float, intensity: i
 func _spawn_screen_damage_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
 	var top_y := maxf(layer_size.y * 0.10, focus_local.y - layer_size.y * 0.14)
 	var bottom_y := minf(layer_size.y * 0.50, focus_local.y + layer_size.y * 0.15)
-	var slash_count := 5 + intensity
+	var slash_count := mini(5 + intensity, POST_MATCH_MAX_SCREEN_RAYS)
 	for i in range(slash_count):
 		var y := lerpf(top_y, bottom_y, float(i) / float(maxi(1, slash_count - 1)))
 		_spawn_local_effect_panel(
@@ -886,81 +1005,41 @@ func _spawn_screen_damage_event(layer_size: Vector2, focus_local: Vector2, durat
 
 
 func _spawn_replay_ring(global_center: Vector2, ring_size: Vector2, fill: Color, border: Color, border_width: int, lifetime: float, target_scale: Vector2, delay: float) -> void:
-	var ring := Panel.new()
-	ring.name = "PostMatchRing"
-	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	ring.material = _post_match_effect_material()
-	ring.size = ring_size
-	ring.pivot_offset = ring.size * 0.5
-	ring.position = _global_to_vfx_local(global_center) - ring.size * 0.5
-	ring.z_index = POST_MATCH_EFFECT_Z_INDEX
-	ring.modulate = Color(1.0, 1.0, 1.0, 0.0 if delay > 0.0 else 1.0)
-	ring.add_theme_stylebox_override("panel", _effect_stylebox(fill, border, border_width, 999))
-	_vfx_layer.add_child(ring)
-	_tween_effect_cleanup(ring, lifetime, target_scale, delay)
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchRingGlow", "soft_glow", center_local, ring_size * 1.18, fill, lifetime * 0.92, target_scale, delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchRing", "ripple", center_local, ring_size, border, lifetime, target_scale, delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 
 
 func _spawn_replay_shield(global_center: Vector2, shield_size: Vector2, fill: Color, border: Color, border_width: int, lifetime: float) -> void:
-	var shield := Panel.new()
-	shield.name = "PostMatchShield"
-	shield.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	shield.material = _post_match_effect_material()
-	shield.size = shield_size
-	shield.pivot_offset = shield.size * 0.5
-	shield.position = _global_to_vfx_local(global_center) - shield.size * 0.5
-	shield.z_index = POST_MATCH_EFFECT_FRONT_Z_INDEX
-	shield.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	shield.add_theme_stylebox_override("panel", _effect_stylebox(fill, border, border_width, 18))
-	_vfx_layer.add_child(shield)
-	_tween_effect_cleanup(shield, lifetime, Vector2(1.14, 1.08), 0.0)
+	var center_local := _global_to_vfx_local(global_center)
+	_spawn_runtime_sprite_local("PostMatchShieldGlow", "soft_glow", center_local, shield_size * 1.22, fill, lifetime, Vector2(1.18, 1.12), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchShield", "shield", center_local, shield_size * 1.08, border, lifetime, Vector2(1.14, 1.08), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 
 
 func _spawn_replay_streak(global_center: Vector2, angle: float, length: float, thickness: float, color: Color, lifetime: float, delay: float, offset: Vector2 = Vector2.ZERO) -> void:
-	var streak := Panel.new()
-	streak.name = "PostMatchStreak"
-	streak.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	streak.material = _post_match_effect_material()
-	streak.size = Vector2(maxf(8.0, length), maxf(2.0, thickness))
-	streak.pivot_offset = streak.size * 0.5
-	streak.position = _global_to_vfx_local(global_center) + offset - streak.size * 0.5
-	streak.rotation = angle
-	streak.z_index = POST_MATCH_EFFECT_FRONT_Z_INDEX
-	streak.modulate = Color(1.0, 1.0, 1.0, 0.0 if delay > 0.0 else 1.0)
-	streak.add_theme_stylebox_override("panel", _effect_stylebox(color, color.lightened(0.20), 1, 999))
-	_vfx_layer.add_child(streak)
-	_tween_effect_cleanup(streak, lifetime, Vector2(1.20, 0.64), delay)
+	var center_local := _global_to_vfx_local(global_center) + offset
+	_spawn_runtime_sprite_local("PostMatchStreak", "ray", center_local, Vector2(maxf(8.0, length), maxf(2.0, thickness)), color, lifetime, Vector2(1.20, 0.64), delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle)
 
 
 func _spawn_replay_particle(global_center: Vector2, start_offset: Vector2, travel: Vector2, particle_size: Vector2, color: Color, lifetime: float, delay: float, corner_radius: int) -> void:
-	var particle := Panel.new()
-	particle.name = "PostMatchParticle"
-	particle.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	particle.material = _post_match_effect_material()
-	particle.size = particle_size
-	particle.pivot_offset = particle.size * 0.5
-	particle.position = _global_to_vfx_local(global_center) + start_offset - particle.size * 0.5
-	particle.z_index = POST_MATCH_EFFECT_FRONT_Z_INDEX
-	particle.rotation = atan2(travel.y, travel.x)
-	particle.modulate = Color(1.0, 1.0, 1.0, 0.0 if delay > 0.0 else 1.0)
-	particle.add_theme_stylebox_override("panel", _effect_stylebox(color, color.lightened(0.20), 1, corner_radius))
-	_vfx_layer.add_child(particle)
-	_tween_effect_cleanup(particle, lifetime, Vector2(0.62, 0.62), delay, travel)
+	var texture_key := "spark"
+	if corner_radius < 32:
+		texture_key = "shard"
+	elif particle_size.x > particle_size.y * 1.8 or particle_size.y > particle_size.x * 1.8:
+		texture_key = "ray"
+	var center_local := _global_to_vfx_local(global_center) + start_offset
+	var rotation := atan2(travel.y, travel.x)
+	if texture_key == "ray" and particle_size.y > particle_size.x:
+		particle_size = Vector2(particle_size.y, particle_size.x)
+		rotation += PI * 0.5
+	_spawn_runtime_sprite_local("PostMatchParticle", texture_key, center_local, particle_size, color, lifetime, Vector2(0.62, 0.62), delay, travel, 0.28, POST_MATCH_EFFECT_FRONT_Z_INDEX, rotation)
 
 
 func _spawn_replay_coin(global_center: Vector2, start_offset: Vector2, travel: Vector2, coin_size: Vector2, lifetime: float, delay: float) -> void:
-	var coin := Panel.new()
-	coin.name = "PostMatchCoin"
-	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	coin.material = _post_match_effect_material()
-	coin.size = coin_size
-	coin.pivot_offset = coin.size * 0.5
-	coin.position = _global_to_vfx_local(global_center) + start_offset - coin.size * 0.5
-	coin.z_index = POST_MATCH_EFFECT_FRONT_Z_INDEX
-	coin.rotation = 0.18 * float(int(start_offset.x) % 7)
-	coin.modulate = Color(1.0, 1.0, 1.0, 0.0 if delay > 0.0 else 1.0)
-	coin.add_theme_stylebox_override("panel", _effect_stylebox(Color(1.0, 0.72, 0.12, 0.96), Color(1.0, 0.96, 0.48, 1.0), 2, 999))
-	_vfx_layer.add_child(coin)
-	_tween_effect_cleanup(coin, lifetime, Vector2(0.78, 0.78), delay, travel, 0.95)
+	var center_local := _global_to_vfx_local(global_center) + start_offset
+	var spin := 0.95 + 0.10 * float(int(abs(start_offset.x)) % 5)
+	_spawn_runtime_sprite_local("PostMatchCoinTrail", "ray", center_local + Vector2(0.0, -coin_size.y * 0.40), Vector2(coin_size.x * 1.45, maxf(3.0, coin_size.y * 0.24)), Color(1.0, 0.92, 0.32, 0.50), lifetime * 0.62, Vector2(0.52, 0.34), delay, travel * 0.92, 0.0, POST_MATCH_EFFECT_Z_INDEX, PI * 0.5)
+	_spawn_runtime_sprite_local("PostMatchCoin", "coin", center_local, coin_size, Color(1.0, 0.78, 0.18, 0.98), lifetime, Vector2(0.78, 0.78), delay, travel, spin, POST_MATCH_EFFECT_FRONT_Z_INDEX, 0.18 * float(int(start_offset.x) % 7))
 
 
 func _spawn_replay_sprite(texture_key: String, global_center: Vector2, draw_size: Vector2, color: Color, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, z_index: int = POST_MATCH_EFFECT_FRONT_Z_INDEX) -> void:
@@ -975,7 +1054,7 @@ func _spawn_replay_sprite(texture_key: String, global_center: Vector2, draw_size
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	sprite.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	sprite.material = _post_match_effect_material()
+	sprite.material = _post_match_runtime_shader_material()
 	sprite.custom_minimum_size = draw_size
 	sprite.size = draw_size
 	sprite.pivot_offset = draw_size * 0.5
@@ -992,6 +1071,253 @@ func _post_match_effect_material() -> CanvasItemMaterial:
 	_post_match_additive_material = CanvasItemMaterial.new()
 	_post_match_additive_material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD as CanvasItemMaterial.BlendMode
 	return _post_match_additive_material
+
+
+func _post_match_runtime_shader_material() -> ShaderMaterial:
+	if _post_match_runtime_material != null:
+		return _post_match_runtime_material
+	var shader := Shader.new()
+	shader.code = "\n".join([
+		"shader_type canvas_item;",
+		"render_mode blend_add, unshaded;",
+		"void fragment() {",
+		"	vec4 texel = texture(TEXTURE, UV);",
+		"	COLOR = vec4(texel.rgb * COLOR.rgb, texel.a * COLOR.a);",
+		"}",
+	])
+	_post_match_runtime_material = ShaderMaterial.new()
+	_post_match_runtime_material.shader = shader
+	return _post_match_runtime_material
+
+
+func _runtime_particle_count(intensity: int, multiplier: float = 1.0) -> int:
+	var index := clampi(intensity, 1, POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS.size() - 1)
+	var base_count := int(POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS[index])
+	var count := int(round(float(base_count) * maxf(0.1, multiplier)))
+	return clampi(count, 1, POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST)
+
+
+func _spawn_runtime_impact_stack(global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var center_local := _global_to_vfx_local(global_center)
+	var colors := _result_effect_colors(clean_kind)
+	var accent: Color = colors.get("accent", Color.WHITE)
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	var dark: Color = colors.get("dark", accent.darkened(0.45))
+	var glow_size := draw_size * (1.72 + float(intensity) * 0.14)
+	var shock_size := draw_size * (1.04 + float(intensity) * 0.08)
+	_spawn_runtime_sprite_local("PostMatchRuntimeBloom", "soft_glow", center_local, glow_size, Color(accent.r, accent.g, accent.b, 0.28), lifetime * 1.04, Vector2(1.16, 1.16), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchRuntimeCoreLight", "soft_glow", center_local, draw_size * (0.78 + float(intensity) * 0.03), Color(core.r, core.g, core.b, 0.42), lifetime * 0.54, Vector2(0.76, 0.76), lifetime * 0.02, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
+	_spawn_runtime_sprite_local("PostMatchRuntimeShockwave", "ripple", center_local, shock_size, Color(core.r, core.g, core.b, 0.74), lifetime * 0.76, Vector2(1.42 + float(intensity) * 0.07, 1.42 + float(intensity) * 0.07), lifetime * 0.02, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
+	if clean_kind in ["fire", "ice", "earth", "damage", "heart"]:
+		var haze_color := Color(dark.r, dark.g, dark.b, 0.16)
+		if clean_kind == "ice":
+			haze_color = Color(core.r, core.g, core.b, 0.20)
+		elif clean_kind == "heart":
+			haze_color = Color(accent.r, accent.g, accent.b, 0.14)
+		_spawn_runtime_sprite_local("PostMatchRuntimeDistortion", "smoke", center_local, draw_size * (1.34 + float(intensity) * 0.08), haze_color, lifetime * 0.92, Vector2(1.26, 1.04), lifetime * 0.06, Vector2(0.0, -draw_size.y * 0.06), 0.08, POST_MATCH_EFFECT_Z_INDEX)
+	var ray_count := mini(POST_MATCH_MAX_SCREEN_RAYS, 4 + intensity)
+	for i in range(ray_count):
+		var angle := TAU * float(i) / float(ray_count) + sin(float(i) * 1.7) * 0.18
+		var offset := Vector2(cos(angle), sin(angle)) * draw_size.x * (0.06 + float(i % 3) * 0.025)
+		_spawn_runtime_sprite_local(
+			"PostMatchRuntimeImpactRay",
+			"ray",
+			center_local + offset,
+			Vector2(draw_size.x * (0.56 + float(intensity) * 0.045 + float(i % 3) * 0.035), 5.0 + float(intensity) * 0.95),
+			Color(core.r, core.g, core.b, 0.48),
+			lifetime * 0.48,
+			Vector2(1.12, 0.42),
+			lifetime * (0.03 + float(i % 4) * 0.016),
+			Vector2(cos(angle), sin(angle)) * draw_size.x * (0.10 + float(intensity) * 0.012),
+			0.0,
+			POST_MATCH_EFFECT_FRONT_Z_INDEX,
+			angle
+		)
+
+
+func _spawn_runtime_sprite_local(name: String, texture_key: String, center_local: Vector2, draw_size: Vector2, color: Color, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, z_index: int = POST_MATCH_EFFECT_FRONT_Z_INDEX, rotation: float = 0.0, move_ease: Tween.EaseType = Tween.EASE_OUT as Tween.EaseType) -> TextureRect:
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return null
+	var texture := _runtime_vfx_texture(texture_key)
+	if texture == null:
+		return null
+	var sprite := TextureRect.new()
+	sprite.name = name
+	sprite.texture = texture
+	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	sprite.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
+	sprite.material = _post_match_runtime_shader_material()
+	sprite.custom_minimum_size = draw_size
+	sprite.size = draw_size
+	sprite.pivot_offset = draw_size * 0.5
+	sprite.position = center_local - draw_size * 0.5
+	sprite.rotation = rotation
+	sprite.z_index = z_index
+	sprite.modulate = Color(color.r, color.g, color.b, 0.0 if delay > 0.0 else color.a)
+	_vfx_layer.add_child(sprite)
+	_tween_effect_cleanup(sprite, lifetime, target_scale, delay, move_offset, spin, color.a, move_ease)
+	return sprite
+
+
+func _runtime_vfx_texture(key: String) -> Texture2D:
+	key = key.strip_edges().to_lower()
+	if not POST_MATCH_RUNTIME_TEXTURE_KEYS.has(key):
+		key = "soft_glow"
+	if _post_match_runtime_textures.has(key):
+		return _post_match_runtime_textures[key]
+	var texture: Texture2D = null
+	match key:
+		"soft_glow":
+			texture = _make_soft_glow_texture(128)
+		"ray":
+			texture = _make_ray_texture()
+		"spark":
+			texture = _make_spark_texture(64)
+		"smoke":
+			texture = _make_smoke_texture(128)
+		"coin":
+			texture = _make_coin_texture(72)
+		"ripple":
+			texture = _make_ripple_texture(128)
+		"shard":
+			texture = _make_shard_texture()
+		"shield":
+			texture = _make_shield_texture(128)
+	_post_match_runtime_textures[key] = texture
+	return texture
+
+
+func _make_soft_glow_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.5
+	for y in range(size):
+		for x in range(size):
+			var distance := (Vector2(x, y) - center).length() / radius
+			var alpha := pow(clampf(1.0 - distance, 0.0, 1.0), 2.15)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_ray_texture() -> Texture2D:
+	var width := 256
+	var height := 32
+	var image := Image.create(width, height, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center_y := float(height - 1) * 0.5
+	for y in range(height):
+		var y_falloff := pow(clampf(1.0 - abs(float(y) - center_y) / center_y, 0.0, 1.0), 2.2)
+		for x in range(width):
+			var t := float(x) / float(width - 1)
+			var end_falloff := pow(sin(t * PI), 0.62)
+			var core := 0.35 + 0.65 * pow(clampf(1.0 - abs(float(y) - center_y) / maxf(1.0, center_y * 0.28), 0.0, 1.0), 2.0)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, end_falloff * y_falloff * core))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_spark_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.5
+	for y in range(size):
+		for x in range(size):
+			var delta := Vector2(x, y) - center
+			var radial := clampf(1.0 - delta.length() / radius, 0.0, 1.0)
+			var cross := maxf(
+				pow(clampf(1.0 - abs(delta.y) / maxf(1.0, radius * 0.10), 0.0, 1.0), 2.0),
+				pow(clampf(1.0 - abs(delta.x) / maxf(1.0, radius * 0.10), 0.0, 1.0), 2.0)
+			)
+			var alpha := maxf(pow(radial, 2.3), cross * pow(radial, 0.55))
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_smoke_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.5
+	for y in range(size):
+		for x in range(size):
+			var delta := Vector2(x, y) - center
+			var distance := delta.length() / radius
+			var base := pow(clampf(1.0 - distance, 0.0, 1.0), 1.25)
+			var angle := atan2(delta.y, delta.x)
+			var swirl := 0.5 + 0.5 * sin(angle * 5.0 + distance * 13.0)
+			var noise := 0.5 + 0.5 * sin(float(x) * 0.173 + float(y) * 0.319 + sin(float(x + y) * 0.047) * 4.0)
+			var alpha := base * (0.42 + swirl * 0.24 + noise * 0.24)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_coin_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.48
+	for y in range(size):
+		for x in range(size):
+			var delta := Vector2(x, y) - center
+			var normalized := Vector2(delta.x / radius, delta.y / maxf(1.0, radius * 0.82))
+			var distance := normalized.length()
+			if distance <= 1.0:
+				var edge := clampf((1.0 - distance) / 0.12, 0.0, 1.0)
+				var inner := 0.52 + 0.48 * pow(edge, 0.55)
+				var glint := pow(clampf(1.0 - (Vector2(x, y) - center + Vector2(radius * 0.26, radius * 0.24)).length() / (radius * 0.38), 0.0, 1.0), 2.0)
+				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, clampf(inner + glint * 0.36, 0.0, 1.0)))
+			else:
+				image.set_pixel(x, y, Color(1.0, 1.0, 1.0, 0.0))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_ripple_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.5
+	for y in range(size):
+		for x in range(size):
+			var distance := (Vector2(x, y) - center).length() / radius
+			var outer := clampf(1.0 - abs(distance - 0.70) / 0.055, 0.0, 1.0)
+			var inner := clampf(1.0 - abs(distance - 0.44) / 0.030, 0.0, 1.0) * 0.42
+			var alpha := maxf(pow(outer, 0.62), inner) * clampf(1.0 - maxf(0.0, distance - 0.94) / 0.06, 0.0, 1.0)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_shard_texture() -> Texture2D:
+	var width := 64
+	var height := 96
+	var image := Image.create(width, height, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(width - 1), float(height - 1)) * 0.5
+	for y in range(height):
+		for x in range(width):
+			var nx: float = (float(x) - center.x) / (float(width) * 0.50)
+			var ny: float = (float(y) - center.y) / (float(height) * 0.50)
+			var diamond: float = absf(nx) * 0.88 + absf(ny)
+			var alpha := clampf((1.0 - diamond) / 0.18, 0.0, 1.0)
+			var spine := pow(clampf(1.0 - absf(nx) / 0.10, 0.0, 1.0), 2.0) * clampf(1.0 - absf(ny) * 0.72, 0.0, 1.0)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, maxf(alpha * 0.88, spine * 0.82)))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_shield_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	for y in range(size):
+		for x in range(size):
+			var nx: float = (float(x) - center.x) / (float(size) * 0.48)
+			var ny: float = (float(y) - center.y) / (float(size) * 0.48)
+			var lower_taper := maxf(0.0, ny) * 0.34
+			var upper_round := maxf(0.0, -ny - 0.10) * 0.12
+			var allowed_width := 0.82 - lower_taper + upper_round
+			var inside: bool = absf(nx) <= allowed_width and ny > -0.82 and ny < 0.94
+			var alpha := 0.0
+			if inside:
+				var edge_x := clampf((allowed_width - absf(nx)) / 0.11, 0.0, 1.0)
+				var edge_y := clampf(minf(ny + 0.82, 0.94 - ny) / 0.12, 0.0, 1.0)
+				var edge := minf(edge_x, edge_y)
+				var glass := pow(clampf(1.0 - (Vector2(nx + 0.18, ny + 0.26)).length() / 0.72, 0.0, 1.0), 1.8) * 0.24
+				alpha = maxf(0.22 + glass, 1.0 - edge)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, clampf(alpha, 0.0, 1.0)))
+	return ImageTexture.create_from_image(image)
 
 
 func _effect_stylebox(fill: Color, border: Color, border_width: int, corner_radius: int) -> StyleBoxFlat:
@@ -1059,6 +1385,8 @@ func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_life
 	var clean_kind := mastery_impact_kind(orb_id)
 	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier(clean_kind, result_amount))
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_cast_sequence(orb_id, source_point, target_global, spool_lifetime, travel_lifetime, result_amount):
+		return
 	_spawn_mastery_cast_spool(source_local, orb_id, spool_lifetime, intensity)
 	_spawn_mastery_cast_travel(source_local, target_local, orb_id, travel_lifetime, spool_lifetime, intensity)
 
@@ -1091,10 +1419,14 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 
 	if source == null or target_global == Vector2.ZERO:
 		return
-	if _vfx_layer == null or not is_instance_valid(_vfx_layer) or _visual_registry == null:
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
 	var source_point := control_global_center(source, 0.5)
 	if source_point == Vector2.ZERO:
+		return
+	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_beam(orb_id, source_point, target_global, beam_lifetime):
+		return
+	if _visual_registry == null:
 		return
 	var beam_texture: Texture2D = _visual_registry.mastery_beam_texture(orb_id)
 	if beam_texture == null:
@@ -1130,6 +1462,8 @@ func _spawn_mastery_cast_spool(source_local: Vector2, orb_id: int, lifetime: flo
 	var dark: Color = colors.get("dark", accent.darkened(0.45))
 	var duration := maxf(0.16, lifetime)
 	var charge_size := Vector2(34, 34) + Vector2(6, 6) * float(intensity)
+	_spawn_runtime_sprite_local("MasteryCastRuntimeBloom", "soft_glow", source_local, Vector2(110, 110) + Vector2(14, 14) * float(intensity), Color(accent.r, accent.g, accent.b, 0.30), duration, Vector2(1.24 + float(intensity) * 0.04, 1.24 + float(intensity) * 0.04), 0.0, Vector2.ZERO, 0.12, POST_MATCH_CAST_Z_INDEX)
+	_spawn_runtime_sprite_local("MasteryCastRuntimeCore", "spark", source_local, charge_size * 1.34, Color(core.r, core.g, core.b, 0.96), duration * 0.84, Vector2(0.82, 0.82), duration * 0.12, Vector2.ZERO, 0.38, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 	_spawn_local_effect_panel(
 		"MasteryCastChargeCore",
 		source_local,
@@ -1387,6 +1721,8 @@ func _mastery_launch_scale(intensity: int) -> float:
 
 func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
+	_spawn_runtime_sprite_local("MasteryFireLaunchBloom", "soft_glow", source_local, Vector2(72 + intensity * 10, 54 + intensity * 6) * launch_scale, Color(1.0, 0.20, 0.04, 0.42), duration, Vector2(0.72, 0.72), delay, delta, 0.46, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryFireLaunchCore", "ray", source_local, Vector2(82 + intensity * 10, 18 + intensity * 2) * launch_scale, Color(core.r, core.g, core.b, 0.96), duration * 0.92, Vector2(0.62, 0.50), delay, delta, 0.22, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	_spawn_local_effect_panel(
 		"MasteryFireProjectile",
 		source_local,
@@ -1404,7 +1740,7 @@ func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction
 		angle,
 		Tween.EASE_IN_OUT as Tween.EaseType
 	)
-	var trail_count := 11 + intensity * 7 + maxi(0, intensity - 4) * 4
+	var trail_count := _runtime_particle_count(intensity, 1.25)
 	for i in range(trail_count):
 		var side := (float(i % 5) - 2.0) * 5.0 * launch_scale
 		var back := -float(i % 4) * 12.0 * launch_scale
@@ -1431,6 +1767,8 @@ func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction
 
 func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
+	_spawn_runtime_sprite_local("MasteryIceLaunchMist", "smoke", source_local, Vector2(distance * 0.28, 54 + intensity * 7) * launch_scale, Color(accent.r, accent.g, accent.b, 0.24), duration, Vector2(1.08, 0.72), delay, delta, 0.0, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryIceLaunchColdRay", "ray", source_local, Vector2(distance * (0.22 + float(intensity) * 0.012), 10 + intensity) * launch_scale, Color(core.r, core.g, core.b, 0.74), duration * 0.92, Vector2(1.18, 0.40), delay, delta, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var breeze_count := 6 + intensity * 4 + maxi(0, intensity - 4) * 3
 	for i in range(breeze_count):
 		var lane := (float(i) / float(maxi(1, breeze_count - 1)) - 0.5) * (52.0 + float(intensity) * 8.0) * launch_scale
@@ -1476,6 +1814,8 @@ func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction:
 
 func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
+	_spawn_runtime_sprite_local("MasteryEarthLaunchDustWake", "smoke", source_local + direction * 28.0, Vector2(96 + intensity * 16, 42 + intensity * 5) * launch_scale, Color(dark.r, dark.g, dark.b, 0.32), duration * 0.92, Vector2(1.24, 0.68), delay, delta * 0.82, 0.08, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryEarthLaunchRunicCrack", "ray", source_local + direction * 18.0, Vector2(74 + intensity * 13, 9 + intensity) * launch_scale, Color(core.r, core.g, core.b, 0.70), duration * 0.82, Vector2(1.18, 0.38), delay, delta * 0.96, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var segment_count := 10 + intensity * 5 + maxi(0, intensity - 4) * 4
 	for i in range(segment_count):
 		var progress := float(i) / float(maxi(1, segment_count - 1))
@@ -1544,19 +1884,42 @@ func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle:
 func _spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector2, fill: Color, border: Color, border_width: int, corner_radius: int, z_index: int, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, rotation: float = 0.0, move_ease: Tween.EaseType = Tween.EASE_OUT as Tween.EaseType) -> void:
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
-	var panel := Panel.new()
-	panel.name = name
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	panel.material = _post_match_effect_material()
-	panel.size = size
-	panel.pivot_offset = size * 0.5
-	panel.position = center_local - size * 0.5
-	panel.rotation = rotation
-	panel.z_index = z_index
-	panel.modulate = Color(1.0, 1.0, 1.0, 0.0 if delay > 0.0 else 1.0)
-	panel.add_theme_stylebox_override("panel", _effect_stylebox(fill, border, border_width, corner_radius))
-	_vfx_layer.add_child(panel)
-	_tween_effect_cleanup(panel, lifetime, target_scale, delay, move_offset, spin, 1.0, move_ease)
+	var texture_key := _runtime_texture_key_for_effect(name, size, corner_radius)
+	var draw_size := size
+	var draw_rotation := rotation
+	if texture_key == "ray" and size.y > size.x:
+		draw_size = Vector2(size.y, size.x)
+		draw_rotation += PI * 0.5
+	var tint := border if border.a >= fill.a else fill
+	if texture_key == "smoke" or texture_key == "soft_glow":
+		tint = fill if fill.a >= border.a else border
+	if texture_key in ["ripple", "shield"]:
+		_spawn_runtime_sprite_local("%sGlow" % name, "soft_glow", center_local, size * 1.12, Color(fill.r, fill.g, fill.b, minf(fill.a, 0.22)), lifetime * 0.92, target_scale, delay, move_offset * 0.72, spin * 0.5, z_index - 1, draw_rotation, move_ease)
+	_spawn_runtime_sprite_local(name, texture_key, center_local, draw_size, tint, lifetime, target_scale, delay, move_offset, spin, z_index, draw_rotation, move_ease)
+
+
+func _runtime_texture_key_for_effect(effect_name: String, size: Vector2, corner_radius: int) -> String:
+	var lower_name := effect_name.to_lower()
+	var aspect := size.x / maxf(1.0, size.y)
+	if lower_name.contains("coin"):
+		return "coin"
+	if lower_name.contains("shield") or lower_name.contains("armor"):
+		return "shield"
+	if lower_name.contains("shockwave") or lower_name.contains("spool") or lower_name.contains("pulse") or lower_name.contains("ring"):
+		return "ripple"
+	if lower_name.contains("smoke") or lower_name.contains("dust") or lower_name.contains("haze") or lower_name.contains("mist"):
+		return "smoke"
+	if lower_name.contains("shard") or lower_name.contains("stone") or lower_name.contains("crystal"):
+		return "shard"
+	if lower_name.contains("spark") or lower_name.contains("mote"):
+		return "spark"
+	if lower_name.contains("flash") or lower_name.contains("bloom") or lower_name.contains("core"):
+		return "soft_glow"
+	if aspect >= 2.1 or aspect <= 0.48:
+		return "ray"
+	if corner_radius < 20:
+		return "shard"
+	return "soft_glow"
 
 
 func _screen_replay_is_offensive(clean_kind: String) -> bool:
@@ -1691,28 +2054,8 @@ func _spawn_mastery_source_pulse(source_local: Vector2, orb_id: int, lifetime: f
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
 	var accent := OrbType.color(orb_id)
-	var pulse := Panel.new()
-	pulse.name = "MasterySourcePulse"
-	pulse.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	pulse.size = Vector2(96, 96)
-	pulse.pivot_offset = pulse.size * 0.5
-	pulse.position = source_local - pulse.size * 0.5
-	pulse.z_index = 126
-	pulse.modulate = Color(1.0, 1.0, 1.0, 0.92)
-	pulse.add_theme_stylebox_override("panel", _mastery_source_pulse_stylebox(accent))
-	_vfx_layer.add_child(pulse)
-	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
-		pulse.queue_free()
-		return
-	var duration := maxf(0.12, lifetime)
-	var tween := _timer_owner.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(pulse, "scale", Vector2(1.55, 1.55), duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
-	tween.tween_property(pulse, "modulate:a", 0.0, duration).set_delay(duration * 0.20)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(pulse):
-			pulse.queue_free()
-	)
+	_spawn_runtime_sprite_local("MasterySourcePulseGlow", "soft_glow", source_local, Vector2(118, 118), Color(accent.r, accent.g, accent.b, 0.34), lifetime, Vector2(1.55, 1.55), 0.0, Vector2.ZERO, 0.0, 126)
+	_spawn_runtime_sprite_local("MasterySourcePulseRing", "ripple", source_local, Vector2(96, 96), Color(accent.r, accent.g, accent.b, 0.92), lifetime, Vector2(1.55, 1.55), 0.0, Vector2.ZERO, 0.0, 127)
 
 
 func _mastery_source_pulse_stylebox(accent: Color) -> StyleBoxFlat:
@@ -1751,7 +2094,9 @@ func _global_to_vfx_local(global_position: Vector2) -> Vector2:
 	return inverse_canvas * global_position
 
 
-func _result_label_color(kind: String) -> Color:
+func _result_label_color(kind: String, high_contrast: bool = false) -> Color:
+	if high_contrast and kind in ["fire", "ice", "earth", "damage"]:
+		return Color(1.0, 1.0, 1.0, 1.0)
 	match kind:
 		"fire":
 			return Color(1.0, 0.37, 0.16, 1.0)

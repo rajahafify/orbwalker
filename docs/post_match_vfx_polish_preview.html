@@ -579,8 +579,9 @@
       <aside class="notes">
         <h3>What Changed In-Game</h3>
         <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. Top-tier offensive results bias their screen-wide spectacle toward the enemy/top combat band instead of spilling most of the weight across the player UI.</p>
+        <p>This checkpoint focuses on Fire VFX iteration only. The current implementation captures the asset integration and tiering experiments, but the latest strong-fire look is not accepted yet because the meteor/screen layer still needs a cleaner art direction.</p>
         <div class="spec-list">
-          <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire builds hot at the mastery, launches as a larger flame mass at high values, then erupts around the enemy band.</span></div>
+          <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire is now split into weak fireball, medium wildfire, and strong meteor experiments, with medium currently closest to the target feel.</span></div>
           <div class="spec" style="color:var(--ice)"><span class="dot"></span><span>Ice gathers as cold breath and crystals, scales into wider breezes and more shards, then shatters near the enemy.</span></div>
           <div class="spec" style="color:var(--earth)"><span class="dot"></span><span>Earth rumbles under the mastery, scales into a denser ground slither, then cracks and pulses near the enemy.</span></div>
           <div class="spec" style="color:var(--heart)"><span class="dot"></span><span>Healing now lands on the HP bar with refreshing green streams and soft motes.</span></div>
@@ -626,8 +627,20 @@
           <p>Healing and armor gain now aim at the player HP bar instead of the portrait. Armor adds a short-lived shield linger over the bar, and signature-tier results add a low-opacity screen-wide elemental layer.</p>
         </article>
         <article class="change-card">
+          <h4>Fire VFX Checkpoint</h4>
+          <p>Fire now has dedicated max-overlay helpers for fireball, wildfire travel, meteor-style attack attempts, full-screen ember/fog atmosphere, local mastery-card spool, ember spray, and high-contrast result labels. The Alenia atmospheric ember/fog sheets are integrated as runtime flipbooks.</p>
+        </article>
+        <article class="change-card">
+          <h4>Known Issue</h4>
+          <p>The current strong-fire direction is a checkpoint, not final acceptance. The meteor version avoided the worst opaque sprite-sheet slab by moving away from large meteor-sheet backgrounds, but the strong attack still needs a redesign pass before it reads like a polished devastating meteor strike.</p>
+        </article>
+        <article class="change-card">
+          <h4>Label Readability</h4>
+          <p>Offensive result labels are forced above the max VFX overlay with white text, a thicker black outline, and a non-relative high z-index so large fire effects do not drown out the damage number.</p>
+        </article>
+        <article class="change-card">
           <h4>Validation</h4>
-          <p>The change includes registry and speed-scale smoke coverage, a presenter spawn probe, combat model tests, and a Godot main-scene launch without runtime errors.</p>
+          <p>The checkpoint was smoke-tested with fire VFX spawn probes, <code>CombatModelTest.run_all()</code>, <code>git diff --check</code>, and a headless main-menu scene launch. Godot still reports the pre-existing GDAI port/capture shutdown warnings.</p>
         </article>
       </div>
     </section>
