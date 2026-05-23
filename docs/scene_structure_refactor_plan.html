@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scene Structure Refactor Plan</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Scene Structure Refactor Plan</h1>
+      <p class="summary">Date: 2026-05-06</p>
+      <h1 id="scene-structure-refactor-plan">Scene Structure Refactor Plan</h1>
+<p>Date: 2026-05-06 Status: Proposed documentation-only plan Scope: <code>res://scenes/</code> folder structure, screen ownership, and shared UI scene composition.</p>
+<h2 id="context">Context</h2>
+<p>The first playable game flow is now established: main menu, combat, shop, collection, and final run summary are the player-facing screens. This plan is historical architecture guidance from before the flat player-facing scene cleanup; the current checkout has already pruned the empty placeholder scene folders.</p>
+<p>Current scene layout:</p>
+<pre><code class="language-text">
+scenes/
+  collection.tscn
+  combat.tscn
+  main_menu.tscn
+  run_summary.tscn
+  shop.tscn
+  ui/
+    board.tscn
+    elemental_mastery_hud_variants.tscn
+    player_hud.tscn
+</code></pre>
+<p>Observed mismatch:</p>
+<ul>
+<li>The older <code>scenes/flow/</code>, <code>scenes/shop/</code>, <code>scenes/run/</code>, <code>scenes/combat/</code>, and <code>scenes/board/</code> placeholder folders are gone from the current checkout.</li>
+<li>Player-facing scenes currently live as flat root files under <code>scenes/</code>.</li>
+<li>Shared UI surfaces now include reusable <code>scenes/ui/board.tscn</code> and <code>scenes/ui/player_hud.tscn</code>; remaining scene-structure work is a future taxonomy decision rather than an active cleanup blocker.</li>
+</ul>
+<h2 id="resolved-hud-preset-cleanup">Resolved HUD Preset Cleanup</h2>
+<p>The shop readability pass briefly introduced shop-specific <code>PlayerLoadoutHud</code> geometry constants in <code>scripts/scenes/shop.gd</code>. The scene-review P1/P2 cleanup moved that geometry into <code>PlayerLoadoutHud.shop_player_hud_layout_preset()</code>, so shop no longer owns internal HUD geometry constants. Combat still applies a combat-owned layout override through <code>CombatLayoutPresenter</code>, and shop applies the named shared preset from <code>PlayerLoadoutHud</code>.</p>
+<p>The remaining architectural issue is not the old shop-local constants. It is the lack of a reusable HUD scene/component boundary:</p>
+<ul>
+<li>Combat and shop still build or mount equivalent Player HUD structures separately.</li>
+<li><code>PlayerLoadoutHud</code> owns the shared data binding and named layout presets, but the HUD is not yet represented by a reusable <code>.tscn</code> component.</li>
+<li>Future screens should add shared <code>PlayerLoadoutHud</code> presets or a shared HUD component instead of defining screen-local internal HUD geometry.</li>
+</ul>
+<p>Target principle:</p>
+<ul>
+<li>A shared HUD should be a single reusable scene/component boundary.</li>
+<li>Combat and shop may choose where to mount the shared HUD on the screen.</li>
+<li>Combat and shop should not independently redefine the internal Player HUD section layout unless a new shared variant is explicitly added.</li>
+</ul>
+<h2 id="target-scene-folder-structure">Target Scene Folder Structure</h2>
+<p>Use scene folders to express product surfaces and reusable composition units, not implementation history.</p>
+<p>Recommended structure:</p>
+<pre><code class="language-text">
+scenes/
+  app/
+    main_menu.tscn
+  screens/
+    combat/
+      combat_player.tscn
+    shop/
+      shop_player.tscn
+    collection/
+      collection.tscn
+    run_summary/
+      final_run_summary.tscn
+  components/
+    board/
+      board.tscn
+    hud/
+      player_hud_section.tscn
+      elemental_mastery_panel.tscn
+    overlays/
+      combat_outcome_overlay.tscn
+      treasure_chest_choice_overlay.tscn
+  dev/
+    elemental_mastery_hud_variants.tscn
+</code></pre>
+<p>Alternative if the team wants fewer folders:</p>
+<pre><code class="language-text">
+scenes/
+  main/
+    main_menu.tscn
+  combat/
+    combat_player.tscn
+  shop/
+    shop_player.tscn
+  collection/
+    collection.tscn
+  summary/
+    final_run_summary.tscn
+  shared/
+    board.tscn
+    player_hud_section.tscn
+    elemental_mastery_panel.tscn
+  dev/
+    elemental_mastery_hud_variants.tscn
+</code></pre>
+<p>The first structure is preferred because it separates full screens from reusable components.</p>
+<h2 id="solid-ownership-rules">SOLID Ownership Rules</h2>
+<p>Single Responsibility:</p>
+<ul>
+<li>Full screen scenes own screen composition and screen-specific input flow.</li>
+<li>Component scenes own reusable UI layout and visual structure.</li>
+<li>Runtime services own game rules and state transitions.</li>
+<li>layout presenters may position components, but should not redefine another component's internals.</li>
+</ul>
+<p>Open/Closed:</p>
+<ul>
+<li>Adding a new screen should not require changing shared component internals.</li>
+<li>Adding a new HUD variant should be explicit and reusable, not hardcoded inside one screen controller.</li>
+</ul>
+<p>Liskov Substitution:</p>
+<ul>
+<li>If combat and shop both consume <code>player_hud_section</code>, either surface should be able to mount the component without changing its contract.</li>
+<li>Any variant must preserve the same public signals and data binding contract.</li>
+</ul>
+<p>Interface Segregation:</p>
+<ul>
+<li>Screen controllers should receive small component APIs such as <code>bind_player_hud(...)</code>, <code>update_player_data(...)</code>, and <code>handle_global_click(...)</code>.</li>
+<li>Screens should not depend on incidental child-node geometry inside shared components.</li>
+</ul>
+<p>Dependency Inversion:</p>
+<ul>
+<li>Screens depend on shared component interfaces and RunState/service APIs.</li>
+<li>Shared components depend on data payloads and signals, not on combat/shop controllers.</li>
+</ul>
+<h2 id="proposed-refactor-tasks">Proposed Refactor Tasks</h2>
+<h3 id="ss-01-freeze-current-scene-inventory">SS-01: Freeze Current Scene Inventory</h3>
+<p>Document every current <code>.tscn</code>, whether it is a player-facing screen, reusable component, development preview, or legacy/empty folder placeholder.</p>
+<p>Acceptance:</p>
+<ul>
+<li><code>wiki/file-map.html</code> and this plan agree on the current scene inventory.</li>
+<li>Empty folders are explicitly marked as pending migration targets or removal candidates.</li>
+</ul>
+<h3 id="ss-02-create-shared-hud-scene-boundary">SS-02: Create Shared HUD Scene Boundary</h3>
+<p>Move the code-built Player HUD section structure into a reusable scene such as <code>res://scenes/components/hud/player_hud_section.tscn</code>, while keeping <code>PlayerLoadoutHud</code> as the data-binding/controller helper if that remains the best boundary.</p>
+<p>Acceptance:</p>
+<ul>
+<li>Combat and shop both instance the same HUD scene/component.</li>
+<li>Internal HUD geometry lives in one shared place.</li>
+<li>Screen controllers pass data and listen to signals, but do not define HUD internals.</li>
+</ul>
+<h3 id="ss-03-restore-combat-shop-hud-identity">SS-03: Restore Combat/Shop HUD Identity</h3>
+<p>Remove scene-local Player HUD geometry overrides from combat and shop unless they are replaced by explicit shared variants.</p>
+<p>Acceptance:</p>
+<ul>
+<li>Combat and shop Player HUD sections render identically for the same state payload at the same design size.</li>
+<li>Any allowed difference is documented as a named shared variant.</li>
+<li>A focused probe compares key child rects for combat and shop HUD instances.</li>
+</ul>
+<h3 id="ss-04-move-full-screens-into-final-folders">SS-04: Move Full Screens Into Final Folders</h3>
+<p>Move finalized full screens into the target folder taxonomy.</p>
+<p>Proposed moves:</p>
+<ul>
+<li><code>scenes/main_menu.tscn</code> -&gt; <code>scenes/app/main_menu.tscn</code></li>
+<li><code>scenes/combat.tscn</code> -&gt; <code>scenes/screens/combat/combat_player.tscn</code></li>
+<li><code>scenes/shop.tscn</code> -&gt; <code>scenes/screens/shop/shop_player.tscn</code></li>
+<li><code>scenes/collection.tscn</code> -&gt; <code>scenes/screens/collection/collection.tscn</code></li>
+<li><code>scenes/run_summary.tscn</code> -&gt; <code>scenes/screens/run_summary/final_run_summary.tscn</code></li>
+<li><code>scenes/ui/board.tscn</code> -&gt; <code>scenes/components/board/board.tscn</code></li>
+<li><code>scenes/ui/elemental_mastery_hud_variants.tscn</code> -&gt; <code>scenes/dev/elemental_mastery_hud_variants.tscn</code></li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li><code>project.godot</code> main scene is updated.</li>
+<li><code>RunState</code> route constants are updated.</li>
+<li>Source references to old scene paths are removed or converted through constants.</li>
+<li>Godot MCP scene instantiate probes pass for all player-facing screens.</li>
+</ul>
+<h3 id="ss-05-remove-or-repurpose-empty-scene-folders">SS-05: Remove Or Repurpose Empty Scene Folders</h3>
+<p>After moves are complete, remove empty <code>scenes/run/</code>, <code>scenes/shop/</code>, and any other empty folders unless they become real homes in the final taxonomy.</p>
+<p>Acceptance:</p>
+<ul>
+<li><code>scenes/</code> contains no misleading empty domain folders.</li>
+<li><code>wiki/file-map.html</code> and <code>docs/system_architecture.html</code> match the live layout.</li>
+</ul>
+<h3 id="ss-06-add-scene-contract-validation">SS-06: Add Scene Contract Validation</h3>
+<p>Add a focused validation probe that checks screen/component contracts rather than only loading scenes.</p>
+<p>Minimum checks:</p>
+<ul>
+<li>Main menu scene path configured in <code>project.godot</code>.</li>
+<li>RunState route constants point to existing scenes.</li>
+<li>Combat, shop, collection, and final summary instantiate.</li>
+<li>Shared <code>player_hud_section</code> component instantiates.</li>
+<li>Combat and shop mount the shared HUD component.</li>
+<li>Combat/shop shared HUD child rects match for the same design size, unless using an explicit shared variant.</li>
+</ul>
+<p>Acceptance:</p>
+<ul>
+<li>Godot MCP validation covers scene load, route constants, and shared HUD geometry contracts.</li>
+<li>Manual screenshot QA remains separate from structural validation.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>Do not change combat math, shop economy, RunState sequencing, content pools, or meta progression.</li>
+<li>Do not redesign the entire UI in the same task as moving scenes.</li>
+<li>Do not move files before all scene path references and route constants are inventoried.</li>
+<li>Do not treat a screen-specific hotfix as a replacement for shared component architecture.</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Should <code>player_hud_section.tscn</code> contain only layout nodes, with <code>PlayerLoadoutHud</code> continuing as the controller/helper, or should the script move onto the scene root?</li>
+<li>Should Elemental Mastery remain part of the Player HUD component, or become a separate shared component mounted adjacent to the Player HUD by combat and shop?</li>
+<li>Should overlays such as treasure chest choice and combat outcome become <code>.tscn</code> component scenes now, or remain code-built until the screen folder migration is complete?</li>
+<li>Should the final folder use <code>screens/</code> and <code>components/</code>, or shorter domain folders such as <code>combat/</code>, <code>shop/</code>, <code>shared/</code>, and <code>dev/</code>?</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/scene_structure_refactor_plan.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#scene-structure-refactor-plan">Scene Structure Refactor Plan</a><a class="toc-h2" href="#context">Context</a><a class="toc-h2" href="#resolved-hud-preset-cleanup">Resolved HUD Preset Cleanup</a><a class="toc-h2" href="#target-scene-folder-structure">Target Scene Folder Structure</a><a class="toc-h2" href="#solid-ownership-rules">SOLID Ownership Rules</a><a class="toc-h2" href="#proposed-refactor-tasks">Proposed Refactor Tasks</a><a class="toc-h3" href="#ss-01-freeze-current-scene-inventory">SS-01: Freeze Current Scene Inventory</a><a class="toc-h3" href="#ss-02-create-shared-hud-scene-boundary">SS-02: Create Shared HUD Scene Boundary</a><a class="toc-h3" href="#ss-03-restore-combat-shop-hud-identity">SS-03: Restore Combat/Shop HUD Identity</a><a class="toc-h3" href="#ss-04-move-full-screens-into-final-folders">SS-04: Move Full Screens Into Final Folders</a><a class="toc-h3" href="#ss-05-remove-or-repurpose-empty-scene-folders">SS-05: Remove Or Repurpose Empty Scene Folders</a><a class="toc-h3" href="#ss-06-add-scene-contract-validation">SS-06: Add Scene Contract Validation</a><a class="toc-h2" href="#non-goals">Non-Goals</a><a class="toc-h2" href="#open-questions">Open Questions</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

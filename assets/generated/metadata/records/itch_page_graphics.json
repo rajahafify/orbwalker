@@ -1,28 +1,30 @@
 {
-    "asset_id": "itch_page_graphics",
-    "asset_name": "Itch.io page header, cover, thumbnail, and embed art",
-    "asset_type": "marketing_pack",
-    "group_id": "marketing_and_store",
-    "brief_path": "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.md",
-    "candidate_paths": [
-        "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
-    ],
-    "source_references": [
-        "assets.json",
-        "resources/assetgen.workflow.md"
-    ],
-    "license_status": "approved",
-    "usage_rights": "approved",
-    "dimensions": "1672x941",
-    "export_format": "png_candidate",
-    "alpha_type": "needs_qa",
-    "transparent_background": "false_verified_opaque_marketing_candidate",
-    "qa_status": "approved",
-    "review_status": "approved",
-    "integration_status": "approved_pending_integration",
-    "embedded_text": "none_requested_needs_visual_confirmation",
-    "notes": "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
-    "final_prompt": "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
-    "generation_mode": "built-in imagegen",
-    "approval_date": "2026-05-08"
+    "asset_id":  "itch_page_graphics",
+    "asset_name":  "Itch.io page header, cover, thumbnail, and embed art",
+    "asset_type":  "marketing_pack",
+    "group_id":  "marketing_and_store",
+    "brief_path":  "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.html",
+    "candidate_paths":  [
+                            "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png",
+                            "resources/art/assetgen/marketing/itch_page_graphics_key_art_candidate_01.png"
+                        ],
+    "source_references":  [
+                              "assets.json",
+                              "resources/assetgen.workflow.html"
+                          ],
+    "license_status":  "approved",
+    "usage_rights":  "approved",
+    "dimensions":  "1672x941",
+    "export_format":  "png_candidate",
+    "alpha_type":  "needs_qa",
+    "transparent_background":  "false_verified_opaque_marketing_candidate",
+    "qa_status":  "approved",
+    "review_status":  "approved",
+    "integration_status":  "integrated_assetgen_library",
+    "embedded_text":  "none_requested_needs_visual_confirmation",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+    "final_prompt":  "Create wide key art for Orbwalker itch.io demo page: lone fantasy hero manipulating elemental orbs in a dungeon, enemy silhouette and treasure chest support, 16:9 banner, no logo text, no watermark, readable at thumbnail size.",
+    "generation_mode":  "built-in imagegen",
+    "approval_date":  "2026-05-08",
+    "integration_date":  "2026-05-22"
 }

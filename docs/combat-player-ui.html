@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combat Player UI Redesign Implementation Brief</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Combat Player UI Redesign Implementation Brief</h1>
+      <p class="summary">Summary**: Design findings and implementation-facing direction for fixing the player section in the combat screen. This document focuses on visual hierarchy, layout, and readability, not gameplay rule changes.</p>
+      <h1 id="combat-player-ui-redesign-implementation-brief">Combat Player UI Redesign Implementation Brief</h1>
+<p><strong>Summary</strong>: Design findings and implementation-facing direction for fixing the player section in the combat screen. This document focuses on visual hierarchy, layout, and readability, not gameplay rule changes.</p>
+<p><strong>Sources</strong>: User-provided combat screen screenshot and critique request from 2026-04-29, <code>docs/game_design_document.html</code>, <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code></p>
+<p><strong>Last updated</strong>: 2026-04-29</p>
+<p>---</p>
+<h2 id="goal">Goal</h2>
+<p>Turn the bottom player section into a clear combat status console: the player should immediately understand hero condition, available build resources, empty slot capacity, and mastery progress without the section feeling like placeholder debug UI. The board remains the primary interaction area; the player section should support decisions rather than compete with it. (source: user-provided combat screen screenshot, <code>docs/game_design_document.html</code>)</p>
+<p>The current combat player scene already has first-class nodes for <code>PlayerPanel</code>, <code>HeroCard</code>, <code>VitalsPanel</code>, <code>LoadoutFrame</code>, and <code>MasteryStrip</code>, so the redesign should preserve that conceptual split while improving composition and visual treatment. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>)</p>
+<h2 id="design-principles">Design Principles</h2>
+<ul>
+<li>Make the player section read as one designed HUD, not separate widgets placed in a large box. (source: user-provided combat screen screenshot)</li>
+<li>Use strong hierarchy: hero identity first, HP/status second, held build resources third, mastery progression fourth. (source: <code>docs/game_design_document.html</code>)</li>
+<li>Empty slots must still look intentional because the prototype has fixed 5 equipment slots and 3 consumable slots. (source: <code>docs/game_design_document.html</code>, <code>scripts/combat/player_state.gd</code>)</li>
+<li>Show combat-relevant state only when it helps decision making; avoid rows of placeholder values that look like debug output. (source: user-provided combat screen screenshot)</li>
+<li>Keep the redesign compatible with portrait-first composition and pending desktop/mobile overlap checks. (source: <code>project.godot</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
+<h2 id="proposed-layout">Proposed Layout</h2>
+<p>Use three horizontal layers inside the player panel:</p>
+<ol>
+<li><strong>Hero status layer</strong>: left hero card, right HP/status block.</li>
+<li><strong>Loadout layer</strong>: equipment rail and consumable rail with clear headers and slot affordance.</li>
+<li><strong>Mastery layer</strong>: full-width compact mastery row with one consistent cell per orb type.</li>
+</ol>
+<p>Recommended proportions for the existing 468 px design-space player panel height:</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Layer</th>
+<th>Approximate Height</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Hero status</td>
+<td>180-210 px</td>
+<td>Portrait, level, HP, conditional armor/status</td>
+</tr>
+<tr>
+<td>Loadout</td>
+<td>135-155 px</td>
+<td>5 equipment slots, 3 consumable slots</td>
+</tr>
+<tr>
+<td>Mastery</td>
+<td>55-70 px</td>
+<td>Six mastery tracks</td>
+</tr>
+</tbody>
+</table></div>
+<p>The exact pixel values can change during implementation, but these proportions keep the top area from feeling empty while giving loadout and mastery enough room to breathe. (source: <code>scripts/scenes/combat.gd</code>)</p>
+<h2 id="problem-and-fix-list">Problem And Fix List</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Problem</th>
+<th>Design Fix</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1. The section feels unfinished and placeholder-like.</td>
+<td>Give the section a deliberate three-layer HUD structure: hero status, loadout, mastery. Each layer should have a clear job and visual boundary.</td>
+</tr>
+<tr>
+<td>2. The player portrait is too small.</td>
+<td>Enlarge the portrait card and make it the left anchor of the player section. The portrait should be visually comparable to a combat status card, not a small icon.</td>
+</tr>
+<tr>
+<td>3. The portrait frame and level badge are weak.</td>
+<td>Treat the portrait as a character card with a stronger frame, inset art area, and integrated <code>Lv. 1</code> badge. The badge should attach to the frame instead of floating awkwardly.</td>
+</tr>
+<tr>
+<td>4. The HP bar is oversized but generic.</td>
+<td>Convert HP into a framed vitals module with a darker track, clear fill, subtle bevel, and optional damage-preview space. The bar can stay long, but it needs structure.</td>
+</tr>
+<tr>
+<td>5. The HP text is weakly integrated.</td>
+<td>Add an <code>HP</code> label or heart icon beside <code>100 / 100</code>, and style the number as combat status text rather than raw debug text.</td>
+</tr>
+<tr>
+<td>6. Portrait and HP spacing feels disconnected.</td>
+<td>Group portrait and vitals into one hero status block. Align the HP bar to the portrait height and add hero name/level context above or beside it.</td>
+</tr>
+<tr>
+<td>7. Equipment and consumable areas look broken when empty.</td>
+<td>Add designed empty-slot states: faint category silhouettes, recessed sockets, locked-slot styling if unavailable, or subtle placeholder icons.</td>
+</tr>
+<tr>
+<td>8. Slots have low contrast.</td>
+<td>Use a darker inner slot, brighter edge, and soft highlight/shadow so empty slots remain visible against the panel background.</td>
+</tr>
+<tr>
+<td>9. <code>EQUIPMENT</code> and <code>CONSUMABLES</code> labels are too weak.</td>
+<td>Use icon-plus-label headers, stronger contrast, and direct alignment above each rail. The labels should scan before the individual slots.</td>
+</tr>
+<tr>
+<td>10. The mastery strip is cramped.</td>
+<td>Allocate a dedicated full-width strip with consistent cell widths, equal spacing, and larger icons or badges.</td>
+</tr>
+<tr>
+<td>11. Mastery looks like debug counters.</td>
+<td>Replace repeated bare <code>0</code> values with designed level cells: orb icon plus level badge, pips, or a small <code>Lv 0</code> tag inside each cell.</td>
+</tr>
+<tr>
+<td>12. The panel lacks clear grouping.</td>
+<td>Use subpanel backgrounds or separators for hero status, loadout, and mastery. Keep borders lighter than the outer frame.</td>
+</tr>
+<tr>
+<td>13. Space distribution is inconsistent.</td>
+<td>Reduce unused upper-panel void and give that space to loadout and mastery breathing room. The player panel should feel dense but not compressed.</td>
+</tr>
+<tr>
+<td>14. Gold borders are too heavy.</td>
+<td>Reserve gold for outer frame, active highlights, and important badges. Use neutral dark dividers for secondary grouping.</td>
+</tr>
+<tr>
+<td>15. The bottom area feels visually flat.</td>
+<td>Add controlled depth: recessed panels, inner shadows, small highlights, and different background tones for status, slot rails, and mastery.</td>
+</tr>
+<tr>
+<td>16. The section communicates too little state.</td>
+<td>Show HP always, armor/block conditionally when relevant, slot availability, consumable charges, and mastery progress. Avoid showing inactive placeholder bars.</td>
+</tr>
+<tr>
+<td>17. Alignment feels arbitrary.</td>
+<td>Put all player-section elements on a strict shared grid with consistent left/right margins and vertical baselines.</td>
+</tr>
+<tr>
+<td>18. The player HUD feels less important than the board.</td>
+<td>Increase player-section confidence through a stronger hero card, clearer HP module, and cleaner resource rows while keeping board interaction visually dominant.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="information-hierarchy">Information Hierarchy</h2>
+<p>The player section should answer these questions in order:</p>
+<ol>
+<li><strong>Am I alive and stable?</strong> Use portrait, HP, and conditional armor/block/status. HP persists through the run, and armor reduces incoming damage before HP. (source: <code>docs/game_design_document.html</code>, <code>scripts/combat/player_state.gd</code>)</li>
+<li><strong>What build tools do I currently have?</strong> Show 5 equipment slots and 3 consumable slots as always-visible rails. Equipment and consumables are core run progression surfaces. (source: <code>docs/game_design_document.html</code>, <code>docs/test_plan.html</code>)</li>
+<li><strong>What scaling am I building toward?</strong> Show all six mastery tracks in a compact, non-debug row. Mastery exists for Fire, Ice, Earth, Heart, Armor, and Gold. (source: <code>docs/game_design_document.html</code>)</li>
+</ol>
+<h2 id="visual-treatment">Visual Treatment</h2>
+<ul>
+<li>Background: use a slightly different dark panel tone for each major layer so grouping is visible without adding more heavy borders.</li>
+<li>Borders: outer player panel can keep a gold accent; internal panels should use thinner, darker, lower-contrast frames.</li>
+<li>Portrait: make the hero card tactile, with an inset art plate and a level badge that overlaps the frame intentionally.</li>
+<li>HP: red fill is acceptable, but it needs a clear dark track, better label treatment, and enough padding so the number does not feel pasted on.</li>
+<li>Slots: empty slots should be readable from the board-view distance. Use consistent socket size and a small type/icon cue for slot category.</li>
+<li>Mastery: each orb type should have a fixed-size cell with icon and level treatment. Avoid tiny icons followed by free-floating numbers.</li>
+<li>Typography: use fewer all-caps micro-labels. Reserve all-caps for section headers and use larger numeric text for HP and levels.</li>
+</ul>
+<h2 id="implementation-phases">Implementation Phases</h2>
+<ol>
+<li><strong>Wireframe pass</strong></li>
+<ul>
+<li>Lock the three-layer structure.</li>
+<li>Align portrait, HP, loadout, and mastery to one grid.</li>
+<li>Remove excess empty panel space before adding decorative treatment.</li>
+</ul>
+</ol>
+<ol>
+<li><strong>Hierarchy pass</strong></li>
+<ul>
+<li>Increase portrait and HP prominence.</li>
+<li>Make equipment/consumable headers readable.</li>
+<li>Convert mastery cells from debug-style counters to designed level cells.</li>
+</ul>
+</ol>
+<ol>
+<li><strong>Empty-state pass</strong></li>
+<ul>
+<li>Design visible empty equipment slots.</li>
+<li>Design visible empty consumable slots.</li>
+<li>Add slot affordance states for empty, filled, disabled/locked if needed, and selected/active if later supported.</li>
+</ul>
+</ol>
+<ol>
+<li><strong>State pass</strong></li>
+<ul>
+<li>Show HP always.</li>
+<li>Show armor/block only when relevant or as a compact shield badge.</li>
+<li>Show consumable charges and item quantities in badges.</li>
+<li>Keep debug-only information out of the player-facing HUD.</li>
+</ul>
+</ol>
+<ol>
+<li><strong>Responsive review pass</strong></li>
+<ul>
+<li>Check the combat screen at <code>1080x1920</code>, <code>900x1600</code>, <code>1920x1080</code>, and <code>1366x768</code>.</li>
+<li>Verify no HP text, slot label, mastery cell, or portrait badge overlaps.</li>
+<li>Verify the board remains the primary focus and the player panel stays readable.</li>
+</ul>
+</ol>
+<h2 id="acceptance-criteria">Acceptance Criteria</h2>
+<ul>
+<li>The player panel reads as one cohesive HUD section from a full-screen combat view.</li>
+<li>The hero portrait and HP bar form a clear player status block.</li>
+<li>Empty equipment and consumable slots look intentional and interactive, not missing.</li>
+<li>Equipment, consumables, and mastery each have readable labels and consistent spacing.</li>
+<li>Mastery levels are understandable without looking like raw debug counters.</li>
+<li>Gold accents are used for emphasis instead of outlining every nested box.</li>
+<li>The panel communicates HP, relevant defensive state, build inventory, and mastery progress without clutter.</li>
+<li>The layout passes manual visual review at portrait and desktop aspect ratios listed in <code>docs/test_plan.html</code>.</li>
+</ul>
+<h2 id="out-of-scope">Out Of Scope</h2>
+<ul>
+<li>No new combat resources or mechanics.</li>
+<li>No changes to board rules, enemy behavior, shop logic, item effects, or mastery formulas.</li>
+<li>No requirement to redesign the enemy section in the same pass.</li>
+<li>No requirement to replace final art assets before the layout and hierarchy are fixed.</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Should armor be visible as a small always-present shield value or only appear when armor is greater than zero?</li>
+<li>Should equipment and consumable empty slots use category silhouettes, rarity frames, or plain recessed sockets?</li>
+<li>Should mastery levels use numeric badges, pips, or both?</li>
+<li>Should relics remain outside this player panel or get a later compact treatment in the same bottom HUD?</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/combat-player-ui.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#combat-player-ui-redesign-implementation-brief">Combat Player UI Redesign Implementation Brief</a><a class="toc-h2" href="#goal">Goal</a><a class="toc-h2" href="#design-principles">Design Principles</a><a class="toc-h2" href="#proposed-layout">Proposed Layout</a><a class="toc-h2" href="#problem-and-fix-list">Problem And Fix List</a><a class="toc-h2" href="#information-hierarchy">Information Hierarchy</a><a class="toc-h2" href="#visual-treatment">Visual Treatment</a><a class="toc-h2" href="#implementation-phases">Implementation Phases</a><a class="toc-h2" href="#acceptance-criteria">Acceptance Criteria</a><a class="toc-h2" href="#out-of-scope">Out Of Scope</a><a class="toc-h2" href="#open-questions">Open Questions</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

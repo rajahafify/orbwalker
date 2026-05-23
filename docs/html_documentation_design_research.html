@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML documentation design research</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="hero">
+        <div class="hero-label">Research brief</div>
+        <h1>Designing HTML reports and wiki pages people will actually use</h1>
+        <p class="summary">Research synthesis for Matchatro's browser-first documentation system: what good reports, wiki pages, runbooks, QA reviews, and implementation plans should look like now that HTML is the default human-facing format.</p>
+        <div class="hero-strip">
+          <span class="hero-chip">User-need first</span>
+          <span class="hero-chip">Scannable by default</span>
+          <span class="hero-chip">Structured by page type</span>
+          <span class="hero-chip">Accessible and printable</span>
+          <span class="hero-chip">Reusable template system</span>
+        </div>
+      </section>
+      <div class="content">
+        <section id="executive-summary">
+          <h2>Executive summary</h2>
+          <p>Good HTML documentation is not just prettier Markdown. It should use browser-native structure to reduce reader effort: clear page purpose, strong headings, tables for comparison, callouts for risk, diagrams for relationships, and a stable navigation frame. The research points to one central rule: design the page around the user's task, then choose the component patterns that make the task easier.</p>
+          <p>The best foundation for Matchatro is a small documentation design system: a reusable HTML shell, a page-type taxonomy, a component set, and quality checks. That gives future reports a consistent look without making every agent invent layout from scratch.</p>
+          <div class="callout ok"><strong>Recommendation:</strong> implement a reusable Matchatro HTML documentation template and page-type guidance, then migrate future reports/wiki pages onto that style as they are touched.</div>
+        </section>
+
+        <section id="principles">
+          <h2>Design principles</h2>
+          <div class="grid">
+            <div class="card"><b>Start with the user need</b>Define who is reading, what decision they need to make, and what task the page helps complete.</div>
+            <div class="card"><b>Make scanning the first-class path</b>Use summaries, headings, tables, badges, and short chunks so readers can locate the right section before reading deeply.</div>
+            <div class="card"><b>Separate page types</b>Do not mix tutorial, how-to, reference, and explanation goals without labeling the mode clearly.</div>
+            <div class="card"><b>Put evidence next to claims</b>Use source paths, validation outputs, screenshots, and status metadata near the conclusion they support.</div>
+            <div class="card"><b>Design for maintenance</b>Include owner, freshness, source of truth, changelog, and open questions so stale pages are visible.</div>
+            <div class="card"><b>Preserve accessibility</b>Use semantic HTML, readable contrast, keyboard-friendly controls, responsive layout, and print-safe styling.</div>
+          </div>
+        </section>
+
+        <section id="source-synthesis">
+          <h2>Source synthesis</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Research takeaway</th>
+                  <th>Implication for Matchatro</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="https://diataxis.fr/">Diátaxis</a></td>
+                  <td>Documentation quality improves when content is organized around user needs: tutorials, how-to guides, reference, and explanation.</td>
+                  <td>Give every wiki/report page a type. Do not let status reports become architecture explanations or how-to guides without section labels.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://diataxis.fr/quality/">Diátaxis quality theory</a></td>
+                  <td>Functional quality covers accuracy and completeness; deep quality covers flow, fit, anticipation, and the feeling of being good to use.</td>
+                  <td>Quality gates should check both correctness and usability: can a future agent or human find the answer quickly?</td>
+                </tr>
+                <tr>
+                  <td><a href="https://docs.github.com/en/contributing/writing-for-github-docs/best-practices-for-github-docs">GitHub Docs</a></td>
+                  <td>Documentation should align to user needs, structure content for readability, write plainly, and format for scannability.</td>
+                  <td>Every report should open with purpose, audience, key takeaways, and next action, not a raw chronology.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://google.github.io/styleguide/docguide/best_practices.html">Google documentation guide</a></td>
+                  <td>Documents should be short, useful, practical, and written with the reader's goal in mind.</td>
+                  <td>Use executive summaries and progressive detail. Keep long evidence sections collapsible or clearly separated.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://learn.microsoft.com/en-us/style-guide/scannable-content/">Microsoft scannable content</a></td>
+                  <td>Online readers need headings, lists, tables, and important keywords near the beginning of headings and entries.</td>
+                  <td>Prefer specific section titles such as "Remaining blockers" over generic titles such as "Notes".</td>
+                </tr>
+                <tr>
+                  <td><a href="https://www.gov.uk/guidance/content-design/user-needs">GOV.UK user needs</a></td>
+                  <td>Content should start from valid user needs and avoid publishing material that does not help the user do something.</td>
+                  <td>Archive or demote pages that no longer support a live decision, workflow, or durable reference need.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://www.w3.org/WAI/standards-guidelines/wcag/">W3C WCAG</a></td>
+                  <td>Accessibility guidance focuses on making content perceivable, operable, understandable, and robust.</td>
+                  <td>Generated HTML must keep semantic structure, color contrast, keyboard access for interactive widgets, and non-color status labels.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://www.atlassian.com/software/confluence/resources/guides/best-practices/knowledge-management">Atlassian knowledge management</a></td>
+                  <td>Knowledge bases work better when knowledge is organized by product/service spaces, discoverable, and shared openly by default.</td>
+                  <td>Use page categories and link hubs: gameplay, assets, architecture, QA, release, Android, and agent workflow.</td>
+                </tr>
+                <tr>
+                  <td><a href="https://thariqs.github.io/html-effectiveness/">HTML effectiveness examples</a></td>
+                  <td>HTML can turn long agent outputs into reports, diagrams, prototypes, editing interfaces, and review tools.</td>
+                  <td>Use HTML not only for prose, but also for asset review boards, QA dashboards, decision matrices, and visual comparators.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="recommended-patterns">
+          <h2>Recommended page patterns</h2>
+          <div class="pattern">
+            <div><b>Status report</b>Summary, status badges, changed files, validation, blockers, next action, appendix evidence.</div>
+            <div><b>Wiki page</b>Purpose, scope, current state, concepts, workflows, source paths, known issues, open questions, LLM reuse notes.</div>
+            <div><b>QA report</b>Acceptance criteria, test matrix, screenshots/contact sheets, failures, severity, retest instructions.</div>
+            <div><b>Decision record</b>Context, options, tradeoffs, decision, consequences, rollback path, date, owner.</div>
+            <div><b>Architecture note</b>System map, responsibilities, data flow, contracts, invariants, risks, source links.</div>
+            <div><b>Implementation plan</b>Goal, non-goals, tasks, ownership, affected files, validation plan, stop conditions.</div>
+            <div><b>Asset review board</b>Category filters, candidate images, alpha/background checks, review status, promote/reject notes.</div>
+            <div><b>Runbook</b>Prereqs, exact steps, expected output, troubleshooting, recovery path, last verified date.</div>
+          </div>
+        </section>
+
+        <section id="information-architecture">
+          <h2>Information architecture</h2>
+          <p>The wiki should behave like a map, not a pile of pages. Matchatro should keep a small number of durable hubs and make every page declare where it belongs.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hub</th>
+                  <th>What belongs there</th>
+                  <th>Recommended page fields</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Gameplay systems</td>
+                  <td>Combat, shop, run flow, progression, content registry.</td>
+                  <td>Current behavior, source files, invariants, validation scenes.</td>
+                </tr>
+                <tr>
+                  <td>Assets and visual production</td>
+                  <td>Assetgen workflow, candidates, QA, approvals, integration state.</td>
+                  <td>Asset ID, lifecycle status, source image, approved output, QA evidence.</td>
+                </tr>
+                <tr>
+                  <td>Architecture</td>
+                  <td>Runtime ownership, scene structure, services, autoloads, MVC boundaries.</td>
+                  <td>Responsibility map, data flow, known debt, future migration notes.</td>
+                </tr>
+                <tr>
+                  <td>Release and platform</td>
+                  <td>Android builds, itch readiness, packaging, device validation.</td>
+                  <td>Build command, artifact path, install status, device evidence, rollback.</td>
+                </tr>
+                <tr>
+                  <td>Agent workflow</td>
+                  <td>Multi-agent flow, Godot MCP validation, HTML doc rules, handoff templates.</td>
+                  <td>Role ownership, required tools, allowed edits, validation requirements.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="visual-system">
+          <h2>Visual system recommendations</h2>
+          <ul>
+            <li><strong>Use a stable shell:</strong> hero/summary, main content, sticky table of contents, print styling, and responsive single-column mobile layout.</li>
+            <li><strong>Use color for meaning:</strong> status, risk, priority, confidence, and category. Do not decorate with arbitrary palettes.</li>
+            <li><strong>Keep line length comfortable:</strong> prose should sit in a readable column; tables and evidence can overflow horizontally inside framed regions.</li>
+            <li><strong>Prefer tables for comparison:</strong> options, risks, file responsibilities, test matrices, metadata fields, and source synthesis.</li>
+            <li><strong>Use callouts sparingly:</strong> warnings, decisions, blockers, assumptions, and recommendations should stand out.</li>
+            <li><strong>Use diagrams when structure matters:</strong> inline SVG or Mermaid-style rendered diagrams for flows, dependencies, and state transitions.</li>
+            <li><strong>Make freshness visible:</strong> include created date, last reviewed date, validation date, owner or agent role, and source-of-truth fields.</li>
+          </ul>
+        </section>
+
+        <section id="quality-checklist">
+          <h2>Quality checklist</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Gate</th>
+                  <th>Pass condition</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Purpose</td>
+                  <td>The page says who it is for, why it exists, and what decision or task it supports.</td>
+                </tr>
+                <tr>
+                  <td>Scan path</td>
+                  <td>A reader can understand status and next action from headings, summary, badges, and tables in under one minute.</td>
+                </tr>
+                <tr>
+                  <td>Evidence</td>
+                  <td>Claims cite source paths, commands, screenshots, validation notes, or external references.</td>
+                </tr>
+                <tr>
+                  <td>Accessibility</td>
+                  <td>Semantic headings, sufficient contrast, non-color labels, keyboard-safe controls, and print-safe styles are present.</td>
+                </tr>
+                <tr>
+                  <td>Maintainability</td>
+                  <td>The page includes last updated context, open questions, and LLM reuse notes for future agents.</td>
+                </tr>
+                <tr>
+                  <td>Scope control</td>
+                  <td>The page separates facts, assumptions, recommendations, and decisions.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="implementation-options">
+          <h2>Implementation options</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>What changes</th>
+                  <th>Pros</th>
+                  <th>Tradeoffs</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge">A</span> Guidance only</td>
+                  <td>Add a concise HTML documentation design standard to <code>AGENTS.html</code> and wiki guidance.</td>
+                  <td>Low risk, fast, keeps agents aligned.</td>
+                  <td>Future pages may still drift visually.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge">B</span> Template kit</td>
+                  <td>Create reusable single-file HTML templates for report, wiki, QA, decision, and runbook pages.</td>
+                  <td>Best balance of consistency and flexibility.</td>
+                  <td>Requires maintaining templates as project needs evolve.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge">C</span> Generator script</td>
+                  <td>Add a tool that creates a new HTML doc from page type metadata.</td>
+                  <td>Highest consistency; reduces repetitive manual scaffolding.</td>
+                  <td>More tooling surface; may be overkill before the template style stabilizes.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge">D</span> Full wiki restyle</td>
+                  <td>Rewrite all existing converted HTML docs onto the new style immediately.</td>
+                  <td>Maximum visual consistency now.</td>
+                  <td>Large diff, high review burden, low immediate product value.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout"><strong>Recommended path:</strong> choose Option B first. Add templates and guidance now, then migrate high-traffic pages opportunistically. Avoid a full wiki restyle until the template has survived real use.</div>
+        </section>
+
+        <section id="proposed-standard">
+          <h2>Proposed Matchatro standard</h2>
+          <ol>
+            <li>Every human-facing page starts with title, purpose, audience, status, and one-paragraph executive summary.</li>
+            <li>Every long page includes a sticky or clearly visible table of contents.</li>
+            <li>Every factual claim that matters cites source paths, validation notes, or external references.</li>
+            <li>Every page has a page type: report, wiki, QA, decision, architecture, implementation plan, runbook, or asset review.</li>
+            <li>Every durable page includes open questions and LLM reuse notes.</li>
+            <li>Every interactive page includes a no-script fallback or still presents its core information without interaction.</li>
+            <li>Every template is self-contained: embedded CSS, no remote scripts, no external dependencies unless explicitly requested.</li>
+          </ol>
+        </section>
+
+        <section id="source-notes">
+          <h2>Source notes</h2>
+          <ul>
+            <li>Diátaxis documentation framework: <a href="https://diataxis.fr/">diataxis.fr</a> and quality notes at <a href="https://diataxis.fr/quality/">diataxis.fr/quality</a>.</li>
+            <li>GitHub Docs best practices: <a href="https://docs.github.com/en/contributing/writing-for-github-docs/best-practices-for-github-docs">docs.github.com</a>.</li>
+            <li>Google documentation best practices: <a href="https://google.github.io/styleguide/docguide/best_practices.html">google.github.io/styleguide</a>.</li>
+            <li>Microsoft scannable content guidance: <a href="https://learn.microsoft.com/en-us/style-guide/scannable-content/">learn.microsoft.com style guide</a>.</li>
+            <li>GOV.UK user-needs content design guidance: <a href="https://www.gov.uk/guidance/content-design/user-needs">gov.uk content design</a>.</li>
+            <li>W3C WCAG overview: <a href="https://www.w3.org/WAI/standards-guidelines/wcag/">w3.org/WAI</a>.</li>
+            <li>Atlassian knowledge management best practices: <a href="https://www.atlassian.com/software/confluence/resources/guides/best-practices/knowledge-management">atlassian.com</a>.</li>
+            <li>HTML effectiveness examples and local captured article context: <a href="https://thariqs.github.io/html-effectiveness/">thariqs.github.io/html-effectiveness</a> and <code>C:/Users/Home/Downloads/local-image-2026-05-18_12_07.pdf</code>.</li>
+          </ul>
+        </section>
+
+        <section id="llm-reuse-notes">
+          <h2>LLM reuse notes</h2>
+          <div class="table-wrap">
+            <table>
+              <tbody>
+                <tr>
+                  <th>Canonical summary</th>
+                  <td>Matchatro should adopt a small HTML documentation design system: reusable page templates, page-type taxonomy, scannable layout, evidence-first reporting, accessibility baseline, and freshness metadata.</td>
+                </tr>
+                <tr>
+                  <th>Key entities</th>
+                  <td><code>AGENTS.html</code>, <code>wiki/index.html</code>, <code>docs/html_documentation_design_research.html</code>, report templates, wiki templates, QA templates, decision templates.</td>
+                </tr>
+                <tr>
+                  <th>Key decisions pending</th>
+                  <td>Whether to implement guidance only, a template kit, a generator script, or a full restyle.</td>
+                </tr>
+                <tr>
+                  <th>Recommended decision</th>
+                  <td>Implement the template kit first, then migrate important pages opportunistically.</td>
+                </tr>
+                <tr>
+                  <th>Open questions</th>
+                  <td>Which pages should be first to receive the new template; whether interactive widgets are allowed in docs beyond review tools.</td>
+                </tr>
+                <tr>
+                  <th>Tags</th>
+                  <td>documentation, html, wiki, reports, content-design, accessibility, templates, information-architecture</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="decision" id="decision-gate">
+          <h2>Decision gate</h2>
+          <p>This report is research only. No documentation templates, generator scripts, or existing wiki restyles have been implemented yet.</p>
+          <p><strong>Question for the project owner:</strong> should we implement the recommended template kit now?</p>
+        </section>
+
+        <section class="footer">
+          <p><span class="badge">Research</span> Created 2026-05-18 for Matchatro's HTML documentation design direction.</p>
+        </section>
+      </div>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc">
+        <a class="toc-h2" href="#executive-summary">Executive summary</a>
+        <a class="toc-h2" href="#principles">Design principles</a>
+        <a class="toc-h2" href="#source-synthesis">Source synthesis</a>
+        <a class="toc-h2" href="#recommended-patterns">Recommended page patterns</a>
+        <a class="toc-h2" href="#information-architecture">Information architecture</a>
+        <a class="toc-h2" href="#visual-system">Visual system</a>
+        <a class="toc-h2" href="#quality-checklist">Quality checklist</a>
+        <a class="toc-h2" href="#implementation-options">Implementation options</a>
+        <a class="toc-h2" href="#proposed-standard">Proposed standard</a>
+        <a class="toc-h2" href="#source-notes">Source notes</a>
+        <a class="toc-h2" href="#llm-reuse-notes">LLM reuse notes</a>
+        <a class="toc-h2" href="#decision-gate">Decision gate</a>
+      </nav>
+    </aside>
+  </div>
+</body>
+</html>

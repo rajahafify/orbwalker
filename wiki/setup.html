@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html">Architecture</a><a href="features.html">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html">File Map</a><a href="setup.html" aria-current="page">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>Setup</h1>
+      <p class="summary">Summary**: Practical setup and validation notes for the current Godot checkout. This page records only the commands and surfaces that are actually present in the repository.</p>
+      <h1 id="setup">Setup</h1>
+<p><strong>Summary</strong>: Practical setup and validation notes for the current Godot checkout. This page records only the commands and surfaces that are actually present in the repository.</p>
+<p><strong>Sources</strong>: <code>project.godot</code>, <a href="../AGENTS.html"><code>AGENTS.html</code></a>, <code>.codex/config.toml</code>, <code>.codex/agents/default.toml</code>, <code>.codex/agents/explorer.toml</code>, <code>.codex/agents/worker.toml</code>, <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, <code>addons/gdai-mcp-plugin-godot/plugin.cfg</code></p>
+<p><strong>Last updated</strong>: 2026-05-03</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The project is a Godot 4.6 game named <code>Orbwalker</code>. The main scene is <code>res://scenes/main_menu.tscn</code>, <code>project.godot</code> configures <code>RunState</code> as an autoload, uses <code>res://raw/spash.png</code> for the boot splash image, and enables the bundled GDAI MCP editor plugin. (source: <code>project.godot</code>)</p>
+<h2 id="details">Details</h2>
+<ul>
+<li>Open the project in Godot 4.6 and run <code>res://scenes/main_menu.tscn</code> as the start scene. (source: <code>project.godot</code>)</li>
+<li>Use <code>res://scenes/combat.tscn</code> for player-facing combat validation, <code>res://scenes/shop.tscn</code> for shop validation, <code>res://scenes/run_summary.tscn</code> for final summary validation, and focused Godot MCP editor-script probes for board resolver/combat envelope checks. The old board-debug scene has been removed. (source: <a href="../AGENTS.html"><code>AGENTS.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>The repository contains the player-facing combat and shop scenes plus the final run summary flow scene. Boss relic rewards are selected inside the combat victory overlay; the old boss relic reward and shop placeholder scenes have been removed. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>)</li>
+<li>Project-local Codex defaults set the main/default model to <code>gpt-5.5</code> with <code>low</code> reasoning, the explorer custom agent to <code>gpt-5.5</code> with <code>medium</code> reasoning, and the worker custom agent to <code>gpt-5.3-coder</code> with <code>high</code> reasoning; milestone-style implementation prompts use this multi-agent workflow by default, and spawned subagents must be launched with explicit model overrides. (source: <a href="../AGENTS.html"><code>AGENTS.html</code></a>, <code>.codex/config.toml</code>, <code>.codex/agents/default.toml</code>, <code>.codex/agents/explorer.toml</code>, <code>.codex/agents/worker.toml</code>)</li>
+<li>Closed for current readiness: the repo currently relies on manual QA plus Godot MCP/editor-script checks. Public release-candidate validation is owned by ITCH-06/ITCH-08 in <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>.</li>
+<li>AR-01 combat result-envelope regression can be rerun with <code>res://scripts/debug/ar01_combat_result_probe.gd</code>. It is disabled by default behind project setting <code>debug/ar01_combat_result_probe_enabled=false</code>; enable it only for the probe call, then turn it back off. (source: <code>scripts/debug/ar01_combat_result_probe.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>New automated logic tests should live under <code>scripts/tests/</code> and use <code>*_test.gd</code> filenames. Keep them framework-free for now: expose a static or instance runner that can be called from Godot MCP <code>execute_editor_script</code>, return a structured pass/fail report, and use simple assertions or explicit failure collection. Retained probes under <code>scripts/debug/</code> are legacy validation helpers, not the preferred location for new tests. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>MIDI music sources can be rendered to Godot-ready WAV files with <code>python tools/audio/export_midi_to_wav.py</code>. The script defaults to the local FluidSynth binary at <code>C:\Users\Home\Downloads\orbwalker\fluidsynth-v2.5.4-win10-x64-cpp11\fluidsynth-v2.5.4-win10-x64-cpp11\bin\fluidsynth.exe</code> and <code>raw/GeneralUser GS v1.471.sf2</code>; override either path with <code>--fluidsynth</code> or <code>--soundfont</code>. (source: <code>tools/audio/export_midi_to_wav.py</code>, <code>raw/</code>)</li>
+<li>Android debug export currently uses the Godot 4.6.2 console executable and the <code>Android</code> export preset:</li>
+<ul>
+<li><code>&amp; 'C:\Users\Home\Desktop\Godot\Godot_v4.6.2-stable_win64_console.exe' --path 'D:\godot\matchatro' --export-debug Android 'D:\godot\matchatro\Orbwalker.apk'</code></li>
+<li>On this Windows checkout, the command has repeatedly written a valid <code>Orbwalker.apk</code> and then failed to terminate cleanly, leaving a <code>Godot_v4.6.2-stable_win64_console.exe</code> process plus a Java/Gradle child. Treat this as an export-tool shutdown issue, not proof that the APK failed. Check <code>Orbwalker.apk</code> <code>LastWriteTime</code>/size, install with <code>adb install -r D:\godot\matchatro\Orbwalker.apk</code>, then stop only the stuck console exporter and Java child if needed. Leave the main Godot editor process running. (source: <code>export_presets.cfg</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><code>project.godot</code> - main scene, autoloads, display settings, and editor plugin enablement</li>
+<li><a href="../AGENTS.html"><code>AGENTS.html</code></a> - project operating rules, including the multi-agent workflow</li>
+<li><code>.codex/config.toml</code> - project-local Codex default model settings</li>
+<li><code>.codex/agents/</code> - project-local Codex custom agent definitions</li>
+<li><code>scenes/main_menu.tscn</code> - boot scene</li>
+<li><code>scripts/debug/ar01_combat_result_probe.gd</code> - feature-flagged AR-01 combat envelope regression probe</li>
+<li><code>scripts/tests/*_test.gd</code> - preferred convention for new automated logic tests and lightweight callable runners for current MVC models plus combat state-machine invariants</li>
+<li><a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a> - manual QA checklist</li>
+<li><a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a> - architecture and setup context</li>
+<li><code>tools/audio/export_midi_to_wav.py</code> - MIDI-to-WAV export helper for music assets</li>
+<li><code>export_presets.cfg</code> - Android export preset for <code>Orbwalker.apk</code></li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Closed for current readiness: a repo-local scripted build/test command is optional future tooling unless ITCH-06 requires it.</li>
+<li>Transferred to ITCH-06: the Godot Android CLI export hang root-cause/workaround is now part of public build packaging readiness.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="architecture.html">architecture</a></li>
+<li><a href="file-map.html">file-map</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/setup.html"><code>wiki/setup.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#setup">Setup</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

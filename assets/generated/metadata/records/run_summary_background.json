@@ -1,28 +1,30 @@
 {
-    "asset_id": "run_summary_background",
-    "asset_name": "Victory/defeat run-summary background",
-    "asset_type": "background",
-    "group_id": "screens",
-    "brief_path": "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.md",
-    "candidate_paths": [
-        "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
-    ],
-    "source_references": [
-        "assets.json",
-        "resources/assetgen.workflow.md"
-    ],
-    "license_status": "approved",
-    "usage_rights": "approved",
-    "dimensions": "941x1672",
-    "export_format": "png_candidate",
-    "alpha_type": "needs_qa",
-    "transparent_background": "false_verified_opaque_background_candidate",
-    "qa_status": "approved",
-    "review_status": "approved",
-    "integration_status": "approved_pending_integration",
-    "embedded_text": "none_requested_needs_visual_confirmation",
-    "notes": "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
-    "final_prompt": "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
-    "generation_mode": "built-in imagegen",
-    "approval_date": "2026-05-08"
+    "asset_id":  "run_summary_background",
+    "asset_name":  "Victory/defeat run-summary background",
+    "asset_type":  "background",
+    "group_id":  "screens",
+    "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.html",
+    "candidate_paths":  [
+                            "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png",
+                            "resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png"
+                        ],
+    "source_references":  [
+                              "assets.json",
+                              "resources/assetgen.workflow.html"
+                          ],
+    "license_status":  "approved",
+    "usage_rights":  "approved",
+    "dimensions":  "941x1672",
+    "export_format":  "png_candidate",
+    "alpha_type":  "needs_qa",
+    "transparent_background":  "false_verified_opaque_background_candidate",
+    "qa_status":  "approved",
+    "review_status":  "approved",
+    "integration_status":  "integrated_runtime_visual_registry",
+    "embedded_text":  "none_requested_needs_visual_confirmation",
+    "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png and wired screen background/runtime asset map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+    "final_prompt":  "Create a vertical mobile background candidate for Orbwalker final run summary: quiet fantasy dungeon alcove, central safe area for run stats, lower button area, no readable text, no watermark, no casino imagery.",
+    "generation_mode":  "built-in imagegen",
+    "approval_date":  "2026-05-08",
+    "integration_date":  "2026-05-22"
 }

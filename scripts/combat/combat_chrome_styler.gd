@@ -93,11 +93,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 			(top_bar as Control).add_theme_stylebox_override("panel", top_style)
 
 	var combat_strip_texture := _resolve_visual_texture(visuals, "combat_timer_track_texture")
-	if combat_strip_texture != null:
-		var strip_style := _panel_texture_stylebox(combat_strip_texture, 18, 18, 10, 10, 8.0)
-		var combat_strip: Variant = nodes.get("combat_strip", null)
-		if combat_strip is Control:
-			(combat_strip as Control).add_theme_stylebox_override("panel", strip_style)
+	var combat_strip: Variant = nodes.get("combat_strip", null)
+	if combat_strip is Control:
+		(combat_strip as Control).add_theme_stylebox_override("panel", _transparent_panel_stylebox())
 
 	var ornate_frame_style := StyleBoxFlat.new()
 	ornate_frame_style.bg_color = Color(0.02, 0.04, 0.07, 0.98)
@@ -113,7 +111,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if enemy_panel_texture == null:
 		_apply_panel_stylebox(nodes.get("enemy_panel", null), ornate_frame_style)
 	if combat_strip_texture == null:
-		_apply_panel_stylebox(nodes.get("combat_strip", null), ornate_frame_style)
+		_apply_panel_stylebox(nodes.get("combat_strip", null), _transparent_panel_stylebox())
 
 	apply_progressbar_flat_style(nodes.get("enemy_hp_bar", null), Color(0.58, 0.09, 0.78, 1.0))
 	apply_progressbar_flat_style(nodes.get("player_hp_bar", null), Color(0.78, 0.16, 0.17, 1.0))
@@ -456,6 +454,18 @@ static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = nul
 
 
 
+static func _transparent_panel_stylebox() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.border_color = Color(0.0, 0.0, 0.0, 0.0)
+	style.set_border_width_all(0)
+	style.content_margin_left = 0.0
+	style.content_margin_right = 0.0
+	style.content_margin_top = 0.0
+	style.content_margin_bottom = 0.0
+	return style
+
+
 static func apply_timer_label_readability(label: Variant) -> void:
 	if not (label is Label):
 		return
@@ -529,10 +539,10 @@ static func apply_decorative_overlays(nodes: Dictionary, visuals: Variant) -> vo
 				(divider_node as TextureRect).texture = divider_texture
 			(divider_node as TextureRect).expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 			(divider_node as TextureRect).stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-			if key == "divider_board_player":
+			if key == "divider_enemy_timer" or key == "divider_board_player":
 				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.0)
 			else:
-				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.90)
+				(divider_node as TextureRect).modulate = Color(1.0, 1.0, 1.0, 0.72)
 
 	var corner_texture := _resolve_visual_texture(visuals, "combat_corner_ornament_texture")
 	for key in ["corner_top_left", "corner_top_right", "corner_bottom_left", "corner_bottom_right"]:

@@ -1,26 +1,28 @@
-﻿{
+{
     "asset_count":  53,
     "generated_on":  "2026-05-08Tassetgen-approved",
     "assets":  [
                    {
                        "asset_id":  "app_icon",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/app_icon.qa.md",
+                       "report_path":  "assets/qa/reports/app_icon.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png",
+                                               "resources/art/assetgen/system/app_icon_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "approved_asset_manifest",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/approved_asset_manifest.qa.md",
+                       "report_path":  "assets/qa/reports/approved_asset_manifest.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -29,13 +31,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "art_bible",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/art_bible.qa.md",
+                       "report_path":  "assets/qa/reports/art_bible.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -44,13 +47,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "asset_briefs",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/asset_briefs.qa.md",
+                       "report_path":  "assets/qa/reports/asset_briefs.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -59,214 +63,241 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "board_orb_clear_vfx",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/board_orb_clear_vfx.qa.md",
+                       "report_path":  "assets/qa/reports/board_orb_clear_vfx.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/vfx/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "boot_splash",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/boot_splash.qa.md",
+                       "report_path":  "assets/qa/reports/boot_splash.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png",
+                                               "resources/art/assetgen/system/boot_splash_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "boss_portraits",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/boss_portraits.qa.md",
+                       "report_path":  "assets/qa/reports/boss_portraits.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png",
+                                               "resources/art/assetgen/enemies/boss_portraits_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "collection_background",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/collection_background.qa.md",
+                       "report_path":  "assets/qa/reports/collection_background.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png",
+                                               "resources/art/assetgen/backgrounds/collection_background_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_visual_registry",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/backgrounds/collection_background_candidate_01.png and wired screen background/runtime asset map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "combat_background",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/combat_background.qa.md",
+                       "report_path":  "assets/qa/reports/combat_background.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png",
+                                               "resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_visual_registry",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/backgrounds/combat_background_candidate_01.png and wired VisualRegistry/first_pass_asset_map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "combat_enemy_stage_art",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/combat_enemy_stage_art.qa.md",
+                       "report_path":  "assets/qa/reports/combat_enemy_stage_art.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png",
+                                               "resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "combat_ui_chrome_pack",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/combat_ui_chrome_pack.qa.md",
+                       "report_path":  "assets/qa/reports/combat_ui_chrome_pack.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "consumable_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/consumable_icons.qa.md",
+                       "report_path":  "assets/qa/reports/consumable_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/consumable_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "controls_visual",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/controls_visual.qa.md",
+                       "report_path":  "assets/qa/reports/controls_visual.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png",
+                                               "resources/art/assetgen/specs/controls_visual_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "enemy_animation_set",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/enemy_animation_set.qa.md",
+                       "report_path":  "assets/qa/reports/enemy_animation_set.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
+                                               "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png",
+                                               "resources/art/assetgen/sheets/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: candidate_08 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: candidate_08 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
-                       "approval_date":  "2026-05-08"
+                       "approval_date":  "2026-05-08",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "enemy_attack_vfx",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/enemy_attack_vfx.qa.md",
+                       "report_path":  "assets/qa/reports/enemy_attack_vfx.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/vfx/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "enemy_portraits",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/enemy_portraits.qa.md",
+                       "report_path":  "assets/qa/reports/enemy_portraits.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png",
+                                               "resources/art/assetgen/enemies/enemy_portraits_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "equipment_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/equipment_icons.qa.md",
+                       "report_path":  "assets/qa/reports/equipment_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "game_title_logo",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/game_title_logo.qa.md",
+                       "report_path":  "assets/qa/reports/game_title_logo.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
                                            ],
@@ -276,13 +307,13 @@
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
                        "integration_status":  "integrated_main_menu",
-                       "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. 2026-05-08 human approval: asset cleared for integration. Main-menu runtime test integration completed with deterministic dark-background alpha cleanup and asset-map wiring; broader runtime rollout remains pending. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
-                       "integration_date":  "2026-05-08"
+                       "notes":  "Bulk-generation-first logo candidate created with built-in imagegen. Exact text must be checked during deferred QA. 2026-05-08 human approval: asset cleared for integration. Main-menu runtime test integration completed with deterministic dark-background alpha cleanup and asset-map wiring; broader runtime rollout remains pending. 2026-05-08 human visual acceptance: wired for main-menu runtime use. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "generation_metadata",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/generation_metadata.qa.md",
+                       "report_path":  "assets/qa/reports/generation_metadata.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -291,90 +322,101 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "hero_animation_set",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/hero_animation_set.qa.md",
+                       "report_path":  "assets/qa/reports/hero_animation_set.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png"
+                                               "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png",
+                                               "resources/art/assetgen/sheets/hero_animation_set_candidate_07_soft_eroded_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: candidate_07 soft-eroded component sprite preview accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
-                       "approval_date":  "2026-05-08"
+                       "approval_date":  "2026-05-08",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "hero_full_body_or_pose_set",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/hero_full_body_or_pose_set.qa.md",
+                       "report_path":  "assets/qa/reports/hero_full_body_or_pose_set.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png",
+                                               "resources/art/assetgen/characters/hero_full_body_or_pose_set_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "hero_orbwalker_portrait",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/hero_orbwalker_portrait.qa.md",
+                       "report_path":  "assets/qa/reports/hero_orbwalker_portrait.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png",
+                                               "resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_visual_registry",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png and wired VisualRegistry/first_pass_asset_map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "intent_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/intent_icons.qa.md",
+                       "report_path":  "assets/qa/reports/intent_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/intent_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "itch_page_graphics",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/itch_page_graphics.qa.md",
+                       "report_path":  "assets/qa/reports/itch_page_graphics.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
+                                               "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png",
+                                               "resources/art/assetgen/marketing/itch_page_graphics_key_art_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "main_menu_background",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/main_menu_background.qa.md",
+                       "report_path":  "assets/qa/reports/main_menu_background.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
                                            ],
@@ -384,17 +426,17 @@
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
                        "integration_status":  "integrated_main_menu",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration accepted by human visual review; runtime map points to resources/art/assetgen/main_menu/main_menu_background_candidate_01.png. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration accepted by human visual review; runtime map points to resources/art/assetgen/main_menu/main_menu_background_candidate_01.png. 2026-05-08 human visual acceptance: wired for main-menu runtime use. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
                        "integrated_paths":  [
                                                 "resources/art/assetgen/main_menu/main_menu_background_candidate_01.png",
                                                 "resources/visual/first_pass_asset_map.json"
                                             ],
-                       "integration_date":  "2026-05-08"
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "main_menu_ui_pack",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/main_menu_ui_pack.qa.md",
+                       "report_path":  "assets/qa/reports/main_menu_ui_pack.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
                                                "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
@@ -405,7 +447,7 @@
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
                        "integration_status":  "integrated_main_menu",
-                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration: candidate_05 alpha sheet deterministically sliced into runtime menu chrome/icon PNGs and wired through resources/visual/first_pass_asset_map.json. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration: candidate_05 alpha sheet deterministically sliced into runtime menu chrome/icon PNGs and wired through resources/visual/first_pass_asset_map.json. 2026-05-08 human visual acceptance: wired for main-menu runtime use. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
                        "integrated_paths":  [
                                                 "resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png",
                                                 "resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png",
@@ -420,59 +462,65 @@
                                                 "resources/visual/first_pass_asset_map.json",
                                                 "tools/asset_tools/extract_assetgen_main_menu_ui.py"
                                             ],
-                       "integration_date":  "2026-05-08"
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "mastery_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/mastery_icons.qa.md",
+                       "report_path":  "assets/qa/reports/mastery_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "mastery_vfx",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/mastery_vfx.qa.md",
+                       "report_path":  "assets/qa/reports/mastery_vfx.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/vfx/mastery_vfx_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "merchant_character",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/merchant_character.qa.md",
+                       "report_path":  "assets/qa/reports/merchant_character.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png",
+                                               "resources/art/assetgen/characters/merchant_character_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "music_combat",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/music_combat.qa.md",
+                       "report_path":  "assets/qa/reports/music_combat.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -481,13 +529,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "music_menu",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/music_menu.qa.md",
+                       "report_path":  "assets/qa/reports/music_menu.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -496,13 +545,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "music_shop",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/music_shop.qa.md",
+                       "report_path":  "assets/qa/reports/music_shop.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -511,13 +561,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "music_victory_defeat_summary",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/music_victory_defeat_summary.qa.md",
+                       "report_path":  "assets/qa/reports/music_victory_defeat_summary.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -526,29 +577,32 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "orb_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/orb_icons.qa.md",
+                       "report_path":  "assets/qa/reports/orb_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "qa_reports",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/qa_reports.qa.md",
+                       "report_path":  "assets/qa/reports/qa_reports.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -557,76 +611,85 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "rarity_badges",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/rarity_badges.qa.md",
+                       "report_path":  "assets/qa/reports/rarity_badges.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/rarity_badges_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_asset_map",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "relic_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/relic_icons.qa.md",
+                       "report_path":  "assets/qa/reports/relic_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "result_screen_ui_pack",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/result_screen_ui_pack.qa.md",
+                       "report_path":  "assets/qa/reports/result_screen_ui_pack.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "run_summary_background",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/run_summary_background.qa.md",
+                       "report_path":  "assets/qa/reports/run_summary_background.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
+                                               "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png",
+                                               "resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_visual_registry",
+                       "notes":  "Bulk-generation-first candidate exists. QA, cleanup, legal/license review, final approval, and runtime integration deferred until all image-capable candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/backgrounds/run_summary_background_candidate_01.png and wired screen background/runtime asset map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "screenshots",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/screenshots.qa.md",
+                       "report_path":  "assets/qa/reports/screenshots.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -635,13 +698,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "sfx_combat_core",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/sfx_combat_core.qa.md",
+                       "report_path":  "assets/qa/reports/sfx_combat_core.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -650,13 +714,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "sfx_shop",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/sfx_shop.qa.md",
+                       "report_path":  "assets/qa/reports/sfx_shop.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -665,13 +730,14 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Wave 1 entry is spec/capture-only in this pass; no generated image candidate created. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "sfx_ui",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/sfx_ui.qa.md",
+                       "report_path":  "assets/qa/reports/sfx_ui.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -680,91 +746,102 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "shared_hud_chrome",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/shared_hud_chrome.qa.md",
+                       "report_path":  "assets/qa/reports/shared_hud_chrome.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/shared_hud_chrome_candidate_05_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "shop_background",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/shop_background.qa.md",
+                       "report_path":  "assets/qa/reports/shop_background.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png",
+                                               "resources/art/assetgen/backgrounds/shop_background_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_runtime_visual_registry",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 runtime integration: copied approved candidate to resources/art/assetgen/backgrounds/shop_background_candidate_01.png and wired VisualRegistry/first_pass_asset_map for runtime use. Godot import artifacts generated; editor validation blocked by gdai MCP extension load/port issue. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "shop_transaction_vfx",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/shop_transaction_vfx.qa.md",
+                       "report_path":  "assets/qa/reports/shop_transaction_vfx.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/vfx/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "shop_ui_pack",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/shop_ui_pack.qa.md",
+                       "report_path":  "assets/qa/reports/shop_ui_pack.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/shop_ui_pack_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "store_capsule_key_art",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/store_capsule_key_art.qa.md",
+                       "report_path":  "assets/qa/reports/store_capsule_key_art.qa.html",
                        "candidate_paths":  [
-                                               "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
+                                               "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png",
+                                               "resources/art/assetgen/marketing/store_capsule_key_art_candidate_01.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "trailer_or_gif_capture",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/trailer_or_gif_capture.qa.md",
+                       "report_path":  "assets/qa/reports/trailer_or_gif_capture.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -773,45 +850,50 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "treasure_chest_icons",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/treasure_chest_icons.qa.md",
+                       "report_path":  "assets/qa/reports/treasure_chest_icons.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/sheets/treasure_chest_icons_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "tutorial_onboarding_ui_pack",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/tutorial_onboarding_ui_pack.qa.md",
+                       "report_path":  "assets/qa/reports/tutorial_onboarding_ui_pack.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
+                                               "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png",
+                                               "resources/art/assetgen/sheets/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: candidate_06 soft-alpha output accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
-                       "approval_date":  "2026-05-08"
+                       "approval_date":  "2026-05-08",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "ui_motion_language",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/ui_motion_language.qa.md",
+                       "report_path":  "assets/qa/reports/ui_motion_language.qa.html",
                        "candidate_paths":  [
 
                                            ],
@@ -820,24 +902,27 @@
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_governance_spec",
+                       "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+                       "integration_date":  "2026-05-22"
                    },
                    {
                        "asset_id":  "unlock_achievement_vfx",
                        "qa_status":  "approved",
-                       "report_path":  "assets/qa/reports/unlock_achievement_vfx.qa.md",
+                       "report_path":  "assets/qa/reports/unlock_achievement_vfx.qa.html",
                        "candidate_paths":  [
                                                "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
-                                               "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
+                                               "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png",
+                                               "resources/art/assetgen/vfx/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
                                            ],
                        "status":  "approved",
                        "review_status":  "approved",
                        "license_status":  "approved",
                        "usage_rights":  "approved",
                        "approval_date":  "2026-05-08",
-                       "integration_status":  "approved_pending_integration",
-                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed."
+                       "integration_status":  "integrated_assetgen_library",
+                       "notes":  "2026-05-08 human review: accepted this adaptive chroma-key output as fine to proceed from deferred QA. Legal/license review and runtime integration remain blocked pending approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+                       "integration_date":  "2026-05-22"
                    }
                ],
     "qa_status":  "bulk_generation_first_alpha_cleanup_candidates_recorded_pending_batch_qa"

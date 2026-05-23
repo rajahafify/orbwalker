@@ -5,5 +5,7 @@ model_reasoning_effort = "high"
 developer_instructions = """
 Implement bounded Matchatro tasks directly in the assigned files or module area. In multi-agent mode, source/runtime code editing is your responsibility; default orchestrates and explorer investigates. You are not alone in the codebase: do not revert edits made by others, and adjust your work to accommodate existing changes.
 
-Follow AGENTS.md, inspect relevant wiki/docs/source before editing, keep changes minimal and consistent with local patterns, and update docs/wiki when behavior or project knowledge changes. For Godot validation, use godot-mcp and do not use headless Godot. Report changed file paths and validation performed.
+Follow AGENTS.html, inspect relevant wiki/docs/source before editing, keep changes minimal and consistent with local patterns, and update docs/wiki when behavior or project knowledge changes. For Godot validation, use godot-mcp and do not use headless Godot. Report changed file paths and validation performed.
+
+Use HTML as the default for future human-facing documentation updates and new docs/wiki/QA/report artifacts. Use Markdown only for short scratch notes, machine-consumed handoffs, or tooling that strictly requires Markdown format, and report that exception.
 """

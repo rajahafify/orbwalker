@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Main Menu Assets</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html">Architecture</a><a href="features.html">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html" aria-current="page">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html">File Map</a><a href="setup.html">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>Main Menu Assets</h1>
+      <p class="summary">Summary**: Inventory and map for the generated main menu art package. This page records the new menu background, logo, UI chrome, stat panel, and icon assets, plus the existing mastery icons that are reused for the elemental row.</p>
+      <h1 id="main-menu-assets">Main Menu Assets</h1>
+<p><strong>Summary</strong>: Inventory and map for the generated main menu art package. This page records the new menu background, logo, UI chrome, stat panel, and icon assets, plus the existing mastery icons that are reused for the elemental row.</p>
+<p><strong>Sources</strong>: <code>resources/art/first_pass/menu/</code>, <code>resources/art/assetgen/main_menu/</code>, <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <code>resources/art/first_pass/derived/icons/mastery_ice.png</code>, <code>resources/art/first_pass/derived/icons/mastery_earth.png</code>, <code>resources/art/first_pass/derived/icons/mastery_heart.png</code>, <code>resources/art/first_pass/derived/icons/mastery_armor.png</code>, <code>resources/art/first_pass/derived/icons/mastery_gold.png</code>, <code>resources/visual/first_pass_asset_map.json</code>, <code>tools/asset_tools/extract_assetgen_main_menu_ui.py</code>, <code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code>, <a href="../docs/main_menu_layout_guide.html"><code>docs/main_menu_layout_guide.html</code></a>, <a href="../docs/main_menu_recreation.html"><code>docs/main_menu_recreation.html</code></a>, <code>scenes/main_menu.tscn</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/ui/visual_registry.gd</code></p>
+<p><strong>Last updated</strong>: 2026-05-08</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The menu art package now lives under <code>resources/art/first_pass/menu/</code> and is documented in <code>resources/visual/first_pass_asset_map.json</code>. The package covers the vertical background plate, the title logo, the outer border, the primary and secondary button plates, the three-column status strip, and the six menu-specific stat icons. (source: <code>resources/art/first_pass/menu/</code>, <code>resources/visual/first_pass_asset_map.json</code>)</p>
+<p>The six elemental row icons are reused from the existing mastery icon family instead of being regenerated. Current runtime menu polish hides the elemental row from the main-menu view without removing the assets or mappings, so this icon family remains available for future menu/UI use. (source: <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <code>resources/art/first_pass/derived/icons/mastery_ice.png</code>, <code>resources/art/first_pass/derived/icons/mastery_earth.png</code>, <code>resources/art/first_pass/derived/icons/mastery_heart.png</code>, <code>resources/art/first_pass/derived/icons/mastery_armor.png</code>, <code>resources/art/first_pass/derived/icons/mastery_gold.png</code>, <code>scripts/main_menu/main_menu_view.gd</code>)</p>
+<p>The runtime main menu scene is now wired to the menu art package for background, logo, outer border, button chrome, stats panel chrome, and menu icon sets through the asset map. The generated chrome/icon PNGs have been cleaned so transparent regions are real alpha instead of baked checkerboard pixels. (source: <code>scenes/main_menu.tscn</code>, <code>scripts/scenes/main_menu.gd</code>, <code>resources/visual/first_pass_asset_map.json</code>, <code>tools/asset_tools/clean_menu_art.py</code>)</p>
+<p>The first assetgen runtime integration is main-menu only and includes the accepted background, deterministic candidate_05 UI pack slicing with post-slice cleanup/composition, and the cleaned generated title logo. <code>main_menu_background_candidate_01.png</code> is the mapped background, <code>tools/asset_tools/extract_assetgen_main_menu_ui.py</code> slices the approved candidate_05 sheet into runtime <code>outer_border</code>, <code>button_primary</code>, <code>button_secondary</code>, <code>stats_panel</code>, and semantic <code>menu_icons</code>, and <code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code> creates the true-alpha runtime logo. Human visual review accepted this menu wiring on 2026-05-08, and the three involved asset records now use <code>integration_status: integrated_main_menu</code>. (source: <code>resources/art/assetgen/main_menu/</code>, <code>tools/asset_tools/extract_assetgen_main_menu_ui.py</code>, <code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code>, <code>resources/visual/first_pass_asset_map.json</code>, <code>assets/generated/metadata/records/main_menu_background.json</code>, <code>assets/generated/metadata/records/main_menu_ui_pack.json</code>, <code>assets/generated/metadata/records/game_title_logo.json</code>)</p>
+<h2 id="details">Details</h2>
+<h3 id="generated-menu-art">Generated menu art</h3>
+<ul>
+<li><code>resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png</code> - vertical dungeon-city background plate for the main menu.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_background_candidate_01.png</code> - approved assetgen background candidate currently used for the main-menu-only integration test.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png</code> - candidate_05 sliced outer border from the approved UI sheet.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png</code> - candidate_05 sliced primary button plate.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png</code> - candidate_05 sliced secondary button plate.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png</code> - candidate_05 sliced panel used for the menu stats surface.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05.png</code> - candidate_05 sliced profile icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05.png</code> - candidate_05 sliced settings icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05.png</code> - candidate_05 sliced achievements icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05.png</code> - candidate_05 sliced relic-chest icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05.png</code> - candidate_05 sliced mastery-progress icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05.png</code> - candidate_05 sliced best-run icon frame.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic profile glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic settings glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic achievements glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic relic-chest glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic mastery-progress glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05_semantic.png</code> - candidate_05 medallion frame with deterministic semantic best-run glyph composite.</li>
+<li><code>resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05_frame_only.png</code> - optional deterministic frame-only variant of the dark slab panel (not wired by default).</li>
+<li><code>resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png</code> - bulk-generation-first logo candidate with deterministic edge-connected dark-background alpha cleanup for main-menu runtime testing.</li>
+<li><code>resources/art/first_pass/menu/main_menu_logo_orbwalker_v1.png</code> - original logo wordmark export (fully opaque background).</li>
+<li><code>resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png</code> - cleaned transparent logo wordmark used at runtime; enclosed checkerboard regions were removed in the 2026-04-30 MCP validation pass.</li>
+<li><code>resources/art/first_pass/menu/main_menu_border_outer_v1.png</code> - ornate outer screen border.</li>
+<li><code>resources/art/first_pass/menu/main_menu_button_primary_v1.png</code> - highlighted primary action button plate.</li>
+<li><code>resources/art/first_pass/menu/main_menu_button_secondary_v1.png</code> - darker secondary button plate.</li>
+<li><code>resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png</code> - three-column status panel for relics, mastery, and best run.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png</code> - relics-unlocked icon.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png</code> - mastery-progress compass icon.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png</code> - best-run demon/skull icon.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_profile_v1.png</code> - profile icon.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_achievements_v1.png</code> - achievements icon.</li>
+<li><code>resources/art/first_pass/menu/main_menu_icon_settings_v1.png</code> - settings icon.</li>
+</ul>
+<h3 id="reused-mastery-icons">Reused mastery icons</h3>
+<ul>
+<li><code>resources/art/first_pass/derived/icons/mastery_fire.png</code></li>
+<li><code>resources/art/first_pass/derived/icons/mastery_ice.png</code></li>
+<li><code>resources/art/first_pass/derived/icons/mastery_earth.png</code></li>
+<li><code>resources/art/first_pass/derived/icons/mastery_heart.png</code></li>
+<li><code>resources/art/first_pass/derived/icons/mastery_armor.png</code></li>
+<li><code>resources/art/first_pass/derived/icons/mastery_gold.png</code></li>
+</ul>
+<h3 id="asset-map">Asset map</h3>
+<p><code>resources/visual/first_pass_asset_map.json</code> now includes a <code>menu</code> section with:</p>
+<ul>
+<li><code>background</code></li>
+<li><code>logo</code></li>
+<li><code>outer_border</code></li>
+<li><code>button_primary</code></li>
+<li><code>button_secondary</code></li>
+<li><code>stats_panel</code></li>
+<li><code>menu_icons</code></li>
+<li><code>reused_mastery_icons</code></li>
+</ul>
+<p>This keeps the menu-specific art package separated from the combat and shop art families. (source: <code>resources/visual/first_pass_asset_map.json</code>)</p>
+<p>The mapped <code>backgrounds.main_menu</code> and <code>menu.background</code> paths point to <code>resources/art/assetgen/main_menu/main_menu_background_candidate_01.png</code> for the isolated assetgen integration test. The mapped <code>menu.outer_border</code>, <code>menu.button_primary</code>, <code>menu.button_secondary</code>, and <code>menu.stats_panel</code> paths point to candidate_05 runtime slices; <code>menu.menu_icons.<em></code> now points to deterministic semantic candidate_05 composites (<code></em>_semantic.png</code>) so footer/stat medallions carry meaningful glyphs instead of empty frames. (source: <code>resources/visual/first_pass_asset_map.json</code>, <code>resources/art/assetgen/main_menu/</code>, <code>tools/asset_tools/extract_assetgen_main_menu_ui.py</code>)</p>
+<p>The mapped <code>menu.logo</code> path now points to <code>resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png</code>, generated by <code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code> with deterministic edge-connected dark-background removal so the runtime logo uses true alpha. (source: <code>resources/visual/first_pass_asset_map.json</code>, <code>resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png</code>, <code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code>)</p>
+<h3 id="runtime-defect-remediation-2026-04-30">Runtime defect remediation (2026-04-30)</h3>
+<ul>
+<li>Resolved logo clipping and menu overlap caused by native texture-size expansion in runtime layout.</li>
+<li>Resolved elemental row/stats/footer overflow caused by unbounded icon minimum sizes.</li>
+<li>Resolved footer panel blowout and bottom text collisions by clamping runtime icon sizes and simplifying bottom label usage.</li>
+<li>Resolution is implemented in runtime scene composition code, not by changing source art dimensions. (source: <code>scripts/scenes/main_menu.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h3 id="runtime-reference-match-pass-2026-04-30">Runtime reference-match pass (2026-04-30)</h3>
+<ul>
+<li>Main menu initially used generated <code>menu.button_primary</code> and <code>menu.button_secondary</code> textures at runtime for action and footer button chrome; this was later replaced by restrained dark <code>StyleBoxFlat</code> button styling in the 2026-05-08 readability pass.</li>
+<li>Main menu <code>StatsPanel</code> now uses generated <code>menu.stats_panel</code> texture at runtime.</li>
+<li>Main menu stats and footer iconography now uses generated <code>menu.menu_icons</code> semantic composite mappings at runtime instead of empty candidate_05 medallions or progression-item fallback icons.</li>
+<li>Main menu no longer exposes a visible debug combat button; <code>Start Run</code> remains the only functional player-facing action. (source: <code>scenes/main_menu.tscn</code>, <code>scripts/scenes/main_menu.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h3 id="runtime-layout-polish-2026-05-08">Runtime layout polish (2026-05-08)</h3>
+<ul>
+<li>Main-menu runtime view now hides <code>GenerateLogToggle</code> while preserving the underlying setting/signal path (<code>RunState.set_generate_run_log_files_enabled</code>) so log-export behavior still exists but is not shown in the primary menu UI.</li>
+<li>Main-menu runtime view now hides <code>ElementRow</code> (icons/labels) from the menu surface without deleting nodes or removing asset-map mastery icon data.</li>
+<li>Main-menu button stack now uses centered <code>VBoxContainer</code> alignment and an updated column rect so <code>Start Run</code>, <code>Continue</code>, <code>Collection</code>, <code>Settings</code>, and <code>Quit</code> are visually centered in the menu slab after row/toggle removal.</li>
+<li>Main-menu logo rect was enlarged and lowered relative to the prior accepted values (<code>x=0.03</code>, <code>y=0.065</code>, <code>w=0.94</code>, <code>h=0.16</code>) to read approximately 1.5x larger in the current runtime presentation pass. (source: <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>)</li>
+</ul>
+<h3 id="runtime-button-readability-pass-2026-05-08">Runtime button readability pass (2026-05-08)</h3>
+<ul>
+<li>Main-menu action, footer, and profile-overlay action buttons now use shared restrained dark <code>StyleBoxFlat</code> treatments in runtime view code instead of candidate_05 <code>menu.button_primary</code> and <code>menu.button_secondary</code> texture plates.</li>
+<li><code>Start Run</code> remains slightly emphasized with a brighter cool-toned border/text treatment, but without parchment/gold fill.</li>
+<li>Button behavior and disabled-state visuals remain unchanged; only runtime chrome styling was adjusted. (source: <code>scripts/main_menu/main_menu_view.gd</code>)</li>
+</ul>
+<h3 id="checkerboard-alpha-cleanup-2026-04-30">Checkerboard alpha cleanup (2026-04-30)</h3>
+<ul>
+<li><code>tools/asset_tools/clean_menu_art.py</code> removes baked checkerboard pixels from generated menu chrome/icon PNGs and rewrites them with real transparent alpha.</li>
+<li>Cleaned assets include the outer border, primary/secondary button plates, stats triptych panel, and all <code>main_menu_icon_*</code> files.</li>
+<li><code>scripts/scenes/main_menu.gd</code> now uses zero texture-slice margins for these highly compressed runtime button/panel plates so the cleaned art remains visible in the current menu layout. (source: <code>tools/asset_tools/clean_menu_art.py</code>, <code>scripts/scenes/main_menu.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><code>resources/art/first_pass/menu/</code> - generated menu art package.</li>
+<li><code>resources/art/assetgen/main_menu/</code> - approved assetgen main-menu runtime test assets copied out of the governed <code>assets/</code> workspace.</li>
+<li><code>resources/visual/first_pass_asset_map.json</code> - JSON map for the new menu art package and the reused mastery icons.</li>
+<li><a href="../docs/main_menu_layout_guide.html"><code>docs/main_menu_layout_guide.html</code></a> - HTML overlay and slot map for main menu composition/layout planning.</li>
+<li><a href="../docs/main_menu_recreation.html"><code>docs/main_menu_recreation.html</code></a> - HTML visual recreation of the reference menu using the generated art pack.</li>
+<li><code>scenes/main_menu.tscn</code> - authored main menu scene with background/logo zones, textured border, button stack, element row, stats panel, and footer actions.</li>
+<li><code>scripts/scenes/main_menu.gd</code> - main menu host wiring and MVC integration for node bindings and input handlers.</li>
+<li><code>scripts/main_menu/main_menu_view.gd</code> - runtime layout, menu asset-map texture binding, stats panel texture stylebox, and non-textured dark button styling for action/footer/profile buttons.</li>
+<li><code>tools/asset_tools/clean_menu_art.py</code> - menu chrome/icon alpha cleanup utility for generated assets with baked checkerboard backgrounds.</li>
+<li><code>tools/asset_tools/extract_assetgen_main_menu_ui.py</code> - deterministic candidate_05 UI pack slicer for main-menu runtime chrome/icon outputs, edge-connected magenta cleanup, semantic icon compositing, extract report, and preview.</li>
+<li><code>tools/asset_tools/prepare_main_menu_logo_alpha.py</code> - deterministic logo cleanup utility that removes edge-connected dark background pixels from <code>game_title_logo_candidate_01.png</code> and writes the runtime alpha logo plus cleanup report.</li>
+<li><code>scripts/ui/visual_registry.gd</code> - still does not expose dedicated menu accessors; main menu currently reads mapped paths directly.</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Closed for launch readiness: main-menu texture cleanup is not an itch blocker unless ITCH-07 screenshot/page curation identifies it.</li>
+<li>Closed for launch readiness: the menu icon folder split is a future asset-organization cleanup, not an active public-readiness issue.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="file-map.html">file-map</a></li>
+<li><a href="features.html">features</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/main-menu-assets.html"><code>wiki/main-menu-assets.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#main-menu-assets">Main Menu Assets</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h3" href="#generated-menu-art">Generated menu art</a><a class="toc-h3" href="#reused-mastery-icons">Reused mastery icons</a><a class="toc-h3" href="#asset-map">Asset map</a><a class="toc-h3" href="#runtime-defect-remediation-2026-04-30">Runtime defect remediation (2026-04-30)</a><a class="toc-h3" href="#runtime-reference-match-pass-2026-04-30">Runtime reference-match pass (2026-04-30)</a><a class="toc-h3" href="#runtime-layout-polish-2026-05-08">Runtime layout polish (2026-05-08)</a><a class="toc-h3" href="#runtime-button-readability-pass-2026-05-08">Runtime button readability pass (2026-05-08)</a><a class="toc-h3" href="#checkerboard-alpha-cleanup-2026-04-30">Checkerboard alpha cleanup (2026-04-30)</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

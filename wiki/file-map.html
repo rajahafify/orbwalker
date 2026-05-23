@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File Map</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html">Architecture</a><a href="features.html">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html" aria-current="page">File Map</a><a href="setup.html">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>File Map</h1>
+      <p class="summary">Summary**: High-level map of the important folders and files in the current Orbwalker checkout.</p>
+      <h1 id="file-map">File Map</h1>
+<p><strong>Summary</strong>: High-level map of the important folders and files in the current Orbwalker checkout.</p>
+<p><strong>Sources</strong>: <code>project.godot</code>, <a href="../AGENTS.html"><code>AGENTS.html</code></a>, <code>.codex/config.toml</code>, <code>.codex/agents/</code>, <a href="../todo.html"><code>todo.html</code></a>, <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/ui/board.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, <code>scenes/ui/player_hud.tscn</code>, <code>scripts/core/run_state.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/core/profile_repository.gd</code>, <code>scripts/core/balance_manager.gd</code>, <code>scripts/core/flow_result_utils.gd</code>, <code>scripts/board/board_model.gd</code>, <code>scripts/board/board_view.gd</code>, <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/combat/combat_outcome_overlay.gd</code>, <code>scripts/content/content_registry.gd</code>, <code>scripts/run/player_progression_service.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/shop/shop_model.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/main_menu/main_menu_model.gd</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>, <code>scripts/collection/collection_model.gd</code>, <code>scripts/collection/collection_view.gd</code>, <code>scripts/collection/collection_controller.gd</code>, <code>scripts/run_summary/run_summary_model.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/run_summary/run_summary_controller.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/debug/ar01_combat_result_probe.gd</code>, <code>scripts/debug/player_hud_contract_probe.gd</code>, <code>resources/art/first_pass/</code>, <code>resources/visual/</code></p>
+<p><strong>Last updated</strong>: 2026-05-07</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The repository is a Godot project with scenes, gameplay scripts, first-pass art, and content assets already separated into focused folders. (source: <code>project.godot</code>, repository layout)</p>
+<h2 id="details">Details</h2>
+<ul>
+<li><code>scenes/</code> - Scene entry points and player-facing flow. Important files include <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, reusable board surface <code>scenes/ui/board.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, <code>scenes/collection.tscn</code>, shared HUD scene <code>scenes/ui/player_hud.tscn</code>, and <code>scenes/ui/elemental_mastery_hud_variants.tscn</code>. Earlier empty placeholder folders under <code>scenes/</code> have been pruned; root player-facing scene paths remain unchanged. The combat scene now contains explicit mobile HUD zones, a timer-only strip, a board-level outcome overlay that hands defeat to the final run summary with a <code>Run Summary</code> button, boss reward selection in the victory overlay, and an instanced shared <code>PlayerHudSection</code>; shop instantiates the same <code>PlayerHudSection</code> scene in code and uses the same internal HUD layout while only positioning the whole HUD below the shop action row. The Collection scene is the M11 equipment progression surface for Total Score and adjacent rarity claims. The old board-debug, boss relic reward, shop placeholder, and broken root Elemental Mastery testbed scenes were removed. The UI variant scene is a standalone Elemental Mastery visual comparison gallery. <a href="../docs/scene_structure_refactor_plan.html"><code>docs/scene_structure_refactor_plan.html</code></a> proposes a final taxonomy that separates full screens from reusable components and development previews. (source: repository layout, <a href="../docs/scene_structure_refactor_plan.html"><code>docs/scene_structure_refactor_plan.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scenes/combat.tscn</code>, <code>scenes/ui/player_hud.tscn</code>, <code>scripts/scenes/shop.gd</code>, <code>scenes/run_summary.tscn</code>, <code>scenes/collection.tscn</code>, <code>scenes/ui/elemental_mastery_hud_variants.tscn</code>)</li>
+<li><code>scripts/core/</code> - Global run orchestration and shared startup logic. <code>run_state.gd</code> is the main autoload-backed facade for run state, public transition APIs, Run Log APIs, player-profile reset/snapshot wrappers, Run Score tracking, Total Score banking, equipment unlock APIs, victory-based equipment unlock awards, prototype balance APIs, and additive state-change signals for gold, run step, run state, profile/meta, and run summary changes. <code>scene_router.gd</code> owns FlowTrace route storage, retained route caps, prepared-scene loading/attach helpers, transition generation, and rollback generation guards behind the <code>RunState</code> facade. <code>run_logger.gd</code> owns passive Run Log event capture, serial allocation, snapshots, opt-in JSON/HTML/text export assembly, and export bookkeeping behind the <code>RunState</code> facade; <code>run_log_reporter.gd</code> formats readable text and HTML reports from a <code>RunState.run_log_snapshot()</code> payload. <code>profile_repository.gd</code> owns profile/meta-profile file load/save, legacy meta-profile migration, save warnings, and last-I/O probe metadata behind the <code>RunState</code> facade. <code>balance_manager.gd</code> owns prototype balance defaults/current levers, normalization, ProjectSettings sync, ContentRegistry propagation, fight rewards, starting gold, and encounter scaling behind the <code>RunState</code> facade. <code>flow_result_utils.gd</code> owns shared flow/result dictionary helpers used by player-facing scene controllers. <code>audio_manager.gd</code> owns music/SFX playback and generated fallback tones; <code>audio_stream_loader.gd</code> owns shared WAV byte loading, signed PCM16 parsing, frame-count calculation, and loop configuration; and <code>audio_manager_resolver.gd</code> owns the shared dynamic <code>/root/AudioManager</code> lookup plus lazy already-open-editor fallback. Desktop/editor playback prefers exported WAV music over code-generated fallback loops. Android/template builds try non-imported raw WAV payload copies in <code>resources/audio/raw_music/</code> first, then music WAV resources, then generated fallback, so exported APK playback can keep full uploaded WAV byte length and loop timing. Main-menu scene behavior lives in <code>scripts/scenes/main_menu.gd</code>. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/run_log_reporter.gd</code>, <code>scripts/core/profile_repository.gd</code>, <code>scripts/core/balance_manager.gd</code>, <code>scripts/core/flow_result_utils.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/core/audio_manager.gd</code>, <code>scripts/core/audio_stream_loader.gd</code>, <code>scripts/core/audio_manager_resolver.gd</code>, <code>resources/audio/music/</code>, <code>resources/audio/raw_music/</code>)</li>
+<li><code>scripts/board/</code> - Board MVC/domain scripts: <code>BoardModel</code> owns the 5x6 cell state and generation, <code>BoardView</code> owns board rendering, animation, board-local coordinate helpers, board presentation model binding, drag visuals, and board input filtering, <code>BoardController</code> owns <code>BoardView.gui_input</code> and <code>mouse_exited</code> wiring, board-local hover-id translation, drag/touch interpretation, swap lifecycle, board input enable forwarding, board initialization, board mutation helpers, consumable orb conversion, visual/simulation resolve model handoff, visual replay mutation APIs for clear/gravity/refill commits, and final model commit, and <code>BoardMatchResolverService</code> owns match/cascade resolution. (source: <code>scripts/board/board_model.gd</code>, <code>scripts/board/board_view.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/board/board_match_resolver_service.gd</code>)</li>
+<li><code>scripts/combat/</code> - Combat domain state plus the local combat MVC collaborators and narrow combat presentation/debug/layout/VFX/chrome/placeholder/HUD helpers. <code>CombatController</code> owns combat scene orchestration, resolver simulation, RunState/FlowTrace routing calls, board binding, VFX timing decisions, shared HUD payload decisions, replay timing decisions, consumable-use eligibility/status/audio consequences, and scene transitions. <code>CombatModel</code> owns scene-local mutable bookkeeping for input phase, external lock reason, <code>combat_speed</code>, FlowTrace route id, pending next-scene path, outcome transition lock, hovered board orb id, staged HUD replay values and replay mutation helpers, combat mastery preview totals/token and release bookkeeping, and resolve trace active/origin/pass state; it does not own <code>PlayerState</code>, <code>EnemyState</code>, <code>BoardModel</code>, <code>CombatStateMachine</code>, <code>RunState</code>, resolver math, or content state. <code>CombatView</code> owns combat scene node binding plus HUD snapshot application, top/enemy/timer/player/debug rendering, timer text/fill/color sync, enemy intent bubble and enemy block preview rendering, shared <code>PlayerLoadoutHud</code> render/control wrappers, view hover signals, visual chrome, backdrop/scrim helpers, zone guides, loadout rail layout, sole <code>CombatLayoutPresenter</code> construction/binding/application, enemy/player VFX target geometry helpers, and VFX presenter binding-node packaging. <code>CombatController</code> binds the board-domain <code>BoardController</code> from <code>scripts/board/</code> with the current <code>BoardModel</code> and <code>BoardView</code>, and it binds <code>PlayerState</code> to the current run-owned mastery provider during combat setup. <code>combat_hud_presenter.gd</code> owns side-effect-free combat HUD snapshot dictionaries, timer state derivation, top-step labels, primary intent badge data, enemy intent preview rows, and intent damage preview dictionaries; <code>combat_debug_command_adapter.gd</code> owns combat debug command effects behind controller-injected orchestration callbacks; <code>combat_consumable_service.gd</code> owns combat-scoped consumable effect application through injected board conversion callbacks; <code>combat_placeholder_textures.gd</code> owns only code-generated timer, intent, enemy portrait, and hero portrait placeholder texture builders; <code>combat_chrome_styler.gd</code> owns code-built combat chrome and style construction; <code>combat_layout_presenter.gd</code> owns combat scene geometry; <code>combat_vfx_presenter.gd</code> owns transient combat VFX drawing mechanics; <code>combat_debug_console.gd</code> owns debug command parsing/dispatch and log rendering; <code>combat_turn_log_presenter.gd</code> owns turn-log text and outcome strings; <code>combat_resolve_presenter.gd</code> owns board-space resolve replay presentation mechanics; and <code>combat_outcome_overlay.gd</code> owns standard outcome card and boss reward overlay presentation state/layout. (source: <code>scripts/combat/player_state.gd</code>, <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_debug_command_adapter.gd</code>, <code>scripts/combat/combat_consumable_service.gd</code>, <code>scripts/combat/combat_placeholder_textures.gd</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/combat/combat_debug_console.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/combat/combat_resolve_presenter.gd</code>, <code>scripts/combat/combat_outcome_overlay.gd</code>)</li>
+<ul>
+<li>Combat MVC status: <code>scripts/scenes/combat.gd</code> is a thin host, <code>CombatView</code> is now the primary combat render surface and sole <code>CombatLayoutPresenter</code> owner, <code>CombatModel</code> owns the accepted scene-local state surface plus staged HUD/mastery replay bookkeeping, <code>CombatHudPresenter</code> owns HUD/intent presentation data, <code>CombatDebugCommandAdapter</code> owns debug command effects, and <code>CombatConsumableService</code> owns combat consumable effect application. The 2026-05-07 compatibility and SOLID cleanups removed controller reach-ins to private view helper nodes, dead render-only wrappers, the generic <code>CombatView.node(...)</code> accessor, redundant controller layout-presenter storage, controller layout result mirrors, direct controller enemy/player VFX target lookup and fallback geometry, HUD/intent formatting helpers, debug command body methods, staged HUD dictionary math, shared HUD node-map assembly, controller VFX layer visibility control, normal-path shared HUD rendering/control fallback calls, render-only unused controller mirror fields for timer/enemy/chrome/layout visual nodes, normal-path controller ownership of status/turn-summary/debug/outcome UI node references, final bootstrap mirrors for background/layout root/board panel/title/hint labels, and additional controller wrapper/delegate helpers (timer sync, intent hover relays, replay VFX relay methods, dead turn-summary/outcome formatter wrappers) now called directly through <code>CombatView</code> and <code>CombatVfxPresenter</code> boundaries. <code>CombatController</code> still owns combat flow, input phase, RunState/FlowTrace routing, debug command callbacks, boss reward claim/skip, resolver kickoff, VFX timing, replay order, and board orchestration, with only <code>_board</code> and <code>_board_view</code> retained as direct scene-node mirrors. No new folders, scene paths, or runtime files were added for these view compatibility cleanups. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_debug_command_adapter.gd</code>, <code>scripts/combat/combat_consumable_service.gd</code>)</li>
+</ul>
+<li><code>scripts/content/</code> - Content registry and validation. <code>content_registry.gd</code> is the current dictionary-backed content source of truth and compatibility API for equipment, consumables, mastery cards, treasure chests, relics, enemies, bosses, shop pools, shop pricing, validation, and future data-source migration. The internal collection/key remains <code>treasure chests</code> for compatibility while public copy uses treasure chest terminology. (source: <code>scripts/content/content_registry.gd</code>)</li>
+<li><code>scripts/run/</code> - Player progression state, player progression service, persistent player profile state, and persistent meta progression state. <code>player_profile_state.gd</code> owns the default profile identity and contains <code>MetaProfileState</code>; <code>meta_profile_state.gd</code> stores Total Score, unlocked equipment ids, and recent equipment unlock toast payloads separately from per-run state; <code>player_progression_service.gd</code> enforces one equipped item per equipment family. (source: <code>scripts/run/player_progression_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>, <code>scripts/run/player_profile_state.gd</code>, <code>scripts/run/meta_profile_state.gd</code>)</li>
+<li><code>scripts/shop/</code> - Shop domain and scene-MVC scripts. <code>shop_state.gd</code> and <code>shop_service.gd</code> remain run-level data/economy authorities; <code>shop_model.gd</code> is the shop scene state facade, <code>shop_view.gd</code> owns UI/layout/rendering and shared HUD wiring, and <code>shop_controller.gd</code> owns shop actions, transitions, rollback callbacks, and shop audio/FlowTrace integration. (source: <code>scripts/shop/shop_state.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/shop/shop_model.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>)</li>
+<li><code>scripts/scenes/</code> - Thin hosts for player-facing scenes: <code>main_menu.gd</code>, <code>combat.gd</code>, <code>shop.gd</code>, <code>run_summary.gd</code>, and <code>collection.gd</code>. These mirror the flat root scene files under <code>scenes/</code>. The scene hosts instantiate local model/view/controller collaborators, bind scene nodes, and forward lifecycle or signal events into controller actions. (source: <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/main_menu/main_menu_model.gd</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/collection/collection_model.gd</code>, <code>scripts/collection/collection_view.gd</code>, <code>scripts/collection/collection_controller.gd</code>, <code>scripts/run_summary/run_summary_model.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/run_summary/run_summary_controller.gd</code>)</li>
+<li><code>scripts/debug/</code> - Retained legacy probes and debug-only validation helpers, including the AR-01 combat result-envelope probe and shared PlayerHUD contract probe. The AR-01 probe is disabled by default behind <code>debug/ar01_combat_result_probe_enabled</code> and is intended for Godot MCP/editor-script regression capture before architecture refactors. <code>player_hud_contract_probe.gd</code> verifies combat/shop keep the same <code>scenes/ui/player_hud.tscn</code> layout and binding keys, and now also checks shop host-to-view preload wiring plus shared HUD scene instancing from <code>shop_view.gd</code>. The old board-debug controller was removed in AR-08. (source: <code>scripts/debug/ar01_combat_result_probe.gd</code>, <code>scripts/debug/player_hud_contract_probe.gd</code>)</li>
+<li><code>scripts/tests/</code> - Preferred home for new lightweight automated logic tests using the <code>*_test.gd</code> naming convention. Tests should be callable from Godot MCP/editor scripts or debug tooling and return structured pass/fail reports; use this folder for new model, state-machine, board, integration, and service tests instead of adding new test runners under <code>scripts/debug/</code>. Current tests cover every MVC model (<code>BoardModel</code>, <code>CombatModel</code>, <code>MainMenuModel</code>, <code>ShopModel</code>, <code>CollectionModel</code>, and <code>RunSummaryModel</code>) plus <code>CombatStateMachine</code> invariants; <code>scripts/tests/integrations/board_resolver_test.gd</code> covers board resolver integration cases, and <code>scripts/tests/shop_view_layout_test.gd</code> guards the accepted 9/10 shop presentation probe contract. (source: <code>scripts/tests/board_model_test.gd</code>, <code>scripts/tests/combat_model_test.gd</code>, <code>scripts/tests/main_menu_model_test.gd</code>, <code>scripts/tests/shop_model_test.gd</code>, <code>scripts/tests/shop_view_layout_test.gd</code>, <code>scripts/tests/collection_model_test.gd</code>, <code>scripts/tests/run_summary_model_test.gd</code>, <code>scripts/tests/combat_state_machine_test.gd</code>, <code>scripts/tests/integrations/board_resolver_test.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li><code>scripts/ui/</code> - Shared presentation helpers such as the visual registry, reusable connected player HUD/loadout/mastery renderer, canonical <code>UiUtils.panel_style(...)</code> and <code>UiUtils.clear_children(...)</code> helpers, reusable bottom-right <code>achievement_toast.gd</code>, and standalone Elemental Mastery HUD variant gallery script. <code>visual_registry.gd</code> loads generated clean combat orb PNGs from <code>resources/art/first_pass/derived/orbs/</code> before falling back to runtime orb-sheet cleanup. <code>player_loadout_hud.gd</code> owns the shared combat/shop <code>PlayerHudSection</code> geometry, footer compatibility API, and optional section-position override plumbing; the actual reusable HUD node tree now lives in <code>scenes/ui/player_hud.tscn</code> and is instanced by combat and shop instead of duplicated. <code>ui_utils.gd</code> owns small shared UI helpers used by player-facing flow and shared HUD code that need explicit border/radius/margin mapping or child-node cleanup. (source: <code>scripts/ui/visual_registry.gd</code>, <code>resources/art/first_pass/derived/orbs/</code>, <code>scenes/ui/player_hud.tscn</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/ui/ui_utils.gd</code>, <code>scripts/ui/achievement_toast.gd</code>, <code>scripts/ui/elemental_mastery_hud_variants.gd</code>)</li>
+<li><code>tools/asset_tools/</code> - Utility scripts for asset extraction, cleanup, and deterministic first-pass art generation, including HUD slicing, derived icon alpha cleanup, menu chrome/icon alpha cleanup, character portrait placeholder generation, mastery reference panel/card/VFX generation, and Elemental Mastery preview panel/card chrome generation. (source: <code>tools/asset_tools/hud_extractor.gd</code>, <code>tools/asset_tools/clean_derived_icons.py</code>, <code>tools/asset_tools/clean_menu_art.py</code>, <code>tools/asset_tools/generate_character_placeholders.py</code>, <code>tools/asset_tools/generate_mastery_reference_assets.py</code>, <code>tools/asset_tools/generate_mastery_preview_chrome.py</code>)</li>
+<li><code>resources/art/first_pass/</code> - First-pass backgrounds, enemy portraits, hero portraits, UI sheets, VFX, derived icons, derived clean combat orb textures, generated shop UI art, Elemental Mastery preview frame/card chrome, derived mastery panel/card chrome, derived mastery beams/shell/impacts, and the <code>menu/</code> art package for the main menu background, logo, border, button plates, stat panel, and menu symbols. The preview scene and live combat variant-5 mastery panel use the existing real mastery icon assets for card badges, while the selected combat layout uses <code>mastery_preview_panel_frame.png</code> and <code>mastery_preview_card_*.png</code> as its panel/card chrome. Character portrait placeholders now include <code>heroes/hero_orbwalker.png</code> and enemy variants for <code>ruin_lancer</code>, <code>vault_executioner</code>, and <code>goldbound_keeper</code>. The shop reference-polish merchant header lives under <code>resources/art/first_pass/derived/shop_ui/</code> and is loaded through <code>VisualRegistry.shop_merchant_header()</code>. (source: repository layout, <code>resources/art/first_pass/menu/</code>, <code>resources/art/first_pass/heroes/</code>, <code>resources/art/first_pass/enemies/</code>, <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <code>resources/art/first_pass/derived/orbs/</code>, <code>resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png</code>, <code>resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png</code>, <code>resources/art/first_pass/derived/vfx/</code>)</li>
+<li><code>resources/content/</code> - Reserved future content-asset area. Runtime content remains dictionary-backed inside <code>ContentRegistry</code> for this prototype phase; previously empty placeholder subfolders were pruned during repo cleanup and a later scoped migration can recreate the final folder taxonomy when needed. (source: <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <code>scripts/content/content_registry.gd</code>)</li>
+<li><code>resources/visual/</code> - First-pass visual asset map and theme resource. <code>resources/visual/first_pass_asset_map.json</code> includes main-menu art mappings plus complete runtime <code>enemy_portraits</code> and shared <code>hero_portraits</code> entries used by combat and shop portrait wiring. (source: repository layout, <code>resources/visual/first_pass_asset_map.json</code>)</li>
+<li><code>resources/audio/music/</code> - Godot-ready WAV music rendered from MIDI sources for menu, combat, shop, credit, and melody candidates; runtime music loading uses these WAVs before generated fallback on desktop/editor and Android/template builds. (source: <code>resources/audio/music/</code>, <code>tools/audio/export_midi_to_wav.py</code>, <code>scripts/core/audio_manager.gd</code>, <code>scripts/core/audio_stream_loader.gd</code>)</li>
+<li><code>resources/audio/raw_music/</code> - Non-imported byte-for-byte WAV payload copies (<code>*.wav.bin</code>) used by Android/template <code>AudioManager</code> loading to decode full uploaded WAV headers/data inside exported packages before falling back to standard music WAV resources. (source: <code>resources/audio/raw_music/</code>, <code>scripts/core/audio_manager.gd</code>, <code>scripts/core/audio_stream_loader.gd</code>)</li>
+<li><code>assets/</code> - Governed assetgen production workspace for creative-control docs, per-asset briefs, prompt templates, generated-candidate metadata, QA/checklist records, approval manifests, rejection logs, and integration-prep notes. It is intentionally outside runtime resource paths, and runtime integration remains blocked until QA, human review, legal/license review, and explicit approval pass. (source: <a href="../assets/README.html"><code>assets/README.html</code></a>, <a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a>, <code>assets.json</code>)</li>
+<li><code>assets.json</code> - Root production-readiness asset inventory and backlog. It maps current first-pass coverage and missing production needs across brand, screens, characters, icons, UI chrome, VFX, audio, animation, marketing assets, and asset-governance records; it is an inventory/backlog, not the final approved production asset manifest. (source: <code>assets.json</code>, <a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a>, <code>resources/visual/first_pass_asset_map.json</code>, <code>scripts/content/content_registry.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
+<li><a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a> - Documentation-only governance workflow for AI-generated 2D asset production. It defines the proposed <code>assets/</code> workspace structure, creative-control inputs, generation metadata, QA/cleanup states, human/legal review gates, transparency checks, and release gate before generated assets enter production runtime paths. (source: <a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a>, <a href="../wiki/assetgen-workflow.html"><code>wiki/assetgen-workflow.html</code></a>)</li>
+<li><code>logs/</code> - Local generated Run Log exports. This folder is ignored by git and receives per-run JSON, HTML, and text files when <code>RunState</code> finalizes a run while main-menu <code>Generate Log</code> is enabled. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>.gitignore</code>)</li>
+<li><code>tmp/</code> - Local scratch captures and temporary visual references. This folder is ignored by git and should not be used as a durable source path. (source: <code>.gitignore</code>)</li>
+<li><code>raw/</code> - Raw source assets that are not edited by agents unless explicitly requested, currently including MIDI music sources, <code>GeneralUser GS v1.471.sf2</code> for music export, and <code>spash.png</code>, which is referenced by <code>project.godot</code> as the boot splash image. (source: <code>raw/</code>, <code>tools/audio/export_midi_to_wav.py</code>, <code>project.godot</code>)</li>
+<li><code>tools/audio/</code> - Audio pipeline helpers, including the MIDI-to-WAV renderer that shells out to the local FluidSynth binary, uses the raw SoundFont, verifies WAV headers, and normalizes rendered PCM levels. (source: <code>tools/audio/export_midi_to_wav.py</code>)</li>
+<li><code>docs/</code> - Human-facing design, architecture, QA docs, and architecture-maintenance tracking. <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a> tracks refactor-risk tasks, regression harness work, and current/future architecture alignment before Milestone 10 balance closure. (source: <a href="../docs/game_design_document.html"><code>docs/game_design_document.html</code></a>, <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li><a href="../docs/scene_structure_refactor_plan.html"><code>docs/scene_structure_refactor_plan.html</code></a> - Documentation-only proposal for finalizing <code>scenes/</code> into full-screen, shared-component, and development-preview folders after the playable flow was finalized. (source: <a href="../docs/scene_structure_refactor_plan.html"><code>docs/scene_structure_refactor_plan.html</code></a>)</li>
+<li><a href="../wiki/assetgen-workflow.html"><code>wiki/assetgen-workflow.html</code></a> - Wiki summary of the AI-generated asset governance process defined in <a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a>. (source: <a href="../wiki/assetgen-workflow.html"><code>wiki/assetgen-workflow.html</code></a>, <a href="../resources/assetgen.workflow.html"><code>resources/assetgen.workflow.html</code></a>)</li>
+<li><a href="../todo.html"><code>todo.html</code></a> - Milestone and scope tracker for prototype work. (source: <a href="../todo.html"><code>todo.html</code></a>)</li>
+<li><a href="../AGENTS.html"><code>AGENTS.html</code></a> - Operating rules for source/wiki precedence, development workflow, and the project-local multi-agent workflow. (source: <a href="../AGENTS.html"><code>AGENTS.html</code></a>)</li>
+<li><code>.codex/</code> - Project-local Codex configuration, including the default model setting and custom <code>default</code>, <code>explorer</code>, and <code>worker</code> agent definitions. (source: <code>.codex/config.toml</code>, <code>.codex/agents/default.toml</code>, <code>.codex/agents/explorer.toml</code>, <code>.codex/agents/worker.toml</code>)</li>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><code>project.godot</code> - project entry and autoload configuration</li>
+<li><a href="../assets/README.html"><code>assets/README.html</code></a> - governed assetgen workspace overview and runtime-integration gate</li>
+<li><code>assets.json</code> - production-readiness asset inventory and generation backlog</li>
+<li><a href="../todo.html"><code>todo.html</code></a> - milestone scope and status tracker</li>
+<li><code>scenes/main_menu.tscn</code> - startup scene</li>
+<li><code>scenes/ui/player_hud.tscn</code> - shared combat/shop PlayerHudSection scene</li>
+<li><code>scenes/collection.tscn</code> - equipment progression and Score claim surface</li>
+<li><code>scripts/core/run_state.gd</code> - central runtime facade and additive state-change signal source</li>
+<li><code>scripts/core/scene_router.gd</code> - FlowTrace and scene-transition helper behind the RunState facade</li>
+<li><code>scripts/core/run_logger.gd</code> - Run Log event/export state helper behind the RunState facade</li>
+<li><code>scripts/core/run_log_reporter.gd</code> - Run Log text/HTML report formatter</li>
+<li><code>scripts/core/profile_repository.gd</code> - profile/meta-profile file persistence helper behind the RunState facade</li>
+<li><code>scripts/core/balance_manager.gd</code> - prototype balance defaults/levers, ProjectSettings sync, and encounter scaling helper behind the RunState facade</li>
+<li><code>scripts/core/flow_result_utils.gd</code> - shared result/transition dictionary helper</li>
+<li><code>scripts/content/content_registry.gd</code> - content data source and validation</li>
+<li><code>scripts/run/player_profile_state.gd</code> - persistent default player profile container</li>
+<li><code>scripts/run/meta_profile_state.gd</code> - persistent meta profile state</li>
+<li><code>scripts/combat/combat_controller.gd</code> - combat scene MVC controller and orchestration owner</li>
+<li><code>scripts/combat/combat_model.gd</code> - combat scene-local MVC state holder</li>
+<li><code>scripts/combat/combat_view.gd</code> - combat scene rendering/view owner</li>
+<li><code>scripts/scenes/collection.gd</code> - Collection screen controller</li>
+<li><code>scripts/debug/ar01_combat_result_probe.gd</code> - feature-flagged AR-01 combat envelope regression probe</li>
+<li><code>scripts/debug/player_hud_contract_probe.gd</code> - shared combat/shop PlayerHUD scene and binding regression probe</li>
+<li><code>scripts/ui/achievement_toast.gd</code> - reusable achievement unlock toast</li>
+<li><code>scripts/ui/player_loadout_hud.gd</code> - shared combat/shop connected player HUD, loadout, and mastery renderer</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Closed for launch readiness: the reserved <code>resources/content/</code> folders are future content-architecture cleanup, not an itch readiness blocker.</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="setup.html">setup</a></li>
+<li><a href="architecture.html">architecture</a></li>
+<li><a href="features.html">features</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/file-map.html"><code>wiki/file-map.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#file-map">File Map</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

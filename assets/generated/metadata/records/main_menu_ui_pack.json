@@ -1,16 +1,16 @@
-﻿{
+{
     "asset_id":  "main_menu_ui_pack",
     "asset_name":  "Main menu buttons, border, stats panel, and menu icons",
     "asset_type":  "ui_pack",
     "group_id":  "ui_chrome",
-    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.md",
+    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.html",
     "candidate_paths":  [
                             "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
                             "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
                         ],
     "source_references":  [
                               "assets.json",
-                              "resources/assetgen.workflow.md",
+                              "resources/assetgen.workflow.html",
                               "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                               "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.png",
                               "assets/prompts/runs/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.prompt.json",
@@ -31,7 +31,7 @@
     "review_status":  "approved",
     "integration_status":  "integrated_main_menu",
     "embedded_text":  "none_or_needs_approval",
-    "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration: candidate_05 alpha sheet deterministically sliced into runtime menu chrome/icon PNGs and wired through resources/visual/first_pass_asset_map.json. 2026-05-08 human visual acceptance: wired for main-menu runtime use.",
+    "notes":  "2026-05-08 human review: candidate_05 UI retry accepted as good. Legal/license review and runtime integration remain blocked pending final approval. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-08 main-menu-only test integration: candidate_05 alpha sheet deterministically sliced into runtime menu chrome/icon PNGs and wired through resources/visual/first_pass_asset_map.json. 2026-05-08 human visual acceptance: wired for main-menu runtime use. 2026-05-22 integration completion: wired through project settings, VisualRegistry, or first_pass_asset_map for runtime use; source candidate retained in resources/art/assetgen.",
     "final_prompt":  "Use case: stylized-concept\nAsset type: main menu UI chrome pack for Orbwalker\nPrimary request: production candidate UI kit sheet for main menu buttons, frames, stats panels, and menu icons.\nSubject: a clean UI component sheet containing primary button, secondary button, outer border frame, stats panel frame, small icon medallions for profile/settings/achievements/relics/mastery/best run.\nStyle/medium: polished stylized 2D fantasy UI chrome, dark stone, beveled metal, antique gold trim, mobile readable.\nComposition/framing: organized component sheet on neutral background, components separated with padding, no labels, no text baked into buttons.\nLighting/mood: premium but restrained menu UI.\nColor palette: charcoal stone, blackened steel, antique gold, subtle cyan/violet elemental accents.\nConstraints: no readable text, no labels, no logo, no watermark, no casino imagery, no gore, no dense ornament that hurts readability.",
     "generation_mode":  "built-in imagegen chroma-key fallback plus deterministic adaptive extraction",
     "approval_date":  "2026-05-08",
@@ -49,5 +49,5 @@
                              "resources/visual/first_pass_asset_map.json",
                              "tools/asset_tools/extract_assetgen_main_menu_ui.py"
                          ],
-    "integration_date":  "2026-05-08"
+    "integration_date":  "2026-05-22"
 }

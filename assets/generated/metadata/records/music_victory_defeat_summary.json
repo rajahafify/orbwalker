@@ -1,24 +1,27 @@
 {
-    "asset_id": "music_victory_defeat_summary",
-    "asset_name": "Victory, defeat, and run-summary music stingers/loops",
-    "asset_type": "music",
-    "group_id": "audio",
-    "brief_path": "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.md",
-    "candidate_paths": [],
-    "source_references": [
-        "assets.json",
-        "resources/assetgen.workflow.md"
-    ],
-    "license_status": "approved",
-    "usage_rights": "approved",
-    "dimensions": "needs_generation_or_spec",
-    "export_format": "spec_only_this_pass",
-    "alpha_type": "needs_qa",
-    "transparent_background": "needs_brief_confirmation",
-    "qa_status": "approved",
-    "review_status": "approved",
-    "integration_status": "approved_pending_integration",
-    "embedded_text": "none_or_needs_approval",
-    "notes": "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
-    "approval_date": "2026-05-08"
+    "asset_id":  "music_victory_defeat_summary",
+    "asset_name":  "Victory, defeat, and run-summary music stingers/loops",
+    "asset_type":  "music",
+    "group_id":  "audio",
+    "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.html",
+    "candidate_paths":  [
+
+                        ],
+    "source_references":  [
+                              "assets.json",
+                              "resources/assetgen.workflow.html"
+                          ],
+    "license_status":  "approved",
+    "usage_rights":  "approved",
+    "dimensions":  "needs_generation_or_spec",
+    "export_format":  "spec_only_this_pass",
+    "alpha_type":  "needs_qa",
+    "transparent_background":  "needs_brief_confirmation",
+    "qa_status":  "approved",
+    "review_status":  "approved",
+    "integration_status":  "integrated_governance_spec",
+    "embedded_text":  "none_or_needs_approval",
+    "notes":  "Generated from current assets.json treasure chest terminology. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: record is spec, audio, capture, or governance-only in this pass; integrated as approved workflow/spec metadata with no runtime texture candidate.",
+    "approval_date":  "2026-05-08",
+    "integration_date":  "2026-05-22"
 }

@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Itch.io Readiness Task Tracker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Itch.io Readiness Task Tracker</h1>
+      <p class="summary">Purpose: track the remaining work needed to move the current <code>itch.io demo / alpha page</code> readiness rating from <code>7/10</code> to <code>10/10</code>. When every readiness task in this tracker is <code>done</code>, the project is considered ready to publish an honest alpha/demo build on itch.io.</p>
+      <h1 id="itch-io-readiness-task-tracker">Itch.io Readiness Task Tracker</h1>
+<p>Purpose: track the remaining work needed to move the current <code>itch.io demo / alpha page</code> readiness rating from <code>7/10</code> to <code>10/10</code>. When every readiness task in this tracker is <code>done</code>, the project is considered ready to publish an honest alpha/demo build on itch.io.</p>
+<p>Source launch snapshot: <code>launch-milestone.html</code></p>
+<p>Current active handoff tracker: <code>docs/current_work_tasks.html</code></p>
+<p>Status values: <code>not started</code>, <code>in progress</code>, <code>blocked</code>, <code>done</code>, <code>deferred</code>.</p>
+<p>Branch naming rule: each readiness task should be worked on a focused branch named <code>codex/itch-number-name</code>, for example <code>codex/itch-01-combat-readability</code>.</p>
+<p>Completion rule: do not mark a task <code>done</code> unless its validation evidence is recorded in <code>docs/test_plan.html</code> or explicitly accepted by the human after manual QA. Use Godot MCP for Godot runtime validation and do not use headless Godot.</p>
+<h2 id="overall-publish-gate">Overall Publish Gate</h2>
+<p>The itch.io alpha/demo is publish-ready when:</p>
+<ul>
+<li>A first-time player can download or install the build, start a run, understand the main actions without external help, complete or die in a run, and want to retry.</li>
+<li>The full loop works: Main Menu -&gt; Combat -&gt; Victory -&gt; Shop -&gt; Boss/Reward -&gt; Death or Victory -&gt; Run Summary -&gt; Main Menu.</li>
+<li>Combat is readable on mobile and PC for board state, enemy HP/intent, timer, player HP, action feedback, and current phase.</li>
+<li>Shop decisions are understandable without explanation: buy, afford, sold out, sell, reroll, and continue.</li>
+<li>Defeat/victory/result screens feel intentional and consistent with the rest of the game.</li>
+<li>The build launches cleanly with correct title/icon/version and no accidental debug-only player path.</li>
+<li>The itch.io page presents the game honestly as an alpha/demo with curated screenshots, controls, and known scope.</li>
+</ul>
+<h2 id="transferred-readiness-backlog">Transferred Readiness Backlog</h2>
+<p>This section is the single active owner for launch-related open QA/issues moved out of older milestone, known-issue, and temporary trackers. The old sources should now read as transferred/closed there rather than as independent open work.</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Source Item</th>
+<th>New Owner</th>
+<th>Status</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Board lock behavior during resolution and transitions.</td>
+<td>ITCH-03, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Full combat readability acceptance on mobile and PC, including target-viewport screenshot review and real touch drag QA.</td>
+<td>ITCH-01, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Shop Android/on-device QA and complete transaction click-through for buy, unaffordable buy, sell, reroll, and continue.</td>
+<td>ITCH-04, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Full route recovery and end-to-end run-loop QA after SceneRouter/rollback hardening.</td>
+<td>ITCH-03, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Board/orb visual pop-in and perceived Start Run feel on target hardware.</td>
+<td>ITCH-01, ITCH-03, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Merchant Compass free-first-reroll behavior.</td>
+<td>ITCH-04</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Combat top-bar Back/Settings route hardening or explicit public-build decision.</td>
+<td>ITCH-03, ITCH-06</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Known Godot reload diagnostics before relying on a clean <code>get_godot_errors</code> release gate.</td>
+<td>ITCH-06, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Android export hang workaround/public export hygiene.</td>
+<td>ITCH-06</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Result/victory/defeat/final-summary screenshot polish and route checks.</td>
+<td>ITCH-05, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Player-facing notes, controls, known limitations, screenshots, and itch.io page copy.</td>
+<td>ITCH-07</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Temporary tracker cleanup for accepted Elemental Mastery and combat feedback polish notes.</td>
+<td>ITCH-07, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+<tr>
+<td>Pre-drag mastery hover/manual visual QA across all six orb/card types and overlap/readability.</td>
+<td>ITCH-01, ITCH-08</td>
+<td><code>not started</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="itch-01-combat-readability-pass">ITCH-01: Combat Readability Pass</h2>
+<ul>
+<li>Branch: <code>codex/itch-01-combat-readability</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Combat screen readability for the player-facing <code>res://scenes/combat.tscn</code> flow.</li>
+<li>Goal: Make combat readable at a glance on mobile and PC without changing combat math, resolver outcomes, or accepted resolve timing.</li>
+<li>Current rationale: <code>todo.html</code> identifies mobile-first combat UI readability as the active Milestone 12 blocker. The launch snapshot identifies combat hierarchy as the highest-leverage improvement for itch readiness.</li>
+<li>Acceptance:</li>
+<ul>
+<li>Board cells and orb identities are immediately readable.</li>
+<li>Enemy HP, enemy name, enemy block/intent, timer/phase state, player HP, and gold are readable without zooming.</li>
+<li>Current phase/action state is obvious during ready, dragging, resolve, victory, and defeat.</li>
+<li>Combat board remains visually central during active play.</li>
+<li>No incoherent overlap in portrait mobile layout or desktop window layout.</li>
+<li>Touch/mouse drag behavior remains unchanged, including board-local touch coordinate behavior.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP: <code>get_project_info</code>, <code>play_scene</code> for combat/main flow, <code>get_scene_tree</code> or focused probes for key nodes, and <code>get_godot_errors</code>.</li>
+<li>Manual screenshot review on mobile portrait and desktop-sized viewport.</li>
+<li>Manual drag/resolve smoke: one normal attack turn, one victory, one defeat or forced defeat.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/features.html</code> or <code>wiki/known-issues.html</code> only if durable behavior, layout responsibility, or known risk changes.</li>
+</ul>
+</ul>
+<h2 id="itch-02-first-run-clarity-and-onboarding">ITCH-02: First-Run Clarity And Onboarding</h2>
+<ul>
+<li>Branch: <code>codex/itch-02-first-run-clarity</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: First-time player guidance across main menu, first combat, first shop, and run summary.</li>
+<li>Goal: A new player should understand the basic loop without reading an external explanation.</li>
+<li>Acceptance:</li>
+<ul>
+<li>The first run teaches or clearly signals drag-to-match.</li>
+<li>The player can infer that Fire/Ice/Earth damage enemies, Heart heals, Armor blocks, and Gold buys.</li>
+<li>Enemy intent and player HP danger are explained or visually obvious before the first serious mistake.</li>
+<li>First shop explains buy/sell/reroll/continue at the point of use.</li>
+<li>Guidance is concise and does not bury the screen in tutorial text.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP scene smoke for main, combat, shop, and run summary.</li>
+<li>Fresh first-run manual QA from new-run state.</li>
+<li>Optional external-player observation: player reaches the first shop without verbal instruction.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/features.html</code> if new onboarding/tutorial behavior is added.</li>
+</ul>
+</ul>
+<h2 id="itch-03-full-run-loop-stability">ITCH-03: Full Run Loop Stability</h2>
+<ul>
+<li>Branch: <code>codex/itch-03-run-loop-stability</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: End-to-end first playable loop stability and route confidence.</li>
+<li>Goal: The public alpha/demo should not break during normal play from launch through death/victory and return to menu.</li>
+<li>Acceptance:</li>
+<ul>
+<li>Start Run enters combat reliably.</li>
+<li>Normal victory routes to shop correctly.</li>
+<li>Shop Continue routes to the next fight correctly.</li>
+<li>Boss reward or boss completion routes correctly.</li>
+<li>Defeat routes to run summary or the intended defeat surface.</li>
+<li>Final victory routes to run summary.</li>
+<li>Main Menu return and Start New Run work from summary.</li>
+<li>No blocker crash, lock, stuck overlay, or missing route on the tested loop.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP smoke for <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/combat.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Focused RunState route probe or equivalent debug <code>/skip</code> validation.</li>
+<li>Manual end-to-end run using real inputs, with at least one death path and one victory/summary path if practical.</li>
+<li><code>get_godot_errors</code> after the loop.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/known-issues.html</code> for any remaining non-blocking route risks.</li>
+</ul>
+</ul>
+<h2 id="itch-04-shop-decision-clarity">ITCH-04: Shop Decision Clarity</h2>
+<ul>
+<li>Branch: <code>codex/itch-04-shop-clarity</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Player-facing shop readability and decision flow in <code>res://scenes/shop.tscn</code>.</li>
+<li>Goal: The shop should be understandable without external explanation.</li>
+<li>Acceptance:</li>
+<ul>
+<li>It is obvious what can be bought, what is unaffordable, what is sold out, and what Continue does.</li>
+<li>Buy, sell, reroll, treasure chest, relic, and continue actions have clear visual feedback.</li>
+<li>Player loadout sell flow is discoverable and does not leave stale selection/popover state.</li>
+<li>Disabled and sold-out states are readable but not visually dominant.</li>
+<li>The shared bottom HUD does not overlap shop actions or obscure important info.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP shop scene smoke and focused layout probe.</li>
+<li>Manual shop transaction click-through: buy equipment, attempt unaffordable buy, sell equipment, reroll, continue.</li>
+<li>Manual screenshot review after purchase/sold-out state.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/features.html</code> if shop behavior or layout responsibility changes.</li>
+</ul>
+</ul>
+<h2 id="itch-05-result-screen-polish">ITCH-05: Result Screen Polish</h2>
+<ul>
+<li>Branch: <code>codex/itch-05-result-screen-polish</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Victory, defeat, and final run summary presentation.</li>
+<li>Goal: Result screens should feel intentional and close enough to the main menu quality that they do not break confidence.</li>
+<li>Acceptance:</li>
+<ul>
+<li>Combat victory overlay clearly shows reward, gold gained, and next action.</li>
+<li>Defeat communicates why the player died and what happened in the run.</li>
+<li>Final run summary is readable and visually consistent with the current fantasy presentation.</li>
+<li>Primary actions are obvious: Continue, Start New Run, Main Menu.</li>
+<li>Result screens do not feel like debug placeholders.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP smoke for combat victory/defeat surfaces and run summary scene.</li>
+<li>Manual screenshot review for victory, defeat, and final summary.</li>
+<li>Manual route check from each result action.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/features.html</code> if result behavior changes.</li>
+</ul>
+</ul>
+<h2 id="itch-06-public-build-packaging">ITCH-06: Public Build Packaging</h2>
+<ul>
+<li>Branch: <code>codex/itch-06-public-build-packaging</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Export configuration, build output, title/icon/version, and accidental debug exposure.</li>
+<li>Goal: Produce a clean itch.io alpha/demo build that a player can run without developer setup.</li>
+<li>Acceptance:</li>
+<ul>
+<li>Exported build launches directly into the intended main menu.</li>
+<li>Project title, visible version, app icon, and package naming are intentional for the alpha/demo.</li>
+<li>Debug-only controls or probes are either hidden, disabled, or intentionally documented.</li>
+<li>Build artifacts are ignored or handled according to repo policy.</li>
+<li>Install/run instructions are short and accurate.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Fresh export/build.</li>
+<li>Install/run smoke on the target platform for the itch upload.</li>
+<li>Verify no blocker errors after launch and Start Run.</li>
+<li>Record build filename/version and platform in <code>docs/test_plan.html</code>.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/setup.html</code> if export or install steps change.</li>
+<li>Update <code>wiki/known-issues.html</code> for any public-build caveats.</li>
+</ul>
+</ul>
+<h2 id="itch-07-itch-io-page-and-screenshot-pack">ITCH-07: Itch.io Page And Screenshot Pack</h2>
+<ul>
+<li>Branch: <code>codex/itch-07-page-screenshot-pack</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Store/page copy, screenshot curation, controls, scope wording, and public caveats.</li>
+<li>Goal: Publish with a page that is attractive, honest, and clear about alpha/demo status.</li>
+<li>Acceptance:</li>
+<ul>
+<li>Page headline and short description explain the hook in one sentence.</li>
+<li>Page clearly labels the build as alpha/demo.</li>
+<li>Controls are listed.</li>
+<li>4-6 curated screenshots show main menu, combat, shop, victory/reward, and defeat/summary without unreadable clutter.</li>
+<li>Known limitations are stated without undermining confidence.</li>
+<li>Download/install instructions match the exported build.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Screenshot review at full size and thumbnail size.</li>
+<li>Page copy review before publishing.</li>
+<li>Final smoke test using the exact uploaded build.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>launch-milestone.html</code> if launch ratings change.</li>
+<li>Update <code>docs/test_plan.html</code> with final release candidate evidence.</li>
+<li>Append <code>wiki/log.html</code> if the wiki changes.</li>
+</ul>
+</ul>
+<h2 id="itch-08-final-release-candidate-qa">ITCH-08: Final Release Candidate QA</h2>
+<ul>
+<li>Branch: <code>codex/itch-08-final-rc-qa</code></li>
+<li>Status: <code>not started</code></li>
+<li>Owner/scope: Final pre-publish acceptance pass across the exact build and page materials.</li>
+<li>Goal: Confirm the public alpha/demo is ready to publish.</li>
+<li>Acceptance:</li>
+<ul>
+<li>All previous ITCH tasks are <code>done</code> or explicitly deferred with human acceptance.</li>
+<li>Exact release candidate build has passed launch, Start Run, first combat, shop, one route forward, death or victory summary, and return to main menu.</li>
+<li>No known blocker crash or severe first-session confusion remains.</li>
+<li><code>launch-milestone.html</code> rates itch.io demo/alpha readiness at <code>10/10</code>.</li>
+<li>Human gives explicit publish approval.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP smoke on relevant scenes before export if source changed.</li>
+<li>Exact exported build manual QA.</li>
+<li><code>get_godot_errors</code> or equivalent post-run error check where applicable.</li>
+<li>Final checklist recorded in <code>docs/test_plan.html</code>.</li>
+</ul>
+<li>Docs/wiki impact:</li>
+<ul>
+<li>Update <code>launch-milestone.html</code>.</li>
+<li>Update <code>docs/test_plan.html</code>.</li>
+<li>Update <code>wiki/log.html</code> if wiki pages changed.</li>
+</ul>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/itch_readiness_tasks.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#itch-io-readiness-task-tracker">Itch.io Readiness Task Tracker</a><a class="toc-h2" href="#overall-publish-gate">Overall Publish Gate</a><a class="toc-h2" href="#transferred-readiness-backlog">Transferred Readiness Backlog</a><a class="toc-h2" href="#itch-01-combat-readability-pass">ITCH-01: Combat Readability Pass</a><a class="toc-h2" href="#itch-02-first-run-clarity-and-onboarding">ITCH-02: First-Run Clarity And Onboarding</a><a class="toc-h2" href="#itch-03-full-run-loop-stability">ITCH-03: Full Run Loop Stability</a><a class="toc-h2" href="#itch-04-shop-decision-clarity">ITCH-04: Shop Decision Clarity</a><a class="toc-h2" href="#itch-05-result-screen-polish">ITCH-05: Result Screen Polish</a><a class="toc-h2" href="#itch-06-public-build-packaging">ITCH-06: Public Build Packaging</a><a class="toc-h2" href="#itch-07-itch-io-page-and-screenshot-pack">ITCH-07: Itch.io Page And Screenshot Pack</a><a class="toc-h2" href="#itch-08-final-release-candidate-qa">ITCH-08: Final Release Candidate QA</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

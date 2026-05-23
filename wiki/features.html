@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Features</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html">Architecture</a><a href="features.html" aria-current="page">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html">File Map</a><a href="setup.html">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>Features</h1>
+      <p class="summary">Summary**: Snapshot of the currently implemented gameplay, UI, and content features in the Orbwalker prototype.</p>
+      <h1 id="features">Features</h1>
+<p><strong>Summary</strong>: Snapshot of the currently implemented gameplay, UI, and content features in the Orbwalker prototype.</p>
+<p><strong>Sources</strong>: <a href="../todo.html"><code>todo.html</code></a>, <a href="../docs/game_design_document.html"><code>docs/game_design_document.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scenes/main_menu.tscn</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/core/run_state.gd</code>, <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/content/content_registry.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/run/player_progression_service.gd</code>, <code>scripts/board/board_model.gd</code>, <code>scripts/board/board_view.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code></p>
+<p><strong>Last updated</strong>: 2026-05-07</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The project already covers the early prototype loop: board generation, drag movement, match resolution, combat, shop flow, boss rewards, run sequencing, content packs, and the player-facing HUD. (source: <a href="../todo.html"><code>todo.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/core/run_state.gd</code>)</p>
+<h2 id="details">Details</h2>
+<h3 id="board-and-combat">Board and combat</h3>
+<ul>
+<li>5x6 orb board with six orb types, deterministic generation, and no starting automatic matches. (source: <code>scripts/board/board_model.gd</code>, <a href="../todo.html"><code>todo.html</code></a>)</li>
+<li>Drag-based orb movement and board rendering are handled by the player-facing combat board path. The old board-debug scene/controller was removed in AR-08; focused editor-script probes now cover board resolver regression checks. The combat scene host delegates runtime orchestration to <code>CombatController</code>, while <code>BoardController</code> still owns board-local <code>BoardView.gui_input</code> handling. (source: <code>scripts/board/board_view.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/tests/integrations/board_resolver_test.gd</code>)</li>
+<li>Match resolution supports lines, L, T, gravity, refill, and cascades. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/board/board_match_resolver_service.gd</code>)</li>
+<li>Combat resolves heart healing, armor gain, elemental damage, gold gain, block, and enemy death-before-intent behavior. (source: <code>scripts/combat/combat_state_machine.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h3 id="run-flow">Run flow</h3>
+<ul>
+<li>The run is a 3-level prototype with enemy, shop, boss, boss-reward, and advance steps. The normal player-facing boss reward step is presented inside the combat victory overlay, then continues to the post-boss shop. (source: <a href="../todo.html"><code>todo.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Boss preview, boss relic reward, victory, and defeat flow are implemented in the run path. Boss relic reward selection now lives entirely in the combat victory overlay, and the old separate boss relic reward scene was removed in AR-08. Run summaries track total gold earned, monsters defeated, and bosses defeated separately. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Run-flow entry, shop exits, and final-summary actions include local duplicate-transition guards for Start Run, player-shop Continue/Menu, and final-summary <code>Start New Run</code>/<code>Main Menu</code>. Start Run and final-summary actions now route through <code>RunState.flow_trace_change_scene(...)</code> and recover their buttons/status text on failed scene transitions; player-shop advance actions check failed <code>RunState</code> transition results before changing scenes, and player-shop Continue/Menu also unlock and show a failure status if the later traced scene-change call itself fails. The old boss reward and shop placeholder scenes were removed in AR-08. (source: <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/scenes/run_summary.gd</code>)</li>
+<li>Run-level balance logging is available through <code>RunState.run_log_snapshot()</code>, <code>RunState.run_log_export_json(...)</code>, <code>RunState.run_log_export_text()</code>, and <code>RunState.run_log_export_html()</code>. The log captures passive evidence for run start/end, fight start/end, turn results, shop open/actions/leave, and boss reward choice/skip. Shop log payloads include bounded item/relic offer snapshots with content ids, display names, types, prices, affordability, sold-out state, treasure chest presence, reroll state, pending treasure chest options, selected/purchased/granted action details, and shop before/after snapshots for actions and leaving. The main menu exposes a persisted <code>Generate Log</code> toggle that defaults off; when enabled, finalizing a run writes JSON, HTML, and text reports under project-root <code>logs/</code>. <code>RunState.run_log_last_export_snapshot()</code> exposes the latest paths/errors. Text and HTML formatting live in <code>scripts/core/run_log_reporter.gd</code>. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/core/run_log_reporter.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>.gitignore</code>)</li>
+<li>Milestone 10 has a temporary prototype balance lever surface and a validated playtest baseline for Milestone 11. M10-04 currently uses fixed fight base rewards instead of random early gold boosts: new runs start with <code>0</code> gold, Gold orb spawn/shop/reroll multipliers stay neutral at <code>1.0</code>, and level 1/2/3 fights grant base rewards of <code>10/12/14</code> gold through <code>RunState.mark_fight_victory()</code> after matched-gold gains resolve. The post-match victory popup displays total fight gold as base plus matched gold. The first level-1 shop guarantees affordable <code>Shortsword</code> damage access at the 10-gold floor, and the shop pool guarantees one treasure chest when treasure chests are available while keeping equipment dominant and consumables rare. M10-05 adds level/type-scoped temporary survivability multipliers while keeping global enemy HP/damage multipliers neutral. Dungeon 1 is a forgiving damage check with frequent enemy block/defend intents: level 1 normal HP/damage <code>0.50/0.50</code>, level 1 boss <code>0.60/0.65</code>. Dungeon 2 is the first defense check with stronger/more frequent attacks and lighter block: level 2 normal <code>0.90/1.0</code>, level 2 boss <code>1.0/1.10</code>. Dungeon 3 is now a late damage check after high-effort playtest feedback: level 3 normal HP/damage <code>2.2/1.20</code>, level 3 boss <code>2.60/1.30</code>. M10-07 closeout logs show the current layer can produce both late-run defeats and a full victory, so remaining tuning should wait until after Milestone 11 meta progression. These values are temporary playtest scaffolding, not final balance. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/shop/shop_service.gd</code>, <a href="../docs/milestone_10_balance_tasks.html"><code>docs/milestone_10_balance_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h3 id="shop-and-progression">Shop and progression</h3>
+<ul>
+<li>The shop offers 3 random item slots and 1 relic offer per dungeon level, plus reroll, buying, selling, and treasure chest selection. Generated item stock and treasure chest options exclude equipment that is already equipped, and relic offers exclude relics already owned by the player, including cached per-level offers that become stale after ownership changes. Pending treasure chest choices do not block the shared player HUD; full-slot rewards keep the treasure chest choices open so the player can sell equipped gear or consumables from the loadout bubble or press Skip. Runtime APIs now use the <code>treasure_chest</code> type/key names. (source: <a href="../docs/game_design_document.html"><code>docs/game_design_document.html</code></a>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>Shop runtime presentation now follows a local MVC split: <code>ShopModel</code> projects enriched offer state for rendering (<code>affordable</code>, <code>sold_out</code>, <code>disabled</code>, <code>reroll_enabled</code>) and tracks local selection/status/transition lock; <code>ShopView</code> owns shop UI build/layout/rendering plus shared <code>PlayerLoadoutHud</code> binding/signals; and <code>ShopController</code> owns shop actions, RunState transition calls/rollback callbacks, FlowTrace markers, and shop audio hooks while preserving existing <code>RunState</code> and <code>ShopService</code> APIs. (source: <code>scripts/shop/shop_model.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Non-combat player-facing screens now follow the same local MVC ownership split. Main menu (<code>MainMenuModel</code>/<code>MainMenuView</code>/<code>MainMenuController</code>), Collection (<code>CollectionModel</code>/<code>CollectionView</code>/<code>CollectionController</code>), and final run summary (<code>RunSummaryModel</code>/<code>RunSummaryView</code>/<code>RunSummaryController</code>) keep screen-local state/format helpers in model, node rendering/layout/chrome/status/toast/profile surface in view, and <code>RunState</code> routing/FlowTrace/action locks/audio commands in controller while preserving the same scene paths and visible behavior. (source: <code>scripts/main_menu/main_menu_model.gd</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>, <code>scripts/collection/collection_model.gd</code>, <code>scripts/collection/collection_view.gd</code>, <code>scripts/collection/collection_controller.gd</code>, <code>scripts/run_summary/run_summary_model.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/run_summary/run_summary_controller.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/scenes/run_summary.gd</code>)</li>
+<li>Combat now follows the same local MVC host shape while preserving domain ownership: <code>scripts/scenes/combat.gd</code> is the thin host, <code>CombatView</code> owns combat rendering, status/turn-summary/debug/outcome UI boundaries, shared <code>PlayerLoadoutHud</code> binding/render/control wrappers, shared HUD node-map assembly, sole <code>CombatLayoutPresenter</code> wiring/application, VFX layer visibility, and enemy/player VFX target geometry helpers, <code>CombatModel</code> owns only scene-local mutable bookkeeping such as input phase, transition locks, staged HUD replay values and mutation helpers, mastery preview totals/release bookkeeping, and resolve trace state, and <code>CombatController</code> keeps combat flow orchestration, domain state collaborators, RunState/FlowTrace routing, debug callbacks, consumable-use eligibility/status/audio consequences, VFX timing decisions, and replay timing decisions. The latest controller cleanup also removed leftover wrapper/delegate helpers, so normal timer/intent hover and replay VFX paths now call <code>CombatView</code> and <code>CombatVfxPresenter</code> directly while preserving existing replay order and <code>combat_speed</code> timing. <code>CombatConsumableService</code> applies combat-scoped consumable effect dictionaries through injected board conversion callbacks. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/combat/combat_consumable_service.gd</code>)</li>
+<li>Player progression tracks 5 equipment slots, 3 consumable slots, relic ownership, and 6 mastery tracks capped at 5. (source: <code>scripts/run/player_progression_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>)</li>
+<li>Milestone 11 adds persistent equipment achievement progression through a default <code>PlayerProfileState</code> profile that contains <code>MetaProfileState</code>. Run Score starts at <code>0</code> each run, increases from non-sell gold sources, excludes sell/refund gold, and banks into persistent Total Score when the run ends. The player profile stores profile identity plus Total Score, unlocked equipment ids, and recent equipment unlock toast payloads separately from temporary <code>RunState</code>; the previous flat meta-profile save is migrated into the default profile. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/run/player_profile_state.gd</code>, <code>scripts/run/meta_profile_state.gd</code>)</li>
+<li>Equipment progression currently covers 5 families with max rarity Rare: Shortsword, Buckler, Coin Purse, Healing Charm, and Leather Gloves. Common variants are unlocked by default; winning with a Common equipped unlocks that family's Uncommon, winning with an Uncommon equipped unlocks that family's Rare, and the Collection screen can claim adjacent unlocks for Total Score costs of <code>100</code> and <code>300</code>. Locked variants cannot roll in shops or treasure chest choices, unlocked lower rarities can still roll, and equipping two variants from the same family is rejected. (source: <code>scripts/content/content_registry.gd</code>, <code>scripts/core/run_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/scenes/collection.gd</code>)</li>
+</ul>
+<h3 id="content-pack">Content pack</h3>
+<ul>
+<li>The current content registry includes equipment, mastery cards, consumables, relics, enemies, and bosses. (source: <code>scripts/content/content_registry.gd</code>)</li>
+<li>After the Milestone 11 progression slice, the active equipment pack is 15 equipment variants: 5 Common, 5 Uncommon, and 5 Rare across 5 families. The registry still includes 6 mastery cards, 6 consumables, 5 relics, 3 enemies, and 3 bosses. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/content/content_registry.gd</code>)</li>
+</ul>
+<h3 id="ui-and-presentation">UI and presentation</h3>
+<ul>
+<li>A lightweight <code>AudioManager</code> now plays exported MIDI-source WAV music for menu, combat, and shop when the assets exist, with code-generated fallback loops and short generated SFX tones. Exported music is peak-normalized by the render script and played at <code>-12 dB</code>; shared WAV loading, source-frame counting, and loop configuration live in <code>AudioStreamLoader</code>, which can decode source signed 16-bit WAV into memory or configure Godot imported streams. Android/template builds now try non-imported raw WAV byte copies (<code>res://resources/audio/raw_music/{menu,combat,shop}.wav.bin</code>) first so exported APK playback keeps full uploaded WAV data, then fall back to <code>res://resources/audio/music/*.wav</code>, and finally generated loops if both fail. Menu, combat, and shop scenes request their own looping music contexts, while SFX hooks cover menu start, combat drag swaps, combat match/combo/result/victory/defeat events, and shop purchase/reroll/sell/treasure chest success or failure feedback. <code>AudioManagerResolver</code> owns the shared dynamic <code>/root/AudioManager</code> lookup and lazy already-open-editor fallback used by menu, combat, and shop controllers. Verbose music diagnostics are opt-in through <code>debug/audio_diagnostics_enabled</code>. (source: <code>scripts/core/audio_manager.gd</code>, <code>scripts/core/audio_stream_loader.gd</code>, <code>scripts/core/audio_manager_resolver.gd</code>, <code>resources/audio/music/</code>, <code>resources/audio/raw_music/</code>, <code>project.godot</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>The main menu creates a local <code>MainMenuMusicPlayer</code> for desktop/editor WAV playback, using the same <code>AudioStreamLoader</code> WAV/imported-stream helpers as <code>AudioManager</code>. It stops retry polling after playback succeeds, stops any shared <code>AudioManager</code> combat/shop track before local menu playback, and reconnects through a finished-signal restart path if the stream ends unexpectedly. When Start Run is pressed on desktop/editor, the menu stops its local player and starts shared <code>AudioManager</code> combat music before scene transition so the combat track can continue through loading. On Android/template builds, menu music is routed through <code>AudioManager</code> instead, so menu/combat/shop music all use the shared WAV-first Android export path. (source: <code>scripts/scenes/main_menu.gd</code>, <code>scripts/core/audio_manager.gd</code>, <code>scripts/core/audio_stream_loader.gd</code>, <code>resources/audio/music/main-menu.wav</code>)</li>
+<li>MIDI source music lives in <code>raw/</code> with the GeneralUser GS SoundFont and is rendered to Godot-ready signed 16-bit WAV files by <code>tools/audio/export_midi_to_wav.py</code> through the local FluidSynth binary path. The script verifies WAV headers and peak-normalizes the rendered PCM data. (source: <code>raw/</code>, <code>tools/audio/export_midi_to_wav.py</code>, <code>resources/audio/music/</code>)</li>
+<li>Combat and shop now use player-facing scenes with wired character portraits: combat enemy portrait resolves from encounter <code>enemy_id</code>, combat hero portrait resolves from a shared Orbwalker hero texture, and shop reuses the same hero portrait accessor inside the shared player HUD. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
+<li>Shop UI now uses a mobile-first reference-style merchant layout with a top run/gold bar, compact visual-only <code>?</code> and <code>S</code> Help/Settings controls, generated merchant header art, 3 larger stock offer cards, a premium relic card, large reroll/continue actions, and the same <code>PlayerLoadoutHud</code> inventory popover used by combat. The stock/relic cards prioritize readable item names, rarity/type labels, framed art, wrapped descriptions, price badges, and explicit sold/treasure chest/gold-blocked state badges in non-overlapping bands; native stock/relic tooltips are disabled so they do not overlap the custom cards. The shop applies the shared <code>PlayerLoadoutHud.shop_player_hud_layout_preset()</code> with a bottom-sticky <code>PlayerHudSection</code> (<code>492px</code> tall section anchored at <code>y=1428</code> in the <code>1080x1920</code> design space) connected close below the action row. The shared popover shows equipment, consumable, and relic details with larger title/description/sell text, dynamic height, and parent-bounded placement; hover is preview-only, while click/touch button activation commits equipment or consumable selection. The embedded Sell action appears only for the selected hovered equipment/consumable slot; shop render refreshes preserve that popover, and the shared HUD outside-click handler can activate Sell from mouse/touch hits inside the visible Sell button before applying outside-dismissal. Outside mouse or touch input clears through the HUD-owned focus handler. A treasure chest choice overlay with Skip and the same connected <code>PlayerHudSection</code> used by combat remain in place. Shop gold, relic offers, reroll, continue, and treasure chest controls stay outside the shared player HUD. Shop transaction handlers guard against duplicate same-frame buy, relic buy, reroll, sell, treasure chest pick, and treasure chest skip execution. The thin <code>shop.gd</code> host delegates this surface to <code>ShopView</code> and action handling to <code>ShopController</code>. (source: <code>scenes/shop.tscn</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png</code>)</li>
+<li>Combat and shop player HUDs share the same <code>scenes/ui/player_hud.tscn</code> node tree plus the <code>PlayerLoadoutHud</code> presenter/API boundary. The shared scene contains the single PlayerHUD structure: <code>ElementalMasteryPanel</code>, <code>PlayerPanel</code> with hero portrait and HP/relic area, and <code>LoadoutFrame</code> with equipment and consumable rails. Scene controllers bind the same node references with <code>bind_player_hud(...)</code>, pass current player/progression snapshots through <code>load_player_data(...)</code> or <code>update_player_data(...)</code>, delegate layout refresh and outside-click focus handling back to the HUD, and only handle scene-specific consequences from <code>sell_slot_requested</code> or combat consumable use. The HUD owns full player HUD geometry/chrome, hero portrait, HP, equipment slots, consumable slots, owned relic icons with compact overflow, empty-slot silhouettes, equipment badges, item description popovers, and slot selection state. Combat instances the shared HUD scene in <code>scenes/combat.tscn</code>, while shop instances it through <code>ShopView</code>; both bind the full HUD node set and use the same internal layout, with screens only positioning the whole HUD section. This one-to-one PlayerHUD contract is user-confirmed intended behavior and is guarded by <code>scripts/debug/player_hud_contract_probe.gd</code>. Gold stays outside the shared footer surface. (source: <code>scenes/ui/player_hud.tscn</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/debug/player_hud_contract_probe.gd</code>)</li>
+<li>The visual registry provides first-pass art lookup and fallback paths for UI, backgrounds, icons, enemy portraits, shared hero portraits, shop merchant header art, combat orb textures, and M12 combat UI chrome. Combat orb textures prefer generated clean PNGs under <code>resources/art/first_pass/derived/orbs/</code>, with runtime orb-sheet cleanup retained as a fallback if a derived texture is missing. The shop merchant header prefers <code>resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png</code> before falling back to existing shop/background art. Combat UI chrome accessors resolve derived backdrop/scrim, enemy panel, board frame, mastery rail, player HUD rail, loadout rail, block badge, timer track/marker, dividers, and corner ornaments under <code>resources/art/first_pass/derived/combat_ui/</code>, with stable fallbacks if a texture is missing. Runtime encounter IDs now include <code>cavern_striker</code>, <code>cavern_defender</code>, <code>ash_hunter</code>, <code>ruin_lancer</code>, <code>vault_executioner</code>, <code>goldbound_keeper</code>, <code>iron_gate</code>, <code>burning_knight</code>, <code>prism_warden</code>, and fallback <code>training_goblin</code>. (source: <code>scripts/ui/visual_registry.gd</code>, <code>resources/art/first_pass/derived/orbs/</code>, <code>resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png</code>, <code>resources/art/first_pass/derived/combat_ui/</code>, <code>tools/asset_tools/generate_combat_ui_chrome.py</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>The current M12 enemy stage uses two static image layers: <code>EnemyStageBackdrop</code> renders the generated dungeon background and <code>EnemyPortrait</code> renders a single generated foreground enemy sprite. A temporary spritesheet-backed goblin experiment was reverted, so combat runtime no longer creates <code>EnemySpriteView</code> or uses spritesheet metadata for the enemy stage. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/ui/visual_registry.gd</code>, <code>resources/art/first_pass/derived/combat_layers/</code>, <code>resources/art/first_pass/enemy_sprites/</code>)</li>
+<li>The main menu now has a dedicated first-pass art package under <code>resources/art/first_pass/menu/</code>, and the visual asset map documents the background, logo, border, button plates, stat panel, and menu icon set. The six elemental row icons reuse the existing mastery icon family. (source: <code>resources/art/first_pass/menu/</code>, <code>resources/visual/first_pass_asset_map.json</code>, <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <code>resources/art/first_pass/derived/icons/mastery_ice.png</code>, <code>resources/art/first_pass/derived/icons/mastery_earth.png</code>, <code>resources/art/first_pass/derived/icons/mastery_heart.png</code>, <code>resources/art/first_pass/derived/icons/mastery_armor.png</code>, <code>resources/art/first_pass/derived/icons/mastery_gold.png</code>)</li>
+<li>Main menu runtime now uses an authored portrait scene composition with fixed design-space zones for logo/menu/element row/stats/footer and textured menu chrome from the mapped art package: <code>menu.outer_border</code>, <code>menu.button_primary</code>, <code>menu.button_secondary</code>, <code>menu.stats_panel</code>, and <code>menu.menu_icons</code>. <code>Start Run</code> remains functional, <code>Generate Log</code> toggles opt-in run-log file export, <code>Collection</code> opens the M11 equipment progression screen, and <code>Profile</code> opens a main-menu profile overlay showing the default profile, Total Score, and Reset Profile action. <code>Continue</code>, <code>Settings</code>, <code>Quit</code>, and <code>Achievements</code> remain disabled placeholders. (source: <code>scenes/main_menu.tscn</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scenes/collection.tscn</code>, <code>scripts/scenes/collection.gd</code>, <code>resources/visual/first_pass_asset_map.json</code>)</li>
+<li>Main menu runtime applies explicit texture-size containment (<code>EXPAND_IGNORE_SIZE</code>), safe-area coordinate remapping, and icon size clamping so logo/element/stats/footer controls no longer expand beyond viewport bounds or overlap each other at the default portrait resolution. (source: <code>scripts/scenes/main_menu.gd</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>Main menu generated chrome and menu icons now have real transparent alpha instead of baked checkerboard backgrounds, so the dungeon background remains visible behind the ornate border, button plates, stats panel, and footer/action icons. (source: <code>tools/asset_tools/clean_menu_art.py</code>, <code>resources/art/first_pass/menu/</code>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>Derived equipment/mastery/relic icons were reprocessed to remove baked checkerboard backgrounds, restore alpha transparency, and normalize icon canvas sizing for cleaner slot/card rendering. (source: <code>tools/asset_tools/clean_derived_icons.py</code>, <code>resources/art/first_pass/derived/icons/</code>)</li>
+<li>Combat and shop render compact owned-relic token rows with overflow (<code>+N</code>) handling through the same shared HUD row under the player HP/vitals area, while the footer is split into left-aligned equipment and right-aligned consumables. Equipment and consumable slots remain selectable in shop for selling, and consumable slots remain usable in combat during player input. (source: <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>Shop page polish now gives the merchant stage its own shop-background backdrop, dark scrim, counter band, and darker summary/detail backing, while stock/relic cards use stronger rarity-first hierarchy and larger framed item art. Treasure chest offer icons fall back to the existing fire mastery icon because the internal icon keys still use treasure chest identifiers. The shop player HUD uses the same connected <code>PlayerHudSection</code> scene and internal layout as combat; <code>ShopView</code> only positions the whole HUD section beneath the action row. <code>shop_layout_probe_snapshot()</code> exposes source-derived geometry checks for the stock row, card text bands, disabled native tooltips, compact visual top controls, action-to-HUD gap, action hint bounds, treasure chest terminology, and shared slot-detail popover sizing. (source: <code>scripts/shop/shop_view.gd</code>, <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scenes/ui/player_hud.tscn</code>)</li>
+<li>Boss relic reward options now render in a compact combat-level victory modal with a dim scrim, three readable choice cards with dedicated relic image and text nodes, a separate Skip action, and disabled Continue before selection. Claiming or skipping a non-final boss reward immediately advances to the shop without a post-selection confirmation card; defeating the third boss bypasses relic selection and opens the final run summary. The modal is layered above <code>PlayerHudSection</code> so reward choices are not clipped by the board zone or hidden under Elemental Mastery/player HUD. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Final victory and defeat routing now use <code>res://scenes/run_summary.tscn</code>, a full-screen final run summary page. The page reuses the menu background art, adds a dim scrim and wide gold-framed panel, and presents level, monsters, bosses, gold, result, equipment, relics, <code>Start New Run</code>, and <code>Main Menu</code> in a readable portrait layout; defeat mode shows <code>DEFEAT</code>, defeat cause, and <code>FALLEN</code>. Summary action buttons disable while routing so duplicate taps do not start overlapping transitions, and <code>Start New Run</code> prepares combat before replacing the completed summary snapshot. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scenes/run_summary.tscn</code>)</li>
+<li>Equipment unlock achievements use a reusable bottom-right toast with title <code>Achievement Unlocked</code> and message <code>&lt;item name&gt; unlocked</code>. The final summary consumes recent victory unlocks without changing its summary layout, and Collection claims show the same toast after a successful Score claim. (source: <code>scripts/ui/achievement_toast.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scripts/scenes/collection.gd</code>)</li>
+<li>Combat outcome routing remains driven by <code>RunState</code> transitions, while the combat scene controller centralizes the duplicated trace/change-scene call for standard Continue, boss reward claim, and boss reward skip in <code>_trace_and_change_scene_to_target(...)</code>. Boss reward selection still lives in the combat overlay, final boss victory still opens the final summary, and defeat still routes to the final run summary in defeat mode. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Combat strip is now a decorative READY divider at rest: a centered <code>TimerTrack</code> keeps the existing timer data path, but the fill layer is hidden until an active timer state so the strip reads as dark/gold chrome with centered <code>READY</code> and a small glowing marker instead of a blue progress control. Timer snapshot data is built by <code>CombatHudPresenter</code>, runtime timer text/fill/color application lives in <code>CombatView</code>, timer-track and timer-label readability chrome is applied through <code>CombatChromeStyler</code>, and the code-generated timer placeholder texture is built by <code>CombatPlaceholderTextures</code>. (source: <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/combat/combat_placeholder_textures.gd</code>, <code>scenes/combat.tscn</code>)</li>
+<li>Display viewport now defaults to portrait mobile (<code>1080x1920</code>) and Android handheld orientation is locked to portrait. Combat HUD sections are enabled by default in <code>scenes/combat.tscn</code> with updated responsive sizing for portrait composition. (source: <code>project.godot</code>, <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Combat UI received a Milestone 12 reference-faithful mobile polish pass using texture-backed combat chrome: full-screen dungeon backdrop/scrim, ornate top/enemy/timer/board/mastery/player HUD layers, decorative dividers/corners, a large enemy stage with right-side block badge area, framed board surface, readable Elemental Mastery rail, and structured bottom hero/HP/relic/equipment/consumable HUD. The deterministic generator for those derived PNGs lives in <code>tools/asset_tools/generate_combat_ui_chrome.py</code>. (source: <code>scenes/combat.tscn</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>resources/art/first_pass/derived/combat_ui/</code>, <code>tools/asset_tools/generate_combat_ui_chrome.py</code>)</li>
+<li>The latest M12 combat UI restage keeps the same presentation-only ownership while moving closer to the reference RPG hierarchy: <code>CombatLayoutPresenter</code> owns the taller header, <code>432px</code> enemy encounter banner, larger intent zone, ornate READY divider, restored dominant board surface, <code>MASTERY</code> rail, compact HP/relic panel, and split equipment/consumable rail rects; <code>CombatChromeStyler</code> strengthens dark metal/gold chrome, label outlines, the outer board frame, and a less progress-like READY strip while leaving individual board cells without ornate slot borders; <code>PlayerLoadoutHud</code> owns the larger compact HP, mastery cards, portrait, empty relic placeholders, and loadout slot styling. (source: <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Combat move timer now uses <code>READY</code>, <code>MOVE</code>, <code>WARN</code>, <code>CRIT</code>, and <code>LOCK</code> presentation states with integer countdown above 2s, tenth-second countdown below 2s, and live safe/warning/critical color transitions across the track fill and labels. (source: <code>scripts/scenes/combat.gd</code>)</li>
+<li>Combat layout now uses a fixed mobile design contract for <code>1080x1920</code> and scales that design root for portrait viewports. Primary zones are ornate top bar, large enemy encounter banner, READY divider, framed 5x6 board, <code>MASTERY</code> rail, compact player HP/relic panel, and split bottom loadout rails. The layout probe reports zone rects, board surface size, overlap checks, and minimum readable-zone checks for enemy intent, timer, board, mastery, HP, and loadout rails. (source: <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/debug/mobile_combat_layout_probe.gd</code>, <code>scenes/combat.tscn</code>)</li>
+<li>Combat scene hierarchy now exposes first-class zone nodes (<code>TopBar</code>, <code>EnemyPanel</code>, <code>CombatStrip</code>, <code>BoardPanel</code>, <code>PlayerPanel</code>) so zone-specific polish can be done without path hunting. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Player zone internals are now split into explicit reference-style subzones (<code>HeroCard</code>, <code>VitalsPanel</code>, <code>StatChipRow</code>, <code>LoadoutFrame</code>, <code>MasteryStrip</code>) and a debug zone-guide toggle (<code>F2</code>) can label core zones during polish passes. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Player loadout now renders as a compact always-visible rail with 5 equipment slots and 3 consumable slots; empty slots use dim framed placeholders and filled equipment/consumable slots show value/count badges. (source: <code>scripts/scenes/combat.gd</code>, <code>scenes/combat.tscn</code>)</li>
+<li>Combat HUD layout uses a dedicated <code>CombatLayoutRoot</code> with design-space rects at <code>1080x1920</code>; <code>CombatView</code> delegates to <code>CombatLayoutPresenter</code> to position <code>TopBar</code>, <code>EnemyPanel</code>, <code>CombatStrip</code>, <code>BoardPanel</code>, and the shared <code>PlayerHudSection</code>, replacing the previous vertical container-driven layout while keeping gameplay state in <code>CombatController</code>. The current Milestone 12 restage follows a reference-oriented hierarchy: taller ornate top bar, art-backed enemy stage with right-side intent, decorative READY divider, restored larger framed 5x6 board, <code>MASTERY</code> rail, compact HP/relic panel, and split equipment/consumable footer. On tall portrait viewports, combat keeps width-based scaling, expands the design-space root height, grows <code>BoardPanel</code> and <code>Board</code> first while preserving 5x6 board aspect, then extends the player HUD to consume remaining height instead of leaving top/bottom dead bands. (source: <code>scenes/combat.tscn</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Combat board touch input comes from <code>BoardView.gui_input</code> local coordinates for both mouse and touch. <code>BoardController</code> owns guarded <code>BoardView.gui_input</code>/<code>mouse_exited</code> wiring, parses board-local mouse/touch drag events using <code>event.position</code> directly, accepts board events only when drag handling reports <code>handled=true</code>, and emits raw hovered orb ids from <code>BoardView.get_hover_orb_id(...)</code> while clearing hover on mouse exit, active drag, non-player input, and non-hover events. This keeps adaptive <code>CombatLayoutRoot</code> scaling from double-applying board transforms. <code>CombatController</code> owns input phase authority, resolve kickoff, timer/status decisions, hovered-orb HUD interpretation, and combat orchestration behind the thin combat scene host; <code>CombatView</code> renders the timer/status snapshot. (source: <code>scripts/board/board_controller.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/board/board_view.gd</code>)</li>
+<li>Combat board presentation now includes a dark drop-shadow panel behind the board and a hidden centered board-level outcome summary card. Victory/debug victory uses a large <code>Continue</code> button, while defeat/debug defeat uses a <code>Run Summary</code> button that opens the final summary page in defeat mode. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Combat board now shows one floating combo counter that updates from <code>COMBO x1</code> upward through each visible resolve/cascade step instead of stacking multiple match-group popups. Drag release clears leftover swap overlays, assigns <code>BoardView</code> to a pre-resolve visual clone, runs the resolver against a separate simulation clone, replays clear, gravity, and refill into the visual board, then commits the final simulation board after presentation. Presentation is trigger-based and ordered: within each resolve pass, match groups are sorted by top row then left column, and each group flashes, clears, commits visually, and advances the shared <code>COMBO xN</code> popup plus matching Elemental Mastery preview before the next same-pass group starts. Gravity and refill begin only after every group in that pass is presented. Clear, gravity, and refill now start their BoardView animations before the visual board clone mutates; the visual state advances only after the matching animation duration completes. <code>CombatResolvePresenter</code> owns the board-space replay mechanics, <code>combat_speed</code> waits, lifecycle-safe continuation checks, and bounded animation-drain behavior. <code>CombatVfxPresenter</code> owns transient combat VFX drawing mechanics such as texture VFX spawning, replay impacts, mastery beams, VFX-layer coordinate conversion, and fade cleanup. <code>CombatView</code> owns HUD, timer, enemy intent, enemy block preview, visual chrome, and layout rendering. <code>CombatController</code> owns resolver simulation, combat math handoff, mastery preview value decisions, replay order/waits, routing callbacks, input, VFX timing decisions, and <code>/skip</code> route state behind the thin host. Combat presentation has a hidden <code>combat_speed</code> setting with <code>slow</code>, <code>normal</code>, <code>fast</code>, and <code>instant</code> modes, defaulting to <code>normal</code>. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_resolve_presenter.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/board/board_match_resolver_service.gd</code>)</li>
+<li>Godot console output includes resolve presentation timing lines prefixed <code>[ResolveTrace +NNNNms]</code>. The trace records resolve start, visual/simulation board setup, resolver simulation signals, presentation pass starts, match flash, combo ticks, clear, gravity, refill, animation drain, and final board commit. (source: <code>scripts/scenes/combat.gd</code>)</li>
+<li>Combat resolve now enables the shared <code>VfxLayer</code> at runtime and plays generated transparent orb-clear bursts on the visible animation pass next to the combo text, avoiding baked atlas-background artifacts while preserving board-space feedback. <code>CombatVfxPresenter</code> owns the transient VFX node spawning and fade cleanup used by clear bursts, replay impacts, and mastery beams. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scenes/combat.tscn</code>)</li>
+<li>Combat turn replay now spawns transient floating result labels from existing <code>turn_log</code> values for elemental enemy damage, enemy block, healing, armor gain, gold gain, enemy attack block, and player HP damage. Labels are presentation-only <code>VfxLayer</code> children owned by <code>CombatVfxPresenter</code>; the combat controller stages visible HUD values during replay so enemy HP/block, player HP/armor, and gold update after the matching impact/result label instead of jumping before it. Enemy HP/block steps after each elemental damage label, and blocked damage labels use <code>-N Damage Blocked</code> for both enemy block and player armor block. Replay impacts use <code>CombatVfxPresenter</code>-owned temporary thresholds for Fire, Ice, Earth, Heart, Armor, and Gold to choose four presentation-only VFX tiers; missing art stays on the existing <code>mastery_impact_texture(...)</code> / <code>orb_clear</code> fallback path while tier metadata scales impact size, lifetime, alpha, brightness, positive result-label font size, label outline, and label container size. Enemy attack replay now adds a generic enemy cue/travel visual, shield/block impact, HP hit impact, and staged partial-block timing so armor feedback reads before HP damage while still using existing <code>turn_log.enemy_attack_resolution</code> values. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <a href="../docs/combat_feedback_revamp_tasks.html"><code>docs/combat_feedback_revamp_tasks.html</code></a>)</li>
+<li>Enemy intent now previews projected HP loss and block before the player moves. <code>CombatHudPresenter</code> computes the presentation-only HP-loss preview from attack intent entries plus visible player HP/armor and builds the enemy intent preview rows, while <code>CombatView</code> renders enemy intent bubbles, enemy block preview overlays, and hover signals for intent emphasis. <code>PlayerLoadoutHud</code> renders current player armor as a persistent full-height semi-transparent silver overshield on the player HP bar, scaled by <code>player_armor / player_max_hp</code>, including armor from turn start and Armor matches. The old <code>BLOCK +N</code> badge is hidden in favor of that HP-bar armor visual. The HUD renders a slower red-to-empty-to-red blinking danger segment for unblocked or partially blocked HP loss by fading a red layer over an empty HP backing, and projected blocked player damage can pulse a second full-height silver overshield over current armor. Enemy intent preview entries render as separate <code>Attack N</code> / <code>Block N</code> bubbles, with no fixed two-intent limit for attack/block entries. The retired scene <code>IntentBadge</code> and <code>EnemyIntentLabel</code> are hidden by default and kept hidden during intent sync, so the old single-bubble intent display no longer flashes before the new bubbles render. Enemy block preview renders as a slower blinking full-height semi-transparent silver overshield on the enemy HP bar scaled by <code>intent.block / enemy.max_hp</code>. Hovering the HP danger segment scales/blinks attack intent bubbles while hovered, while hovering an overshield preview scales/blinks block intent bubbles. (source: <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scenes/combat.tscn</code>, <a href="../docs/combat_feedback_revamp_tasks.html"><code>docs/combat_feedback_revamp_tasks.html</code></a>)</li>
+<li>Before a drag starts, hovering a board orb now highlights only the matching Elemental Mastery card for Fire, Ice, Earth, Heart, Armor, and Gold. The board hover path uses <code>BoardView</code> board-local orb lookup helpers and <code>CombatController</code> clears hover-only state on drag start, non-player-input phases, turn preview refresh, board mouse exit, and combat scene exit. Hover highlighting is separate from active combat mastery replay feedback. Hovering a mastery card opens a compact detail panel with current mastery level, base effect, per-orb damage/heal/armor/gold value, equipment/relic modifier names that affect that mastery/orb type, or <code>No equipment or relic modifiers</code> when none apply, and the same hover lights the matching equipment/relic tokens currently providing those modifiers. (source: <code>scripts/board/board_view.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <a href="../docs/combat_feedback_revamp_tasks.html"><code>docs/combat_feedback_revamp_tasks.html</code></a>)</li>
+<li>Combat debug overlay uses explicit larger debug typography and a taller console input field for command readability during in-editor testing. The hidden combat debug console no longer grabs startup focus, so Android does not open the soft keyboard when combat starts; it only focuses when the debug overlay is opened. The combat console supports <code>/skip &lt;level&gt; &lt;fight&gt;</code> for run-flow jumps; fight <code>1</code> and <code>2</code> target normal fights, while fight <code>3</code> targets that level's boss, so <code>/skip 3 3</code> jumps to the level 3 boss. The old board-debug console was removed in AR-08. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Combat debug command parsing, help/error text, log-level state, and combat log rendering live in <code>CombatDebugConsole</code>; command effects for state snapshots, <code>/skip</code>, board seed/reroll/print, gold/mastery/equipment/consumable/relic commands, and debug win/lose live in <code>CombatDebugCommandAdapter</code> behind narrow controller-injected orchestration callbacks. Normal/detailed turn-log text, intent labels, and reusable outcome summary strings live in <code>CombatTurnLogPresenter</code>. (source: <code>scripts/combat/combat_debug_console.gd</code>, <code>scripts/combat/combat_debug_command_adapter.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/combat/combat_controller.gd</code>)</li>
+<li>Player panel now follows a simplified reference bottom-HUD structure with a left hero portrait card, long primary HP bar, compact relic row, and always-visible equipment and consumable rails; armor, stat chips, combat meta, turn summary rows, the old level badge, and the former bottom mastery strip are hidden from the player panel. Combat player-strip snapshot strings and values are built by <code>CombatHudPresenter</code>; <code>CombatController</code> gathers current domain/staged values, while <code>CombatView</code> applies the snapshot to scene labels/bars and dispatches shared loadout/mastery data into <code>PlayerLoadoutHud</code>. (source: <code>scenes/combat.tscn</code>, <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Combat now has a compact <code>ElementalMasteryPanel</code> rail between the board and player HUD. In the Milestone 12 mobile combat restage, <code>CombatLayoutPresenter</code> overrides the rail to about <code>1048 x 140</code> design pixels with the visible title <code>MASTERY</code>, and <code>PlayerLoadoutHud</code> uses icon-only compact cards with per-card beveled/3D border styling and no native icon tooltip so mastery remains readable below the restored larger board without a separate outer panel border. Hovering a mastery card opens a larger <code>960 x 468</code> detail popover with bigger title/effect/value/modifier text. During cascades, repeated same-orb matches add into the same visible card value; active cards show value-scaled activation glow/frame pulses, and mastery beams add a card-origin pulse so the card reads as the effect source. Combat HUD rebuilds carry the active pooled feedback totals forward, so staged HP/block/armor/gold HUD updates do not clear all active mastery cards at once. After cascades finish, card effects replay from <code>turn_log</code> with temporarily enlarged beams/shell/impact VFX, the pooled numeric feedback releases one card at a time as its matching effect fires, and Mastery Effect SFX plays once at each damage/heal/armor/gold impact/result moment using existing placeholder combat sounds. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/ui/visual_registry.gd</code>, <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <code>resources/art/first_pass/derived/vfx/</code>)</li>
+<li>A standalone Elemental Mastery HUD comparison scene exists for visual selection and records the five reference-driven variants: Reference Faithful, Combat Fit, Taller Mastery Section, Reduced Border Noise, and Feedback Ready. Variant 5 was selected for combat runtime on 2026-05-01. The preview uses generated reference-style panel/card chrome (<code>mastery_preview_panel_frame.png</code>, <code>mastery_preview_card_*.png</code>) with the real main-menu mastery icon assets (<code>mastery_fire.png</code>, <code>mastery_ice.png</code>, <code>mastery_earth.png</code>, <code>mastery_heart.png</code>, <code>mastery_armor.png</code>, <code>mastery_gold.png</code>) so the gallery avoids empty medallions, letter placeholders, generated placeholder icons, checkerboard, and full-card badge crops. (source: <code>scenes/ui/elemental_mastery_hud_variants.tscn</code>, <code>scripts/ui/elemental_mastery_hud_variants.gd</code>, <code>tools/asset_tools/generate_mastery_preview_chrome.py</code>, <code>resources/art/first_pass/derived/icons/mastery_fire.png</code>, <a href="../docs/tmp_elemental_mastery_visual_issues.html"><code>docs/tmp_elemental_mastery_visual_issues.html</code></a>)</li>
+<li>Combat player section cohesion pass added a framed vitals block, <code>HP current / max</code> bar label, conditional Slay the Spire-inspired armor badge (<code>BLOCK +N</code> shown only when armor &gt; 0), and recessed silhouette empty-slot treatment for equipment/consumables. (source: <code>scenes/combat.tscn</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Floating combo feedback is center-stage board text: only the combo count is shown, per-orb match details are omitted, there is no panel border/background, and the font/pulse size grows as the combo count increases. Clear burst size still grows a bit with larger match groups for clearer high-impact reads. (source: <code>scripts/scenes/combat.gd</code>)</li>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><code>scripts/board/board_model.gd</code> - board data model</li>
+<li><code>scripts/combat/combat_state_machine.gd</code> - turn resolution</li>
+<li><code>scripts/core/run_state.gd</code> - run sequencing</li>
+<li><code>scripts/content/content_registry.gd</code> - content pack and pools</li>
+<li><code>scripts/shop/shop_service.gd</code> - shop actions</li>
+<li><code>scripts/run/player_progression_service.gd</code> - progression transitions</li>
+<li><code>scripts/ui/player_loadout_hud.gd</code> - shared combat/shop loadout and mastery renderer</li>
+<li><code>scripts/combat/combat_resolve_presenter.gd</code> - board-space combat resolve replay presentation helper</li>
+<li><code>scripts/combat/combat_vfx_presenter.gd</code> - combat VFX spawning, replay impact, mastery beam, coordinate conversion, and fade cleanup helper</li>
+<li><code>scripts/combat/combat_debug_console.gd</code> - combat debug command parser and log renderer</li>
+<li><code>scripts/combat/combat_turn_log_presenter.gd</code> - combat turn-log and summary text formatter</li>
+<li><code>scripts/combat/combat_chrome_styler.gd</code> - combat code-built chrome and style helper</li>
+<li><code>scripts/combat/combat_controller.gd</code> - combat scene orchestration behind the thin host</li>
+<li><code>scripts/combat/combat_model.gd</code> - combat scene-local MVC state holder</li>
+<li><code>scripts/combat/combat_view.gd</code> - combat scene rendering/view owner</li>
+<li><code>scripts/scenes/combat.gd</code> - thin player-facing combat scene host</li>
+<li><code>scripts/scenes/shop.gd</code> - player-facing shop UI</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Which remaining QA items should be considered done only after manual validation on desktop and mobile. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="architecture.html">architecture</a></li>
+<li><a href="setup.html">setup</a></li>
+<li><a href="file-map.html">file-map</a></li>
+<li><a href="known-issues.html">known-issues</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/features.html"><code>wiki/features.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#features">Features</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h3" href="#board-and-combat">Board and combat</a><a class="toc-h3" href="#run-flow">Run flow</a><a class="toc-h3" href="#shop-and-progression">Shop and progression</a><a class="toc-h3" href="#content-pack">Content pack</a><a class="toc-h3" href="#ui-and-presentation">UI and presentation</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

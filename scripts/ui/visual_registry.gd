@@ -1763,10 +1763,11 @@ func _load_runtime_png_texture(path: String, key: String) -> Texture2D:
 
 
 func _safe_load_texture(path: String, key: String) -> Texture2D:
-	var loaded: Variant = load(path)
-	var texture := loaded as Texture2D
-	if texture != null:
-		return texture
+	if ResourceLoader.exists(path):
+		var loaded: Variant = load(path)
+		var texture := loaded as Texture2D
+		if texture != null:
+			return texture
 	if FileAccess.file_exists(path):
 		var image := Image.new()
 		var load_error := image.load(path)

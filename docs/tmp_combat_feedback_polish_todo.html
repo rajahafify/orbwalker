@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temporary Combat Feedback Polish Todo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Temporary Combat Feedback Polish Todo</h1>
+      <p class="summary">Track the current screenshot-driven combat feedback polish pass. This file is temporary and should be removed or archived after the pass is accepted.</p>
+      <h1 id="temporary-combat-feedback-polish-todo">Temporary Combat Feedback Polish Todo</h1>
+<h2 id="purpose">Purpose</h2>
+<p>Track the current screenshot-driven combat feedback polish pass. This file is temporary and should be removed or archived after the pass is accepted.</p>
+<h2 id="status-legend">Status Legend</h2>
+<ul>
+<li><code>[ ]</code> Not started.</li>
+<li><code>[~]</code> In progress.</li>
+<li><code>[x]</code> Implemented and validated.</li>
+<li><code>[!]</code> Blocked or needs follow-up.</li>
+</ul>
+<h2 id="tasks">Tasks</h2>
+<ul>
+<li>[x] Combo popup obstruction</li>
+<ul>
+<li>Screenshot issue: <code>COMBO xN</code> text overlaps active orbs and blocks board readability.</li>
+<li>Target behavior: combo text remains readable but does not cover the matched orb cluster.</li>
+<li>Implementation: moved/clamped combo popup placement off-cluster and added dark translucent panel + stacked content in <code>scripts/scenes/combat.gd:2294-2367</code>.</li>
+<li>Effort:</li>
+<ol>
+<li>Created temporary tracker before runtime edits and recorded the original source refs for this issue.</li>
+<li>Added off-cluster placement, board clamping, and readable backplate in <code>scripts/scenes/combat.gd:2294-2367</code>.</li>
+<li>Fixed MCP strict-warning issues in combo popup helper locals in <code>scripts/scenes/combat.gd:2300-2303,2312-2315</code>.</li>
+</ol>
+<li>Validation notes: implemented UI-only adjustments; pending runtime screenshot pass.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Board clear overlay opacity</li>
+<ul>
+<li>Screenshot issue: clear overlays wash out orb identity, especially fire/heart/earth.</li>
+<li>Target behavior: clear feedback remains visible while orb identity stays readable.</li>
+<li>Implementation: clear overlay intensity reduced via <code>match_flash_color</code> and <code>orb_clear</code> burst alpha in <code>scripts/board/board_view.gd:13</code>.</li>
+<li>Effort:</li>
+<ol>
+<li>Preserved earlier polish change reducing clear overlay intensity in <code>scripts/board/board_view.gd:13</code>.</li>
+<li>Kept the change presentation-only; no resolver, combo, or combat math files were changed for this item.</li>
+</ol>
+<li>Validation notes: pending runtime screenshot pass.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Enemy impact square/artifact</li>
+<ul>
+<li>Screenshot issue: enemy impact appears as a square patch with unwanted markings over the portrait.</li>
+<li>Target behavior: enemy/player impact uses clean replay impact assets and anchors to target body area.</li>
+<li>Implementation: routed replay impacts through <code>_replay_turn_resolution_from_log()</code> -&gt; <code>_spawn_replay_impact</code>/<code>_control_global_center</code>, and confirmed impact selection through <code>scripts/ui/visual_registry.gd:293</code>.</li>
+<li>Effort:</li>
+<ol>
+<li>Preserved clean impact asset lookup through <code>scripts/ui/visual_registry.gd:293</code>.</li>
+<li>Centralized replay impact emission under <code>_replay_turn_resolution_from_log()</code> in <code>scripts/scenes/combat.gd:1618-1658</code>.</li>
+<li>Fixed strict-warning issues in replay impact helper code in <code>scripts/scenes/combat.gd:2124,2176-2179,2225</code>.</li>
+</ol>
+<li>Validation notes: pending runtime screenshot pass.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Detached/clipped mastery beam</li>
+<ul>
+<li>Screenshot issue: mastery beam appears detached in the right gutter instead of clearly connecting source and target.</li>
+<li>Target behavior: beams connect from mastery card to enemy/player/gold target and stay inside relevant combat space.</li>
+<li>Implementation: source now resolves via <code>_elemental_mastery_cards</code> (<code>scripts/scenes/combat.gd:76,2188-2197</code>), beam trigger path is centralized in <code>_replay_turn_resolution_from_log()</code> (<code>scripts/scenes/combat.gd:1618-1658</code>), and helper remains backward-compatible (<code>scripts/scenes/combat.gd:2230-2259</code>).</li>
+<li>Effort:</li>
+<ol>
+<li>Aligned beam source ownership to active mastery cards via <code>_elemental_mastery_cards</code> in <code>scripts/scenes/combat.gd:76,2188-2197</code>.</li>
+<li>Centralized mastery beam replay path in <code>_replay_turn_resolution_from_log()</code> at <code>scripts/scenes/combat.gd:1618-1658</code>.</li>
+<li>Fixed parser typing regression in beam math locals with explicit <code>Vector2</code>/<code>float</code> types in <code>scripts/scenes/combat.gd:2256-2263</code>.</li>
+<li>Restored Elemental Mastery panel layout constants and <code>_apply_combat_mastery_panel_layout()</code> in <code>scripts/scenes/combat.gd:77-78,138-149,2454,2478,2561-2586</code>.</li>
+<li>Fixed runtime crash from invalid <code>Control.to_local()</code> calls by converting source/target globals with <code>_vfx_layer.get_global_transform_with_canvas().affine_inverse()</code> in <code>scripts/scenes/combat.gd:2264-2266</code>.</li>
+<li>Rebalanced the active mastery card row to fit six cards inside the panel and moved the title above the cards in <code>scripts/scenes/combat.gd:138-141</code> and <code>scripts/ui/player_loadout_hud.gd:15-17,189-214</code>.</li>
+<li>Wired <code>turn_log</code> values into transient card feedback labels and allowed elemental beams to fire from per-element values even when enemy block absorbs all HP damage in <code>scripts/scenes/combat.gd:1626-1708</code>.</li>
+</ol>
+<li>Validation notes: pending runtime screenshot pass.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Duplicate locked timer text</li>
+<ul>
+<li>Screenshot issue: timer strip shows duplicated <code>LOCK LOCK</code>.</li>
+<li>Target behavior: locked state shows one clear lock label.</li>
+<li>Current source references: <code>scripts/scenes/combat.gd:1486</code> (state set), <code>scripts/scenes/combat.gd:1487</code> (state hidden).</li>
+<li>Implementation: set <code>_timer_label.text = "LOCK"</code> and <code>_timer_state_label.text = ""</code> in <code>scripts/scenes/combat.gd:1486-1487</code>.</li>
+<li>Effort:</li>
+<ol>
+<li>Changed locked timer state to one visible label in <code>scripts/scenes/combat.gd:1486-1487</code>.</li>
+<li>Kept the hidden secondary timer-state label available for non-lock states without adding new UI nodes.</li>
+<li>Suppressed legacy bottom mastery strip while validating the same combat layout pass in <code>scripts/scenes/combat.gd:2105-2110,2111-2117,2544-2549</code>.</li>
+</ol>
+<li>Validation notes: implemented.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Elemental mastery card sizing + replay feedback visibility</li>
+<ul>
+<li>Screenshot issue: mastery strip appears as a shallow 2D strip; combat resolution feedback no longer appears meaningful.</li>
+<li>Target behavior: panel/card row reads taller/denser, icon/title/level/<code>+N</code> are readable, and per-element turn values show briefly on the active cards after replay.</li>
+<li>Implementation: updated <code>scripts/ui/player_loadout_hud.gd</code> card geometry constants + label positions, then mapped feedback values in</li>
+<p><code>scripts/scenes/combat.gd::_replay_turn_resolution_from_log()</code> and <code>_play_combat_mastery_feedback_from_turn_log()</code> with short stagger and clear.</p>
+<li>Effort:</li>
+<ol>
+<li>Added small timer-staggered feedback sequence so cards reveal in left-to-right-ish order (<code>COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS</code>) and clear afterwards in <code>scripts/scenes/combat.gd:1674-1708</code>.</li>
+<li>Triggered elemental beams from per-element values even when <code>enemy_damage_taken == 0</code> by using per-element checks in <code>scripts/scenes/combat.gd:1645-1658</code>.</li>
+<li>Kept player panel anchor region unchanged and reflowed only the board/mastery split in <code>scripts/scenes/combat.gd:138-142</code>.</li>
+<li>Corrected card overflow from <code>176px</code> to <code>164px</code> cards with <code>8px</code> gaps in <code>scripts/ui/player_loadout_hud.gd:15-17</code>.</li>
+<li>Corrected title/card and label/level/feedback overlaps in <code>scripts/scenes/combat.gd:140-141</code> and <code>scripts/ui/player_loadout_hud.gd:189-214</code>.</li>
+</ol>
+<li>Validation notes:</li>
+<ol>
+<li><code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>play_scene</code> current scene passed and <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
+<li>Godot MCP scene tree confirmed six <code>164x186</code> cards fit in <code>ElementalMasteryCards size=Vector2(1028,186)</code>.</li>
+<li>Final public drag/cascade visual acceptance is transferred to ITCH-01/ITCH-08.</li>
+</ol>
+</ul>
+</ul>
+<h2 id="effort-log">Effort Log</h2>
+<ul>
+<li>Effort details are embedded under each task above so implementation history is visible next to the relevant screenshot issue.</li>
+</ul>
+<h2 id="validation-log">Validation Log</h2>
+<ul>
+<li>2026-04-30: <code>git diff --check</code> completed (no whitespace or syntax artifacts).</li>
+<li>2026-04-30: <code>godot-mcp --version</code> unavailable from this shell (<code>term is not recognized</code>), so no MCP parse/load validation could be run from this environment.</li>
+<li>2026-04-30: MCP parse failure observed (inference errors): <code>_spawn_mastery_beam</code> locals <code>source_local</code>, <code>target_local</code>, <code>delta</code>, <code>distance</code> at</li>
+<p><code>scripts/scenes/combat.gd:2260-2263</code>.</p>
+<li>2026-04-30: MCP parse issue fixed by explicit typing (<code>Vector2</code> and <code>float</code>) for the same locals in</li>
+<p><code>scripts/scenes/combat.gd:2260-2263</code>.</p>
+<li>2026-04-30: MCP parse failure observed (inference errors): <code>_spawn_combo_floating_text</code> locals <code>cell_span</code> and <code>blocked_radius</code> at</li>
+<p><code>scripts/scenes/combat.gd:2320-2321</code>.</p>
+<li>2026-04-30: MCP parse issue fixed by explicit <code>float</code> typing and <code>absf</code>/<code>maxf</code> for those locals in</li>
+<p><code>scripts/scenes/combat.gd:2320-2321</code>.</p>
+<li>2026-04-30: MCP strict-warning failure observed in new helper code: unused parameter, enum/integer-narrowing, and float-bound conversion warnings in</li>
+<p><code>scripts/scenes/combat.gd:2124,2176-2179,2225,2300-2315</code>.</p>
+<li>2026-04-30: MCP strict-warning fixes applied with explicit typing and float helpers in helper code:</li>
+<p><code>scripts/scenes/combat.gd:2124</code>, <code>scripts/scenes/combat.gd:2176-2179</code>, <code>scripts/scenes/combat.gd:2225</code>, <code>scripts/scenes/combat.gd:2300-2303</code>, <code>scripts/scenes/combat.gd:2312-2315</code>.</p>
+<li>2026-04-30: MCP runtime scene-tree blocker observed: <code>ElementalMasteryPanel</code> was <code>size=Vector2(2,2)</code> and <code>position=Vector2(0,0)</code> after layout pass.</li>
+<li>2026-04-30: MCP layout regression fixed by restoring validated constants and adding <code>_apply_combat_mastery_panel_layout()</code> in</li>
+<p><code>scripts/scenes/combat.gd</code>.</p>
+<li>2026-04-30: MCP runtime scene-tree regression observed again in combat layout: old bottom <code>PlayerPanel/MasteryStrip</code> remained visible while <code>ElementalMasteryPanel</code> is active.</li>
+<li>2026-04-30: MCP regression fixed by suppressing legacy strip display and population in <code>combat_player_controller.gd</code>:</li>
+<p><code>scripts/scenes/combat.gd:2105-2110,2111-2117,2544-2549</code>.</p>
+<li>2026-04-30: Final <code>git diff --check</code> pass completed with no output.</li>
+<li>2026-04-30: Godot MCP load/instantiate probe passed with <code>ResourceLoader.CACHE_MODE_IGNORE</code> for changed scripts and</li>
+<p><code>res://scenes/combat.tscn</code>: controller, board, registry, scene, and instance all loaded.</p>
+<li>2026-04-30: Godot MCP <code>play_scene</code> current scene passed and <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
+<li>2026-04-30: Godot MCP scene-tree inspection confirmed active combat layout:</li>
+<p><code>BoardPanel size=Vector2(1048,734) position=Vector2(16,500)</code>, <code>ElementalMasteryPanel size=Vector2(1048,216) position=Vector2(16,1236)</code>, <code>ElementalMasteryCards size=Vector2(1028,176) position=Vector2(10,38)</code> with six cards, and <code>PlayerPanel/MasteryStrip visible=false</code>.</p>
+<li>2026-04-30: Remaining validation gap: interactive screenshot acceptance after a real drag/cascade/enemy response is still pending.</li>
+<ul>
+<li>2026-04-30: Runtime crash reported by user: <code>Invalid call. Nonexistent function 'to_local' in base 'Control'</code> at</li>
+<p><code>scripts/scenes/combat.gd:2264</code> during <code>_spawn_mastery_beam()</code>.</p>
+</ul>
+<li>2026-04-30: Crash fix applied by replacing <code>Control.to_local()</code> usage with inverse canvas transform conversion in</li>
+<p><code>scripts/scenes/combat.gd:2264-2266</code>.</p>
+<li>2026-04-30: Post-fix <code>git diff --check</code> passed, <code>combat_player_controller.gd</code> opened in Godot editor without parse errors, and</li>
+<p><code>ResourceLoader.CACHE_MODE_IGNORE</code> load/instantiate probe returned <code>controller=true scene=true instance=true</code>.</p>
+<li>2026-04-30: Post-fix Godot MCP scene launch passed after clearing stale debugger output: <code>play_scene</code> current scene started and</li>
+<p><code>get_godot_errors</code> reported <code>Session has no errors</code>.</p>
+<ul>
+<li>2026-04-30: Direct MCP force-call of <code>_spawn_mastery_beam()</code> on the running scene was not possible from the editor-script context</li>
+<p>because the running <code>CombatPlayer</code> node was not visible to that script (<code>combat=false</code>).</p>
+</ul>
+<li>2026-04-30: Godot MCP validation for the current patch was attempted from a worker shell (<code>godot-mcp</code>), but CLI is unavailable there (<code>The term 'godot-mcp' is not recognized</code>).</li>
+<li>2026-04-30: Follow-up regression reported by user: Elemental Mastery looked like a shallow strip and did not appear to do anything.</li>
+<li>2026-04-30: Godot MCP scene-tree inspection caught an intermediate layout overflow: six <code>176px</code> cards plus gaps exceeded the <code>1028px</code></li>
+<p><code>ElementalMasteryCards</code> container, and the title overlapped the card row.</p>
+<li>2026-04-30: Overflow/overlap fixed with <code>164x186</code> cards, <code>8px</code> gaps, cards rect <code>Vector2(10,40)/Vector2(1028,186)</code>,</li>
+<p>and non-overlapping card internals in <code>scripts/scenes/combat.gd:138-141</code> and <code>scripts/ui/player_loadout_hud.gd:15-17,189-214</code>.</p>
+<li>2026-04-30: Post-fix Godot MCP validation passed: <code>play_scene</code> current scene started, <code>get_godot_errors</code> reported</li>
+<p><code>Session has no errors</code>, <code>ElementalMasteryPanel size=Vector2(1048,232) position=Vector2(16,1220)</code>, <code>ElementalMasteryCards size=Vector2(1028,186) position=Vector2(10,40)</code>, and six <code>164x186</code> cards fit within the row.</p>
+</ul>
+<h2 id="cleanup-criteria">Cleanup Criteria</h2>
+<ul>
+<li>[x] Screenshot-polish tasks are implemented/validated for their original temporary tracker scope.</li>
+<li>[x] Durable public screenshot/readability acceptance is transferred to ITCH-01, ITCH-05, ITCH-07, and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+<li>[x] This file is retained only as historical evidence until a later archive/delete cleanup; it is not an active issue tracker.</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/tmp_combat_feedback_polish_todo.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#temporary-combat-feedback-polish-todo">Temporary Combat Feedback Polish Todo</a><a class="toc-h2" href="#purpose">Purpose</a><a class="toc-h2" href="#status-legend">Status Legend</a><a class="toc-h2" href="#tasks">Tasks</a><a class="toc-h2" href="#effort-log">Effort Log</a><a class="toc-h2" href="#validation-log">Validation Log</a><a class="toc-h2" href="#cleanup-criteria">Cleanup Criteria</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

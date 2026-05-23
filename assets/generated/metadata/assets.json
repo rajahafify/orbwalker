@@ -1,17 +1,17 @@
-﻿{
+{
     "records":  [
                     {
                         "asset_id":  "app_icon",
                         "asset_name":  "Application icon",
                         "asset_type":  "icon",
                         "group_id":  "brand_identity",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/app_icon.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/app_icon.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/app_icon_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -33,13 +33,13 @@
                         "asset_name":  "Approved production asset manifest",
                         "asset_type":  "manifest",
                         "group_id":  "asset_pipeline_and_metadata",
-                        "brief_path":  "assets/briefs/wave-03-governance-foundation/approved_asset_manifest.brief.md",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/approved_asset_manifest.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -59,13 +59,13 @@
                         "asset_name":  "Production art bible",
                         "asset_type":  "documentation",
                         "group_id":  "asset_pipeline_and_metadata",
-                        "brief_path":  "assets/briefs/wave-03-governance-foundation/art_bible.brief.md",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/art_bible.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -85,13 +85,13 @@
                         "asset_name":  "Per-asset briefs",
                         "asset_type":  "documentation_set",
                         "group_id":  "asset_pipeline_and_metadata",
-                        "brief_path":  "assets/briefs/wave-03-governance-foundation/asset_briefs.brief.md",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/asset_briefs.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -111,14 +111,14 @@
                         "asset_name":  "Orb clear, cascade, and combo VFX",
                         "asset_type":  "vfx_set",
                         "group_id":  "vfx",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/board_orb_clear_vfx.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/board_orb_clear_vfx.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/board_orb_clear_vfx_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "assets/rejected/alpha_failed/board_orb_clear_vfx_candidate_01_alpha_fixed.png",
                                                   "assets/rejected/alpha_failed/board_orb_clear_vfx_candidate_02.png",
@@ -153,13 +153,13 @@
                         "asset_name":  "Boot splash screen image",
                         "asset_type":  "splash",
                         "group_id":  "brand_identity",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boot_splash.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/boot_splash_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -181,13 +181,13 @@
                         "asset_name":  "Boss portrait set",
                         "asset_type":  "boss_portrait_set",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boss_portraits.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/boss_portraits.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/boss_portraits_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -209,13 +209,13 @@
                         "asset_name":  "Collection/meta progression background",
                         "asset_type":  "background",
                         "group_id":  "screens",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/collection_background.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/collection_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -237,13 +237,13 @@
                         "asset_name":  "Dungeon combat background",
                         "asset_type":  "background",
                         "group_id":  "screens",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_background.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_background.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/combat_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -265,13 +265,13 @@
                         "asset_name":  "Wide enemy encounter stage/banner art",
                         "asset_type":  "combat_stage_set",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -293,14 +293,14 @@
                         "asset_name":  "Combat chrome texture pack",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_ui_chrome_pack.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/combat_ui_chrome_pack.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/combat_ui_chrome_pack_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/combat_ui_chrome_pack_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/combat_ui_chrome_pack_candidate_04_chroma_key.prompt.json",
@@ -328,14 +328,14 @@
                         "asset_name":  "Consumable scroll icons",
                         "asset_type":  "icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/consumable_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/consumable_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/consumable_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/consumable_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "assets/rejected/alpha_failed/consumable_icons_candidate_01_alpha_fixed.png",
                                                   "assets/rejected/alpha_failed/consumable_icons_candidate_02.png",
@@ -370,13 +370,13 @@
                         "asset_name":  "Controls/help visual",
                         "asset_type":  "instructional_graphic",
                         "group_id":  "marketing_and_store",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/controls_visual.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/controls_visual.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/controls_visual_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -398,14 +398,14 @@
                         "asset_name":  "Enemy idle, intent, attack, block, hit, defeat animations",
                         "asset_type":  "animation_set",
                         "group_id":  "animation",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_animation_set.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_animation_set.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/enemy_animation_set_candidate_04_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract.py",
@@ -413,19 +413,19 @@
                                                   "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png",
                                                   "assets/sprite_pipeline/candidate_04/enemy_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_04/enemy_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_04.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_04.html",
                                                   "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_06_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/enemy_animation_set_candidate_06_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_06.remaining.json",
                                                   "assets/sprite_pipeline/candidate_06/enemy_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_06/enemy_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_06.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_06.html",
                                                   "assets/generated/candidates/bulk-generation-first/enemy_animation_set_candidate_08_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/enemy_animation_set_candidate_08_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_08.enemy.json",
                                                   "assets/sprite_pipeline/candidate_08_component/enemy_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_08_component/enemy_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_07_08.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_07_08.html",
                                                   "assets/cleanup/chroma_keyed_soft_candidate_08/enemy_animation_set_candidate_08_soft_alpha.png",
                                                   "assets/cleanup/chroma_keyed_soft_candidate_08_eroded/enemy_animation_set_candidate_08_soft_eroded_alpha.png",
                                                   "assets/sprite_pipeline/candidate_08_soft_eroded_component/enemy_animation_set/preview_strip_8col.png"
@@ -450,14 +450,14 @@
                         "asset_name":  "Enemy attack, block, shield, and HP-hit VFX",
                         "asset_type":  "vfx_set",
                         "group_id":  "vfx",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/enemy_attack_vfx.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/enemy_attack_vfx_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/enemy_attack_vfx_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "assets/rejected/alpha_failed/enemy_attack_vfx_candidate_01_alpha_fixed.png",
                                                   "assets/rejected/alpha_failed/enemy_attack_vfx_candidate_02.png",
@@ -492,13 +492,13 @@
                         "asset_name":  "Normal enemy portrait set",
                         "asset_type":  "enemy_portrait_set",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/enemy_portraits.brief.md",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/enemy_portraits.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/enemy_portraits_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -520,14 +520,14 @@
                         "asset_name":  "Equipment item icons",
                         "asset_type":  "icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/equipment_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/equipment_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/equipment_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/equipment_icons_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/equipment_icons_candidate_04_chroma_key.prompt.json",
@@ -555,13 +555,13 @@
                         "asset_name":  "Orbwalker title/logo lockup",
                         "asset_type":  "logo",
                         "group_id":  "brand_identity",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/game_title_logo.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/game_title_logo.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/game_title_logo_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -584,13 +584,13 @@
                         "asset_name":  "Generation metadata records",
                         "asset_type":  "metadata_set",
                         "group_id":  "asset_pipeline_and_metadata",
-                        "brief_path":  "assets/briefs/wave-03-governance-foundation/generation_metadata.brief.md",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/generation_metadata.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -610,14 +610,14 @@
                         "asset_name":  "Hero idle, hurt, attack-cast, victory, defeat animations",
                         "asset_type":  "animation_set",
                         "group_id":  "animation",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_animation_set.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_animation_set.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/hero_animation_set_candidate_04_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract.py",
@@ -625,19 +625,19 @@
                                                   "assets/qa/transparency_tests/adaptive_candidate_04_contact_sheet.png",
                                                   "assets/sprite_pipeline/candidate_04/hero_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_04/hero_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_04.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_04.html",
                                                   "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_06_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/hero_animation_set_candidate_06_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_06.remaining.json",
                                                   "assets/sprite_pipeline/candidate_06/hero_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_06/hero_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_06.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_06.html",
                                                   "assets/generated/candidates/bulk-generation-first/hero_animation_set_candidate_07_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/hero_animation_set_candidate_07_chroma_key.prompt.json",
                                                   "assets/qa/transparency_tests/adaptive_border_extract_report.candidate_07.animations.json",
                                                   "assets/sprite_pipeline/candidate_07/hero_animation_set/preview_strip_8col.png",
                                                   "assets/sprite_pipeline/candidate_07/hero_animation_set/contact_sheet_4x2.png",
-                                                  "assets/qa/reports/sprite_pipeline_candidate_07_08.md",
+                                                  "assets/qa/reports/sprite_pipeline_candidate_07_08.html",
                                                   "assets/cleanup/chroma_keyed_soft_candidate_07/hero_animation_set_candidate_07_soft_alpha.png",
                                                   "assets/cleanup/chroma_keyed_soft_candidate_07_eroded/hero_animation_set_candidate_07_soft_eroded_alpha.png",
                                                   "assets/sprite_pipeline/candidate_07_soft_eroded_component/hero_animation_set/preview_strip_8col.png"
@@ -662,13 +662,13 @@
                         "asset_name":  "Orbwalker full-body/key pose set",
                         "asset_type":  "character_pose",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/hero_full_body_or_pose_set.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/hero_full_body_or_pose_set_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -690,13 +690,13 @@
                         "asset_name":  "Orbwalker hero portrait",
                         "asset_type":  "hero_portrait",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/hero_orbwalker_portrait.brief.md",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/hero_orbwalker_portrait.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/hero_orbwalker_portrait_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -718,14 +718,14 @@
                         "asset_name":  "Enemy intent icon set",
                         "asset_type":  "intent_icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/intent_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/intent_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/intent_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/intent_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/intent_icons_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/intent_icons_candidate_04_chroma_key.prompt.json",
@@ -753,13 +753,13 @@
                         "asset_name":  "Itch.io page header, cover, thumbnail, and embed art",
                         "asset_type":  "marketing_pack",
                         "group_id":  "marketing_and_store",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/itch_page_graphics.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/wave-01-public-demo-core/itch_page_graphics_key_art_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -781,13 +781,13 @@
                         "asset_name":  "Main menu cavern/city background",
                         "asset_type":  "background",
                         "group_id":  "screens",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_background.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_background.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/main_menu_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -814,14 +814,14 @@
                         "asset_name":  "Main menu buttons, border, stats panel, and menu icons",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/main_menu_ui_pack.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_ui_retry/main_menu_ui_pack_candidate_05_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/main_menu_ui_pack_candidate_04_chroma_key.prompt.json",
@@ -867,14 +867,14 @@
                         "asset_name":  "Six mastery card icons",
                         "asset_type":  "mastery_icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/mastery_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/mastery_icons_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/mastery_icons_candidate_04_chroma_key.prompt.json",
@@ -902,14 +902,14 @@
                         "asset_name":  "Elemental mastery beams, shells, and impact VFX",
                         "asset_type":  "vfx_set",
                         "group_id":  "vfx",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_vfx.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/mastery_vfx.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/mastery_vfx_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/mastery_vfx_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "assets/rejected/alpha_failed/mastery_vfx_candidate_01_alpha_fixed.png",
                                                   "assets/rejected/alpha_failed/mastery_vfx_candidate_02.png",
@@ -944,13 +944,13 @@
                         "asset_name":  "Shop merchant character/header art",
                         "asset_type":  "npc_portrait_or_header",
                         "group_id":  "characters",
-                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/merchant_character.brief.md",
+                        "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/merchant_character.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/merchant_character_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -972,13 +972,13 @@
                         "asset_name":  "Combat music loop",
                         "asset_type":  "music",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_combat.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_combat.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -998,13 +998,13 @@
                         "asset_name":  "Main menu music loop",
                         "asset_type":  "music",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_menu.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_menu.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1024,13 +1024,13 @@
                         "asset_name":  "Shop music loop",
                         "asset_type":  "music",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_shop.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_shop.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1050,13 +1050,13 @@
                         "asset_name":  "Victory, defeat, and run-summary music stingers/loops",
                         "asset_type":  "music",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/music_victory_defeat_summary.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1076,14 +1076,14 @@
                         "asset_name":  "Six orb type icons/textures",
                         "asset_type":  "orb_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/orb_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/orb_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/orb_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/orb_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/orb_icons_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/orb_icons_candidate_04_chroma_key.prompt.json",
@@ -1111,13 +1111,13 @@
                         "asset_name":  "Asset QA and transparency reports",
                         "asset_type":  "qa_report_set",
                         "group_id":  "asset_pipeline_and_metadata",
-                        "brief_path":  "assets/briefs/wave-03-governance-foundation/qa_reports.brief.md",
+                        "brief_path":  "assets/briefs/wave-03-governance-foundation/qa_reports.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1137,14 +1137,14 @@
                         "asset_name":  "Common/uncommon/rare rarity badges",
                         "asset_type":  "rarity_badge_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/rarity_badges.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/rarity_badges_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/rarity_badges_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/rarity_badges_candidate_04_chroma_key.prompt.json",
@@ -1172,14 +1172,14 @@
                         "asset_name":  "Relic icons",
                         "asset_type":  "icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/relic_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/relic_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/relic_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/relic_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/relic_icons_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/relic_icons_candidate_04_chroma_key.prompt.json",
@@ -1207,14 +1207,14 @@
                         "asset_name":  "Victory, defeat, boss reward, and run summary UI chrome",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/result_screen_ui_pack.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/result_screen_ui_pack.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/wave-01-public-demo-core/result_screen_ui_pack_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/result_screen_ui_pack_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/result_screen_ui_pack_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/result_screen_ui_pack_candidate_04_chroma_key.prompt.json",
@@ -1242,13 +1242,13 @@
                         "asset_name":  "Victory/defeat run-summary background",
                         "asset_type":  "background",
                         "group_id":  "screens",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/run_summary_background.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/wave-01-public-demo-core/run_summary_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1270,13 +1270,13 @@
                         "asset_name":  "Curated screenshot pack",
                         "asset_type":  "screenshot_pack",
                         "group_id":  "marketing_and_store",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/screenshots.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/screenshots.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1296,13 +1296,13 @@
                         "asset_name":  "Combat core SFX",
                         "asset_type":  "sfx_set",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_combat_core.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_combat_core.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1322,13 +1322,13 @@
                         "asset_name":  "Shop SFX",
                         "asset_type":  "sfx_set",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_shop.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/sfx_shop.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1348,13 +1348,13 @@
                         "asset_name":  "Shared UI SFX",
                         "asset_type":  "sfx_set",
                         "group_id":  "audio",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/sfx_ui.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/sfx_ui.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1374,14 +1374,14 @@
                         "asset_name":  "Shared player HUD, HP bars, slot frames, and mastery panels",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shared_hud_chrome.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_ui_retry/shared_hud_chrome_candidate_05_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/shared_hud_chrome_candidate_04_chroma_key.prompt.json",
@@ -1412,13 +1412,13 @@
                         "asset_name":  "Merchant shop background",
                         "asset_type":  "background",
                         "group_id":  "screens",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_background.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_background.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1440,14 +1440,14 @@
                         "asset_name":  "Shop buy, sell, reroll, treasure chest, and error feedback VFX",
                         "asset_type":  "vfx_set",
                         "group_id":  "vfx",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_transaction_vfx.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_transaction_vfx.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/shop_transaction_vfx_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shop_transaction_vfx_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/shop_transaction_vfx_candidate_04_chroma_key.prompt.json",
@@ -1475,14 +1475,14 @@
                         "asset_name":  "Shop card, offer, relic, reroll, treasure chest, and transaction UI pack",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_ui_pack.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/shop_ui_pack.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/shop_ui_pack_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/shop_ui_pack_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/shop_ui_pack_candidate_04_chroma_key.prompt.json",
@@ -1510,13 +1510,13 @@
                         "asset_name":  "Store/page capsule or hero key art",
                         "asset_type":  "marketing_art",
                         "group_id":  "brand_identity",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/store_capsule_key_art.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/store_capsule_key_art.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/store_capsule_key_art_candidate_01.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1538,13 +1538,13 @@
                         "asset_name":  "Short gameplay GIF/video capture",
                         "asset_type":  "marketing_video",
                         "group_id":  "marketing_and_store",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/trailer_or_gif_capture.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/trailer_or_gif_capture.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1564,14 +1564,14 @@
                         "asset_name":  "Treasure chest icons",
                         "asset_type":  "icon_set",
                         "group_id":  "core_gameplay_icons",
-                        "brief_path":  "assets/briefs/wave-01-public-demo-core/treasure_chest_icons.brief.md",
+                        "brief_path":  "assets/briefs/wave-01-public-demo-core/treasure_chest_icons.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/wave-01-public-demo-core/treasure_chest_icons_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/treasure_chest_icons_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/treasure_chest_icons_candidate_03_alpha_backgrounds.png",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/treasure_chest_icons_candidate_04_chroma_key.png",
@@ -1600,14 +1600,14 @@
                         "asset_name":  "Tutorial, tooltip, first-run guidance, and control prompt UI",
                         "asset_type":  "ui_pack",
                         "group_id":  "ui_chrome",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/tutorial_onboarding_ui_pack.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_soft_candidate_06/tutorial_onboarding_ui_pack_candidate_06_soft_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/tutorial_onboarding_ui_pack_candidate_04_chroma_key.prompt.json",
@@ -1642,13 +1642,13 @@
                         "asset_name":  "UI transition and feedback animation specifications",
                         "asset_type":  "motion_spec",
                         "group_id":  "animation",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/ui_motion_language.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/ui_motion_language.brief.html",
                         "candidate_paths":  [
 
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md"
+                                                  "resources/assetgen.workflow.html"
                                               ],
                         "license_status":  "approved",
                         "usage_rights":  "approved",
@@ -1668,14 +1668,14 @@
                         "asset_name":  "Meta unlock and achievement toast VFX",
                         "asset_type":  "vfx_set",
                         "group_id":  "vfx",
-                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/unlock_achievement_vfx.brief.md",
+                        "brief_path":  "assets/briefs/wave-04-remaining-production-assets/unlock_achievement_vfx.brief.html",
                         "candidate_paths":  [
                                                 "assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_01.png",
                                                 "assets/cleanup/chroma_keyed_adaptive_all/unlock_achievement_vfx_candidate_04_adaptive_alpha.png"
                                             ],
                         "source_references":  [
                                                   "assets.json",
-                                                  "resources/assetgen.workflow.md",
+                                                  "resources/assetgen.workflow.html",
                                                   "assets/qa/transparency_tests/alpha_cleanup_probe_report.full.json",
                                                   "D:/godot/matchatro/assets/generated/candidates/bulk-generation-first/unlock_achievement_vfx_candidate_04_chroma_key.png",
                                                   "assets/prompts/runs/bulk-generation-first/unlock_achievement_vfx_candidate_04_chroma_key.prompt.json",

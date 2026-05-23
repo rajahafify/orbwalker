@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AGENTS.html</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>AGENTS.html</h1>
+      <p class="summary">Project operating rules for AI agents working in <code>D:\godot\matchatro</code>.</p>
+      <h1 id="agents-md">AGENTS.html</h1>
+<p>Project operating rules for AI agents working in <code>D:\godot\matchatro</code>.</p>
+<h2 id="project-context">Project Context</h2>
+<p>Matchatro, currently titled Orbwalker in Godot project metadata, is a Godot 4.6 game prototype. Treat this repository as an existing project with active source, docs, wiki, milestone tracking, and project-local Codex agent config.</p>
+<p>Important project surfaces:</p>
+<ul>
+<li><code>project.godot</code> - Godot project configuration, main scene, autoloads, and plugin enablement.</li>
+<li><code>todo.html</code> - milestone scope and status tracker.</li>
+<li><code>docs/test_plan.html</code> - QA checklist and validation notes.</li>
+<li><code>docs/game_design_document.html</code> - product/design intent.</li>
+<li><code>docs/system_architecture.html</code> - human-written architecture notes.</li>
+<li><code>wiki/</code> - agent-maintained knowledge base.</li>
+<li><code>.codex/config.toml</code> and <code>.codex/agents/</code> - project-local Codex model and role configuration.</li>
+</ul>
+<h2 id="source-of-truth">Source Of Truth</h2>
+<p>Use this priority order:</p>
+<ol>
+<li>Actual source code, scenes, resources, and tests.</li>
+<li>Raw source material in <code>raw/</code>.</li>
+<li>Human-written docs in <code>docs/</code> and root project files.</li>
+<li>Agent-maintained wiki pages.</li>
+<li>Chat/task instructions from the human.</li>
+</ol>
+<p>Rules:</p>
+<ul>
+<li>For current behavior, trust source files over wiki or docs.</li>
+<li>For intended design, trust raw specs, design docs, or explicit human instructions over wiki.</li>
+<li>If code, docs, wiki, and task instructions disagree, call out the contradiction and update the wiki when useful.</li>
+<li>If something cannot be verified, mark it as <code>needs verification</code>.</li>
+</ul>
+<h2 id="default-multi-agent-workflow">Default Multi-Agent Workflow</h2>
+<p>Use the multi-agent workflow by default for milestone-style implementation prompts such as <code>Work on milestone 1</code>, unless the human explicitly asks to keep work in the main thread.</p>
+<p>Role split:</p>
+<ul>
+<li><code>default</code> uses <code>gpt-5.5</code> with low reasoning for orchestration, task generation, integration, documentation, summary, and handoff.</li>
+<li><code>explorer</code> uses <code>gpt-5.5</code> for exploration tasks, planning research, behavior checks, risk review, and source/wiki contradiction checks.</li>
+<li><code>worker</code> uses <code>gpt-5.3-codex</code> for bounded implementation, focused file edits, assigned docs/wiki updates, and validation follow-through.</li>
+</ul>
+<p>Code editing rule:</p>
+<ul>
+<li>In multi-agent mode, source/runtime code edits are done only by <code>worker</code>.</li>
+<li><code>default</code> may edit documentation, wiki, <code>AGENTS.html</code>, and <code>.codex/</code> orchestration files, but must not directly edit gameplay/runtime files such as <code>scripts/</code>, <code>scenes/</code>, <code>resources/</code>, <code>addons/</code>, <code>tools/</code>, <code>project.godot</code>, <code>.gd</code>, <code>.tscn</code>, <code>.tres</code>, or <code>.res</code> files.</li>
+<li><code>explorer</code> must not edit any files.</li>
+<li>If a worker cannot be spawned, <code>default</code> must stop and report the blocker before making source/runtime code edits, unless the human explicitly authorizes main-thread implementation.</li>
+</ul>
+<p>When spawning subagents, pass explicit model overrides. Do not rely on the role name or <code>.codex/agents/*.toml</code> alone to select the model:</p>
+<ul>
+<li>Spawn <code>explorer</code> with <code>agent_type = "explorer"</code>, <code>model = "gpt-5.5"</code>, and <code>reasoning_effort = "medium"</code>.</li>
+<li>Spawn <code>worker</code> with <code>agent_type = "worker"</code>, <code>model = "gpt-5.3-codex"</code>, and <code>reasoning_effort = "high"</code>.</li>
+<li>Keep orchestration and final handoff in the main/default agent using <code>gpt-5.5</code> with low reasoning.</li>
+</ul>
+<p>Default milestone flow, step by step:</p>
+<ol>
+<li><code>default</code> reads <code>todo.html</code>, <code>docs/test_plan.html</code>, relevant wiki pages, and the human request.</li>
+<li><code>default</code> generates concrete tasks and separates exploration, planning, implementation, validation, and documentation work.</li>
+<li><code>explorer</code> handles exploration tasks: relevant files, current behavior, risks, stale docs, and source/wiki contradictions.</li>
+<li><code>explorer</code> handles planning research tasks when the plan depends on codebase facts, milestone scope, validation surfaces, or implementation risks.</li>
+<li><code>default</code> turns explorer findings into an ordered implementation plan with explicit worker ownership.</li>
+<li><code>worker</code> handles source/runtime code edits with explicit file or module ownership.</li>
+<li><code>default</code> reviews worker results, coordinates or records validation, resolves docs/wiki updates, and summarizes remaining uncertainty.</li>
+</ol>
+<p>Do not skip phases in multi-agent mode. If a phase is unnecessary, state why before moving to the next phase.</p>
+<p>Worker rules:</p>
+<ul>
+<li>Tell workers they are not alone in the codebase.</li>
+<li>Tell workers not to revert edits made by others.</li>
+<li>Give each worker a clear ownership area or file/module scope.</li>
+<li>Assign all source/runtime code edits to workers in multi-agent mode.</li>
+<li>Do not assign overlapping worker write scopes unless the human explicitly accepts the merge risk.</li>
+<li>Require workers to report changed file paths and validation performed.</li>
+</ul>
+<p>Explorer rules:</p>
+<ul>
+<li>Explorers should not edit files.</li>
+<li>Explorer findings are evidence, not final authority; verify against source before changing behavior.</li>
+<li>Use explorers for sidecar research that can run in parallel with default-agent orchestration or unrelated local work.</li>
+</ul>
+<h2 id="development-workflow">Development Workflow</h2>
+<p>For every coding task:</p>
+<ol>
+<li>Check <code>git status --short --branch</code>.</li>
+<li>Read related wiki pages before editing.</li>
+<li>Inspect relevant source files, scenes, resources, and docs.</li>
+<li>Make the smallest working change that satisfies the request.</li>
+<li>Preserve existing project patterns and avoid unrelated refactors.</li>
+<li>Run relevant validation, using Godot MCP for Godot behavior.</li>
+<li>Update docs/wiki when behavior, setup, file responsibilities, or durable project knowledge changes.</li>
+<li>Append <code>wiki/log.html</code> when the wiki changes.</li>
+<li>Summarize what changed, what was tested, what was not tested, and remaining uncertainty.</li>
+</ol>
+<p>Do not commit unless the human explicitly asks.</p>
+<h2 id="godot-validation">Godot Validation</h2>
+<p>Use <code>godot-mcp</code> for Godot tasks. Do not use headless Godot.</p>
+<p>Preferred validation surfaces and tools:</p>
+<ul>
+<li><code>res://scenes/main_menu.tscn</code> - startup/main-menu flow.</li>
+<li><code>res://scenes/combat.tscn</code> - player-facing combat scene.</li>
+<li><code>res://scenes/shop.tscn</code> - player-facing shop flow.</li>
+<li><code>res://scenes/run_summary.tscn</code> - final victory summary flow.</li>
+<li>Focused <code>execute_editor_script</code> probes for board resolver, combat envelope, RunState routing, and content contracts.</li>
+<li><code>get_project_info</code></li>
+<li><code>get_godot_errors</code></li>
+<li><code>play_scene</code></li>
+<li><code>stop_running_scene</code></li>
+<li><code>get_scene_tree</code></li>
+<li><code>execute_editor_script</code></li>
+<li>runtime node/property inspection where needed</li>
+</ul>
+<p>Validation rules:</p>
+<ul>
+<li>If <code>get_godot_errors</code> looks stale, reload or inspect the relevant script/scene and rerun the check.</li>
+<li>Prefer small typed <code>execute_editor_script</code> probes over large ad hoc scripts.</li>
+<li><code>res://scenes/combat/board_debug.tscn</code> has been removed; do not use it as a validation surface.</li>
+<li>If MCP tools are unavailable, state that clearly and record what was not tested.</li>
+<li>Do not claim runtime validation happened unless it actually ran.</li>
+</ul>
+<h2 id="wiki-workflow">Wiki Workflow</h2>
+<p>The wiki is a working knowledge base, not the source of truth for current behavior.</p>
+<p>Read first:</p>
+<ul>
+<li><code>wiki/index.html</code></li>
+<li>Relevant pages linked from the index.</li>
+<li><code>wiki/setup.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/open-questions.html</code> when they match the task.</li>
+</ul>
+<p>Update the wiki when:</p>
+<ul>
+<li>A feature changes or is added.</li>
+<li>A system, module, file responsibility, setup step, dependency, API, schema, interface, or validation workflow changes.</li>
+<li>A bug reveals a durable edge case.</li>
+<li>A design or technical decision is made.</li>
+<li>A repeated explanation would be useful later.</li>
+</ul>
+<p>Do not update the wiki for:</p>
+<ul>
+<li>Small formatting-only changes.</li>
+<li>Temporary experiments that are reverted.</li>
+<li>Comment-only changes.</li>
+<li>Pure refactors that do not change behavior or understanding.</li>
+</ul>
+<p>Wiki page rules:</p>
+<ul>
+<li>Use Obsidian-style links like <code>[[features]]</code>.</li>
+<li>Prefer lowercase hyphenated page names.</li>
+<li>Cite factual claims with source paths, for example <code>(source: scripts/core/run_state.gd)</code>.</li>
+<li>Mark unverified claims with <code>(needs verification)</code>.</li>
+<li>Keep <code>wiki/log.html</code> append-only. Do not rewrite old log entries except to fix formatting.</li>
+</ul>
+<h2 id="question-answering">Question Answering</h2>
+<p>When answering project questions:</p>
+<ol>
+<li>Read <code>wiki/index.html</code>.</li>
+<li>Read relevant wiki pages.</li>
+<li>Inspect source files if the answer depends on current behavior.</li>
+<li>Answer directly with concrete file references.</li>
+<li>Say when the answer is not in the wiki.</li>
+<li>Update the wiki and append <code>wiki/log.html</code> only if the answer adds durable project knowledge.</li>
+</ol>
+<h2 id="documentation-and-milestones">Documentation And Milestones</h2>
+<p>Keep these files synchronized when milestone work changes behavior or accepted scope:</p>
+<ul>
+<li><code>todo.html</code></li>
+<li><code>docs/test_plan.html</code></li>
+<li>relevant <code>wiki/</code> pages</li>
+<li><code>wiki/log.html</code></li>
+</ul>
+<p>For milestone work, use <code>todo.html</code> for scope and status, <code>docs/test_plan.html</code> for QA state, and wiki pages for durable implementation knowledge. Do not mark checklist items complete without real validation or explicit human confirmation.</p>
+<h2 id="documentation-format">Documentation Format</h2>
+<p>Use HTML as the default format for future human-facing project documentation.</p>
+<ul>
+<li>Create new wiki pages, product docs, architecture notes, task trackers, runbooks, decision records, asset reports, QA reports, and long-form review artifacts as self-contained <code>.html</code> files.</li>
+<li>Include semantic HTML, embedded CSS, clear navigation, readable tables or callouts where useful, and no external scripts, CDNs, tracking pixels, or remote assets unless explicitly requested.</li>
+<li>Use Markdown only for short internal scratch notes, machine-consumed handoffs, or external tools that strictly require Markdown format; call out the exception in the final response when it happens.</li>
+<li>When updating existing documentation, preserve the repository's HTML documentation style and update links to point at <code>.html</code> targets.</li>
+</ul>
+<h2 id="coding-style">Coding Style</h2>
+<p>Prefer:</p>
+<ul>
+<li>Clear names.</li>
+<li>Small functions.</li>
+<li>Simple data structures.</li>
+<li>Explicit state.</li>
+<li>Existing project patterns.</li>
+<li>Minimal dependencies.</li>
+</ul>
+<p>Avoid:</p>
+<ul>
+<li>Large rewrites.</li>
+<li>Hidden side effects.</li>
+<li>Unnecessary abstractions.</li>
+<li>Mixing unrelated changes.</li>
+<li>Adding dependencies without a strong reason.</li>
+<li>Changing public behavior without being asked.</li>
+</ul>
+<p>Use <code>apply_patch</code> for manual edits. In this PowerShell environment, use <code>;</code> instead of <code>&amp;&amp;</code>.</p>
+<h2 id="safety-rules">Safety Rules</h2>
+<p>Do not:</p>
+<ul>
+<li>Delete user data.</li>
+<li>Modify files in <code>raw/</code> unless explicitly requested.</li>
+<li>Commit secrets, API keys, tokens, or credentials.</li>
+<li>Rewrite configuration without checking how it is used.</li>
+<li>Make destructive changes unless explicitly requested.</li>
+<li>Replace working code with speculative architecture.</li>
+<li>Revert user changes unless explicitly asked.</li>
+</ul>
+<p>Before adding a dependency:</p>
+<ol>
+<li>Check whether the project already has a suitable dependency.</li>
+<li>Prefer standard library or existing utilities.</li>
+<li>Confirm the dependency is necessary.</li>
+<li>Record the reason in <code>wiki/decisions.html</code>.</li>
+<li>Update setup/install docs if needed.</li>
+</ol>
+<h2 id="git-and-branches">Git And Branches</h2>
+<ul>
+<li>Check live branch and worktree state before repo maintenance.</li>
+<li>This repo commonly uses <code>codex/milestone-*</code> branch names; verify exact branch names before switching, rebasing, or merging.</li>
+<li>Prefer fast-forward or linear history operations when branch topology allows.</li>
+<li>Do not use destructive commands like <code>git reset --hard</code> or <code>git checkout --</code> unless the human explicitly requests them.</li>
+<li>Commit only when requested. When committing, keep the commit focused on the requested work.</li>
+</ul>
+<h2 id="completion-criteria">Completion Criteria</h2>
+<p>A task is complete when:</p>
+<ul>
+<li>The requested work is done.</li>
+<li>Relevant source files were inspected.</li>
+<li>Relevant validation was run, or the untested scope is clearly stated.</li>
+<li>Wiki/docs were updated if durable project knowledge changed.</li>
+<li><code>wiki/log.html</code> has a new entry if the wiki changed.</li>
+<li>Remaining uncertainty is recorded or called out.</li>
+<li>Final response states what changed, what was tested, and what remains uncertain.</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>AGENTS.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#agents-md">AGENTS.html</a><a class="toc-h2" href="#project-context">Project Context</a><a class="toc-h2" href="#source-of-truth">Source Of Truth</a><a class="toc-h2" href="#default-multi-agent-workflow">Default Multi-Agent Workflow</a><a class="toc-h2" href="#development-workflow">Development Workflow</a><a class="toc-h2" href="#godot-validation">Godot Validation</a><a class="toc-h2" href="#wiki-workflow">Wiki Workflow</a><a class="toc-h2" href="#question-answering">Question Answering</a><a class="toc-h2" href="#documentation-and-milestones">Documentation And Milestones</a><a class="toc-h2" href="#documentation-format">Documentation Format</a><a class="toc-h2" href="#coding-style">Coding Style</a><a class="toc-h2" href="#safety-rules">Safety Rules</a><a class="toc-h2" href="#git-and-branches">Git And Branches</a><a class="toc-h2" href="#completion-criteria">Completion Criteria</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

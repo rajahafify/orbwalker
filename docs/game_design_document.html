@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Game Design Document</title>
+  <style>
+	:root {
+	  color-scheme: light;
+	  --ink: #18231f;
+	  --muted: #65716b;
+	  --paper: #fffdf8;
+	  --paper-2: #f7f2e8;
+	  --line: #d8cdbd;
+	  --line-strong: #a99578;
+	  --ocean: #0f766e;
+	  --ocean-dark: #0b4f4b;
+	  --gold: #b7802d;
+	  --blue: #2563eb;
+	  --red: #b42318;
+	  --green: #167043;
+	  --code: #101828;
+	  --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+	}
+	* { box-sizing: border-box; }
+	body {
+	  margin: 0;
+	  color: var(--ink);
+	  font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+	  background:
+		linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+		radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+		radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+		#ebe5d8;
+	  background-size: 34px 34px, 34px 34px, auto, auto, auto;
+	}
+	.layout {
+	  max-width: 1240px;
+	  margin: 0 auto;
+	  padding: 28px 24px 72px;
+	  display: grid;
+	  grid-template-columns: minmax(0, 1fr) 292px;
+	  gap: 24px;
+	}
+	main {
+	  min-width: 0;
+	  background: var(--paper);
+	  border: 1px solid var(--line-strong);
+	  border-radius: 4px;
+	  padding: 36px 38px 42px;
+	  box-shadow: var(--shadow);
+	  overflow: hidden;
+	}
+	.content { padding: 0; }
+	aside {
+	  position: sticky;
+	  top: 18px;
+	  align-self: start;
+	  max-height: calc(100vh - 36px);
+	  overflow: auto;
+	  background: rgba(255, 253, 248, .92);
+	  border: 1px solid var(--line-strong);
+	  border-radius: 4px;
+	  padding: 16px;
+	  box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+	  backdrop-filter: blur(8px);
+	}
+	.hero {
+	  position: relative;
+	  margin: -36px -38px 32px;
+	  padding: 42px 38px 34px;
+	  color: #fff9ed;
+	  background:
+		linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+	  overflow: hidden;
+	}
+	.hero::after {
+	  content: "";
+	  position: absolute;
+	  inset: 0;
+	  pointer-events: none;
+	  background:
+		linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+	  background-size: 32px 32px;
+	  mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+	}
+	.hero > * { position: relative; z-index: 1; }
+	.hero-label {
+	  display: inline-block;
+	  margin-bottom: 14px;
+	  padding: 5px 11px;
+	  border: 1px solid rgba(255, 249, 237, .42);
+	  border-radius: 2px;
+	  background: rgba(255, 249, 237, .10);
+	  font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  letter-spacing: .12em;
+	  text-transform: uppercase;
+	}
+	h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+	h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+	h2 {
+	  margin: 2em 0 .75em;
+	  padding-top: 1.15em;
+	  border-top: 1px solid var(--line);
+	  font-size: 1.55rem;
+	}
+	h2::before {
+	  content: "";
+	  display: inline-block;
+	  width: 9px;
+	  height: 9px;
+	  margin-right: 9px;
+	  border: 2px solid var(--gold);
+	  transform: rotate(45deg) translateY(-1px);
+	}
+	h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+	p, li, td { max-width: 76ch; }
+	p { margin: .72em 0; }
+	a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+	code {
+	  background: #efe8da;
+	  color: #2f3b35;
+	  padding: .13em .38em;
+	  border-radius: 3px;
+	  font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+	}
+	pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+	pre code { background: transparent; color: inherit; padding: 0; }
+	.summary {
+	  margin: 0 0 24px;
+	  padding: 12px 0 12px 16px;
+	  max-width: 820px;
+	  color: var(--muted);
+	  border-left: 4px solid var(--gold);
+	  font-size: 1.06rem;
+	}
+	.hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+	.hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+	.hero-chip {
+	  padding: 7px 10px;
+	  border: 1px solid rgba(255, 249, 237, .34);
+	  border-radius: 2px;
+	  background: rgba(255, 249, 237, .12);
+	  font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	}
+	.toc-title {
+	  margin-bottom: 10px;
+	  color: var(--ocean-dark);
+	  font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  letter-spacing: .08em;
+	  text-transform: uppercase;
+	}
+	.toc a {
+	  display: block;
+	  padding: 6px 0;
+	  color: var(--ink);
+	  border-bottom: 1px solid rgba(216, 205, 189, .55);
+	  font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+	}
+	.toc .toc-h2 { padding-left: 10px; }
+	.toc .toc-h3 { padding-left: 22px; }
+	.toc .toc-h4 { padding-left: 34px; }
+	.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+	.metric, .card, .takeaway-list li, .flow-step, .pattern div {
+	  border: 1px solid var(--line);
+	  border-radius: 4px;
+	  background:
+		linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+	  box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+	}
+	.metric, .card { padding: 16px; }
+	.metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+	.metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+	.card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+	.takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+	.takeaway-list li { padding: 14px 15px; }
+	.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+	.flow-step { position: relative; min-height: 126px; padding: 15px; }
+	.flow-step:not(:last-child)::after {
+	  content: "";
+	  position: absolute;
+	  right: -9px;
+	  top: 50%;
+	  width: 8px;
+	  height: 8px;
+	  border-top: 2px solid var(--gold);
+	  border-right: 2px solid var(--gold);
+	  transform: translateY(-50%) rotate(45deg);
+	  background: var(--paper);
+	}
+	.flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+	.pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+	.pattern div { min-height: 122px; padding: 15px; }
+	.pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+	.callout, blockquote {
+	  margin: 18px 0;
+	  padding: 14px 16px;
+	  border: 1px solid #efd7a9;
+	  border-left: 5px solid var(--gold);
+	  border-radius: 4px;
+	  background: #fff8e8;
+	}
+	.callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+	.callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+	.decision {
+	  border: 1px solid rgba(212, 163, 92, .46);
+	  background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+	  border-radius: 4px;
+	  padding: 18px;
+	  margin-top: 24px;
+	  box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+	}
+	.table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+	table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+	th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+	th { background: #efe6d6; color: #27352f; font-weight: 800; }
+	tr:last-child td { border-bottom: 0; }
+	.badge {
+	  display: inline-block;
+	  padding: 3px 8px;
+	  border-radius: 2px;
+	  background: #e8f4f1;
+	  color: var(--ocean-dark);
+	  border: 1px solid #9accc4;
+	  font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  white-space: nowrap;
+	  text-transform: uppercase;
+	  letter-spacing: .04em;
+	}
+	.badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+	.badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+	.footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+	@media (max-width: 980px) {
+	  .layout { display: block; padding: 16px; }
+	  aside { position: static; margin-bottom: 16px; }
+	  main { padding: 24px; overflow: visible; }
+	  .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+	  .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+	  .flow-step:not(:last-child)::after { display: none; }
+	}
+	@media print {
+	  body { background: white; }
+	  .layout { display: block; max-width: none; padding: 0; }
+	  aside { display: none; }
+	  main { border: 0; box-shadow: none; }
+	  .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+	  a { color: inherit; text-decoration: none; }
+	}
+</style>
+</head>
+<body>
+  <div class="layout">
+	<main>
+	  <h1>Orbwalker Game Design Document</h1>
+	  <p class="summary">Status: Draft 0.1</p>
+	  <h1 id="orbwalker-game-design-document">Orbwalker Game Design Document</h1>
+<p>Status: Draft 0.1 Title: Temporary Genre: Match-3 roguelike Target platforms: PC and mobile Primary inputs: Mouse and touch</p>
+<h2 id="high-concept">High Concept</h2>
+<p>Orbwalker is a fantasy match-3 roguelike where the free orb movement of Puzzle &amp; Dragons / Tower of Saviors meets run progression, shops, treasure chests, equipment, mastery cards, consumables, and relics.</p>
+<p>The player controls a single hero through a run of dungeon levels. Each fight is turn-based. The player moves one orb freely across a 5x6 board under a short timer, creates matches, resolves cascades, and uses the resulting damage, healing, armor, and gold to survive the run.</p>
+<h2 id="design-pillars">Design Pillars</h2>
+<ol>
+<li>Free movement puzzle combat: the player can drag one orb through the board, displacing other orbs as it moves.</li>
+<li>Build-driven roguelike progression: equipment, mastery, consumables, and relics change scoring, economy, defense, and orb value.</li>
+<li>Clear enemy intent: each turn, the player sees what the enemy is about to do and plans the board movement around that threat.</li>
+<li>Short, readable decisions: each fight should be understandable at a glance, but high skill should come from routing the board under time pressure.</li>
+<li>Fantasy first: items should feel like recognizable fantasy gear, relics, and magic rather than abstract casino objects.</li>
+</ol>
+<h2 id="player-fantasy">Player Fantasy</h2>
+<p>The player is a fantasy hero fighting through a dungeon by manipulating elemental orbs. The hero grows stronger through equipment and mastery rather than party members.</p>
+<p>Future versions may add multiple hero types. Each hero may have different equipment pools, mastery unlocks, starting stats, or passive rules. The first version uses one generic hero.</p>
+<h2 id="core-game-loop">Core Game Loop</h2>
+<h3 id="fight-loop">Fight Loop</h3>
+<ol>
+<li>Enemy intent is shown.</li>
+<li>Player starts dragging an orb.</li>
+<li>The 5-second movement timer starts.</li>
+<li>Player releases the mouse/touch, or the timer ends.</li>
+<li>All matches resolve.</li>
+<li>New orbs fall from the top.</li>
+<li>Cascades continue until no matches remain.</li>
+<li>Player effects resolve in this order:</li>
+<ol>
+<li>Heart healing.</li>
+<li>Armor gain.</li>
+<li>Elemental damage.</li>
+<li>Gold gain.</li>
+</ol>
+<li>If the enemy dies, its attack does not resolve.</li>
+<li>If the enemy survives, its intent resolves.</li>
+<li>Temporary armor expires.</li>
+<li>Next turn begins.</li>
+</ol>
+<h3 id="dungeon-level-loop">Dungeon Level Loop</h3>
+<p>The target full run uses 10 dungeon levels.</p>
+<p>Each dungeon level follows this structure:</p>
+<ol>
+<li>Enemy 1.</li>
+<li>Shop.</li>
+<li>Enemy 2.</li>
+<li>Shop.</li>
+<li>Boss.</li>
+<li>Boss relic reward.</li>
+<li>Shop.</li>
+<li>Advance to the next dungeon level.</li>
+</ol>
+<p>Level 10 ends with the main boss.</p>
+<h3 id="run-loop">Run Loop</h3>
+<ol>
+<li>Start a run.</li>
+<li>Pick a dungeon.</li>
+<li>Clear dungeon levels.</li>
+<li>Build around equipment, mastery, consumables, relics, and gold income.</li>
+<li>Die or defeat the level 10 main boss.</li>
+<li>Unlock future equipment and relics through meta progression.</li>
+</ol>
+<p>Only one dungeon is required for the first version. Additional dungeons and ascension-style difficulty can be added later.</p>
+<h2 id="board-rules">Board Rules</h2>
+<ul>
+<li>Board size: 5 columns x 6 rows.</li>
+<li>Gravity: down.</li>
+<li>Refill: new orbs enter from the top.</li>
+<li>Starting boards should avoid automatic matches.</li>
+<li>The board does not need to guarantee that a match is available.</li>
+<li>New orbs can immediately create cascades.</li>
+<li>Cascades count as real combos and trigger normal orb effects.</li>
+</ul>
+<h2 id="orb-movement">Orb Movement</h2>
+<p>The orb movement is the Puzzle &amp; Dragons style.</p>
+<ul>
+<li>The player selects one orb.</li>
+<li>Dragging the selected orb through adjacent cells swaps/displaces the orb in each cell it passes through.</li>
+<li>Movement is horizontal and vertical only.</li>
+<li>Diagonal movement is not allowed.</li>
+<li>The timer starts when the player begins dragging.</li>
+<li>The movement ends when the player releases input or when the 5-second timer expires.</li>
+</ul>
+<h2 id="match-rules">Match Rules</h2>
+<p>Only same-type orbs can match.</p>
+<p>Valid match shapes:</p>
+<ul>
+<li>Straight horizontal line of 3 or more.</li>
+<li>Straight vertical line of 3 or more.</li>
+<li>L shape made from connected horizontal and vertical same-type lines.</li>
+<li>T shape made from connected horizontal and vertical same-type lines.</li>
+</ul>
+<p>Diagonal connections do not count.</p>
+<h2 id="orb-types">Orb Types</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Orb</th>
+<th>Primary Effect</th>
+<th>Default Value</th>
+<th>Combo Scaling</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Fire</td>
+<td>Damage</td>
+<td>1 damage per orb</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Ice</td>
+<td>Damage</td>
+<td>1 damage per orb</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Earth</td>
+<td>Damage</td>
+<td>1 damage per orb</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Heart</td>
+<td>Healing</td>
+<td>1 HP per orb</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Armor</td>
+<td>Defense</td>
+<td>1 armor per orb</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Gold</td>
+<td>Currency</td>
+<td>1 gold per orb</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+<p>Gold orbs are rarer than other orb types. Their exact spawn rate is a balance target.</p>
+<h2 id="damage-and-resource-formula">Damage And Resource Formula</h2>
+<p>Damage-scaling orb calculations (Fire, Ice, Earth, Armor):</p>
+<pre><code class="language-text">
+base_amount = orb_count * (orb_mastery_level + 1)
+damage_combo_multiplier = (increase_combo_modifier + combo_count) * more_combo_modifier
+total_amount = base_amount * damage_combo_multiplier
+</code></pre>
+<p>Non-combo orb calculations:</p>
+<pre><code class="language-text">
+heart_total = heart_orb_count * (heart_mastery_level + 1)
+gold_total = gold_orb_count * (gold_mastery_level + 1)
+</code></pre>
+<p>Interpretation:</p>
+<ul>
+<li><code>orb_mastery_level</code> is tracked per orb type.</li>
+<li><code>increase_combo_modifier</code> is additive with combo count.</li>
+<li><code>more_combo_modifier</code> is multiplicative after the additive stage ("increase then more" style).</li>
+<li>Heart and Gold explicitly do not use combo scaling.</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-text">
+fire_orb_count = 3
+fire_mastery_level = 0
+increase_combo_modifier = 0
+combo_count = 3
+more_combo_modifier = 1
+
+base_amount = 3 * (0 + 1) = 3
+damage_combo_multiplier = (0 + 3) * 1 = 3
+total_amount = 3 * 3 = 9
+</code></pre>
+<h2 id="player-stats">Player Stats</h2>
+<p>Initial prototype target:</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Stat</th>
+<th>Starting Value</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Max HP</td>
+<td>100</td>
+</tr>
+<tr>
+<td>Fire base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Ice base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Earth base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Heart base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Armor base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Gold base value</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Equipment slots</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Consumable slots</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Move timer</td>
+<td>5 seconds</td>
+</tr>
+</tbody>
+</table></div>
+<p>HP persists across the run.</p>
+<p>Player armor behaves like Slay the Spire block:</p>
+<ul>
+<li>Armor reduces incoming enemy damage before HP.</li>
+<li>Unused armor expires after the enemy turn.</li>
+<li>A future relic may allow armor to last for 2 turns.</li>
+</ul>
+<p>Healing is rare. There is no automatic healing after bosses.</p>
+<h2 id="enemy-rules">Enemy Rules</h2>
+<p>Enemies have HP only. They do not have persistent armor by default.</p>
+<p>Each enemy has a moveset that cycles through intents. Intent is visible before the player moves.</p>
+<p>Initial enemy intents:</p>
+<ul>
+<li>Attack: deal damage to the player.</li>
+<li>Block: reduce incoming player damage this turn.</li>
+<li>Attack + Block: reduce incoming player damage this turn, then attack if still alive.</li>
+</ul>
+<p>If an enemy intent includes block, that block applies against the player's damage on the current turn. The enemy block does not persist after the turn unless a future enemy rule says otherwise.</p>
+<p>If the enemy dies from player damage, its remaining intent does not resolve.</p>
+<p>Enemies will scale through:</p>
+<ul>
+<li>HP scaling.</li>
+<li>Damage scaling.</li>
+<li>Block scaling.</li>
+<li>More punishing moveset cycles.</li>
+<li>Boss checks.</li>
+</ul>
+<p>Level 1 normal enemies should be killable in roughly 3 turns by an expert player while taking minimal damage.</p>
+<h2 id="boss-rules">Boss Rules</h2>
+<p>Boss type should be visible at the start of the dungeon level.</p>
+<p>Bosses should mostly act as checks on the player's build and execution. Examples:</p>
+<ul>
+<li>Defense check: boss deals high damage every turn.</li>
+<li>Damage check: boss gains large block every turn.</li>
+<li>Combo check: boss reduces damage unless the player reaches a combo threshold.</li>
+<li>Element check: boss is immune to certain elements on certain turns.</li>
+<li>Scaling check: boss grows stronger every few turns.</li>
+</ul>
+<p>Bosses should feel like Slay the Spire elites/bosses: readable, threatening, and capable of punishing slow builds.</p>
+<h2 id="economy">Economy</h2>
+<p>Gold persists for the whole run.</p>
+<p>Gold is primarily earned by matching gold orbs. Normal enemies do not need to drop gold after death.</p>
+<p>Equipment, mastery, relics, and other effects can improve gold income.</p>
+<p>After defeating a normal enemy, the player receives no automatic reward other than gold they matched during the fight.</p>
+<h2 id="shop">Shop</h2>
+<p>The player automatically enters the shop after each fight and can skip by buying nothing.</p>
+<p>Default shop inventory:</p>
+<ul>
+<li>3 random item slots.</li>
+<li>1 relic offer for the current dungeon level.</li>
+</ul>
+<p>Random item slots can contain:</p>
+<ul>
+<li>Equipment.</li>
+<li>Mastery cards.</li>
+<li>Treasure chests.</li>
+<li>Consumables.</li>
+</ul>
+<p>Relic rules:</p>
+<ul>
+<li>One relic can appear as the shop relic offer per dungeon level.</li>
+<li>If not bought, that relic offer is lost.</li>
+<li>Bosses also grant a relic reward.</li>
+<li>Therefore, a dungeon level can offer up to 2 relics: 1 shop relic and 1 boss relic reward.</li>
+</ul>
+<p>Shop actions:</p>
+<ul>
+<li>Buy items.</li>
+<li>Buy multiple treasure chests if the player has enough gold.</li>
+<li>Reroll shop inventory.</li>
+<li>Sell equipment for full gold value.</li>
+</ul>
+<p>Pricing rules:</p>
+<ul>
+<li>Prices scale by rarity.</li>
+<li>Prices may scale by dungeon level.</li>
+<li>After killing the first enemy, the player should usually be able to afford at least 1 treasure chest if they matched some gold.</li>
+</ul>
+<h2 id="treasure-chests">Treasure Chests</h2>
+<p>Treasure chests are shop rewards that open into a short choice of generated options.</p>
+<p>The player buys a pack, opens it, sees 3 generated options, and picks 1.</p>
+<p>Treasure chest types:</p>
+<ul>
+<li>Element treasure chest: generates items tied to a specific orb type, such as Fire, Ice, Earth, Heart, Armor, or Gold.</li>
+<li>Category treasure chest: generates items from a category, such as 3 equipment, 3 mastery cards, or 3 consumables.</li>
+</ul>
+<p>Treasure chests can produce:</p>
+<ul>
+<li>Equipment.</li>
+<li>Mastery cards.</li>
+<li>Consumables.</li>
+</ul>
+<p>Relics are not part of normal treasure chest pools unless a specific future pack allows it.</p>
+<h2 id="equipment">Equipment</h2>
+<p>Equipment is the Balatro joker equivalent.</p>
+<p>Rules:</p>
+<ul>
+<li>Equipment is passive.</li>
+<li>Equipment has rarity.</li>
+<li>The hero starts with 5 equipment slots.</li>
+<li>Relics can add more slots.</li>
+<li>Duplicate equipment is not allowed.</li>
+<li>Equipment can be sold for full gold value.</li>
+<li>Equipment is not hero-specific in the first version.</li>
+<li>Future rare equipment may have downside effects.</li>
+</ul>
+<p>Equipment should mainly modify:</p>
+<ul>
+<li>Base orb values.</li>
+<li>Damage formula.</li>
+<li>Combo multiplier.</li>
+<li>Armor gain.</li>
+<li>Healing value.</li>
+<li>Gold gain.</li>
+<li>Mastery level while equipped.</li>
+</ul>
+<p>Equipment should feel like normal fantasy gear: shortsword, buckler, charm, ring, amulet, boots, cloak, etc.</p>
+<h2 id="mastery">Mastery</h2>
+<p>Mastery cards are the Balatro planet card equivalent.</p>
+<p>Rules:</p>
+<ul>
+<li>Mastery is permanent for the current run.</li>
+<li>Each orb type has a mastery card.</li>
+<li>Mastery has a max level.</li>
+<li>Working prototype cap: level 5.</li>
+<li>Working formula: orb base value = 1 + mastery level.</li>
+<li>Equipment can temporarily add mastery levels while equipped.</li>
+</ul>
+<p>Initial mastery cards:</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Mastery</th>
+<th>Effect</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Fire Mastery</td>
+<td>Fire orbs gain +1 damage per orb per level.</td>
+</tr>
+<tr>
+<td>Ice Mastery</td>
+<td>Ice orbs gain +1 damage per orb per level.</td>
+</tr>
+<tr>
+<td>Earth Mastery</td>
+<td>Earth orbs gain +1 damage per orb per level.</td>
+</tr>
+<tr>
+<td>Heart Mastery</td>
+<td>Heart orbs heal +1 HP per orb per level.</td>
+</tr>
+<tr>
+<td>Armor Mastery</td>
+<td>Armor orbs give +1 armor per orb per level.</td>
+</tr>
+<tr>
+<td>Gold Mastery</td>
+<td>Gold orbs give +1 gold per orb per level.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Example:</p>
+<pre><code class="language-text">
+Fire Mastery level 1:
+fire base value = 2
+
+3 fire orbs, 3 total combos:
+3 * 2 * 3 = 18 fire damage
+</code></pre>
+<h2 id="consumables">Consumables</h2>
+<p>Consumables are single-use items.</p>
+<p>Rules:</p>
+<ul>
+<li>The player has 3 consumable slots.</li>
+<li>Consumables can be held for later.</li>
+<li>Consumables mainly affect the board.</li>
+<li>Consumables can be bought, found from treasure chests, or possibly earned from future rewards.</li>
+</ul>
+<p>Initial consumable direction:</p>
+<ul>
+<li>Remove a specific orb type.</li>
+<li>Convert one orb type into another.</li>
+<li>Add a small number of specific orbs.</li>
+<li>Clean up the board before a difficult enemy turn.</li>
+</ul>
+<h2 id="relics">Relics</h2>
+<p>Relics are rare run modifiers.</p>
+<p>Rules:</p>
+<ul>
+<li>Relics last for the whole run.</li>
+<li>Relics are run-changing and limited.</li>
+<li>One relic can be offered in the shop per dungeon level.</li>
+<li>One relic can be obtained after killing each boss.</li>
+<li>Meta progression can unlock new relics.</li>
+</ul>
+<p>Relics should be stronger and broader than equipment. Examples:</p>
+<ul>
+<li>Add an equipment slot.</li>
+<li>Let armor last 2 turns.</li>
+<li>Increase gold orb spawn rate.</li>
+<li>Improve all treasure chests.</li>
+<li>Change how combo multiplier scales.</li>
+</ul>
+<h2 id="meta-progression">Meta Progression</h2>
+<p>Meta progression should unlock content, not raw permanent power.</p>
+<p>Initial meta progression:</p>
+<ul>
+<li>Unlock new equipment.</li>
+<li>Unlock new relics.</li>
+</ul>
+<p>Future meta progression:</p>
+<ul>
+<li>Unlock hero types.</li>
+<li>Unlock dungeons.</li>
+<li>Unlock ascension levels.</li>
+<li>Unlock advanced mastery cards.</li>
+</ul>
+<h2 id="first-playable-prototype-scope">First Playable Prototype Scope</h2>
+<p>Recommended vertical slice:</p>
+<ul>
+<li>3 dungeon levels instead of the full 10.</li>
+<li>One hero.</li>
+<li>All 6 orb types.</li>
+<li>5x6 board.</li>
+<li>Free orb movement.</li>
+<li>5-second timer.</li>
+<li>Same-type line, L, and T matching.</li>
+<li>Cascades.</li>
+<li>Enemy intent.</li>
+<li>Player HP persistence.</li>
+<li>Armor expiration after enemy turn.</li>
+<li>Gold economy.</li>
+<li>Shop after each fight.</li>
+<li>3 random shop item slots.</li>
+<li>1 shop relic offer per dungeon level.</li>
+<li>Boss relic reward.</li>
+<li>5 equipment slots.</li>
+<li>3 consumable slots.</li>
+<li>6 mastery cards.</li>
+<li>6 consumables.</li>
+<li>20 to 30 equipment items.</li>
+<li>5 relics.</li>
+<li>At least 3 normal enemies and 3 bosses.</li>
+</ul>
+<h2 id="initial-equipment-list">Initial Equipment List</h2>
+<p>These are prototype effects and need balance passes.</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Equipment</th>
+<th>Rarity</th>
+<th>Effect</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Shortsword</td>
+<td>Common</td>
+<td>If at least one damage orb matches, add +5 final damage.</td>
+</tr>
+<tr>
+<td>Buckler</td>
+<td>Common</td>
+<td>First armor match each turn gives +5 armor.</td>
+</tr>
+<tr>
+<td>Coin Purse</td>
+<td>Common</td>
+<td>Gold orbs give +1 gold per orb.</td>
+</tr>
+<tr>
+<td>Healing Charm</td>
+<td>Common</td>
+<td>First heart match each turn restores +4 HP.</td>
+</tr>
+<tr>
+<td>Ember Ring</td>
+<td>Common</td>
+<td>Fire base value +1.</td>
+</tr>
+<tr>
+<td>Frost Ring</td>
+<td>Common</td>
+<td>Ice base value +1.</td>
+</tr>
+<tr>
+<td>Stone Ring</td>
+<td>Common</td>
+<td>Earth base value +1.</td>
+</tr>
+<tr>
+<td>Leather Gloves</td>
+<td>Common</td>
+<td>Move timer +0.5 seconds.</td>
+</tr>
+<tr>
+<td>Iron Helm</td>
+<td>Common</td>
+<td>Start each fight with 5 armor.</td>
+</tr>
+<tr>
+<td>Combo Lens</td>
+<td>Common</td>
+<td>If total combo count is 3 or higher, combo count is treated as +1 for damage.</td>
+</tr>
+<tr>
+<td>Twin Blades</td>
+<td>Uncommon</td>
+<td>If Fire and Ice both match, add +12 final damage.</td>
+</tr>
+<tr>
+<td>War Banner</td>
+<td>Uncommon</td>
+<td>First damage match each turn gains +1 base value.</td>
+</tr>
+<tr>
+<td>Tower Shield</td>
+<td>Uncommon</td>
+<td>Armor base value +1.</td>
+</tr>
+<tr>
+<td>Merchant Scales</td>
+<td>Uncommon</td>
+<td>First gold match each turn gives +5 extra gold.</td>
+</tr>
+<tr>
+<td>Battle Drum</td>
+<td>Uncommon</td>
+<td>If total combo count is 5 or higher, multiply damage by 1.25.</td>
+</tr>
+<tr>
+<td>Earthbreaker Maul</td>
+<td>Uncommon</td>
+<td>Earth damage ignores the first 10 enemy block.</td>
+</tr>
+<tr>
+<td>Hearth Amulet</td>
+<td>Uncommon</td>
+<td>Heart base value +1.</td>
+</tr>
+<tr>
+<td>Alchemist Gloves</td>
+<td>Uncommon</td>
+<td>Using a consumable also creates 2 gold orbs.</td>
+</tr>
+<tr>
+<td>Training Manual</td>
+<td>Uncommon</td>
+<td>All mastery levels count as +1 while equipped.</td>
+</tr>
+<tr>
+<td>Mirror Charm</td>
+<td>Uncommon</td>
+<td>The first mastery card bought each dungeon level is copied.</td>
+</tr>
+<tr>
+<td>Ruby Brooch</td>
+<td>Rare</td>
+<td>Fire Mastery counts as level 5 while equipped.</td>
+</tr>
+<tr>
+<td>Sapphire Brooch</td>
+<td>Rare</td>
+<td>Ice Mastery counts as level 5 while equipped.</td>
+</tr>
+<tr>
+<td>Emerald Brooch</td>
+<td>Rare</td>
+<td>Earth Mastery counts as level 5 while equipped.</td>
+</tr>
+<tr>
+<td>Royal Seal</td>
+<td>Rare</td>
+<td>Gold base value +2.</td>
+</tr>
+<tr>
+<td>Champion Plate</td>
+<td>Rare</td>
+<td>Player armor lasts until the start of the next player turn instead of expiring immediately after enemy action.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="initial-mastery-cards">Initial Mastery Cards</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Card</th>
+<th>Type</th>
+<th>Effect</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Fire Mastery</td>
+<td>Mastery</td>
+<td>Increase Fire Mastery by 1, up to cap.</td>
+</tr>
+<tr>
+<td>Ice Mastery</td>
+<td>Mastery</td>
+<td>Increase Ice Mastery by 1, up to cap.</td>
+</tr>
+<tr>
+<td>Earth Mastery</td>
+<td>Mastery</td>
+<td>Increase Earth Mastery by 1, up to cap.</td>
+</tr>
+<tr>
+<td>Heart Mastery</td>
+<td>Mastery</td>
+<td>Increase Heart Mastery by 1, up to cap.</td>
+</tr>
+<tr>
+<td>Armor Mastery</td>
+<td>Mastery</td>
+<td>Increase Armor Mastery by 1, up to cap.</td>
+</tr>
+<tr>
+<td>Gold Mastery</td>
+<td>Mastery</td>
+<td>Increase Gold Mastery by 1, up to cap.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="initial-consumables">Initial Consumables</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Consumable</th>
+<th>Type</th>
+<th>Effect</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Fire Scroll</td>
+<td>Consumable</td>
+<td>Convert 5 random non-Fire orbs into Fire orbs.</td>
+</tr>
+<tr>
+<td>Ice Scroll</td>
+<td>Consumable</td>
+<td>Convert 5 random non-Ice orbs into Ice orbs.</td>
+</tr>
+<tr>
+<td>Earth Scroll</td>
+<td>Consumable</td>
+<td>Convert 5 random non-Earth orbs into Earth orbs.</td>
+</tr>
+<tr>
+<td>Heart Scroll</td>
+<td>Consumable</td>
+<td>Convert 5 random non-Heart orbs into Heart orbs.</td>
+</tr>
+<tr>
+<td>Armor Scroll</td>
+<td>Consumable</td>
+<td>Convert 5 random non-Armor orbs into Armor orbs.</td>
+</tr>
+<tr>
+<td>Gold Scroll</td>
+<td>Consumable</td>
+<td>Convert 3 random non-Gold orbs into Gold orbs.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="initial-relics">Initial Relics</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Relic</th>
+<th>Effect</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Deep Pockets</td>
+<td>Gain +1 equipment slot.</td>
+</tr>
+<tr>
+<td>Stalwart Mantle</td>
+<td>Player armor lasts for 2 turns.</td>
+</tr>
+<tr>
+<td>Golden Idol</td>
+<td>Gold orbs appear more often.</td>
+</tr>
+<tr>
+<td>Crown of Chains</td>
+<td>Every combo after the fifth adds +2 to the damage combo count instead of +1.</td>
+</tr>
+<tr>
+<td>Merchant Compass</td>
+<td>First shop reroll each shop is free.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="initial-enemy-direction">Initial Enemy Direction</h2>
+<p>Normal enemies should use simple readable cycles.</p>
+<p>Example enemy patterns:</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Enemy Pattern</th>
+<th>Turn 1</th>
+<th>Turn 2</th>
+<th>Turn 3</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Striker</td>
+<td>Attack 8</td>
+<td>Attack 10</td>
+<td>Block 8</td>
+</tr>
+<tr>
+<td>Defender</td>
+<td>Block 12</td>
+<td>Attack 8 + Block 8</td>
+<td>Attack 12</td>
+</tr>
+<tr>
+<td>Charger</td>
+<td>Block 10</td>
+<td>Attack 6</td>
+<td>Attack 18</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="initial-boss-direction">Initial Boss Direction</h2>
+<p>Bosses should preview their type before the dungeon level begins.</p>
+<p>Example boss checks:</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Boss Type</th>
+<th>Rule</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Iron Gate</td>
+<td>Starts each turn with high block. Tests damage output.</td>
+</tr>
+<tr>
+<td>Burning Knight</td>
+<td>Deals high damage every turn. Tests armor and healing.</td>
+</tr>
+<tr>
+<td>Prism Warden</td>
+<td>Rotates elemental immunity each turn. Tests flexible damage.</td>
+</tr>
+<tr>
+<td>Combo Gate</td>
+<td>Reduces damage unless the player reaches a combo threshold.</td>
+</tr>
+<tr>
+<td>Rising Blade</td>
+<td>Gains damage every 3 turns. Tests speed.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="future-ideas">Future Ideas</h2>
+<p>Future elemental identity:</p>
+<ul>
+<li>Fire can apply damage over time.</li>
+<li>Ice can build stagger and freeze when full.</li>
+<li>Earth can add defense or interact with armor.</li>
+</ul>
+<p>Future systems:</p>
+<ul>
+<li>Debuff enemy intents.</li>
+<li>Hazard orbs.</li>
+<li>Locked orbs.</li>
+<li>Advanced boss rules.</li>
+<li>Multiple heroes.</li>
+<li>More dungeons.</li>
+<li>Ascension levels.</li>
+<li>Equipment with tradeoffs.</li>
+<li>Relics that alter match rules.</li>
+</ul>
+<h2 id="open-balance-questions">Open Balance Questions</h2>
+<ul>
+<li>Exact gold orb spawn rate.</li>
+<li>Exact mastery level cap.</li>
+<li>Shop price ranges by rarity and dungeon level.</li>
+<li>Reroll cost curve.</li>
+<li>Starting HP.</li>
+<li>Level 1 enemy HP and damage.</li>
+<li>Boss HP and scaling curve.</li>
+<li>Whether full runs should remain 10 dungeon levels or be shortened after playtesting.</li>
+<li>Whether 5 seconds is the right default movement timer for both PC and mobile.</li>
+<li>Whether L/T matching should produce bonus effects beyond counting connected matched orbs.</li>
+</ul>
+	  <section class="footer">
+		<p><span class="badge">Converted</span> Source file: <code>docs/game_design_document.html</code></p>
+	  </section>
+	</main>
+	<aside>
+	  <div class="toc-title">Contents</div>
+	  <nav class="toc"><a class="toc-h1" href="#orbwalker-game-design-document">Orbwalker Game Design Document</a><a class="toc-h2" href="#high-concept">High Concept</a><a class="toc-h2" href="#design-pillars">Design Pillars</a><a class="toc-h2" href="#player-fantasy">Player Fantasy</a><a class="toc-h2" href="#core-game-loop">Core Game Loop</a><a class="toc-h3" href="#fight-loop">Fight Loop</a><a class="toc-h3" href="#dungeon-level-loop">Dungeon Level Loop</a><a class="toc-h3" href="#run-loop">Run Loop</a><a class="toc-h2" href="#board-rules">Board Rules</a><a class="toc-h2" href="#orb-movement">Orb Movement</a><a class="toc-h2" href="#match-rules">Match Rules</a><a class="toc-h2" href="#orb-types">Orb Types</a><a class="toc-h2" href="#damage-and-resource-formula">Damage And Resource Formula</a><a class="toc-h2" href="#player-stats">Player Stats</a><a class="toc-h2" href="#enemy-rules">Enemy Rules</a><a class="toc-h2" href="#boss-rules">Boss Rules</a><a class="toc-h2" href="#economy">Economy</a><a class="toc-h2" href="#shop">Shop</a><a class="toc-h2" href="#treasure-chests">Treasure Chests</a><a class="toc-h2" href="#equipment">Equipment</a><a class="toc-h2" href="#mastery">Mastery</a><a class="toc-h2" href="#consumables">Consumables</a><a class="toc-h2" href="#relics">Relics</a><a class="toc-h2" href="#meta-progression">Meta Progression</a><a class="toc-h2" href="#first-playable-prototype-scope">First Playable Prototype Scope</a><a class="toc-h2" href="#initial-equipment-list">Initial Equipment List</a><a class="toc-h2" href="#initial-mastery-cards">Initial Mastery Cards</a><a class="toc-h2" href="#initial-consumables">Initial Consumables</a><a class="toc-h2" href="#initial-relics">Initial Relics</a><a class="toc-h2" href="#initial-enemy-direction">Initial Enemy Direction</a><a class="toc-h2" href="#initial-boss-direction">Initial Boss Direction</a><a class="toc-h2" href="#future-ideas">Future Ideas</a><a class="toc-h2" href="#open-balance-questions">Open Balance Questions</a></nav>
+	</aside>
+  </div>
+</body>
+</html>

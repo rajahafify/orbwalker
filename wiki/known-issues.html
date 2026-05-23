@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Known Issues</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html">Architecture</a><a href="features.html">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html" aria-current="page">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html">File Map</a><a href="setup.html">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>Known Issues</h1>
+      <p class="summary">Summary**: Current risks, validation gaps, and implementation mismatches that should stay visible while the prototype evolves.</p>
+      <h1 id="known-issues">Known Issues</h1>
+<p><strong>Summary</strong>: Current risks, validation gaps, and implementation mismatches that should stay visible while the prototype evolves.</p>
+<p><strong>Sources</strong>: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/tmp_transition_delay_handoff.html"><code>docs/tmp_transition_delay_handoff.html</code></a>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/content/content_registry.gd</code>, <code>scripts/core/run_state.gd</code></p>
+<p><strong>Last updated</strong>: 2026-05-07</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The prototype is functional. Launch-readiness QA items that used to live here have been transferred to <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>; this page now records source context and non-launch future risks rather than acting as the active launch issue tracker. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>)</p>
+<h2 id="details">Details</h2>
+<ul>
+<li>Transferred to ITCH-01/ITCH-08: General combat touch selection offset was manually retested and accepted during AR-13 for real Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy. Broader Android/on-device layout/audio/full-run feel is now tracked in <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>. Shop HUD touch outside-dismissal was manually retested and confirmed during AR-04 after routing touch events through the shared HUD focus handler and refreshing selection state. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/board/board_controller.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Transferred to ITCH-03/ITCH-08: Board lock behavior during resolution and transitions requires full end-to-end release-candidate validation, but it is no longer tracked as a standalone known issue here. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>)</li>
+<li>Transferred to ITCH-01/ITCH-08: Desktop and broad mobile overlap checks, exact target-viewport screenshot review, human visual approval, and real touch drag release QA now live in the itch readiness tracker. The M12 reference-faithful mobile combat layout probe reports no actionable overlap and <code>7/7</code> readable-zone checks for <code>1080x1920</code>, <code>1080x2400</code>, and <code>900x1600</code>, and a Godot MCP running-scene screenshot was inspected at the current portrait runtime viewport. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/debug/mobile_combat_layout_probe.gd</code>)</li>
+<li>Transferred to ITCH-04/ITCH-08: Shop Android/on-device QA and full manual transaction click-through now live in the itch readiness tracker. The current shop layout probe reports <code>stock_fits=true</code>, <code>action_row_overlaps_hud=false</code>, <code>bottom_gap_before_hud=12</code>, <code>action_hud_connected=true</code>, <code>hud_bottom_aligned=true</code>, <code>native_tooltips_disabled</code>, compact visual-only Help/Settings controls, merchant summary/detail backing, and <code>player_hud_contract.status=ok</code>; screenshot review rated Readability/Layout/Feature/Fantasy/Reference <code>9/10</code>. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Resolved scene-review HUD ownership risk: combat and shop now consume the same reusable <code>scenes/ui/player_hud.tscn</code> PlayerHUD component and bind the same full HUD node-key contract through <code>PlayerLoadoutHud</code>. <code>PlayerLoadoutHud.shop_player_hud_layout_preset()</code> only positions the whole shop HUD section below the action row, while internal HUD geometry/chrome remains shared and HUD-owned. <code>scripts/debug/player_hud_contract_probe.gd</code> guards against future combat/shop PlayerHUD drift. (source: <code>scenes/ui/player_hud.tscn</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/debug/player_hud_contract_probe.gd</code>)</li>
+<li>Transferred to ITCH-01/ITCH-08: The M12 mobile combat UI now has derived art-backed chrome and structural restage passes that move toward the reference RPG hierarchy; exact target-device touch/layout approval and any enemy-stage art replacement decision now live in the itch readiness tracker. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scenes/combat.tscn</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>resources/art/first_pass/derived/combat_ui/</code>, <code>resources/art/first_pass/derived/combat_layers/</code>, <code>resources/art/first_pass/enemy_sprites/</code>)</li>
+<li>Transferred to ITCH-04: Merchant Compass free-first-reroll behavior is now owned by the itch shop-clarity/readiness slice instead of this page. <code>scripts/shop/shop_service.gd</code> does not currently implement a special free reroll path. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Boss reward and final summary route sanity was manually accepted during AR-17 for normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior. Longer full-run playthroughs remain useful for Milestone 10 balance and content QA rather than as an open AR route blocker. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scripts/scenes/combat.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Transferred to ITCH-01/ITCH-03/ITCH-08: <code>Start Run -&gt; Combat</code> is no longer blocked by combat scene instantiation after the lazy <code>VisualRegistry</code> fix; target-hardware board pop-in and perceived Start Run feel are now release-readiness checks in the itch tracker. AR-01 measured <code>Start Run -&gt; Combat</code>, <code>Combat -&gt; Shop</code>, and <code>Shop -&gt; Combat</code> route timings without the original multi-second stall. (source: <code>scripts/ui/visual_registry.gd</code>, <code>resources/art/first_pass/derived/orbs/</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>, <a href="../docs/tmp_transition_delay_handoff.html"><code>docs/tmp_transition_delay_handoff.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>)</li>
+<li>External content migration remains deferred. The current prototype source of truth is dictionary-backed <code>ContentRegistry</code> content; a future <code>.tres</code>, JSON, or other data-source migration should keep the registry read API as the compatibility boundary. (source: <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <code>scripts/content/content_registry.gd</code>)</li>
+<li>Board-debug scene coverage was retired in AR-08. Current regression coverage should rely on <code>combat.tscn</code>, <code>shop.tscn</code>, <code>run_summary.tscn</code>, and focused Godot MCP editor-script probes for board resolver, combat envelope, RunState routing, and content contracts. (source: <a href="../AGENTS.html"><code>AGENTS.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>Transferred to ITCH-03/ITCH-08: Transition ownership is partially formalized through <code>SceneRouter</code>; full route recovery and release-candidate end-to-end route exercise now live in the itch tracker. The scene-review P1/P2 cleanup resolved the known failure-path blockers and added rollback/post-ready recovery surfaces. (source: <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>Transferred to ITCH-03/ITCH-06: Combat top-bar Back and Settings actions still call <code>change_scene_to_file("res://scenes/main_menu.tscn")</code> directly from <code>CombatController</code>; route-hardening or an explicit public-build decision now belongs to the itch readiness tracker. (source: <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/combat/combat_controller.gd</code>)</li>
+<li>AR-26 signal capture currently deep-copies <code>_run_summary</code> in <code>RunState._capture_run_signal_state()</code> and compares full dictionaries in <code>_emit_run_summary_changed_if_needed(...)</code>. This preserves correct change detection and is not a current blocker, but it is unnecessary work for ordinary gold/step mutations after a run summary exists. A future cleanup could replace the deep-copy/equality path with a <code>_run_summary_generation</code> counter incremented when summaries are finalized, cleared, or restored, while preserving current signal payloads. (source: <code>scripts/core/run_state.gd</code>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>)</li>
+<li>The combat scene controller remains large after the AR helper extractions: the legacy root controller was 2432 lines on the AR-18 branch before it was renamed to <code>scripts/scenes/combat.gd</code>. The god-object risk is reduced because debug console, turn-log formatting, layout, VFX, drag input, placeholder textures, visual chrome, resolve presentation, outcome overlay presentation, and HUD snapshot building are extracted, but combat flow routing, scene-node HUD application, and turn orchestration remain in the controller and should be treated as future coordinator-boundary refactor candidates. (source: <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Shared HUD API drift risk is narrowed after the scene-review cleanup because named HUD layout presets now live in <code>PlayerLoadoutHud</code>; future screens that need alternate HUD geometry should add shared presets there instead of screen-local internal HUD constants. (source: <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>Temporary diagnostics are retained intentionally for Milestone 10/M12 QA: FlowTrace logs exposed through <code>RunState</code> and stored by <code>SceneRouter</code>, combat <code>ResolveTrace</code> logs, <code>RunState.flow_trace_debug_snapshot()</code>, and the feature-flagged AR-01 combat result-envelope probe. FlowTrace route state is capped at 50 retained routes, so the diagnostic no longer grows unbounded during long sessions. These diagnostics should be retired, feature-flagged further, or moved into a narrower debug harness if they outlive balance/build-readiness QA usefulness. (source: <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/debug/ar01_combat_result_probe.gd</code>)</li>
+<li>AR-01 baseline capture found repeated unsourced Godot <code>GDScript::reload: Integer division. Decimal part will be discarded.</code> warnings after scene smokes. Later AR batches repeatedly reached no-session-error <code>get_godot_errors</code> gates, but if the warning reappears it should still be localized before treating error output as a clean regression signal. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>)</li>
+<li>Transferred to ITCH-06/ITCH-08: Current combat scene smoke on 2026-05-07 reached first usable frame, but <code>get_godot_errors</code> reported two <code>GDScript::reload: Integer used when an enum value is expected</code> diagnostics. Clean release-candidate error gating now lives in the itch readiness tracker. (source: <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/combat/combat_controller.gd</code>)</li>
+<li>Transferred to ITCH-06: Android CLI export on this Windows checkout can hang after writing a valid <code>Orbwalker.apk</code>; public export hygiene and workaround validation now live in the itch packaging slice. (source: <a href="../wiki/setup.html"><code>wiki/setup.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>)</li>
+<li>Balance tuning is tracked through the Milestone 10 task tracker. The M10-01 inventory confirmed the active tuning owners before value changes: shop pricing and much prototype content live in dictionary-backed <code>ContentRegistry</code>, while current runtime encounter selection and enemy/boss stats are still owned by <code>RunState</code>. <code>ContentRegistry</code> still carries older enemy rows for contract/content coverage, so active enemy HP/intent tuning should use <code>RunState</code> unless ownership is deliberately migrated later. (source: <a href="../docs/milestone_10_balance_tasks.html"><code>docs/milestone_10_balance_tasks.html</code></a>, <code>scripts/content/content_registry.gd</code>, <code>scripts/core/run_state.gd</code>, <a href="../todo.html"><code>todo.html</code></a>, <a href="../docs/game_design_document.html"><code>docs/game_design_document.html</code></a>)</li>
+<li>M10-02 captured 3 human-played untuned baseline logs before tuning. The evidence showed mixed blockers: first-shop affordability could be weak, low-effectiveness play could die before shop access, and stronger runs still hit level 2-3 survivability pressure. M10-03 through M10-06 added temporary balance levers, fixed fight base rewards (<code>10/12/14</code>), first-shop <code>Shortsword</code> affordability, booster presence, equipment-heavy shop stock, rare consumables, and level/type-scoped survivability identities. M10-07 closeout compared tuned logs against the untuned baseline and found no Milestone 10 blocker: <code>run_1777968781_770133_2026-05-05t16_13_01</code> died in Dungeon 3, <code>run_1777969048_434533_2026-05-05t16_17_28</code> won a full run, and <code>run_1777973747_694854_2026-05-05t17_35_47</code> reached L3 enemy 2 after first-shop affordability, booster buys, equipment buys, and two boss relic rewards. Full-slot equipment friction is visible in late Dungeon 3 shops, but it is a post-Milestone-11 UX/economy tuning question unless player testing says it blocks the run. Deeper combat/economy rebalance is deferred until after meta progression. These values are temporary M10 playtest scaffolding, not final balance. (source: <a href="../docs/milestone_10_balance_tasks.html"><code>docs/milestone_10_balance_tasks.html</code></a>, <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>logs/run_1777973747_694854_2026-05-05t17_35_47.json</code>)</li>
+<li>Transferred to ITCH-05/ITCH-08: Screenshot-reported combat victory overlay bug from 2026-05-05 was fixed for the M10-04 flow; final result-screen screenshot/route review now lives in the itch result-polish and RC QA slices. (source: user screenshot on 2026-05-05, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a> - current QA gaps</li>
+<li><a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a> - architecture-maintenance tracker</li>
+<li><code>scripts/shop/shop_service.gd</code> - shop behavior and reroll logic</li>
+<li><code>scripts/content/content_registry.gd</code> - current content model</li>
+<li><a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a> - planned content model</li>
+<li><a href="../docs/tmp_transition_delay_handoff.html"><code>docs/tmp_transition_delay_handoff.html</code></a> - temporary transition-stall diagnostic handoff</li>
+<li><code>export_presets.cfg</code> - Android APK export preset</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Closed here: launch-blocker classification moved to <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>. (source: <a href="../docs/test_plan.html"><code>docs/test_plan.html</code></a>, <a href="../docs/itch_readiness_tasks.html"><code>docs/itch_readiness_tasks.html</code></a>)</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="architecture.html">architecture</a></li>
+<li><a href="setup.html">setup</a></li>
+<li><a href="decisions.html">decisions</a></li>
+<li><a href="open-questions.html">open-questions</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/known-issues.html"><code>wiki/known-issues.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#known-issues">Known Issues</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

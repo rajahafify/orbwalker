@@ -1,28 +1,30 @@
 {
-    "asset_id": "combat_enemy_stage_art",
-    "asset_name": "Wide enemy encounter stage/banner art",
-    "asset_type": "combat_stage_set",
-    "group_id": "characters",
-    "brief_path": "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.md",
-    "candidate_paths": [
-        "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png"
-    ],
-    "source_references": [
-        "assets.json",
-        "resources/assetgen.workflow.md"
-    ],
-    "license_status": "approved",
-    "usage_rights": "approved",
-    "dimensions": "1672x941",
-    "export_format": "png_candidate",
-    "alpha_type": "opaque_stage_sheet_candidate",
-    "transparent_background": "false_bulk_candidate",
-    "qa_status": "approved",
-    "review_status": "approved",
-    "integration_status": "approved_pending_integration",
-    "embedded_text": "none_or_needs_approval",
-    "notes": "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed.",
-    "final_prompt": "Use case: stylized-concept; Asset type: combat enemy stage/banner art set for Orbwalker; Primary request: production candidate wide encounter stage/banner sheet for a fantasy match-3 roguelike. Subject: four wide horizontal encounter banners in a 2x2 sheet: cavern raider stage, shield guard stage, burning knight arena, prism vault arena. Each banner has an empty central/foreground area for portrait placement and UI overlays. Style/medium: polished stylized 2D game stage art, dark-fantasy dungeon, readable at mobile combat header size. Composition/framing: 2x2 sheet of wide banners, consistent horizon and camera height, no characters, no labels. Lighting/mood: tense dungeon encounter, clear environmental identity per banner. Color palette: cool stone, warm torch/gold, fire red/orange, prism cyan/violet, distinct but cohesive. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no UI controls, no characters.",
-    "generation_mode": "built-in imagegen",
-    "approval_date": "2026-05-08"
+    "asset_id":  "combat_enemy_stage_art",
+    "asset_name":  "Wide enemy encounter stage/banner art",
+    "asset_type":  "combat_stage_set",
+    "group_id":  "characters",
+    "brief_path":  "assets/briefs/wave-02-runtime-art-alignment/combat_enemy_stage_art.brief.html",
+    "candidate_paths":  [
+                            "assets/generated/candidates/bulk-generation-first/combat_enemy_stage_art_candidate_01.png",
+                            "resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
+                        ],
+    "source_references":  [
+                              "assets.json",
+                              "resources/assetgen.workflow.html"
+                          ],
+    "license_status":  "approved",
+    "usage_rights":  "approved",
+    "dimensions":  "1672x941",
+    "export_format":  "png_candidate",
+    "alpha_type":  "opaque_stage_sheet_candidate",
+    "transparent_background":  "false_bulk_candidate",
+    "qa_status":  "approved",
+    "review_status":  "approved",
+    "integration_status":  "integrated_assetgen_library",
+    "embedded_text":  "none_or_needs_approval",
+    "notes":  "Bulk-generation-first candidate created with built-in imagegen. QA, legal/license review, final approval, and runtime integration deferred until all candidates exist. 2026-05-08 human approval: asset cleared for integration; runtime integration not yet performed. 2026-05-22 integration completion: copied approved candidate into resources/art/assetgen asset library and exposed through first_pass_asset_map assetgen section; not all library assets have a current scene consumer.",
+    "final_prompt":  "Use case: stylized-concept; Asset type: combat enemy stage/banner art set for Orbwalker; Primary request: production candidate wide encounter stage/banner sheet for a fantasy match-3 roguelike. Subject: four wide horizontal encounter banners in a 2x2 sheet: cavern raider stage, shield guard stage, burning knight arena, prism vault arena. Each banner has an empty central/foreground area for portrait placement and UI overlays. Style/medium: polished stylized 2D game stage art, dark-fantasy dungeon, readable at mobile combat header size. Composition/framing: 2x2 sheet of wide banners, consistent horizon and camera height, no characters, no labels. Lighting/mood: tense dungeon encounter, clear environmental identity per banner. Color palette: cool stone, warm torch/gold, fire red/orange, prism cyan/violet, distinct but cohesive. Constraints: no readable text, no labels, no logo, no watermark, no gore, no casino imagery, no UI controls, no characters.",
+    "generation_mode":  "built-in imagegen",
+    "approval_date":  "2026-05-08",
+    "integration_date":  "2026-05-22"
 }

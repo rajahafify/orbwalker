@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture Review Task Tracker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Architecture Review Task Tracker</h1>
+      <p class="summary">Purpose: track architecture-review follow-up work with explicit status, progress, blockers, validation gates, and documentation impact. This is the entry point for architecture-maintenance tasks before Milestone 10 balance closure.</p>
+      <h1 id="architecture-review-task-tracker">Architecture Review Task Tracker</h1>
+<p>Purpose: track architecture-review follow-up work with explicit status, progress, blockers, validation gates, and documentation impact. This is the entry point for architecture-maintenance tasks before Milestone 10 balance closure.</p>
+<p>Status values: <code>not started</code>, <code>in progress</code>, <code>blocked</code>, <code>done</code>, <code>deferred</code>.</p>
+<h2 id="ar-01-baseline-regression-harness">AR-01: Baseline Regression Harness</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Regression checklist and Godot MCP probe workflow for board resolver, combat state machine, shop service, RunState routing, audio loading, and shared HUD selection.</li>
+<li>Progress: 2026-05-03 baseline evidence captured in <code>docs/test_plan.html</code> for branch/worktree state, <code>git diff --check</code>, <code>get_project_info</code>, <code>get_godot_errors</code>, main/combat/board-debug/shop scene smokes, user runtime route timings for <code>Start Run -&gt; Combat</code>, <code>Combat -&gt; Shop</code>, and <code>Shop -&gt; Combat</code>, board resolver known cases, combat state machine result envelope, shop service buy/reroll/sell/booster basics, RunState route invariants, audio stream loading, and minimal <code>PlayerLoadoutHud</code> selection/popover behavior.</li>
+<li>Blockers: None for AR-01 baseline capture. Remaining manual QA items such as texture-map visual pop-in, live HUD sell flow, overlap checks, and integer-division warning cleanup stay tracked outside AR-01 completion.</li>
+<li>Next action: Use the retained AR-01 harness as the pre-refactor comparison point for AR-02 and later architecture-touching batches.</li>
+<li>Validation: Static checks pass; Godot MCP checks cover <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/combat.tscn</code>, <code>res://scenes/combat/board_debug.tscn</code>, and <code>res://scenes/shop.tscn</code>; focused probes record expected result envelopes for deterministic systems.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/file-map.html</code>, <code>wiki/setup.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the retained feature-flagged AR-01 probe and captured baseline.</li>
+</ul>
+<h2 id="ar-02-low-risk-bug-fixes">AR-02: Low-Risk Bug Fixes</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Small confirmed issues such as <code>EnemyState.get_current_intent()</code> mutation, main-menu music polling after success, noisy audio diagnostics, and await/transition guards.</li>
+<li>Progress: 2026-05-03 completed the low-risk batch. <code>EnemyState.get_current_intent()</code> returns a duplicated intent snapshot before adding the derived <code>index</code>, keeping the caller contract unchanged while making the read API non-mutating by construction. The main-menu music retry poll stops after successful desktop playback or Android/template <code>AudioManager</code> routing while preserving retry behavior for failed setup. Verbose <code>AudioManager</code> music diagnostics are gated behind <code>debug/audio_diagnostics_enabled=false</code> by default. Run-flow entry/exit controls now have local duplicate-transition guards for Start Run, player-shop Continue/Menu, legacy boss-reward Skip/Continue, and legacy shop Skip/Next/Menu; player-shop and legacy reward/shop advance actions now check failed <code>RunState</code> transition results before routing.</li>
+<li>Blockers: None for AR-02 completion. Known unsourced Godot integer-division reload warnings remain tracked outside this low-risk batch.</li>
+<li>Next action: Move to AR-03 shared WAV/audio utility extraction or AR-04 shop/input safety after choosing the next architecture-review batch.</li>
+<li>Validation: Intent snapshot probe passed; main scene smoke confirmed desktop <code>MainMenuMusicPlayer</code> playback; focused audio setting probe confirmed diagnostics are opt-in; transition scene instantiate probes passed for <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/shop.tscn</code>, <code>res://scenes/flow/boss_relic_reward.tscn</code>, and <code>res://scenes/flow/shop_placeholder.tscn</code>; retained AR-01 combat result-envelope probe still matched the documented baseline. Fresh <code>get_godot_errors</code> returned no session errors after script/instantiate checks; after main scene smoke it still reported the known unsourced integer-division reload warnings.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the completed AR-02 batch.</li>
+</ul>
+<h2 id="ar-03-shared-wav-audio-utility-extraction">AR-03: Shared WAV/Audio Utility Extraction</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Shared WAV parsing, frame-count, and loop configuration logic currently duplicated between <code>scripts/core/audio_manager.gd</code> and <code>scripts/scenes/main_menu.gd</code>.</li>
+<li>Progress: 2026-05-03 completed the extraction by adding <code>scripts/core/audio_stream_loader.gd</code> as the shared helper for file byte loading, signed PCM16 WAV parsing, imported <code>AudioStream</code> loop configuration, WAV loop bounds, and source-header frame counts. <code>scripts/core/audio_manager.gd</code> and <code>scripts/scenes/main_menu.gd</code> now call the shared loader instead of carrying duplicate WAV helper implementations. Generated music/SFX remains owned by <code>AudioManager</code>, and the AR-02 desktop shop-to-main-menu audio handoff remains unchanged: desktop main menu stops shared <code>AudioManager</code> music before local <code>MainMenuMusicPlayer</code> playback, while Android/template menu music still routes through <code>AudioManager</code>.</li>
+<li>Blockers: None for AR-03 completion. Android/on-device listening and loop-length acceptance remains manual unless explicitly retested on hardware.</li>
+<li>Next action: Move to AR-04 shop/input safety or another architecture-review batch.</li>
+<li>Validation: Pre-change and post-change Godot MCP audio probes matched for menu/combat/shop WAV stream class, volume, data bytes, and loop ends; generated <code>swap</code> SFX still builds; the direct main-menu music loader returns the same WAV data and loop end; the focused shared-music stop probe still reports <code>before_key=shop before_playing=true after_key= after_playing=false</code>; retained AR-01 combat result-envelope probe still matched baseline; <code>play_scene main</code> launched with desktop <code>MainMenuMusicPlayer</code> playback and <code>get_godot_errors</code> reported no session errors.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/features.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the new shared audio loader ownership.</li>
+</ul>
+<h2 id="ar-04-shop-input-safety">AR-04: Shop/Input Safety</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: <code>scripts/scenes/shop.gd</code>, <code>scripts/shop/shop_service.gd</code>, and shared <code>scripts/ui/player_loadout_hud.gd</code> interaction behavior.</li>
+<li>Progress: 2026-05-03 completed the shop/input safety batch. <code>PlayerLoadoutHud</code> hover now previews item details without mutating committed equipment or consumable selection; Sell is shown only when the hovered equipment/consumable slot matches the clicked selected slot. <code>shop_player.gd</code> now routes touch outside-dismissal through the same shared HUD focus handler as mouse clicks and adds a same-frame action guard around buy, relic buy, reroll, sell, booster pick, and booster skip handlers so one input frame cannot execute duplicate shop transactions. Manual QA then found the first outside-dismiss route still failed on PC and Android because handled UI events did not reach <code>_unhandled_input</code>; the shop now performs the dismissal check in <code>_input</code> without marking the event handled. A second manual follow-up found the popover closed but selected chrome stayed active; outside-dismiss now clears inventory focus and refreshes the shop UI so slot selection re-renders cleared.</li>
+<li>Blockers: None for the AR-04 code batch. Live visual overlap checks, texture-map pop-in, and Android listening remain manual QA unless explicitly retested.</li>
+<li>Next action: Move to the next selected architecture-review batch after any desired manual shop/touch QA.</li>
+<li>Validation: Godot MCP <code>view_script</code> checks passed for <code>res://scripts/ui/player_loadout_hud.gd</code> and <code>res://scripts/scenes/shop.gd</code>; focused editor-script probes confirmed hover preserves committed selection through hover enter/exit, click selection still commits, Sell appears only for the selected hovered slot, outside-click focus dismissal clears selection, same-frame shop action calls are guarded, and <code>res://scenes/shop.tscn</code> instantiates. Follow-up source-shape and scene instantiate probes passed after moving outside-dismissal to <code>_input</code>; <code>view_script</code> and <code>get_godot_errors</code> passed after the focus-clear/refresh follow-up. Final <code>get_godot_errors</code> reported no session errors. User manual QA confirmed the outside-dismissal and visual deselection fixes on PC and Android.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/features.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the completed AR-04 batch.</li>
+</ul>
+<h2 id="ar-05-combat-controller-first-split">AR-05: Combat Controller First Split</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: First behavior-preserving extraction from <code>scripts/scenes/combat.gd</code>; <code>scripts/combat/combat_outcome_overlay.gd</code> now owns the combat outcome overlay presentation boundary for standard victory/defeat cards, boss reward card controls, scrim layering, and overlay layout.</li>
+<li>Progress: 2026-05-03 completed the first split. <code>combat_player_controller.gd</code> still owns combat math, resolve presentation timing, RunState victory/defeat/boss-reward routing, audio calls, scene transitions, input phase changes, debug console commands, and <code>/skip</code>; <code>CombatOutcomeOverlay</code> owns only outcome/boss-reward UI state, card content/layout, visibility, and helper text wrapping.</li>
+<li>Blockers: None for AR-05 completion. Broader combat presentation extraction was handled by later AR slices; final public visual regression checks are transferred to <code>docs/itch_readiness_tasks.html</code>.</li>
+<li>Next action: Move to AR-06 only after choosing a presentation-only boundary that preserves the accepted resolve order.</li>
+<li>Validation: Godot MCP <code>view_script</code> checks passed for <code>res://scripts/combat/combat_outcome_overlay.gd</code> and <code>res://scripts/scenes/combat.gd</code>; focused editor-script probes confirmed helper load/methods, <code>res://scenes/combat.tscn</code> instantiate, outcome node presence, helper boss-reward controls/scrim/layout state, standard summary state, boss reward state, hide state, and text wrapping. Retained AR-01 combat result-envelope probe still matched baseline values. Final <code>get_godot_errors</code> reported no session errors. User manual QA confirmed normal victory continue, boss reward claim/skip, defeat Main Menu, final-boss summary, debug console commands, and resolve presentation order remained good.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the new helper ownership.</li>
+</ul>
+<h2 id="ar-06-combat-presentation-split">AR-06: Combat Presentation Split</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: <code>scripts/combat/combat_resolve_presenter.gd</code> now owns the board-space resolve replay presentation boundary: match-group presentation sorting, match flash waits, clear/gravity/refill animation timing, visual board commits, clear burst spawning, combo popup lifecycle, and <code>combat_speed</code> duration/wait behavior. <code>scripts/scenes/combat.gd</code> still owns drag/input lifecycle, resolver simulation, combat math, mastery preview value calculation and HUD feedback decisions, RunState routing, outcome overlay routing, audio routing callbacks, scene transitions, debug console, and <code>/skip</code>.</li>
+<li>Progress: 2026-05-03 completed the presentation split with a callback boundary from the controller into <code>CombatResolvePresenter</code>. The accepted visible ordering is preserved by keeping the replay sequence as match flash, clear animation, visual clear commit, <code>combo_tick</code> trace, combo popup/mastery preview, gravity animation/commit, refill animation/commit. AR-08 cleanup candidates were left untouched.</li>
+<li>Blockers: None for the AR-06 code batch. Manual visual QA on Android passed for the AR-06 combat presentation checks; broader desktop/mobile overlap and deferred orb texture-map pop-in review remain useful outside this batch.</li>
+<li>Next action: Move to AR-07 or another selected architecture-review batch.</li>
+<li>Validation: Godot MCP <code>view_script</code> checks passed for <code>res://scripts/combat/combat_resolve_presenter.gd</code> and <code>res://scripts/scenes/combat.gd</code>; <code>res://scenes/combat.tscn</code> instantiated with board and outcome nodes; retained AR-01 combat result-envelope probe still matched baseline values; <code>play_scene main</code> launched successfully with no runtime errors; final <code>get_godot_errors</code> reported no session errors. A first attempt at a focused async presenter-order editor probe hit an MCP tool-script parse limitation before execution. User manual QA on the installed Android build confirmed AR-06 presentation behavior works.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/features.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the new helper ownership.</li>
+</ul>
+<h2 id="ar-07-runstate-data-contract-roadmap">AR-07: RunState/Data Contract Roadmap</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: <code>scripts/core/run_state.gd</code>, <code>scripts/content/content_registry.gd</code>, <code>docs/system_architecture.html</code>, and future content data format.</li>
+<li>Progress: 2026-05-03 completed the AR-07 roadmap pass. The prototype source of truth is now documented as dictionary-backed <code>ContentRegistry</code> content for this phase, with Resource or JSON migration deferred behind the existing registry read API. <code>ContentRegistry.content_contract_snapshot()</code> records current collection fields, validation ownership, shop pool/pricing ownership, and the future migration boundary. <code>RunState.run_contract_snapshot()</code> records run-owned persistence/routing fields, scene route constants, level sequence, public transition/action APIs, and the content dependency boundary. Single-item content getters now return duplicated dictionaries like list APIs, so caller mutation cannot alter the registry index.</li>
+<li>Blockers: None for AR-07 completion. Actual <code>.tres</code>, JSON, or external content migration is intentionally deferred to a future scoped task.</li>
+<li>Next action: Move to AR-08 cleanup/dead-code validation only when ready, keeping cleanup separate from content migration.</li>
+<li>Validation: Godot MCP <code>view_script</code> checks passed for <code>res://scripts/core/run_state.gd</code> and <code>res://scripts/content/content_registry.gd</code>; focused content contract probe confirmed validation <code>[]</code>, expected content counts, contract snapshots, and non-mutating single-item getters; RunState route invariant probe preserved AR-01 route shapes; retained AR-01 combat result-envelope probe still matched baseline; scene instantiate checks passed for main, combat, board-debug, and shop; final <code>get_godot_errors</code> reported no session errors; <code>git diff --check</code> passed.</li>
+<li>Docs/wiki impact: <code>docs/system_architecture.html</code>, <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the AR-07 contract boundary.</li>
+</ul>
+<h2 id="ar-08-cleanup-dead-code-validation">AR-08: Cleanup/Dead-Code Validation</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Confirmed-unused symbols and stale placeholder/fallback surfaces such as <code>base_orb_values</code>, <code>PLAYER_EFFECT_ORDER</code>, summary helpers, and legacy placeholder scenes.</li>
+<li>Progress: 2026-05-03 completed cleanup in two passes. First removed <code>PlayerState.base_orb_values</code>, the unused <code>CombatStateMachine.PLAYER_EFFECT_ORDER</code> constant, and unused legacy string-format helpers. Follow-up cleanup renamed the final victory surface from <code>run_summary_placeholder</code> to <code>final_run_summary</code>, removed the legacy boss relic reward scene/script after boss rewards moved fully into the combat victory overlay, removed the legacy shop placeholder scene/script, and removed the board-debug scene/controller. Boss reward data APIs and the <code>boss_relic_reward</code> run step key remain because the combat overlay still uses them.</li>
+<li>Blockers: None for this cleanup batch. Historical validation notes still mention deleted debug/fallback surfaces as past evidence, but current validation should use <code>main.tscn</code>, <code>combat_player.tscn</code>, <code>shop_player.tscn</code>, <code>final_run_summary.tscn</code>, and focused editor-script probes.</li>
+<li>Next action: Move to the next architecture-review batch. If a replacement board-debug workflow is needed later, implement it as a new scoped debug tooling task rather than reviving the deleted scene.</li>
+<li>Validation: Godot MCP <code>view_script</code> passed for touched scripts; <code>get_godot_errors</code> reported no session errors; retained AR-01 combat result-envelope probe still matched baseline; RunState route probes preserved combat/shop/boss-reward/final-victory route shapes with final victory routing to <code>res://scenes/run_summary.tscn</code>; defeat now also routes to <code>res://scenes/run_summary.tscn</code> in defeat mode while reset/no-summary inactive state still routes to main; main, combat, shop, and final summary scenes instantiate/run as validation surfaces; deleted-scene reference searches are clean; <code>git diff --check</code> passed.</li>
+<li>Docs/wiki impact: <code>AGENTS.html</code>, <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/features.html</code>, <code>wiki/file-map.html</code>, <code>wiki/known-issues.html</code>, <code>wiki/setup.html</code>, and <code>wiki/log.html</code> updated for the completed cleanup and new validation surfaces.</li>
+</ul>
+<h2 id="ar-09-stability-and-shared-ui-utility-cleanup">AR-09: Stability And Shared UI Utility Cleanup</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Fix the confirmed post-AR-08 stability risks before larger architecture movement. Scope includes lifecycle-safe awaits in combat resolve presentation, bounded animation-drain behavior, duplicate-transition guards in final summary, main-menu failed-transition recovery, one untraced combat redirect, and the duplicated <code>_panel_style()</code> signature risk between player-facing flow scenes.</li>
+<li>Progress: 2026-05-03 completed the stability cleanup without changing combat math, resolver order, visible resolve order, combo/mastery timing, content data, audio priority, route semantics, debug commands, or <code>/skip</code>. <code>combat_player_controller.gd</code> now checks scene/board continuation after awaited resolve presentation and turn replay steps before committing final board state or routing outcomes. <code>CombatResolvePresenter</code> now checks timer owner, scene tree, and board-view validity after waits and before touching bound nodes, and the final animation drain exits on invalid lifecycle state or a bounded timeout/iteration cap. The combat wrong-step redirect now uses <code>RunState.flow_trace_change_scene(...)</code> instead of a bare deferred <code>change_scene_to_file</code>. <code>main_boot.gd</code> now checks Start Run transition results and restores the button/status state on failure. <code>final_run_summary.gd</code> now guards <code>New Run</code> and <code>Main Menu</code> actions with a single transition lock and disabled buttons while routing. <code>scripts/ui/ui_utils.gd</code> now owns the canonical <code>panel_style(fill, border, border_width := 2, radius := 6, margins := Vector4.ZERO)</code> helper used by <code>shop_player.gd</code> and <code>final_run_summary.gd</code>, preserving their previous border/radius/margin visuals while removing the signature mismatch.</li>
+<li>Out of scope:</li>
+<ul>
+<li>Do not change combat math, accepted resolve order, combo/mastery feedback timing, content data shape, audio priority behavior, or broader controller ownership.</li>
+<li>Do not migrate every <code>StyleBoxFlat</code> in <code>player_loadout_hud.gd</code>; this batch only fixes the duplicated helper-signature trap in flow scenes.</li>
+</ul>
+<li>Validation: <code>git status --short --branch</code> confirmed branch <code>codex/ar-09-stability-ui-cleanup</code> with the preserved uncommitted AR tracker edit plus AR-09 source/doc changes; <code>git diff --check</code> passed. Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_player_controller.gd</code>, <code>combat_resolve_presenter.gd</code>, <code>main_boot.gd</code>, <code>final_run_summary.gd</code>, <code>shop_player.gd</code>, and <code>ui_utils.gd</code>; <code>get_godot_errors</code> reported no session errors. Focused editor probes passed for scene instantiation of <code>main.tscn</code>, <code>combat_player.tscn</code>, and <code>final_run_summary.tscn</code>, and for canonical <code>UiUtils.panel_style(...)</code> border/radius/margin mapping. <code>play_scene main</code> launched with desktop <code>MainMenuMusicPlayer</code> playback and no session errors. User manual sanity QA on 2026-05-04 confirmed Start Run, combat resolve/cascade feel, combat routing, final-summary actions, shop regression, and visible panel styling are all good.</li>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/features.html</code>, <code>wiki/file-map.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the stability fixes and shared <code>UiUtils</code> ownership.</li>
+</ul>
+<h2 id="ar-10-combat-controller-god-object-refactor">AR-10: Combat Controller God-Object Refactor</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Reduce <code>scripts/scenes/combat.gd</code> by extracting the lowest-risk remaining responsibilities after AR-09 stability cleanup. First extraction target is debug console ownership plus turn-log formatting, because those areas are large, mostly isolated, and less coupled to combat math or resolve timing than input, layout, VFX, HUD sync, or routing.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving extraction. <code>scripts/combat/combat_debug_console.gd</code> now owns debug command parsing, help text, log storage/rendering, log-level state, command output coloring, and command dispatch. <code>scripts/combat/combat_turn_log_presenter.gd</code> now owns normal/detailed turn-log line generation, state snapshot formatting helpers, intent formatting, and reusable outcome/summary strings. <code>combat_player_controller.gd</code> still owns combat state, board mutation, RunState/progression mutations, HUD refresh, <code>/skip</code> route/state reset, debug fight win/lose outcome routing, resolve presentation callbacks, input, VFX, layout, and scene transitions.</li>
+<li>Plan:</li>
+<ul>
+<li>Add <code>scripts/combat/combat_debug_console.gd</code> for debug command parsing, help text, debug output formatting, command dispatch, and <code>/skip &lt;level&gt; &lt;fight&gt;</code> handling.</li>
+<li>Keep privileged gameplay actions owned by <code>combat_player_controller.gd</code>. The debug console should call controller-provided callbacks for actions such as skip routing, run-state mutation, combat refresh, and status updates instead of directly owning gameplay state.</li>
+<li>Add <code>scripts/combat/combat_turn_log_presenter.gd</code> for turn-log text generation, verbosity-specific formatting, summary string construction, and reusable result-envelope display text.</li>
+<li>Keep combat result dictionaries, <code>turn_log</code> shape, debug command names, and visible command output stable unless a confirmed bug is found during extraction.</li>
+<li>Leave input handling, resolve presentation, combo timing, mastery feedback, VFX spawning, layout management, HUD sync, outcome routing, and RunState transitions in the controller for later AR batches.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not change combat math, enemy intent resolution, rewards, shop routing, boss reward flow, accepted resolve animation order, or scene transitions.</li>
+<li>Do not start content migration or theme-resource extraction in this batch.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-10-combat-controller-refactor</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_player_controller.gd</code>, <code>combat_debug_console.gd</code>, and <code>combat_turn_log_presenter.gd</code>; focused <code>ResourceLoader.CACHE_MODE_IGNORE</code> probes loaded all three current scripts; <code>res://scenes/combat.tscn</code> instantiated with <code>DebugOverlay</code>, <code>CombatLogText</code>, <code>ConsoleInput</code>, <code>Board</code>, and <code>OutcomeSummaryPanel</code>; <code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors after rerun.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values: <code>status=ok</code>, <code>combo_count=3</code>, <code>heal_amount=4</code>, <code>armor_gained=9</code>, <code>gold_gained=2</code>, <code>enemy_blocked=5</code>, <code>enemy_damage_taken=19</code>, <code>total_elemental_damage=24</code>, <code>enemy_intent_skipped=false</code>, and <code>next_phase_name=Intent Preview</code>.</li>
+<li>Focused turn-logger probe confirmed the known normal turn summary lines and summary string match the pre-refactor baseline; a broader in-editor console lambda probe returned <code>&lt;null&gt;</code> because of MCP tool-script limitations, so representative live debug command click-through remains manual QA.</li>
+<li>Manual acceptance should cover opening combat, using representative debug commands, completing one normal combat transition, and confirming no visible behavior changed.</li>
+</ul>
+<li>Docs/wiki impact: Update <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> after the extraction only if the runtime helpers are actually added and validated.</li>
+</ul>
+<h2 id="ar-11-combat-layout-presenter-extraction">AR-11: Combat layout presenter extraction</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extracted combat scene geometry and responsive design-space positioning from <code>scripts/scenes/combat.gd</code> into <code>scripts/combat/combat_layout_presenter.gd</code>.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving layout extraction. <code>CombatLayoutPresenter</code> now owns viewport/design-root scaling, runtime zone rect calculation, design-rect application, enemy panel positioning, combat strip timer geometry, board panel aspect/shadow geometry, player panel legacy visibility/layout, loadout rail positioning, debug overlay anchoring, <code>PlayerLoadoutHud</code> section override dispatch, and outcome overlay board-rect sync. <code>combat_player_controller.gd</code> keeps scene node ownership, gameplay state, timer state decisions, input, resolver/presenter orchestration, VFX, HUD data refresh, audio, <code>/skip</code>, debug command callbacks, outcome routing, and scene transitions.</li>
+<li>Out of scope:</li>
+<ul>
+<li>Do not redesign the combat screen, resize gameplay zones beyond existing formulas, or combine this with theme-resource extraction.</li>
+<li>Do not move <code>PlayerLoadoutHud</code> ownership; this AR only moves combat-scene positioning orchestration.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-11-combat-layout-manager</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code>, <code>res://scripts/combat/combat_layout_presenter.gd</code>, and <code>res://scripts/ui/player_loadout_hud.gd</code>; focused script reload returned <code>reload=0 base=RefCounted new=true</code> for the layout helper.</li>
+<li>Focused <code>res://scenes/combat.tscn</code> instantiate probe confirmed <code>CombatLayoutRoot</code>, <code>BoardPanel</code>, <code>Board</code>, <code>PlayerHudSection</code>, <code>DebugOverlay</code>, and <code>OutcomeSummaryPanel</code>.</li>
+<li>Focused layout probe preserved key formulas: <code>1080x1920</code> board <code>480x576</code>, <code>1080x2400</code> board <code>880x1056</code>, tall board panel <code>1048x1064</code>, wide viewport root centering/scale, and compact/right-side debug overlay anchoring.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values: <code>status=ok</code>, <code>combo_count=3</code>, <code>heal_amount=4</code>, <code>armor_gained=9</code>, <code>gold_gained=2</code>, <code>enemy_blocked=5</code>, <code>enemy_damage_taken=19</code>, <code>total_elemental_damage=24</code>, <code>enemy_intent_skipped=false</code>, and <code>next_phase_name=Intent Preview</code>.</li>
+<li><code>play_scene main</code> launched with desktop menu WAV playback and clean recent runtime output. Final <code>get_godot_errors</code> still carried two stale enum diagnostics from an earlier failed MCP editor-script probe; focused <code>view_script</code> refreshes for <code>run_state.gd</code> and <code>ar01_combat_result_probe.gd</code> passed, and no project runtime error appeared in the rerun log.</li>
+<li>Manual visual QA remains required for overlap checks, Android/on-device layout, drag/cascade feel, deferred orb texture-map pop-in, and rapid-tap feel.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the new layout helper boundary and validation evidence.</li>
+</ul>
+<h2 id="ar-12-combat-vfx-presenter-extraction">AR-12: Combat VFX presenter extraction</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extracted combat VFX spawning and transient replay effect helpers from <code>scripts/scenes/combat.gd</code> into <code>scripts/combat/combat_vfx_presenter.gd</code>.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving VFX extraction. <code>CombatVfxPresenter</code> now owns VFX layer binding, texture VFX spawning, replay impact texture lookup/fallback, mastery beam source lookup, global-to-VFX-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup through the controller-owned tween owner. <code>CombatPlayerController</code> keeps turn-log decisions, replay order, awaits, combat speed timing, mastery preview totals/release semantics, resolver simulation, combat math, input, layout, audio, debug callbacks, <code>/skip</code>, outcome routing, and scene transitions.</li>
+<li>Plan:</li>
+<ul>
+<li>Move texture-based VFX spawning, replay impact spawning, mastery beam spawning, mastery-card source lookup support, global/local coordinate conversion, fade tween lifecycle, and small visual-effect helper decisions that are not combat math.</li>
+<li>Keep <code>CombatPlayerController</code> responsible for deciding when effects happen, which <code>turn_log</code> values trigger them, and when awaited replay steps continue or abort.</li>
+<li>Pass required dependencies explicitly: <code>VfxLayer</code>, <code>VisualRegistry</code>, <code>PlayerLoadoutHud</code>, mastery card root, and timer/tween owner.</li>
+<li>Preserve mastery feedback timing, pooled feedback release order, beam sizing, impact sizing, target/source placement, and lifecycle guards.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not change combo popup timing, mastery preview math, turn replay order, resolve presentation, VFX art assets, layout, or combat speed behavior.</li>
+<li>Do not introduce new effects or change visual readability tuning in this refactor batch.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-12-combat-vfx-manager</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code> and <code>res://scripts/combat/combat_vfx_presenter.gd</code>.</li>
+<li>Focused helper reload/instantiate probe returned <code>reload=0 base=RefCounted new=true</code>.</li>
+<li>Focused VFX helper probe confirmed a null texture no-op kept <code>VfxLayer</code> at <code>0</code> children, a spawned texture parented one <code>TextureRect</code> under <code>VfxLayer</code>, and preserved size plus alpha modulation.</li>
+<li>Focused <code>res://scenes/combat.tscn</code> instantiate probe confirmed <code>VfxLayer</code>, <code>ElementalMasteryCards</code>, <code>EnemyPortrait</code>, <code>PlayerPortrait</code>, and <code>Board</code>.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values: <code>status=ok</code>, <code>combo_count=3</code>, <code>heal_amount=4</code>, <code>armor_gained=9</code>, <code>gold_gained=2</code>, <code>enemy_blocked=5</code>, <code>enemy_damage_taken=19</code>, <code>total_elemental_damage=24</code>, <code>enemy_intent_skipped=false</code>, and <code>next_phase_name=Intent Preview</code>.</li>
+<li><code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>Manual visual QA remains required for real mastery beams, impact placement, cascade readability, Android/on-device behavior, and overlap checks.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the new VFX helper boundary and validation evidence.</li>
+</ul>
+<h2 id="ar-13-board-drag-input-handler-extraction">AR-13: Board Drag Input Handler Extraction</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extracted the board drag/pointer input state machine from <code>scripts/scenes/combat.gd</code> into <code>scripts/board/board_controller.gd</code>.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving drag-input extraction. <code>BoardController</code> now owns board-local mouse/touch event parsing, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, drag timer countdown state, drag visual reset/abort, and live match-glow refresh. <code>CombatPlayerController</code> keeps input phase ownership, timer/status rendering, swap SFX policy through a callback, resolve kickoff, visual/simulation board cloning, combat math, resolve presentation, HUD sync, VFX, layout, debug callbacks, <code>/skip</code>, outcome routing, and scene transitions.</li>
+<li>Plan:</li>
+<ul>
+<li>Move pointer/touch drag bookkeeping, selected cell/path tracking, swap-attempt flow, drag visual clearing, and board input event parsing where it can be separated without changing board state rules.</li>
+<li>Keep <code>combat_player_controller.gd</code> responsible for input phase ownership, combat resolve kickoff, audio callback decisions, board-state mutation approval, and post-drag orchestration.</li>
+<li>Preserve Android touch coordinate behavior through <code>BoardView.gui_input</code> local coordinates and avoid reintroducing transform double-application.</li>
+<li>Keep <code>/skip</code>, debug console, layout, resolve presentation, VFX, HUD sync, and route transitions out of this batch.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not change drag movement rules, swap legality, resolver ordering, accepted resolve presentation timing, or combat math.</li>
+<li>Do not add gesture features, input buffering, rapid-tap behavior changes, or responsive layout fixes.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-13-board-drag-input-handler</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code> and <code>res://scripts/board/board_controller.gd</code>; focused script-load probe returned controller base <code>Control</code> and helper base <code>RefCounted</code>.</li>
+<li>Focused helper probes confirmed <code>BoardView</code> local coordinate round trip for cell <code>(2, 4)</code>, valid drag start, adjacent move swap, invalid start rejection, invalid/non-adjacent move rejection without board mutation, release end action, reset visual state, touch start/second-touch rejection/touch-drag/touch-end behavior, and timeout end action.</li>
+<li><code>res://scenes/combat.tscn</code> instantiated with <code>CombatLayoutRoot</code> and <code>Board</code>; retained AR-01 combat result-envelope probe still matched baseline values; <code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>User manual QA confirmed real mouse drag, Android touch drag, rapid-tap feel, cascade feel after drag release, and board coordinate accuracy passed.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the new drag-input helper boundary and validation evidence.</li>
+</ul>
+<h2 id="ar-14-combat-theme-and-chrome-boundary">AR-14: Combat Theme And Chrome Boundary</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extracted combat style/chrome construction from <code>scripts/scenes/combat.gd</code> into <code>scripts/combat/combat_chrome_styler.gd</code>.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving chrome boundary. <code>CombatChromeStyler</code> now owns code-built combat panel/frame styleboxes, progress-bar style construction, label font/color overrides, timer-track and timer-label readability styling, button chrome, board/outcome panel chrome, stat-chip chrome, debug overlay font sizing, shared player-HUD chrome dispatch, and debug zone-guide chrome. <code>CombatPlayerController</code> keeps scene node ownership, <code>_apply_visual_chrome()</code> orchestration, timer runtime text/fill/color math, placeholder texture creation/assignment, layout, VFX, input, combat math, resolve presentation, route transitions, debug callbacks, <code>/skip</code>, and <code>UiUtils.panel_style(...)</code> stays untouched.</li>
+<li>Plan:</li>
+<ul>
+<li>The source inventory found a low-risk helper boundary rather than a <code>.tres</code> resource migration.</li>
+<li>Placeholder texture builders were left in <code>CombatPlayerController</code> for AR-15.</li>
+<li>Existing color, border, radius, margin, font size, timer behavior, and placeholder appearance were preserved.</li>
+<li>Layout formulas, VFX, input, combat math, resolve presentation, route transitions, and <code>UiUtils.panel_style(...)</code> ownership were unchanged.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not migrate shop/final-summary styles or replace <code>UiUtils.panel_style(...)</code>.</li>
+<li>Do not redesign the combat UI, generate new art, or broaden into theme-resource cleanup across the project.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-14-combat-theme-chrome-boundary</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_player_controller.gd</code> and <code>combat_chrome_styler.gd</code>.</li>
+<li>Focused script-load probe returned controller base <code>Control</code>, helper reload <code>0</code>, and helper base <code>RefCounted</code>; <code>res://scenes/combat.tscn</code> instantiated with <code>CombatLayoutRoot</code>, <code>Board</code>, <code>TimerTrack</code>, and <code>OutcomeSummaryPanel</code>.</li>
+<li>Focused style probe confirmed representative pre-refactor values: shared frame bg <code>(0.025, 0.045, 0.07, 0.94)</code>, border <code>(0.18, 0.24, 0.31, 0.9)</code>, border width <code>1</code>, radius <code>4</code>, margins <code>8/6</code>; timer track bg <code>(0.035, 0.075, 0.11, 0.94)</code>, border <code>(0.2, 0.3, 0.4, 0.9)</code>, border width <code>1</code>, radius <code>4</code>; timer font <code>18</code>, timer-state font <code>15</code>, outline <code>2</code>, shadow x <code>1</code>; enemy HP fill <code>(0.7, 0.12, 0.13, 1.0)</code>.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values; <code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>User manual QA passed after the helper extraction.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the new chrome helper boundary and validation evidence.</li>
+</ul>
+<h2 id="ar-15-combat-placeholder-texture-utility">AR-15: Combat Placeholder Texture Utility</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extracted code-generated combat placeholder texture builders from <code>scripts/scenes/combat.gd</code> into <code>scripts/combat/combat_placeholder_textures.gd</code>.</li>
+<li>Progress: 2026-05-04 completed the behavior-preserving placeholder utility extraction. <code>CombatPlaceholderTextures</code> now owns only the code-generated timer, intent, enemy portrait, and hero portrait placeholder <code>ImageTexture</code> builders. <code>CombatPlayerController</code> keeps the fallback decisions, <code>VisualRegistry</code> lookup calls, node assignment, visibility toggles, timer runtime behavior, portrait refresh timing, layout, chrome styling, combat math, resolve presentation, routing, debug callbacks, and <code>/skip</code>.</li>
+<li>Plan:</li>
+<ul>
+<li>Moved timer, intent, enemy portrait, and hero portrait placeholder texture creation without changing their pixel shapes, sizes, colors, transparency, or fallback conditions.</li>
+<li>Keep <code>CombatPlayerController</code> responsible for choosing when placeholders are needed and assigning textures to scene nodes.</li>
+<li>Avoid changing <code>VisualRegistry</code> asset lookup, generated art assets, deferred orb texture-map behavior, or combat layout.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not generate new art, migrate placeholders to files, alter portrait mapping, or change visual registry fallback behavior.</li>
+<li>Do not combine with combat theme/chrome extraction unless AR-14 has already established a helper that should clearly own placeholders.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-15-combat-placeholder-texture-utility</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code> and <code>res://scripts/combat/combat_placeholder_textures.gd</code>.</li>
+<li>Focused texture probe confirmed timer <code>96x96</code>, intent <code>96x96</code>, enemy <code>260x230</code>, and hero <code>192x192</code> placeholders plus representative sampled colors/alpha matched the pre-refactor source values.</li>
+<li>Focused script-load and scene instantiate probe loaded the controller as <code>Control</code>, the helper as <code>RefCounted</code>, instantiated <code>res://scenes/combat.tscn</code>, and confirmed <code>TimerIcon</code>, <code>IntentBadge</code>, <code>EnemyPortrait</code>, <code>PlayerPortrait</code>, and <code>Board</code> nodes exist.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values; <code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>A separate async scene-ready texture-assignment probe hit an MCP tool-script parse limitation before execution, so runtime ready-time placeholder assignment remains covered by existing controller fallback code paths plus main-scene smoke rather than that specific probe.</li>
+<li>User manual QA passed after the helper extraction.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the new helper ownership.</li>
+</ul>
+<h2 id="ar-16-combat-hud-sync-boundary-review">AR-16: Combat HUD Sync Boundary Review</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Reviewed and reduced remaining HUD data-sync pressure in <code>scripts/scenes/combat.gd</code> after <code>PlayerLoadoutHud</code>, AR-10, and the layout/theme/placeholder extractions were stable. <code>scripts/combat/combat_hud_presenter.gd</code> now owns side-effect-free combat HUD snapshot dictionary construction; <code>CombatPlayerController</code> still owns scene-node application for top HUD, enemy stage, timer/tempo, player vitals/stat labels, debug overlay, <code>PlayerLoadoutHud</code> payload dispatch, placeholder fallback decisions, and loadout rail layout refresh.</li>
+<li>Progress: 2026-05-04 completed the narrow data-boundary extraction. <code>_update_hud()</code> now builds one combat HUD snapshot and applies it through the existing <code>_sync_*</code> scene update methods. The new helper returns <code>top_hud</code>, <code>enemy_stage</code>, <code>tempo_row</code>, <code>player_strip</code>, and <code>debug_overlay</code> dictionaries from controller-provided player/enemy/combat/progression/timer data. No <code>PlayerLoadoutHud</code> source was changed, so shop HUD behavior, inventory selection/popovers, consumable use signals, sell flow, mastery card rendering, and layout override behavior remain under the existing shared HUD boundary.</li>
+<li>Plan:</li>
+<ul>
+<li>Inventory <code>_sync_*</code> and <code>_update_hud()</code> responsibilities and separate pure data snapshot construction from scene-specific label/bar updates where doing so reduces coupling.</li>
+<li>Prefer pushing reusable player-loadout/mastery data binding into <code>PlayerLoadoutHud</code> only when it matches that helper's existing ownership; keep combat-only enemy/timer/status labels in the controller or a combat-specific HUD helper.</li>
+<li>Preserve shared shop/combat HUD input safety, popover behavior, consumable slot usage, sell-slot callbacks, mastery feedback lanes, and existing player HUD geometry.</li>
+<li>Keep RunState routing, outcome overlay, resolve presentation, VFX, input handling, layout formulas, and combat math out of this batch.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not redesign HUD layout, move inventory behavior back into combat, or change shop HUD behavior.</li>
+<li>Do not change Elemental Mastery timing, feedback pooling, or card rendering.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-16-combat-hud-sync-boundary</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code> and <code>res://scripts/combat/combat_hud_presenter.gd</code>.</li>
+<li>Focused HUD snapshot probe returned helper base <code>RefCounted</code>, controller base <code>Control</code>, instantiated <code>res://scenes/combat.tscn</code> and <code>res://scenes/shop.tscn</code>, and confirmed representative top HUD, enemy, timer, player vitals/stat, truncated turn-summary, and debug snapshot strings.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values: <code>status=ok</code>, <code>combo_count=3</code>, <code>heal_amount=4</code>, <code>armor_gained=9</code>, <code>gold_gained=2</code>, <code>enemy_blocked=5</code>, <code>enemy_damage_taken=19</code>, <code>total_elemental_damage=24</code>, <code>enemy_intent_skipped=false</code>, and <code>next_phase_name=Intent Preview</code>.</li>
+<li><code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>User manual QA passed after the HUD snapshot boundary extraction, covering the AR-16 acceptance surface for combat/shop HUD behavior.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the completed HUD snapshot boundary.</li>
+</ul>
+<h2 id="ar-17-combat-outcome-and-transition-boundary-review">AR-17: Combat Outcome And Transition Boundary Review</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Review the remaining scene transition, outcome routing, and debug fight outcome code in <code>scripts/scenes/combat.gd</code> after lower-risk presentation/debug/input extractions are complete. A narrow behavior-preserving transition glue boundary now lives in <code>_trace_and_change_scene_to_target(...)</code>, which centralizes the duplicated combat outcome trace/scene-change call used by the standard Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns transition semantics, boss reward state, route constants, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only outcome/boss-reward presentation.</li>
+<li>Progress: 2026-05-04 source review found a small duplicated route-tracing boundary rather than a new helper file. <code>_on_next_button_pressed()</code>, <code>_claim_boss_reward_option()</code>, and <code>_skip_boss_reward_option()</code> now call <code>_trace_and_change_scene_to_target(...)</code> with the same target scenes, route names, trace step names, source strings, and boss-claim <code>option_index</code> trace payload as before. Final boss auto-summary routing remains deferred as before. Debug fight win/lose still only prepare pending outcome paths and are intentionally unchanged.</li>
+<li>Plan:</li>
+<ul>
+<li>Inventory combat-owned outcome paths: normal victory, boss victory reward overlay, final victory summary, defeat summary, debug fight win/lose, next-button routing, route tracing, failed-transition recovery, and <code>_pending_next_scene_path</code> ownership.</li>
+<li>Identify whether any pure formatting or adapter code can move without weakening the current <code>RunState</code> transition contract or <code>CombatOutcomeOverlay</code> ownership.</li>
+<li>Preserve AR-09 lifecycle guards, traced combat redirect, final-summary routing, defeat routing to final summary in defeat mode, boss reward routing, audio handoff behavior, and <code>/skip</code>.</li>
+<li>Treat this as a review-first AR; implementation should happen only if the source inventory finds a narrow, behavior-preserving boundary.</li>
+</ul>
+<li>Out of scope:</li>
+<ul>
+<li>Do not change RunState semantics, boss reward step keys, route names, final summary naming, defeat/victory summary content, scene transitions, audio priority, or overlay layout.</li>
+<li>Do not merge this with input, VFX, layout, or HUD-sync extraction.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-17-combat-outcome-transition-boundary</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code>.</li>
+<li>Focused RunState route invariant probe preserved normal fight victory to shop, shop advance to combat, boss victory to combat-hosted boss reward, boss reward skip to shop, final boss victory to <code>res://scenes/run_summary.tscn</code>, and defeat to <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Focused scene instantiate probe passed for <code>res://scenes/combat.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values; <code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors.</li>
+<li>User manual QA passed with no issues and no errors after checking normal victory continue, boss reward claim/skip, final boss summary, defeat summary, debug fight win/lose, and main-menu return behavior.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the narrowed combat outcome transition glue boundary.</li>
+</ul>
+<h2 id="ar-18-architecture-review-closeout-before-milestone-10">AR-18: Architecture Review Closeout Before Milestone 10</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Final architecture-review closeout audit before Milestone 10 balance work. Scope is limited to tracker/docs/wiki consistency, remaining AR validation gaps, obsolete temporary diagnostics, deleted validation surfaces, and current source contract checks. No gameplay/runtime behavior changes were made.</li>
+<li>Progress: 2026-05-04 added the final closeout entry after confirming no AR-18 entry existed. The audit found that AR-01 through AR-17 are complete and documented; historical dated notes still mention deleted surfaces such as <code>board_debug.tscn</code>, <code>boss_relic_reward.tscn</code>, <code>shop_placeholder.tscn</code>, and <code>run_summary_placeholder.tscn</code>, but AR-08 and later notes already define the current player-facing validation surfaces. Current architecture handoff to Milestone 10 is <code>main.tscn</code>, <code>combat_player.tscn</code>, <code>shop_player.tscn</code>, <code>final_run_summary.tscn</code>, retained AR-01 combat result-envelope probes, RunState route probes, and content/scene contract probes.</li>
+<li>Closeout classification:</li>
+<ul>
+<li>Covered by AR evidence: baseline and post-change route timing capture, combat instantiate stall regression, shared HUD combat/shop behavior, RunState route invariants, dictionary-backed <code>ContentRegistry</code> alignment, per-batch <code>get_godot_errors</code>, and tracker/wiki synchronization through AR-18.</li>
+<li>Combat controller refactor status: <code>scripts/scenes/combat.gd</code> is reduced from the pre-AR estimate of about 3357 lines to 2432 lines on the AR-18 branch, a reduction of about 925 lines or 28%. The original high-value leaf extraction target is met: debug console, turn-log formatting, layout/positioning, VFX spawning, drag/pointer input, placeholder textures, resolve presentation, outcome overlay presentation, visual chrome, and side-effect-free HUD snapshot building now live in focused helpers. The controller remains a combat scene coordinator for input phase authority, resolver simulation, combat math handoff, RunState outcome routing, audio hooks, <code>/skip</code>, privileged debug callbacks, scene-node HUD application, placeholder fallback assignment, VFX timing decisions, and scene transitions.</li>
+<li>Still open for Milestone 10 or later QA: board pop-in/perceived transition feel on target hardware, full desktop/mobile overlap sweep, seeded full-run reproducibility, Merchant Compass free-first-reroll behavior, economy/balance tuning, Android audio loop-length listening, and first-playable run/content QA.</li>
+<li>Future refactor candidates: a <code>CombatFlowCoordinator</code> could own post-resolve outcome decisions and route selection; a <code>CombatHudApplier</code> could apply <code>CombatHudPresenter</code> dictionaries to scene labels/bars/nodes; a <code>CombatTurnOrchestrator</code> could own the resolve pipeline, but that is higher risk because it touches combat timing, presentation sequencing, and combat math boundaries.</li>
+<li>Known failure-path follow-ups from closeout review: <code>final_run_summary.gd</code> mutates <code>RunState</code> for <code>Start New Run</code> before confirming the scene transition, so a failed final-summary transition can leave the old summary visible with a fresh active run; <code>main_boot.gd</code> switches from menu music to combat music before confirming Start Run transition success, so a failed Start Run transition can leave combat music playing on the main menu. These do not change the accepted normal route evidence, but should be fixed before treating transition failure recovery as fully closed.</li>
+<li>Retained intentionally for QA: <code>RunState</code> FlowTrace logs, combat <code>ResolveTrace</code> logs, and the feature-flagged <code>scripts/debug/ar01_combat_result_probe.gd</code>; these are documented diagnostics for Milestone 10 QA rather than accidental architecture ownership boundaries.</li>
+</ul>
+<li>Blockers: None for closing the AR tracker. Remaining items are Milestone 10 balance/QA or future scoped cleanup, not AR closeout blockers.</li>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/ar-18-architecture-review-closeout</code>; <code>git diff --check</code> passed before and after documentation edits.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/scenes/combat.gd</code>, <code>res://scripts/core/run_state.gd</code>, and <code>res://scripts/debug/ar01_combat_result_probe.gd</code>.</li>
+<li>Focused route/content/scene closeout probes confirmed current scenes exist, deleted debug/fallback scenes are absent, <code>RunState</code> route constants point to combat/shop/final summary, route invariants preserve normal victory to shop, shop advance to combat, boss reward in combat, boss reward skip to shop, final victory to final summary, and defeat to final summary, and <code>ContentRegistry.validate_player_state_content()</code> returns no errors.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values.</li>
+<li><code>play_scene main</code> launched with desktop menu WAV playback; final <code>get_godot_errors</code> reported no session errors. Post-closeout review added two failure-path transition cleanup follow-ups to <code>wiki/known-issues.html</code> and this tracker context; they were not part of the validated normal-route acceptance surface.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>todo.html</code>, <code>wiki/index.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the closeout and Milestone 10 handoff.</li>
+</ul>
+<h2 id="post-review-scene-p1-p2-cleanup">Post-Review: Scene P1/P2 Cleanup</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Fix the four scene-review findings on <code>codex/scene-refactor</code>: Start Run failure-path run/audio mutation, final-summary New Run failure-path run mutation, shop ready-time redirect recovery, and shop-owned Player HUD internal geometry. Scope deliberately excludes scene folder moves and reusable <code>.tscn</code> HUD component extraction.</li>
+<li>Progress: 2026-05-06 added <code>RunState.flow_trace_prepare_scene(...)</code> and <code>RunState.flow_trace_attach_prepared_scene(...)</code> so callers can load/instantiate a target scene, commit run/audio state only after preparation succeeds, and attach through the existing FlowTrace markers. <code>main_boot.gd</code> now prepares combat before <code>RunState.start_new_run()</code> and combat-music handoff, then restores the prior run snapshot/menu music/button/status if attach fails. <code>final_run_summary.gd</code> now prepares combat before clearing the completed summary for New Run, and restores the prior summary/run snapshot plus action buttons on attach failure. <code>shop_player.gd</code> replaced no-active-run and wrong-step bare deferred redirects with a deferred traced redirect helper using <code>RunState.flow_trace_change_scene(...)</code> and visible failure status. Shop HUD internals moved out of shop-local constants into <code>PlayerLoadoutHud.shop_player_hud_layout_preset()</code>, while the shop screen still owns its mount placement and preserves the 30 design-pixel action-to-HUD gap.</li>
+<li>Validation:</li>
+<ul>
+<li><code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>run_state.gd</code>, <code>main_boot.gd</code>, <code>final_run_summary.gd</code>, <code>shop_player.gd</code>, <code>player_loadout_hud.gd</code>, and <code>combat_layout_presenter.gd</code>.</li>
+<li>Focused editor probes passed for transition preparation failure leaving run state unchanged, Start Run attach failure restoring inactive run state, final-summary New Run attach failure preserving the completed summary snapshot, duplicate shop-step snapshot restore, shared shop HUD preset geometry with 30px gap/no action-row overlap, and combat HUD layout probe with no actionable overlap at <code>1080x1920</code>.</li>
+<li>Scene instantiate probe passed for <code>main.tscn</code>, <code>combat_player.tscn</code>, <code>shop_player.tscn</code>, and <code>final_run_summary.tscn</code>.</li>
+<li>Route invariant probe passed for new run to combat, fight victory to shop, shop advance to combat, final victory to final summary, and defeat to final summary.</li>
+<li>Initial <code>get_godot_errors</code> after script loads showed only the existing stale enum reload warnings and no new touched-script parse errors. Final <code>play_scene main</code> launched the menu with desktop <code>MainMenuMusicPlayer</code> playback and <code>get_godot_errors</code> reported no session errors.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/known-issues.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/features.html</code>, and <code>wiki/log.html</code> updated for the resolved transition/HUD findings.</li>
+</ul>
+<h2 id="post-review-flowtrace-and-callback-cleanup">Post-Review: FlowTrace And Callback Cleanup</h2>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Focused P1/P2 cleanup for confirmed architecture-review risks without changing combat math, mobile combat layout, shop economy, route semantics, debug command names, or visual timing. Scope includes bounded FlowTrace route retention, deferred rollback generation guards, <code>PlayerLoadoutHud</code> intent tween lifecycle cleanup, direct callable references in low-risk callback bindings, and removal of stable <code>RunState</code> transition API <code>has_method(...)</code> guards.</li>
+<li>Progress: 2026-05-06 completed the cleanup. <code>RunState</code> now caps retained FlowTrace route state at 50 routes while preserving the active route, exposes <code>flow_trace_debug_snapshot()</code> for focused probes, and tracks a transition generation that is bumped at prepared scene attach plus run mutation boundaries such as <code>start_new_run()</code> and <code>reset_run()</code>. Deferred prepared-scene post-ready callbacks now skip stale rollback restoration if a newer transition/run mutation happened during the one-frame health-check window. <code>PlayerLoadoutHud</code> now connects to the bound HUD section lifecycle and kills intent HP danger and armor-risk pulse tweens when that section exits. Low-risk <code>Callable(self, "...")</code> callback bindings were converted to direct callable references in combat, main-menu, collection, shop, and final-summary paths. Stable snapshot/restore and Collection FlowTrace wrapper guards now call the current <code>RunState</code> API directly; optional profile/meta/audio compatibility probes remain guarded.</li>
+<li>Out of scope:</li>
+<ul>
+<li>Do not consolidate flow colors without a shared exact-match color owner.</li>
+<li>Do not migrate UI to <code>.tscn</code> scenes, theme resources, or broader coordinator refactors.</li>
+<li>Do not remove optional <code>has_method(...)</code> compatibility probes for profile/meta fallback names, dynamic audio nodes, or achievement toast APIs.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed branch <code>codex/milestone-12</code> with the focused source/doc changes; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>run_state.gd</code>, <code>player_loadout_hud.gd</code>, <code>combat_player_controller.gd</code>, <code>main_boot.gd</code>, <code>collection.gd</code>, <code>final_run_summary.gd</code>, and <code>shop_player.gd</code>.</li>
+<li>Focused FlowTrace probe created 65 synthetic routes and confirmed retained route count capped at <code>50</code>, active route id stayed present, <code>start_new_run()</code> bumped transition generation, and <code>reset_run()</code> bumped it again.</li>
+<li>Focused scene instantiate probe passed for <code>main.tscn</code>, <code>combat_player.tscn</code>, <code>shop_player.tscn</code>, and <code>final_run_summary.tscn</code>.</li>
+<li>Focused HUD lifecycle probe confirmed the new <code>PlayerLoadoutHud</code> cleanup callback is valid and can run when the bound HUD section exits.</li>
+<li>Retained AR-01 combat result-envelope probe still matched baseline values under the nested <code>result</code> payload: <code>combo_count=3</code>, <code>heal_amount=4</code>, <code>armor_gained=9</code>, <code>gold_gained=2</code>, <code>enemy_blocked=5</code>, <code>enemy_damage_taken=19</code>, <code>total_elemental_damage=24</code>, <code>enemy_intent_skipped=false</code>, and <code>next_phase_name=Intent Preview</code>.</li>
+<li><code>play_scene main</code> launched with desktop <code>MainMenuMusicPlayer</code> playback; <code>stop_running_scene</code> succeeded; final <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/known-issues.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the cleanup and validation evidence.</li>
+</ul>
+<h2 id="milestone-12-architecture-debt-follow-up">Milestone 12 Architecture Debt Follow-Up</h2>
+<h3 id="ar-19-shop-content-safety-fixes">AR-19: Shop/content safety fixes</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Harden shop pricing and content validation without changing prototype economy defaults beyond rejecting zero/negative shop multipliers. <code>ContentRegistry</code> now clamps <code>shop_price_multiplier</code> and <code>reroll_cost_multiplier</code> to at least <code>0.1</code>, exposes a conservative <code>reroll_cost_max</code> pricing field, and validates malformed player-state content entries without crashing. <code>ShopService</code> applies the same multiplier floor to item/reroll calculations, keeps positive reroll costs from rounding to zero, and respects the optional reroll ceiling.</li>
+<li>Validation:</li>
+<ul>
+<li>Focused Godot MCP probe confirmed <code>shop_price_multiplier=0.1</code>, <code>reroll_cost_multiplier=0.1</code>, item price floor <code>1</code>, first positive reroll cost <code>1</code>, intentional zero-base reroll <code>0</code>, and bounded high reroll cost behavior.</li>
+<li>Focused content validation probe confirmed non-dictionary entries and missing <code>next_tier_item_id</code> references report errors instead of crashing.</li>
+</ul>
+</ul>
+<h3 id="ar-20-shared-flow-result-utilities">AR-20: Shared flow result utilities</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Added <code>scripts/core/flow_result_utils.gd</code> for common result/transition dictionary interpretation and replaced duplicated <code>_scene_change_succeeded(...)</code>, <code>_result_ok(...)</code>, and <code>_result_failure_reason(...)</code> helpers in main-menu, Collection, combat, shop, and run-summary controllers. Route semantics, rollback payloads, FlowTrace names, transition locks, and visible status text were preserved.</li>
+<li>Validation:</li>
+<ul>
+<li>Focused Godot MCP helper probe confirmed the shared success/failure/reason matrix matches existing controller semantics.</li>
+<li>Source search confirmed the duplicated private helper definitions were removed from the affected controllers.</li>
+</ul>
+</ul>
+<h3 id="ar-21-combat-phase-encapsulation">AR-21: Combat phase encapsulation</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Added <code>CombatStateMachine.reset_to_intent_preview()</code> and replaced external direct writes to <code>_combat.phase = INTENT_PREVIEW</code> with the narrow method. Phase remains readable for current HUD/debug checks, and combat phase order, result envelopes, math, timing, and debug probes were not changed.</li>
+<li>Validation:</li>
+<ul>
+<li>Source search confirmed no remaining external <code>_combat.phase = ...</code> writes while current phase reads remain intact.</li>
+<li>Focused script reload checks covered <code>scripts/combat/combat_state_machine.gd</code> and <code>scripts/scenes/combat.gd</code>.</li>
+</ul>
+</ul>
+<h3 id="ar-22-runlogger-extraction">AR-22: RunLogger extraction</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Added <code>scripts/core/run_logger.gd</code> to own run-log event storage, serial allocation, metadata/export state, snapshots, run-end export assembly, and export bookkeeping. <code>RunState.run_log_*</code> public methods remain facade wrappers, and existing event names/payload shapes still flow through <code>RunLogReporter</code> for formatting.</li>
+<li>Validation:</li>
+<ul>
+<li>Focused Godot MCP run-log probe confirmed a new run starts with <code>run_start</code>, preserves event count/order across snapshot/restore, and increments event count after a logged turn event.</li>
+<li>Source search confirmed run-log backing state now lives in <code>RunLogger</code>, with <code>RunState</code> retaining only the delegated logger field and facade calls.</li>
+</ul>
+</ul>
+<h3 id="ar-23-scenerouter-extraction">AR-23: SceneRouter extraction</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Added <code>scripts/core/scene_router.gd</code> to own FlowTrace route record storage, route retention, active route id, transition generation, prepared scene loading/attach helpers, rollback generation guards, and route debug snapshots. <code>RunState.flow_trace_*</code>, <code>next_scene_path()</code>, and transition-facing public APIs remain compatibility wrappers around the router.</li>
+<li>Validation:</li>
+<ul>
+<li>Focused Godot MCP route probe confirmed route retention stays capped at <code>50</code>, the active route survives retention and snapshot/restore, and transition generation is preserved through router snapshot/restore.</li>
+<li>Source search confirmed FlowTrace/transition backing state now lives in <code>SceneRouter</code>, with <code>RunState</code> retaining only the delegated router field and public facade.</li>
+</ul>
+</ul>
+<ul>
+<li>Multi-agent review: Explorer findings were accepted at <code>8.6/10</code>. The worker first pass was rejected at <code>7.4/10</code> because reroll pricing could still round to zero and extracted logger/router ownership was too shallow. The second worker pass fixed both blockers and was accepted at <code>8.7/10</code>.</li>
+<li>Shared validation:</li>
+<ul>
+<li><code>git status --short --branch</code> was checked before implementation/review batches on <code>codex/milestone-12</code>.</li>
+<li><code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>.</li>
+<li>Godot MCP <code>view_script</code> loaded the touched source scripts, including <code>run_state.gd</code>, <code>run_logger.gd</code>, <code>scene_router.gd</code>, <code>flow_result_utils.gd</code>, <code>content_registry.gd</code>, <code>shop_service.gd</code>, <code>combat_state_machine.gd</code>, and the affected controllers.</li>
+<li>User manual QA passed on 2026-05-07 after the committed AR-19 through AR-23 batch.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, <code>wiki/known-issues.html</code>, and <code>wiki/log.html</code> updated for the AR-19 through AR-23 architecture debt batch.</li>
+</ul>
+<h3 id="ar-24-profilerepository-extraction">AR-24: ProfileRepository extraction</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extract profile/meta-profile persistence from <code>scripts/core/run_state.gd</code> into a thin <code>scripts/core/profile_repository.gd</code> helper while keeping <code>RunState.profile_snapshot()</code>, <code>meta_profile_snapshot()</code>, <code>reset_profile()</code>, <code>create_default_profile()</code>, equipment unlock APIs, and Total Score APIs as the public compatibility boundary.</li>
+<li>Progress: 2026-05-07 completed the persistence-only extraction. <code>ProfileRepository</code> now owns profile path constants, <code>ConfigFile</code> load/save, legacy meta-profile migration from <code>user://matchatro_meta_profile.cfg</code>, save warnings, and last-I/O probe metadata. <code>RunState</code> keeps player/meta profile object ownership, default common unlock sync, equipment unlock/claim rules, victory unlock awards, Total Score banking, profile/meta public wrappers, and the reset-profile ordering.</li>
+<li>Plan:</li>
+<ul>
+<li>Move <code>ConfigFile</code> load/save path ownership for <code>PROFILE_PATH</code>, <code>PROFILE_SECTION</code>, legacy <code>META_PROFILE_PATH</code>, and <code>META_PROFILE_SECTION</code> into <code>ProfileRepository</code>.</li>
+<li>Keep <code>RunState</code> responsible for when profile/meta state is created, reset, synced with default unlocks, and exposed to callers.</li>
+<li>Preserve legacy meta-profile migration behavior and existing profile snapshot shapes.</li>
+<li>Avoid changing collection unlock rules, victory unlock awards, Total Score banking, profile overlay text, or save file locations.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>res://scripts/core/run_state.gd</code> and <code>res://scripts/core/profile_repository.gd</code>.</li>
+<li>Focused Godot MCP editor probe with profile-file backup/restore confirmed reset/default common unlock sync, profile/meta snapshot shape, save/load round trip, legacy meta-profile migration, and recent unlock consume persistence behavior.</li>
+<li>Godot MCP <code>play_scene main</code>, <code>stop_running_scene</code>, and <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
+<li>Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at <code>8.8/10</code>.</li>
+</ul>
+<li>Preserve:</li>
+<ul>
+<li>Public <code>RunState</code> profile/meta APIs and return dictionary shapes.</li>
+<li>Existing <code>user://matchatro_profile.cfg</code> and legacy <code>user://matchatro_meta_profile.cfg</code> behavior.</li>
+<li>Common-equipment default unlock behavior.</li>
+<li>Manual QA acceptance from AR-19 through AR-23 route flow.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the new repository ownership.</li>
+</ul>
+<h3 id="ar-25-balancemanager-extraction">AR-25: BalanceManager extraction</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Extract prototype balance lever normalization, defaults, project-setting sync, fight reward lookup, and encounter stat scaling from <code>scripts/core/run_state.gd</code> into <code>scripts/core/balance_manager.gd</code>. <code>RunState</code> remains the public facade for prototype balance APIs and current encounter assignment.</li>
+<li>Progress: 2026-05-07 completed the balance helper extraction. <code>BalanceManager</code> now owns prototype balance defaults, backing lever state, lever normalization, ProjectSettings sync, fight reward lookup, starting gold lookup, ContentRegistry lever propagation, and encounter HP/damage scaling. <code>RunState</code> keeps the public prototype balance facade methods, owns when active encounters are assigned, and still decides when scaling is applied.</li>
+<li>Plan:</li>
+<ul>
+<li>Move <code>PROTOTYPE_BALANCE_DEFAULTS</code>, <code>PROTOTYPE_BALANCE_PROJECT_SETTINGS_PREFIX</code>, lever normalization, project-setting sync, level-scoped multipliers, encounter scaling, and fight gold reward lookup into <code>BalanceManager</code> unless a constant must stay in <code>RunState</code> for compatibility.</li>
+<li>Keep <code>RunState.prototype_balance_levers_snapshot()</code>, <code>prototype_balance_defaults_snapshot()</code>, <code>set_prototype_balance_levers(...)</code>, <code>reset_prototype_balance_levers()</code>, and <code>prototype_fight_gold_reward_for(...)</code> wrappers.</li>
+<li>Keep <code>RunState</code> as the owner of active encounter dictionaries and when scaling is applied during fight assignment.</li>
+<li>Preserve temporary Milestone 10/M12 balance defaults except for safety clamps already introduced in AR-19.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>view_script</code> passed for <code>res://scripts/core/run_state.gd</code> and <code>res://scripts/core/balance_manager.gd</code>.</li>
+<li>Focused Godot MCP editor probes confirmed default snapshot parity, setter/resetter parity, ProjectSettings sync, fight rewards <code>10/12/14</code>, ContentRegistry shop/reroll multiplier propagation, first-shop guarantee path with <code>enemy_1</code> reward <code>10</code>, and representative encounter scaling.</li>
+<li>Godot MCP <code>play_scene main</code>, <code>stop_running_scene</code>, and <code>get_godot_errors</code> reported no runtime errors.</li>
+<li>Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at <code>8.7/10</code>.</li>
+</ul>
+<li>Preserve:</li>
+<ul>
+<li>Existing public <code>RunState</code> balance method names and return shapes.</li>
+<li>Current active encounter stats under default levers.</li>
+<li>Current tuned temporary balance values and first-shop guarantee behavior.</li>
+<li>Shop/content safety clamps from AR-19.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the new balance helper ownership.</li>
+</ul>
+<h3 id="ar-26-runstate-signal-facade">AR-26: RunState signal facade</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Add a small event-driven facade to <code>RunState</code> after logger/router/profile/balance ownership is stable. Initial signals should cover high-value state changes such as gold, level/step, run activity, profile/meta changes, and summary availability without forcing immediate controller migrations.</li>
+<li>Progress: 2026-05-07 completed the additive signal facade. <code>RunState</code> now exposes <code>gold_changed</code>, <code>run_step_changed</code>, <code>run_state_changed</code>, <code>profile_changed</code>, and <code>run_summary_changed</code> signals with dictionary payloads. Existing polling/snapshot APIs and controller call paths were left unchanged; the signals emit only from committed mutation points and snapshot restore emissions are marked with <code>restore_run_transition_state</code>.</li>
+<li>Plan:</li>
+<ul>
+<li>Add conservative <code>RunState</code> signals such as <code>gold_changed</code>, <code>run_step_changed</code>, <code>run_state_changed</code>, <code>profile_changed</code>, and <code>run_summary_changed</code>.</li>
+<li>Emit from existing mutation points only after state changes are committed.</li>
+<li>Keep existing polling/snapshot APIs working; do not migrate all controllers in this batch unless a narrow caller benefits clearly.</li>
+<li>Document signal payloads and avoid duplicate emissions during snapshot restore/rollback unless restoration intentionally changes visible state.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code>, <code>view_script</code> for <code>res://scripts/core/run_state.gd</code>, and <code>get_godot_errors</code> reported no session errors.</li>
+<li>Focused Godot MCP editor probe connected all five signals and verified representative emissions for <code>start_new_run()</code>, <code>add_gold()</code>, successful and failed <code>spend_gold()</code>, fight victory, shop advance, snapshot restore, defeat/final summary, and reset.</li>
+<li>Godot MCP <code>play_scene main</code>, <code>stop_running_scene</code>, and final <code>get_godot_errors</code> reported no runtime errors.</li>
+<li>Multi-agent review: Explorer findings were accepted as the implementation boundary. Worker source patch was reviewed and accepted at <code>8.6/10</code>.</li>
+<li>User manual QA passed on 2026-05-07 for the deferred AR-24 through AR-26 extraction batch.</li>
+</ul>
+<li>Preserve:</li>
+<ul>
+<li>Public snapshot/polling APIs and current controller behavior.</li>
+<li>Existing route semantics and rollback behavior.</li>
+<li>RunLogger and SceneRouter facade boundaries introduced in AR-22 and AR-23.</li>
+</ul>
+<li>Docs/wiki impact: <code>docs/architecture_review_tasks.html</code>, <code>docs/test_plan.html</code>, <code>wiki/architecture.html</code>, <code>wiki/file-map.html</code>, and <code>wiki/log.html</code> updated for the signal facade.</li>
+</ul>
+<h3 id="ar-27-shared-consolelogger-scene">AR-27: Shared ConsoleLogger scene</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Replace the combat-local log rendering part of <code>CombatDebugConsole</code> with a reusable <code>ConsoleLogger</code> scene. This is closed in the AR tracker as a non-launch future cleanup candidate; public-build debug exposure decisions are transferred to ITCH-06 in <code>docs/itch_readiness_tasks.html</code>.</li>
+<li>Plan:</li>
+<ul>
+<li>Add a reusable console log UI scene, likely under <code>scenes/ui/</code>, with script ownership under <code>scripts/ui/</code>.</li>
+<li>Add or choose a shared event boundary for console log events. Keep it narrow: append log line, clear log if needed, and optional level/category metadata.</li>
+<li>Split current <code>CombatDebugConsole</code> responsibilities before renaming: command input and command dispatch remain combat-specific unless a later task creates a broader command router; log display moves to <code>ConsoleLogger</code>.</li>
+<li>Preserve existing debug command names, command behavior, log visibility, and combat debug affordances during the migration.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Godot MCP instantiate check for the new reusable console scene and existing combat scene.</li>
+<li>Focused probe that emits console log events from combat and at least one non-combat scene/controller surface.</li>
+<li>Focused probe or manual QA that existing combat debug commands still dispatch and render log output in order.</li>
+<li><code>play_scene main</code>, <code>stop_running_scene</code>, and <code>get_godot_errors</code>.</li>
+</ul>
+</ul>
+<h3 id="ar-28-combat-presenter-naming-cleanup">AR-28: Combat presenter naming cleanup</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Aligned combat helper names with Rails-style presentation boundaries and avoided generic <code>Manager</code>/<code>Builder</code> names where the role is more precise. A presenter takes state, events, or result data and turns it into a consumable presentation object or presentation action for a view/UI surface. This was a naming/ownership pass only and did not intentionally change combat math, resolver envelopes, board coordinate handling, route semantics, or resolve replay timing.</li>
+<li>Progress: 2026-05-07 completed the behavior-preserving presenter rename pass. <code>CombatHudPresenter</code> now owns side-effect-free HUD display payload construction, <code>CombatTurnLogPresenter</code> owns readable combat turn/output text preparation, <code>CombatLayoutPresenter</code> owns combat scene layout presentation, and <code>CombatVfxPresenter</code> owns transient VFX presentation. Matching <code>.gd.uid</code> files moved with the renamed scripts, and direct runtime/debug references were updated.</li>
+<li>Plan:</li>
+<ul>
+<li>Treat <code>Presenter</code> as the name for view-specific display preparation or sequencing.</li>
+<li>Rename <code>CombatHudPresenter</code> for combat/player/enemy/run state prepared for HUD display.</li>
+<li>Rename <code>CombatTurnLogPresenter</code> for text/output prepared for console or run-log presentation rather than owned storage.</li>
+<li>Keep <code>Logger</code> for classes that own append/export/storage of log events. Do not use <code>Logger</code> for a class that only formats a turn result into display text.</li>
+<li>Rename <code>CombatLayoutPresenter</code> for layout applied as a presentation concern.</li>
+<li>Rename <code>CombatVfxPresenter</code> for combat events/results turned into visible VFX presentation.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Source-reference search found no old presenter/helper names across runtime/docs surfaces after docs sync.</li>
+<li><code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_controller.gd</code>, <code>combat_debug_console.gd</code>, <code>combat_hud_presenter.gd</code>, <code>combat_turn_log_presenter.gd</code>, <code>combat_layout_presenter.gd</code>, <code>combat_vfx_presenter.gd</code>, and <code>mobile_combat_layout_probe.gd</code>.</li>
+<li>Godot MCP combat scene smoke ran through <code>open_scene res://scenes/combat.tscn</code>, <code>play_scene current</code>, and <code>stop_running_scene</code>.</li>
+<li>Retained AR-01 combat result-envelope probe still matched the baseline values.</li>
+<li><code>get_godot_errors</code> still reported stale open-script/global-class diagnostics for deleted old presenter paths until the local <code>.godot</code> editor cache is fully refreshed; cache-ignore script loads and scene smoke used the renamed scripts successfully.</li>
+</ul>
+</ul>
+<h3 id="ar-29-combatview-rendering-ownership-extraction">AR-29: CombatView rendering ownership extraction</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Continued the combat MVC refactor by moving view-only rendering ownership from <code>CombatController</code> into <code>CombatView</code>. This pass preserved combat math, resolver result envelopes, board-local <code>BoardView.gui_input</code> coordinates, route semantics, debug command behavior, <code>combat_speed</code>, and resolve/replay timing.</li>
+<li>Progress: 2026-05-07 completed the rendering extraction. <code>CombatView</code> now owns HUD snapshot application, top/enemy/timer/player/debug rendering, timer display sync, enemy intent bubble and enemy block preview rendering, hover signal emission, visual chrome, backdrop/scrim helpers, zone guides, loadout rail layout calls, and <code>CombatLayoutPresenter</code> application. <code>CombatController</code> remains the orchestrator for combat setup, HUD snapshot construction, shared HUD payload decisions, input phase authority, resolver kickoff, replay/VFX timing decisions, audio hooks, RunState/FlowTrace route calls, debug callbacks, <code>/skip</code>, and outcome routing.</li>
+<li>Follow-up: 2026-05-07 removed the leftover controller reach-ins to private <code>CombatView</code> helper nodes, dead render-only no-op wrappers, the public <code>CombatView.node(...)</code> accessor, and unused controller-owned intent/block preview declarations. <code>CombatView.refresh_character_portraits(...)</code> now owns portrait/backdrop refresh while controller references are limited closer to orchestration boundaries.</li>
+<li>Residual follow-up:</li>
+<ul>
+<li>Reduce any remaining controller node references only where they are proven not to be needed for binding, VFX source-position decisions, signal callbacks, outcome/debug boundaries, or route/action buttons.</li>
+<li>Keep <code>CombatModel</code> small until a separate state-ownership pass is planned.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Rendering extraction review gate accepted at <code>8.2/10</code>; score was capped by remaining compatibility wrappers and the blocked direct route probe.</li>
+<li>Compatibility cleanup follow-up review gate accepted at <code>8.4/10</code>; score is capped by broader retained UI refs, stale editor reload warnings, and manual route/debug QA not being rerun in this pass.</li>
+<li><code>git diff --check</code> passed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_controller.gd</code>, <code>combat_view.gd</code>, <code>combat_model.gd</code>, <code>combat_layout_presenter.gd</code>, <code>combat_vfx_presenter.gd</code>, <code>combat_resolve_presenter.gd</code>, and <code>board_controller.gd</code>.</li>
+<li>Scene instantiate probe passed for <code>res://scenes/combat.tscn</code>, <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Retained AR-01 combat result-envelope probe passed, and the focused board local-coordinate/touch drag probe preserved the board-local coordinate path.</li>
+<li><code>open_scene res://scenes/combat.tscn</code>, <code>play_scene main</code>, <code>stop_running_scene</code>, and final <code>get_godot_errors</code> passed with <code>Session has no errors</code>.</li>
+<li>Direct route probing through MCP editor scripts could not execute because <code>RunState</code> was exposed as a placeholder instance in that context; manual route QA remains required.</li>
+<li>Follow-up parser-crash fix removed invalid no-op compatibility statements and explicitly typed the <code>_view.apply_combat_layout(...)</code> result in <code>combat_controller.gd</code>; Godot MCP <code>play_scene current</code> reached <code>combat_first_usable_frame</code> and resolve trace output. User manual QA passed after the fix.</li>
+<li>Compatibility cleanup follow-up validation passed <code>git status --short --branch</code>, <code>git diff --check</code> with the existing CRLF warning only, static searches for no-op assignments/untyped <code>_view</code> inference/private view-node calls/removed wrapper definitions, Godot MCP script loads, scene instantiate probes, retained AR-01 envelope probe, focused board local-coordinate/touch drag probe, <code>play_scene current</code>, resolve trace through match flash/clear/gravity/refill/final commit, <code>stop_running_scene</code>, and final <code>get_godot_errors</code> with no current crash. The editor session still reported stale unused-variable reload warnings, including declarations already removed by the follow-up patch.</li>
+<li>User manual QA passed on 2026-05-07 for the compatibility cleanup follow-up, covering real drag, resolve animation feel, enemy intent/block preview hover rendering, victory/defeat/boss reward routes, and debug commands.</li>
+</ul>
+</ul>
+<h3 id="ar-30-combatmodel-scene-local-state-ownership">AR-30: CombatModel scene-local state ownership</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Continued the combat MVC refactor by moving scene-local mutable bookkeeping from <code>CombatController</code> into <code>CombatModel</code>. This pass intentionally kept <code>PlayerState</code>, <code>EnemyState</code>, <code>BoardModel</code>, <code>CombatStateMachine</code>, <code>RunState</code>, content registry state, resolver math, and replay timing outside <code>CombatModel</code>.</li>
+<li>Progress: 2026-05-07 completed the model ownership pass. <code>CombatModel</code> now owns input phase, external lock reason, <code>combat_speed</code>, FlowTrace route id, pending next-scene path, outcome transition lock, hovered board orb id, staged HUD replay values, combat mastery preview totals/token, and resolve trace active/origin/pass bookkeeping behind small methods. <code>CombatController</code> now calls model methods for those scene-local transitions and remains the owner of combat setup, resolver kickoff, board binding, audio, debug callbacks, RunState/FlowTrace side effects, route actions, and replay/VFX timing decisions.</li>
+<li>Preserve:</li>
+<ul>
+<li>Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, <code>combat_speed</code>, debug command names, board-local <code>BoardView.gui_input</code> coordinates, and visible resolve/replay timing.</li>
+<li>Existing <code>CombatView</code> rendering ownership and presenter/helper boundaries.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Review gate accepted at <code>8.1/10</code>; score is capped because <code>CombatController</code> remains large, broad UI/presenter boundary refs remain, the editor session still reports reload-warning noise, and the full manual route/debug QA gate has not been rerun for this exact pass.</li>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed with the existing CRLF normalization warning only.</li>
+<li>Static searches confirmed moved state is no longer declared as controller-owned fields and model access is through method calls rather than direct public property mutation.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_model.gd</code>, <code>combat_controller.gd</code>, <code>combat_view.gd</code>, <code>combat_resolve_presenter.gd</code>, <code>combat_vfx_presenter.gd</code>, and <code>board_controller.gd</code>.</li>
+<li>Scene instantiate probe passed for <code>res://scenes/combat.tscn</code>, <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.</li>
+<li>Initial <code>play_scene current</code> exposed a nil-model crash in <code>CombatController._enter_tree()</code> before <code>bind(...)</code>; a pre-bind <code>_ensure_model()</code> guard fixed it. The rerun reached <code>combat_first_usable_frame</code>, then <code>stop_running_scene</code> and final <code>get_godot_errors</code> reported no current runtime crash.</li>
+<li>Exact-pass manual QA is closed in the AR tracker; release-candidate route/debug/manual QA is transferred to ITCH-03/ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<h3 id="ar-31-combat-layout-presenter-ownership-cleanup">AR-31: Combat layout presenter ownership cleanup</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Continued the combat MVC cleanup by making <code>CombatView</code> the sole owner of <code>CombatLayoutPresenter</code> construction/binding and removing controller-side layout presenter compatibility storage. This pass preserved the existing presenter split: <code>CombatResolvePresenter</code> and <code>CombatVfxPresenter</code> stay controller-owned because the controller still chooses replay/VFX timing and source targets; <code>CombatTurnLogPresenter</code> stays controller-owned for debug/outcome text; <code>CombatHudPresenter</code> stays controller-owned for side-effect-free snapshot construction.</li>
+<li>Progress: 2026-05-07 removed <code>COMBAT_LAYOUT_PRESENTER_SCRIPT</code>, <code>_combat_layout_presenter</code>, <code>_bind_combat_layout_presenter()</code>, controller layout result mirrors, and the low-vertical-layout mirror from <code>CombatController</code>. <code>_apply_combat_layout()</code> now delegates to <code>CombatView.apply_combat_layout(...)</code> without storing view layout state.</li>
+<li>Preserve:</li>
+<ul>
+<li>Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, <code>combat_speed</code>, debug command names, board-local <code>BoardView.gui_input</code> coordinates, and visible resolve/replay timing.</li>
+<li>Controller orchestration boundaries for board binding, resolve/VFX timing presenters, outcome overlay, debug console, signal/action callbacks, RunState/FlowTrace routing, audio, and privileged debug callbacks.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Review gate accepted at <code>8.3/10</code>; score is capped because broader controller UI refs remain at current orchestration/VFX/action boundaries, the live editor session still reports existing unused-field reload warnings, and full live resolve/manual route-debug QA was not rerun for this exact slice.</li>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed with the existing CRLF normalization warning only.</li>
+<li>Static searches confirmed removed layout presenter symbols/layout mirror fields are absent from <code>combat_controller.gd</code>, and found no standalone no-op statements or untyped controller <code>_view</code> inference sites.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_controller.gd</code>, <code>combat_view.gd</code>, <code>combat_model.gd</code>, <code>combat_layout_presenter.gd</code>, <code>combat_resolve_presenter.gd</code>, <code>combat_vfx_presenter.gd</code>, and <code>board_controller.gd</code>.</li>
+<li>Scene instantiate probe passed for <code>res://scenes/combat.tscn</code>, <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.</li>
+<li><code>open_scene res://scenes/combat.tscn</code>, <code>play_scene current</code>, <code>stop_running_scene</code>, and final <code>get_godot_errors</code> completed with no current runtime crash and the smoke reached <code>combat_first_usable_frame</code>. Existing unused-field reload warnings remain in the editor session.</li>
+</ul>
+</ul>
+<h3 id="ar-32-combat-vfx-target-lookup-cleanup">AR-32: Combat VFX target lookup cleanup</h3>
+<ul>
+<li>Status: <code>done</code></li>
+<li>Owner/scope: Continued combat MVC cleanup by moving enemy/player VFX target geometry lookup and VFX presenter binding-node packaging from <code>CombatController</code> into <code>CombatView</code>. This pass kept <code>CombatVfxPresenter</code> controller-owned and kept replay timing/order in <code>CombatController</code>.</li>
+<li>Progress: 2026-05-07 added <code>CombatView.enemy_vfx_target_global(...)</code>, <code>CombatView.player_vfx_target_global(...)</code>, and <code>CombatView.vfx_presenter_bindings(...)</code>. <code>CombatController</code> now asks the view for enemy/player replay targets and VFX binding nodes, with compatibility fallback to the existing controller refs. <code>_active_enemy_visual_control()</code> was removed because enemy target selection no longer needs a controller-owned helper.</li>
+<li>Preserve:</li>
+<ul>
+<li>Combat math, resolver result shape, enemy intent resolution, reward values, route semantics, <code>combat_speed</code>, debug command names, board-local <code>BoardView.gui_input</code> coordinates, and visible resolve/replay timing.</li>
+<li>Controller ownership of VFX timing decisions, replay waits, staged HUD updates, SFX calls, mastery feedback release, resolver callbacks, RunState/FlowTrace routing, and privileged debug callbacks.</li>
+</ul>
+<li>Validation:</li>
+<ul>
+<li>Review gate accepted at <code>8.4/10</code>; score is capped because controller fallback node refs remain for compatibility and full manual route/debug QA was not rerun for this exact slice.</li>
+<li><code>git status --short --branch</code> confirmed <code>codex/milestone-12</code>; <code>git diff --check</code> passed with the existing CRLF normalization warning only.</li>
+<li>Static searches confirmed <code>_active_enemy_visual_control</code> is absent, controller no longer directly computes centers from <code>_enemy_portrait</code> or <code>_player_portrait</code>, and the new <code>CombatView</code> VFX binding helper has explicit <code>Variant</code> local typing after an initial parser warning-as-error was found and fixed.</li>
+<li>Godot MCP <code>get_project_info</code> reported Godot <code>4.6.2-stable</code>; <code>view_script</code> passed for <code>combat_controller.gd</code>, <code>combat_view.gd</code>, <code>combat_model.gd</code>, <code>combat_resolve_presenter.gd</code>, <code>combat_vfx_presenter.gd</code>, and <code>board_controller.gd</code>.</li>
+<li>Scene instantiate probe passed for <code>res://scenes/combat.tscn</code>, <code>res://scenes/main_menu.tscn</code>, <code>res://scenes/shop.tscn</code>, and <code>res://scenes/run_summary.tscn</code>.</li>
+<li>Retained AR-01 combat result-envelope probe and focused board local-coordinate/touch drag probe passed.</li>
+<li><code>open_scene res://scenes/combat.tscn</code>, <code>play_scene current</code>, <code>stop_running_scene</code>, and final <code>get_godot_errors</code> completed with no current runtime crash. Resolve trace reached match flash, clear, combo ticks, gravity/refill, animation drain, resolve completion, final board commit, and turn replay FlowTrace. Existing unused-field reload warnings remain in the editor session.</li>
+<li>User manual QA passed on 2026-05-07 for this exact VFX target lookup cleanup.</li>
+</ul>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/architecture_review_tasks.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#architecture-review-task-tracker">Architecture Review Task Tracker</a><a class="toc-h2" href="#ar-01-baseline-regression-harness">AR-01: Baseline Regression Harness</a><a class="toc-h2" href="#ar-02-low-risk-bug-fixes">AR-02: Low-Risk Bug Fixes</a><a class="toc-h2" href="#ar-03-shared-wav-audio-utility-extraction">AR-03: Shared WAV/Audio Utility Extraction</a><a class="toc-h2" href="#ar-04-shop-input-safety">AR-04: Shop/Input Safety</a><a class="toc-h2" href="#ar-05-combat-controller-first-split">AR-05: Combat Controller First Split</a><a class="toc-h2" href="#ar-06-combat-presentation-split">AR-06: Combat Presentation Split</a><a class="toc-h2" href="#ar-07-runstate-data-contract-roadmap">AR-07: RunState/Data Contract Roadmap</a><a class="toc-h2" href="#ar-08-cleanup-dead-code-validation">AR-08: Cleanup/Dead-Code Validation</a><a class="toc-h2" href="#ar-09-stability-and-shared-ui-utility-cleanup">AR-09: Stability And Shared UI Utility Cleanup</a><a class="toc-h2" href="#ar-10-combat-controller-god-object-refactor">AR-10: Combat Controller God-Object Refactor</a><a class="toc-h2" href="#ar-11-combat-layout-presenter-extraction">AR-11: Combat layout presenter extraction</a><a class="toc-h2" href="#ar-12-combat-vfx-presenter-extraction">AR-12: Combat VFX presenter extraction</a><a class="toc-h2" href="#ar-13-board-drag-input-handler-extraction">AR-13: Board Drag Input Handler Extraction</a><a class="toc-h2" href="#ar-14-combat-theme-and-chrome-boundary">AR-14: Combat Theme And Chrome Boundary</a><a class="toc-h2" href="#ar-15-combat-placeholder-texture-utility">AR-15: Combat Placeholder Texture Utility</a><a class="toc-h2" href="#ar-16-combat-hud-sync-boundary-review">AR-16: Combat HUD Sync Boundary Review</a><a class="toc-h2" href="#ar-17-combat-outcome-and-transition-boundary-review">AR-17: Combat Outcome And Transition Boundary Review</a><a class="toc-h2" href="#ar-18-architecture-review-closeout-before-milestone-10">AR-18: Architecture Review Closeout Before Milestone 10</a><a class="toc-h2" href="#post-review-scene-p1-p2-cleanup">Post-Review: Scene P1/P2 Cleanup</a><a class="toc-h2" href="#post-review-flowtrace-and-callback-cleanup">Post-Review: FlowTrace And Callback Cleanup</a><a class="toc-h2" href="#milestone-12-architecture-debt-follow-up">Milestone 12 Architecture Debt Follow-Up</a><a class="toc-h3" href="#ar-19-shop-content-safety-fixes">AR-19: Shop/content safety fixes</a><a class="toc-h3" href="#ar-20-shared-flow-result-utilities">AR-20: Shared flow result utilities</a><a class="toc-h3" href="#ar-21-combat-phase-encapsulation">AR-21: Combat phase encapsulation</a><a class="toc-h3" href="#ar-22-runlogger-extraction">AR-22: RunLogger extraction</a><a class="toc-h3" href="#ar-23-scenerouter-extraction">AR-23: SceneRouter extraction</a><a class="toc-h3" href="#ar-24-profilerepository-extraction">AR-24: ProfileRepository extraction</a><a class="toc-h3" href="#ar-25-balancemanager-extraction">AR-25: BalanceManager extraction</a><a class="toc-h3" href="#ar-26-runstate-signal-facade">AR-26: RunState signal facade</a><a class="toc-h3" href="#ar-27-shared-consolelogger-scene">AR-27: Shared ConsoleLogger scene</a><a class="toc-h3" href="#ar-28-combat-presenter-naming-cleanup">AR-28: Combat presenter naming cleanup</a><a class="toc-h3" href="#ar-29-combatview-rendering-ownership-extraction">AR-29: CombatView rendering ownership extraction</a><a class="toc-h3" href="#ar-30-combatmodel-scene-local-state-ownership">AR-30: CombatModel scene-local state ownership</a><a class="toc-h3" href="#ar-31-combat-layout-presenter-ownership-cleanup">AR-31: Combat layout presenter ownership cleanup</a><a class="toc-h3" href="#ar-32-combat-vfx-target-lookup-cleanup">AR-32: Combat VFX target lookup cleanup</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker System Architecture</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>Orbwalker System Architecture</h1>
+      <p class="summary">Source GDD: <code>docs/game_design_document.html</code></p>
+      <h1 id="orbwalker-system-architecture">Orbwalker System Architecture</h1>
+<p>Source GDD: <code>docs/game_design_document.html</code> Type: Long-lived technical architecture and implementation reference</p>
+<h2 id="purpose">Purpose</h2>
+<p>This document converts the GDD into implementation decisions before gameplay coding begins. It is the canonical architecture reference and should remain valid beyond Milestone 0.</p>
+<p>No folders, scenes, project settings, gameplay scripts, resource classes, or stub code are created as part of this project-management pass.</p>
+<h2 id="scope-confirmation">Scope Confirmation</h2>
+<p>The first playable target is the GDD vertical slice, not the full 10-level game.</p>
+<p>Included in the first playable:</p>
+<ul>
+<li>One generic hero.</li>
+<li>One dungeon.</li>
+<li>3 dungeon levels.</li>
+<li>5x6 orb board.</li>
+<li>Six orb types: Fire, Ice, Earth, Heart, Armor, Gold.</li>
+<li>Puzzle &amp; Dragons style free orb movement.</li>
+<li>5-second move timer.</li>
+<li>Same-type straight, L, and T matching.</li>
+<li>Cascades.</li>
+<li>Turn-based combat with visible enemy intent.</li>
+<li>Persistent player HP across the run.</li>
+<li>Temporary armor that expires after enemy action by default.</li>
+<li>Gold economy from matched gold orbs.</li>
+<li>Shop after each fight.</li>
+<li>3 random shop item slots.</li>
+<li>1 shop relic offer per dungeon level.</li>
+<li>Boss relic reward.</li>
+<li>5 equipment slots.</li>
+<li>3 consumable slots.</li>
+<li>6 mastery cards.</li>
+<li>6 consumables.</li>
+<li>20 to 30 equipment items.</li>
+<li>5 relics.</li>
+<li>At least 3 normal enemies.</li>
+<li>At least 3 bosses.</li>
+<li>Basic victory and defeat flow.</li>
+</ul>
+<p>Deferred until after the first playable:</p>
+<ul>
+<li>Full 10 dungeon level run.</li>
+<li>Multiple dungeons.</li>
+<li>Multiple hero types.</li>
+<li>Ascension-style difficulty.</li>
+<li>Meta progression beyond content unlock planning.</li>
+<li>Hazard orbs, locked orbs, advanced boss rules, and future elemental identities.</li>
+<li>Permanent save system, unless needed for testing.</li>
+<li>Final art, final audio, and full production polish.</li>
+</ul>
+<h2 id="proposed-folder-structure">Proposed Folder Structure</h2>
+<p>This original planning structure has been superseded by the live prototype and the scene-structure follow-up plan in <code>docs/scene_structure_refactor_plan.html</code>. The current first playable flow is finalized enough that <code>scenes/</code> should be refactored around full screens and reusable components instead of early milestone folders.</p>
+<pre><code class="language-text">
+res://
+  scenes/
+	main.tscn
+	combat/
+	shop/
+	run/
+	ui/
+  scripts/
+	core/
+	board/
+	combat/
+	content/
+	run/
+	shop/
+	ui/
+	debug/
+  resources/
+	content/
+	  equipment/
+	  mastery/
+	  consumables/
+	  relics/
+	  treasure-chests/
+	  enemies/
+	  bosses/
+	  pricing/
+	visual/
+	  orbs/
+	  icons/
+  docs/
+</code></pre>
+<p>Ownership intent:</p>
+<ul>
+<li><code>scripts/core/</code>: shared primitives such as IDs, RNG helpers, result structs, and lightweight utility classes.</li>
+<li><code>scripts/board/</code>: board state, orb movement, match detection, gravity, refill, and board view coordination.</li>
+<li><code>scripts/combat/</code>: combat state machine, scoring, enemy intent resolution, and combat-specific effect timing.</li>
+<li><code>scripts/content/</code>: content resource classes, registry, validation, and effect definitions.</li>
+<li><code>scripts/run/</code>: run state, dungeon sequence, victory, defeat, and transition ownership.</li>
+<li><code>scripts/shop/</code>: shop generation, pricing, reroll, purchase, sell, and treasure chest opening.</li>
+<li><code>scripts/ui/</code>: presentation components that read state and send commands but do not own gameplay rules.</li>
+<li><code>scripts/debug/</code>: debug-only tools for seeds, board layouts, test fights, and run manipulation.</li>
+</ul>
+<p>Updated scene ownership target:</p>
+<ul>
+<li>Full player-facing screens should live under a dedicated screen/app taxonomy.</li>
+<li>Reusable scene composition units, such as board surface and player HUD, should live under shared component folders.</li>
+<li>Development-only visual comparison scenes should live under a development/preview folder.</li>
+<li>Combat and shop should mount the same Player HUD component rather than redefining HUD internals through separate screen-local layout constants.</li>
+</ul>
+<p>See <code>docs/scene_structure_refactor_plan.html</code> for the proposed final folder layout, SOLID ownership rules, and stepwise migration tasks.</p>
+<h2 id="content-data-format-decision">Content Data Format Decision</h2>
+<p>The live prototype currently uses dictionary-backed default content inside <code>ContentRegistry</code> as the runtime source of truth. <code>ContentRegistry</code> is the compatibility API for content reads, validation, shop pools, shop pricing, and future migration work. Callers should use registry methods such as <code>get_equipment()</code>, <code>list_equipment()</code>, <code>shop_item_pool()</code>, <code>shop_relic_pool()</code>, <code>shop_pricing_config()</code>, and <code>content_contract_snapshot()</code> instead of reading a concrete storage backend directly. (source: <code>scripts/content/content_registry.gd</code>)</p>
+<p>Godot <code>Resource</code>-based content remains a possible later data-source migration, not the current prototype source of truth. A later migration should keep <code>ContentRegistry</code> as the read API and adapt data loading behind it so combat, progression, shop, HUD, and debug callers keep the same dictionary-shaped contracts. JSON-backed content would need the same compatibility boundary.</p>
+<p>Deferred Resource-backed content candidates:</p>
+<ul>
+<li><code>EquipmentData</code></li>
+<li><code>MasteryCardData</code></li>
+<li><code>ConsumableData</code></li>
+<li><code>RelicData</code></li>
+<li><code>TreasureChestData</code></li>
+<li><code>EnemyData</code></li>
+<li><code>BossData</code></li>
+<li><code>IntentData</code></li>
+<li><code>ShopPricingData</code></li>
+<li><code>OrbSpawnTableData</code></li>
+</ul>
+<p>Common fields for content resources:</p>
+<ul>
+<li><code>id</code></li>
+<li><code>display_name</code></li>
+<li><code>description</code></li>
+<li><code>icon</code></li>
+<li><code>tags</code></li>
+<li><code>unlock_state</code></li>
+<li><code>sort_order</code></li>
+</ul>
+<p>Item-specific fields:</p>
+<ul>
+<li>Equipment: rarity, base_price, effect list, slot rules, duplicate policy.</li>
+<li>Mastery card: target orb type, level increase, cap.</li>
+<li>Consumable: target rules, board mutation effect, slot behavior.</li>
+<li>Relic: effect list, acquisition source, duplicate policy.</li>
+<li>Treasure chest: generated pool, option count, rarity weighting, orb or category filter.</li>
+<li>Enemy: max HP, intent cycle, level scaling values.</li>
+<li>Boss: max HP, boss type, preview text, intent cycle, special rule data, scaling values.</li>
+<li>Pricing: rarity price bands, dungeon level modifier, reroll curve, sell percentage.</li>
+<li>Orb spawn table: weights per orb type, modifiers for relics or level rules.</li>
+</ul>
+<p>Effect representation:</p>
+<ul>
+<li>Use data-defined effect descriptors for common effects.</li>
+<li>Use scripted effect handlers only for effects that cannot be expressed with common descriptors.</li>
+<li>Every effect should declare its timing hook, target, operation, value, and condition.</li>
+</ul>
+<p>Examples of common effect descriptors:</p>
+<ul>
+<li>Add flat final damage if any damage orb matched.</li>
+<li>Add base value to one orb type.</li>
+<li>Add extra armor on the first armor match each turn.</li>
+<li>Treat combo count as higher when threshold is met.</li>
+<li>Increase equipment slot count.</li>
+<li>Modify orb spawn weights.</li>
+<li>Modify armor expiration behavior.</li>
+</ul>
+<h2 id="runtime-state-ownership">Runtime State Ownership</h2>
+<p>State should be separated from scenes so board, combat, shop, and run logic can be tested without relying on UI nodes.</p>
+<p>Planned runtime models:</p>
+<ul>
+<li><code>RunState</code></li>
+<ul>
+<li>Owns run-level persistence: hero state, current dungeon level, current sequence step, gold, equipment, mastery levels, consumables, relics, seen or offered relics, RNG seed, and run result.</li>
+</ul>
+</ul>
+<ul>
+<li><code>PlayerState</code></li>
+<ul>
+<li>Owns player stats: max HP, current HP, current armor, orb base values, equipment slots, consumable slots, move timer, equipped items, held consumables, relics, and mastery levels.</li>
+</ul>
+</ul>
+<ul>
+<li><code>BoardModel</code></li>
+<ul>
+<li>Owns the 5x6 orb grid, cell helpers, board generation, current seed or RNG stream, and pure board operations.</li>
+</ul>
+</ul>
+<ul>
+<li><code>CombatState</code></li>
+<ul>
+<li>Owns the active fight: current enemy, current turn, current phase, selected board, temporary turn flags, combo results, pending damage, pending healing, pending gold, and victory or defeat outcome.</li>
+</ul>
+</ul>
+<ul>
+<li><code>EnemyState</code></li>
+<ul>
+<li>Owns active enemy HP, current intent index, current block for the turn, special boss state, and any temporary modifiers.</li>
+</ul>
+</ul>
+<ul>
+<li><code>ShopState</code></li>
+<ul>
+<li>Owns active shop inventory: random item slots, treasure chest offers, relic offer, reroll count, pricing snapshot, buy/sell availability, and shop exit state.</li>
+</ul>
+</ul>
+<ul>
+<li><code>ContentRegistry</code></li>
+<ul>
+<li>Owns dictionary-backed default content, loaded content pools, validation results, shop pool snapshots, and shop pricing configuration. Other systems request content by ID, type, rarity, tag, category, or unlock state through registry methods, which return duplicated dictionaries for caller safety. <code>content_contract_snapshot()</code> records the current collection schema and migration boundary. (source: <code>scripts/content/content_registry.gd</code>)</li>
+</ul>
+</ul>
+<p>Scene ownership principle:</p>
+<ul>
+<li>Scenes display state and collect player commands.</li>
+<li>State models own gameplay truth.</li>
+<li>Service or controller classes perform legal state transitions.</li>
+<li>UI should never directly mutate low-level board, combat, shop, or run values except through explicit commands.</li>
+</ul>
+<h2 id="combat-event-and-effect-timing">Combat Event And Effect Timing</h2>
+<p>The prototype should follow the GDD order exactly unless a future design change is documented.</p>
+<p>Turn order:</p>
+<ol>
+<li>Show enemy intent.</li>
+<li>Wait for player drag start.</li>
+<li>Start movement timer.</li>
+<li>End movement on release or timer expiry.</li>
+<li>Resolve all matches and cascades.</li>
+<li>Build a turn result: combo count, matched orb counts, cascade data, and match groups.</li>
+<li>Apply player effects in this order:</li>
+<ul>
+<li>Heart healing.</li>
+<li>Armor gain.</li>
+<li>Elemental damage.</li>
+<li>Gold gain.</li>
+</ul>
+<li>Check enemy death.</li>
+<li>If enemy is dead, skip remaining enemy intent.</li>
+<li>If enemy survives, resolve enemy intent.</li>
+<li>Expire temporary armor according to current armor duration rules.</li>
+<li>Advance enemy intent.</li>
+<li>Begin next turn or end fight.</li>
+</ol>
+<p>Recommended effect hooks:</p>
+<ul>
+<li><code>on_run_start</code></li>
+<li><code>on_dungeon_level_start</code></li>
+<li><code>on_fight_start</code></li>
+<li><code>on_turn_start</code></li>
+<li><code>before_board_input</code></li>
+<li><code>after_board_input</code></li>
+<li><code>before_match_resolution</code></li>
+<li><code>after_match_resolution</code></li>
+<li><code>before_healing</code></li>
+<li><code>after_healing</code></li>
+<li><code>before_armor_gain</code></li>
+<li><code>after_armor_gain</code></li>
+<li><code>before_damage_calculation</code></li>
+<li><code>after_damage_calculation</code></li>
+<li><code>before_enemy_damage_received</code></li>
+<li><code>after_enemy_damage_received</code></li>
+<li><code>on_enemy_defeated</code></li>
+<li><code>on_player_defeated</code></li>
+<li><code>on_turn_cleanup</code></li>
+<li><code>on_shop_enter</code></li>
+<li><code>on_shop_reroll</code></li>
+<li><code>on_item_bought</code></li>
+<li><code>on_item_sold</code></li>
+<li><code>on_consumable_used</code></li>
+<li><code>on_treasure_chest_opened</code></li>
+<li><code>on_boss_reward</code></li>
+</ul>
+<p>Milestone boundary note:</p>
+<ul>
+<li>Milestone 5 hook coverage is intentionally scoped to player-state actions (equipment, mastery, consumables, relics).</li>
+<li>Full cross-system timing coverage continues in later milestones.</li>
+</ul>
+<p>Timing rules:</p>
+<ul>
+<li>Enemy block applies against player damage during the current turn only.</li>
+<li>Enemy attacks are skipped if the enemy dies before intent resolution.</li>
+<li>Heart, Armor, and Gold do not use combo scaling by default.</li>
+<li>Fire, Ice, and Earth use combo scaling by default.</li>
+<li>Armor expires after enemy action unless relics or equipment change the rule.</li>
+<li>Relic and equipment effects should declare whether they are passive, triggered, or replacement effects.</li>
+</ul>
+<h2 id="key-architecture-decisions">Key Architecture Decisions</h2>
+<ul>
+<li>Board logic should be deterministic and runnable without visual nodes.</li>
+<li>Match resolution should return structured results rather than directly applying combat effects.</li>
+<li>Combat should consume match results and produce structured combat logs.</li>
+<li>Shop generation should use seeded RNG and content pools.</li>
+<li>Content should be loaded through a registry and validated before run start.</li>
+<li>Content callers should depend on <code>ContentRegistry</code> read APIs, not on whether content is backed by dictionaries, Resources, JSON, or another later data source.</li>
+<li>Balance values should live in data where practical.</li>
+<li>Debug tools should be available early, but isolated from player-facing flow.</li>
+</ul>
+<h2 id="open-decisions-left-for-later-milestones">Open Decisions Left For Later Milestones</h2>
+<ul>
+<li>Exact gold orb spawn rate.</li>
+<li>Exact price bands by rarity and dungeon level.</li>
+<li>Reroll cost curve.</li>
+<li>Final 3-boss roster for the prototype.</li>
+<li>Whether L and T matches should ever grant bonus effects beyond matched orb count.</li>
+<li>Whether the 5-second timer should change after mobile testing.</li>
+</ul>
+<h2 id="architecture-baseline-completion-criteria">Architecture Baseline Completion Criteria</h2>
+<p>The architecture baseline is complete when:</p>
+<ul>
+<li>Prototype scope is confirmed against the GDD.</li>
+<li>Proposed folder structure is documented.</li>
+<li>Content data format is selected.</li>
+<li>Runtime state ownership is documented.</li>
+<li>Combat timing and effect hooks are documented.</li>
+<li>Manual QA checklist exists.</li>
+<li>Setup tasks are clearly separated from architecture documentation.</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>docs/system_architecture.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#orbwalker-system-architecture">Orbwalker System Architecture</a><a class="toc-h2" href="#purpose">Purpose</a><a class="toc-h2" href="#scope-confirmation">Scope Confirmation</a><a class="toc-h2" href="#proposed-folder-structure">Proposed Folder Structure</a><a class="toc-h2" href="#content-data-format-decision">Content Data Format Decision</a><a class="toc-h2" href="#runtime-state-ownership">Runtime State Ownership</a><a class="toc-h2" href="#combat-event-and-effect-timing">Combat Event And Effect Timing</a><a class="toc-h2" href="#key-architecture-decisions">Key Architecture Decisions</a><a class="toc-h2" href="#open-decisions-left-for-later-milestones">Open Decisions Left For Later Milestones</a><a class="toc-h2" href="#architecture-baseline-completion-criteria">Architecture Baseline Completion Criteria</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

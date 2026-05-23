@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+
+    .wiki-map {
+      margin: 0 0 24px;
+      padding: 13px 14px 12px;
+      border: 1px solid rgba(169, 149, 120, .72);
+      border-radius: 4px;
+      background: linear-gradient(135deg, rgba(255, 248, 232, .92), rgba(239, 247, 245, .82));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .07);
+    }
+    .wiki-map-title {
+      margin-bottom: 9px;
+      color: var(--ocean-dark);
+      font: 800 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .wiki-map nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wiki-map a {
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid rgba(15, 118, 110, .28);
+      border-radius: 3px;
+      background: rgba(255, 253, 248, .78);
+      color: var(--ocean-dark);
+      font: 700 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .wiki-map a:hover, .wiki-map a:focus {
+      border-color: var(--ocean);
+      background: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="wiki-map" aria-label="Wiki map"><div class="wiki-map-title">Wiki Map</div><nav><a href="index.html">Wiki Index</a><a href="architecture.html" aria-current="page">Architecture</a><a href="features.html">Features</a><a href="assetgen-workflow.html">Assetgen Workflow</a><a href="main-menu-assets.html">Main Menu Assets</a><a href="decisions.html">Decisions</a><a href="known-issues.html">Known Issues</a><a href="open-questions.html">Open Questions</a><a href="file-map.html">File Map</a><a href="setup.html">Setup</a><a href="log.html">Wiki Log</a></nav></section>
+      <h1>Architecture</h1>
+      <p class="summary">Summary**: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.</p>
+      <h1 id="architecture">Architecture</h1>
+<p><strong>Summary</strong>: Current runtime architecture for Orbwalker, grounded in the live scripts and the long-lived architecture doc. This page also records the current mismatch between the planned content model and the implemented one.</p>
+<p><strong>Sources</strong>: <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scripts/core/run_state.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/core/profile_repository.gd</code>, <code>scripts/core/balance_manager.gd</code>, <code>scripts/core/flow_result_utils.gd</code>, <code>scripts/board/board_model.gd</code>, <code>scripts/board/board_view.gd</code>, <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/combat/combat_outcome_overlay.gd</code>, <code>scripts/content/content_registry.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/shop/shop_model.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>, <code>scripts/scenes/shop.gd</code>, <code>scripts/main_menu/main_menu_model.gd</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>, <code>scripts/collection/collection_model.gd</code>, <code>scripts/collection/collection_view.gd</code>, <code>scripts/collection/collection_controller.gd</code>, <code>scripts/run_summary/run_summary_model.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/run_summary/run_summary_controller.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/scenes/run_summary.gd</code>, <code>scripts/run/player_progression_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>, <code>scripts/ui/visual_registry.gd</code></p>
+<p><strong>Last updated</strong>: 2026-05-07</p>
+<p>---</p>
+<h2 id="overview">Overview</h2>
+<p>The architecture is organized around state-owned gameplay logic and scene-driven presentation. <code>RunState</code> remains the public autoload facade for run flow, run gold, dungeon level, boss rewards, encounter selection, routing APIs, Run Log APIs, profile/meta APIs, prototype balance APIs, and additive state-change signals. <code>SceneRouter</code> owns FlowTrace/scene-transition machinery, <code>RunLogger</code> owns run-log storage/export state, <code>ProfileRepository</code> owns profile file load/save and legacy migration, and <code>BalanceManager</code> owns prototype balance defaults, lever state, ProjectSettings sync, and encounter scaling behind that facade. <code>BoardModel</code> owns the 5x6 grid. <code>CombatStateMachine</code> resolves turns. <code>ShopService</code> owns shop actions. <code>PlayerProgressionState</code> and <code>PlayerProgressionService</code> own equipment, consumables, relics, and mastery transitions. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/profile_repository.gd</code>, <code>scripts/core/balance_manager.gd</code>, <code>scripts/board/board_model.gd</code>, <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/shop/shop_service.gd</code>, <code>scripts/run/player_progression_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>)</p>
+<h2 id="details">Details</h2>
+<h3 id="run-flow">Run flow</h3>
+<ul>
+<li><code>RunState</code> tracks dungeon level, current step, current encounter, run gold, total gold earned, and the boss-reward sequence while exposing compatibility wrappers for routing and Run Log APIs. It also emits additive dictionary-payload signals for committed gold, run step, run active/victory/summary, profile/meta, and run-summary changes; existing controllers still use the polling/snapshot APIs unless deliberately migrated later. <code>SceneRouter</code> chooses and attaches the next scene, owns FlowTrace route records, retains only the latest 50 route records while preserving the active route, and uses a transition-generation guard to avoid restoring stale snapshots after newer run/transition mutations. <code>RunLogger</code> owns event serials, event storage, run metadata, snapshot/restore data, and end-of-run export bookkeeping; <code>RunLogReporter</code> still formats readable reports. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/core/scene_router.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/run_log_reporter.gd</code>)</li>
+<li><code>ProfileRepository</code> owns profile and legacy meta-profile <code>ConfigFile</code> persistence, including <code>user://matchatro_profile.cfg</code>, legacy <code>user://matchatro_meta_profile.cfg</code> migration, save warnings, and last-I/O probe metadata. <code>RunState</code> still owns when profile/meta state is created, reset, synced with default equipment unlocks, mutated for score/unlocks, and exposed through compatibility snapshots. (source: <code>scripts/core/profile_repository.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li><code>BalanceManager</code> owns prototype balance defaults, current lever state, lever normalization, ProjectSettings sync under <code>matchatro/prototype_balance/</code>, starting-gold lookup, fight reward lookup, ContentRegistry lever propagation, and encounter HP/damage scaling. <code>RunState</code> still exposes the public prototype balance methods, owns active encounter dictionaries, and decides when scaling is applied during fight assignment. (source: <code>scripts/core/balance_manager.gd</code>, <code>scripts/core/run_state.gd</code>, <code>scripts/content/content_registry.gd</code>)</li>
+<li>The level structure is a 3-level prototype run with repeated enemy, shop, boss reward, and advance steps. (source: <a href="../todo.html"><code>todo.html</code></a>, <code>scripts/core/run_state.gd</code>)</li>
+</ul>
+<h3 id="board-and-combat">Board and combat</h3>
+<ul>
+<li><code>BoardModel</code> is a pure data model with deterministic generation, bounds checks, swaps, and match-avoidant starting boards. (source: <code>scripts/board/board_model.gd</code>)</li>
+<li><code>BoardView</code> is a render-and-animation surface. It draws the grid, selected cells, drag path, flashes, and glow overlays, owns board presentation model binding, drag visual reset/update helpers, hover lookup, and board input filtering, but does not own board rules. (source: <code>scripts/board/board_view.gd</code>)</li>
+<li><code>CombatStateMachine</code> resolves the turn order, applies player effects in the documented sequence, handles block and armor, and records a structured combat log. External callers that need to reset phase now use <code>reset_to_intent_preview()</code> instead of directly writing the public <code>phase</code> field; existing read access remains for HUD/debug checks. (source: <code>scripts/combat/combat_state_machine.gd</code>, <code>scripts/scenes/combat.gd</code>)</li>
+<li>Combat now follows the project-local MVC host pattern. <code>scripts/scenes/combat.gd</code> is the thin scene host, <code>CombatModel</code> owns small scene-local mutable state, <code>CombatView</code> owns node binding/snapshot access, and <code>CombatController</code> owns combat scene orchestration, input phase authority, resolver simulation, combat math handoff, RunState outcome routing, audio hooks, <code>/skip</code> route/state reset, privileged debug callbacks, HUD snapshot application and <code>PlayerLoadoutHud</code> payload dispatch, timer runtime text/fill/color math, placeholder fallback decisions and scene-node assignment, VFX timing decisions, and scene transitions. Its <code>_trace_and_change_scene_to_target(...)</code> helper owns the duplicated combat outcome trace/change-scene glue for standard Continue, boss reward claim, and boss reward skip without taking over <code>RunState</code> route semantics or <code>CombatOutcomeOverlay</code> presentation. <code>CombatHudPresenter</code> owns side-effect-free combat HUD snapshot dictionary construction for top HUD, enemy stage, timer/tempo row, player strip, and debug overlay data. <code>CombatPlaceholderTextures</code> owns only the code-generated timer, intent, enemy portrait, and hero portrait placeholder texture builders. <code>CombatChromeStyler</code> owns code-built combat chrome/style construction, including shared combat frame styleboxes, progress-bar styles, label font/color overrides, timer-track and timer-label readability styling, button chrome, board/outcome panel chrome, stat-chip chrome, debug overlay font sizing, shared player-HUD chrome dispatch, and debug zone-guide chrome. <code>BoardController</code> owns guarded <code>BoardView.gui_input</code>/<code>mouse_exited</code> wiring, board-local mouse/touch event parsing, drag-result callback dispatch, board-local hovered-orb-id translation, active drag state, touch-index tracking, selected orb/current cell/path tracking, adjacent-cell swap bookkeeping, move-timer countdown state, drag visual reset/abort, match-glow refresh, visual replay mutation APIs for clear/gravity/refill commits, board input-enable forwarding, and final board-model commit while preserving <code>BoardView.gui_input</code> local coordinates. <code>CombatLayoutPresenter</code> owns combat scene geometry and responsive design-space positioning, including design-root scaling, runtime zone rects, enemy/strip/board/player panel positioning, loadout rail positioning, debug overlay anchors, and outcome overlay layout sync. <code>CombatVfxPresenter</code> owns transient combat VFX drawing mechanics: VFX layer binding, texture VFX spawning, replay impacts, mastery beam source lookup, global-to-layer coordinate conversion, beam sizing/rotation/z-index, and fade cleanup. <code>CombatDebugConsole</code> currently owns debug command parsing/dispatch, command help/error text, log-level state, and combat log rendering. Future AR-27 should split log rendering into a reusable <code>ConsoleLogger</code> scene that listens to shared console-log events from any scene, while combat command dispatch stays combat-specific unless a later command-router task is accepted. <code>CombatTurnLogPresenter</code> owns normal/detailed turn-log text, state snapshot formatting helpers, intent text, and reusable outcome/summary strings. <code>CombatResolvePresenter</code> owns only the board-space resolve replay presentation boundary: sorted match presentation order, match flash waits, clear/gravity/refill animation timing, board-controller delegated visual commit steps, clear bursts, combo popup lifecycle, and <code>combat_speed</code> waits. <code>CombatOutcomeOverlay</code> owns only the combat outcome overlay presentation boundary: standard victory/defeat card state, boss reward card controls, scrim layering, card layout/content, and text wrapping. (source: <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>, <code>scripts/combat/combat_model.gd</code>, <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_hud_presenter.gd</code>, <code>scripts/combat/combat_placeholder_textures.gd</code>, <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/board/board_controller.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/combat/combat_vfx_presenter.gd</code>, <code>scripts/combat/combat_debug_console.gd</code>, <code>scripts/combat/combat_turn_log_presenter.gd</code>, <code>scripts/combat/combat_resolve_presenter.gd</code>, <code>scripts/combat/combat_outcome_overlay.gd</code>)</li>
+<li>Architecture-review refactors extracted obvious combat leaf responsibilities and then moved combat to the local MVC shape. The current accepted boundary is structural rather than final: <code>CombatController</code> is still large, <code>CombatView</code> is still conservative, and follow-up cleanup should target clear ownership names and real seams, especially reusable console logging, view-ready HUD presentation, combat layout/VFX presenter naming, and log presentation. (source: <a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a>, <code>scripts/scenes/combat.gd</code>, <code>scripts/combat/combat_controller.gd</code>)</li>
+</ul>
+<h3 id="shop-and-progression">Shop and progression</h3>
+<ul>
+<li><code>ShopService</code> remains the economy and shop-state authority that opens shops, rerolls offers, buys items, sells equipped items, and resolves treasure chest picks through <code>RunState</code> and the progression service. (source: <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Shop runtime scene ownership now follows a local MVC split: <code>ShopModel</code> owns selected-slot/status/transition state plus enriched shop snapshot projection, <code>ShopView</code> owns the shop UI surface and shared <code>PlayerLoadoutHud</code> binding/layout/rendering, <code>ShopController</code> owns shop actions, RunState transition calls, scene-change rollback callbacks, FlowTrace marks, and shop music/SFX hooks, and <code>scripts/scenes/shop.gd</code> is a thin host that wires scene nodes to model/view/controller. (source: <code>scripts/shop/shop_model.gd</code>, <code>scripts/shop/shop_view.gd</code>, <code>scripts/shop/shop_controller.gd</code>, <code>scripts/scenes/shop.gd</code>)</li>
+<li>Main-menu, Collection, and final run-summary screens now follow the same local MVC ownership pattern as shop. <code>MainMenuModel</code>, <code>CollectionModel</code>, and <code>RunSummaryModel</code> own screen-local state snapshots and formatting helpers; corresponding <code><em>View</code> scripts own node binding, screen rendering/layout/chrome, status labels, and toast/profile presentation; corresponding <code></em>Controller</code> scripts own lifecycle entry, action routing, <code>RunState</code>/FlowTrace transition calls, transition locks, and audio command routing. <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, and <code>scripts/scenes/run_summary.gd</code> are thin hosts that wire nodes and forward signals to controllers. (source: <code>scripts/main_menu/main_menu_model.gd</code>, <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>, <code>scripts/collection/collection_model.gd</code>, <code>scripts/collection/collection_view.gd</code>, <code>scripts/collection/collection_controller.gd</code>, <code>scripts/run_summary/run_summary_model.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/run_summary/run_summary_controller.gd</code>, <code>scripts/scenes/main_menu.gd</code>, <code>scripts/scenes/collection.gd</code>, <code>scripts/scenes/run_summary.gd</code>)</li>
+<li><code>PlayerProgressionState</code> stores equipped items, consumables, relics, and mastery levels. <code>PlayerProgressionService</code> performs the legal transitions and rebuilds active effects. (source: <code>scripts/run/player_progression_state.gd</code>, <code>scripts/run/player_progression_service.gd</code>)</li>
+</ul>
+<h3 id="content-and-validation">Content and validation</h3>
+<ul>
+<li><code>ContentRegistry</code> currently stores content as nested dictionaries and validates required fields, effect hooks, entry types, and <code>next_tier_item_id</code> references. It also builds shop pools and pricing snapshots, clamps shop/reroll pricing multipliers to a positive prototype floor, and exposes the reroll cost ceiling used by <code>ShopService</code>. <code>content_contract_snapshot()</code> records the current collection fields, validation owner, shop pool/pricing owner, and future migration boundary. Single-item getters and list APIs return duplicated dictionaries so callers cannot mutate the registry index by accident. (source: <code>scripts/content/content_registry.gd</code>, <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Dictionary-backed <code>ContentRegistry</code> content is the prototype source of truth for this phase. The older Resource-based architecture direction is now documented as future migration work that should stay behind the <code>ContentRegistry</code> read API instead of changing combat, shop, progression, HUD, or debug callers directly. (source: <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <code>scripts/content/content_registry.gd</code>)</li>
+</ul>
+<h3 id="visual-routing">Visual routing</h3>
+<ul>
+<li><code>visual_registry.gd</code> centralizes first-pass texture lookup and fallback behavior for combat and shop presentation. (source: <code>scripts/ui/visual_registry.gd</code>)</li>
+</ul>
+<h3 id="scene-structure">Scene structure</h3>
+<ul>
+<li>The live <code>scenes/</code> folder keeps player-facing root screens flat: <code>main_menu.tscn</code>, <code>combat.tscn</code>, <code>shop.tscn</code>, <code>run_summary.tscn</code>, and <code>collection.tscn</code>. Reusable scene components remain under <code>scenes/ui/</code>, including <code>board.tscn</code> and <code>player_hud.tscn</code>. Root scene scripts mirror those screens under <code>scripts/scenes/</code>; reusable systems remain in domain folders such as <code>scripts/board/</code>, <code>scripts/combat/</code>, <code>scripts/shop/</code>, and <code>scripts/ui/</code>. (source: repository layout, <code>project.godot</code>)</li>
+<li>Shared UI composition follows the same ownership rule as shared runtime helpers: combat and shop may mount shared components in different screen zones, but should not redefine shared component internals with screen-local geometry constants. <code>PlayerLoadoutHud</code> now owns both the default shared HUD geometry and the named shop portrait layout preset, while <code>CombatLayoutPresenter</code> owns combat's runtime section override and <code>ShopView</code> owns the shop screen mount/placement. (source: <code>scripts/shop/shop_view.gd</code>, <code>scripts/combat/combat_layout_presenter.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+</ul>
+<h2 id="important-files">Important Files</h2>
+<ul>
+<li><code>scripts/core/run_state.gd</code> - run orchestration, public facade APIs, and additive state-change signals</li>
+<li><code>scripts/core/scene_router.gd</code> - FlowTrace route storage, scene transition helpers, and rollback generation guards behind the <code>RunState</code> facade</li>
+<li><code>scripts/core/run_logger.gd</code> - run-log event storage, snapshots, export assembly, and export bookkeeping behind the <code>RunState</code> facade</li>
+<li><code>scripts/core/profile_repository.gd</code> - profile/meta-profile file persistence and legacy migration behind the <code>RunState</code> facade</li>
+<li><code>scripts/core/balance_manager.gd</code> - prototype balance defaults, lever state, ProjectSettings sync, and encounter scaling behind the <code>RunState</code> facade</li>
+<li><code>scripts/core/flow_result_utils.gd</code> - shared flow/result dictionary helpers for scene controllers</li>
+<li><code>scripts/content/content_registry.gd</code> - content data, validation, and pools</li>
+<li><code>scripts/board/board_controller.gd</code> - board-local drag/pointer input state helper</li>
+<li><code>scripts/combat/combat_chrome_styler.gd</code> - combat code-built chrome and style helper</li>
+<li><code>scripts/combat/combat_hud_presenter.gd</code> - side-effect-free combat HUD snapshot dictionary builder</li>
+<li><code>scripts/combat/combat_controller.gd</code> - combat scene orchestration behind the thin combat scene host</li>
+<li><code>scripts/combat/combat_model.gd</code> - small combat scene-local state model</li>
+<li><code>scripts/combat/combat_view.gd</code> - combat root node binding and view snapshot access</li>
+<li><code>scripts/combat/combat_placeholder_textures.gd</code> - combat code-generated placeholder texture builder helper</li>
+<li><code>scripts/combat/combat_state_machine.gd</code> - combat turn resolution</li>
+<li><code>scripts/combat/combat_layout_presenter.gd</code> - combat scene geometry and responsive design-space layout helper</li>
+<li><code>scripts/combat/combat_vfx_presenter.gd</code> - combat transient VFX spawning, impact, beam, coordinate conversion, and fade cleanup helper</li>
+<li><code>scripts/combat/combat_resolve_presenter.gd</code> - board-space resolve replay presentation helper</li>
+<li><code>scripts/combat/combat_debug_console.gd</code> - combat debug command parser and log renderer</li>
+<li><code>scripts/combat/combat_turn_log_presenter.gd</code> - combat turn-log and outcome summary formatter</li>
+<li><code>scripts/combat/combat_outcome_overlay.gd</code> - combat outcome and boss reward overlay presentation helper</li>
+<li><code>scripts/shop/shop_model.gd</code> - shop scene state facade and enriched snapshot projection</li>
+<li><code>scripts/shop/shop_view.gd</code> - shop UI build/layout/rendering and shared PlayerHUD bindings</li>
+<li><code>scripts/shop/shop_controller.gd</code> - shop action orchestration, transitions, and audio/FlowTrace hooks</li>
+<li><code>scripts/shop/shop_service.gd</code> - shop generation and purchases</li>
+<li><code>scripts/run/player_progression_service.gd</code> - equip, sell, mastery, consumable, and relic transitions</li>
+<li><a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a> - original architecture target and planned data model</li>
+<li><a href="../docs/scene_structure_refactor_plan.html"><code>docs/scene_structure_refactor_plan.html</code></a> - proposed final scene folder taxonomy and shared-HUD scene/component refactor plan</li>
+<li><a href="../docs/architecture_review_tasks.html"><code>docs/architecture_review_tasks.html</code></a> - architecture-maintenance task tracker for refactor risks, regression harness work, and current/future architecture alignment</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Whether a later content migration should use Resource classes, JSON, or another external data source. The current prototype remains dictionary-backed behind <code>ContentRegistry</code>. (source: <a href="../docs/system_architecture.html"><code>docs/system_architecture.html</code></a>, <code>scripts/content/content_registry.gd</code>)</li>
+</ul>
+<h2 id="related-pages">Related Pages</h2>
+<ul>
+<li><a href="setup.html">setup</a></li>
+<li><a href="file-map.html">file-map</a></li>
+<li><a href="features.html">features</a></li>
+<li><a href="decisions.html">decisions</a></li>
+<li><a href="known-issues.html">known-issues</a></li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <a href="../wiki/architecture.html"><code>wiki/architecture.html</code></a></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#architecture">Architecture</a><a class="toc-h2" href="#overview">Overview</a><a class="toc-h2" href="#details">Details</a><a class="toc-h3" href="#run-flow">Run flow</a><a class="toc-h3" href="#board-and-combat">Board and combat</a><a class="toc-h3" href="#shop-and-progression">Shop and progression</a><a class="toc-h3" href="#content-and-validation">Content and validation</a><a class="toc-h3" href="#visual-routing">Visual routing</a><a class="toc-h3" href="#scene-structure">Scene structure</a><a class="toc-h2" href="#important-files">Important Files</a><a class="toc-h2" href="#open-questions">Open Questions</a><a class="toc-h2" href="#related-pages">Related Pages</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

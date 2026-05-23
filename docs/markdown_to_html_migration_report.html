@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markdown to HTML Migration Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="hero">
+        <div class="hero-label">Documentation System Upgrade</div>
+        <h1>Markdown to HTML Migration Report</h1>
+        <p class="summary">The repository documentation set moved from plain-text pages into self-contained, browser-readable HTML: navigable, reviewable, shareable, and ready for richer internal wiki pages.</p>
+        <div class="hero-strip">
+          <span class="hero-chip">134 files converted</span>
+          <span class="hero-chip">0 Markdown files remaining</span>
+          <span class="hero-chip">Run logs now export HTML</span>
+          <span class="hero-chip">Future docs default to HTML</span>
+        </div>
+      </section>
+      <div class="content">
+
+      <section id="executive-summary">
+        <h2>Executive Summary</h2>
+        <p>The migration converted repository Markdown documentation, wiki pages, task trackers, asset briefs, QA reports, templates, addon docs, and repo-local memory notes into HTML counterparts. Original Markdown files were removed, and text references were updated to point at <code>.html</code> targets.</p>
+        <p>Runtime-facing run-log export was also changed from Markdown output to HTML output, so future generated run reports align with the new documentation format. Project instructions now state that future human-facing documentation should default to self-contained HTML.</p>
+        <p>This migration follows the same operating idea highlighted by Thariq Shihipar's HTML-output thread and companion examples: large agent-produced artifacts are easier to review when they can use layout, tables, diagrams, navigation, and browser-native interaction instead of staying as linear text.</p>
+        <div class="callout ok">
+          <strong>Current status:</strong> migration is structurally complete in the working tree. Validation found no remaining Markdown-extension files and no stale Markdown-extension path references outside excluded Git/Android areas.
+        </div>
+      </section>
+
+      <section id="key-takeaways">
+        <h2>Key Takeaways</h2>
+        <ul class="takeaway-list">
+          <li>Human-facing project knowledge now lives in browser-readable HTML files rather than Markdown source files.</li>
+          <li>Wiki and docs links were rewritten to use <code>.html</code> targets.</li>
+          <li><code>scripts/core/run_logger.gd</code>, <code>scripts/core/run_log_reporter.gd</code>, and <code>scripts/core/run_state.gd</code> now expose and write HTML run-log reports.</li>
+          <li><code>AGENTS.html</code>, <code>.codex/agents/default.toml</code>, and <code>.codex/agents/worker.toml</code> now make HTML the default for future documentation.</li>
+          <li>No commit has been made for this migration at report time.</li>
+        </ul>
+      </section>
+
+      <section id="metrics">
+        <h2>Migration Metrics</h2>
+        <div class="grid">
+          <div class="metric">
+            <strong>134</strong>
+            <span>Markdown files converted during the bulk migration pass</span>
+          </div>
+          <div class="metric">
+            <strong>0</strong>
+            <span>Remaining Markdown-extension files found by the Markdown-file inventory check</span>
+          </div>
+          <div class="metric">
+            <strong>0</strong>
+            <span>Stale Markdown-extension path references found outside Git/Android exclusions</span>
+          </div>
+          <div class="metric">
+            <strong>57</strong>
+            <span>JSON files validated after path and metadata updates</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="source-article-takeaways">
+        <h2>Source Article Takeaways</h2>
+        <p>The captured article gives a practical rubric for when HTML is worth the extra generation cost. The migration report now treats those ideas as the rationale for Matchatro's documentation default, not just as a style preference.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Article Point</th>
+                <th>Project Translation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>HTML carries more kinds of information: tables, CSS design data, SVG, code snippets, interaction, workflows, spatial layout, and images.</td>
+                <td>Use HTML for asset QA pages, architecture reports, design reviews, implementation plans, visual workflows, and status reports where layout improves comprehension.</td>
+              </tr>
+              <tr>
+                <td>Long Markdown documents are often not read deeply once they pass roughly 100 lines.</td>
+                <td>Large Matchatro docs should bias toward navigable HTML with summary blocks, tables, status cards, and section links.</td>
+              </tr>
+              <tr>
+                <td>HTML can become a two-way artifact with sliders, knobs, local editors, and copy/export buttons.</td>
+                <td>Future review tools such as asset approval boards, task triage pages, balancing dashboards, or prompt-tuning forms can be single-file HTML utilities.</td>
+              </tr>
+              <tr>
+                <td>HTML is easier to share because browsers render it directly once the file is available locally or hosted.</td>
+                <td>Human-facing reports should be reviewable in the browser without build steps, external dependencies, or special Markdown preview tooling.</td>
+              </tr>
+              <tr>
+                <td>Tradeoffs are real: HTML is less token-efficient, takes longer to generate, and produces noisier version-control diffs.</td>
+                <td>Keep Markdown-format exceptions available for short scratch notes, machine handoffs, strict external tooling, or changes where compact diffs matter more than reviewability.</td>
+              </tr>
+              <tr>
+                <td>A design-system reference helps avoid ugly or inconsistent generated HTML.</td>
+                <td>Longer-term follow-up: create a reusable Matchatro documentation style/template so future HTML wiki pages share the same visual system.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="scope">
+        <h2>Scope</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th>Action</th>
+                <th>Examples</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Project guidance</td>
+                <td>Converted and updated</td>
+                <td><code>AGENTS.html</code>, <code>.codex/agents/default.toml</code>, <code>.codex/agents/worker.toml</code></td>
+              </tr>
+              <tr>
+                <td>Milestone and task docs</td>
+                <td>Converted and references rewritten</td>
+                <td><code>todo.html</code>, <code>docs/current_work_tasks.html</code>, <code>docs/test_plan.html</code></td>
+              </tr>
+              <tr>
+                <td>Wiki</td>
+                <td>Converted and log updated</td>
+                <td><code>wiki/index.html</code>, <code>wiki/log.html</code>, <code>wiki/assetgen-workflow.html</code></td>
+              </tr>
+              <tr>
+                <td>Asset generation docs</td>
+                <td>Converted and metadata references updated</td>
+                <td><code>resources/assetgen.workflow.html</code>, <code>assets/briefs/**/*.html</code>, <code>assets/qa/reports/**/*.html</code></td>
+              </tr>
+              <tr>
+                <td>Addon docs</td>
+                <td>Converted</td>
+                <td><code>addons/gdai-mcp-plugin-godot/README.html</code>, <code>CHANGELOG.html</code>, <code>LICENSE.html</code></td>
+              </tr>
+              <tr>
+                <td>Runtime run logs</td>
+                <td>Export format changed from Markdown to HTML</td>
+                <td><code>scripts/core/run_log_reporter.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/run_state.gd</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="implementation-details">
+        <h2>Implementation Details</h2>
+        <div class="flow">
+          <div class="flow-step">
+            <b>Inventory</b>
+            <span>Found every Markdown file in repo-owned documentation, wiki, asset, and addon surfaces.</span>
+          </div>
+          <div class="flow-step">
+            <b>Convert</b>
+            <span>Generated standalone HTML pages with embedded CSS and table-of-contents navigation.</span>
+          </div>
+          <div class="flow-step">
+            <b>Rewrite</b>
+            <span>Updated links, manifests, metadata, and role prompts to point at HTML targets.</span>
+          </div>
+          <div class="flow-step">
+            <b>Runtime</b>
+            <span>Moved run-log export from Markdown report generation to HTML report generation.</span>
+          </div>
+          <div class="flow-step">
+            <b>Validate</b>
+            <span>Checked file inventory, references, JSON parse health, HTML structure, and diff hygiene.</span>
+          </div>
+        </div>
+        <h3>Document Conversion</h3>
+        <p>Each migrated page was emitted as a standalone HTML document with embedded CSS, semantic headings, a summary area, a generated table of contents, and a footer noting the source file. Original Markdown paths were removed and replaced by corresponding HTML paths.</p>
+        <h3>Reference Rewrites</h3>
+        <p>Repository text references were rewritten from Markdown targets to HTML targets. Asset metadata and manifest files were updated where they referenced converted briefs, reports, templates, or docs.</p>
+        <h3>Run Log Export</h3>
+        <p>Run-log reporting now uses an HTML builder and export facade. The old Markdown export functions were removed from the active runtime API surface and replaced with <code>run_log_export_html()</code>.</p>
+        <h3>Future Documentation Rule</h3>
+        <p>The durable project rule now says that future wiki pages, product docs, architecture notes, task trackers, runbooks, decision records, asset reports, QA reports, and long-form review artifacts should default to self-contained HTML.</p>
+      </section>
+
+      <section id="validation">
+        <h2>Validation</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Check</th>
+                <th>Result</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Markdown-file inventory check</td>
+                <td><span class="badge success">Pass</span></td>
+                <td>No remaining Markdown files were reported.</td>
+              </tr>
+              <tr>
+                <td>Markdown-reference grep excluding Git and Android output</td>
+                <td><span class="badge success">Pass</span></td>
+                <td>No stale Markdown path references were reported outside excluded directories.</td>
+              </tr>
+              <tr>
+                <td>HTML structure probe</td>
+                <td><span class="badge success">Pass</span></td>
+                <td>HTML files checked during migration started with <code>&lt;!doctype html&gt;</code> and ended with <code>&lt;/html&gt;</code>.</td>
+              </tr>
+              <tr>
+                <td>JSON parse probe</td>
+                <td><span class="badge success">Pass</span></td>
+                <td>57 JSON files parsed successfully after metadata path rewrites.</td>
+              </tr>
+              <tr>
+                <td><code>git diff --check</code></td>
+                <td><span class="badge success">Pass</span></td>
+                <td>Passed with CRLF normalization warnings only.</td>
+              </tr>
+              <tr>
+                <td>Godot runtime validation</td>
+                <td><span class="badge warning">Not run</span></td>
+                <td>No Godot MCP tools were available in the current tool context. Headless Godot was not used.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="risks">
+        <h2>Risks and Follow-Ups</h2>
+        <div class="callout risk">
+          <strong>Agent discovery compatibility:</strong> the repo now has <code>AGENTS.html</code> instead of the conventional Markdown agent-guide filename. This matches the all-HTML migration request, but some external tools may still expect the conventional Markdown filename.
+        </div>
+        <ul>
+          <li>Some third-party tooling may assume README, CHANGELOG, LICENSE, or AGENTS files are Markdown. If that becomes a blocker, add a narrow exception or tool-specific adapter rather than reverting the whole documentation migration.</li>
+          <li>Large generated HTML diffs are less compact than Markdown diffs. Human review should happen in browser view; git diffs remain usable for targeted source changes.</li>
+          <li>Future documentation agents must avoid creating new Markdown files unless the target tool strictly requires Markdown format.</li>
+        </ul>
+      </section>
+
+      <section id="source-notes">
+        <h2>Source Notes</h2>
+        <ul>
+          <li>External context: Thariq Shihipar's original X post linked to the argument for HTML as an agent output format: <a href="https://x.com/trq212/status/2052809885763747935">x.com/trq212/status/2052809885763747935</a>. X was not directly readable in this environment, so supporting details were checked through the companion example gallery and Simon Willison's summary.</li>
+          <li>Local captured source: <code>C:/Users/Home/Downloads/local-image-2026-05-18_12_07.pdf</code> contains readable screenshots of the article and replies. The report's source-article takeaway section was updated from that local capture.</li>
+          <li>The companion gallery frames the shift as twenty self-contained HTML files that replace long linear text artifacts across planning, code review, design, prototyping, diagrams, decks, research, reports, and custom editors: <a href="https://thariqs.github.io/html-effectiveness/">thariqs.github.io/html-effectiveness</a>.</li>
+          <li>Simon Willison summarized the same piece as an argument for asking models to output HTML because it enables SVG diagrams, widgets, in-page navigation, and richer explanations than plain text formats: <a href="https://simonwillison.net/2026/May/8/unreasonable-effectiveness-of-html/">simonwillison.net/2026/May/8/unreasonable-effectiveness-of-html</a>.</li>
+          <li><code>wiki/log.html</code> records both the migration and the durable HTML-default documentation rule.</li>
+          <li><code>AGENTS.html</code> contains the project-level documentation-format rule.</li>
+          <li><code>.codex/agents/default.toml</code> and <code>.codex/agents/worker.toml</code> carry role-specific documentation-format instructions.</li>
+          <li><code>scripts/core/run_log_reporter.gd</code>, <code>scripts/core/run_logger.gd</code>, and <code>scripts/core/run_state.gd</code> contain the runtime export API change.</li>
+        </ul>
+      </section>
+
+      <section id="llm-reuse-notes">
+        <h2>LLM Reuse Notes</h2>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr>
+                <th>Canonical summary</th>
+                <td>Matchatro documentation was migrated from Markdown to self-contained HTML, internal references were rewritten, run-log export now writes HTML, and future human-facing docs default to HTML.</td>
+              </tr>
+              <tr>
+                <th>Key entities</th>
+                <td><code>AGENTS.html</code>, <code>wiki/log.html</code>, <code>resources/assetgen.workflow.html</code>, <code>scripts/core/run_log_reporter.gd</code>, <code>scripts/core/run_logger.gd</code>, <code>scripts/core/run_state.gd</code></td>
+              </tr>
+              <tr>
+                <th>Key decisions</th>
+                <td>Use HTML for human-facing docs by default; keep Markdown only for strict tooling, compact scratch notes, machine-facing exceptions, or cases where diff review matters more than browser readability.</td>
+              </tr>
+              <tr>
+                <th>Open questions</th>
+                <td>Whether external tooling needs a compatibility file for conventional Markdown filenames such as AGENTS or README; whether Matchatro should add a reusable HTML documentation style/template.</td>
+              </tr>
+              <tr>
+                <th>Tags</th>
+                <td>documentation, html, wiki, migration, run-log-export, agent-guidance</td>
+              </tr>
+              <tr>
+                <th>Suggested related wiki pages</th>
+                <td><code>wiki/index.html</code>, <code>wiki/setup.html</code>, <code>wiki/log.html</code>, <code>wiki/assetgen-workflow.html</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="footer">
+        <p><span class="badge">Report</span> Created 2026-05-17 for the Markdown to HTML documentation migration.</p>
+      </section>
+      </div>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc">
+        <a class="toc-h2" href="#executive-summary">Executive Summary</a>
+        <a class="toc-h2" href="#key-takeaways">Key Takeaways</a>
+        <a class="toc-h2" href="#metrics">Migration Metrics</a>
+        <a class="toc-h2" href="#source-article-takeaways">Source Article Takeaways</a>
+        <a class="toc-h2" href="#scope">Scope</a>
+        <a class="toc-h2" href="#implementation-details">Implementation Details</a>
+        <a class="toc-h2" href="#validation">Validation</a>
+        <a class="toc-h2" href="#risks">Risks and Follow-Ups</a>
+        <a class="toc-h2" href="#source-notes">Source Notes</a>
+        <a class="toc-h2" href="#llm-reuse-notes">LLM Reuse Notes</a>
+      </nav>
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 # Copyright 2025-present Delano Lourenco
-# License: See LICENSE.md
+# License: See LICENSE.html
 # Website: https://gdaimcp.com
 @tool
 extends EditorPlugin

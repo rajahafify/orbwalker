@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-Generated 2D Asset Workflow</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #65716b;
+      --paper: #fffdf8;
+      --paper-2: #f7f2e8;
+      --line: #d8cdbd;
+      --line-strong: #a99578;
+      --ocean: #0f766e;
+      --ocean-dark: #0b4f4b;
+      --gold: #b7802d;
+      --blue: #2563eb;
+      --red: #b42318;
+      --green: #167043;
+      --code: #101828;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+        #ebe5d8;
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main {
+      min-width: 0;
+      background: var(--paper);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 36px 38px 42px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .content { padding: 0; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: rgba(255, 253, 248, .92);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+      backdrop-filter: blur(8px);
+    }
+    .hero {
+      position: relative;
+      margin: -36px -38px 32px;
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background:
+        linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+    }
+    .hero > * { position: relative; z-index: 1; }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid var(--gold);
+      transform: rotate(45deg) translateY(-1px);
+    }
+    h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+    p, li, td { max-width: 76ch; }
+    p { margin: .72em 0; }
+    a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    .summary {
+      margin: 0 0 24px;
+      padding: 12px 0 12px 16px;
+      max-width: 820px;
+      color: var(--muted);
+      border-left: 4px solid var(--gold);
+      font-size: 1.06rem;
+    }
+    .hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+    .hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .hero-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--ocean-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 6px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc .toc-h2 { padding-left: 10px; }
+    .toc .toc-h3 { padding-left: 22px; }
+    .toc .toc-h4 { padding-left: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric, .card, .takeaway-list li, .flow-step, .pattern div {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+    }
+    .metric, .card { padding: 16px; }
+    .metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+    .metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+    .card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+    .takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .takeaway-list li { padding: 14px 15px; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+    .flow-step { position: relative; min-height: 126px; padding: 15px; }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      transform: translateY(-50%) rotate(45deg);
+      background: var(--paper);
+    }
+    .flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .pattern div { min-height: 122px; padding: 15px; }
+    .pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+    .callout, blockquote {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #efd7a9;
+      border-left: 5px solid var(--gold);
+      border-radius: 4px;
+      background: #fff8e8;
+    }
+    .callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+    .decision {
+      border: 1px solid rgba(212, 163, 92, .46);
+      background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+      border-radius: 4px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+    }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+    th { background: #efe6d6; color: #27352f; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: #e8f4f1;
+      color: var(--ocean-dark);
+      border: 1px solid #9accc4;
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+    .badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+    .footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 980px) {
+      .layout { display: block; padding: 16px; }
+      aside { position: static; margin-bottom: 16px; }
+      main { padding: 24px; overflow: visible; }
+      .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+      .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+    }
+    @media print {
+      body { background: white; }
+      .layout { display: block; max-width: none; padding: 0; }
+      aside { display: none; }
+      main { border: 0; box-shadow: none; }
+      .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+      a { color: inherit; text-decoration: none; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <h1>AI-Generated 2D Asset Workflow</h1>
+      <p class="summary">This is a Codex multi-agent workflow for producing generated 2D assets. Each</p>
+      <h1 id="ai-generated-2d-asset-workflow">AI-Generated 2D Asset Workflow</h1>
+<p>This is a Codex multi-agent workflow for producing generated 2D assets. Each workflow layer is owned by a separate <code>worker</code> subagent with a clear handoff between layers. The main/default agent coordinates scope, reviews outputs, and records final status, but layer work should be delegated to workers.</p>
+<p>Current execution mode is <code>bulk_generation_first</code>: generate candidates for the full planned asset list first, then run QA as one deferred batch. Legal/license review, final approval, and runtime integration remain blocked until that later QA/review pass is complete.</p>
+<p>All image creation or raster image editing in this workflow must use the Codex <code>imagegen</code> skill. Read that skill's <code>SKILL.html</code> first, then call the available in-chat image generation tool exposed to the agent by Codex. Do not try to run <code>image_gen</code>, <code>imagegen</code>, or any similarly named command in PowerShell, Bash, or another CLI; those names are not shell executables in this workflow. Use a CLI fallback only when the human explicitly asks for the skill's CLI fallback and the skill documentation provides one.</p>
+<p>For sprite sheets, animation strips, or frame-normalized 2D animation exports, use the available <code>game-studio:sprite-pipeline</code> skill after image candidates exist. This skill is for sprite normalization, contact sheets, anchors, scale, animation strip assembly, and preview packaging; it does not replace the <code>imagegen</code> requirement for creating or editing generated image candidates.</p>
+<p>Audio, screenshot, and video assets are not generated via <code>imagegen</code>. They must use non-image capture/audio tooling, or remain as explicit spec placeholders until such tooling is requested.</p>
+<h2 id="folder-structure">Folder Structure</h2>
+<pre><code class="language-text">
+assets/
+  art_bible/
+    style.html
+    palettes/
+    references/
+  briefs/
+    asset_name.brief.html
+  prompts/
+    templates.html
+    runs/
+  generated/
+    candidates/
+    metadata/
+  qa/
+    reports/
+    transparency_tests/
+  cleanup/
+    alpha_fixed/
+  approved/
+    sprites/
+    ui/
+    icons/
+  rejected/
+  integrated/
+    game_engine/
+</code></pre>
+<h2 id="bulk-generation-first-mode">Bulk-Generation-First Mode</h2>
+<p>Use this mode when the request is to maximize candidate throughput before QA.</p>
+<ol>
+<li>Load the candidate list from <code>assets.json</code> and the generated-record mirror at</li>
+<p><code>assets/generated/metadata/assets.json</code>. If present, use <code>assets/generated/metadata/bulk_generation_plan.json</code> as the per-wave routing manifest.</p>
+<li>Generate image candidates for all image-capable entries first.</li>
+<li>Defer QA to one later batch across the whole wave.</li>
+<li>Keep legal/license review, final approval, and runtime integration blocked</li>
+<p>until deferred QA is finished and reviewed.</p>
+<li>For audio/screenshot/video entries, record non-image tooling requirements or</li>
+<p>placeholder specs; do not force them into image generation.</p>
+</ol>
+<h2 id="layer-1-creative-control">Layer 1: Creative Control</h2>
+<p><strong>Worker ownership:</strong> assign one worker subagent to prepare and validate the creative-control inputs for the asset batch.</p>
+<p>Maintain a single source of truth before production begins.</p>
+<ul>
+<li><strong>Art bible:</strong> style, palette, lighting, camera angle, shape language, line weight, scale, allowed effects, prohibited motifs.</li>
+<li><strong>Asset briefs:</strong> asset name, purpose, dimensions, game context, references, animation needs, export format, transparency requirement.</li>
+<li><strong>Prompt templates:</strong> reusable prompt structure with variables for asset type, pose, material, mood, style, background, negative constraints.</li>
+<li><strong>Style and transparency rules:</strong> transparent background required where applicable; no baked shadows, halos, unwanted glow, or unapproved text.</li>
+</ul>
+<h2 id="layer-2-asset-production">Layer 2: Asset Production</h2>
+<p><strong>Worker ownership:</strong> assign a separate worker subagent to generate, QA, clean, and export candidates from the approved Layer 1 inputs. This worker must use the Codex <code>imagegen</code> skill for all generated raster asset creation or editing. The worker should invoke the Codex-provided image generation tool from the agent tool interface, not from the local shell.</p>
+<p>Produce candidates first, then QA later as one batch in this mode.</p>
+<ol>
+<li>Generate candidates from approved briefs and prompt templates for every</li>
+<p>image-capable record in the current <code>assets.json</code> list.</p>
+<li>Save source prompt, model, seed, date, references, and generation settings.</li>
+<li>After image candidates exist, run <code>game-studio:sprite-pipeline</code> for sprite</li>
+<p>sheets/animation strips that need frame normalization, anchors, padding, scale, contact sheets, and preview outputs.</p>
+<li>Defer QA checks (style, dimensions, readability, defects, transparency, and</li>
+<p>policy constraints) into one later batch pass.</p>
+<li>Defer cleanup (alpha edges, halos, color spill, baked shadows) into that QA</li>
+<p>batch unless a blocker must be fixed to continue generation.</p>
+<li>Keep outputs in generated/metadata + candidate form until QA/review gates</li>
+<p>are explicitly reopened.</p>
+</ol>
+<h3 id="chroma-key-transparency-fallback">Chroma-Key Transparency Fallback</h3>
+<p>Use this fallback only when true-alpha image generation is unavailable or has repeatedly produced fake transparency, such as baked checkerboard or fully opaque PNGs. The fallback creates a temporary opaque source image with a flat key color, then derives the final transparent PNG through deterministic key extraction.</p>
+<p>Rules:</p>
+<ol>
+<li>Choose an asset-specific key color that is absent from the intended asset.</li>
+<p>Prefer highly saturated synthetic colors:</p>
+<ul>
+<li><code>#FF00FF</code> magenta for green, earth, heal, gold, silver, blue, and mixed</li>
+<p>icon sheets.</p>
+<li><code>#00FFFF</code> cyan for fire, red, orange, dark, and violet VFX sheets.</li>
+<li>Do not use a key color that appears in the asset palette, glows, particles,</li>
+<p>seals, symbols, or highlights.</p>
+</ul>
+<li>Prompt for a perfectly flat solid key background. The prompt must forbid</li>
+<p>gradients, checkerboards, texture, shadows, glow, smoke, particles, frames, panels, antialias blending into the background, and use of the key color inside the asset.</p>
+<li>Save the keyed opaque source as a generated candidate and record the key</li>
+<p>color in prompt metadata.</p>
+<li>Run deterministic keyed-alpha extraction into</li>
+<p><code>assets/cleanup/chroma_keyed/</code> or another documented cleanup path. Exact key pixels become alpha 0; near-key edge pixels may become partial alpha only when they are background antialiasing.</p>
+<li>Reject the output if the background is not flat, if the key color appears</li>
+<p>inside the asset body, if large matte rectangles remain, or if glow/particle edges are visibly clipped.</p>
+<li>Promote only the extracted RGBA PNG, not the opaque keyed source, to active</li>
+<p>candidate paths. Metadata must state the source key color, extraction script or report, alpha status, and remaining review gates.</p>
+</ol>
+<p>This fallback does not approve an asset. It only creates a real-alpha candidate for deferred QA, human review, legal/license review, and integration gates.</p>
+<p>For non-image assets (audio, screenshot, video), record one of:</p>
+<ul>
+<li>tooling-needed entries for capture/audio pipelines, or</li>
+<li>spec placeholder deliverables if tooling is not yet requested.</li>
+</ul>
+<h2 id="layer-3-governance-integration">Layer 3: Governance &amp; Integration</h2>
+<p><strong>Worker ownership:</strong> assign a separate worker subagent to run the governance and integration checklist after Layer 2 finishes. This worker verifies review status, metadata, policy/license state, and production integration readiness.</p>
+<p>Only reviewed and approved assets enter production. In <code>bulk_generation_first</code> mode, this entire layer stays blocked until the deferred QA batch is complete.</p>
+<ul>
+<li>Human reviewer checks style, gameplay fit, readability, and brand consistency.</li>
+<li>Legal/policy review checks license, source rights, likeness, trademarks, unsafe content, and embedded text.</li>
+<li>Approved assets are integrated into the engine or production repository.</li>
+<li>Unapproved, rejected, or incomplete assets are blocked from production builds.</li>
+</ul>
+<h2 id="asset-lifecycle">Asset Lifecycle</h2>
+<pre><code class="language-text">
+briefed -&gt; generated_bulk_pending_qa -&gt; qa_pending_batch -&gt; cleanup_required -&gt; review_pending -&gt; approved -&gt; integrated
+                                 |                  |                 |
+                                 v                  v                 v
+                              rejected          rejected          rejected
+</code></pre>
+<h2 id="status-flow">Status Flow</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>briefed</code></td>
+<td>Asset brief approved for generation.</td>
+</tr>
+<tr>
+<td><code>generated_bulk_pending_qa</code></td>
+<td>Candidate generation complete for this record while batch QA is deferred.</td>
+</tr>
+<tr>
+<td><code>qa_pending_batch</code></td>
+<td>Waiting for the deferred one-pass QA batch.</td>
+</tr>
+<tr>
+<td><code>cleanup_required</code></td>
+<td>Needs alpha, halo, artifact, or style fixes.</td>
+</tr>
+<tr>
+<td><code>review_pending</code></td>
+<td>Passed QA and awaiting human/legal review.</td>
+</tr>
+<tr>
+<td><code>approved</code></td>
+<td>Cleared for production use.</td>
+</tr>
+<tr>
+<td><code>integrated</code></td>
+<td>Added to game/project build.</td>
+</tr>
+<tr>
+<td><code>rejected</code></td>
+<td>Blocked from production.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="metadata-fields">Metadata Fields</h2>
+<pre><code class="language-yaml">
+asset_id:
+asset_name:
+asset_type:
+brief_path:
+prompt_template:
+final_prompt:
+negative_prompt:
+model:
+model_version:
+seed:
+generation_date:
+creator:
+reviewer:
+source_references:
+license_status:
+usage_rights:
+dimensions:
+export_format:
+alpha_type: straight | premultiplied
+transparent_background: true | false
+qa_status:
+review_status:
+approval_date:
+embedded_text: none | approved | rejected
+notes:
+</code></pre>
+<h2 id="transparency-checks">Transparency Checks</h2>
+<p>Transparent assets must pass all checks before approval.</p>
+<ul>
+<li>Alpha channel is present and functional.</li>
+<li>Asset is tested on white, black, gray, checkerboard, and in-game background.</li>
+<li>Halos, matte color, color spill, jagged alpha, and baked shadows are detected and removed.</li>
+<li>Straight or premultiplied alpha is documented in metadata.</li>
+<li>Alpha edges are cleaned before approval.</li>
+</ul>
+<h2 id="qa-rules">QA Rules</h2>
+<ul>
+<li>Matches art bible, palette, silhouette, scale, and intended use.</li>
+<li>Meets required dimensions, padding, safe area, and export format.</li>
+<li>Sprite sheets and animation strips have stable frame dimensions, anchors, scale, ordering, and preview/contact-sheet evidence.</li>
+<li>No visible artifacts, warped geometry, broken outlines, unwanted blur, or compression damage.</li>
+<li>No embedded text unless explicitly approved.</li>
+<li>No unlicensed references, trademarks, likeness issues, or restricted content.</li>
+<li>Metadata is complete and linked to the asset file.</li>
+</ul>
+<h2 id="release-gate">Release Gate</h2>
+<p>An asset may enter production only when all conditions are true:</p>
+<ul>
+<li><code>status = approved</code></li>
+<li>QA passed</li>
+<li>Human reviewed</li>
+<li>License checked</li>
+<li>Metadata complete</li>
+<li>No embedded text unless approved</li>
+<li>Transparent assets passed alpha and halo checks</li>
+</ul>
+<p>Under <code>bulk_generation_first</code>, all assets remain blocked from legal/license clearance, final approval, and runtime integration until deferred QA batch completion and follow-up review are explicitly recorded.</p>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>resources/assetgen.workflow.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#ai-generated-2d-asset-workflow">AI-Generated 2D Asset Workflow</a><a class="toc-h2" href="#folder-structure">Folder Structure</a><a class="toc-h2" href="#bulk-generation-first-mode">Bulk-Generation-First Mode</a><a class="toc-h2" href="#layer-1-creative-control">Layer 1: Creative Control</a><a class="toc-h2" href="#layer-2-asset-production">Layer 2: Asset Production</a><a class="toc-h3" href="#chroma-key-transparency-fallback">Chroma-Key Transparency Fallback</a><a class="toc-h2" href="#layer-3-governance-integration">Layer 3: Governance &amp; Integration</a><a class="toc-h2" href="#asset-lifecycle">Asset Lifecycle</a><a class="toc-h2" href="#status-flow">Status Flow</a><a class="toc-h2" href="#metadata-fields">Metadata Fields</a><a class="toc-h2" href="#transparency-checks">Transparency Checks</a><a class="toc-h2" href="#qa-rules">QA Rules</a><a class="toc-h2" href="#release-gate">Release Gate</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

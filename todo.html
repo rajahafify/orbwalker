@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable LLM wiki/documentation artifact.
+Use browser view for review. Convert to Markdown only if plain-text editing or git diffs are required.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Execution Todo</title>
+  <style>
+	:root {
+	  color-scheme: light;
+	  --ink: #18231f;
+	  --muted: #65716b;
+	  --paper: #fffdf8;
+	  --paper-2: #f7f2e8;
+	  --line: #d8cdbd;
+	  --line-strong: #a99578;
+	  --ocean: #0f766e;
+	  --ocean-dark: #0b4f4b;
+	  --gold: #b7802d;
+	  --blue: #2563eb;
+	  --red: #b42318;
+	  --green: #167043;
+	  --code: #101828;
+	  --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+	}
+	* { box-sizing: border-box; }
+	body {
+	  margin: 0;
+	  color: var(--ink);
+	  font: 16px/1.62 Georgia, Cambria, "Times New Roman", serif;
+	  background:
+		linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+		radial-gradient(circle at 14% 0%, rgba(183, 128, 45, .18), transparent 28%),
+		radial-gradient(circle at 92% 8%, rgba(15, 118, 110, .16), transparent 30%),
+		#ebe5d8;
+	  background-size: 34px 34px, 34px 34px, auto, auto, auto;
+	}
+	.layout {
+	  max-width: 1240px;
+	  margin: 0 auto;
+	  padding: 28px 24px 72px;
+	  display: grid;
+	  grid-template-columns: minmax(0, 1fr) 292px;
+	  gap: 24px;
+	}
+	main {
+	  min-width: 0;
+	  background: var(--paper);
+	  border: 1px solid var(--line-strong);
+	  border-radius: 4px;
+	  padding: 36px 38px 42px;
+	  box-shadow: var(--shadow);
+	  overflow: hidden;
+	}
+	.content { padding: 0; }
+	aside {
+	  position: sticky;
+	  top: 18px;
+	  align-self: start;
+	  max-height: calc(100vh - 36px);
+	  overflow: auto;
+	  background: rgba(255, 253, 248, .92);
+	  border: 1px solid var(--line-strong);
+	  border-radius: 4px;
+	  padding: 16px;
+	  box-shadow: 0 10px 28px rgba(53, 43, 31, .10);
+	  backdrop-filter: blur(8px);
+	}
+	.hero {
+	  position: relative;
+	  margin: -36px -38px 32px;
+	  padding: 42px 38px 34px;
+	  color: #fff9ed;
+	  background:
+		linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+	  overflow: hidden;
+	}
+	.hero::after {
+	  content: "";
+	  position: absolute;
+	  inset: 0;
+	  pointer-events: none;
+	  background:
+		linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(255,255,255,.07) 1px, transparent 1px);
+	  background-size: 32px 32px;
+	  mask-image: linear-gradient(90deg, rgba(0,0,0,.55), transparent 78%);
+	}
+	.hero > * { position: relative; z-index: 1; }
+	.hero-label {
+	  display: inline-block;
+	  margin-bottom: 14px;
+	  padding: 5px 11px;
+	  border: 1px solid rgba(255, 249, 237, .42);
+	  border-radius: 2px;
+	  background: rgba(255, 249, 237, .10);
+	  font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  letter-spacing: .12em;
+	  text-transform: uppercase;
+	}
+	h1, h2, h3, h4, h5, h6 { line-height: 1.14; letter-spacing: 0; }
+	h1 { margin: 0 0 12px; max-width: 930px; font-size: clamp(2.05rem, 4vw, 3.4rem); }
+	h2 {
+	  margin: 2em 0 .75em;
+	  padding-top: 1.15em;
+	  border-top: 1px solid var(--line);
+	  font-size: 1.55rem;
+	}
+	h2::before {
+	  content: "";
+	  display: inline-block;
+	  width: 9px;
+	  height: 9px;
+	  margin-right: 9px;
+	  border: 2px solid var(--gold);
+	  transform: rotate(45deg) translateY(-1px);
+	}
+	h3 { margin: 1.35em 0 .5em; font-size: 1.13rem; color: var(--ocean-dark); }
+	p, li, td { max-width: 76ch; }
+	p { margin: .72em 0; }
+	a { color: var(--ocean-dark); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+	code {
+	  background: #efe8da;
+	  color: #2f3b35;
+	  padding: .13em .38em;
+	  border-radius: 3px;
+	  font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+	}
+	pre { background: var(--code); color: #e5edf7; padding: 16px; border-radius: 4px; overflow: auto; }
+	pre code { background: transparent; color: inherit; padding: 0; }
+	.summary {
+	  margin: 0 0 24px;
+	  padding: 12px 0 12px 16px;
+	  max-width: 820px;
+	  color: var(--muted);
+	  border-left: 4px solid var(--gold);
+	  font-size: 1.06rem;
+	}
+	.hero .summary { color: #e9f7f4; border-left-color: rgba(255, 249, 237, .55); }
+	.hero-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+	.hero-chip {
+	  padding: 7px 10px;
+	  border: 1px solid rgba(255, 249, 237, .34);
+	  border-radius: 2px;
+	  background: rgba(255, 249, 237, .12);
+	  font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	}
+	.toc-title {
+	  margin-bottom: 10px;
+	  color: var(--ocean-dark);
+	  font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  letter-spacing: .08em;
+	  text-transform: uppercase;
+	}
+	.toc a {
+	  display: block;
+	  padding: 6px 0;
+	  color: var(--ink);
+	  border-bottom: 1px solid rgba(216, 205, 189, .55);
+	  font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+	}
+	.toc .toc-h2 { padding-left: 10px; }
+	.toc .toc-h3 { padding-left: 22px; }
+	.toc .toc-h4 { padding-left: 34px; }
+	.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+	.metric, .card, .takeaway-list li, .flow-step, .pattern div {
+	  border: 1px solid var(--line);
+	  border-radius: 4px;
+	  background:
+		linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+	  box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+	}
+	.metric, .card { padding: 16px; }
+	.metric strong { display: block; color: var(--ocean-dark); font-size: 2rem; line-height: 1.1; }
+	.metric span, .flow-step span { color: var(--muted); font-size: .92rem; }
+	.card b { display: block; margin-bottom: 6px; color: var(--ocean-dark); }
+	.takeaway-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+	.takeaway-list li { padding: 14px 15px; }
+	.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+	.flow-step { position: relative; min-height: 126px; padding: 15px; }
+	.flow-step:not(:last-child)::after {
+	  content: "";
+	  position: absolute;
+	  right: -9px;
+	  top: 50%;
+	  width: 8px;
+	  height: 8px;
+	  border-top: 2px solid var(--gold);
+	  border-right: 2px solid var(--gold);
+	  transform: translateY(-50%) rotate(45deg);
+	  background: var(--paper);
+	}
+	.flow-step b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+	.pattern { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+	.pattern div { min-height: 122px; padding: 15px; }
+	.pattern b { display: block; color: var(--ocean-dark); margin-bottom: 7px; }
+	.callout, blockquote {
+	  margin: 18px 0;
+	  padding: 14px 16px;
+	  border: 1px solid #efd7a9;
+	  border-left: 5px solid var(--gold);
+	  border-radius: 4px;
+	  background: #fff8e8;
+	}
+	.callout.ok { border-color: #9fd7b8; border-left-color: var(--green); background: #edf9f2; }
+	.callout.risk { border-color: #f0b3ad; border-left-color: var(--red); background: #fff1f0; }
+	.decision {
+	  border: 1px solid rgba(212, 163, 92, .46);
+	  background: linear-gradient(135deg, #fff8e7, #ffffff 70%);
+	  border-radius: 4px;
+	  padding: 18px;
+	  margin-top: 24px;
+	  box-shadow: 0 12px 26px rgba(69, 43, 18, .08);
+	}
+	.table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+	table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+	th, td { border-bottom: 1px solid var(--line); padding: 10px 11px; vertical-align: top; text-align: left; }
+	th { background: #efe6d6; color: #27352f; font-weight: 800; }
+	tr:last-child td { border-bottom: 0; }
+	.badge {
+	  display: inline-block;
+	  padding: 3px 8px;
+	  border-radius: 2px;
+	  background: #e8f4f1;
+	  color: var(--ocean-dark);
+	  border: 1px solid #9accc4;
+	  font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+	  white-space: nowrap;
+	  text-transform: uppercase;
+	  letter-spacing: .04em;
+	}
+	.badge.success { background: #e7f7ed; color: #166534; border-color: #91cfa8; }
+	.badge.warning { background: #fff3ce; color: #854d0e; border-color: #e7c773; }
+	.footer { margin-top: 48px; color: var(--muted); font-size: .9rem; }
+	@media (max-width: 980px) {
+	  .layout { display: block; padding: 16px; }
+	  aside { position: static; margin-bottom: 16px; }
+	  main { padding: 24px; overflow: visible; }
+	  .hero { margin: -24px -24px 28px; padding: 30px 24px; }
+	  .grid, .takeaway-list, .flow, .pattern { grid-template-columns: 1fr; }
+	  .flow-step:not(:last-child)::after { display: none; }
+	}
+	@media print {
+	  body { background: white; }
+	  .layout { display: block; max-width: none; padding: 0; }
+	  aside { display: none; }
+	  main { border: 0; box-shadow: none; }
+	  .hero { color: black; background: white; border-bottom: 2px solid var(--line); }
+	  a { color: inherit; text-decoration: none; }
+	}
+</style>
+</head>
+<body>
+  <div class="layout">
+	<main>
+	  <h1>Orbwalker Execution Todo</h1>
+	  <p class="summary">Source GDD: <code>docs/game_design_document.html</code></p>
+	  <h1 id="orbwalker-execution-todo">Orbwalker Execution Todo</h1>
+<p>Source GDD: <code>docs/game_design_document.html</code> Created: 2026-04-26 Target: First playable prototype vertical slice from the GDD.</p>
+<h2 id="current-project-state">Current Project State</h2>
+<ul>
+<li>Milestones 0-12 are complete through first playable build readiness closeout.</li>
+<li>Milestone 12 is concluded as a scope milestone. Remaining public-launch polish, packaging, validation, and page preparation now live in <code>docs/itch_readiness_tasks.html</code>.</li>
+<li>Combat, shop, run flow, balance scaffolding, initial content, equipment meta progression, and first playable readiness scaffolding are implemented; itch.io publication is tracked separately through the ITCH readiness slices.</li>
+</ul>
+<h2 id="execution-strategy">Execution Strategy</h2>
+<p>Build the prototype in layers. Keep board and combat logic deterministic and testable before relying on presentation. Use data-driven definitions for items, enemies, bosses, relics, consumables, and shop pools so balance can change without rewriting core systems.</p>
+<p>Core implementation targets:</p>
+<ul>
+<li>Godot 4.6 project.</li>
+<li>One hero.</li>
+<li>3 dungeon levels for the first playable prototype.</li>
+<li>5 columns x 6 rows board.</li>
+<li>6 orb types: Fire, Ice, Earth, Heart, Armor, Gold.</li>
+<li>Puzzle &amp; Dragons style free orb movement.</li>
+<li>5 second movement timer.</li>
+<li>Same-type straight, L, and T matching.</li>
+<li>Cascades with combo counting.</li>
+<li>Turn-based enemy intent combat.</li>
+<li>Persistent HP and gold across the run.</li>
+<li>Shop after each fight.</li>
+<li>20 to 30 equipment items, 6 mastery cards, 6 consumables, 5 relics.</li>
+<li>At least 3 normal enemies and 3 bosses.</li>
+</ul>
+<h2 id="status-legend">Status Legend</h2>
+<ul>
+<li><code>[ ]</code> Not started.</li>
+<li><code>[~]</code> In progress.</li>
+<li><code>[x]</code> Complete.</li>
+<li><code>[!]</code> Blocked or needs design decision.</li>
+</ul>
+<h2 id="milestone-0-production-baseline-and-scope-lock">Milestone 0: Production Baseline And Scope Lock</h2>
+<p>Status: Complete.</p>
+<p>Goal: Turn the GDD into an executable implementation shape and prepare the project for feature work.</p>
+<p>Primary deliverable: A Godot project that opens to a debug start scene, has an agreed folder structure, and has clear data and code ownership for the prototype systems.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Confirm prototype scope from the GDD.</li>
+<ul>
+<li>Deliverable: <code>todo.html</code> is accepted as the execution plan for the first playable prototype. Scope confirmation is documented in <code>docs/system_architecture.html</code>.</li>
+<li>Acceptance: The prototype target is explicitly 3 dungeon levels, one hero, one dungeon, and the GDD feature list under "First Playable Prototype Scope".</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Document proposed project folder structure.</li>
+<ul>
+<li>Deliverable: Proposed folders such as <code>scenes/</code>, <code>scripts/core/</code>, <code>scripts/board/</code>, <code>scripts/combat/</code>, <code>scripts/run/</code>, <code>scripts/shop/</code>, <code>scripts/ui/</code>, <code>scripts/content/</code>, <code>resources/</code>, <code>resources/items/</code>, <code>resources/enemies/</code>, and <code>resources/relics/</code> are documented in <code>docs/system_architecture.html</code>.</li>
+<li>Acceptance: New gameplay files have obvious homes and avoid mixing data, UI, and simulation code.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Create project folder structure.</li>
+<ul>
+<li>Deliverable: Actual project folders matching the approved structure.</li>
+<li>Acceptance: Folder creation is complete without adding gameplay code.</li>
+<li>Note: Created under <code>scenes/</code>, <code>scripts/</code>, and <code>resources/</code> based on the approved structure.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Create a minimal boot scene.</li>
+<ul>
+<li>Deliverable: <code>res://scenes/main_menu.tscn</code> or equivalent main scene configured in <code>project.godot</code>.</li>
+<li>Acceptance: Running the project opens a simple prototype entry point with a "start fight" or direct debug fight path.</li>
+<li>Note: <code>scenes/main_menu.tscn</code> and <code>scripts/scenes/main_menu.gd</code> were added, and <code>run/main_scene</code> now points to this scene.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Decide the data format for content.</li>
+<ul>
+<li>Deliverable: Resource class plan for equipment, mastery cards, consumables, relics, enemies, bosses, treasure chests, and shop pricing. Documented in <code>docs/system_architecture.html</code>.</li>
+<li>Acceptance: Each content type can be created as data without custom code per item, except when a unique effect needs a scripted hook.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Define core runtime state models.</li>
+<ul>
+<li>Deliverable: Planned classes for <code>BoardState</code>, <code>RunState</code>, <code>PlayerState</code>, <code>EnemyState</code>, <code>CombatState</code>, <code>ShopState</code>, and <code>ContentRegistry</code>. Documented in <code>docs/system_architecture.html</code>.</li>
+<li>Acceptance: The project can separate persistent run state from temporary fight state and UI state.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Define event and effect timing.</li>
+<ul>
+<li>Deliverable: A documented combat event order matching the GDD: match resolution, heart healing, armor gain, elemental damage, gold gain, enemy death check, enemy intent, armor expiration. Documented in <code>docs/system_architecture.html</code>.</li>
+<li>Acceptance: Equipment and relic effects can attach to clear timing points without hardcoding every item into the combat loop.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add a manual QA checklist.</li>
+<ul>
+<li>Deliverable: <code>docs/test_plan.html</code> or a section in this file listing repeatable smoke tests.</li>
+<li>Acceptance: Every milestone can be validated with specific play steps.</li>
+</ul>
+</ul>
+<h2 id="milestone-1-board-foundation">Milestone 1: Board Foundation</h2>
+<p>Status: Complete.</p>
+<p>Goal: Implement a deterministic 5x6 orb board that can render, refill, and avoid initial automatic matches.</p>
+<p>Primary deliverable: A visible 5x6 board with all six orb types, configurable spawn weights, and no automatic matches on newly generated starting boards.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement orb type definitions.</li>
+<ul>
+<li>Deliverable: <code>OrbType</code> enum or equivalent constants for Fire, Ice, Earth, Heart, Armor, and Gold.</li>
+<li>Acceptance: All systems refer to one canonical orb type definition.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement board data model.</li>
+<ul>
+<li>Deliverable: <code>BoardState</code> with 5 columns, 6 rows, cell read/write helpers, bounds checks, cloning, and deterministic random generation.</li>
+<li>Acceptance: Board logic can run without UI nodes.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add configurable spawn weights.</li>
+<ul>
+<li>Deliverable: Board generation settings with Gold rarer than other orb types.</li>
+<li>Acceptance: Gold spawn rate can be adjusted for balance without changing board logic.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Prevent initial automatic matches.</li>
+<ul>
+<li>Deliverable: Board generator that retries or repairs generated boards until no starting match exists.</li>
+<li>Acceptance: A new fight never begins with an immediate match already on the board.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Render the board.</li>
+<ul>
+<li>Deliverable: Board scene showing a stable 5x6 grid and one visual orb per cell.</li>
+<li>Acceptance: The board fits desktop and mobile aspect ratios without stretched or overlapping cells.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add debug board controls.</li>
+<ul>
+<li>Deliverable: Debug actions for regenerate board, print board state, and optionally set a fixed seed.</li>
+<li>Acceptance: Developers can reproduce board bugs using a known seed or printed board layout.</li>
+</ul>
+</ul>
+<h2 id="milestone-2-free-orb-movement-and-timer">Milestone 2: Free Orb Movement And Timer</h2>
+<p>Goal: Implement Puzzle &amp; Dragons style drag movement with a 5 second timer.</p>
+<p>Primary deliverable: The player can select one orb, drag through adjacent orthogonal cells, displace orbs along the path, and end movement by release or timer expiry.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement pointer and touch selection.</li>
+<ul>
+<li>Deliverable: Input handler that maps mouse or touch coordinates to board cells.</li>
+<li>Acceptance: The same board can be controlled on PC with a mouse and on mobile with touch.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement selected orb state.</li>
+<ul>
+<li>Deliverable: The selected orb is tracked separately during drag while the board updates displaced cells.</li>
+<li>Acceptance: The dragged orb follows the pointer and the board cells update predictably.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement orthogonal path movement.</li>
+<ul>
+<li>Deliverable: Movement through adjacent horizontal and vertical cells only.</li>
+<li>Acceptance: Diagonal movement does not swap cells and cannot skip cells.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement displacement swapping.</li>
+<ul>
+<li>Deliverable: Each entered adjacent cell swaps or shifts with the selected orb according to the GDD movement rule.</li>
+<li>Acceptance: Dragging through a path produces the same final board that a Puzzle &amp; Dragons style player expects.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement 5 second movement timer.</li>
+<ul>
+<li>Deliverable: Timer starts on drag start and ends the move on expiry.</li>
+<li>Acceptance: Releasing early or timer expiry both lock the board and start match resolution.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add movement feedback.</li>
+<ul>
+<li>Deliverable: Selected orb highlight, timer display, and optional path or cell feedback.</li>
+<li>Acceptance: The player can read which orb is selected and how much time remains.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add input lock states.</li>
+<ul>
+<li>Deliverable: Board ignores new drag input while matches, cascades, combat, shop, or transitions are resolving.</li>
+<li>Acceptance: The player cannot mutate the board during non-input phases.</li>
+<li>Note: Milestone-level implementation is complete enough for the first playable scope. Remaining full end-to-end lock validation is transferred to ITCH-03 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<h2 id="milestone-3-match-detection-clear-gravity-and-cascades">Milestone 3: Match Detection, Clear, Gravity, And Cascades</h2>
+<p>Status: Complete.</p>
+<p>Goal: Resolve all valid matches and cascades exactly according to the GDD.</p>
+<p>Primary deliverable: A deterministic match resolver that handles horizontal, vertical, L, and T matches, clears matched orbs, applies gravity, refills from the top, and repeats until stable.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement horizontal and vertical run detection.</li>
+<ul>
+<li>Deliverable: Match scanner for same-type straight lines of 3 or more.</li>
+<li>Acceptance: Lines of 3, 4, 5, and 6 are detected correctly in every row and column.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement L and T shape support.</li>
+<ul>
+<li>Deliverable: Connected same-type horizontal and vertical runs are merged into one match component.</li>
+<li>Acceptance: L and T matches count as valid matches and diagonal-only connections do not count.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Define combo counting.</li>
+<ul>
+<li>Deliverable: Resolver output that returns total combo count and matched orb counts by orb type.</li>
+<li>Acceptance: Separate connected match groups count as separate combos, including cascade combos.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Clear matched orbs.</li>
+<ul>
+<li>Deliverable: Matched cells are removed after each resolver pass.</li>
+<li>Acceptance: All cells belonging to valid match components are cleared exactly once.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply gravity.</li>
+<ul>
+<li>Deliverable: Existing orbs fall down into empty cells after clears.</li>
+<li>Acceptance: Gravity is down only and preserves the order of falling orbs in each column.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Refill from the top.</li>
+<ul>
+<li>Deliverable: New orbs enter empty cells from above using configured spawn weights.</li>
+<li>Acceptance: Refill can immediately create cascades and those cascades are resolved.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add resolver animation hooks.</li>
+<ul>
+<li>Deliverable: Events for match found, clear, fall, refill, and cascade complete.</li>
+<li>Acceptance: Logic can run instantly for tests and with animations for gameplay.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add board resolver tests.</li>
+<ul>
+<li>Deliverable: Test scenes or scripts for line, L, T, no diagonal, cascade, gravity, and refill cases.</li>
+<li>Acceptance: Known board layouts produce expected combo counts and orb totals.</li>
+</ul>
+</ul>
+<h2 id="milestone-4-core-combat-loop">Milestone 4: Core Combat Loop</h2>
+<p>Status: Complete.</p>
+<p>Goal: Convert match results into healing, armor, damage, gold, and enemy intent resolution.</p>
+<p>Primary deliverable: A complete single-fight loop with persistent player HP, enemy intent preview, armor behavior, enemy block, enemy death, and next-turn flow.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement player state.</li>
+<ul>
+<li>Deliverable: <code>PlayerState</code> with max HP, current HP, armor, gold, base orb values, equipment slots, consumable slots, and move timer.</li>
+<li>Acceptance: HP persists across fights and armor is temporary by default.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement enemy state and intents.</li>
+<ul>
+<li>Deliverable: Enemy data with HP, move cycle, current intent, attack value, and block value.</li>
+<li>Acceptance: Enemy intent is visible before the player moves.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement combat state machine.</li>
+<ul>
+<li>Deliverable: Phases for intent preview, player input, match resolution, player effects, enemy response, cleanup, victory, and defeat.</li>
+<li>Acceptance: The game always advances through the GDD turn order.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply heart healing.</li>
+<ul>
+<li>Deliverable: Heart matches heal by matched heart orbs times current heart base value.</li>
+<li>Acceptance: Healing does not exceed max HP unless a future effect explicitly allows it.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply armor gain.</li>
+<ul>
+<li>Deliverable: Armor matches add temporary armor by matched armor orbs times current armor base value.</li>
+<li>Acceptance: Armor blocks incoming damage before HP and expires after enemy action by default.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply elemental damage.</li>
+<ul>
+<li>Deliverable: Fire, Ice, and Earth damage uses <code>matched_element_orbs <em> element_base_value </em> total_combo_count</code>.</li>
+<li>Acceptance: Heart, Armor, and Gold do not use combo scaling by default.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply gold gain.</li>
+<ul>
+<li>Deliverable: Gold matches increase run gold by matched gold orbs times current gold base value.</li>
+<li>Acceptance: Gold persists for the run and normal enemies do not need automatic gold drops.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Apply enemy block.</li>
+<ul>
+<li>Deliverable: Enemy block intent reduces incoming player damage for the current turn only.</li>
+<li>Acceptance: Enemy block does not persist unless a future rule says it should.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Resolve enemy death before enemy intent.</li>
+<ul>
+<li>Deliverable: Enemy attack is skipped if damage kills the enemy.</li>
+<li>Acceptance: A lethal player turn prevents all remaining enemy intent from resolving.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement defeat and victory outcomes.</li>
+<ul>
+<li>Deliverable: Fight ends cleanly on player death or enemy death.</li>
+<li>Acceptance: Victory transitions to shop or boss reward, defeat transitions to run summary.</li>
+</ul>
+</ul>
+<p>Verification notes (2026-04-26):</p>
+<ul>
+<li>Added <code>PlayerState</code>, <code>EnemyState</code>, and <code>CombatStateMachine</code> runtime models, plus <code>RunState</code> autoload persistence for cross-fight HP and gold.</li>
+<li>Combat debug scene now shows enemy intent, phase, player/enemy stats, and a detailed combat log for turn-by-turn formula verification.</li>
+<li>Enemy death now waits for manual confirmation through a <code>Next</code> button before transitioning to post-battle reward.</li>
+<li>Godot MCP script validation passed for enemy block reduction, lethal-before-intent skip, armor blocking and expiration, and healing clamp to max HP.</li>
+</ul>
+<h2 id="milestone-5-player-state-management">Milestone 5: Player State Management</h2>
+<p>Status: Complete.</p>
+<p>Goal: Implement a clear player-state runtime for progression systems with explicit acceptance gates.</p>
+<p>Primary deliverable: A canonical <code>PlayerProgressionState</code> (or equivalent) plus validated state transitions for equipment, mastery, consumables, and relics.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Phase A: Define player-state contracts.</li>
+<ul>
+<li>Deliverable: Canonical runtime and data structures for 5 equipment slots, 3 consumable slots, persistent relic list, and 6 mastery tracks with cap 5.</li>
+<li>Acceptance: All fields have documented ownership, defaults, and run persistence behavior through <code>RunState</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Phase B: Implement player-state transitions.</li>
+<ul>
+<li>Deliverable: Action interfaces or services for <code>equip_item</code>, <code>unequip_item</code>, <code>sell_equipment</code>, <code>grant_mastery</code>, <code>add_consumable</code>, <code>use_consumable</code>, and <code>add_relic</code>.</li>
+<li>Acceptance: Each action defines deterministic preconditions and postconditions, and rejects invalid operations with explicit reasons.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Phase C: Scope effects to player-state actions.</li>
+<ul>
+<li>Deliverable: Milestone 5 effect coverage limited to hooks needed by equipment, consumable, and relic state actions.</li>
+<li>Acceptance: Equipment and relic effects apply only while active, and player-state actions do not require combat-specific hardcoded special cases.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Phase D: Validate data and expose debug state.</li>
+<ul>
+<li>Deliverable: Content checks for duplicate IDs, missing display data, and invalid effect references used by player-state content.</li>
+<li>Deliverable: Standard validation result format as an error list with <code>item_id</code> and <code>reason</code>.</li>
+<li>Deliverable: Debug visibility for current player-state snapshot during playtest.</li>
+<li>Acceptance: Invalid content is reported before run entry and active player progression state can be inspected at runtime.</li>
+</ul>
+</ul>
+<h2 id="milestone-6-shop-economy-and-treasure-chests">Milestone 6: Shop, Economy, And Treasure Chests</h2>
+<p>Status: Complete.</p>
+<p>Goal: Build the post-fight shop loop and the economy around matched gold.</p>
+<p>Primary deliverable: After each fight, the player enters a shop with 3 random item slots, 1 relic offer for the dungeon level, reroll, treasure chests, buying, selling, and skipping.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement persistent run gold.</li>
+<ul>
+<li>Deliverable: Gold is stored in <code>RunState</code> and displayed in combat and shop.</li>
+<li>Acceptance: Gold earned in fights is available in later shops.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement shop generation.</li>
+<ul>
+<li>Deliverable: Shop inventory with 3 random item slots and 1 relic offer per dungeon level.</li>
+<li>Acceptance: The relic offer is lost if not bought before leaving that dungeon level.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement pricing rules.</li>
+<ul>
+<li>Deliverable: Configurable price ranges by rarity and dungeon level, plus reroll cost.</li>
+<li>Acceptance: Price balance can be adjusted without changing shop UI code.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement buy action.</li>
+<ul>
+<li>Deliverable: Player can buy equipment, mastery cards, consumables, treasure chests, and relics when they can afford them.</li>
+<li>Acceptance: Buying subtracts gold, applies the item or moves it into the correct inventory, and prevents invalid purchases.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement sell equipment action.</li>
+<ul>
+<li>Deliverable: Equipped items can be sold for full gold value.</li>
+<li>Acceptance: Selling removes the equipment, removes its passive effects, and refunds the correct amount.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement shop reroll.</li>
+<ul>
+<li>Deliverable: Reroll replaces random item slots and respects reroll cost.</li>
+<li>Acceptance: Relic offer behavior is explicitly decided and implemented: either fixed for the dungeon level or rerolled only if the GDD is updated.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement treasure chest purchase.</li>
+<ul>
+<li>Deliverable: Buying a treasure chest opens a reward view with 3 generated options and allows the player to pick 1.</li>
+<li>Acceptance: Treasure chests can generate element-based or category-based options and do not generate relics by default; full equipment or consumable inventories leave the player HUD usable and provide a clear Skip path instead of blocking shop progression.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Tune early affordability.</li>
+<ul>
+<li>Deliverable: Initial price and gold spawn settings.</li>
+<li>Acceptance: After the first enemy, a player who matched some gold can usually afford at least 1 treasure chest.</li>
+<li>Note: Remaining Merchant Compass free-first-reroll behavior and final shop-public-readiness QA are transferred to ITCH-04 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<p>Verification notes (2026-04-26):</p>
+<ul>
+<li>Added <code>ShopState</code> and <code>ShopService</code> runtime systems under <code>scripts/shop/</code> for shop open, item/relic offers, buy, sell, reroll, and treasure chest option pick flow.</li>
+<li><code>RunState</code> now owns persistent run gold (<code>run_gold</code>) and exposes shop/economy actions consumed by combat and shop UI.</li>
+<li>Combat gold gain now syncs through <code>RunState</code>, and the shop scene moved from placeholder text to actionable debug controls.</li>
+<li>Debug content and pricing scaffolding were extended in <code>ContentRegistry</code> to support Milestone 6 shop generation and purchase paths.</li>
+<li>Fixed strict typing parse break in <code>scripts/debug/board_debug_controller.gd</code> by using explicit <code>Variant</code> locals for <code>RunState</code> service retrieval in debug add-item actions.</li>
+<li>2026-05-02 shop UX follow-up: pending treasure chest choices no longer block the shared player HUD, full-slot picks tell the player to sell from the loadout HUD or skip, and <code>shop_player.gd</code> now shows a contextual sell bubble near the selected equipment or consumable slot instead of a permanent action-row sell button.</li>
+</ul>
+<h2 id="milestone-7-dungeon-and-run-structure">Milestone 7: Dungeon And Run Structure</h2>
+<p>Status: Complete.</p>
+<p>Goal: Turn isolated fights and shops into a 3-level first playable run.</p>
+<p>Primary deliverable: A complete 3 dungeon level run with normal enemies, shops, bosses, boss relic rewards, death, and victory.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement run start.</li>
+<ul>
+<li>Deliverable: New run initializes one hero, starting stats, starting gold, empty inventories, and level 1 dungeon state.</li>
+<li>Acceptance: Starting a new run produces a clean state every time.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement dungeon level sequence.</li>
+<ul>
+<li>Deliverable: Each level follows Enemy 1, Shop, Enemy 2, Shop, Boss, Boss Relic Reward, Shop, Advance.</li>
+<li>Acceptance: The game advances through the sequence without manual debug intervention.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement 3-level prototype run.</li>
+<ul>
+<li>Deliverable: Level counter and run completion after level 3 boss and final shop or victory screen.</li>
+<li>Acceptance: The vertical slice can be completed from start to finish.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add boss preview.</li>
+<ul>
+<li>Deliverable: Boss type is visible at the start of each dungeon level.</li>
+<li>Acceptance: The player knows the level boss check before committing to shop and fight decisions.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement boss relic reward.</li>
+<ul>
+<li>Deliverable: Boss victory grants or offers a relic reward before the next shop.</li>
+<li>Acceptance: Boss relics are separate from shop relic offers and are selected or explicitly skipped from the combat victory overlay before the shop transition.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement defeat summary.</li>
+<ul>
+<li>Deliverable: Run loss screen showing level reached, enemies defeated, gold earned, equipped items, relics, and cause of death.</li>
+<li>Acceptance: Player death exits the run cleanly.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement prototype victory summary.</li>
+<ul>
+<li>Deliverable: Run win screen after clearing the prototype final boss.</li>
+<li>Acceptance: Clearing all 3 levels produces a complete win state.</li>
+</ul>
+</ul>
+<p>Verification notes (2026-04-27):</p>
+<ul>
+<li>Godot MCP sequence validation passed for run start, level sequence transitions, boss reward step, prototype victory transition, and defeat summary transition.</li>
+<li>Run sequencing is now owned by <code>RunState</code> and consumed by combat/shop/summary scenes instead of hard-coded placeholder jumps.</li>
+<li>2026-05-02 dungeon playthrough fix: normal player-facing boss reward routing stays in <code>combat_player.tscn</code> for the victory overlay picker, then advances to the post-boss shop; the old boss relic scene is retained only as legacy/debug fallback.</li>
+</ul>
+<h2 id="milestone-8-initial-content-pack">Milestone 8: Initial Content Pack</h2>
+<p>Status: Complete.</p>
+<p>Goal: Fill the prototype with enough content to exercise the build-driven roguelike loop.</p>
+<p>Primary deliverable: A data-driven content pack matching the GDD initial lists.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement 6 mastery cards.</li>
+<ul>
+<li>Deliverable: Fire, Ice, Earth, Heart, Armor, and Gold mastery cards.</li>
+<li>Acceptance: Each card increases its mastery by 1 up to the prototype cap.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement 6 consumables.</li>
+<ul>
+<li>Deliverable: Fire Scroll, Ice Scroll, Earth Scroll, Heart Scroll, Armor Scroll, and Gold Scroll.</li>
+<li>Acceptance: Each scroll converts the correct number of random non-target orbs.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement common equipment.</li>
+<ul>
+<li>Deliverable: Shortsword, Buckler, Coin Purse, Healing Charm, Ember Ring, Frost Ring, Stone Ring, Leather Gloves, Iron Helm, and Combo Lens.</li>
+<li>Acceptance: Each common item has a working effect, price, icon or placeholder icon, and shop description.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement uncommon equipment.</li>
+<ul>
+<li>Deliverable: Twin Blades, War Banner, Tower Shield, Merchant Scales, Battle Drum, Earthbreaker Maul, Hearth Amulet, Alchemist Gloves, Training Manual, and Mirror Charm.</li>
+<li>Acceptance: Each uncommon item has a working effect, price, icon or placeholder icon, and shop description.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement rare equipment.</li>
+<ul>
+<li>Deliverable: Ruby Brooch, Sapphire Brooch, Emerald Brooch, Royal Seal, and Champion Plate.</li>
+<li>Acceptance: Each rare item has a working effect, price, icon or placeholder icon, and shop description.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement 5 relics.</li>
+<ul>
+<li>Deliverable: Deep Pockets, Stalwart Mantle, Golden Idol, Crown of Chains, and Merchant Compass.</li>
+<li>Acceptance: Each relic modifies the run for the rest of the run and displays clearly in the relic inventory.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement at least 3 normal enemies.</li>
+<ul>
+<li>Deliverable: Striker, Defender, and Charger or equivalent enemies based on the GDD pattern table.</li>
+<li>Acceptance: Each enemy has HP, readable intent cycle, attack values, block values, and level scaling.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement at least 3 bosses.</li>
+<ul>
+<li>Deliverable: Three boss checks chosen from Iron Gate, Burning Knight, Prism Warden, Combo Gate, and Rising Blade.</li>
+<li>Acceptance: Each boss has a previewed identity, readable moveset, and a distinct build or execution pressure.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement content pool rules.</li>
+<ul>
+<li>Deliverable: Shop and treasure chest pools by rarity, category, orb type, and current dungeon level.</li>
+<li>Acceptance: Random generation produces valid content and avoids duplicates where the GDD requires no duplicates.</li>
+</ul>
+</ul>
+<p>Verification notes (2026-04-27):</p>
+<ul>
+<li>Replaced debug-only content definitions with full Milestone 8 pack in <code>scripts/content/content_registry.gd</code>:</li>
+<ul>
+<li>10 common, 10 uncommon, and 5 rare equipment items.</li>
+<li>5 relics, plus existing 6 mastery cards and 6 consumables.</li>
+<li>3 normal enemies and 3 bosses represented in content data.</li>
+</ul>
+<li>Added item/relic <code>combat_modifiers</code> and integrated them into turn resolution via <code>RunState.current_combat_modifiers()</code> and <code>CombatStateMachine</code>.</li>
+<li>Added content pool level gating (<code>min_level</code>, <code>max_level</code>) for shop/relic generation and maintained no-duplicate offer selection.</li>
+<li>Added placeholder content presentation fields (<code>description</code>, <code>icon_key</code>) and surfaced item description text in shop offer buttons.</li>
+<li>Milestone 8 QA execution completed via Godot MCP editor-script checks: mastery/consumable resolution paths, equipment buy/equip/sell/resolve flows, relic buy/resolve flows, enemy/boss run-sequence coverage, and shop/treasure chest pool-rule checks all passed with no reported failures.</li>
+</ul>
+<h2 id="milestone-9-ui-ux-and-game-feel">Milestone 9: UI, UX, And Game Feel</h2>
+<p>Status: Complete.</p>
+<p>Goal: Make the prototype readable, playable, and comfortable enough for repeated playtesting.</p>
+<p>Primary deliverable: A cohesive game flow where combat, shop, inventory, item effects, enemy intent, and run progress are understandable without debug tools.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Implement combat HUD.</li>
+<ul>
+<li>Deliverable: Player HP, armor, gold, move timer, enemy HP, enemy block, enemy intent, combo count, and recent result summary.</li>
+<li>Acceptance: The player can understand the current turn at a glance.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement inventory UI.</li>
+<ul>
+<li>Deliverable: Equipment slots, consumable slots, relic list, and mastery levels.</li>
+<li>Acceptance: The player can inspect current build state during combat and shop, including owned relics in the shared footer HUD.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement item detail views.</li>
+<ul>
+<li>Deliverable: Tooltip or detail panel for equipment, mastery cards, consumables, relics, and treasure chests.</li>
+<li>Acceptance: Item effect text is visible before buying, using, or selling.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement shop UI.</li>
+<ul>
+<li>Deliverable: Shop offers, prices, buy buttons, reroll, sell controls, treasure chest opening view, and skip shop.</li>
+<li>Acceptance: The player can complete all shop actions without debug input.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement boss and dungeon UI.</li>
+<ul>
+<li>Deliverable: Level number, upcoming boss preview, current sequence step, and transition screens.</li>
+<li>Acceptance: The player knows where they are in the run and what threat is coming.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add feedback for match resolution.</li>
+<ul>
+<li>Deliverable: Clear, fall, refill, cascade, combo, damage, heal, armor, and gold feedback.</li>
+<li>Acceptance: The player can connect board results to combat outcomes.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add basic audio and visual polish.</li>
+<ul>
+<li>Deliverable: Placeholder sound effects, hit feedback, item purchase feedback, enemy death feedback, and simple transitions.</li>
+<li>Acceptance: Important actions produce readable response without slowing play.</li>
+<li>Note: 2026-05-02 added a code-generated placeholder audio manager, scene music contexts, and SFX hooks for menu start, combat drag swaps, combat match/combo/result/victory/defeat, and shop purchase/reroll/sell/treasure chest actions. Raw MIDI files now export through FluidSynth and <code>raw/GeneralUser GS v1.471.sf2</code> into normalized signed 16-bit WAVs in <code>resources/audio/music/</code>, and <code>AudioManager</code> prefers those WAV music assets when present. The main menu owns a direct <code>MainMenuMusicPlayer</code> for <code>main-menu.wav</code>, while <code>AudioManager</code> now opens the absolute source WAV for combat/shop music before falling back to Godot imports; both paths decode PCM into memory and play at <code>-12 dB</code>. Manual listening, mix, and loop-point review remains needed before marking complete.</li>
+<li>Note: 2026-05-03 Android export audio hardening now prefers imported <code>res://</code> audio streams in template/export builds before direct source-WAV decoding, while keeping generated SFX active. Godot MCP confirmed imported combat/menu WAV streams load as <code>AudioStreamWAV</code>, generated <code>swap</code> SFX builds, combat music logs from <code>AudioManager</code>, and main menu music logs from <code>MainMenuMusicPlayer</code>; Android on-device listening remains needed.</li>
+<li>Note: 2026-05-03 Android audio regression follow-up routes menu music through <code>AudioManager</code>, tries uploaded WAV/imported music first for menu/combat/shop on Android/template builds, configures imported WAV loop bounds, and keeps generated music as fallback only. Android on-device listening and final public-build audio/mix acceptance are transferred to ITCH-06 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Validate responsive layout.</li>
+<ul>
+<li>Deliverable: Desktop and mobile aspect ratio checks for board, combat HUD, shop, and inventories.</li>
+<li>Acceptance: Text and controls do not overlap on target resolutions.</li>
+<li>Note: 2026-05-03 combat now uses tall-portrait design height when the viewport is narrower/taller than 1080x1920, so extra Android height expands the board zone before extending the player HUD. The default 1080x1920 board remains 480x576, while a 1080x2400 probe computes an 880x1056 board with no design-space gap between board/HUD and the bottom of the root. Real Android visual review remains needed before marking mobile overlap complete.</li>
+<li>Note: 2026-05-03 Android combat touch regression follow-up fixed the scaled-board touch path by using <code>BoardView.gui_input</code> local touch positions directly. Exact target-device screenshots, touch/layout approval, and public-release QA are transferred to ITCH-01, ITCH-04, and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<p>Verification notes (2026-04-27):</p>
+<ul>
+<li>Promoted combat screen from debug-style readout to Milestone 9 HUD with explicit run progress, turn summary, combo summary, and readability-focused status feedback.</li>
+<li>Extended shop and boss-reward scenes with run progress, inventory/mastery visibility, and inline effect/detail text so purchase and reward decisions are readable without console commands.</li>
+<li>Added responsive compact-mode handling in combat HUD spacing/min-width logic; final mobile overlap verification is transferred to ITCH-01 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+<li>Godot MCP validation passed for updated scene load/instantiation checks and main-scene run smoke test with no reported session errors.</li>
+<li>Added Milestone 9 responsive layout hardening for combat/shop surfaces:</li>
+<ul>
+<li><code>BoardAndStateRow</code>, <code>ShopActionsRow</code>, and <code>BottomActionsRow</code> now use adaptive <code>BoxContainer</code> layout switching (horizontal desktop, vertical compact/mobile).</li>
+<li>Combat status/state labels now use autowrap to reduce clipping risk in narrow layouts.</li>
+</ul>
+<li>Godot MCP post-change checks passed for script parse state, <code>res://scenes/main_menu.tscn</code> run smoke, and shop scene load/instantiate.</li>
+<li>2026-05-02 dungeon playthrough fix: shared <code>PlayerLoadoutHud</code> footer now includes owned relics for combat and shop, with compact icon overflow for tight space.</li>
+<li>2026-05-02 shop generation follow-up: shop stock and treasure chest equipment options filter out already-equipped equipment, consumables can be sold from a unified non-clipped inventory popover, owned relics sit between the HP panel and the equipment/consumable rows, and the popover dismisses when inventory focus is lost.</li>
+<li>Milestone 9 graphical asset integration pass (combat + shop) is now wired through a dedicated visual registry and player-facing scenes:</li>
+<ul>
+<li>Added <code>scripts/ui/visual_registry.gd</code> and <code>resources/visual/first_pass_asset_map.json</code> as the centralized texture lookup/mapping contract (backgrounds, enemy portraits, orb/intent/rarity/mastery/item atlases, and VFX sheet hooks with fallbacks).</li>
+<li>Added player-facing scene routes:</li>
+</ul>
+<li>Combat: <code>res://scenes/combat.tscn</code> (controller: <code>res://scripts/scenes/combat.gd</code>)</li>
+<ul>
+<li>Shop: <code>res://scenes/shop.tscn</code> (controller: <code>res://scripts/scenes/shop.gd</code>)</li>
+<ul>
+<li><code>RunState</code> transition constants route fights and shops to the player-facing scenes.</li>
+<li><code>BoardView</code> now supports orb atlas rendering (<code>orb_id -&gt; Texture2D</code>) with color fallback and preserves selection/path/flash/glow/fall/refill behavior.</li>
+<li>First-pass art assets were reorganized under <code>res://resources/art/first_pass/{backgrounds,enemies,sheets,ui,vfx}</code> with per-class mipmap policy in <code>.import</code> files (<code>backgrounds/enemies: true</code>, UI sheets: false).</li>
+<li>Added lightweight VFX hooks driven by combat events:</li>
+</ul>
+<li>enemy damage -&gt; hit flash,</li>
+<li>resolver clear -&gt; orb clear burst,</li>
+<li>gold gain -&gt; sparkle.</li>
+<ul>
+<li>Added shared theme resource <code>res://resources/visual/first_pass_theme.tres</code> and applied it to player-facing combat/shop scenes.</li>
+<li>Godot MCP validation passed for scene instantiate and runtime smoke on:</li>
+</ul>
+<li><code>res://scenes/combat.tscn</code></li>
+<li><code>res://scenes/shop.tscn</code></li>
+<li><code>res://scenes/main_menu.tscn</code></li>
+</ul>
+<li>Reference player-panel revamp added for <code>res://scenes/combat.tscn</code>:</li>
+<ul>
+<li>Rebuilt the bottom player HUD into a reference-style hero portrait card, primary HP bar, compact equipment/consumable rails, and bottom mastery strip.</li>
+<li>Armor, stat chip, combat meta, and turn summary rows stay hidden so the simplified HUD does not show empty placeholder bars or clutter.</li>
+<li>Godot MCP load/instantiate and running scene-tree checks passed for the reference-aligned player-panel structure at the current portrait design size.</li>
+</ul>
+</ul>
+<h2 id="architecture-maintenance-review-task-tracking-plan">Architecture Maintenance: Review Task Tracking Plan</h2>
+<p>Status: Complete.</p>
+<p>Goal: Track architecture-refactor risks and regression harness follow-up before Milestone 10 balance closure.</p>
+<p>Tracker: <code>docs/architecture_review_tasks.html</code></p>
+<p>Tasks:</p>
+<ul>
+<li>[x] AR-01 Baseline regression harness.</li>
+<li>[x] AR-02 Low-risk bug fixes.</li>
+<li>[x] AR-03 Shared WAV/audio utility extraction.</li>
+<li>[x] AR-04 Shop/input safety.</li>
+<li>[x] AR-05 Combat controller first split.</li>
+<li>[x] AR-06 Combat presentation split.</li>
+<li>[x] AR-07 RunState/data contract roadmap. Prototype content source of truth is dictionary-backed <code>ContentRegistry</code> data for this phase; <code>.tres</code> or JSON migration is deferred behind the registry API.</li>
+<li>[x] AR-08 Cleanup/dead-code validation. Removed confirmed-unused code symbols/helpers, renamed the final victory summary to <code>final_run_summary</code>, removed the legacy boss relic reward scene, removed the legacy shop placeholder scene, and removed the board-debug scene/controller. Current validation now uses player-facing scenes plus focused Godot MCP probes instead of the deleted debug/fallback surfaces.</li>
+<li>[x] AR-09 Stability and shared UI utility cleanup. Added lifecycle guards, bounded resolve animation drain, traced combat redirect, Start Run failure recovery, final-summary transition guards, and shared <code>UiUtils.panel_style(...)</code> ownership.</li>
+<li>[x] AR-10 Combat controller god-object refactor. Extracted <code>CombatDebugConsole</code> and <code>CombatTurnLogPresenter</code> while keeping privileged gameplay callbacks, <code>/skip</code>, routing, input, layout, VFX timing, and combat state in the controller.</li>
+<li>[x] AR-11 Combat layout presenter extraction. Extracted combat scene geometry and responsive layout ownership into <code>CombatLayoutPresenter</code> while preserving portrait/tall viewport behavior and shared HUD layout overrides.</li>
+<li>[x] AR-12 Combat VFX presenter extraction. Extracted transient combat VFX drawing mechanics into <code>CombatVfxPresenter</code> while keeping replay order, combat math, mastery feedback semantics, routing, input, layout, audio, debug callbacks, and <code>/skip</code> in the controller.</li>
+<li>[x] AR-13 Board controller extraction. Extracted board-local drag/pointer bookkeeping into <code>BoardController</code> while preserving <code>BoardView.gui_input</code> local-coordinate behavior, current drag rules, swap feel, resolve kickoff, combat math, timing, routing, layout, VFX, audio callback policy, debug callbacks, and <code>/skip</code> ownership in the combat controller.</li>
+<li>[x] AR-14 Combat theme and chrome boundary. Extracted combat style/chrome construction into <code>CombatChromeStyler</code> while preserving existing colors, borders, radii, margins, font sizes, timer runtime behavior, placeholders, layout formulas, input, VFX, combat math, resolve presentation, route transitions, <code>UiUtils.panel_style(...)</code>, and <code>/skip</code> ownership.</li>
+<li>[x] AR-15 Combat placeholder texture utility. Extracted timer, intent, enemy portrait, and hero portrait code-generated placeholder texture builders into <code>CombatPlaceholderTextures</code> while preserving dimensions, colors, alpha, fill rectangles, fallback decisions, VisualRegistry lookup behavior, assignment timing, layout, chrome, combat math, route transitions, and <code>/skip</code> ownership.</li>
+<li>[x] AR-16 Combat HUD sync boundary review. Extracted side-effect-free combat HUD snapshot construction into <code>CombatHudPresenter</code> while keeping scene-specific label/bar/node application, <code>PlayerLoadoutHud</code> payload dispatch, loadout rail layout refresh, placeholder fallback assignment, combat-only enemy/timer/status behavior, shop HUD behavior, mastery feedback/card rendering, combat math, route transitions, and <code>/skip</code> ownership unchanged.</li>
+<li>[x] AR-17 Combat outcome and transition boundary review. Source review found a narrow behavior-preserving transition glue boundary inside <code>combat_player_controller.gd</code>; <code>_trace_and_change_scene_to_target(...)</code> now owns duplicated combat outcome trace/change-scene calls for standard Continue, boss reward claim, and boss reward skip while <code>RunState</code> keeps route semantics and <code>CombatOutcomeOverlay</code> keeps presentation. Automated Godot MCP validation passed, and user manual QA found no issues or errors.</li>
+<li>[x] AR-18 Architecture review closeout before Milestone 10. Audited the final AR tracker state, current validation surfaces, deleted historical debug/fallback scenes, retained diagnostics, docs/wiki consistency, route/content/scene contracts, and remaining non-AR QA gaps. AR-01 through AR-17 are closed; remaining work moves to Milestone 10 balance/QA or later scoped cleanup.</li>
+</ul>
+<h2 id="milestone-10-short-term-playtest-balance-pass">Milestone 10: Short-Term Playtest Balance Pass</h2>
+<p>Status: Complete.</p>
+<p>Goal: Make the current run loop easier to playtest before adding meta progression.</p>
+<p>Primary deliverable: A temporary balance layer where gold income, shop access, damage, enemy survivability, and debug levers let the team repeatedly test items, treasure chests, relics, and builds without pretending the economy is final.</p>
+<p>Scope note: This milestone is a playtest-enabling pass, not the final balance pass. Meta progression will change power curves, unlock pacing, and economy pressure, so deep final tuning should happen after meta progression exists.</p>
+<p>Tracker: <code>docs/milestone_10_balance_tasks.html</code></p>
+<p>Execution note: M10 work should proceed through the tracker order: add the Run Log and active balance-source inventory, capture untuned baseline logs, add temporary balance levers, tune economy and survivability, improve content test access, then close out with focused playtest evidence. Do not tune balance values before baseline evidence exists.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Add run-log baseline evidence capture.</li>
+<ul>
+<li>Deliverable: Passive Run Log with opt-in JSON/HTML/text file generation under gitignored <code>logs/</code> plus an inventory of active balance data owners.</li>
+<li>Acceptance: M10-01 identifies orb weights, run gold, combat formulas, shop pricing, active encounter stats, debug commands, and current validation surfaces before tuning. Runtime logging records run, fight, turn, shop, boss reward, and run-end events without changing combat math, shop behavior, route semantics, balance values, or presentation timing.</li>
+<li>Note: 2026-05-05 M10-01 added <code>RunState.run_log_snapshot()</code>, <code>run_log_export_json(...)</code>, <code>run_log_export_text()</code>, <code>run_log_export_html()</code>, and a main-menu <code>Generate Log</code> toggle for per-run export to <code>logs/</code> on run end. Focused Godot MCP probes verified representative events and generated files; normal untuned baseline playthroughs were completed in M10-02.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Capture untuned baseline runs.</li>
+<ul>
+<li>Deliverable: At least 3 human-played untuned Run Logs from normal <code>Start Run</code> playthroughs, not automated probes, <code>/skip</code>, forced outcomes, debug-command runs, or simulated editor runs.</li>
+<li>Acceptance: M10-02 records level/fight reach, turns per fight, gold, shop access, purchases, deaths, item/relic access, and blocker categories before any balance tuning.</li>
+<li>Note: 2026-05-05 M10-02 verified 3 human-played baseline logs. The runs covered a high-skill defeat at level 2 boss, an intentional new-player simulation defeat in level 1 fight 1, and a third defeat at level 3 enemy 1. Current blockers are mixed: first-shop affordability, first-fight survivability/combat effectiveness, and level 2-3 enemy pressure.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add or expose playtest balance levers.</li>
+<ul>
+<li>Deliverable: Configurable values for gold income, starting gold, shop affordability, enemy HP/damage scaling, or equivalent debug/test settings.</li>
+<li>Acceptance: Designers can make item and shop testing easier without rewriting core systems.</li>
+<li>Note: 2026-05-05 M10-03 added temporary prototype levers for starting gold, Gold orb spawn access, shop price/reroll multipliers, fight base rewards, and enemy HP/damage multipliers while keeping default parity until tuning tasks changed values.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Tune early gold access.</li>
+<ul>
+<li>Deliverable: Temporary prototype settings for gold orb value/spawn rate, starting gold, fight rewards, shop prices, or treasure chest affordability.</li>
+<li>Acceptance: After the first enemy, a normal playtest run can usually buy at least one item, treasure chest, consumable, or useful shop option.</li>
+<li>Note: 2026-05-05 M10-04 set temporary fixed fight base rewards to <code>10/12/14</code> by dungeon level, kept Gold spawn/shop/reroll multipliers neutral, and later M10-06 made the first shop guarantee affordable <code>Shortsword</code> damage access at the <code>10</code> gold floor.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Tune early combat survivability.</li>
+<ul>
+<li>Deliverable: Temporary level 1-2 enemy HP, damage, block, and player starting-stat adjustments.</li>
+<li>Acceptance: Runs survive long enough to reach multiple shops and test build decisions, while mistakes can still matter.</li>
+<li>Note: 2026-05-05 M10-05 added temporary dungeon/type survivability identities: forgiving Dungeon 1 normal fights, a tougher Dungeon 1 boss skill check, Dungeon 2 defense pressure, and a retuned Dungeon 3 late damage check. Player accepted the current early balance for now and deferred deeper rebalance until after Milestone 11 meta progression.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Tune item and relic test access.</li>
+<ul>
+<li>Deliverable: Temporary economy or debug flow that makes equipment, mastery cards, consumables, relics, and treasure chests practical to inspect during repeated runs.</li>
+<li>Acceptance: A tester can exercise most implemented content without needing many failed economy-starved runs.</li>
+<li>Note: 2026-05-05 M10-06 retuned shop access after the first evidence pass: shops now guarantee at least one treasure chest when available, bias remaining offers toward equipment, keep mastery cards possible, make consumables rare, and avoid a second treasure chest unless needed. The first level-1 shop now guarantees affordable damage equipment (<code>Shortsword</code>) instead of <code>Coin Purse</code>; <code>Shortsword</code> price is <code>10</code>. Shop relic offers now persist as one relic per level, showing sold-out in later same-level shops after purchase and refreshing only on the next dungeon level. Merchant Compass free-first-reroll remains deferred.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Record first-pass balance assumptions.</li>
+<ul>
+<li>Deliverable: Short notes in <code>docs/test_plan.html</code> or relevant wiki pages describing temporary balance values, what they are meant to test, and what is intentionally not final.</li>
+<li>Acceptance: Future meta progression work can distinguish test scaffolding from accepted design.</li>
+<li>Note: 2026-05-05 M10 tracker, test plan, and wiki notes label M10 values as temporary playtest scaffolding rather than final balance.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Run focused playtest loops.</li>
+<ul>
+<li>Deliverable: Recorded notes from repeated level 1 and early-run playtests covering gold earned, shop purchases, deaths, item access, and major blockers.</li>
+<li>Acceptance: The team has enough evidence to start meta progression on a playable baseline.</li>
+<li>Note: 2026-05-05 M10-07 compared tuned logs against the M10-02 untuned baseline. Tuned evidence includes a D3 defeat, a full victory, and newest checked run <code>run_1777973747_694854_2026-05-05t17_35_47</code> reaching L3 enemy 2 with first-shop affordability, treasure chest access, boss relic rewards, and visible full-slot friction. No M10 blocker remains; full-slot friction, Merchant Compass reroll behavior, and final tuning move to post-Milestone 11/meta-progression work.</li>
+</ul>
+</ul>
+<h2 id="milestone-11-meta-progression-foundation">Milestone 11: Meta Progression Foundation</h2>
+<p>Status: Complete; manual QA passed.</p>
+<p>Goal: Add a mastery/meta layer that gives long-term structure to repeated runs after the core loop is easier to playtest.</p>
+<p>Primary deliverable: A first meta progression system that can support equipment unlocks, mastery growth, or other persistent goals without hiding core-loop balance problems.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Define meta progression scope.</li>
+<ul>
+<li>Deliverable: Selected first meta system, such as equipment unlocks, mastery progression, account upgrades, hero growth, or content pool expansion.</li>
+<li>Acceptance: The system has a clear player-facing purpose and does not duplicate existing run-only mastery cards.</li>
+<li>Note: Milestone 11 uses equipment achievement progression. Run Score banks into persistent Total Score, and 5 equipment families unlock Common -&gt; Uncommon -&gt; Rare by victory achievement or adjacent Score claim.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Define persistence model.</li>
+<ul>
+<li>Deliverable: Runtime state shape for meta progress, unlock flags, earned currency or XP, and reset/new-run behavior.</li>
+<li>Acceptance: Meta data can persist across runs separately from temporary <code>RunState</code> data.</li>
+<li>Note: <code>PlayerProfileState</code> owns the default profile and contains <code>MetaProfileState</code>, which persists Total Score, unlocked equipment ids, and recent unlock toast payloads separately from per-run <code>RunState</code>. The main-menu Profile overlay can reset the profile back to a new default profile.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Implement first unlock/progression loop.</li>
+<ul>
+<li>Deliverable: A small playable vertical slice where completing fights, bosses, runs, or challenges advances meta progress and changes future run options.</li>
+<li>Acceptance: The player has a reason to start another run beyond one-run victory or defeat.</li>
+<li>Note: Victory with a Common or Uncommon equipped unlocks that family's next tier; Run Score is added to Total Score on run end.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Connect meta progression to content access.</li>
+<ul>
+<li>Deliverable: Equipment, relic, mastery, consumable, hero, or dungeon content can be gated or expanded by meta state.</li>
+<li>Acceptance: Unlocks affect future runs in an understandable way without breaking current shop/combat flows.</li>
+<li>Note: Locked equipment variants are filtered from shop and treasure chest pools; lower unlocked rarities can still roll, and only one equipment item per family can be equipped.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Validate meta progression with the temporary balance layer.</li>
+<ul>
+<li>Deliverable: Playtest notes showing how meta progress changes run difficulty, item access, and economy pressure.</li>
+<li>Acceptance: Remaining balance work is documented as post-meta tuning rather than mixed with initial system implementation.</li>
+<li>Note: 2026-05-05 Godot MCP focused probes passed for content contracts, score source filtering, default unlocks, profile container save-load, main-menu Profile reset controls, shop gating, family duplicate prevention, idempotent score banking, scene instantiation, and <code>play_scene main</code>; user QA passed after follow-up fixes to final summary parser warnings, defeat unlock-toast leakage, and Profile reset placement.</li>
+</ul>
+</ul>
+<h2 id="milestone-12-first-playable-build">Milestone 12: First Playable Build</h2>
+<p>Status: Complete.</p>
+<p>Goal: Package and document the first playable prototype.</p>
+<p>Primary deliverable: A readable mobile-first playable build that demonstrates the full GDD vertical slice and can be shared for feedback.</p>
+<p>Scope note: Milestone 12 is concluded as of 2026-05-07. Remaining public-launch readiness work, including final combat readability approval, packaging, player-facing notes, page assets, release-candidate QA, and itch.io publication approval, is transferred to <code>docs/itch_readiness_tasks.html</code>.</p>
+<p>Tasks:</p>
+<ul>
+<li>[x] Rework mobile combat UI readability.</li>
+<ul>
+<li>Deliverable: Reference-faithful mobile combat presentation with a derived combat UI asset pack, full-screen backdrop/scrim, texture-backed top/enemy/timer/board/mastery/player HUD frames, a large enemy stage with readable intent, protected 5x6 board, readable Elemental Mastery rail, and structured bottom hero/HP/relic/equipment/consumable HUD.</li>
+<li>Acceptance: At mobile portrait resolutions, enemy threat, board state, timer, mastery, player HP, and loadout rails are readable without overlapping primary zones. Board touch input still uses <code>BoardView.gui_input</code> local coordinates with no transform double-application. Godot MCP validates combat scene load/run state, asset availability, layout probe results, and running-scene screenshots; manual visual/touch acceptance remains the final gate.</li>
+<li>Note: 2026-05-05 through 2026-05-06 reference-faithful passes added derived combat UI chrome under <code>resources/art/first_pass/derived/combat_ui/</code>, VisualRegistry accessors, texture-backed combat scene chrome, extended layout probe readability checks, repeated Godot MCP evidence for <code>1080x1920</code>, <code>1080x2400</code>, and <code>900x1600</code>, and follow-up polish through the current 9/10 screenshot direction. Final public-readiness approval and real device/touch QA are transferred to ITCH-01 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Add export presets.</li>
+<ul>
+<li>Deliverable: Export configuration for PC, with mobile export prepared if certificates and SDKs are available.</li>
+<li>Acceptance: A clean build can be produced from the project without manual scene changes.</li>
+<li>Note: Initial Android export preset/build work exists from the M12 readiness pass. Public upload packaging is transferred to ITCH-06 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Build release candidate.</li>
+<ul>
+<li>Deliverable: First playable build artifact.</li>
+<li>Acceptance: Build launches, starts a run, completes fights and shops, and reaches victory or defeat.</li>
+<li>Note: M12 generated and installed debug Android APKs during readiness validation. Exact public release-candidate export and upload smoke are transferred to ITCH-06 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Write player-facing notes.</li>
+<ul>
+<li>Deliverable: Short prototype notes covering controls, current scope, known limitations, and feedback focus.</li>
+<li>Acceptance: A tester can play without reading the GDD.</li>
+<li>Note: Public page/player-facing wording is transferred to ITCH-07 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Write developer handoff notes.</li>
+<ul>
+<li>Deliverable: Notes describing architecture, content creation flow, test checklist, and major known risks.</li>
+<li>Acceptance: Future contributors can add content or tune balance without reverse engineering the prototype.</li>
+<li>Note: Durable implementation knowledge is covered by the existing docs/wiki; public launch handoff and final QA notes are transferred to the ITCH tracker as needed.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Tag first playable scope.</li>
+<ul>
+<li>Deliverable: Git tag or milestone marker once the build is accepted.</li>
+<li>Acceptance: The first playable state can be retrieved and compared against later iterations.</li>
+<li>Note: Milestone 12 closeout is the milestone marker. A release tag for the exact itch.io upload remains part of ITCH-08/final publish approval.</li>
+</ul>
+</ul>
+<h2 id="cross-cutting-technical-tasks">Cross-Cutting Technical Tasks</h2>
+<p>These tasks should be worked on alongside the milestones when the affected systems appear.</p>
+<ul>
+<li>[x] Deterministic RNG support.</li>
+<ul>
+<li>Deliverable: Seeded RNG for board generation, shops, treasure chests, and enemy selection.</li>
+<li>Acceptance: A run can be reproduced for debugging.</li>
+<li>Note: First-playable debug/repro needs are covered by existing board/shop/run probes and Run Log evidence. Any public-release reproducibility concern is transferred to ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Save-safe run state shape.</li>
+<ul>
+<li>Deliverable: Run state that can later be serialized even if saving is not included in the prototype.</li>
+<li>Acceptance: State objects avoid direct scene-node dependencies.</li>
+<li>Note: Current profile/meta and RunState snapshot/rollback surfaces cover the first playable scope. Future save architecture remains outside itch readiness unless ITCH-08 finds a release blocker.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Debug tools.</li>
+<ul>
+<li>Deliverable: Debug commands for win fight, lose fight, add gold, add item, spawn enemy, set board, and jump to shop.</li>
+<li>Acceptance: Designers can test systems without playing a full run every time.</li>
+<li>Note: Debug commands and probes exist for the current validation workflow. Public-build exposure decisions are transferred to ITCH-06 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Error reporting.</li>
+<ul>
+<li>Deliverable: Clear debug logs or UI warnings for invalid content data and impossible states.</li>
+<li>Acceptance: Runtime issues are diagnosable from logs.</li>
+<li>Note: Current validation uses content validation, Run Log/FlowTrace/ResolveTrace diagnostics, and <code>get_godot_errors</code>. Clean public-release error gates are transferred to ITCH-06 and ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Automated logic tests where practical.</li>
+<ul>
+<li>Deliverable: Tests for board generation, matching, cascades, scoring, item effects, and shop generation.</li>
+<li>Acceptance: Core deterministic systems can be checked without manual play.</li>
+<li>Note: Lightweight callable model/service tests and focused Godot MCP probes cover the first playable scope. Additional release-candidate validation is transferred to ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<h2 id="open-design-decisions-to-resolve-during-implementation">Open Design Decisions To Resolve During Implementation</h2>
+<ul>
+<li>[x] Exact gold orb spawn rate.</li>
+<ul>
+<li>Deliverable: Prototype spawn weight setting.</li>
+<li>Decision point: Resolve during Milestone 10 after shop and economy are playable.</li>
+<li>Note: Temporary prototype balance is accepted for the current first playable scope. Final tuning remains outside this tracker unless it blocks ITCH-08.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Exact shop price ranges by rarity and dungeon level.</li>
+<ul>
+<li>Deliverable: Prototype price table.</li>
+<li>Decision point: Resolve during Milestones 6 and 10.</li>
+<li>Note: Temporary M10 values are accepted for first playable. Final tuning remains outside this tracker unless ITCH-04/ITCH-08 finds a blocker.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Reroll cost curve.</li>
+<ul>
+<li>Deliverable: Reroll cost formula and Merchant Compass behavior.</li>
+<li>Decision point: Resolve during Milestone 6.</li>
+<li>Note: Paid reroll path exists for first playable. Merchant Compass free-first-reroll is transferred to ITCH-04 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Boss roster for the 3-level prototype.</li>
+<ul>
+<li>Deliverable: Selected 3 bosses from the GDD boss direction list.</li>
+<li>Decision point: Resolve before Milestone 8 content implementation.</li>
+<li>Note: Prototype boss roster is implemented and validated through current run-flow/content checks.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Whether L and T matches get bonus effects.</li>
+<ul>
+<li>Deliverable: Prototype decision.</li>
+<li>Decision point: Default to no bonus beyond matched orb count unless playtesting shows the board needs more reward clarity.</li>
+<li>Note: Current first playable decision is no extra L/T bonus beyond matched orb count.</li>
+</ul>
+</ul>
+<ul>
+<li>[x] Whether 5 seconds is right for both PC and mobile.</li>
+<ul>
+<li>Deliverable: Prototype movement timer setting.</li>
+<li>Decision point: Keep 5 seconds for first playable, then tune after mobile input testing.</li>
+<li>Note: Current first playable keeps the 5 second timer. Any target-device comfort issue is transferred to ITCH-01/ITCH-08 in <code>docs/itch_readiness_tasks.html</code>.</li>
+</ul>
+</ul>
+<h2 id="recommended-immediate-next-steps">Recommended Immediate Next Steps</h2>
+<ol>
+<li>Create the folder structure and main debug scene from Milestone 0.</li>
+<li>Implement <code>BoardState</code> and orb definitions from Milestone 1.</li>
+<li>Build the board renderer and deterministic no-starting-match generator.</li>
+<li>Implement mouse/touch drag movement before adding combat.</li>
+<li>Add match resolver tests before connecting cascades to scoring.</li>
+</ol>
+<h2 id="first-playable-definition-of-done">First Playable Definition Of Done</h2>
+<p>The prototype is considered first playable when:</p>
+<ul>
+<li>A new run can be started from the game.</li>
+<li>The player can complete or lose a 3-level dungeon run.</li>
+<li>All six orb types appear and resolve correctly.</li>
+<li>Free movement, timer, matching, and cascades work according to the GDD.</li>
+<li>Enemy intent is shown before movement and resolves after player effects.</li>
+<li>HP, armor, gold, equipment, mastery, consumables, and relics persist correctly across the run.</li>
+<li>Shops appear after fights and support buying, selling, rerolling, treasure chests, relic offers, and skipping.</li>
+<li>Bosses provide clear checks and grant relic rewards.</li>
+<li>The initial content pack is present and functional.</li>
+<li>The build can be exported and played without debug tools.</li>
+</ul>
+      <section class="footer">
+        <p><span class="badge">Converted</span> Source file: <code>todo.html</code></p>
+      </section>
+    </main>
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc"><a class="toc-h1" href="#orbwalker-execution-todo">Orbwalker Execution Todo</a><a class="toc-h2" href="#current-project-state">Current Project State</a><a class="toc-h2" href="#execution-strategy">Execution Strategy</a><a class="toc-h2" href="#status-legend">Status Legend</a><a class="toc-h2" href="#milestone-0-production-baseline-and-scope-lock">Milestone 0: Production Baseline And Scope Lock</a><a class="toc-h2" href="#milestone-1-board-foundation">Milestone 1: Board Foundation</a><a class="toc-h2" href="#milestone-2-free-orb-movement-and-timer">Milestone 2: Free Orb Movement And Timer</a><a class="toc-h2" href="#milestone-3-match-detection-clear-gravity-and-cascades">Milestone 3: Match Detection, Clear, Gravity, And Cascades</a><a class="toc-h2" href="#milestone-4-core-combat-loop">Milestone 4: Core Combat Loop</a><a class="toc-h2" href="#milestone-5-player-state-management">Milestone 5: Player State Management</a><a class="toc-h2" href="#milestone-6-shop-economy-and-treasure-chests">Milestone 6: Shop, Economy, And Treasure Chests</a><a class="toc-h2" href="#milestone-7-dungeon-and-run-structure">Milestone 7: Dungeon And Run Structure</a><a class="toc-h2" href="#milestone-8-initial-content-pack">Milestone 8: Initial Content Pack</a><a class="toc-h2" href="#milestone-9-ui-ux-and-game-feel">Milestone 9: UI, UX, And Game Feel</a><a class="toc-h2" href="#architecture-maintenance-review-task-tracking-plan">Architecture Maintenance: Review Task Tracking Plan</a><a class="toc-h2" href="#milestone-10-short-term-playtest-balance-pass">Milestone 10: Short-Term Playtest Balance Pass</a><a class="toc-h2" href="#milestone-11-meta-progression-foundation">Milestone 11: Meta Progression Foundation</a><a class="toc-h2" href="#milestone-12-first-playable-build">Milestone 12: First Playable Build</a><a class="toc-h2" href="#cross-cutting-technical-tasks">Cross-Cutting Technical Tasks</a><a class="toc-h2" href="#open-design-decisions-to-resolve-during-implementation">Open Design Decisions To Resolve During Implementation</a><a class="toc-h2" href="#recommended-immediate-next-steps">Recommended Immediate Next Steps</a><a class="toc-h2" href="#first-playable-definition-of-done">First Playable Definition Of Done</a></nav>
+    </aside>
+  </div>
+</body>
+</html>

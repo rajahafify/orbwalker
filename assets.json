@@ -9,16 +9,16 @@
   },
   "source_references": [
     "project.godot",
-    "todo.md",
-    "docs/game_design_document.md",
-    "docs/itch_readiness_tasks.md",
-    "resources/assetgen.workflow.md",
+    "todo.html",
+    "docs/game_design_document.html",
+    "docs/itch_readiness_tasks.html",
+    "resources/assetgen.workflow.html",
     "resources/visual/first_pass_asset_map.json",
     "scripts/content/content_registry.gd",
     "scripts/ui/visual_registry.gd",
-    "wiki/file-map.md",
-    "wiki/features.md",
-    "wiki/assetgen-workflow.md"
+    "wiki/file-map.html",
+    "wiki/features.html",
+    "wiki/assetgen-workflow.html"
   ],
   "status_legend": {
     "missing": "No concrete asset exists yet or runtime uses generated/code placeholder.",
@@ -44,7 +44,7 @@
       "no visible halo, matte spill, jagged edge, or baked shadow unless approved",
       "straight or premultiplied alpha documented"
     ],
-    "workflow_reference": "resources/assetgen.workflow.md"
+    "workflow_reference": "resources/assetgen.workflow.html"
   },
   "runtime_asset_roots": {
     "current_first_pass_art": "res://resources/art/first_pass/",
@@ -778,7 +778,7 @@
           "name": "Production art bible",
           "type": "documentation",
           "current_paths": [],
-          "target_path": "assets/art_bible/style.md",
+          "target_path": "assets/art_bible/style.html",
           "status": "missing"
         },
         {
