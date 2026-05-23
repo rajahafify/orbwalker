@@ -631,11 +631,11 @@ func _on_print_board_button_pressed() -> void:
 
 
 func _on_back_button_pressed() -> void:
-	_host.get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	_set_status_text("Combat help is visual-only in this prototype build.")
 
 
 func _on_settings_button_pressed() -> void:
-	_host.get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+	_set_status_text("Settings is visual-only in this prototype build.")
 
 
 func _on_run_tests_button_pressed() -> void:

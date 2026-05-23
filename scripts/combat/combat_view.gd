@@ -26,10 +26,10 @@ const TIMER_TRACK_PADDING := 5.0
 const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
 const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
-const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 66))
-const ENEMY_PANEL_RECT := Rect2(Vector2(16, 80), Vector2(1048, 392))
-const COMBAT_STRIP_RECT := Rect2(Vector2(16, 484), Vector2(1048, 56))
-const BOARD_PANEL_RECT := Rect2(Vector2(16, 552), Vector2(1048, 846))
+const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
+const ENEMY_PANEL_RECT := Rect2(Vector2(16, 132), Vector2(1048, 432))
+const COMBAT_STRIP_RECT := Rect2(Vector2(16, 576), Vector2(1048, 64))
+const BOARD_PANEL_RECT := Rect2(Vector2(16, 660), Vector2(1048, 756))
 
 var _root_nodes: Dictionary = {}
 var _board: Control = null
@@ -54,7 +54,7 @@ var _debug_toggle_button: Button = null
 var _settings_button: Button = null
 var _board_view_control: Control = null
 var _layout_root: Control = null
-var _top_bar: PanelContainer = null
+var _top_bar: Panel = null
 var _enemy_panel: PanelContainer = null
 var _enemy_panel_root: Control = null
 var _intent_row: HBoxContainer = null
@@ -352,7 +352,7 @@ func set_top_bar_text(level_text: String, hint_text: String) -> void:
 	if _title_label != null:
 		_title_label.text = level_text
 	if _hint_label != null:
-		_hint_label.text = hint_text
+		_hint_label.text = _format_top_gold_text(hint_text)
 
 
 func setup_rendering_helpers() -> void:
@@ -368,8 +368,9 @@ func bind_layout_presenter() -> void:
 	_combat_layout_presenter.bind({
 		"layout_root": _layout_root,
 		"top_bar": _top_bar,
-		"top_bar_row": _top_bar.get_node_or_null("TopBarRow"),
+		"top_bar_row": _top_bar.get_node_or_null("TopBarRow") if _top_bar != null else null,
 		"back_button": _back_button,
+		"debug_toggle_button": _debug_toggle_button,
 		"settings_button": _settings_button,
 		"title_label": _title_label,
 		"hint_label": _hint_label,
@@ -747,7 +748,17 @@ func stop_enemy_intent_hover_emphasis() -> void:
 func _sync_top_hud(snapshot: Dictionary) -> void:
 	_title_label.text = String(snapshot.get("level_text", "LEVEL"))
 	_enemy_step_label.text = String(snapshot.get("enemy_step_text", "FIGHT"))
-	_hint_label.text = String(snapshot.get("gold_text", "GOLD 0"))
+	_hint_label.text = _format_top_gold_text(String(snapshot.get("gold_text", "GOLD 0")))
+
+
+func _format_top_gold_text(text: String) -> String:
+	var clean_text := text.strip_edges()
+	if clean_text.begins_with("$"):
+		return clean_text
+	if clean_text.to_upper().begins_with("GOLD"):
+		var amount_text := clean_text.substr(4).strip_edges()
+		return "$  %s" % amount_text
+	return clean_text
 
 
 func _sync_enemy_stage(snapshot: Dictionary) -> void:

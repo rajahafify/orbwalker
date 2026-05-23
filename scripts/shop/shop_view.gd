@@ -14,6 +14,8 @@ signal consumable_slot_selected(index: int)
 signal hud_sell_slot_requested(slot_type: String, slot_index: int)
 
 const PLAYER_HUD_SCENE := preload("res://scenes/ui/player_hud.tscn")
+const TOP_HEADER_SCENE := preload("res://scenes/ui/top_header.tscn")
+const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
@@ -23,10 +25,23 @@ const MERCHANT_STAGE_RECT := Rect2(Vector2(16, 132), Vector2(1048, 338))
 const STOCK_PANEL_RECT := Rect2(Vector2(16, 484), Vector2(1048, 556))
 const RELIC_PANEL_RECT := Rect2(Vector2(16, 1054), Vector2(1048, 188))
 const ACTION_ROW_RECT := Rect2(Vector2(16, 1252), Vector2(1048, 164))
-const TOP_SETTINGS_BUTTON_RECT := Rect2(Vector2(774, 22), Vector2(58, 58))
-const TOP_HELP_BUTTON_RECT := Rect2(Vector2(840, 22), Vector2(58, 58))
-const TOP_MENU_BUTTON_RECT := Rect2(Vector2(906, 22), Vector2(118, 58))
+const SHOP_HEADER_TOPBAR_RECT := Rect2(Vector2.ZERO, TOP_BAR_RECT.size)
+const SHOP_HEADER_TITLE_RECT := Rect2(Vector2(34, 24), Vector2(560, 68))
+const SHOP_HEADER_GOLD_RECT := Rect2(Vector2(620, 20), Vector2(238, 76))
+const SHOP_HEADER_HELP_RECT := Rect2(Vector2(884, 22), Vector2(64, 64))
+const SHOP_HEADER_SETTINGS_RECT := Rect2(Vector2(972, 22), Vector2(64, 64))
+const SHOP_HEADER_MERCHANT_RECT := Rect2(Vector2.ZERO, MERCHANT_STAGE_RECT.size)
+const SHOP_HEADER_SPEECH_RECT := Rect2(Vector2(42, 52), Vector2(352, 150))
+const SHOP_HEADER_BOTTOM_RAIL_RECT := Rect2(Vector2(0, MERCHANT_STAGE_RECT.size.y - 18.0), Vector2(MERCHANT_STAGE_RECT.size.x, 18))
+const TOP_SETTINGS_BUTTON_RECT := SHOP_HEADER_SETTINGS_RECT
+const TOP_HELP_BUTTON_RECT := SHOP_HEADER_HELP_RECT
+const TOP_MENU_BUTTON_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const MERCHANT_INFO_BACKDROP_RECT := Rect2(Vector2(448, 86), Vector2(584, 148))
+const SHOP_HELP_MODAL_OVERLAY_RECT := Rect2(Vector2.ZERO, DESIGN_SIZE)
+const SHOP_HELP_MODAL_RECT := Rect2(Vector2(170, 560), Vector2(740, 420))
+const SHOP_HELP_MODAL_TITLE_RECT := Rect2(Vector2(58, 60), Vector2(620, 116))
+const SHOP_HELP_MODAL_BODY_RECT := Rect2(Vector2(58, 198), Vector2(620, 142))
+const SHOP_HELP_MODAL_CLOSE_RECT := Rect2(Vector2(662, 24), Vector2(56, 56))
 const ACTION_HINT_RECT := Rect2(Vector2(14, 6), Vector2(ACTION_ROW_RECT.size.x - 28.0, 52))
 const OFFER_CARD_SIZE := Vector2(332, 470)
 const OFFER_CARD_GAP := 8.0
@@ -70,6 +85,11 @@ var _gold_label: Label
 var _main_menu_button: Button
 var _help_button: Button
 var _settings_button: Button
+var _shop_help_overlay: ColorRect
+var _shop_help_modal: Panel
+var _shop_help_title_label: Label
+var _shop_help_body_label: Label
+var _shop_help_close_button: Button
 var _merchant_stage: Panel
 var _merchant_backdrop: TextureRect
 var _merchant_scrim: ColorRect
@@ -167,18 +187,25 @@ func _create_ui() -> void:
 	_hud_overlay.z_index = 50
 	_hud_overlay.clip_contents = false
 
-	_top_bar = _make_panel("TopBar", _layout_root)
-	_crest_panel = _make_panel("CrestPanel", _top_bar)
-	_crest_label = _make_label("CrestLabel", _crest_panel, "M", 28, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_run_progress_label = _make_label("RunProgressLabel", _top_bar, "Dungeon -", 20, MUTED_COLOR)
-	_title_label = _make_label("TitleLabel", _top_bar, "Shop", 44, GOLD_COLOR)
-	_gold_pill = _make_panel("GoldPill", _top_bar)
-	_gold_label = _make_label("GoldLabel", _gold_pill, "G 0", 36, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_main_menu_button = _make_button("MainMenuButton", _top_bar, "Menu")
-	_help_button = _make_button("HelpButton", _top_bar, "?")
-	_settings_button = _make_button("SettingsButton", _top_bar, "S")
-	_help_button.tooltip_text = "Help (visual-only in this prototype build)."
+	_top_bar = TOP_HEADER_SCENE.instantiate() as Panel
+	_top_bar.name = "TopBar"
+	_layout_root.add_child(_top_bar)
+	_crest_panel = _top_bar.get_node("%CrestPanel") as Panel
+	_crest_label = _top_bar.get_node("%CrestLabel") as Label
+	_run_progress_label = _top_bar.get_node("%RunProgressLabel") as Label
+	_title_label = _top_bar.get_node("%TitleLabel") as Label
+	_gold_pill = _top_bar.get_node("%GoldPill") as Panel
+	_gold_label = _top_bar.get_node("%GoldLabel") as Label
+	_main_menu_button = _top_bar.get_node("%MainMenuButton") as Button
+	_help_button = _top_bar.get_node("%HelpButton") as Button
+	_settings_button = _top_bar.get_node("%SettingsButton") as Button
+	_help_button.tooltip_text = "Shop help"
 	_settings_button.tooltip_text = "Settings (visual-only in this prototype build)."
+	_crest_panel.visible = false
+	_crest_label.visible = false
+	_run_progress_label.visible = false
+	_main_menu_button.visible = false
+	_settings_button.visible = true
 
 	_merchant_stage = _make_panel("MerchantStage", _layout_root)
 	_merchant_backdrop = _make_texture("MerchantBackdrop", _merchant_stage)
@@ -190,10 +217,14 @@ func _create_ui() -> void:
 	_merchant_header_label = _make_label("MerchantHeaderLabel", _merchant_stage, "", 32, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_merchant_header_label.visible = false
 	_speech_card = _make_panel("SpeechCard", _merchant_stage)
-	_speech_label = _make_label("SpeechLabel", _speech_card, "Well met. New stock, fresh from the depths.", 23, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_speech_label = _make_label("SpeechLabel", _speech_card, "Well met, adventurer. New stock, fresh from the depths.", 25, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_boss_preview_label = _make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 16, MUTED_COLOR)
 	_summary_label = _make_label("SummaryLabel", _merchant_stage, "-", 21, POSITIVE_COLOR)
 	_detail_label = _make_label("DetailLabel", _merchant_stage, "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover.", 19, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_merchant_info_backdrop.visible = false
+	_boss_preview_label.visible = false
+	_summary_label.visible = false
+	_detail_label.visible = false
 
 	_stock_panel = _make_panel("StockPanel", _layout_root)
 	_stock_title_label = _make_label("StockTitleLabel", _stock_panel, "SHOP STOCK", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
@@ -228,6 +259,16 @@ func _create_ui() -> void:
 		_treasure_chest_option_buttons.append(button)
 	_skip_treasure_chest_button = _make_button("SkipTreasureChestButton", _treasure_chest_modal, "Skip")
 	_skip_treasure_chest_button.visible = false
+
+	_shop_help_overlay = _make_color_rect("ShopHelpOverlay", _layout_root, Color(0.0, 0.0, 0.0, 0.54))
+	_shop_help_overlay.visible = false
+	_shop_help_overlay.z_index = 70
+	_shop_help_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_shop_help_modal = _make_panel("ShopHelpModal", _shop_help_overlay)
+	_shop_help_modal.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_shop_help_title_label = _make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_shop_help_body_label = _make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_shop_help_close_button = _make_button("ShopHelpCloseButton", _shop_help_modal, "x")
 
 
 func _bind_shared_player_hud_scene() -> void:
@@ -292,6 +333,8 @@ func _connect_signals() -> void:
 	_main_menu_button.pressed.connect(_emit_main_menu_pressed)
 	_help_button.pressed.connect(_on_help_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
+	_shop_help_overlay.gui_input.connect(_on_shop_help_overlay_gui_input)
+	_shop_help_close_button.pressed.connect(_hide_shop_help_modal)
 	for index in _treasure_chest_option_buttons.size():
 		_treasure_chest_option_buttons[index].pressed.connect(func(): emit_signal("treasure_chest_option_pressed", index))
 	_skip_treasure_chest_button.pressed.connect(_emit_skip_treasure_chest_pressed)
@@ -306,9 +349,9 @@ func render(snapshot: Dictionary) -> void:
 	var pending_options: Array = snapshot.get("pending_treasure_chest_options", [])
 	var treasure_chest_pending := bool(snapshot.get("treasure_chest_pending", false))
 
-	_run_progress_label.text = "Dungeon %d-%d Shop" % [int(snapshot.get("dungeon_level", 1)), int(snapshot.get("shop_ordinal", 1))]
+	_title_label.text = "Dungeon %d-%d" % [int(snapshot.get("dungeon_level", 1)), int(snapshot.get("shop_ordinal", 1))]
 	_boss_preview_label.text = "Boss preview: %s" % String(snapshot.get("boss_preview", "-"))
-	_gold_label.text = "G  %d" % int(snapshot.get("gold", 0))
+	_gold_label.text = "$  %d" % int(snapshot.get("gold", 0))
 	_detail_label.text = "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover."
 	set_status(String(snapshot.get("status_message", "")), bool(snapshot.get("status_positive", true)))
 
@@ -509,6 +552,11 @@ func lock_transitions(enabled: bool) -> void:
 
 
 func handle_global_input(event: InputEvent) -> bool:
+	if _shop_help_overlay != null and _shop_help_overlay.visible:
+		if event is InputEventKey and event.pressed and not event.echo:
+			if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACK:
+				_hide_shop_help_modal()
+				return true
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		return _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position)
 	if event is InputEventScreenTouch and event.pressed:
@@ -543,11 +591,32 @@ func _emit_main_menu_pressed() -> void:
 
 
 func _on_help_pressed() -> void:
-	set_status("Help is visual-only in this prototype build.", true)
+	_show_shop_help_modal()
 
 
 func _on_settings_pressed() -> void:
 	set_status("Settings is visual-only in this prototype build.", true)
+
+
+func _show_shop_help_modal() -> void:
+	if _shop_help_overlay == null:
+		return
+	_shop_help_overlay.visible = true
+
+
+func _hide_shop_help_modal() -> void:
+	if _shop_help_overlay == null:
+		return
+	_shop_help_overlay.visible = false
+
+
+func _on_shop_help_overlay_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_hide_shop_help_modal()
+		(_shop_help_overlay as Control).accept_event()
+	elif event is InputEventScreenTouch and event.pressed:
+		_hide_shop_help_modal()
+		(_shop_help_overlay as Control).accept_event()
 
 
 func _emit_skip_treasure_chest_pressed() -> void:
@@ -626,26 +695,19 @@ func apply_layout() -> void:
 	_apply_rect(_relic_card, RELIC_PANEL_RECT)
 	_apply_rect(_action_row, ACTION_ROW_RECT)
 
-	_apply_rect(_crest_panel, Rect2(Vector2(18, 15), Vector2(58, 58)))
-	_apply_rect(_crest_label, Rect2(Vector2.ZERO, Vector2(58, 58)))
-	_apply_rect(_run_progress_label, Rect2(Vector2(98, 16), Vector2(416, 32)))
-	_apply_rect(_title_label, Rect2(Vector2(98, 48), Vector2(416, 52)))
-	_apply_rect(_gold_pill, Rect2(Vector2(530, 20), Vector2(196, 72)))
-	_apply_rect(_gold_label, Rect2(Vector2.ZERO, Vector2(196, 72)))
-	_apply_rect(_settings_button, TOP_SETTINGS_BUTTON_RECT)
-	_apply_rect(_help_button, TOP_HELP_BUTTON_RECT)
-	_apply_rect(_main_menu_button, TOP_MENU_BUTTON_RECT)
+	if _top_bar.has_method("apply_header_layout"):
+		_top_bar.call("apply_header_layout")
 
-	_apply_rect(_merchant_backdrop, Rect2(Vector2.ZERO, MERCHANT_STAGE_RECT.size))
-	_apply_rect(_merchant_scrim, Rect2(Vector2.ZERO, MERCHANT_STAGE_RECT.size))
-	_apply_rect(_merchant_counter, Rect2(Vector2(0, 278), Vector2(MERCHANT_STAGE_RECT.size.x, 60)))
-	_apply_rect(_merchant_info_backdrop, MERCHANT_INFO_BACKDROP_RECT)
-	_apply_rect(_merchant_header_label, Rect2(Vector2(464, 22), Vector2(560, 54)))
-	_apply_rect(_speech_card, Rect2(Vector2(24, 30), Vector2(420, 198)))
-	_apply_rect(_speech_label, Rect2(Vector2(18, 14), Vector2(384, 110)))
-	_apply_rect(_boss_preview_label, Rect2(Vector2(18, 132), Vector2(384, 48)))
-	_apply_rect(_summary_label, Rect2(Vector2(462, 94), Vector2(562, 44)))
-	_apply_rect(_detail_label, Rect2(Vector2(462, 140), Vector2(562, 84)))
+	_apply_rect(_merchant_backdrop, SHOP_HEADER_MERCHANT_RECT)
+	_apply_rect(_merchant_scrim, SHOP_HEADER_MERCHANT_RECT)
+	_apply_rect(_merchant_counter, SHOP_HEADER_BOTTOM_RAIL_RECT)
+	_apply_rect(_merchant_info_backdrop, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
+	_apply_rect(_merchant_header_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
+	_apply_rect(_speech_card, SHOP_HEADER_SPEECH_RECT)
+	_apply_rect(_speech_label, Rect2(Vector2(20, 18), SHOP_HEADER_SPEECH_RECT.size - Vector2(40, 36)))
+	_apply_rect(_boss_preview_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
+	_apply_rect(_summary_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
+	_apply_rect(_detail_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 
 	_apply_rect(_stock_title_label, Rect2(Vector2(0, 12), Vector2(STOCK_PANEL_RECT.size.x, 44)))
 	_apply_rect(_offer_grid, Rect2(Vector2(14, 74), Vector2(STOCK_PANEL_RECT.size.x - 28.0, OFFER_CARD_SIZE.y)))
@@ -667,6 +729,11 @@ func apply_layout() -> void:
 	for index in _treasure_chest_option_buttons.size():
 		_apply_rect(_treasure_chest_option_buttons[index], Rect2(Vector2(46 + float(index) * 238.0, 150), Vector2(208, 236)))
 	_apply_rect(_skip_treasure_chest_button, Rect2(Vector2(302, 340), Vector2(172, 54)))
+	_apply_rect(_shop_help_overlay, SHOP_HELP_MODAL_OVERLAY_RECT)
+	_apply_rect(_shop_help_modal, SHOP_HELP_MODAL_RECT)
+	_apply_rect(_shop_help_title_label, SHOP_HELP_MODAL_TITLE_RECT)
+	_apply_rect(_shop_help_body_label, SHOP_HELP_MODAL_BODY_RECT)
+	_apply_rect(_shop_help_close_button, SHOP_HELP_MODAL_CLOSE_RECT)
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
@@ -718,41 +785,39 @@ func _shop_player_hud_nodes() -> Dictionary:
 
 
 func _apply_visual_chrome() -> void:
-	for panel in [_top_bar, _stock_panel]:
+	for panel in [_stock_panel]:
 		(panel as Panel).add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
 	_merchant_stage.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.03, 0.04, 0.05, 0.55), Color(0.70, 0.50, 0.22, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
 	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
-	_crest_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.30, 0.18, 0.06, 0.98), GOLD_COLOR, 2, 32, Vector4(8, 6, 8, 6)))
-	_gold_pill.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.22, 0.13, 0.04, 0.96), GOLD_COLOR, 2, 8, Vector4(8, 6, 8, 6)))
 	_treasure_chest_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.08, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
 	_treasure_chest_overlay.color = Color(0.0, 0.0, 0.0, 0.44)
+	_shop_help_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.07, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
+	_shop_help_overlay.color = Color(0.0, 0.0, 0.0, 0.54)
 
-	_apply_button_chrome(_main_menu_button, Color(0.13, 0.09, 0.05, 0.95), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
-	_apply_button_chrome(_help_button, Color(0.10, 0.12, 0.18, 0.95), Color(0.38, 0.55, 0.82, 1.0), Color(0.14, 0.18, 0.26, 0.98))
-	_apply_button_chrome(_settings_button, Color(0.10, 0.12, 0.18, 0.95), Color(0.38, 0.55, 0.82, 1.0), Color(0.14, 0.18, 0.26, 0.98))
+	_apply_round_button_chrome(_shop_help_close_button, Color(0.13, 0.09, 0.05, 0.96), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
 	_apply_button_chrome(_reroll_button, Color(0.05, 0.17, 0.27, 0.96), Color(0.31, 0.62, 0.84, 1.0), Color(0.08, 0.24, 0.36, 0.98))
 	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
 	_apply_button_chrome(_continue_button, Color(0.12, 0.30, 0.06, 0.96), Color(0.54, 0.78, 0.24, 1.0), Color(0.18, 0.40, 0.08, 0.98))
 	_apply_button_chrome(_skip_treasure_chest_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
 
-	for label in [_title_label, _gold_label, _stock_title_label, _treasure_chest_title_label, _merchant_header_label]:
+	for label in [_stock_title_label, _treasure_chest_title_label, _merchant_header_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for label in [_run_progress_label, _boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title, _treasure_chest_hint_label]:
+	for label in [_boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title, _treasure_chest_hint_label]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
 	_detail_label.add_theme_color_override("font_color", INK_COLOR)
 	_action_hint_label.add_theme_color_override("font_color", GOLD_COLOR)
-	for label in [_speech_label, _hp_label, _crest_label]:
+	_shop_help_title_label.add_theme_color_override("font_color", POSITIVE_COLOR)
+	_shop_help_body_label.add_theme_color_override("font_color", INK_COLOR)
+	for label in [_speech_label, _hp_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for button in [_main_menu_button, _help_button, _settings_button, _reroll_button, _sell_equipment_button, _continue_button, _skip_treasure_chest_button]:
+	for button in [_reroll_button, _sell_equipment_button, _continue_button, _skip_treasure_chest_button, _shop_help_close_button]:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 24)
-	_main_menu_button.add_theme_font_size_override("font_size", 22)
-	_help_button.add_theme_font_size_override("font_size", 34)
-	_settings_button.add_theme_font_size_override("font_size", 27)
+	_shop_help_close_button.add_theme_font_size_override("font_size", 30)
 	_reroll_button.add_theme_font_size_override("font_size", 30)
 	_continue_button.add_theme_font_size_override("font_size", 30)
 	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())
@@ -779,22 +844,22 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"design_size": DESIGN_SIZE,
 		"merchant_header_asset_path": "res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
 		"top_bar": TOP_BAR_RECT,
-		"top_controls": {
-			"menu_button": TOP_MENU_BUTTON_RECT,
-			"help_button": TOP_HELP_BUTTON_RECT,
-			"settings_button": TOP_SETTINGS_BUTTON_RECT,
-			"menu_label": "Menu",
-			"help_label": "?",
-			"settings_label": "S",
-			"help_settings_visual_only": true,
-		},
+		"top_controls": TOP_HEADER_SCRIPT.layout_snapshot_for(Rect2(Vector2.ZERO, TOP_BAR_RECT.size)),
 		"merchant_stage": MERCHANT_STAGE_RECT,
 		"merchant_stage_content": {
-			"header_label": Rect2(Vector2(464, 22), Vector2(560, 54)),
-			"speech_card": Rect2(Vector2(24, 30), Vector2(420, 198)),
-			"summary_detail_backdrop": MERCHANT_INFO_BACKDROP_RECT,
-			"summary_label": Rect2(Vector2(462, 94), Vector2(562, 44)),
-			"detail_label": Rect2(Vector2(462, 140), Vector2(562, 84)),
+			"speech_card": SHOP_HEADER_SPEECH_RECT,
+			"bottom_rail": SHOP_HEADER_BOTTOM_RAIL_RECT,
+			"summary_detail_visible": false,
+			"boss_preview_visible": false,
+		},
+		"shop_help_modal": {
+			"overlay": SHOP_HELP_MODAL_OVERLAY_RECT,
+			"modal": SHOP_HELP_MODAL_RECT,
+			"title": SHOP_HELP_MODAL_TITLE_RECT,
+			"body": SHOP_HELP_MODAL_BODY_RECT,
+			"close_button": SHOP_HELP_MODAL_CLOSE_RECT,
+			"title_text": "Shop opened. Buy, reroll, sell, or continue.",
+			"body_text": "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.",
 		},
 		"stock_panel": STOCK_PANEL_RECT,
 		"relic_panel": RELIC_PANEL_RECT,
@@ -868,6 +933,14 @@ func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, 
 	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 8, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 8, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
+	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
+
+
+func _apply_round_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
+	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 32, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 32, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 32, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 32, Vector4(8, 6, 8, 6)))
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 

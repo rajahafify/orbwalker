@@ -1,11 +1,13 @@
 extends RefCounted
 class_name CombatLayoutPresenter
 
+const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
+
 const DESIGN_SIZE = Vector2(1080, 1920)
-const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 92))
-const ENEMY_PANEL_RECT = Rect2(Vector2(16, 108), Vector2(1048, 432))
-const COMBAT_STRIP_RECT = Rect2(Vector2(16, 552), Vector2(1048, 64))
-const BOARD_PANEL_RECT = Rect2(Vector2(16, 636), Vector2(1048, 780))
+const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 116))
+const ENEMY_PANEL_RECT = Rect2(Vector2(16, 132), Vector2(1048, 432))
+const COMBAT_STRIP_RECT = Rect2(Vector2(16, 576), Vector2(1048, 64))
+const BOARD_PANEL_RECT = Rect2(Vector2(16, 660), Vector2(1048, 756))
 const ENEMY_INTENT_RECT = Rect2(Vector2(724, 332), Vector2(300, 76))
 const ENEMY_STAGE_RECT = Rect2(Vector2(0, 0), Vector2(1048, 432))
 const ENEMY_HP_ROW_RECT = Rect2(Vector2(24, 292), Vector2(682, 124))
@@ -136,13 +138,12 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	var mastery_panel_global := _offset_rect(mastery_panel_local, section_rect.position)
 	var footer_panel_global := _offset_rect(footer_panel_local, section_rect.position)
 	var top_bar_rect: Rect2 = snapshot["top_bar_rect"]
-	var top_row_rect := Rect2(top_bar_rect.position + Vector2(12.0, 10.0), top_bar_rect.size - Vector2(24.0, 20.0))
+	var shared_top_controls: Dictionary = TOP_HEADER_SCRIPT.layout_snapshot_for(top_bar_rect)
 	var top_segments := {
-		"top_back": Rect2(top_row_rect.position, Vector2(90, 58)),
-		"top_level": Rect2(top_row_rect.position + Vector2(100, 0), Vector2(250, 58)),
-		"top_enemy_step": Rect2(top_row_rect.position + Vector2(360, 0), Vector2(250, 58)),
-		"top_gold": Rect2(top_row_rect.position + Vector2(620, 0), Vector2(304, 58)),
-		"top_menu": Rect2(top_row_rect.position + Vector2(934, 0), Vector2(90, 58)),
+		"top_title": shared_top_controls.get("title", Rect2()),
+		"top_gold": shared_top_controls.get("gold_counter", Rect2()),
+		"top_help": shared_top_controls.get("help_button", Rect2()),
+		"top_settings": shared_top_controls.get("settings_button", Rect2()),
 	}
 	var primary_zone_rects := {
 		"top_bar": top_bar_rect,
@@ -175,7 +176,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 	var hp_bar_rect := _player_hp_zone_rect(section_rect, footer_panel_local)
 	var loadout_rails_rect := _player_loadout_rails_rect(section_rect, footer_panel_local)
 	var readability_zones := {
-		"top_segments": top_row_rect,
+		"top_segments": top_bar_rect,
 		"enemy_name": enemy_name_rect,
 		"enemy_hp": enemy_hp_text_rect,
 		"primary_intent_badge": enemy_intent_rect,
@@ -192,7 +193,7 @@ static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
 		"loadout_rails": loadout_rails_rect,
 	}
 	var readability_actionable_zone_rects := {
-		"top_segments": top_row_rect,
+		"top_segments": top_bar_rect,
 		"enemy_name": enemy_name_rect,
 		"enemy_hp": enemy_hp_text_rect,
 		"primary_intent_badge": enemy_intent_rect,
@@ -283,25 +284,10 @@ func _apply_design_rect(control: Control, rect: Rect2) -> void:
 
 
 func _apply_top_bar_layout() -> void:
-	var top_row := _control("top_bar_row")
-	if top_row != null:
-		top_row.position = Vector2(12.0, 10.0)
-		top_row.size = _layout_top_bar_rect.size - Vector2(24.0, 20.0)
-	var back_button := _control("back_button")
-	if back_button != null:
-		back_button.custom_minimum_size = Vector2(102, 60)
-	var settings_button := _control("settings_button")
-	if settings_button != null:
-		settings_button.custom_minimum_size = Vector2(102, 60)
-	var title_label := _control("title_label")
-	if title_label != null:
-		title_label.custom_minimum_size = Vector2(248, 60)
-	var enemy_step_label := _control("enemy_step_label")
-	if enemy_step_label != null:
-		enemy_step_label.custom_minimum_size = Vector2(248, 60)
-	var hint_label := _control("hint_label")
-	if hint_label != null:
-		hint_label.custom_minimum_size = Vector2(292, 60)
+	var top_bar := _control("top_bar")
+	if top_bar != null and top_bar.has_method("apply_header_layout"):
+		top_bar.call("apply_header_layout")
+		return
 
 
 func _apply_enemy_panel_layout() -> void:
@@ -445,8 +431,8 @@ func _apply_decorative_layout() -> void:
 	_place_divider(_control("divider_enemy_timer"), _layout_enemy_panel_rect.position.y + _layout_enemy_panel_rect.size.y + 2.0)
 	_place_divider(_control("divider_timer_board"), _layout_combat_strip_rect.position.y + _layout_combat_strip_rect.size.y + 2.0)
 	_place_divider(_control("divider_board_player"), _layout_board_panel_rect.position.y + _layout_board_panel_rect.size.y + 2.0)
-	_place_corner(_control("corner_top_left"), _layout_top_bar_rect.position + Vector2(-10.0, -8.0), false, false)
-	_place_corner(_control("corner_top_right"), Vector2(_layout_top_bar_rect.position.x + _layout_top_bar_rect.size.x - CORNER_ORNAMENT_SIZE.x + 10.0, _layout_top_bar_rect.position.y - 8.0), true, false)
+	_hide_corner(_control("corner_top_left"))
+	_hide_corner(_control("corner_top_right"))
 	_place_corner(_control("corner_bottom_left"), Vector2(_layout_player_hud_section_rect.position.x - 10.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 8.0), false, true)
 	_place_corner(_control("corner_bottom_right"), Vector2(_layout_player_hud_section_rect.position.x + _layout_player_hud_section_rect.size.x - CORNER_ORNAMENT_SIZE.x + 10.0, _layout_player_hud_section_rect.position.y + _layout_player_hud_section_rect.size.y - CORNER_ORNAMENT_SIZE.y + 8.0), true, true)
 
@@ -468,6 +454,14 @@ func _place_corner(node: Control, position: Vector2, flip_h: bool, flip_v: bool)
 		node.position.x += CORNER_ORNAMENT_SIZE.x
 	if flip_v:
 		node.position.y += CORNER_ORNAMENT_SIZE.y
+
+
+func _hide_corner(node: Control) -> void:
+	if node == null:
+		return
+	node.visible = false
+	node.size = Vector2.ZERO
+	node.position = Vector2(-9999.0, -9999.0)
 
 
 func _update_runtime_layout_rects(layout_root_size: Vector2) -> void:

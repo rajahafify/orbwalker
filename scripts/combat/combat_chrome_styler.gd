@@ -89,7 +89,7 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if top_bar_texture != null:
 		var top_style := _panel_texture_stylebox(top_bar_texture, 34, 34, 24, 24, 10.0)
 		var top_bar: Variant = nodes.get("top_bar", null)
-		if top_bar is Control:
+		if top_bar is Control and not (top_bar as Control).has_method("apply_header_layout"):
 			(top_bar as Control).add_theme_stylebox_override("panel", top_style)
 
 	var combat_strip_texture := _resolve_visual_texture(visuals, "combat_timer_track_texture")
@@ -106,7 +106,9 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	ornate_frame_style.content_margin_right = 10.0
 	ornate_frame_style.content_margin_top = 8.0
 	ornate_frame_style.content_margin_bottom = 8.0
-	if top_bar_texture == null:
+	var shared_top_bar: Variant = nodes.get("top_bar", null)
+	var is_shared_top_header := shared_top_bar is Control and (shared_top_bar as Control).has_method("apply_header_layout")
+	if top_bar_texture == null and not is_shared_top_header:
 		_apply_panel_stylebox(nodes.get("top_bar", null), ornate_frame_style)
 	if enemy_panel_texture == null:
 		_apply_panel_stylebox(nodes.get("enemy_panel", null), ornate_frame_style)
@@ -145,6 +147,8 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		nodes.get("primary_intent_amount_label", null),
 		nodes.get("primary_intent_detail_label", null),
 	]:
+		if is_shared_top_header and (label == nodes.get("title_label", null) or label == nodes.get("hint_label", null)):
+			continue
 		if label is Label:
 			(label as Label).add_theme_color_override("font_color", ui_text_color)
 
@@ -156,9 +160,12 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	var debug_input_font_size := int(config.get("debug_input_font_size", 24))
 	var debug_input_height := float(config.get("debug_input_height", 72.0))
 
-	_set_label_font_size(nodes.get("title_label", null), font_size_title)
+	if not is_shared_top_header:
+		_set_label_font_size(nodes.get("title_label", null), font_size_title)
 	_set_label_font_size(nodes.get("enemy_step_label", null), font_size_value)
-	_set_label_font_size(nodes.get("hint_label", null), font_size_value)
+	if not is_shared_top_header:
+		_set_label_font_size(nodes.get("hint_label", null), font_size_value)
+		_apply_top_header_label_theme(nodes.get("title_label", null), nodes.get("hint_label", null))
 	_set_label_font_size(nodes.get("intent_label", null), font_size_value)
 	_set_label_font_size(nodes.get("enemy_name_label", null), 38)
 	_set_label_font_size(nodes.get("enemy_hp_text_label", null), 28)
@@ -218,9 +225,11 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if timer_icon != null:
 		timer_icon.visible = false
 		timer_icon.custom_minimum_size = Vector2.ZERO
-	_set_label_outline(nodes.get("title_label", null), 3, Color(0.01, 0.02, 0.03, 0.92))
+	if not is_shared_top_header:
+		_set_label_outline(nodes.get("title_label", null), 3, Color(0.01, 0.02, 0.03, 0.92))
 	_set_label_outline(nodes.get("enemy_step_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
-	_set_label_outline(nodes.get("hint_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
+	if not is_shared_top_header:
+		_set_label_outline(nodes.get("hint_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
 	_set_label_outline(nodes.get("run_progress_label", null), 2, Color(0.01, 0.02, 0.03, 0.90))
 	_set_label_outline(nodes.get("timer_label", null), 3, Color(0.01, 0.02, 0.03, 0.92))
 
@@ -245,12 +254,13 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	if primary_intent_amount != null:
 		primary_intent_amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 		primary_intent_amount.visible = false
-	apply_button_theme([
-		nodes.get("back_button", null),
-		nodes.get("debug_toggle_button", null),
-		nodes.get("settings_button", null),
-		nodes.get("next_button", null),
-	])
+	var themed_buttons: Array = [nodes.get("debug_toggle_button", null), nodes.get("next_button", null)]
+	if not is_shared_top_header:
+		themed_buttons.append(nodes.get("back_button", null))
+		themed_buttons.append(nodes.get("settings_button", null))
+	apply_button_theme(themed_buttons)
+	if not is_shared_top_header:
+		apply_round_header_button_theme([nodes.get("back_button", null), nodes.get("settings_button", null)])
 	apply_timer_track_theme(nodes.get("timer_track", null), visuals)
 	apply_decorative_overlays(nodes, visuals)
 	apply_loadout_group_theme(
@@ -425,6 +435,54 @@ static func apply_button_theme(buttons: Array) -> void:
 		style_hover.bg_color = Color(0.09, 0.14, 0.19, 0.96)
 		(button as Button).add_theme_stylebox_override("hover", style_hover)
 		(button as Button).add_theme_stylebox_override("pressed", style_hover)
+
+
+static func apply_round_header_button_theme(buttons: Array) -> void:
+	for button in buttons:
+		if not (button is Button):
+			continue
+		(button as Button).custom_minimum_size = Vector2(64.0, 64.0)
+		(button as Button).add_theme_font_size_override("font_size", 32)
+		(button as Button).add_theme_color_override("font_color", Color(1.0, 0.91, 0.74, 1.0))
+		var style_normal := StyleBoxFlat.new()
+		style_normal.bg_color = Color(0.08, 0.09, 0.10, 0.96)
+		style_normal.border_color = Color(0.85, 0.61, 0.20, 0.86)
+		style_normal.set_border_width_all(2)
+		style_normal.set_corner_radius_all(32)
+		style_normal.content_margin_left = 4.0
+		style_normal.content_margin_right = 4.0
+		style_normal.content_margin_top = 4.0
+		style_normal.content_margin_bottom = 4.0
+		(button as Button).add_theme_stylebox_override("normal", style_normal)
+		var style_hover := style_normal.duplicate() as StyleBoxFlat
+		style_hover.bg_color = Color(0.16, 0.14, 0.10, 0.98)
+		(button as Button).add_theme_stylebox_override("hover", style_hover)
+		(button as Button).add_theme_stylebox_override("pressed", style_hover)
+
+
+static func _apply_top_header_label_theme(title_label: Variant, gold_label: Variant) -> void:
+	if title_label is Label:
+		var title := title_label as Label
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+		title.add_theme_color_override("font_color", Color(1.0, 0.78, 0.32, 1.0))
+		title.add_theme_constant_override("outline_size", 2)
+		title.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.82))
+	if gold_label is Label:
+		var gold := gold_label as Label
+		gold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+		gold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+		gold.add_theme_color_override("font_color", Color(1.0, 0.86, 0.57, 1.0))
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.22, 0.13, 0.04, 0.96)
+		style.border_color = Color(0.85, 0.61, 0.20, 0.96)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(8)
+		style.content_margin_left = 8.0
+		style.content_margin_right = 8.0
+		style.content_margin_top = 4.0
+		style.content_margin_bottom = 4.0
+		gold.add_theme_stylebox_override("normal", style)
 
 
 static func apply_timer_track_theme(timer_track: Variant, visuals: Variant = null) -> void:

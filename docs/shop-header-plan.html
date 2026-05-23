@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<!--
+Generated as a human-readable planning artifact for the shop header readability pass.
+Use browser view for review before implementing the Godot layout.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop Header Readability Plan</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090c0d;
+      --panel: #101417;
+      --panel-2: #15100b;
+      --ink: #f4e6c6;
+      --muted: #c8b88e;
+      --dim: #83785f;
+      --gold: #d89b32;
+      --gold-2: #8e5d1e;
+      --green: #8dd66f;
+      --blue: #5f8ec7;
+      --line: rgba(216, 155, 50, .64);
+      --line-soft: rgba(216, 155, 50, .24);
+      --red: #d65643;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.55 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 18% 4%, rgba(105, 56, 20, .34), transparent 28%),
+        radial-gradient(circle at 90% 0%, rgba(82, 38, 116, .26), transparent 30%),
+        linear-gradient(180deg, #15120f, #080b0d 40%, #050607);
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 30px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1;
+      letter-spacing: 0;
+      color: #ffe6af;
+      text-shadow: 0 3px 0 rgba(0, 0, 0, .55);
+    }
+
+    .lede {
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .section {
+      background: rgba(9, 12, 13, .88);
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section h2 {
+      padding: 16px 18px;
+      font-size: 22px;
+      color: #f3c873;
+      background: linear-gradient(180deg, rgba(39, 29, 15, .94), rgba(14, 16, 17, .94));
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .content {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .priority {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      background: rgba(255, 255, 255, .025);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-left: 4px solid var(--gold);
+      border-radius: 4px;
+    }
+
+    .priority h3 {
+      font-size: 18px;
+      color: #ffe0a0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    li + li { margin-top: 8px; }
+
+    code {
+      padding: 1px 5px;
+      color: #f7d994;
+      background: rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 3px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .9em;
+    }
+
+    .component-map {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+    }
+
+    .tree-node {
+      padding: 10px 12px;
+      border: 1px solid rgba(216, 155, 50, .22);
+      background: rgba(0, 0, 0, .18);
+      border-radius: 4px;
+    }
+
+    .tree-node strong {
+      color: #f3c873;
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      font-size: 15px;
+    }
+
+    .mockup-wrap {
+      padding: 22px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .04), transparent 18%),
+        rgba(0, 0, 0, .34);
+    }
+
+    .phone {
+      width: 640px;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 8px;
+      background: #050708;
+      border: 1px solid rgba(216, 155, 50, .7);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .56);
+    }
+
+    .shop-header {
+      position: relative;
+      min-height: 278px;
+      overflow: hidden;
+      border: 1px solid rgba(216, 155, 50, .76);
+      border-radius: 8px 8px 0 0;
+      background:
+        linear-gradient(180deg, rgba(6, 8, 9, .78), rgba(6, 8, 9, .12) 46%, rgba(6, 8, 9, .88)),
+        url("../assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png");
+      background-size: cover;
+      background-position: center top;
+    }
+
+    .shop-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 48% 48%, rgba(108, 64, 136, .22), transparent 24%),
+        linear-gradient(90deg, rgba(0, 0, 0, .28), transparent 30%, transparent 70%, rgba(0, 0, 0, .34));
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 170px 52px 52px;
+      gap: 10px;
+      align-items: center;
+      min-height: 70px;
+      padding: 7px 12px 7px 18px;
+      background: rgba(5, 8, 10, .84);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .34);
+    }
+
+    .title-stack {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .shop-title {
+      color: #ffd88f;
+      font-size: 28px;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 #000, 0 0 18px rgba(216, 155, 50, .18);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gold-counter {
+      min-width: 156px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: #ffdd91;
+      font: 700 26px/1 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, transparent 0 8px, rgba(255, 220, 128, .22) 8px 9px, transparent 9px calc(100% - 9px), rgba(255, 220, 128, .22) calc(100% - 9px) calc(100% - 8px), transparent calc(100% - 8px)),
+        linear-gradient(180deg, rgba(77, 49, 19, .96), rgba(22, 20, 18, .98));
+      border: 1px solid var(--gold);
+      border-radius: 7px;
+      box-shadow: inset 0 0 0 1px rgba(255, 238, 176, .08);
+    }
+
+    .coin {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      color: #5e3306;
+      font-size: 19px;
+      background: radial-gradient(circle at 34% 28%, #fff1a8, #dfa338 46%, #7b480c 78%);
+      border: 1px solid #f4c669;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 3px rgba(95, 51, 7, .34);
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      color: #ffe8bc;
+      background:
+        radial-gradient(circle at 50% 46%, rgba(255, 231, 171, .12), transparent 52%),
+        linear-gradient(180deg, rgba(27, 30, 30, .98), rgba(8, 9, 10, .98));
+      border: 1px solid rgba(216, 155, 50, .78);
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 26px;
+      box-shadow: inset 0 0 0 2px rgba(255, 232, 188, .06), 0 8px 16px rgba(0, 0, 0, .42);
+    }
+
+    .gear {
+      font-size: 0;
+    }
+
+    .gear svg {
+      width: 29px;
+      height: 29px;
+      display: block;
+      color: #ffe8bc;
+      filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .65));
+    }
+
+    .merchant-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: center;
+      min-height: 205px;
+      align-items: start;
+      padding: 34px 24px 28px;
+    }
+
+    .speech {
+      width: min(275px, 48%);
+      min-height: 104px;
+      padding: 16px 18px;
+      background: rgba(8, 10, 12, .80);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .42);
+    }
+
+    .speech strong {
+      display: block;
+      color: #f5e3c0;
+      font-size: 19px;
+      line-height: 1.35;
+      margin-bottom: 0;
+    }
+
+    .speech span {
+      display: none;
+    }
+
+    .help-modal-preview {
+      width: min(520px, calc(100% - 24px));
+      margin: 12px auto 0;
+      padding: 24px 28px 30px;
+      position: relative;
+      color: #f6e7c9;
+      background:
+        linear-gradient(180deg, rgba(12, 14, 15, .96), rgba(7, 9, 10, .98)),
+        rgba(0, 0, 0, .88);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .56), inset 0 0 0 1px rgba(255, 238, 176, .06);
+    }
+
+    .help-modal-preview h3 {
+      margin: 0 44px 20px 0;
+      color: var(--green);
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .help-modal-preview p {
+      color: #f2e4cb;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .help-modal-preview .close {
+      position: absolute;
+      right: 14px;
+      top: 14px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: #ffe8bc;
+      border: 1px solid rgba(216, 155, 50, .58);
+      border-radius: 50%;
+      background: rgba(20, 16, 12, .94);
+      font: 700 22px/1 Arial, sans-serif;
+    }
+
+    .callouts {
+      display: grid;
+      gap: 10px;
+    }
+
+    .callout {
+      padding: 12px 14px;
+      border: 1px solid rgba(216, 155, 50, .26);
+      background: rgba(0, 0, 0, .22);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+
+    .callout strong {
+      color: #f4ce7f;
+    }
+
+    .execution-list {
+      display: grid;
+      gap: 12px;
+      counter-reset: execution-step;
+    }
+
+    .execution-step {
+      position: relative;
+      padding: 14px 14px 14px 54px;
+      border: 1px solid rgba(216, 155, 50, .22);
+      background: rgba(0, 0, 0, .22);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+
+    .execution-step::before {
+      counter-increment: execution-step;
+      content: counter(execution-step);
+      position: absolute;
+      left: 14px;
+      top: 15px;
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      color: #1a1208;
+      background: linear-gradient(180deg, #f2c66d, #a9681f);
+      border-radius: 50%;
+      font-weight: 700;
+      box-shadow: inset 0 0 0 1px rgba(255, 242, 184, .45);
+    }
+
+    .execution-step strong {
+      display: block;
+      color: #f4ce7f;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .speech {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Shop Header Readability Plan</h1>
+      <p class="lede">Goal: rebuild the yellow-highlighted shop header into a legible, componentized hero/header area that reads closer to the reference: strong title, obvious gold counter, simple controls, and one larger merchant message panel over the shop art.</p>
+    </header>
+
+    <div class="layout">
+      <main class="section">
+        <h2>Prioritized Work</h2>
+        <div class="content">
+          <article class="priority">
+            <h3>P0: Make The Header Readable</h3>
+            <ul>
+              <li>Split the current top strip into clear components: <code>header.title</code>, <code>header.gold_counter</code>, and <code>header.help_button</code>.</li>
+              <li>Replace tiny mixed labels with one large title: <code>Dungeon 1-2 Shop</code>.</li>
+              <li>Make the gold counter a central framed plaque with a coin medallion and at least 48px height in design space.</li>
+              <li>Keep controls as round icon buttons on the right, matching the reference help/settings treatment.</li>
+            </ul>
+          </article>
+
+          <article class="priority">
+            <h3>P1: Reframe The Merchant Section</h3>
+            <ul>
+              <li>Turn the merchant area into <code>header.merchant_stage</code> with one primary child: <code>speech_panel</code>.</li>
+              <li>Increase the speech panel text size and line height; use short, high-contrast copy like the reference: “Well met, adventurer. New stock, fresh from the depths.”</li>
+              <li>Remove boss preview from the header mockup; keep only the greeting panel from the reference.</li>
+              <li>Let the merchant/background art carry the right side instead of adding a separate status/instruction box.</li>
+            </ul>
+          </article>
+
+          <article class="priority">
+            <h3>P2: Improve Visual Hierarchy</h3>
+            <ul>
+              <li>Use a single dark framed header band instead of many small nested panels.</li>
+              <li>Let the background art show through behind the merchant stage, but darken it enough for text readability.</li>
+              <li>Add one clear bottom rail under the merchant stage so the header ends cleanly before shop stock begins.</li>
+              <li>Align left and right content to shared gutters; avoid floating text blocks with unrelated widths.</li>
+            </ul>
+          </article>
+
+          <article class="priority">
+            <h3>P3: Implementation Safety</h3>
+            <ul>
+              <li>Create named rect constants for each component instead of inline <code>Rect2</code> calls.</li>
+              <li>Expose the new header geometry through <code>shop_layout_probe_snapshot()</code>.</li>
+              <li>Add layout tests for minimum font zones, component containment, button hit size, and no overlap between title, gold, and controls.</li>
+              <li>Keep the first implementation scoped to the yellow/header section before changing stock cards, relics, or footer.</li>
+            </ul>
+          </article>
+        </div>
+      </main>
+
+      <aside class="section">
+        <h2>Component Shape</h2>
+        <div class="content component-map">
+          <div class="tree-node"><strong>shop_header</strong><br>Only the topbar and merchant art section.</div>
+          <div class="tree-node"><strong>shop_header.topbar</strong><br>Grid: title + gold + help.</div>
+          <div class="tree-node"><strong>topbar.title</strong><br><code>screen_title</code></div>
+          <div class="tree-node"><strong>topbar.gold_counter</strong><br><code>coin_icon</code><br><code>gold_value</code></div>
+          <div class="tree-node"><strong>topbar.menu</strong><br><code>help_button</code></div>
+          <div class="tree-node"><strong>shop_header.merchant_stage</strong><br><code>speech_panel</code><br>background art remains visible on the right.</div>
+          <div class="tree-node"><strong>shop_header.bottom_rail</strong><br>Visual end of the header; stock layout is separate.</div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="section" style="margin-top: 22px;">
+      <h2>Mockup</h2>
+      <div class="mockup-wrap">
+        <div class="phone">
+          <div class="shop-header" aria-label="Proposed shop header mockup">
+            <div class="topbar">
+              <div class="title-stack">
+                <div class="shop-title">Dungeon 1-2</div>
+              </div>
+              <div class="gold-counter"><span class="coin">$</span><span>256</span></div>
+              <div class="icon-btn">?</div>
+              <div class="icon-btn gear" aria-label="Settings">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <path fill="currentColor" d="M28.8 6h6.4l2.3 8.1c2 .6 3.9 1.4 5.6 2.4l7.3-4.1 4.5 4.5-4.1 7.3c1 1.8 1.8 3.6 2.4 5.6l8.1 2.3v6.4l-8.1 2.3c-.6 2-1.4 3.9-2.4 5.6l4.1 7.3-4.5 4.5-7.3-4.1c-1.8 1-3.6 1.8-5.6 2.4L35.2 58h-6.4l-2.3-8.1c-2-.6-3.9-1.4-5.6-2.4l-7.3 4.1-4.5-4.5 4.1-7.3c-1-1.8-1.8-3.6-2.4-5.6L2.7 38v-6.4l8.1-2.3c.6-2 1.4-3.9 2.4-5.6l-4.1-7.3 4.5-4.5 7.3 4.1c1.8-1 3.6-1.8 5.6-2.4L28.8 6Zm3.2 17.2a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2Z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="merchant-row">
+              <div class="speech">
+                <strong>Well met, adventurer. New stock, fresh from the depths.</strong>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="help-modal-preview" aria-label="Shop help modal mockup">
+            <div class="close">x</div>
+            <h3>Shop opened. Buy, reroll, sell, or continue.</h3>
+            <p>Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="margin-top: 22px;">
+      <h2>Notes For Godot Implementation</h2>
+      <div class="content callouts">
+        <div class="callout"><strong>Recommended first pass:</strong> use <code>scenes/ui/top_header.tscn</code> as the single shared top header in shop and combat, then pair it with a single speech-panel merchant stage in shop.</div>
+        <div class="callout"><strong>Readable minimums:</strong> title 28px or larger, gold value 26px or larger, speech body 18px or larger, and help control 48px or larger.</div>
+        <div class="callout"><strong>Help behavior:</strong> the <code>?</code> button should open a modal with the shop action guidance, not render that guidance inside the header.</div>
+        <div class="callout"><strong>Reference direction:</strong> less tiny dashboard chrome, more framed fantasy storefront: large title, dominant merchant area, warm gold rails, and fewer competing text blocks.</div>
+      </div>
+    </section>
+
+    <section class="section" style="margin-top: 22px;">
+      <h2>Execution Plan</h2>
+      <div class="content execution-list">
+        <div class="execution-step">
+          <strong>Wire the help button.</strong>
+          Keep the <code>?</code> as a real shop-help control. Pressing it opens a modal with “Shop opened. Buy, reroll, sell, or continue.” and the short buy/sell instruction copy.
+        </div>
+        <div class="execution-step">
+          <strong>Extract shared header.</strong>
+          Keep title, gold, help, settings, chrome, and geometry in <code>scenes/ui/top_header.tscn</code> plus <code>scripts/ui/top_header.gd</code>; shop and combat must reuse that scene instead of restyling private copies.
+        </div>
+        <div class="execution-step">
+          <strong>Build the topbar once.</strong>
+          Replace the current small mixed header labels with one large title, a framed gold counter with coin medallion, and one round help control.
+        </div>
+        <div class="execution-step">
+          <strong>Rebuild the merchant stage.</strong>
+          Keep the shop art visible, place one readable speech plaque on the left, remove the extra status/instruction panel, and add a clean bottom rail where the header ends.
+        </div>
+        <div class="execution-step">
+          <strong>Add the help modal.</strong>
+          Implement the modal as a centered framed panel with a close button, keyboard/backdrop dismissal, and no impact on the normal header layout.
+        </div>
+        <div class="execution-step">
+          <strong>Expose layout probes.</strong>
+          Add the shared header and help modal rects to layout probes so tests can assert containment, minimum sizes, no overlap, and shop/combat parity.
+        </div>
+        <div class="execution-step">
+          <strong>Enforce shared ownership.</strong>
+          Keep <code>scripts/debug/top_header_contract_probe.gd</code> green so combat instances <code>scenes/ui/top_header.tscn</code>, shop instantiates the same scene, and both probes use <code>TopHeader.layout_snapshot_for()</code>.
+        </div>
+        <div class="execution-step">
+          <strong>Validate in small passes.</strong>
+          Update the layout test, run the focused shop layout probe, run <code>git diff --check</code>, then boot <code>res://scenes/shop.tscn</code> headlessly and visually compare against this mockup.
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

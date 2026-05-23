@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/board.tscn" id="2_board"]
 [ext_resource type="Theme" path="res://resources/visual/first_pass_theme.tres" id="3_theme"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_player_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/top_header.tscn" id="5_top_header"]
 
 [node name="Combat" type="Control"]
 layout_mode = 3
@@ -55,8 +56,7 @@ layout_mode = 1
 anchors_preset = 0
 mouse_filter = 2
 
-[node name="TopBar" type="PanelContainer" parent="CombatLayoutRoot"]
-layout_mode = 1
+[node name="TopBar" parent="CombatLayoutRoot" instance=ExtResource("5_top_header")]
 
 [node name="CornerTopLeft" type="TextureRect" parent="CombatLayoutRoot"]
 unique_name_in_owner = true
@@ -71,52 +71,6 @@ layout_mode = 1
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
-
-[node name="TopBarRow" type="HBoxContainer" parent="CombatLayoutRoot/TopBar"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="BackButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-layout_mode = 2
-text = "<"
-
-[node name="TitleLabel" type="Label" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "LEVEL"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="EnemyStepLabel" type="Label" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "FIGHT"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="TopSpacer" type="Control" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-layout_mode = 2
-size_flags_horizontal = 0
-
-[node name="HintLabel" type="Label" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "GOLD 0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="DebugToggleButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Debug"
-
-[node name="SettingsButton" type="Button" parent="CombatLayoutRoot/TopBar/TopBarRow"]
-layout_mode = 2
-text = "M"
 
 [node name="EnemyPanel" type="PanelContainer" parent="CombatLayoutRoot"]
 layout_mode = 1
@@ -427,7 +381,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[connection signal="pressed" from="CombatLayoutRoot/TopBar/TopBarRow/BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="CombatLayoutRoot/TopBar/TopBarRow/DebugToggleButton" to="." method="_on_debug_toggle_button_pressed"]
-[connection signal="pressed" from="CombatLayoutRoot/TopBar/TopBarRow/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/TopBar/HelpButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/TopBar/DebugToggleButton" to="." method="_on_debug_toggle_button_pressed"]
+[connection signal="pressed" from="CombatLayoutRoot/TopBar/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="CombatLayoutRoot/BoardPanel/OutcomeSummaryPanel/OutcomeSummaryRoot/NextButton" to="." method="_on_next_button_pressed"]

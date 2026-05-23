@@ -16,12 +16,12 @@ func build_hud_snapshot(data: Dictionary) -> Dictionary:
 	if bool(data.get("show_intent_preview", false)):
 		enemy_intent_preview = _enemy_intent_preview_data(intent, enemy_hp, enemy_max_hp)
 	var player_gold := int(data.get("player_gold", 0))
-	var top_level_text := "LEVEL %d / %d" % [
+	var top_level_text := "Dungeon %d-%d" % [
 		int(data.get("dungeon_level", 0)),
-		maxi(1, int(data.get("max_dungeon_levels", 1))),
+		_combat_step_ordinal(String(data.get("current_step_key", ""))),
 	]
 	var top_enemy_step_text := _top_enemy_step_text(String(data.get("current_step_key", "")))
-	var top_gold_text := "GOLD %d" % player_gold
+	var top_gold_text := "$  %d" % player_gold
 	var primary_intent_badge := _primary_intent_badge_snapshot(intent, _compact_formatter(data))
 	var hud_snapshot: Dictionary = build_snapshot(
 		{
@@ -161,6 +161,17 @@ func _top_enemy_step_text(current_step_key: String) -> String:
 			return "SHOP"
 		_:
 			return current_step_key.to_upper()
+
+
+func _combat_step_ordinal(current_step_key: String) -> int:
+	match current_step_key:
+		"enemy_1":
+			return 1
+		"enemy_2":
+			return 2
+		"boss":
+			return 3
+	return 1
 
 
 func _primary_intent_badge_snapshot(intent: Dictionary, format_intent_compact: Callable = Callable()) -> Dictionary:
