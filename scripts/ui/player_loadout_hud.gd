@@ -619,7 +619,7 @@ func _pulse_combat_mastery_feedback_label(feedback_label: Label) -> void:
 		return
 	feedback_label.scale = Vector2(1.18, 1.18)
 	var tween := feedback_label.create_tween()
-	tween.tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
 
 
 func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
@@ -1041,7 +1041,7 @@ func _pulse_modifier_source_slot(slot: Control) -> void:
 	var tween := slot.create_tween()
 	slot.set_meta("modifier_wiggle_tween", tween)
 	tween.set_parallel(true)
-	tween.tween_property(slot, "scale", Vector2(MODIFIER_SOURCE_WIGGLE_SCALE, MODIFIER_SOURCE_WIGGLE_SCALE), MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(slot, "scale", Vector2(MODIFIER_SOURCE_WIGGLE_SCALE, MODIFIER_SOURCE_WIGGLE_SCALE), MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
 	tween.tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.18)
 	tween.chain().tween_property(slot, "rotation_degrees", MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.28)
 	tween.chain().tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES * 0.45, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.22)

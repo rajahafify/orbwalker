@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Post-Match AAA VFX Target</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05070b;
+      --panel: #0b1018;
+      --panel-2: #111927;
+      --ink: #f4f7fb;
+      --muted: #9aa8bb;
+      --line: rgba(181, 210, 255, 0.18);
+      --gold: #ffd35a;
+      --fire: #ff5a1f;
+      --ice: #70e8ff;
+      --earth: #86f05c;
+      --heart: #73ff9a;
+      --armor: #a7d8ff;
+      --damage: #ff3b33;
+      --power: 0.62;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 8%, rgba(255, 102, 36, 0.14), transparent 28%),
+        radial-gradient(circle at 80% 14%, rgba(112, 232, 255, 0.12), transparent 26%),
+        radial-gradient(circle at 50% 100%, rgba(255, 211, 90, 0.10), transparent 35%),
+        linear-gradient(180deg, #070a10, var(--bg) 64%, #030406);
+      font: 15px/1.45 "Segoe UI", Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(180deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 64px);
+      mask-image: radial-gradient(circle at center, black, transparent 74%);
+      opacity: 0.62;
+    }
+
+    main {
+      width: min(1240px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+      position: relative;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 50px);
+      line-height: 0.96;
+      letter-spacing: 0;
+      max-width: 760px;
+      text-shadow: 0 0 28px rgba(255, 211, 90, 0.24);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .control {
+      min-width: min(360px, 100%);
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 211, 90, 0.38);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(16, 22, 32, 0.94), rgba(7, 10, 15, 0.92));
+      box-shadow: 0 0 34px rgba(255, 211, 90, 0.10);
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 54px;
+      gap: 12px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .control label {
+      color: #ffe9a8;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #ffca3b;
+    }
+
+    output {
+      display: grid;
+      place-items: center;
+      min-height: 34px;
+      border: 1px solid rgba(255, 211, 90, 0.35);
+      border-radius: 6px;
+      color: #fff1b4;
+      background: rgba(255, 211, 90, 0.08);
+      font-weight: 900;
+    }
+
+    .showcase {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .tile {
+      position: relative;
+      min-height: 300px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(13, 20, 30, 0.58), rgba(5, 7, 11, 0.84)),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06), transparent 54%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -38px 70px rgba(0,0,0,0.34),
+        0 18px 48px rgba(0,0,0,0.36);
+      isolation: isolate;
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent), transparent 84%), transparent 44%),
+        linear-gradient(120deg, transparent 0 34%, rgba(255,255,255,0.05) 38%, transparent 44% 100%);
+      opacity: calc(0.28 + var(--power) * 0.45);
+      z-index: 0;
+    }
+
+    .tile canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      mix-blend-mode: screen;
+    }
+
+    .target {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: 112px;
+      height: 132px;
+      transform: translate(-50%, -50%);
+      border-radius: 45% 45% 34% 34%;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.18), transparent 28%),
+        linear-gradient(180deg, #344154, #151b25 70%, #080a0e);
+      box-shadow:
+        0 26px 36px rgba(0,0,0,0.72),
+        inset 0 12px 26px rgba(255,255,255,0.10);
+      opacity: 0.62;
+      z-index: 1;
+    }
+
+    .player-target {
+      border-radius: 38% 38% 22% 22%;
+      background:
+        radial-gradient(circle at 50% 22%, rgba(255, 211, 90, 0.18), transparent 24%),
+        linear-gradient(180deg, #283c54, #141b25 68%, #080b10);
+    }
+
+    .amount {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 5;
+      transform: translate(-50%, -50%) scale(calc(0.86 + var(--power) * 0.30));
+      font-size: 48px;
+      font-weight: 1000;
+      color: #fff;
+      letter-spacing: 0;
+      text-shadow:
+        0 4px 0 rgba(0,0,0,0.95),
+        0 0 12px var(--accent),
+        0 0 32px var(--accent);
+      pointer-events: none;
+    }
+
+    .nameplate {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 6;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--accent), transparent 44%);
+      border-radius: 8px;
+      background: rgba(3, 6, 10, 0.76);
+      box-shadow: 0 0 28px color-mix(in srgb, var(--accent), transparent 86%);
+      backdrop-filter: blur(10px);
+    }
+
+    .nameplate h2 {
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      color: color-mix(in srgb, var(--accent), white 28%);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .fire { --accent: var(--fire); }
+    .ice { --accent: var(--ice); }
+    .earth { --accent: var(--earth); }
+    .heal { --accent: var(--heart); }
+    .armor { --accent: var(--armor); }
+    .gold { --accent: var(--gold); }
+
+    .combat-placement {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .combat-frame,
+    .notes {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(11, 16, 24, 0.90), rgba(4, 6, 10, 0.94));
+      overflow: hidden;
+    }
+
+    .combat-frame {
+      min-height: 410px;
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(255, 211, 90, 0.12);
+    }
+
+    #sequenceCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .arena {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse at 50% 8%, rgba(255, 160, 60, 0.15), transparent 28%),
+        linear-gradient(180deg, rgba(17, 24, 34, 0.40), rgba(2, 3, 5, 0.92)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 86px);
+    }
+
+    .enemy-stand {
+      position: absolute;
+      left: 50%;
+      top: 38px;
+      width: min(270px, 45%);
+      height: 150px;
+      transform: translateX(-50%);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 24%, rgba(128, 255, 94, 0.17), transparent 28%),
+        linear-gradient(180deg, rgba(66, 76, 62, 0.64), rgba(12, 14, 17, 0.30));
+      box-shadow: 0 28px 54px rgba(0,0,0,0.46);
+      z-index: 1;
+    }
+
+    .board {
+      position: absolute;
+      left: 50%;
+      top: 200px;
+      width: min(340px, calc(100% - 64px));
+      aspect-ratio: 1 / 1;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 8px;
+      border: 1px solid rgba(255, 211, 90, 0.46);
+      border-radius: 8px;
+      background: rgba(2, 4, 7, 0.76);
+      z-index: 2;
+    }
+
+    .orb {
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: inset 0 7px 12px rgba(255,255,255,0.26), inset 0 -14px 18px rgba(0,0,0,0.46), 0 0 14px currentColor;
+    }
+
+    .mastery-row {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      z-index: 3;
+    }
+
+    .mastery {
+      min-height: 54px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 6px;
+      background: rgba(5, 8, 12, 0.88);
+      box-shadow: inset 0 0 24px color-mix(in srgb, currentColor, transparent 86%);
+    }
+
+    .notes {
+      padding: 18px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+    }
+
+    .notes h3 {
+      font-size: 22px;
+    }
+
+    .notes p {
+      color: var(--muted);
+    }
+
+    .spec-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 6px;
+    }
+
+    .spec {
+      display: grid;
+      grid-template-columns: 12px 1fr;
+      gap: 10px;
+      color: #dbe6f6;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 14px currentColor;
+    }
+
+    .change-log {
+      margin-top: 14px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(11, 16, 24, 0.90), rgba(4, 6, 10, 0.94));
+    }
+
+    .change-log h3 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .change-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .change-card {
+      min-height: 134px;
+      padding: 12px;
+      border: 1px solid rgba(181, 210, 255, 0.14);
+      border-radius: 8px;
+      background: rgba(2, 5, 9, 0.56);
+    }
+
+    .change-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #ffe7a0;
+      letter-spacing: 0;
+    }
+
+    .change-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    @media (max-width: 940px) {
+      .topbar,
+      .combat-placement {
+        grid-template-columns: 1fr;
+      }
+
+      .showcase {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .change-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: min(100vw - 18px, 520px);
+        padding-top: 12px;
+      }
+
+      .showcase {
+        grid-template-columns: 1fr;
+      }
+
+      .tile {
+        min-height: 260px;
+      }
+
+      .amount {
+        font-size: 42px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="topbar">
+      <div>
+        <h1>Post-Match AAA VFX Target</h1>
+        <p class="subtitle">This is the visual bar for the combat replay pass: bigger result numbers should throw more particles, larger glows, longer streaks, and stronger screen-readable silhouettes.</p>
+      </div>
+      <div class="control">
+        <label for="power">Result Number / Intensity</label>
+        <div class="control-row">
+          <input id="power" type="range" min="3" max="48" value="28">
+          <output id="powerOut">28</output>
+        </div>
+      </div>
+    </section>
+
+    <section class="showcase" aria-label="Elemental VFX previews">
+      <article class="tile fire" data-kind="fire" data-prefix="-">
+        <canvas data-effect="fire"></canvas>
+        <div class="target"></div>
+        <div class="amount"><span data-amount>-28</span></div>
+        <div class="nameplate"><h2>Fire Impact</h2><span class="tag">burn burst</span></div>
+      </article>
+      <article class="tile ice" data-kind="ice" data-prefix="-">
+        <canvas data-effect="ice"></canvas>
+        <div class="target"></div>
+        <div class="amount"><span data-amount>-28</span></div>
+        <div class="nameplate"><h2>Ice Impact</h2><span class="tag">shatter frost</span></div>
+      </article>
+      <article class="tile earth" data-kind="earth" data-prefix="-">
+        <canvas data-effect="earth"></canvas>
+        <div class="target"></div>
+        <div class="amount"><span data-amount>-28</span></div>
+        <div class="nameplate"><h2>Earth Impact</h2><span class="tag">stone pulse</span></div>
+      </article>
+      <article class="tile heal" data-kind="heal" data-prefix="+">
+        <canvas data-effect="heal"></canvas>
+        <div class="target player-target"></div>
+        <div class="amount"><span data-amount>+28</span></div>
+        <div class="nameplate"><h2>Healing</h2><span class="tag">refresh lift</span></div>
+      </article>
+      <article class="tile armor" data-kind="armor" data-prefix="+">
+        <canvas data-effect="armor"></canvas>
+        <div class="target player-target"></div>
+        <div class="amount"><span data-amount>+28</span></div>
+        <div class="nameplate"><h2>Armor Gain</h2><span class="tag">block shell</span></div>
+      </article>
+      <article class="tile gold" data-kind="gold" data-prefix="+">
+        <canvas data-effect="gold"></canvas>
+        <div class="target player-target"></div>
+        <div class="amount"><span data-amount>+28</span></div>
+        <div class="nameplate"><h2>Gold Gain</h2><span class="tag">coin rain</span></div>
+      </article>
+    </section>
+
+    <section class="combat-placement">
+      <div class="combat-frame">
+        <div class="arena"></div>
+        <canvas id="sequenceCanvas"></canvas>
+        <div class="enemy-stand"></div>
+        <div class="board">
+          <i class="orb" style="color:#ff5a1f;background:#c82f12"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#70e8ff;background:#177eb3"></i>
+          <i class="orb" style="color:#f43487;background:#b81458"></i>
+          <i class="orb" style="color:#a7d8ff;background:#6f879b"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#ffd35a;background:#cc9320"></i>
+          <i class="orb" style="color:#ff5a1f;background:#c82f12"></i>
+          <i class="orb" style="color:#70e8ff;background:#177eb3"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#a7d8ff;background:#6f879b"></i>
+          <i class="orb" style="color:#ff5a1f;background:#c82f12"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#f43487;background:#b81458"></i>
+          <i class="orb" style="color:#70e8ff;background:#177eb3"></i>
+          <i class="orb" style="color:#ffd35a;background:#cc9320"></i>
+          <i class="orb" style="color:#a7d8ff;background:#6f879b"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#ff5a1f;background:#c82f12"></i>
+          <i class="orb" style="color:#f43487;background:#b81458"></i>
+          <i class="orb" style="color:#70e8ff;background:#177eb3"></i>
+          <i class="orb" style="color:#86f05c;background:#4cac2d"></i>
+          <i class="orb" style="color:#a7d8ff;background:#6f879b"></i>
+          <i class="orb" style="color:#ffd35a;background:#cc9320"></i>
+          <i class="orb" style="color:#ff5a1f;background:#c82f12"></i>
+        </div>
+        <div class="mastery-row">
+          <i class="mastery" style="color:#ff5a1f"></i>
+          <i class="mastery" style="color:#70e8ff"></i>
+          <i class="mastery" style="color:#86f05c"></i>
+          <i class="mastery" style="color:#73ff9a"></i>
+          <i class="mastery" style="color:#a7d8ff"></i>
+          <i class="mastery" style="color:#ffd35a"></i>
+        </div>
+      </div>
+      <aside class="notes">
+        <h3>What Changed In-Game</h3>
+        <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. The isolated cards above show the impact texture target; the combat mock shows the timing pass.</p>
+        <div class="spec-list">
+          <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire builds hot at the mastery, launches as a flame mass, then bursts on the enemy.</span></div>
+          <div class="spec" style="color:var(--ice)"><span class="dot"></span><span>Ice gathers as cold breath and crystals, breezes forward, then shatters.</span></div>
+          <div class="spec" style="color:var(--earth)"><span class="dot"></span><span>Earth rumbles under the mastery, slithers along the ground, then pulses with stone.</span></div>
+          <div class="spec" style="color:var(--heart)"><span class="dot"></span><span>Healing rises upward with refreshing green streams and soft motes.</span></div>
+          <div class="spec" style="color:var(--armor)"><span class="dot"></span><span>Armor creates a blue-white shield shell with blocking impact streaks.</span></div>
+          <div class="spec" style="color:var(--gold)"><span class="dot"></span><span>Gold rewards rain coins down around the player target.</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="change-log">
+      <h3>Implementation Notes</h3>
+      <div class="change-grid">
+        <article class="change-card">
+          <h4>Replay Timing</h4>
+          <p>Elemental damage now waits through a slower mastery cast sequence before applying enemy damage feedback: 0.86s charge, 0.82s travel, and 0.50s impact hold at normal combat speed.</p>
+        </article>
+        <article class="change-card">
+          <h4>VFX Presenter</h4>
+          <p>CombatVfxPresenter owns the new mastery cast path, layered additive impact effects, result-number intensity scaling, and future-facing post-match VFX speed scaling.</p>
+        </article>
+        <article class="change-card">
+          <h4>Asset Registry</h4>
+          <p>VisualRegistry now builds distinct procedural post-match textures for fire, ice, earth, gold, heart, armor, and damage, with aliases for healing and armor gain.</p>
+        </article>
+        <article class="change-card">
+          <h4>Element Language</h4>
+          <p>Fire spools hot and launches as flame, ice gathers cold breath and shards, earth rumbles then slithers along the ground, healing rises, armor blocks, and gold rains coins.</p>
+        </article>
+        <article class="change-card">
+          <h4>Intensity Scaling</h4>
+          <p>Higher result numbers increase tier, size, lifetime, brightness, particle count, and cast density while keeping board and target readability intact.</p>
+        </article>
+        <article class="change-card">
+          <h4>Validation</h4>
+          <p>The change includes registry and speed-scale smoke coverage, a presenter spawn probe, combat model tests, and a Godot main-scene launch without runtime errors.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const slider = document.getElementById("power");
+    const output = document.getElementById("powerOut");
+    const canvases = [...document.querySelectorAll("canvas[data-effect]")];
+    const sequenceCanvas = document.getElementById("sequenceCanvas");
+    const tiles = [...document.querySelectorAll(".tile[data-kind]")];
+    const TAU = Math.PI * 2;
+    const PREVIEW_TIME_SCALE = 0.42;
+    const SEQUENCE_EFFECTS = [
+      { kind: "fire", slot: 0, accent: [255, 90, 31], core: [255, 226, 112], dark: [150, 28, 8] },
+      { kind: "ice", slot: 1, accent: [112, 232, 255], core: [235, 255, 255], dark: [24, 104, 194] },
+      { kind: "earth", slot: 2, accent: [134, 240, 92], core: [226, 255, 112], dark: [46, 82, 34] }
+    ];
+
+    function fract(value) {
+      return value - Math.floor(value);
+    }
+
+    function hash(seed) {
+      return fract(Math.sin(seed * 127.1 + 311.7) * 43758.5453123);
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function easeInOut(value) {
+      const x = clamp01(value);
+      return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+    }
+
+    function easeOut(value) {
+      return 1 - Math.pow(1 - clamp01(value), 3);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function rgba(rgb, alpha) {
+      return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+    }
+
+    function resizeCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.floor(rect.width * ratio));
+      const height = Math.max(1, Math.floor(rect.height * ratio));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function updatePower() {
+      const value = Number(slider.value);
+      const normalized = (value - Number(slider.min)) / (Number(slider.max) - Number(slider.min));
+      document.documentElement.style.setProperty("--power", normalized.toFixed(3));
+      output.textContent = value;
+      for (const tile of tiles) {
+        const prefix = tile.dataset.prefix || "";
+        const label = tile.querySelector("[data-amount]");
+        label.textContent = `${prefix}${value}`;
+      }
+    }
+
+    function glow(ctx, x, y, radius, colorStops) {
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      for (const stop of colorStops) {
+        gradient.addColorStop(stop[0], stop[1]);
+      }
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, TAU);
+      ctx.fill();
+    }
+
+    function strokeRing(ctx, x, y, radius, width, color, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function spark(ctx, x, y, radius, color, alpha, rotation = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(1, radius * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(-radius, 0);
+      ctx.lineTo(radius, 0);
+      ctx.moveTo(0, -radius);
+      ctx.lineTo(0, radius);
+      ctx.moveTo(-radius * 0.55, -radius * 0.55);
+      ctx.lineTo(radius * 0.55, radius * 0.55);
+      ctx.moveTo(radius * 0.55, -radius * 0.55);
+      ctx.lineTo(-radius * 0.55, radius * 0.55);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function polygon(ctx, points, fill, stroke, width = 2) {
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i += 1) ctx.lineTo(points[i][0], points[i][1]);
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = width;
+        ctx.stroke();
+      }
+    }
+
+    function sequencePoint(source, target, u, kind) {
+      const x = lerp(source.x, target.x, u);
+      const y = lerp(source.y, target.y, u);
+      const dx = target.x - source.x;
+      const dy = target.y - source.y;
+      const distance = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / distance;
+      const ny = dx / distance;
+      const arc = kind === "fire" ? -64 * Math.sin(Math.PI * u) : kind === "ice" ? -22 * Math.sin(Math.PI * u) : 34 * Math.sin(TAU * u * 1.45);
+      return { x: x + nx * arc, y: y + ny * arc };
+    }
+
+    function drawSequenceSpool(ctx, info, source, t, p, value, s) {
+      const power = 0.72 + p * 1.35;
+      const pulse = easeOut(t);
+      glow(ctx, source.x, source.y, (42 + 70 * pulse) * s * power, [
+        [0, rgba(info.core, 0.88)],
+        [0.24, rgba(info.accent, 0.44)],
+        [1, rgba(info.accent, 0)]
+      ]);
+      for (let i = 0; i < 4; i += 1) {
+        const u = clamp01(t - i * 0.10);
+        if (u <= 0) continue;
+        strokeRing(ctx, source.x, source.y, (20 + u * 74 + i * 7) * s * power, (7 - u * 3) * s, rgba(info.core, 1), (1 - u) * 0.82);
+      }
+      const count = Math.floor(8 + value / 3);
+      for (let i = 0; i < count; i += 1) {
+        const a = TAU * i / count + t * 1.6;
+        const inward = 1 - easeOut(fract(t * 0.85 + hash(i)));
+        const r = (18 + hash(i + 3) * 58) * s * power * inward;
+        const x = source.x + Math.cos(a) * r;
+        const y = source.y + Math.sin(a) * r;
+        glow(ctx, x, y, (4 + p * 8) * s, [[0, rgba(info.core, 0.82)], [1, rgba(info.accent, 0)]]);
+      }
+      if (info.kind === "fire") {
+        for (let i = 0; i < 8 + p * 10; i += 1) {
+          const x = source.x + (hash(i) - 0.5) * 66 * s;
+          const y = source.y + 24 * s - easeOut(fract(t + hash(i + 2))) * 72 * s;
+          const h = (34 + hash(i + 4) * 34) * s * power;
+          const w = (9 + p * 10) * s;
+          const grad = ctx.createLinearGradient(x, y + h * 0.4, x, y - h);
+          grad.addColorStop(0, rgba(info.dark, 0));
+          grad.addColorStop(0.42, rgba(info.accent, 0.74));
+          grad.addColorStop(0.92, rgba(info.core, 0.90));
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(x - w, y + h * 0.24);
+          ctx.quadraticCurveTo(x - w * 0.8, y - h * 0.42, x, y - h);
+          ctx.quadraticCurveTo(x + w * 0.9, y - h * 0.25, x + w, y + h * 0.24);
+          ctx.quadraticCurveTo(x, y + h * 0.42, x - w, y + h * 0.24);
+          ctx.fill();
+        }
+      } else if (info.kind === "ice") {
+        for (let i = 0; i < 8 + p * 8; i += 1) {
+          const side = i % 2 === 0 ? -1 : 1;
+          const y = source.y + (hash(i) - 0.5) * 76 * s;
+          const x0 = source.x + side * (76 - t * 48) * s;
+          const x1 = source.x + side * (18 - t * 12) * s;
+          ctx.strokeStyle = rgba(info.core, 0.22 + t * 0.42);
+          ctx.lineWidth = (2 + p * 3) * s;
+          ctx.beginPath();
+          ctx.moveTo(x0, y);
+          ctx.bezierCurveTo(source.x + side * 42 * s, y - 18 * s, source.x + side * 28 * s, y + 16 * s, x1, y);
+          ctx.stroke();
+        }
+      } else {
+        for (let i = 0; i < 7 + p * 8; i += 1) {
+          const x = source.x + (i - 3) * 17 * s;
+          const y = source.y + 34 * s + Math.sin(t * 8 + i) * 4 * s;
+          ctx.strokeStyle = rgba(info.core, 0.32 + t * 0.38);
+          ctx.lineWidth = (3 + p * 4) * s;
+          ctx.beginPath();
+          ctx.moveTo(x - 18 * s, y);
+          ctx.lineTo(x + 16 * s, y + (hash(i) - 0.5) * 14 * s);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function drawSequenceLaunch(ctx, info, source, target, t, p, value, s) {
+      const u = easeInOut(t);
+      const power = 0.75 + p * 1.2;
+      if (info.kind === "earth") {
+        const segments = Math.floor(12 + value / 3);
+        for (let i = 0; i < segments; i += 1) {
+          const segU = i / Math.max(1, segments - 1);
+          if (segU > u) continue;
+          const point = sequencePoint(source, target, segU, info.kind);
+          const next = sequencePoint(source, target, Math.min(1, segU + 0.035), info.kind);
+          ctx.strokeStyle = rgba(info.dark, 0.64);
+          ctx.lineWidth = (7 + p * 6) * s;
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(next.x, next.y);
+          ctx.stroke();
+          ctx.strokeStyle = rgba(info.core, 0.54);
+          ctx.lineWidth = (2 + p * 3) * s;
+          ctx.beginPath();
+          ctx.moveTo(point.x - 8 * s, point.y + 5 * s);
+          ctx.lineTo(point.x + 18 * s, point.y - 2 * s);
+          ctx.stroke();
+        }
+        return;
+      }
+      for (let i = 0; i < 13 + p * 12; i += 1) {
+        const trailU = clamp01(u - i * 0.035);
+        const point = sequencePoint(source, target, trailU, info.kind);
+        const next = sequencePoint(source, target, Math.min(1, trailU + 0.055), info.kind);
+        const alpha = Math.max(0, 0.68 - i * 0.045);
+        ctx.strokeStyle = rgba(i % 2 ? info.accent : info.core, alpha);
+        ctx.lineWidth = (info.kind === "fire" ? 9 : 5) * s * power * (1 - i * 0.025);
+        ctx.beginPath();
+        ctx.moveTo(point.x, point.y);
+        ctx.lineTo(next.x, next.y);
+        ctx.stroke();
+      }
+      const head = sequencePoint(source, target, u, info.kind);
+      glow(ctx, head.x, head.y, (28 + p * 34) * s, [
+        [0, rgba(info.core, 0.94)],
+        [0.44, rgba(info.accent, 0.48)],
+        [1, rgba(info.accent, 0)]
+      ]);
+      if (info.kind === "ice") {
+        for (let i = 0; i < 7 + p * 8; i += 1) {
+          const a = -Math.PI / 2 + (hash(i) - 0.5) * 1.2;
+          const shard = [
+            [head.x + Math.cos(a) * 7 * s, head.y + Math.sin(a) * 7 * s],
+            [head.x + Math.cos(a) * 30 * s, head.y + Math.sin(a) * 30 * s],
+            [head.x + Math.cos(a + 0.24) * 8 * s, head.y + Math.sin(a + 0.24) * 8 * s]
+          ];
+          polygon(ctx, shard, rgba(info.core, 0.30), rgba(info.core, 0.82), 1.2 * s);
+        }
+      }
+    }
+
+    function drawSequenceImpact(ctx, info, target, t, p, value, s) {
+      const power = 0.8 + p * 1.3;
+      const blast = easeOut(t);
+      glow(ctx, target.x, target.y, (50 + blast * 92) * s * power, [
+        [0, rgba(info.core, 0.86)],
+        [0.32, rgba(info.accent, 0.42)],
+        [1, rgba(info.accent, 0)]
+      ]);
+      strokeRing(ctx, target.x, target.y, (22 + blast * 86) * s * power, (8 - blast * 4) * s, rgba(info.core, 1), 0.84 * (1 - blast));
+      const count = Math.floor(12 + value / 2.4);
+      for (let i = 0; i < count; i += 1) {
+        const a = TAU * i / count + hash(i);
+        const travel = (24 + blast * 82 + hash(i + 2) * 24) * s * power;
+        const x = target.x + Math.cos(a) * travel;
+        const y = target.y + Math.sin(a) * travel * (info.kind === "earth" ? 0.58 : 1);
+        if (info.kind === "ice") {
+          polygon(ctx, [[target.x, target.y], [x, y], [target.x + Math.cos(a + 0.2) * 10 * s, target.y + Math.sin(a + 0.2) * 10 * s]], rgba(info.core, 0.18), rgba(info.core, 0.64), 1.2 * s);
+        } else {
+          glow(ctx, x, y, (4 + p * 6) * s, [[0, rgba(info.core, 0.72)], [1, rgba(info.accent, 0)]]);
+        }
+      }
+    }
+
+    function drawCombatSequence(ctx, w, h, t, p, value) {
+      const cycle = 3.0;
+      const raw = t / cycle;
+      const info = SEQUENCE_EFFECTS[Math.floor(raw) % SEQUENCE_EFFECTS.length];
+      const phase = fract(raw);
+      const rowLeft = 18;
+      const gap = 8;
+      const slotWidth = (w - 36 - gap * 5) / 6;
+      const source = {
+        x: rowLeft + slotWidth * (info.slot + 0.5) + gap * info.slot,
+        y: h - 45
+      };
+      const target = { x: w * 0.5, y: 112 };
+      const s = Math.min(w, h) / 520;
+      const spoolEnd = 0.42;
+      const launchEnd = 0.74;
+      drawSequenceSpool(ctx, info, source, phase < spoolEnd ? phase / spoolEnd : Math.max(0, 1 - (phase - spoolEnd) * 1.25), p, value, s);
+      if (phase >= spoolEnd) {
+        drawSequenceLaunch(ctx, info, source, target, clamp01((phase - spoolEnd) / (launchEnd - spoolEnd)), p, value, s);
+      }
+      if (phase >= launchEnd) {
+        drawSequenceImpact(ctx, info, target, clamp01((phase - launchEnd) / (1 - launchEnd)), p, value, s);
+      }
+    }
+
+    function drawFire(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.48;
+      const s = Math.min(w, h) / 280;
+      const power = 0.75 + p * 1.45;
+      const pulse = fract(t * 1.35);
+      glow(ctx, cx, cy, 118 * s * power, [
+        [0, "rgba(255,255,208,0.92)"],
+        [0.18, "rgba(255,176,42,0.48)"],
+        [0.42, "rgba(255,67,12,0.22)"],
+        [1, "rgba(255,20,0,0)"]
+      ]);
+      strokeRing(ctx, cx, cy, (34 + pulse * 78) * s * power, (9 - pulse * 4) * s, "#ffcf54", 0.82 * (1 - pulse));
+      const tongues = Math.floor(7 + value / 5);
+      for (let i = 0; i < tongues; i += 1) {
+        const a = -Math.PI / 2 + (i - tongues / 2) * 0.14 + Math.sin(t * 2 + i) * 0.08;
+        const height = (62 + hash(i) * 64) * s * power;
+        const width = (18 + hash(i + 3) * 18) * s;
+        const x = cx + Math.cos(a) * 18 * s * power;
+        const y = cy + Math.sin(a) * 8 * s;
+        const grad = ctx.createLinearGradient(x, y + height * 0.28, x, y - height);
+        grad.addColorStop(0, "rgba(255,52,9,0)");
+        grad.addColorStop(0.35, "rgba(255,82,15,0.70)");
+        grad.addColorStop(0.72, "rgba(255,204,65,0.94)");
+        grad.addColorStop(1, "rgba(255,255,220,0.16)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(x - width, y + height * 0.22);
+        ctx.quadraticCurveTo(x - width * 0.6, y - height * 0.45, x + Math.sin(t + i) * 14 * s, y - height);
+        ctx.quadraticCurveTo(x + width * 0.8, y - height * 0.35, x + width, y + height * 0.24);
+        ctx.quadraticCurveTo(x, y + height * 0.46, x - width, y + height * 0.22);
+        ctx.fill();
+      }
+      const embers = Math.floor(18 + value * 1.25);
+      for (let i = 0; i < embers; i += 1) {
+        const u = fract(t * (0.22 + hash(i) * 0.35) + hash(i + 8));
+        const x = cx + (hash(i + 11) - 0.5) * 180 * s * power;
+        const y = cy + 72 * s - u * 190 * s * power;
+        const r = (2 + hash(i + 9) * 4) * s;
+        glow(ctx, x, y, r * 4, [[0, "rgba(255,232,112,0.80)"], [0.45, "rgba(255,86,22,0.46)"], [1, "rgba(255,42,0,0)"]]);
+      }
+    }
+
+    function drawIce(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.48;
+      const s = Math.min(w, h) / 280;
+      const power = 0.8 + p * 1.3;
+      const pulse = fract(t * 1.05);
+      glow(ctx, cx, cy, 120 * s * power, [
+        [0, "rgba(245,255,255,0.86)"],
+        [0.22, "rgba(96,226,255,0.42)"],
+        [0.58, "rgba(23,116,255,0.12)"],
+        [1, "rgba(23,116,255,0)"]
+      ]);
+      strokeRing(ctx, cx, cy, (28 + pulse * 88) * s * power, (5 - pulse * 2) * s, "#aef8ff", 0.84 * (1 - pulse));
+      const shards = Math.floor(10 + value / 4);
+      for (let i = 0; i < shards; i += 1) {
+        const angle = i / shards * TAU + t * 0.08;
+        const inner = (12 + hash(i) * 12) * s;
+        const outer = (66 + hash(i + 4) * 52) * s * power;
+        const spread = (0.045 + hash(i + 5) * 0.035);
+        const p1 = [cx + Math.cos(angle - spread) * inner, cy + Math.sin(angle - spread) * inner];
+        const p2 = [cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer];
+        const p3 = [cx + Math.cos(angle + spread) * inner, cy + Math.sin(angle + spread) * inner];
+        polygon(ctx, [p1, p2, p3], "rgba(198,250,255,0.28)", "rgba(221,255,255,0.82)", 1.4 * s);
+      }
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(t * 0.12);
+      ctx.strokeStyle = "rgba(222,255,255,0.78)";
+      ctx.lineWidth = 2 * s;
+      for (let i = 0; i < 6; i += 1) {
+        ctx.rotate(TAU / 6);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -78 * s * power);
+        ctx.moveTo(0, -44 * s * power);
+        ctx.lineTo(18 * s, -62 * s * power);
+        ctx.moveTo(0, -44 * s * power);
+        ctx.lineTo(-18 * s, -62 * s * power);
+        ctx.stroke();
+      }
+      ctx.restore();
+      for (let i = 0; i < 16 + value / 3; i += 1) {
+        const u = fract(t * 0.34 + hash(i));
+        spark(ctx, cx + (hash(i + 2) - 0.5) * 190 * s, cy + (hash(i + 6) - 0.5) * 150 * s, (4 + hash(i + 9) * 7) * s, "#dffcff", 0.70 * (1 - u * 0.38), t + i);
+      }
+    }
+
+    function drawEarth(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.50;
+      const s = Math.min(w, h) / 280;
+      const power = 0.78 + p * 1.22;
+      const pulse = fract(t * 1.18);
+      glow(ctx, cx, cy, 118 * s * power, [
+        [0, "rgba(221,255,120,0.74)"],
+        [0.25, "rgba(105,238,64,0.38)"],
+        [0.55, "rgba(70,88,42,0.24)"],
+        [1, "rgba(50,80,30,0)"]
+      ]);
+      strokeRing(ctx, cx, cy, (36 + pulse * 74) * s * power, (8 - pulse * 3) * s, "#b8ff57", 0.72 * (1 - pulse));
+      const chunks = Math.floor(9 + value / 4);
+      for (let i = 0; i < chunks; i += 1) {
+        const angle = i / chunks * TAU + Math.sin(t + i) * 0.08;
+        const dist = (32 + hash(i) * 62 + pulse * 24) * s * power;
+        const x = cx + Math.cos(angle) * dist;
+        const y = cy + Math.sin(angle) * dist * 0.62;
+        const r = (8 + hash(i + 1) * 12) * s;
+        const sides = 5;
+        const points = [];
+        for (let k = 0; k < sides; k += 1) {
+          const a = k / sides * TAU + hash(i + k) * 0.4;
+          points.push([x + Math.cos(a) * r * (0.65 + hash(k + i) * 0.5), y + Math.sin(a) * r * (0.65 + hash(k + i + 2) * 0.5)]);
+        }
+        polygon(ctx, points, "rgba(95,150,56,0.58)", "rgba(191,255,92,0.70)", 1.2 * s);
+      }
+      ctx.strokeStyle = "rgba(189,255,81,0.78)";
+      ctx.lineWidth = 3 * s;
+      for (let i = 0; i < 5 + value / 12; i += 1) {
+        ctx.beginPath();
+        let x = cx + (hash(i + 20) - 0.5) * 34 * s;
+        let y = cy + (hash(i + 22) - 0.5) * 24 * s;
+        ctx.moveTo(x, y);
+        for (let k = 0; k < 5; k += 1) {
+          x += (hash(i * 17 + k) - 0.5) * 44 * s * power;
+          y += (hash(i * 19 + k) - 0.1) * 28 * s * power;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    function drawHeal(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.54;
+      const s = Math.min(w, h) / 280;
+      const power = 0.78 + p * 1.18;
+      const pulse = fract(t * 0.95);
+      glow(ctx, cx, cy, 126 * s * power, [
+        [0, "rgba(230,255,216,0.74)"],
+        [0.22, "rgba(92,255,136,0.38)"],
+        [0.62, "rgba(0,210,160,0.14)"],
+        [1, "rgba(0,210,160,0)"]
+      ]);
+      strokeRing(ctx, cx, cy + 18 * s, (30 + pulse * 72) * s * power, (5 - pulse * 2) * s, "#b9ffc3", 0.64 * (1 - pulse));
+      const streams = Math.floor(8 + value / 4);
+      for (let i = 0; i < streams; i += 1) {
+        const x = cx + (i / Math.max(1, streams - 1) - 0.5) * 138 * s;
+        const u = fract(t * (0.22 + hash(i) * 0.20) + hash(i + 4));
+        const y0 = cy + 80 * s - u * 42 * s;
+        const y1 = cy - (74 + value * 1.2) * s * power - u * 18 * s;
+        const grad = ctx.createLinearGradient(x, y0, x + Math.sin(t + i) * 22 * s, y1);
+        grad.addColorStop(0, "rgba(80,255,126,0)");
+        grad.addColorStop(0.45, "rgba(91,255,144,0.56)");
+        grad.addColorStop(1, "rgba(238,255,226,0)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = (3 + p * 5) * s;
+        ctx.beginPath();
+        ctx.moveTo(x, y0);
+        ctx.bezierCurveTo(x - 24 * s, cy + 18 * s, x + 30 * s, cy - 34 * s, x + Math.sin(t + i) * 26 * s, y1);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 14 + value / 3; i += 1) {
+        const u = fract(t * (0.18 + hash(i) * 0.25) + hash(i + 9));
+        const x = cx + (hash(i + 3) - 0.5) * 160 * s * power;
+        const y = cy + 76 * s - u * 174 * s * power;
+        glow(ctx, x, y, (5 + hash(i) * 8) * s, [[0, "rgba(226,255,206,0.82)"], [0.55, "rgba(75,255,128,0.34)"], [1, "rgba(75,255,128,0)"]]);
+      }
+      ctx.save();
+      ctx.translate(cx, cy - 14 * s);
+      ctx.scale(s * power, s * power);
+      ctx.fillStyle = "rgba(212,255,205,0.40)";
+      ctx.beginPath();
+      ctx.moveTo(0, 24);
+      ctx.bezierCurveTo(-58, -10, -24, -52, 0, -20);
+      ctx.bezierCurveTo(24, -52, 58, -10, 0, 24);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawArmor(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.49;
+      const s = Math.min(w, h) / 280;
+      const power = 0.76 + p * 1.14;
+      const pulse = fract(t * 1.28);
+      glow(ctx, cx, cy, 120 * s * power, [
+        [0, "rgba(236,250,255,0.70)"],
+        [0.25, "rgba(121,198,255,0.36)"],
+        [0.62, "rgba(55,109,255,0.15)"],
+        [1, "rgba(55,109,255,0)"]
+      ]);
+      strokeRing(ctx, cx, cy, (44 + pulse * 62) * s * power, (7 - pulse * 3) * s, "#d9f4ff", 0.62 * (1 - pulse));
+      const shield = [
+        [cx, cy - 88 * s * power],
+        [cx + 70 * s * power, cy - 52 * s * power],
+        [cx + 56 * s * power, cy + 42 * s * power],
+        [cx, cy + 94 * s * power],
+        [cx - 56 * s * power, cy + 42 * s * power],
+        [cx - 70 * s * power, cy - 52 * s * power]
+      ];
+      const grad = ctx.createLinearGradient(cx, cy - 90 * s, cx, cy + 90 * s);
+      grad.addColorStop(0, "rgba(233,250,255,0.44)");
+      grad.addColorStop(0.44, "rgba(72,165,255,0.18)");
+      grad.addColorStop(1, "rgba(16,66,160,0.08)");
+      polygon(ctx, shield, grad, "rgba(221,246,255,0.92)", 3.2 * s);
+      ctx.strokeStyle = "rgba(210,242,255,0.48)";
+      ctx.lineWidth = 1.2 * s;
+      for (let i = -2; i <= 2; i += 1) {
+        ctx.beginPath();
+        ctx.moveTo(cx - 48 * s * power, cy + i * 22 * s);
+        ctx.lineTo(cx + 48 * s * power, cy + i * 22 * s);
+        ctx.stroke();
+      }
+      const hits = Math.floor(6 + value / 5);
+      for (let i = 0; i < hits; i += 1) {
+        const side = i % 2 === 0 ? -1 : 1;
+        const y = cy + (hash(i + 4) - 0.5) * 120 * s;
+        const x = cx + side * (82 + hash(i) * 38) * s * power;
+        ctx.strokeStyle = "rgba(234,250,255,0.84)";
+        ctx.lineWidth = (2 + p * 6) * s;
+        ctx.beginPath();
+        ctx.moveTo(x + side * 54 * s, y - 12 * s);
+        ctx.lineTo(x - side * 28 * s, y + 4 * s);
+        ctx.stroke();
+        spark(ctx, x - side * 30 * s, y + 5 * s, (8 + hash(i) * 9) * s, "#e8fbff", 0.78, t + i);
+      }
+    }
+
+    function drawGold(ctx, w, h, t, p, value) {
+      const cx = w * 0.5;
+      const cy = h * 0.52;
+      const s = Math.min(w, h) / 280;
+      const power = 0.76 + p * 1.24;
+      const pulse = fract(t * 1.10);
+      glow(ctx, cx, cy, 120 * s * power, [
+        [0, "rgba(255,250,173,0.72)"],
+        [0.26, "rgba(255,202,57,0.40)"],
+        [0.62, "rgba(255,132,24,0.12)"],
+        [1, "rgba(255,132,24,0)"]
+      ]);
+      strokeRing(ctx, cx, cy, (34 + pulse * 70) * s * power, (6 - pulse * 2) * s, "#ffe67d", 0.70 * (1 - pulse));
+      const coins = Math.floor(18 + value * 0.95);
+      for (let i = 0; i < coins; i += 1) {
+        const speed = 0.18 + hash(i) * 0.30 + p * 0.10;
+        const u = fract(t * speed + hash(i + 10));
+        const x = cx + (hash(i + 2) - 0.5) * 230 * s * power + Math.sin(t * 2 + i) * 13 * s;
+        const y = cy - 130 * s + u * 278 * s * power;
+        const r = (7 + hash(i + 3) * 8) * s;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(t * (1.2 + hash(i)) + i);
+        const grad = ctx.createLinearGradient(-r, -r, r, r);
+        grad.addColorStop(0, "#fff7a7");
+        grad.addColorStop(0.42, "#ffd35a");
+        grad.addColorStop(1, "#b96b12");
+        ctx.fillStyle = grad;
+        ctx.strokeStyle = "rgba(255,250,188,0.88)";
+        ctx.lineWidth = 1.5 * s;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * (0.45 + Math.abs(Math.sin(t + i)) * 0.55), r, 0, 0, TAU);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+      for (let i = 0; i < 18 + value / 3; i += 1) {
+        const x = cx + (hash(i + 31) - 0.5) * 200 * s;
+        const y = cy + (hash(i + 41) - 0.5) * 160 * s;
+        spark(ctx, x, y, (5 + hash(i) * 8) * s, "#fff19a", 0.74, t * 1.8 + i);
+      }
+    }
+
+    function drawFrame(now) {
+      const t = now / 1000 * PREVIEW_TIME_SCALE;
+      const value = Number(slider.value);
+      const p = (value - Number(slider.min)) / (Number(slider.max) - Number(slider.min));
+      if (sequenceCanvas) {
+        const { ctx, width, height } = resizeCanvas(sequenceCanvas);
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        drawCombatSequence(ctx, width, height, t, p, value);
+        ctx.restore();
+      }
+      for (const canvas of canvases) {
+        const { ctx, width, height } = resizeCanvas(canvas);
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const kind = canvas.dataset.effect;
+        if (kind === "fire") drawFire(ctx, width, height, t, p, value);
+        if (kind === "ice") drawIce(ctx, width, height, t, p, value);
+        if (kind === "earth") drawEarth(ctx, width, height, t, p, value);
+        if (kind === "heal") drawHeal(ctx, width, height, t, p, value);
+        if (kind === "armor") drawArmor(ctx, width, height, t, p, value);
+        if (kind === "gold") drawGold(ctx, width, height, t, p, value);
+        ctx.restore();
+      }
+      requestAnimationFrame(drawFrame);
+    }
+
+    slider.addEventListener("input", updatePower);
+    window.addEventListener("resize", () => {
+      canvases.forEach(resizeCanvas);
+      if (sequenceCanvas) resizeCanvas(sequenceCanvas);
+    });
+    updatePower();
+    requestAnimationFrame(drawFrame);
+  </script>
+</body>
+</html>

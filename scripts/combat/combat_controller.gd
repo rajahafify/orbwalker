@@ -98,6 +98,9 @@ const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
 const TURN_REPLAY_STEP_SECONDS := 0.34
 const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
+const ELEMENTAL_CAST_SPOOL_SECONDS := 0.86
+const ELEMENTAL_CAST_LAUNCH_SECONDS := 0.82
+const ELEMENTAL_CAST_IMPACT_HOLD_SECONDS := 0.50
 enum InputPhase {
 	PLAYER_INPUT,
 	RESOLVING,
@@ -1762,50 +1765,35 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
-			if vfx_presenter != null:
-				vfx_presenter.spawn_replay_impact(enemy_target, "fire", enemy_impact_size, damage_lifetime, fire_damage)
-				vfx_presenter.spawn_mastery_beam(OrbType.Id.FIRE, enemy_target, damage_lifetime)
-				vfx_presenter.spawn_result_label("%d" % fire_damage, enemy_target, "fire", label_lifetime, Vector2(0, -52), fire_damage)
-			_play_mastery_effect_sfx("damage")
-			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-			if not _can_continue_after_async_wait():
+			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not fire_replay_ok:
 				return
-			_stage_hud_enemy_damage_step(fire_damage)
-			_release_combat_mastery_feedback(OrbType.Id.FIRE)
 		if ice_damage > 0:
-			if vfx_presenter != null:
-				vfx_presenter.spawn_replay_impact(enemy_target, "ice", enemy_impact_size, damage_lifetime, ice_damage)
-				vfx_presenter.spawn_mastery_beam(OrbType.Id.ICE, enemy_target, damage_lifetime)
-				vfx_presenter.spawn_result_label("%d" % ice_damage, enemy_target, "ice", label_lifetime, Vector2(0, -52), ice_damage)
-			_play_mastery_effect_sfx("damage")
-			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-			if not _can_continue_after_async_wait():
+			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not ice_replay_ok:
 				return
-			_stage_hud_enemy_damage_step(ice_damage)
-			_release_combat_mastery_feedback(OrbType.Id.ICE)
 		if earth_damage > 0:
-			if vfx_presenter != null:
-				vfx_presenter.spawn_replay_impact(enemy_target, "earth", enemy_impact_size, damage_lifetime, earth_damage)
-				vfx_presenter.spawn_mastery_beam(OrbType.Id.EARTH, enemy_target, damage_lifetime)
-				vfx_presenter.spawn_result_label("%d" % earth_damage, enemy_target, "earth", label_lifetime, Vector2(0, -52), earth_damage)
-			_play_mastery_effect_sfx("damage")
-			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-			if not _can_continue_after_async_wait():
+			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not earth_replay_ok:
 				return
-			_stage_hud_enemy_damage_step(earth_damage)
-			_release_combat_mastery_feedback(OrbType.Id.EARTH)
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
-			vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
-			vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
-		_play_mastery_effect_sfx("damage")
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-		_stage_hud_enemy_result()
-		_release_combat_mastery_feedback(impact_orb)
+		if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
+			var dominant_replay_ok: bool = await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not dominant_replay_ok:
+				return
+			_stage_hud_enemy_result()
+		else:
+			if vfx_presenter != null:
+				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
+				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
+				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
+			_play_mastery_effect_sfx("damage")
+			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+			if not _can_continue_after_async_wait():
+				return
+			_stage_hud_enemy_result()
+			_release_combat_mastery_feedback(impact_orb)
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		_stage_hud_enemy_result()
 	if enemy_blocked > 0:
@@ -1874,6 +1862,35 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if not _can_continue_after_async_wait():
 		return
 	_reset_combat_mastery_preview()
+
+
+func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_target: Vector2, enemy_impact_size: Vector2, damage_lifetime: float, label_lifetime: float) -> bool:
+	var vfx_presenter: Variant = _combat_vfx_presenter
+	if vfx_presenter != null:
+		vfx_presenter.spawn_mastery_cast_sequence(
+			orb_id,
+			enemy_target,
+			_combat_speed_duration(ELEMENTAL_CAST_SPOOL_SECONDS),
+			_combat_speed_duration(ELEMENTAL_CAST_LAUNCH_SECONDS),
+			damage_amount
+		)
+		await _wait_combat_speed(ELEMENTAL_CAST_SPOOL_SECONDS)
+		if not _can_continue_after_async_wait():
+			return false
+		await _wait_combat_speed(ELEMENTAL_CAST_LAUNCH_SECONDS)
+		if not _can_continue_after_async_wait():
+			return false
+	if vfx_presenter != null:
+		var impact_kind := _mastery_impact_kind(orb_id)
+		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, enemy_impact_size, damage_lifetime, damage_amount)
+		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
+	_play_mastery_effect_sfx("damage")
+	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
+	if not _can_continue_after_async_wait():
+		return false
+	_stage_hud_enemy_damage_step(damage_amount)
+	_release_combat_mastery_feedback(orb_id)
+	return true
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:

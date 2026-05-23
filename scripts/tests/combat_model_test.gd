@@ -11,10 +11,12 @@ func run_all() -> Dictionary:
 	_run_case("hud_staging_clamps_player_values", _test_hud_staging_clamps_player_values, failures)
 	_run_case("mastery_preview_accumulates_releases_consumes_and_resets", _test_mastery_preview_accumulates_releases_consumes_and_resets, failures)
 	_run_case("resolve_trace_begin_pass_end_state", _test_resolve_trace_begin_pass_end_state, failures)
+	_run_case("post_match_vfx_registry_exposes_distinct_results", _test_post_match_vfx_registry_exposes_distinct_results, failures)
+	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 7,
+		"total": 9,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -165,4 +167,33 @@ func _test_resolve_trace_begin_pass_end_state() -> String:
 		return "Expected end_resolve_trace to deactivate trace."
 	if model.resolve_trace_pass_index() != -1:
 		return "Expected end_resolve_trace to reset pass index."
+	return ""
+
+
+func _test_post_match_vfx_registry_exposes_distinct_results() -> String:
+	var registry := VisualRegistry.new()
+	var required_kinds: Array[String] = ["fire", "ice", "earth", "gold", "heart", "armor", "damage", "heal", "block"]
+	var seen_rids := {}
+	for kind in required_kinds:
+		var texture := registry.mastery_impact_texture(kind)
+		if texture == null:
+			return "Expected post-match VFX texture for %s." % kind
+		var rid := texture.get_rid()
+		if kind in ["fire", "ice", "earth", "gold", "heart", "armor", "damage"] and seen_rids.has(rid):
+			return "Expected %s post-match texture to be visually distinct." % kind
+		seen_rids[rid] = kind
+	return ""
+
+
+func _test_post_match_vfx_speed_scale_slows_lifetime() -> String:
+	var presenter := CombatVfxPresenter.new()
+	var slowed := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
+	presenter.set_post_match_vfx_speed_scale(1.0)
+	var baseline := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
+	var slowed_lifetime := float(slowed.get("lifetime", 0.0))
+	var baseline_lifetime := float(baseline.get("lifetime", 0.0))
+	if slowed_lifetime <= baseline_lifetime:
+		return "Expected default post-match VFX lifetime to be slower than baseline speed."
+	if slowed_lifetime < baseline_lifetime * 1.6:
+		return "Expected default post-match VFX lifetime to be noticeably slower."
 	return ""
