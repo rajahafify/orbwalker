@@ -17,6 +17,7 @@ const ORB_ORDER: Array[int] = [
 
 var _entry_select: OptionButton
 var _phase_select: OptionButton
+var _quality_select: OptionButton
 var _amount_slider: HSlider
 var _amount_spin: SpinBox
 var _speed_slider: HSlider
@@ -164,6 +165,17 @@ func _make_control_panel() -> Control:
 	_phase_select.custom_minimum_size = Vector2(210, 48)
 	_phase_select.item_selected.connect(_on_phase_selected)
 	first_row.add_child(_phase_select)
+
+	_quality_select = OptionButton.new()
+	_quality_select.name = "QualitySelect"
+	_quality_select.custom_minimum_size = Vector2(150, 48)
+	_quality_select.add_item("Low")
+	_quality_select.set_item_metadata(0, "low")
+	_quality_select.add_item("High")
+	_quality_select.set_item_metadata(1, "high")
+	_quality_select.select(0)
+	_quality_select.item_selected.connect(_on_quality_selected)
+	first_row.add_child(_quality_select)
 
 	_play_button = Button.new()
 	_play_button.name = "PlayButton"
@@ -537,6 +549,12 @@ func _selected_phase() -> String:
 	return String(_phase_select.get_item_metadata(_phase_select.selected))
 
 
+func _selected_quality() -> String:
+	if _quality_select == null or _quality_select.item_count <= 0:
+		return "low"
+	return String(_quality_select.get_item_metadata(_quality_select.selected))
+
+
 func _selected_amount() -> int:
 	if _amount_spin == null:
 		return 12
@@ -731,6 +749,7 @@ func _bind_presenter() -> void:
 		"elemental_mastery_cards": _mastery_cards,
 		"timer_owner": self,
 	})
+	_presenter.set_post_match_vfx_quality(_selected_quality())
 	_presenter.set_post_match_vfx_speed_scale(float(_speed_slider.value))
 
 
@@ -797,6 +816,10 @@ func _on_entry_selected(_index: int) -> void:
 
 
 func _on_phase_selected(_index: int) -> void:
+	_restart_playback()
+
+
+func _on_quality_selected(_index: int) -> void:
 	_restart_playback()
 
 

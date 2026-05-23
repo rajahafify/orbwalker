@@ -13,6 +13,7 @@ var _post_match_additive_material: CanvasItemMaterial
 var _post_match_runtime_material: ShaderMaterial
 var _post_match_runtime_textures: Dictionary = {}
 var _post_match_vfx_speed_scale := DEFAULT_POST_MATCH_VFX_SPEED_SCALE
+var _post_match_vfx_quality := DEFAULT_POST_MATCH_VFX_QUALITY
 
 const RESULT_VFX_TIER_THRESHOLDS := {
 	"fire": [6, 10, 16],
@@ -35,6 +36,14 @@ const POST_MATCH_CAST_Z_INDEX := 128
 const POST_MATCH_BAR_LINGER_Z_INDEX := 131
 const POST_MATCH_EFFECT_FRONT_Z_INDEX := 132
 const FORCE_MAX_COMBAT_VFX := true
+const POST_MATCH_VFX_QUALITY_HIGH := "high"
+const POST_MATCH_VFX_QUALITY_LOW := "low"
+const POST_MATCH_VFX_QUALITY_OPTIONS: Array[String] = [
+	POST_MATCH_VFX_QUALITY_HIGH,
+	POST_MATCH_VFX_QUALITY_LOW,
+]
+const DEFAULT_POST_MATCH_VFX_QUALITY := POST_MATCH_VFX_QUALITY_LOW
+const POST_MATCH_VFX_QUALITY_SETTING_PATH := "matchatro/combat/post_match_vfx_quality"
 const POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST := 72
 const POST_MATCH_MAX_SCREEN_RAYS := 18
 const POST_MATCH_MAX_SIMULTANEOUS_RUNTIME_EMITTERS := 10
@@ -62,10 +71,27 @@ func bind(dependencies: Dictionary) -> void:
 	_timer_owner = dependencies.get("timer_owner") as Node
 	_max_vfx_overlay = COMBAT_MAX_VFX_OVERLAY_SCRIPT.new()
 	_max_vfx_overlay.bind(dependencies)
+	set_post_match_vfx_quality(_project_post_match_vfx_quality())
 
 
 func set_post_match_vfx_speed_scale(speed_scale: float) -> void:
 	_post_match_vfx_speed_scale = clampf(speed_scale, 0.25, 2.0)
+
+
+func set_post_match_vfx_quality(quality: String) -> void:
+	_post_match_vfx_quality = _normalized_post_match_vfx_quality(quality)
+
+
+func post_match_vfx_quality() -> String:
+	return _post_match_vfx_quality
+
+
+func post_match_vfx_quality_options() -> Array[String]:
+	return POST_MATCH_VFX_QUALITY_OPTIONS.duplicate()
+
+
+func post_match_vfx_quality_uses_max_overlay() -> bool:
+	return _post_match_vfx_quality == POST_MATCH_VFX_QUALITY_HIGH
 
 
 func spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
@@ -184,7 +210,7 @@ func post_match_runtime_texture(key: String) -> Texture2D:
 
 
 func max_combat_vfx_forced() -> bool:
-	return FORCE_MAX_COMBAT_VFX
+	return FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay()
 
 
 func max_combat_vfx_available() -> bool:
@@ -192,7 +218,18 @@ func max_combat_vfx_available() -> bool:
 
 
 func _use_max_combat_vfx() -> bool:
-	return FORCE_MAX_COMBAT_VFX and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+	return FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+
+
+func _project_post_match_vfx_quality() -> String:
+	return _normalized_post_match_vfx_quality(String(ProjectSettings.get_setting(POST_MATCH_VFX_QUALITY_SETTING_PATH, DEFAULT_POST_MATCH_VFX_QUALITY)))
+
+
+func _normalized_post_match_vfx_quality(quality: String) -> String:
+	var normalized := quality.strip_edges().to_lower()
+	if POST_MATCH_VFX_QUALITY_OPTIONS.has(normalized):
+		return normalized
+	return DEFAULT_POST_MATCH_VFX_QUALITY
 
 
 func post_match_runtime_particle_count(intensity: int, multiplier: float = 1.0) -> int:

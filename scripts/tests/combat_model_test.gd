@@ -18,7 +18,7 @@ func run_all() -> Dictionary:
 	_run_case("post_match_vfx_registry_exposes_distinct_results", _test_post_match_vfx_registry_exposes_distinct_results, failures)
 	_run_case("raw_pack_combat_vfx_scenes_are_available", _test_raw_pack_combat_vfx_scenes_are_available, failures)
 	_run_case("new_raw_status_and_scene_vfx_assets_are_available", _test_new_raw_status_and_scene_vfx_assets_are_available, failures)
-	_run_case("combat_vfx_presenter_forces_max_mode", _test_combat_vfx_presenter_forces_max_mode, failures)
+	_run_case("combat_vfx_presenter_quality_switches_max_and_low_modes", _test_combat_vfx_presenter_quality_switches_max_and_low_modes, failures)
 	_run_case("post_match_vfx_runtime_primitives_are_capped", _test_post_match_vfx_runtime_primitives_are_capped, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
@@ -263,10 +263,25 @@ func _test_new_raw_status_and_scene_vfx_assets_are_available() -> String:
 	return ""
 
 
-func _test_combat_vfx_presenter_forces_max_mode() -> String:
+func _test_combat_vfx_presenter_quality_switches_max_and_low_modes() -> String:
 	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	if presenter.post_match_vfx_quality() != "low":
+		return "Expected Low combat VFX quality by default."
+	if presenter.max_combat_vfx_forced():
+		return "Expected default Low combat VFX to use the lightweight fallback path."
+	presenter.set_post_match_vfx_quality("high")
+	if presenter.post_match_vfx_quality() != "high":
+		return "Expected High combat VFX quality to be accepted."
 	if not presenter.max_combat_vfx_forced():
-		return "Expected Max combat VFX to be forced for this polish pass."
+		return "Expected High combat VFX quality to use the Max overlay."
+	presenter.set_post_match_vfx_quality("low")
+	if presenter.post_match_vfx_quality() != "low":
+		return "Expected Low combat VFX quality to be accepted."
+	if presenter.post_match_vfx_quality_uses_max_overlay():
+		return "Expected Low combat VFX quality to use the lightweight fallback path."
+	presenter.set_post_match_vfx_quality("nonsense")
+	if presenter.post_match_vfx_quality() != "low":
+		return "Expected invalid combat VFX quality to normalize back to Low."
 	return ""
 
 
