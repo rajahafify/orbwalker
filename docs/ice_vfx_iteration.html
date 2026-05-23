@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ice Combat VFX Iteration</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b10;
+      --panel: #101721;
+      --panel-2: #172331;
+      --text: #eff7ff;
+      --muted: #a9b9c9;
+      --line: #314253;
+      --ice: #7fdcff;
+      --frost: #d9f7ff;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 8%, rgba(99, 202, 255, 0.18), transparent 30%),
+        linear-gradient(180deg, #091017, var(--bg));
+      color: var(--text);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 56px;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    h1 {
+      color: var(--ice);
+      font-size: clamp(30px, 5vw, 46px);
+    }
+
+    h2 {
+      margin-top: 28px;
+      color: var(--frost);
+      font-size: 22px;
+    }
+
+    p {
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+
+    section {
+      margin-top: 24px;
+      padding: 22px;
+      background: color-mix(in srgb, var(--panel), transparent 6%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    ul {
+      margin: 14px 0 0;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    code {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 0.92em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Ice Combat VFX Iteration</h1>
+    <p>Documented May 23, 2026. This captures the current Ice post-match VFX direction after separating it from the generic elemental and beam-like paths.</p>
+
+    <section>
+      <h2>Accepted Direction</h2>
+      <p>Ice now has three readable power bands:</p>
+      <ul>
+        <li>Weak Ice should feel like a compact ice ball spell with a crisp frost impact.</li>
+        <li>Medium Ice should feel like a windy ice block, with a chunky projectile core moving through snow and shard lanes.</li>
+        <li>Strong Ice should feel like a full blizzard, with screen-wide cold atmosphere focused toward the enemy area.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Implementation Notes</h2>
+      <ul>
+        <li>Ice now has dedicated Max VFX replay and cast branches in <code>CombatMaxVfxOverlay</code> instead of relying on the generic status recipe.</li>
+        <li>Ice travel no longer uses the beam VFX. The medium and strong paths use moving <code>ice_projectile</code>, <code>freeze</code>, <code>ice_shards</code>, wind, snow, and pack-hit layers.</li>
+        <li>The separate mastery-beam entry point also routes Ice through the ice-block travel helper, so Ice should not fall back to a laser-like path.</li>
+        <li>Delayed impact lighting was added so Ice flashes land with the impact rather than glowing early during travel.</li>
+        <li>Strong Ice layers blizzard snow, wind, frost, shard rain, impact blocks, light, and camera kick while keeping the enemy area as the visual focus.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Debug Gallery</h2>
+      <p>The existing VFX gallery remains the preferred place to compare Ice amount scaling.</p>
+      <ul>
+        <li><code>res://scenes/debug/vfx_gallery_show.tscn</code> can play Ice full sequence, travel, impact, and label phases.</li>
+        <li>Use amount presets 4, 12, and 50 to check ice ball, windy ice block, and blizzard behavior.</li>
+        <li>Labels are still handled above the Max VFX overlay by the combat presenter path.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><code>git diff --check</code> passed for the Ice VFX script changes.</li>
+        <li>The debug VFX gallery scene launched headless without new Godot parse/runtime errors.</li>
+        <li>A focused Ice VFX spawn probe passed 7/7 for weak, medium, strong, replay impact, and the mastery-beam entry point.</li>
+        <li>The remaining console warnings were the existing local GDAI port/capture shutdown warnings.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
