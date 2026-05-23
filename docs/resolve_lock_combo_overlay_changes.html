@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resolve Lock And Combo Overlay Changes</title>
+  <style>
+    body {
+      margin: 32px auto;
+      max-width: 900px;
+      padding: 0 24px 48px;
+      color: #18231f;
+      background: #fffdf8;
+      font: 16px/1.6 Georgia, Cambria, "Times New Roman", serif;
+    }
+    h1, h2 { line-height: 1.15; }
+    code {
+      background: #efe8da;
+      padding: 0.12em 0.35em;
+      border-radius: 3px;
+      font-family: Consolas, "Cascadia Mono", monospace;
+    }
+    .note {
+      border-left: 4px solid #b7802d;
+      padding-left: 14px;
+      color: #65716b;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resolve Lock And Combo Overlay Changes</h1>
+  <p class="note">Recorded 2026-05-23 for the combat resolve animation polish pass.</p>
+
+  <h2>Summary</h2>
+  <p>The combat board now visibly and mechanically locks while resolve animations are running, so players are not encouraged to start another match mid-animation. The lock presentation is an extra-dark textless board veil. The previous <code>RESOLVING</code> box was removed so the combo overlay remains the primary read.</p>
+  <p>Combo feedback now uses a full-board overlay from <code>CombatResolvePresenter</code>. The popup is split into fitted <code>COMBO</code> and <code>xN</code> labels, centered over the board, with tuned spacing so the two lines read as one grouped callout without touching.</p>
+
+  <h2>Runtime Files</h2>
+  <ul>
+    <li><code>scripts/board/board_view.gd</code>: dark textless lock veil, persistent pointer capture while locked, and lock-state query.</li>
+    <li><code>scripts/board/board_controller.gd</code>: locked pointer events are swallowed without starting a drag.</li>
+    <li><code>scripts/combat/combat_resolve_presenter.gd</code>: full-board combo overlay with fitted labels and tuned spacing.</li>
+    <li><code>scripts/tests/combat_model_test.gd</code>: focused regression coverage for locked board input and visual lock darkness.</li>
+  </ul>
+
+  <h2>Validation</h2>
+  <ul>
+    <li><code>CombatModelTest.run_all()</code> passed with <code>11/11</code> cases.</li>
+    <li>Focused presenter probes confirmed the combo overlay panel fills the board and applies the tuned close label spacing.</li>
+    <li><code>git diff --check</code> passed for the focused files.</li>
+    <li>Headless Godot project load exited successfully; only the existing MCP port/capture warnings appeared from the active editor integration.</li>
+  </ul>
+</body>
+</html>

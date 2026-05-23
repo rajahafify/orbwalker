@@ -192,7 +192,7 @@ func set_input_enabled(enabled: bool) -> void:
 
 func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
 	if not input_enabled and not _active_drag:
-		return {"handled": false, "action": ACTION_NONE}
+		return {"handled": _is_pointer_event(event), "action": ACTION_NONE}
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -222,6 +222,13 @@ func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
 		return {"handled": true, "action": ACTION_NONE}
 
 	return {"handled": false, "action": ACTION_NONE}
+
+
+func _is_pointer_event(event: InputEvent) -> bool:
+	return event is InputEventMouseButton \
+			or event is InputEventMouseMotion \
+			or event is InputEventScreenTouch \
+			or event is InputEventScreenDrag
 
 
 func update(delta: float, _input_active: bool) -> Dictionary:

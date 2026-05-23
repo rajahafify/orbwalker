@@ -17,10 +17,11 @@ func run_all() -> Dictionary:
 	_run_case("post_match_vfx_registry_exposes_distinct_results", _test_post_match_vfx_registry_exposes_distinct_results, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
+	_run_case("board_lock_visual_state_captures_pointer_input", _test_board_lock_visual_state_captures_pointer_input, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 10,
+		"total": 11,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -213,4 +214,30 @@ func _test_post_match_vfx_top_tier_becomes_screen_wide() -> String:
 		return "Expected Gold 10 to become screen-wide."
 	if presenter.replay_result_is_screen_wide("heart", 3):
 		return "Expected small Heart healing to stay local."
+	return ""
+
+
+func _test_board_lock_visual_state_captures_pointer_input() -> String:
+	var board_view_script := ResourceLoader.load("res://scripts/board/board_view.gd", "", ResourceLoader.CACHE_MODE_IGNORE)
+	var board_view = board_view_script.new()
+	board_view.set_input_enabled(false)
+	if board_view.is_input_enabled():
+		return "Expected board view input state to be locked."
+	if board_view.mouse_filter != Control.MOUSE_FILTER_STOP:
+		return "Expected locked board view to capture pointer input."
+	if board_view.locked_overlay_color.a < 0.70:
+		return "Expected locked board view overlay to be extra dark."
+	var board_controller_script := ResourceLoader.load("res://scripts/board/board_controller.gd", "", ResourceLoader.CACHE_MODE_IGNORE)
+	var board_controller = board_controller_script.new()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	var locked_result: Dictionary = board_controller.handle_pointer_input(click, false)
+	if not bool(locked_result.get("handled", false)):
+		return "Expected locked board controller to swallow pointer input."
+	if String(locked_result.get("action", "")) != "":
+		return "Expected locked board pointer input to have no drag action."
+	board_view.set_input_enabled(true)
+	if not board_view.is_input_enabled():
+		return "Expected board view input state to unlock."
 	return ""

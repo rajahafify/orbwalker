@@ -10,11 +10,15 @@ class_name BoardView
 @export var orb_scale_in_cell: float = 0.74
 @export var selected_cell_color: Color = Color("#f7f2a6")
 @export var path_cell_color: Color = Color("#cfd7ff")
+@export var drag_cell_socket_color: Color = Color(1.0, 0.86, 0.34, 0.16)
+@export var drag_path_socket_color: Color = Color(0.78, 0.84, 1.0, 0.08)
 @export var match_flash_color: Color = Color(1.0, 0.94, 0.48, 0.0)
 @export var matched_orb_pulse_period: float = 1.35
 @export var matched_orb_edge_glow_scale: float = 1.10
 @export var matched_orb_glow_alpha: float = 1.0
 @export var matched_orb_glow_brightness: float = 1.25
+@export var locked_overlay_color: Color = Color(0.0, 0.0, 0.0, 0.72)
+@export var locked_overlay_border_color: Color = Color(0.72, 0.86, 1.0, 0.58)
 
 var selected_cell: Vector2i = Vector2i(-1, -1):
 	set(value):
@@ -51,11 +55,13 @@ var _glow_cells: Dictionary = {} # cell index -> true
 var _overlay_orbs: Array[Dictionary] = []
 var _suppressed_cells: Dictionary = {}
 var _glow_pulse_time: float = 0.0
+var _input_enabled := true
 
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 	resized.connect(queue_redraw)
+	set_input_enabled(_input_enabled)
 	set_process(true)
 
 
@@ -128,9 +134,9 @@ func _draw() -> void:
 				_draw_orb_sprite(rect.get_center(), cell_radius, orb_id, 1.0, is_glowing)
 
 			if selected_cell == Vector2i(column, row):
-				draw_rect(rect.grow(-2.0), selected_cell_color, false, 2.0)
+				_draw_drag_cell_socket(rect.get_center(), cell_radius, drag_cell_socket_color)
 			elif Vector2i(column, row) in path_cells:
-				draw_rect(rect.grow(-3.0), path_cell_color, false, 1.0)
+				_draw_drag_cell_socket(rect.get_center(), cell_radius * 0.86, drag_path_socket_color)
 
 			if _flash_cells.has(cell_index) and match_flash_color.a > 0.0:
 				draw_rect(rect.grow(-4.0), match_flash_color)
@@ -155,6 +161,9 @@ func _draw() -> void:
 
 	if drag_orb_id >= 0:
 		_draw_orb_sprite(drag_pointer_position, cell_radius, drag_orb_id, 1.0, false)
+
+	if not _input_enabled:
+		_draw_locked_overlay(board_rect.grow(board_padding * 0.35))
 
 
 func clear_animations() -> void:
@@ -195,10 +204,14 @@ func clear_board_presentation() -> void:
 
 
 func set_input_enabled(enabled: bool) -> void:
-	if enabled:
-		mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	else:
-		mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_input_enabled = enabled
+	mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	reset_drag_visual_state()
+	queue_redraw()
+
+
+func is_input_enabled() -> bool:
+	return _input_enabled
 
 
 func get_hover_orb_id(board_local_position: Vector2) -> int:
@@ -453,6 +466,19 @@ func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float 
 		draw_texture_rect(texture, rect, false, hot_core)
 	else:
 		draw_texture_rect(texture, rect, false, Color(1.04, 1.03, 1.01, alpha))
+
+
+func _draw_drag_cell_socket(center: Vector2, radius: float, fill_color: Color) -> void:
+	if fill_color.a > 0.0:
+		draw_circle(center, radius * 0.70, fill_color)
+
+
+func _draw_locked_overlay(rect: Rect2) -> void:
+	if locked_overlay_color.a <= 0.0 and locked_overlay_border_color.a <= 0.0:
+		return
+	draw_rect(rect, locked_overlay_color, true)
+	if locked_overlay_border_color.a > 0.0:
+		draw_rect(rect.grow(-2.0), locked_overlay_border_color, false, 3.0)
 
 
 func _add_overlay_orb(

@@ -5,9 +5,11 @@ const MATCH_FLASH_SECONDS := 0.12
 const CLEAR_ANIMATION_SECONDS := 0.12
 const GRAVITY_ANIMATION_SECONDS := 0.14
 const REFILL_ANIMATION_SECONDS := 0.14
-const COMBO_POPUP_SIZE := Vector2(420.0, 96.0)
-const COMBO_POPUP_BASE_FONT_SIZE := 42
-const COMBO_POPUP_MAX_FONT_SIZE := 78
+const COMBO_POPUP_FALLBACK_SIZE := Vector2(420.0, 280.0)
+const COMBO_POPUP_WORD_BASE_FONT_SIZE := 58
+const COMBO_POPUP_WORD_MAX_FONT_SIZE := 104
+const COMBO_POPUP_VALUE_BASE_FONT_SIZE := 112
+const COMBO_POPUP_VALUE_MAX_FONT_SIZE := 236
 const COMBO_COUNT_STEP_SECONDS := 0.22
 const CASCADE_PASS_HOLD_SECONDS := 0.16
 const ANIMATION_DRAIN_MAX_ITERATIONS := 600
@@ -28,7 +30,8 @@ var _combat_speed := COMBAT_SPEED_NORMAL
 
 var _resolve_combo_running := 0
 var _match_clear_burst_texture: Texture2D
-var _combo_popup_panel: PanelContainer
+var _combo_popup_panel: Control
+var _combo_popup_word_label: Label
 var _combo_popup_label: Label
 var _combo_popup_fade_tween: Tween
 
@@ -407,17 +410,19 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 		return
 	if _combo_sound_callback.is_valid():
 		_combo_sound_callback.call()
-	var combo_text := "COMBO x%d" % combo_value
-	var font_size := mini(COMBO_POPUP_MAX_FONT_SIZE, COMBO_POPUP_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 6)
+	var combo_text := "x%d" % combo_value
 
 	var combo_panel := _ensure_combo_popup_panel()
-	if combo_panel == null or _combo_popup_label == null:
+	if combo_panel == null or _combo_popup_word_label == null or _combo_popup_label == null:
 		return
-	combo_panel.position = _center_combo_popup_position()
+	var popup_rect := _combo_popup_rect()
+	combo_panel.position = popup_rect.position
+	combo_panel.size = popup_rect.size
+	combo_panel.custom_minimum_size = popup_rect.size
 	combo_panel.modulate.a = 1.0
+	_combo_popup_word_label.text = "COMBO"
 	_combo_popup_label.text = combo_text
-	_combo_popup_label.add_theme_font_size_override("font_size", font_size)
-	_combo_popup_label.size = COMBO_POPUP_SIZE
+	_layout_combo_popup_labels(combo_value, popup_rect.size)
 	if _combo_popup_fade_tween != null and _combo_popup_fade_tween.is_valid():
 		_combo_popup_fade_tween.kill()
 
@@ -430,35 +435,43 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 		pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10)
 
 
-func _ensure_combo_popup_panel() -> PanelContainer:
+func _ensure_combo_popup_panel() -> Control:
 	if is_instance_valid(_combo_popup_panel):
 		return _combo_popup_panel
 	if not _can_continue_after_wait() or _board_panel == null:
 		return null
-	var combo_panel := PanelContainer.new()
+	var combo_panel := Control.new()
 	combo_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	combo_panel.size = COMBO_POPUP_SIZE
-	combo_panel.custom_minimum_size = COMBO_POPUP_SIZE
+	combo_panel.size = _combo_popup_rect().size
+	combo_panel.custom_minimum_size = combo_panel.size
 	combo_panel.z_index = 80
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	panel_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
-	panel_style.set_border_width_all(0)
-	combo_panel.add_theme_stylebox_override("panel", panel_style)
+
+	var combo_word_label := Label.new()
+	combo_word_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	combo_word_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	combo_word_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	combo_word_label.add_theme_font_size_override("font_size", COMBO_POPUP_WORD_BASE_FONT_SIZE)
+	combo_word_label.add_theme_constant_override("outline_size", 8)
+	combo_word_label.add_theme_color_override("font_outline_color", Color(0.05, 0.015, 0.0, 0.98))
+	combo_word_label.add_theme_color_override("font_color", Color(1.0, 0.78, 0.18, 1.0))
+	combo_word_label.position = Vector2.ZERO
+	combo_word_label.size = combo_panel.size
 
 	var combo_label := Label.new()
 	combo_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	combo_label.add_theme_font_size_override("font_size", COMBO_POPUP_BASE_FONT_SIZE)
-	combo_label.add_theme_constant_override("outline_size", 7)
-	combo_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.00, 0.96))
-	combo_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.28, 1.0))
+	combo_label.add_theme_font_size_override("font_size", COMBO_POPUP_VALUE_BASE_FONT_SIZE)
+	combo_label.add_theme_constant_override("outline_size", 12)
+	combo_label.add_theme_color_override("font_outline_color", Color(0.06, 0.018, 0.0, 1.0))
+	combo_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.48, 1.0))
 	combo_label.position = Vector2.ZERO
-	combo_label.size = COMBO_POPUP_SIZE
+	combo_label.size = combo_panel.size
+	combo_panel.add_child(combo_word_label)
 	combo_panel.add_child(combo_label)
 	_board_panel.add_child(combo_panel)
 	_combo_popup_panel = combo_panel
+	_combo_popup_word_label = combo_word_label
 	_combo_popup_label = combo_label
 	return combo_panel
 
@@ -470,6 +483,7 @@ func _finish_combo_popup() -> void:
 	if _timer_owner == null or not is_instance_valid(_timer_owner):
 		combo_panel.queue_free()
 		_combo_popup_panel = null
+		_combo_popup_word_label = null
 		_combo_popup_label = null
 		return
 	_combo_popup_fade_tween = _timer_owner.create_tween()
@@ -479,14 +493,80 @@ func _finish_combo_popup() -> void:
 		if is_instance_valid(combo_panel):
 			combo_panel.queue_free()
 		_combo_popup_panel = null
+		_combo_popup_word_label = null
 		_combo_popup_label = null
 	)
 
 
-func _center_combo_popup_position() -> Vector2:
+func _combo_popup_rect() -> Rect2:
 	if _board == null:
-		return Vector2.ZERO
-	return _board.position + (_board.size - COMBO_POPUP_SIZE) * 0.5
+		return Rect2(Vector2.ZERO, COMBO_POPUP_FALLBACK_SIZE)
+	return Rect2(_board.position, _board.size)
+
+
+func _layout_combo_popup_labels(combo_value: int, popup_size: Vector2) -> void:
+	if _combo_popup_word_label == null or _combo_popup_label == null:
+		return
+	var safe_size := Vector2(maxf(1.0, popup_size.x), maxf(1.0, popup_size.y))
+	var word_font_size := _fit_combo_font_size(
+		"COMBO",
+		Vector2(safe_size.x * 0.92, safe_size.y * 0.26),
+		mini(COMBO_POPUP_WORD_MAX_FONT_SIZE, COMBO_POPUP_WORD_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 4),
+		34
+	)
+	var value_text := "x%d" % combo_value
+	var value_font_size := _fit_combo_font_size(
+		value_text,
+		Vector2(safe_size.x * 0.94, safe_size.y * 0.42),
+		mini(COMBO_POPUP_VALUE_MAX_FONT_SIZE, COMBO_POPUP_VALUE_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 12),
+		64
+	)
+	var word_height := _combo_line_height(word_font_size)
+	var value_height := _combo_line_height(value_font_size)
+	var label_overlap := minf(value_height * 0.34, maxf(24.0, safe_size.y * 0.12))
+	var stack_height := word_height + value_height - label_overlap
+	var stack_top := safe_size.y * 0.52 - stack_height * 0.5
+	var word_rect := Rect2(Vector2(0.0, stack_top), Vector2(safe_size.x, word_height))
+	var value_rect := Rect2(Vector2(0.0, stack_top + word_height - label_overlap), Vector2(safe_size.x, value_height))
+	_combo_popup_word_label.position = word_rect.position
+	_combo_popup_word_label.size = word_rect.size
+	_combo_popup_word_label.add_theme_font_size_override("font_size", word_font_size)
+	_combo_popup_label.position = value_rect.position
+	_combo_popup_label.size = value_rect.size
+	_combo_popup_label.add_theme_font_size_override("font_size", value_font_size)
+
+
+func _fit_combo_font_size(text: String, target_size: Vector2, desired_size: int, minimum_size: int) -> int:
+	var font := _combo_popup_font()
+	if font == null:
+		return desired_size
+	var target_width := maxf(1.0, target_size.x)
+	var target_height := maxf(1.0, target_size.y)
+	for font_size in range(maxi(minimum_size, desired_size), minimum_size - 1, -2):
+		var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1.0, font_size)
+		var text_height := font.get_height(font_size)
+		if text_size.x <= target_width and text_height <= target_height:
+			return font_size
+	return minimum_size
+
+
+func _combo_line_height(font_size: int) -> float:
+	var font := _combo_popup_font()
+	if font == null:
+		return float(font_size) * 1.2
+	return maxf(float(font_size), font.get_height(font_size))
+
+
+func _combo_popup_font() -> Font:
+	if _combo_popup_label != null and is_instance_valid(_combo_popup_label):
+		var label_font := _combo_popup_label.get_theme_font("font")
+		if label_font != null:
+			return label_font
+	if _board_panel != null and is_instance_valid(_board_panel):
+		return _board_panel.get_theme_default_font()
+	if _board != null and is_instance_valid(_board):
+		return _board.get_theme_default_font()
+	return null
 
 
 func _wait_duration(seconds: float) -> void:
