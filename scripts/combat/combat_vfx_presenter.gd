@@ -536,11 +536,18 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 	var duration := maxf(0.50, lifetime * 0.98)
 	var screen_center := layer_size * 0.5
 	var impact_local := _global_to_vfx_local(global_center)
+	var offensive := _screen_replay_is_offensive(clean_kind)
+	var event_focus := _screen_replay_focus(layer_size, impact_local, clean_kind)
 	var max_dim := maxf(layer_size.x, layer_size.y)
+	var flash_center := screen_center
+	var flash_size := layer_size * 1.08
+	if offensive:
+		flash_center = Vector2(layer_size.x * 0.5, event_focus.y)
+		flash_size = Vector2(layer_size.x * 1.10, layer_size.y * 0.58)
 	_spawn_local_effect_panel(
 		"PostMatchScreenFlash",
-		screen_center,
-		layer_size * 1.08,
+		flash_center,
+		flash_size,
 		Color(accent.r, accent.g, accent.b, 0.07),
 		Color(core.r, core.g, core.b, 0.10),
 		1,
@@ -551,7 +558,7 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 	)
 	_spawn_local_effect_panel(
 		"PostMatchScreenShockwave",
-		impact_local,
+		event_focus,
 		Vector2(max_dim * 0.58, max_dim * 0.58),
 		Color(accent.r, accent.g, accent.b, 0.06),
 		Color(core.r, core.g, core.b, 0.56),
@@ -563,10 +570,19 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 		duration * 0.04
 	)
 	for i in range(3):
-		var lane_y := (float(i) - 1.0) * layer_size.y * 0.16
+		var lane_center := screen_center + Vector2(0.0, (float(i) - 1.0) * layer_size.y * 0.16)
+		var lane_move := Vector2((float(i) - 1.0) * 26.0, -12.0 + float(i) * 10.0)
+		var lane_rotation := -0.23 + float(i) * 0.22
+		if offensive:
+			lane_center = Vector2(
+				layer_size.x * 0.5,
+				clampf(event_focus.y + (float(i) - 1.0) * layer_size.y * 0.08, layer_size.y * 0.10, layer_size.y * 0.48)
+			)
+			lane_move = Vector2((float(i) - 1.0) * 32.0, -18.0 + float(i) * 4.0)
+			lane_rotation = -0.14 + float(i) * 0.11
 		_spawn_local_effect_panel(
 			"PostMatchScreenSweep",
-			screen_center + Vector2(0.0, lane_y),
+			lane_center,
 			Vector2(max_dim * 1.46, 10.0 + float(intensity) * 1.9),
 			Color(accent.r, accent.g, accent.b, 0.15),
 			Color(core.r, core.g, core.b, 0.48),
@@ -576,17 +592,17 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 			duration * 0.54,
 			Vector2(1.08, 0.42),
 			duration * (0.05 + float(i) * 0.055),
-			Vector2((float(i) - 1.0) * 26.0, -12.0 + float(i) * 10.0),
+			lane_move,
 			0.0,
-			-0.23 + float(i) * 0.22
+			lane_rotation
 		)
 	match clean_kind:
 		"fire":
-			_spawn_screen_fire_event(layer_size, duration, intensity, accent, core)
+			_spawn_screen_fire_event(layer_size, event_focus, duration, intensity, accent, core)
 		"ice":
-			_spawn_screen_ice_event(layer_size, duration, intensity, accent, core)
+			_spawn_screen_ice_event(layer_size, event_focus, duration, intensity, accent, core)
 		"earth":
-			_spawn_screen_earth_event(layer_size, impact_local, duration, intensity, accent, core, dark)
+			_spawn_screen_earth_event(layer_size, event_focus, duration, intensity, accent, core, dark)
 		"heart":
 			_spawn_screen_heal_event(layer_size, duration, intensity, accent, core)
 		"armor":
@@ -594,18 +610,21 @@ func _spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String,
 		"gold":
 			_spawn_screen_gold_event(layer_size, duration, intensity, accent, core)
 		"damage":
-			_spawn_screen_damage_event(layer_size, duration, intensity, accent, core)
+			_spawn_screen_damage_event(layer_size, event_focus, duration, intensity, accent, core)
 
 
-func _spawn_screen_fire_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
-	var column_count := 7 + intensity * 2
+func _spawn_screen_fire_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var top_y := maxf(layer_size.y * 0.08, focus_local.y - layer_size.y * 0.15)
+	var bottom_y := minf(layer_size.y * 0.48, focus_local.y + layer_size.y * 0.13)
+	var column_count := 7 + intensity * 3
 	for i in range(column_count):
 		var x := (float(i) + 0.5) / float(column_count) * layer_size.x + sin(float(i) * 1.8) * 18.0
-		var height := layer_size.y * (0.22 + 0.025 * float(i % 4) + 0.018 * float(intensity))
+		var y := lerpf(top_y, bottom_y, float(i % 5) / 4.0)
+		var height := layer_size.y * (0.14 + 0.020 * float(i % 4) + 0.020 * float(intensity))
 		_spawn_local_effect_panel(
 			"PostMatchScreenFireColumn",
-			Vector2(x, layer_size.y + height * 0.28),
-			Vector2(18 + intensity * 3, height),
+			Vector2(x, y + height * 0.24),
+			Vector2(20 + intensity * 4, height),
 			Color(1.0, 0.18, 0.03, 0.28),
 			Color(core.r, core.g, core.b, 0.70),
 			1,
@@ -614,13 +633,14 @@ func _spawn_screen_fire_event(layer_size: Vector2, duration: float, intensity: i
 			duration * 0.78,
 			Vector2(0.58, 1.10),
 			duration * (0.06 + float(i % 5) * 0.018),
-			Vector2(sin(float(i) * 2.4) * 26.0, -layer_size.y * (0.30 + float(i % 3) * 0.04)),
+			Vector2(sin(float(i) * 2.4) * 32.0, -layer_size.y * (0.20 + float(i % 3) * 0.035)),
 			0.18,
 			sin(float(i)) * 0.12
 		)
 	var spark_count := 18 + intensity * 5
 	for i in range(spark_count):
-		var start := Vector2(layer_size.x * (float(i % 11) + 0.5) / 11.0, layer_size.y * (0.18 + 0.08 * float(i % 7)))
+		var start_y := lerpf(top_y, bottom_y, float(i % 7) / 6.0)
+		var start := Vector2(layer_size.x * (float(i % 11) + 0.5) / 11.0, start_y)
 		_spawn_local_effect_panel(
 			"PostMatchScreenFireSpark",
 			start,
@@ -633,16 +653,18 @@ func _spawn_screen_fire_event(layer_size: Vector2, duration: float, intensity: i
 			duration * 0.52,
 			Vector2(0.46, 0.62),
 			float(i % 6) * duration * 0.020,
-			Vector2(sin(float(i) * 1.3) * 28.0, -70.0 - float(intensity) * 8.0),
+			Vector2(sin(float(i) * 1.3) * 32.0, -78.0 - float(intensity) * 10.0),
 			0.45,
 			-0.25 + sin(float(i)) * 0.26
 		)
 
 
-func _spawn_screen_ice_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
-	var breeze_count := 8 + intensity * 2
+func _spawn_screen_ice_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var top_y := maxf(layer_size.y * 0.08, focus_local.y - layer_size.y * 0.17)
+	var bottom_y := minf(layer_size.y * 0.48, focus_local.y + layer_size.y * 0.16)
+	var breeze_count := 8 + intensity * 3
 	for i in range(breeze_count):
-		var y := layer_size.y * (0.12 + float(i) / float(maxi(1, breeze_count - 1)) * 0.76)
+		var y := lerpf(top_y, bottom_y, float(i) / float(maxi(1, breeze_count - 1)))
 		var side := -1.0 if i % 2 == 0 else 1.0
 		_spawn_local_effect_panel(
 			"PostMatchScreenIceBreeze",
@@ -663,7 +685,7 @@ func _spawn_screen_ice_event(layer_size: Vector2, duration: float, intensity: in
 	var shard_count := 16 + intensity * 4
 	for i in range(shard_count):
 		var x := layer_size.x * (float(i % 9) + 0.5) / 9.0
-		var y := layer_size.y * (0.12 + float(i % 7) * 0.11)
+		var y := lerpf(top_y, bottom_y, float(i % 7) / 6.0)
 		_spawn_local_effect_panel(
 			"PostMatchScreenIceShard",
 			Vector2(x, y),
@@ -676,7 +698,7 @@ func _spawn_screen_ice_event(layer_size: Vector2, duration: float, intensity: in
 			duration * 0.58,
 			Vector2(0.48, 0.78),
 			float(i % 7) * duration * 0.018,
-			Vector2(sin(float(i) * 1.7) * 35.0, 26.0 + float(i % 4) * 8.0),
+			Vector2(sin(float(i) * 1.7) * 36.0, 14.0 + float(i % 4) * 7.0),
 			0.55,
 			sin(float(i)) * 0.36
 		)
@@ -685,7 +707,7 @@ func _spawn_screen_ice_event(layer_size: Vector2, duration: float, intensity: in
 func _spawn_screen_earth_event(layer_size: Vector2, impact_local: Vector2, duration: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
 	var crack_count := 6 + intensity
 	for i in range(crack_count):
-		var y := clampf(impact_local.y + (float(i) - float(crack_count - 1) * 0.5) * 42.0, layer_size.y * 0.18, layer_size.y * 0.86)
+		var y := clampf(impact_local.y + (float(i) - float(crack_count - 1) * 0.5) * 38.0, layer_size.y * 0.12, layer_size.y * 0.50)
 		_spawn_local_effect_panel(
 			"PostMatchScreenEarthCrack",
 			Vector2(layer_size.x * 0.5, y),
@@ -705,7 +727,7 @@ func _spawn_screen_earth_event(layer_size: Vector2, impact_local: Vector2, durat
 	var stone_count := 14 + intensity * 4
 	for i in range(stone_count):
 		var x := layer_size.x * (float(i % 10) + 0.5) / 10.0
-		var y := layer_size.y * (0.50 + float(i % 5) * 0.075)
+		var y := clampf(impact_local.y + layer_size.y * (0.04 + float(i % 5) * 0.035), layer_size.y * 0.14, layer_size.y * 0.54)
 		_spawn_local_effect_panel(
 			"PostMatchScreenEarthStone",
 			Vector2(x, y),
@@ -839,10 +861,12 @@ func _spawn_screen_gold_event(layer_size: Vector2, duration: float, intensity: i
 		)
 
 
-func _spawn_screen_damage_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+func _spawn_screen_damage_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var top_y := maxf(layer_size.y * 0.10, focus_local.y - layer_size.y * 0.14)
+	var bottom_y := minf(layer_size.y * 0.50, focus_local.y + layer_size.y * 0.15)
 	var slash_count := 5 + intensity
 	for i in range(slash_count):
-		var y := layer_size.y * (0.16 + float(i) / float(maxi(1, slash_count - 1)) * 0.68)
+		var y := lerpf(top_y, bottom_y, float(i) / float(maxi(1, slash_count - 1)))
 		_spawn_local_effect_panel(
 			"PostMatchScreenDamageSlash",
 			Vector2(layer_size.x * 0.5, y),
@@ -1357,11 +1381,16 @@ func _spawn_mastery_cast_travel(source_local: Vector2, target_local: Vector2, or
 			_spawn_mastery_generic_launch(source_local, delta, angle, distance, duration, delay, intensity, accent, core)
 
 
+func _mastery_launch_scale(intensity: int) -> float:
+	return 1.0 + float(maxi(0, intensity - 1)) * 0.14
+
+
 func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
+	var launch_scale := _mastery_launch_scale(intensity)
 	_spawn_local_effect_panel(
 		"MasteryFireProjectile",
 		source_local,
-		Vector2(44 + intensity * 5, 28 + intensity * 3),
+		Vector2(44 + intensity * 5, 28 + intensity * 3) * launch_scale,
 		Color(1.0, 0.24, 0.04, 0.86),
 		Color(core.r, core.g, core.b, 0.98),
 		2,
@@ -1375,16 +1404,16 @@ func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction
 		angle,
 		Tween.EASE_IN_OUT as Tween.EaseType
 	)
-	var trail_count := 11 + intensity * 5
+	var trail_count := 11 + intensity * 7 + maxi(0, intensity - 4) * 4
 	for i in range(trail_count):
-		var side := (float(i % 5) - 2.0) * 5.0
-		var back := -float(i % 4) * 12.0
+		var side := (float(i % 5) - 2.0) * 5.0 * launch_scale
+		var back := -float(i % 4) * 12.0 * launch_scale
 		var start := normal * side + direction * back
 		var color := accent if i % 2 == 0 else core
 		_spawn_local_effect_panel(
 			"MasteryFireTrail",
 			source_local + start,
-			Vector2(22 + intensity * 4, 8 + intensity),
+			Vector2(22 + intensity * 4, 8 + intensity) * launch_scale,
 			Color(color.r, color.g, color.b, 0.62),
 			Color(core.r, core.g, core.b, 0.80),
 			1,
@@ -1393,7 +1422,7 @@ func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction
 			duration * 0.72,
 			Vector2(0.46, 0.62),
 			delay + float(i) * duration * 0.018,
-			delta + normal * sin(float(i)) * 18.0 + direction * 24.0,
+			delta + normal * sin(float(i)) * 18.0 * launch_scale + direction * 24.0 * launch_scale,
 			0.35,
 			angle,
 			Tween.EASE_IN_OUT as Tween.EaseType
@@ -1401,14 +1430,15 @@ func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, direction
 
 
 func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
-	var breeze_count := 6 + intensity * 3
+	var launch_scale := _mastery_launch_scale(intensity)
+	var breeze_count := 6 + intensity * 4 + maxi(0, intensity - 4) * 3
 	for i in range(breeze_count):
-		var lane := (float(i) / float(maxi(1, breeze_count - 1)) - 0.5) * (52.0 + float(intensity) * 5.0)
-		var start := normal * lane - direction * float(i % 3) * 10.0
+		var lane := (float(i) / float(maxi(1, breeze_count - 1)) - 0.5) * (52.0 + float(intensity) * 8.0) * launch_scale
+		var start := normal * lane - direction * float(i % 3) * 10.0 * launch_scale
 		_spawn_local_effect_panel(
 			"MasteryIceBreeze",
 			source_local + start,
-			Vector2(distance * (0.20 + float(i % 3) * 0.025), 4 + intensity),
+			Vector2(distance * (0.20 + float(i % 3) * 0.025 + float(intensity) * 0.010), (4 + intensity) * launch_scale),
 			Color(accent.r, accent.g, accent.b, 0.26),
 			Color(core.r, core.g, core.b, 0.72),
 			1,
@@ -1417,18 +1447,18 @@ func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction:
 			duration * 0.82,
 			Vector2(1.24, 0.46),
 			delay + float(i) * duration * 0.035,
-			delta + normal * sin(float(i) * 1.7) * 22.0,
+			delta + normal * sin(float(i) * 1.7) * 22.0 * launch_scale,
 			0.0,
 			angle,
 			Tween.EASE_IN_OUT as Tween.EaseType
 		)
-	var shard_count := 8 + intensity * 4
+	var shard_count := 8 + intensity * 5 + maxi(0, intensity - 4) * 3
 	for i in range(shard_count):
-		var start := normal * ((float(i % 7) - 3.0) * 7.0) - direction * float(i % 4) * 7.0
+		var start := normal * ((float(i % 7) - 3.0) * 7.0 * launch_scale) - direction * float(i % 4) * 7.0 * launch_scale
 		_spawn_local_effect_panel(
 			"MasteryIceShardLaunch",
 			source_local + start,
-			Vector2(8 + intensity, 22 + intensity * 3),
+			Vector2(8 + intensity, 22 + intensity * 3) * launch_scale,
 			Color(core.r, core.g, core.b, 0.82),
 			Color(0.92, 1.0, 1.0, 0.94),
 			1,
@@ -1437,7 +1467,7 @@ func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction:
 			duration * 0.72,
 			Vector2(0.50, 0.72),
 			delay + float(i) * duration * 0.026,
-			delta + normal * sin(float(i) * 2.1) * 32.0,
+			delta + normal * sin(float(i) * 2.1) * 32.0 * launch_scale,
 			0.45,
 			angle + PI * 0.5,
 			Tween.EASE_IN_OUT as Tween.EaseType
@@ -1445,17 +1475,18 @@ func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction:
 
 
 func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
-	var segment_count := 10 + intensity * 3
+	var launch_scale := _mastery_launch_scale(intensity)
+	var segment_count := 10 + intensity * 5 + maxi(0, intensity - 4) * 4
 	for i in range(segment_count):
 		var progress := float(i) / float(maxi(1, segment_count - 1))
-		var wave := sin(progress * TAU * 1.75) * (18.0 + float(intensity) * 2.0)
+		var wave := sin(progress * TAU * 1.75) * (18.0 + float(intensity) * 4.0) * launch_scale
 		var center := source_local + delta * progress + normal * wave
 		var segment_delay := delay + duration * progress * 0.72
-		var forward := direction * (24.0 + float(intensity) * 4.0)
+		var forward := direction * (24.0 + float(intensity) * 6.0) * launch_scale
 		_spawn_local_effect_panel(
 			"MasteryEarthSlither",
 			center,
-			Vector2(30 + intensity * 4, 10 + intensity),
+			Vector2(30 + intensity * 5, 10 + intensity * 2) * launch_scale,
 			Color(dark.r, dark.g, dark.b, 0.68),
 			Color(core.r, core.g, core.b, 0.76),
 			1,
@@ -1464,7 +1495,7 @@ func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, directio
 			duration * 0.34,
 			Vector2(1.10, 0.58),
 			segment_delay,
-			forward + normal * sin(float(i)) * 8.0,
+			forward + normal * sin(float(i)) * 8.0 * launch_scale,
 			0.15,
 			angle + sin(float(i)) * 0.28,
 			Tween.EASE_IN_OUT as Tween.EaseType
@@ -1473,7 +1504,7 @@ func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, directio
 			_spawn_local_effect_panel(
 				"MasteryEarthCrack",
 				center + normal * wave * 0.22,
-				Vector2(42 + intensity * 5, 5 + intensity),
+				Vector2(42 + intensity * 6, 5 + intensity * 2) * launch_scale,
 				Color(accent.r, accent.g, accent.b, 0.28),
 				Color(core.r, core.g, core.b, 0.62),
 				1,
@@ -1490,10 +1521,11 @@ func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, directio
 
 
 func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle: float, _distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
+	var launch_scale := _mastery_launch_scale(intensity)
 	_spawn_local_effect_panel(
 		"MasteryGenericLaunch",
 		source_local,
-		Vector2(28 + intensity * 3, 18 + intensity * 2),
+		Vector2(28 + intensity * 3, 18 + intensity * 2) * launch_scale,
 		Color(accent.r, accent.g, accent.b, 0.72),
 		Color(core.r, core.g, core.b, 0.90),
 		2,
@@ -1525,6 +1557,27 @@ func _spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector
 	panel.add_theme_stylebox_override("panel", _effect_stylebox(fill, border, border_width, corner_radius))
 	_vfx_layer.add_child(panel)
 	_tween_effect_cleanup(panel, lifetime, target_scale, delay, move_offset, spin, 1.0, move_ease)
+
+
+func _screen_replay_is_offensive(clean_kind: String) -> bool:
+	return _result_vfx_kind_key(clean_kind) in ["fire", "ice", "earth", "damage"]
+
+
+func _screen_replay_focus(layer_size: Vector2, impact_local: Vector2, clean_kind: String) -> Vector2:
+	var focus := impact_local
+	if focus == Vector2.ZERO:
+		focus = layer_size * 0.5
+	clean_kind = _result_vfx_kind_key(clean_kind)
+	focus.x = clampf(focus.x, layer_size.x * 0.12, layer_size.x * 0.88)
+	if _screen_replay_is_offensive(clean_kind):
+		focus.y = clampf(focus.y, layer_size.y * 0.12, layer_size.y * 0.42)
+	elif clean_kind in ["heart", "armor"]:
+		focus.y = clampf(focus.y, layer_size.y * 0.62, layer_size.y * 0.88)
+	elif clean_kind == "gold":
+		focus.y = clampf(focus.y, layer_size.y * 0.42, layer_size.y * 0.82)
+	else:
+		focus.y = clampf(focus.y, layer_size.y * 0.18, layer_size.y * 0.82)
+	return focus
 
 
 func _result_effect_colors(clean_kind: String) -> Dictionary:

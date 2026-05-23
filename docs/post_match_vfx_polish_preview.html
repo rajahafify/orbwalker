@@ -485,7 +485,7 @@
     <section class="topbar">
       <div>
         <h1>Post-Match AAA VFX Target</h1>
-        <p class="subtitle">This is the visual bar for the combat replay pass: bigger result numbers should throw more particles, larger glows, longer streaks, and stronger screen-readable silhouettes.</p>
+        <p class="subtitle">This is the visual bar for the combat replay pass: bigger result numbers should throw more particles, larger glows, stronger launch travel, and screen-readable silhouettes weighted toward the right target.</p>
       </div>
       <div class="control">
         <label for="power">Result Number / Intensity</label>
@@ -578,11 +578,11 @@
       </div>
       <aside class="notes">
         <h3>What Changed In-Game</h3>
-        <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. Top-tier results also add a screen-wide pulse so huge numbers feel huge instead of just showing a larger local burst.</p>
+        <p>The elemental damage replay now has three readable beats: mastery charge, visible launch travel, then the enemy impact. Top-tier offensive results bias their screen-wide spectacle toward the enemy/top combat band instead of spilling most of the weight across the player UI.</p>
         <div class="spec-list">
-          <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire builds hot at the mastery, launches as a flame mass, then bursts on the enemy.</span></div>
-          <div class="spec" style="color:var(--ice)"><span class="dot"></span><span>Ice gathers as cold breath and crystals, breezes forward, then shatters.</span></div>
-          <div class="spec" style="color:var(--earth)"><span class="dot"></span><span>Earth rumbles under the mastery, slithers along the ground, then pulses with stone.</span></div>
+          <div class="spec" style="color:var(--fire)"><span class="dot"></span><span>Fire builds hot at the mastery, launches as a larger flame mass at high values, then erupts around the enemy band.</span></div>
+          <div class="spec" style="color:var(--ice)"><span class="dot"></span><span>Ice gathers as cold breath and crystals, scales into wider breezes and more shards, then shatters near the enemy.</span></div>
+          <div class="spec" style="color:var(--earth)"><span class="dot"></span><span>Earth rumbles under the mastery, scales into a denser ground slither, then cracks and pulses near the enemy.</span></div>
           <div class="spec" style="color:var(--heart)"><span class="dot"></span><span>Healing now lands on the HP bar with refreshing green streams and soft motes.</span></div>
           <div class="spec" style="color:var(--armor)"><span class="dot"></span><span>Armor now lands on the HP bar, flashes a blue-white blocking shell, and lingers there briefly.</span></div>
           <div class="spec" style="color:var(--gold)"><span class="dot"></span><span>Gold rewards rain coins down around the player target.</span></div>
@@ -610,8 +610,16 @@
           <p>Fire spools hot and launches as flame, ice gathers cold breath and shards, earth rumbles then slithers along the ground, healing rises, armor blocks, and gold rains coins.</p>
         </article>
         <article class="change-card">
+          <h4>Screen Weighting</h4>
+          <p>Offensive screen-wide events now clamp their flash, shockwave, sweeps, fire columns, ice breezes, earth cracks, and damage slashes around the enemy/top combat band. Healing and armor remain bottom/player weighted because they resolve on the HP bar.</p>
+        </article>
+        <article class="change-card">
+          <h4>Launch Scaling</h4>
+          <p>High-value elemental results now increase launch scale before impact: fire gains a larger projectile and more trails, ice gains wider breath lanes and more shards, and earth gains a denser, wider slithering trail.</p>
+        </article>
+        <article class="change-card">
           <h4>Intensity Scaling</h4>
-          <p>Higher result numbers increase tier, size, lifetime, brightness, particle count, cast density, and at the top tier trigger a screen-wide elemental layer.</p>
+          <p>Higher result numbers increase tier, size, lifetime, brightness, particle count, cast density, travel weight, and at the top tier trigger a screen-wide elemental layer.</p>
         </article>
         <article class="change-card">
           <h4>Runtime Follow-Up</h4>
