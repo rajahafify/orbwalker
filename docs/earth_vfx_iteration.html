@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Earth Combat VFX Iteration</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080c08;
+      --panel: #111811;
+      --panel-2: #172216;
+      --text: #f0f7ed;
+      --muted: #b2c2aa;
+      --line: #33442d;
+      --earth: #9eff4a;
+      --stone: #d4b47a;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 22% 8%, rgba(91, 176, 47, 0.20), transparent 30%),
+        linear-gradient(180deg, #0a1009, var(--bg));
+      color: var(--text);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 56px;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    h1 {
+      color: var(--earth);
+      font-size: clamp(30px, 5vw, 46px);
+    }
+
+    h2 {
+      margin-top: 28px;
+      color: var(--stone);
+      font-size: 22px;
+    }
+
+    p {
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+
+    section {
+      margin-top: 24px;
+      padding: 22px;
+      background: color-mix(in srgb, var(--panel), transparent 6%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    ul {
+      margin: 14px 0 0;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    code {
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 0.92em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Earth Combat VFX Iteration</h1>
+    <p>Documented May 23, 2026. This captures the current accepted Earth post-match VFX direction after separating spool, travel, and impact layers.</p>
+
+    <section>
+      <h2>Accepted Direction</h2>
+      <p>Earth is now built as separate readable phases instead of one reused effect scaled up and down:</p>
+      <ul>
+        <li>Spool uses a stable green-tinted tornado and ground buildup at the mastery card.</li>
+        <li>Travel uses the green fractal/caustics lane as the crawling earth-crack movement toward the enemy.</li>
+        <li>Impact uses dust, splash, bubbles, shock rings, stone chunks, and pack-hit bursts rather than the travel fractal.</li>
+        <li>Strong Earth adds the atmospheric tornado only inside the enemy target area, with extra debris and quake layers.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Implementation Notes</h2>
+      <ul>
+        <li>Earth now has dedicated Max VFX replay, cast, spool, travel, impact, and tornado-atmosphere helpers in <code>CombatMaxVfxOverlay</code>.</li>
+        <li>The Alenia atmospheric <code>caustics</code> sheet is reserved for Earth travel/fracture only.</li>
+        <li>Earth impact now routes to <code>rain_splash</code> and <code>bubbles</code> as atmospheric impact/secondary keys, with stone and dust flipbooks layered over them.</li>
+        <li>The tornado scene is pinned for spool use, so it no longer drifts across the board during the charge phase.</li>
+        <li>The Earth palette was shifted greener while preserving brown dust and stone chunks for impact readability.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Debug Gallery</h2>
+      <p>The VFX gallery remains the preferred place to compare Earth amount scaling.</p>
+      <ul>
+        <li><code>res://scenes/debug/vfx_gallery_show.tscn</code> can play Earth full sequence, travel, impact, and label phases.</li>
+        <li>Use amount presets 4, 12, 25, and 50 to compare weak impact, medium buildup, and strong target-area tornado behavior.</li>
+        <li>Watch specifically that the fractal appears during travel, not during impact.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><code>git diff --check</code> passed for the Earth VFX script changes.</li>
+        <li><code>CombatModelTest.run_all()</code> passed 15/15.</li>
+        <li><code>DebugVfxGalleryTest.run_all()</code> passed 3/3.</li>
+        <li>The remaining console warnings were the existing local GDAI port/capture shutdown warnings.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
