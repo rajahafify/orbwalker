@@ -427,25 +427,14 @@
         "source_index": 14
       },
       "equipment_buckler": {
-        "alpha_bbox": [
-          84,
-          76,
-          300,
-          308
-        ],
-        "coverage": 0.2663,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler.png",
-        "sha256": "e767bf89cb489d18553c59770b545ff9055becbd97f3a89f4fd2da0bc2d5b2a2",
+        "sha256": "32487bcc7260513f2e48fda10fd3cd181b28f712f42dfb8f044fb43b7f786dc5",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 1
+        "source": "res://docs/assets/collection-ui/items/buckler_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_champion_plate": {
         "alpha_bbox": [
@@ -469,25 +458,14 @@
         "source_index": 11
       },
       "equipment_coin_purse": {
-        "alpha_bbox": [
-          84,
-          75,
-          299,
-          308
-        ],
-        "coverage": 0.2506,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse.png",
-        "sha256": "ad955c710774e7d6e3fdeaa3ce11c55ffb1eb0340230d9c8c55537d95a222eaa",
+        "sha256": "44239713e9c54a43799ad3e60004adcfe3d45c6d6fbbd0887b2298df678e7a1f",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 2
+        "source": "res://docs/assets/collection-ui/items/coin_purse_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_ember_ring": {
         "alpha_bbox": [
@@ -511,46 +489,24 @@
         "source_index": 8
       },
       "equipment_healing_charm": {
-        "alpha_bbox": [
-          114,
-          70,
-          269,
-          314
-        ],
-        "coverage": 0.156,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
-        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "sha256": "7bb1721083af6da722b1e6f35ebd11bce7c876fa5724e16ca8dcd48d99d23996",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 3
+        "source": "res://docs/assets/collection-ui/items/healing_charm_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_leather_gloves": {
-        "alpha_bbox": [
-          82,
-          80,
-          301,
-          304
-        ],
-        "coverage": 0.2508,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves.png",
-        "sha256": "ff2708cdc56dde52a1afc92c6054d200df8cd088da520975d3fe68dfc5b8ebe5",
+        "sha256": "ecc1163e63f0dde5ef90e8d502c1c266ef6efc40d4caed4e01692f5deba34ac8",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 4
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_merchant_scales": {
         "alpha_bbox": [
@@ -637,25 +593,14 @@
         "source_index": 10
       },
       "equipment_shortsword": {
-        "alpha_bbox": [
-          87,
-          68,
-          297,
-          316
-        ],
-        "coverage": 0.1053,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword.png",
-        "sha256": "0b4fda1e66dd8bd437e358e1d5e09c658e849b50514f070058f70239d7173704",
+        "sha256": "bd8201e2b2fb2fe845e74a13680ce5bf2a375cfd7be08a8e34db93c7dfeb0025",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 0
+        "source": "res://docs/assets/collection-ui/items/shortsword_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_tower_shield": {
         "alpha_bbox": [
@@ -719,6 +664,106 @@
           3
         ],
         "source_index": 9
+      },
+      "equipment_shortsword_knight": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword_knight.png",
+        "sha256": "74e491be72f4177377c22ad67ee6dc5c3819f01e4eb304dc430ae1d7f3b3010c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/shortsword_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_shortsword_royal": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword_royal.png",
+        "sha256": "24544e7429d766c9d41df059694e79b6898d2360c0d77c0508518c4890b28d5c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/shortsword_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_buckler_iron": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler_iron.png",
+        "sha256": "97b04935819b2f4a01a083309287eda0c8e0901e994639f82d5d7663d1885b68",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/buckler_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_buckler_guardian": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler_guardian.png",
+        "sha256": "5397d5351443c5664db3ac01607a748c34e19ff7ce4e2452e090fe4abb1ebc92",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/buckler_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_coin_purse_merchant": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse_merchant.png",
+        "sha256": "f67e5fb2cc08de12b22d5b5c8d2a80d5237f87f3d459566706bf62e28663a238",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/coin_purse_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_coin_purse_noble": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse_noble.png",
+        "sha256": "abf3ee4796317c057bd7e171a25241319e8e421ba81c2ac8db93cc7c59461aa7",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/coin_purse_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_healing_charm_blessed": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm_blessed.png",
+        "sha256": "463049d8533a2f4eabd0c9c8d1d02acff92ba2e19fae8a51e2a7198cb79d3a96",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/healing_charm_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_healing_charm_saint": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm_saint.png",
+        "sha256": "2d26789ff94d7b370b15a3a2ea71cc3e37d62e0d3f77da2951e32a78469083ba",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/healing_charm_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_leather_gloves_duelist": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves_duelist.png",
+        "sha256": "06f090917e5b23f7a986b4d5751ec6dc1a86a032c7a029055b00c7f544587250",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_leather_gloves_blademaster": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves_blademaster.png",
+        "sha256": "283468bb5baeaf138d6ce13e2ef454223faf20ec86c771b1b4ec86823ab7fe7b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       }
     },
     "heroes": {
@@ -1229,25 +1274,14 @@
         "source_index": 14
       },
       "equipment_buckler": {
-        "alpha_bbox": [
-          84,
-          76,
-          300,
-          308
-        ],
-        "coverage": 0.2663,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler.png",
-        "sha256": "e767bf89cb489d18553c59770b545ff9055becbd97f3a89f4fd2da0bc2d5b2a2",
+        "sha256": "32487bcc7260513f2e48fda10fd3cd181b28f712f42dfb8f044fb43b7f786dc5",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 1
+        "source": "res://docs/assets/collection-ui/items/buckler_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_champion_plate": {
         "alpha_bbox": [
@@ -1271,25 +1305,14 @@
         "source_index": 11
       },
       "equipment_coin_purse": {
-        "alpha_bbox": [
-          84,
-          75,
-          299,
-          308
-        ],
-        "coverage": 0.2506,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse.png",
-        "sha256": "ad955c710774e7d6e3fdeaa3ce11c55ffb1eb0340230d9c8c55537d95a222eaa",
+        "sha256": "44239713e9c54a43799ad3e60004adcfe3d45c6d6fbbd0887b2298df678e7a1f",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 2
+        "source": "res://docs/assets/collection-ui/items/coin_purse_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_combo_lens": {
         "alias_of": "equipment_merchant_scales",
@@ -1401,25 +1424,14 @@
         "source_index": 8
       },
       "equipment_healing_charm": {
-        "alpha_bbox": [
-          114,
-          70,
-          269,
-          314
-        ],
-        "coverage": 0.156,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm.png",
-        "sha256": "37eeeebc0fee9d541e0c75989c7ae2c7897fa8220ce536d3b81d21e76dbbaf1b",
+        "sha256": "7bb1721083af6da722b1e6f35ebd11bce7c876fa5724e16ca8dcd48d99d23996",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 3
+        "source": "res://docs/assets/collection-ui/items/healing_charm_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_hearth_amulet": {
         "alias_of": "equipment_healing_charm",
@@ -1444,25 +1456,14 @@
         "source_index": 3
       },
       "equipment_leather_gloves": {
-        "alpha_bbox": [
-          82,
-          80,
-          301,
-          304
-        ],
-        "coverage": 0.2508,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves.png",
-        "sha256": "ff2708cdc56dde52a1afc92c6054d200df8cd088da520975d3fe68dfc5b8ebe5",
+        "sha256": "ecc1163e63f0dde5ef90e8d502c1c266ef6efc40d4caed4e01692f5deba34ac8",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 4
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_merchant_scales": {
         "alpha_bbox": [
@@ -1571,25 +1572,14 @@
         "source_index": 10
       },
       "equipment_shortsword": {
-        "alpha_bbox": [
-          87,
-          68,
-          297,
-          316
-        ],
-        "coverage": 0.1053,
         "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword.png",
-        "sha256": "0b4fda1e66dd8bd437e358e1d5e09c658e849b50514f070058f70239d7173704",
+        "sha256": "bd8201e2b2fb2fe845e74a13680ce5bf2a375cfd7be08a8e34db93c7dfeb0025",
         "size": [
           384,
           384
         ],
-        "source": "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png",
-        "source_grid": [
-          5,
-          3
-        ],
-        "source_index": 0
+        "source": "res://docs/assets/collection-ui/items/shortsword_common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       },
       "equipment_stone_ring": {
         "alias_of": "equipment_healing_charm",
@@ -2098,6 +2088,106 @@
           2
         ],
         "source_index": 3
+      },
+      "equipment_shortsword_knight": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword_knight.png",
+        "sha256": "74e491be72f4177377c22ad67ee6dc5c3819f01e4eb304dc430ae1d7f3b3010c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/shortsword_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_shortsword_royal": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_shortsword_royal.png",
+        "sha256": "24544e7429d766c9d41df059694e79b6898d2360c0d77c0508518c4890b28d5c",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/shortsword_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_buckler_iron": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler_iron.png",
+        "sha256": "97b04935819b2f4a01a083309287eda0c8e0901e994639f82d5d7663d1885b68",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/buckler_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_buckler_guardian": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_buckler_guardian.png",
+        "sha256": "5397d5351443c5664db3ac01607a748c34e19ff7ce4e2452e090fe4abb1ebc92",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/buckler_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_coin_purse_merchant": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse_merchant.png",
+        "sha256": "f67e5fb2cc08de12b22d5b5c8d2a80d5237f87f3d459566706bf62e28663a238",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/coin_purse_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_coin_purse_noble": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_coin_purse_noble.png",
+        "sha256": "abf3ee4796317c057bd7e171a25241319e8e421ba81c2ac8db93cc7c59461aa7",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/coin_purse_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_healing_charm_blessed": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm_blessed.png",
+        "sha256": "463049d8533a2f4eabd0c9c8d1d02acff92ba2e19fae8a51e2a7198cb79d3a96",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/healing_charm_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_healing_charm_saint": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_healing_charm_saint.png",
+        "sha256": "2d26789ff94d7b370b15a3a2ea71cc3e37d62e0d3f77da2951e32a78469083ba",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/healing_charm_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_leather_gloves_duelist": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves_duelist.png",
+        "sha256": "06f090917e5b23f7a986b4d5751ec6dc1a86a032c7a029055b00c7f544587250",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "equipment_leather_gloves_blademaster": {
+        "path": "res://resources/art/assetgen/runtime/equipment/equipment_leather_gloves_blademaster.png",
+        "sha256": "283468bb5baeaf138d6ce13e2ef454223faf20ec86c771b1b4ec86823ab7fe7b",
+        "size": [
+          384,
+          384
+        ],
+        "source": "res://docs/assets/collection-ui/items/leather_gloves_rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       }
     },
     "mastery": {
@@ -2550,6 +2640,58 @@
           2
         ],
         "source_index": 3
+      }
+    },
+    "collection_ui": {
+      "card_frame_common": {
+        "path": "res://resources/art/assetgen/runtime/collection_ui/card_frame_common.png",
+        "sha256": "6a86bf4b0babbec092816ea5662b7c2c70f60def44d1435b0b219037fb37041b",
+        "size": [
+          505,
+          720
+        ],
+        "source": "res://docs/assets/collection-ui/card-frame-common.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "card_frame_uncommon": {
+        "path": "res://resources/art/assetgen/runtime/collection_ui/card_frame_uncommon.png",
+        "sha256": "a48c03eefe04f8491c6d64a87709ac2ae8136a114934c1beeeb5efccd1198522",
+        "size": [
+          505,
+          720
+        ],
+        "source": "res://docs/assets/collection-ui/card-frame-uncommon.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "card_frame_rare": {
+        "path": "res://resources/art/assetgen/runtime/collection_ui/card_frame_rare.png",
+        "sha256": "85d4bfc7a4f906ebbd50a9172a45276102f53c2fdbed1fd2eabfbb2244531927",
+        "size": [
+          505,
+          720
+        ],
+        "source": "res://docs/assets/collection-ui/card-frame-rare.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "price_badge": {
+        "path": "res://resources/art/assetgen/runtime/collection_ui/price_badge.png",
+        "sha256": "da9881a923c03aaa6abadab5d0f4ae9b16167532bc0b5694b1345efb6038c456",
+        "size": [
+          486,
+          180
+        ],
+        "source": "res://docs/assets/collection-ui/price-badge.png",
+        "promoted_for": "collection_asset_backed_card_ui"
+      },
+      "hud_slot_frame": {
+        "path": "res://resources/art/assetgen/runtime/collection_ui/hud_slot_frame.png",
+        "sha256": "95aed6013ef817d03b3c38ddb843e16e603ab0539c82c6dda8a38f85940f916b",
+        "size": [
+          96,
+          96
+        ],
+        "source": "res://docs/assets/collection-ui/hud-slot-frame.png",
+        "promoted_for": "collection_asset_backed_card_ui"
       }
     }
   },

@@ -31,6 +31,7 @@ const PATH_VFX_SHEET := "res://resources/art/assetgen/vfx/board_orb_clear_vfx_ca
 const PATH_HERO_PORTRAIT := "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png"
 const PATH_FALLBACK_HERO_PORTRAIT := "res://resources/art/first_pass/heroes/hero_orbwalker.png"
 const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.json"
+const PATH_RUNTIME_COLLECTION_UI_DIR := "res://resources/art/assetgen/runtime/collection_ui"
 
 const _INTENT_INDEX_BY_TYPE := {
 	0: 0, # ATTACK
@@ -610,6 +611,24 @@ func chrome_texture(key: String, use_placeholder: bool = true) -> Texture2D:
 		_warn_missing("chrome:%s" % normalized_key)
 		return placeholder_texture("chrome_%s_missing" % normalized_key)
 	return null
+
+
+func collection_card_frame(rarity: String) -> Texture2D:
+	var normalized := rarity.strip_edges().to_lower()
+	if normalized != "uncommon" and normalized != "rare":
+		normalized = "common"
+	var texture := _collection_ui_texture("card_frame_%s" % normalized)
+	return texture if texture != null else placeholder_texture("collection_card_frame_%s_missing" % normalized, Color(0.12, 0.10, 0.08, 1.0), Vector2i(505, 720))
+
+
+func collection_price_badge() -> Texture2D:
+	var texture := _collection_ui_texture("price_badge")
+	return texture if texture != null else placeholder_texture("collection_price_badge_missing", Color(0.48, 0.27, 0.06, 1.0), Vector2i(486, 180))
+
+
+func collection_hud_slot_frame() -> Texture2D:
+	var texture := _collection_ui_texture("hud_slot_frame")
+	return texture if texture != null else placeholder_texture("collection_hud_slot_frame_missing", Color(0.16, 0.13, 0.09, 1.0), Vector2i(96, 96))
 
 
 func combat_ui_texture(key: String, use_placeholder: bool = true) -> Texture2D:
@@ -1705,6 +1724,19 @@ func _runtime_icon_texture(icon_key: String) -> Texture2D:
 	return _runtime_texture("icons", icon_key.strip_edges().to_lower())
 
 
+func _collection_ui_texture(key: String) -> Texture2D:
+	var normalized_key := key.strip_edges().to_lower()
+	if normalized_key == "":
+		return null
+	var path := "%s/%s.png" % [PATH_RUNTIME_COLLECTION_UI_DIR, normalized_key]
+	if _runtime_texture_cache.has(path):
+		return _runtime_texture_cache[path]
+	var texture := _load_runtime_png_texture(path, "collection_ui:%s" % normalized_key)
+	if texture != null:
+		_runtime_texture_cache[path] = texture
+	return texture
+
+
 func _runtime_texture_entry(category: String, key: String) -> Dictionary:
 	if category == "" or key == "":
 		return {}
@@ -1749,10 +1781,11 @@ func _ensure_runtime_manifest() -> void:
 
 
 func _load_runtime_png_texture(path: String, key: String) -> Texture2D:
-	var loaded: Variant = load(path)
-	var imported_texture := loaded as Texture2D
-	if imported_texture != null:
-		return imported_texture
+	if ResourceLoader.exists(path):
+		var loaded: Variant = load(path)
+		var imported_texture := loaded as Texture2D
+		if imported_texture != null:
+			return imported_texture
 	if FileAccess.file_exists(path):
 		var image := Image.new()
 		var load_error := image.load(path)

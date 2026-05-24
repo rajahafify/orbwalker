@@ -6,12 +6,13 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("score_text_and_snapshot", _test_score_text_and_snapshot, failures)
 	_run_case("family_view_models_unlock_and_claimable_progression", _test_family_view_models_unlock_and_claimable_progression, failures)
+	_run_case("family_view_models_include_card_asset_fields", _test_family_view_models_include_card_asset_fields, failures)
 	_run_case("validate_claim_rejects_missing_previous_and_score", _test_validate_claim_rejects_missing_previous_and_score, failures)
 	_run_case("normalize_unlock_entries_accepts_arrays_and_nested_payloads", _test_normalize_unlock_entries_accepts_arrays_and_nested_payloads, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -58,6 +59,41 @@ func _test_family_view_models_unlock_and_claimable_progression() -> String:
 		return "Expected uncommon shortsword to be claimable when score requirement is met."
 	if bool(rare.get("claimable", false)):
 		return "Expected rare shortsword not to be claimable before uncommon unlock and score requirement."
+	return ""
+
+
+func _test_family_view_models_include_card_asset_fields() -> String:
+	var model := CollectionModel.new()
+	model._profile_snapshot = {"unlocked_equipment_ids": ["shortsword", "buckler", "coin_purse", "healing_charm", "leather_gloves"]}
+	model._unlocked_item_ids = {
+		"shortsword": true,
+		"buckler": true,
+		"coin_purse": true,
+		"healing_charm": true,
+		"leather_gloves": true,
+	}
+	model._total_score = 300
+	var families := model.family_view_models()
+	if families.size() != 5:
+		return "Expected five equipment families."
+	for family in families:
+		var family_dict := Dictionary(family)
+		var tiers := Array(family_dict.get("tiers", []))
+		if tiers.size() != 3:
+			return "Expected family %s to expose three tiers." % String(family_dict.get("family_id", "unknown"))
+		for tier in tiers:
+			var tier_dict := Dictionary(tier)
+			var tier_id := String(tier_dict.get("tier_id", ""))
+			if String(tier_dict.get("description", "")) == "":
+				return "Expected %s to expose description for card copy." % String(tier_dict.get("item_id", "unknown"))
+			if String(tier_dict.get("icon_key", "")) == "":
+				return "Expected %s to expose icon_key for card art." % String(tier_dict.get("item_id", "unknown"))
+			if String(tier_dict.get("rarity", "")) != tier_id:
+				return "Expected %s rarity to match its tier id." % String(tier_dict.get("item_id", "unknown"))
+			if String(tier_dict.get("card_badge_text", "")) == "":
+				return "Expected %s to expose compact card badge text." % String(tier_dict.get("item_id", "unknown"))
+			if not tier_dict.has("card_claim_enabled"):
+				return "Expected %s to expose card_claim_enabled." % String(tier_dict.get("item_id", "unknown"))
 	return ""
 
 

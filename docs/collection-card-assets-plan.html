@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collection Card Asset Mockup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --gold: #e2ab4b;
+      --gold-bright: #ffd887;
+      --ink: #f6e7c8;
+      --muted: #bca87c;
+      --panel: rgba(8, 10, 12, .84);
+      --common: #e6c27a;
+      --uncommon: #46c7ff;
+      --rare: #b96dff;
+      --epic: #ef74ff;
+      --green: #71d46b;
+      --red: #ef6758;
+      --shadow: 0 28px 80px rgba(0, 0, 0, .62);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        linear-gradient(180deg, rgba(2, 3, 5, .34), rgba(2, 3, 5, .88)),
+        url("../resources/art/assetgen/backgrounds/collection_background_candidate_01.png") center top / cover fixed,
+        #060708;
+    }
+
+    button,
+    .sans {
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+    }
+
+    .screen {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 26px 0 42px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(9, 13, 16, .92), rgba(4, 5, 6, .86));
+      border: 1px solid rgba(226, 171, 75, .72);
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1px rgba(255, 232, 176, .06), var(--shadow);
+    }
+
+    .nav-button,
+    .score-pill {
+      height: 54px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 24px;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0;
+      background:
+        linear-gradient(180deg, rgba(64, 38, 12, .82), rgba(22, 12, 4, .92));
+      border: 1px solid rgba(226, 171, 75, .8);
+      border-radius: 7px;
+      box-shadow: inset 0 0 0 1px rgba(255, 232, 176, .08);
+    }
+
+    .nav-button { justify-self: start; }
+    .score-pill { justify-self: end; min-width: 180px; }
+
+    .title {
+      text-align: center;
+      line-height: 1;
+      color: #ffe6a6;
+      font-size: clamp(38px, 6vw, 70px);
+      font-weight: 800;
+      text-shadow: 0 3px 0 #000, 0 0 26px rgba(226, 171, 75, .32);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(226, 171, 75, .10), transparent 34%),
+        linear-gradient(180deg, rgba(9, 12, 14, .90), rgba(3, 4, 5, .86));
+      border: 1px solid rgba(226, 171, 75, .58);
+      border-radius: 9px;
+      box-shadow: inset 0 0 0 1px rgba(255, 232, 176, .06), var(--shadow);
+      overflow: hidden;
+    }
+
+    .feature {
+      padding: 18px;
+    }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--gold-bright);
+      font-size: 19px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(226, 171, 75, .72));
+    }
+
+    .section-title::after {
+      background: linear-gradient(90deg, rgba(226, 171, 75, .72), transparent);
+    }
+
+    .card-stage {
+      display: grid;
+      place-items: center;
+      padding: 4px 0 6px;
+    }
+
+    .card-stage > .asset-card {
+      width: min(300px, 100%);
+    }
+
+    .asset-card {
+      --accent: var(--common);
+      position: relative;
+      width: min(284px, 100%);
+      aspect-ratio: 505 / 720;
+      isolation: isolate;
+      filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .72));
+    }
+
+    .asset-card.uncommon { --accent: var(--uncommon); }
+    .asset-card.rare { --accent: var(--rare); }
+    .asset-card.epic { --accent: var(--epic); }
+
+    .asset-card::before {
+      content: "";
+      position: absolute;
+      inset: 10% 8% 9%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 50% 37%, color-mix(in srgb, var(--accent) 46%, transparent), transparent 34%),
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, rgba(0, 0, 0, .20)), rgba(0, 0, 0, .44));
+      border-radius: 20px;
+      box-shadow: inset 0 0 42px rgba(0, 0, 0, .72), 0 0 34px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    .card-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card-name {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 9.8%;
+      z-index: 5;
+      color: var(--accent);
+      font-size: 27px;
+      font-weight: 800;
+      line-height: .94;
+      text-align: center;
+      overflow-wrap: anywhere;
+      text-shadow: 0 2px 0 #000, 0 0 14px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    .item-art {
+      position: absolute;
+      left: 30%;
+      right: 30%;
+      top: 31%;
+      z-index: 4;
+      width: 40%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .78));
+    }
+
+    .card-copy {
+      position: absolute;
+      left: 13%;
+      right: 13%;
+      top: 60.5%;
+      z-index: 5;
+      color: #f8e9c8;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.14;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .unlock-badge {
+      position: absolute;
+      left: 22%;
+      right: 22%;
+      bottom: 10%;
+      z-index: 5;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: #ffdf93;
+      font: 900 15px/1 Inter, Segoe UI, Arial, sans-serif;
+      text-align: center;
+      background: url("assets/collection-ui/price-badge.png") center / 100% 100% no-repeat;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .slot-frame,
+    .slot-item {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .slot-item {
+      inset: 8px;
+      width: calc(100% - 16px);
+      height: calc(100% - 16px);
+      filter: drop-shadow(0 5px 6px rgba(0, 0, 0, .58));
+    }
+
+    .tier-rail {
+      display: grid;
+      gap: 10px;
+      padding: 15px;
+    }
+
+    .card-unit {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .card-unit .asset-card {
+      width: min(284px, 100%);
+    }
+
+    .card-icon-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 178px;
+      padding: 7px 10px;
+      background: linear-gradient(180deg, rgba(18, 14, 9, .90), rgba(5, 6, 7, .94));
+      border: 1px solid color-mix(in srgb, var(--accent) 56%, rgba(226, 171, 75, .28));
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px rgba(255, 232, 176, .05), 0 10px 18px rgba(0, 0, 0, .36);
+    }
+
+    .unit-hud-icon {
+      --accent: var(--common);
+      position: relative;
+      width: 54px;
+      height: 54px;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 7px 10px rgba(0, 0, 0, .62));
+    }
+
+    .card-icon-row .icon-copy {
+      color: var(--muted);
+      font: 800 11px/1.2 Inter, Segoe UI, Arial, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .card-icon-row .icon-copy b {
+      display: block;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .upgrade-line {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-card {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .asset-card.mini-card {
+      width: 100%;
+      max-width: 196px;
+      margin: 0 auto;
+    }
+
+    .mini-card .card-name { font-size: 17px; }
+    .mini-card .card-copy { font-size: 11px; line-height: 1.12; }
+    .mini-card .unlock-badge { height: 32px; font-size: 12px; }
+    .mini-unit .card-icon-row {
+      min-width: 150px;
+      padding: 6px 8px;
+      gap: 8px;
+    }
+    .mini-unit .unit-hud-icon {
+      width: 42px;
+      height: 42px;
+    }
+    .mini-unit .card-icon-row .icon-copy {
+      font-size: 9px;
+    }
+    .mini-unit .card-icon-row .icon-copy b {
+      font-size: 11px;
+    }
+
+    .family-row {
+      padding: 15px;
+      border-top: 1px solid rgba(226, 171, 75, .26);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .025), rgba(0, 0, 0, .08));
+    }
+
+    .family-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .family-name {
+      color: #ffe1a0;
+      font-size: 21px;
+      font-weight: 900;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .flow {
+      color: var(--muted);
+      font: 800 13px/1 Inter, Segoe UI, Arial, sans-serif;
+      text-transform: uppercase;
+    }
+
+    .flow span { color: var(--gold-bright); }
+
+    .hud-demo {
+      margin-top: 16px;
+      padding: 14px;
+      background: rgba(0, 0, 0, .34);
+      border: 1px solid rgba(226, 171, 75, .36);
+      border-radius: 8px;
+    }
+
+    .inventory-strip {
+      position: relative;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      justify-content: center;
+      min-height: 82px;
+      padding: 9px;
+      background: linear-gradient(180deg, rgba(8, 12, 15, .90), rgba(2, 3, 4, .92));
+      border: 1px solid rgba(226, 171, 75, .36);
+      border-radius: 6px;
+    }
+
+    .hud-token {
+      --accent: var(--common);
+      position: relative;
+      width: 68px;
+      height: 68px;
+      display: grid;
+      place-items: center;
+      cursor: default;
+      filter: drop-shadow(0 7px 10px rgba(0, 0, 0, .62));
+    }
+
+    .hud-token.uncommon { --accent: var(--uncommon); }
+    .hud-token.rare { --accent: var(--rare); }
+    .hud-token.epic { --accent: var(--epic); }
+
+    .hud-token::after {
+      content: attr(data-bonus);
+      position: absolute;
+      right: 4px;
+      bottom: 2px;
+      z-index: 4;
+      color: #ffe69f;
+      font: 900 16px/1 Inter, Segoe UI, Arial, sans-serif;
+      text-shadow: 0 2px 0 #000, 0 0 8px rgba(0, 0, 0, .9);
+    }
+
+    .hud-token .slot-item {
+      inset: 9px;
+      width: calc(100% - 18px);
+      height: calc(100% - 18px);
+    }
+
+    .hover-card {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 14px);
+      z-index: 20;
+      width: 230px;
+      transform: translateX(-50%) translateY(8px) scale(.96);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+
+    .hud-token:hover .hover-card {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    .hover-card .asset-card {
+      width: 230px;
+    }
+
+    .hover-card .card-name {
+      font-size: 22px;
+    }
+
+    .hover-card .card-copy {
+      font-size: 13px;
+    }
+
+    .hover-card .unlock-badge {
+      height: 36px;
+      font-size: 13px;
+    }
+
+    .collection-list {
+      overflow: visible;
+    }
+
+    .contract {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 15px;
+      color: var(--muted);
+      font: 700 13px/1.35 Inter, Segoe UI, Arial, sans-serif;
+      border-top: 1px solid rgba(226, 171, 75, .26);
+    }
+
+    .contract div {
+      min-height: 78px;
+      padding: 12px;
+      background: rgba(0, 0, 0, .28);
+      border: 1px solid rgba(226, 171, 75, .22);
+      border-radius: 6px;
+    }
+
+    .contract b {
+      display: block;
+      margin-bottom: 6px;
+      color: #ffe1a0;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 980px) {
+      .content { grid-template-columns: 1fr; }
+      .feature { display: grid; grid-template-columns: minmax(220px, 320px) minmax(0, 1fr); gap: 16px; align-items: center; }
+      .card-stage { padding-bottom: 0; }
+    }
+
+    @media (max-width: 720px) {
+      .screen { width: min(100vw - 14px, 620px); padding-top: 10px; }
+      .topbar { grid-template-columns: 1fr; gap: 8px; }
+      .nav-button,
+      .score-pill { justify-self: stretch; }
+      .title { font-size: 42px; }
+      .feature { display: block; }
+      .upgrade-line { grid-template-columns: 1fr; }
+      .asset-card.mini-card { max-width: 240px; }
+      .family-head { grid-template-columns: 1fr; }
+      .contract { grid-template-columns: 1fr; }
+      .hover-card { left: auto; right: 0; transform: translateY(8px) scale(.96); }
+      .hud-token:hover .hover-card { transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <header class="topbar">
+      <button class="nav-button">Main Menu</button>
+      <h1 class="title">Collection</h1>
+      <div class="score-pill">Total Score: 320</div>
+    </header>
+
+    <section class="content">
+      <aside class="panel feature">
+        <div>
+          <div class="section-title"><span>Hover Card</span></div>
+          <div class="card-stage" id="featured-card"></div>
+        </div>
+        <div class="hud-demo">
+          <div class="section-title"><span>Inventory Icons</span></div>
+          <div class="inventory-strip" id="hud-strip"></div>
+        </div>
+      </aside>
+
+      <section class="panel collection-list">
+        <div class="section-title" style="padding: 16px 16px 0;"><span>Upgrade Families</span></div>
+        <div id="families"></div>
+        <div class="contract">
+          <div><b>Asset Contract</b>One full-art card per tier, with a clean canonical family icon reused until tier art is production-ready.</div>
+          <div><b>Upgrade Flow</b>Families render left to right as common &gt; uncommon &gt; rare. Card surface color defines rarity: dark, blue, purple.</div>
+          <div><b>Shop Reuse</b>The same full card frame can become the shop offer card; only action/status copy changes.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const ASSETS = {
+      frameCommon: "assets/collection-ui/card-frame-common.png",
+      frameUncommon: "assets/collection-ui/card-frame-uncommon.png",
+      frameRare: "assets/collection-ui/card-frame-rare.png",
+      slotFrame: "assets/collection-ui/hud-slot-frame.png",
+      equipment: "assets/collection-ui/items/"
+    };
+
+    const families = [
+      {
+        label: "Shortsword",
+        stages: [
+          ["common", "Iron Shortsword", "Deal +2 flat elemental damage each turn.", "shortsword_common.png", "Claimed", "+1"],
+          ["uncommon", "Knight Shortsword", "Deal +4 flat elemental damage each turn.", "shortsword_uncommon.png", "100 Score", "+2"],
+          ["rare", "Royal Shortsword", "Deal +6 flat elemental damage each turn.", "shortsword_rare.png", "300 Score", "+3"]
+        ]
+      },
+      {
+        label: "Buckler",
+        stages: [
+          ["common", "Wooden Buckler", "Gain +2 armor at turn start.", "buckler_common.png", "Claimed", "+1"],
+          ["uncommon", "Iron Buckler", "Gain +4 armor at turn start.", "buckler_uncommon.png", "100 Score", "+2"],
+          ["rare", "Guardian Buckler", "Gain +6 armor at turn start.", "buckler_rare.png", "300 Score", "+3"]
+        ]
+      },
+      {
+        label: "Coin Purse",
+        stages: [
+          ["common", "Worn Coin Purse", "Gain +1 bonus gold when gold orbs resolve.", "coin_purse_common.png", "Claimed", "+1"],
+          ["uncommon", "Merchant Coin Purse", "Gain +2 bonus gold when gold orbs resolve.", "coin_purse_uncommon.png", "100 Score", "+2"],
+          ["rare", "Noble Coin Purse", "Gain +3 bonus gold when gold orbs resolve.", "coin_purse_rare.png", "300 Score", "+3"]
+        ]
+      },
+      {
+        label: "Healing Charm",
+        stages: [
+          ["common", "Linen Healing Charm", "Gain +2 bonus healing when heart orbs resolve.", "healing_charm_common.png", "Claimed", "+1"],
+          ["uncommon", "Blessed Healing Charm", "Gain +4 bonus healing when heart orbs resolve.", "healing_charm_uncommon.png", "100 Score", "+2"],
+          ["rare", "Saint's Healing Charm", "Gain +6 bonus healing when heart orbs resolve.", "healing_charm_rare.png", "300 Score", "+3"]
+        ]
+      },
+      {
+        label: "Leather Gloves",
+        stages: [
+          ["common", "Leather Gloves", "Combo count is treated as +1 for damage scaling.", "leather_gloves_common.png", "Claimed", "+1"],
+          ["uncommon", "Duelist Gloves", "Combo count is treated as +2 for damage scaling.", "leather_gloves_uncommon.png", "100 Score", "+2"],
+          ["rare", "Blademaster Gloves", "Combo count is treated as +3 for damage scaling.", "leather_gloves_rare.png", "300 Score", "+3"]
+        ]
+      }
+    ];
+
+    function stageToObject(stage) {
+      return {
+        rarity: stage[0],
+        name: stage[1],
+        copy: stage[2],
+        icon: ASSETS.equipment + stage[3],
+        state: stage[4],
+        bonus: stage[5]
+      };
+    }
+
+    function cardFrame(rarity) {
+      if (rarity === "uncommon") {
+        return ASSETS.frameUncommon;
+      }
+      return rarity === "rare" || rarity === "epic" ? ASSETS.frameRare : ASSETS.frameCommon;
+    }
+
+    function fullCard(stage, compact = false) {
+      const item = stageToObject(stage);
+      const shortName = breakName(item.name);
+      return `
+        <article class="${compact ? "mini-card " : ""}asset-card ${item.rarity}">
+          <img class="card-frame" src="${cardFrame(item.rarity)}" alt="">
+          <div class="card-name">${shortName}</div>
+          <img class="item-art" src="${item.icon}" alt="${item.name}">
+          <div class="card-copy">${item.copy}</div>
+          <div class="unlock-badge">${item.state}</div>
+        </article>
+      `;
+    }
+
+    function breakName(name) {
+      const words = name.split(" ");
+      if (words.length <= 2) {
+        return words.join("<br>");
+      }
+      return `${words[0]}<br>${words.slice(1).join(" ")}`;
+    }
+
+    function cardUnit(stage, compact = false) {
+      const item = stageToObject(stage);
+      return `
+        <div class="${compact ? "mini-unit " : ""}card-unit ${item.rarity}" style="--accent: var(--${item.rarity});">
+          ${fullCard(stage, compact)}
+          <div class="card-icon-row">
+            <div class="unit-hud-icon ${item.rarity}">
+              <img class="slot-frame" src="${ASSETS.slotFrame}" alt="">
+              <img class="slot-item" src="${item.icon}" alt="${item.name}">
+            </div>
+            <div class="icon-copy"><b>HUD icon</b>Inventory preview</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function hudToken(stage) {
+      const item = stageToObject(stage);
+      return `
+        <div class="hud-token ${item.rarity}" data-bonus="${item.bonus}">
+          <img class="slot-frame" src="${ASSETS.slotFrame}" alt="">
+          <img class="slot-item" src="${item.icon}" alt="${item.name}">
+          <div class="hover-card">${fullCard(stage)}</div>
+        </div>
+      `;
+    }
+
+    function renderFamily(family) {
+      return `
+        <section class="family-row">
+          <div class="family-head">
+            <div class="family-name">${family.label}</div>
+            <div class="flow"><span>Common</span> &gt; <span>Uncommon</span> &gt; <span>Rare</span></div>
+          </div>
+          <div class="upgrade-line">
+            ${family.stages.map(stage => cardUnit(stage, true)).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    document.getElementById("featured-card").innerHTML = fullCard(families[0].stages[1]);
+    document.getElementById("hud-strip").innerHTML = families.map(family => hudToken(family.stages[1])).join("");
+    document.getElementById("families").innerHTML = families.map(renderFamily).join("");
+  </script>
+</body>
+</html>

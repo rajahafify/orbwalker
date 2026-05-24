@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CollectionModel
 
+const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
+
 const TIER_ORDER: Array[String] = ["common", "uncommon", "rare"]
 const TIER_REQUIRED_SCORE := {
 	"common": 0,
@@ -69,6 +71,7 @@ const FAMILY_DEFINITIONS: Array[Dictionary] = [
 var _profile_snapshot: Dictionary = {}
 var _unlocked_item_ids: Dictionary = {}
 var _total_score: int = 0
+var _content_registry = CONTENT_REGISTRY_SCRIPT.new()
 
 func refresh_from_run_state() -> void:
 	_profile_snapshot = _profile_state_snapshot()
@@ -94,6 +97,7 @@ func family_view_models() -> Array[Dictionary]:
 			var tier_id := TIER_ORDER[tier_index]
 			var tier_info: Dictionary = Dictionary(Dictionary(family.get("tiers", {})).get(tier_id, {}))
 			var item_id := String(tier_info.get("item_id", ""))
+			var item_definition := _equipment_definition(item_id)
 			var previous_unlocked := true
 			if tier_index > 0:
 				var previous_tier_id := TIER_ORDER[tier_index - 1]
@@ -105,12 +109,16 @@ func family_view_models() -> Array[Dictionary]:
 			var state_text := "Unlocked" if unlocked else "Locked"
 			var state_color := Color(0.52, 0.90, 0.62, 1.0) if unlocked else Color(0.95, 0.58, 0.50, 1.0)
 			var tier_color: Color = Color(TIER_COLORS.get(tier_id, Color.WHITE))
+			var card_claim_enabled := claimable and has_claim_unlock_api()
 			tiers.append({
 				"family_id": family_id,
 				"tier_id": tier_id,
 				"tier_index": tier_index,
 				"item_id": item_id,
-				"item_display_name": String(tier_info.get("display_name", _title_case_id(item_id))),
+				"item_display_name": String(item_definition.get("display_name", tier_info.get("display_name", _title_case_id(item_id)))),
+				"description": String(item_definition.get("description", "")),
+				"icon_key": String(item_definition.get("icon_key", "")),
+				"rarity": String(item_definition.get("rarity", tier_id)).to_lower(),
 				"tier_label": String(TIER_DISPLAY_NAME.get(tier_id, tier_id)).to_upper(),
 				"tier_color": tier_color,
 				"requirement_text": _tier_requirement_text(tier_id),
@@ -119,8 +127,10 @@ func family_view_models() -> Array[Dictionary]:
 				"unlocked": unlocked,
 				"state_text": state_text,
 				"state_color": state_color,
-				"claimable": claimable and has_claim_unlock_api(),
+				"claimable": card_claim_enabled,
 				"claim_button_text": _claim_button_text(tier_id, unlocked),
+				"card_badge_text": _card_badge_text(tier_id, unlocked),
+				"card_claim_enabled": card_claim_enabled,
 			})
 		families.append(entry)
 	return families
@@ -172,28 +182,28 @@ func _meta_profile_snapshot() -> Dictionary:
 	return {}
 
 
-func _extract_total_score(snapshot: Dictionary) -> int:
-	if snapshot.has("total_score"):
-		return maxi(0, int(snapshot.get("total_score", 0)))
-	if snapshot.has("score"):
-		return maxi(0, int(snapshot.get("score", 0)))
-	if snapshot.has("meta_score"):
-		return maxi(0, int(snapshot.get("meta_score", 0)))
-	var stats: Dictionary = Dictionary(snapshot.get("stats", {}))
+func _extract_total_score(profile_snapshot: Dictionary) -> int:
+	if profile_snapshot.has("total_score"):
+		return maxi(0, int(profile_snapshot.get("total_score", 0)))
+	if profile_snapshot.has("score"):
+		return maxi(0, int(profile_snapshot.get("score", 0)))
+	if profile_snapshot.has("meta_score"):
+		return maxi(0, int(profile_snapshot.get("meta_score", 0)))
+	var stats: Dictionary = Dictionary(profile_snapshot.get("stats", {}))
 	if stats.has("total_score"):
 		return maxi(0, int(stats.get("total_score", 0)))
 	return 0
 
 
-func _extract_unlocked_item_ids(snapshot: Dictionary) -> Dictionary:
+func _extract_unlocked_item_ids(profile_snapshot: Dictionary) -> Dictionary:
 	var unlocked: Dictionary = {}
 	for key in ["unlocked_equipment_ids", "unlocked_equipment_item_ids", "equipment_unlock_ids"]:
-		for raw_id in Array(snapshot.get(key, [])):
+		for raw_id in Array(profile_snapshot.get(key, [])):
 			var item_id := String(raw_id)
 			if item_id != "":
 				unlocked[item_id] = true
 	for key in ["equipment_unlocks", "equipment_unlock_state", "equipment_unlock_flags"]:
-		var mapping := Dictionary(snapshot.get(key, {}))
+		var mapping := Dictionary(profile_snapshot.get(key, {}))
 		for unlock_key in mapping.keys():
 			if bool(mapping.get(unlock_key, false)):
 				unlocked[String(unlock_key)] = true
@@ -224,6 +234,12 @@ func _family_tier_info(family_id: String, tier_id: String) -> Dictionary:
 	return {}
 
 
+func _equipment_definition(item_id: String) -> Dictionary:
+	if item_id == "" or _content_registry == null:
+		return {}
+	return _content_registry.get_equipment(item_id)
+
+
 func _tier_requirement_text(tier_id: String) -> String:
 	match tier_id:
 		"common":
@@ -240,6 +256,12 @@ func _claim_button_text(tier_id: String, unlocked: bool) -> String:
 	if unlocked:
 		return "Claimed"
 	return "Claim (%d Score)" % int(TIER_REQUIRED_SCORE.get(tier_id, 0))
+
+
+func _card_badge_text(tier_id: String, unlocked: bool) -> String:
+	if unlocked:
+		return "Claimed"
+	return "%d Score" % int(TIER_REQUIRED_SCORE.get(tier_id, 0))
 
 
 func _consume_recent_unlock_payload() -> Variant:

@@ -897,6 +897,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Focused profile probe confirmed in-memory default profile creation, Total Score/unlocked-equipment save-load roundtrip, main-menu <code>ProfileOverlay</code> and <code>ResetProfileButton</code> nodes, and removal of profile reset controls from Collection.</li>
 <li>Manual QA passed for the M11 equipment/profile progression slice after follow-up fixes: Run Score/Total Score profile behavior, final summary victory/defeat routing, achievement toast behavior, Collection claims, and main-menu Profile reset placement were accepted by the user on 2026-05-05.</li>
 </ul>
+<p>Verification notes (2026-05-24, Collection asset-backed card UI):</p>
+<ul>
+<li>Collection now renders equipment families as full-art upgrade cards using generated PNG card frames, rarity-colored card surfaces, semantic item art, fixed title/art/copy/badge regions, and separate HUD icon previews. Common, Uncommon, and Rare progression remains driven by the existing unlock and Total Score rules.</li>
+<li>Runtime collection assets were promoted under <code>resources/art/assetgen/runtime/</code>, including collection card chrome, price badge, HUD slot frame, and semantic equipment icons for all 15 family tiers. <code>VisualRegistry</code> resolves the new collection UI assets and <code>ContentRegistry</code> points upgraded equipment at matching item icons instead of placeholder art.</li>
+<li>The portrait Collection layout uses one centered card column to preserve legibility on narrow screens, while the card renderer keeps text and art in non-overlapping fixed rects and pre-wraps effect copy before it can overflow horizontally.</li>
+<li>Validation passed: <code>git diff --check</code>; Godot MCP cache-ignore script loads for touched collection/content/visual registry scripts; focused Collection model tests <code>5/5</code>; focused Collection view layout tests <code>4/4</code>; scene instantiate and render smoke for <code>res://scenes/collection.tscn</code>; final Godot MCP <code>get_godot_errors</code> reported no current session errors.</li>
+</ul>
 <h2 id="milestone-12-first-playable-build">Milestone 12: First Playable Build</h2>
 <ul>
 <li>[x] Mobile combat UI readiness checkpoint concluded for Milestone 12.</li>
