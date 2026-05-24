@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<!--
+Planning artifact for bringing the shop stock, dungeon relic, and action row closer
+to the fantasy card reference while preserving the current shop flow.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop Stock Readability Plan</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090a;
+      --panel: #0d1112;
+      --panel-2: #17100c;
+      --ink: #f5e5c1;
+      --muted: #c8b68e;
+      --dim: #89785b;
+      --gold: #d89b32;
+      --gold-2: #7d4c13;
+      --purple: #c45bff;
+      --red: #f05e45;
+      --blue: #50a9ea;
+      --green: #8ee86b;
+      --line: rgba(216, 155, 50, .72);
+      --line-soft: rgba(216, 155, 50, .28);
+      --shadow: 0 24px 70px rgba(0, 0, 0, .45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.5 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 18% 4%, rgba(105, 56, 20, .35), transparent 28%),
+        radial-gradient(circle at 90% 0%, rgba(80, 38, 110, .24), transparent 30%),
+        linear-gradient(180deg, #15110d, #080b0c 42%, #050606);
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 30px 0 56px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(34px, 4vw, 54px);
+      line-height: 1;
+      color: #ffe6af;
+      text-shadow: 0 3px 0 rgba(0, 0, 0, .55);
+    }
+
+    .lede {
+      max-width: 900px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 22px;
+      align-items: start;
+      margin-top: 24px;
+    }
+
+    .section {
+      background: rgba(9, 12, 13, .88);
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section h2 {
+      padding: 16px 18px;
+      font-size: 22px;
+      color: #f3c873;
+      background: linear-gradient(180deg, rgba(39, 29, 15, .94), rgba(14, 16, 17, .94));
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .content {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .priority {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      background: rgba(255, 255, 255, .025);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-left: 4px solid var(--gold);
+      border-radius: 4px;
+    }
+
+    .priority h3 {
+      font-size: 18px;
+      color: #ffe0a0;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    li + li { margin-top: 8px; }
+
+    code {
+      padding: 1px 5px;
+      color: #f7d994;
+      background: rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 3px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .9em;
+    }
+
+    .component-map {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+    }
+
+    .tree-node {
+      padding: 10px 12px;
+      border: 1px solid rgba(216, 155, 50, .22);
+      background: rgba(0, 0, 0, .18);
+      border-radius: 4px;
+    }
+
+    .tree-node strong {
+      color: #f3c873;
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      font-size: 15px;
+    }
+
+    .mockup-wrap {
+      padding: 20px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .04), transparent 18%),
+        rgba(0, 0, 0, .34);
+    }
+
+    .phone {
+      width: 640px;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 10px;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .7)),
+        url("../assets/generated/candidates/bulk-generation-first/shop_background_candidate_01.png");
+      background-size: cover;
+      background-position: center top;
+      border: 1px solid rgba(216, 155, 50, .72);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .56);
+    }
+
+    .shop-section {
+      padding: 12px 12px 10px;
+      background:
+        linear-gradient(180deg, rgba(8, 12, 13, .94), rgba(4, 5, 5, .82)),
+        rgba(0, 0, 0, .7);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px rgba(255, 230, 165, .05);
+    }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      margin: 0 0 12px;
+      color: #f2be5e;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 0;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(216, 155, 50, .72));
+    }
+
+    .section-title::after {
+      background: linear-gradient(90deg, rgba(216, 155, 50, .72), transparent);
+    }
+
+    .stock-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .offer-card {
+      position: relative;
+      min-height: 384px;
+      padding: 16px 12px 14px;
+      display: grid;
+      grid-template-rows: 34px 104px 132px 1fr 58px;
+      gap: 4px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 43%, rgba(160, 85, 255, .24), transparent 34%),
+        linear-gradient(180deg, rgba(22, 16, 16, .98), rgba(10, 10, 10, .98));
+      border: 2px solid rgba(128, 76, 170, .86);
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255, 230, 165, .08), 0 10px 28px rgba(0, 0, 0, .42);
+    }
+
+    .offer-card.rare {
+      border-color: rgba(188, 77, 38, .92);
+      background:
+        radial-gradient(circle at 50% 43%, rgba(215, 80, 28, .26), transparent 36%),
+        linear-gradient(180deg, rgba(28, 13, 8, .98), rgba(10, 10, 10, .98));
+    }
+
+    .offer-card.uncommon {
+      border-color: rgba(43, 118, 154, .9);
+      background:
+        radial-gradient(circle at 50% 43%, rgba(38, 128, 175, .22), transparent 36%),
+        linear-gradient(180deg, rgba(8, 20, 27, .98), rgba(10, 10, 10, .98));
+    }
+
+    .rarity {
+      justify-self: center;
+      min-width: 132px;
+      padding: 4px 16px;
+      color: var(--purple);
+      text-align: center;
+      font-weight: 800;
+      font-size: 17px;
+      text-transform: uppercase;
+      border: 1px solid rgba(196, 91, 255, .72);
+      border-radius: 0 0 9px 9px;
+      background: rgba(20, 10, 24, .88);
+    }
+
+    .rare .rarity {
+      color: var(--red);
+      border-color: rgba(240, 94, 69, .75);
+      background: rgba(35, 8, 5, .88);
+    }
+
+    .uncommon .rarity {
+      color: var(--green);
+      border-color: rgba(142, 232, 107, .62);
+      background: rgba(4, 28, 18, .82);
+    }
+
+    .offer-name {
+      align-self: center;
+      color: var(--purple);
+      font-size: 31px;
+      line-height: 1.02;
+      text-align: center;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .rare .offer-name { color: var(--red); }
+    .uncommon .offer-name { color: var(--blue); }
+
+    .art {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 132px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, .08), transparent 64%);
+      filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .62));
+    }
+
+    .art::before { content: ""; display: block; }
+
+    .art.sword::before {
+      width: 118px;
+      height: 22px;
+      background: linear-gradient(90deg, #f7f1dd, #9d9a91 58%, #3b3642);
+      clip-path: polygon(0 50%, 72% 0, 100% 50%, 72% 100%);
+      transform: rotate(-42deg);
+      box-shadow: 0 0 18px rgba(196, 91, 255, .38);
+    }
+
+    .art.sword::after {
+      content: "";
+      position: absolute;
+      width: 74px;
+      height: 10px;
+      background: #b18035;
+      border-radius: 8px;
+      transform: translate(10px, 34px) rotate(-42deg);
+      box-shadow: 0 0 0 2px #2b1808;
+    }
+
+    .art.flame::before {
+      width: 108px;
+      height: 126px;
+      background:
+        radial-gradient(circle at 50% 70%, #fff2a0 0 22%, transparent 23%),
+        linear-gradient(140deg, #ff4138 12%, #ff8a2d 45%, #ffd94f 78%);
+      clip-path: polygon(50% 0, 70% 28%, 92% 48%, 82% 86%, 50% 100%, 18% 86%, 8% 48%, 32% 30%);
+      box-shadow: 0 0 34px rgba(255, 82, 35, .52);
+    }
+
+    .art.pack::before {
+      width: 108px;
+      height: 96px;
+      border-radius: 22px 22px 14px 14px;
+      background:
+        linear-gradient(90deg, transparent 18%, rgba(255,255,255,.18) 19% 23%, transparent 24% 76%, rgba(255,255,255,.18) 77% 81%, transparent 82%),
+        linear-gradient(180deg, #ff5c9f, #c7185d);
+      box-shadow: inset 0 -10px 0 rgba(0, 0, 0, .16), 0 0 28px rgba(80, 169, 234, .36);
+    }
+
+    .art.pack::after {
+      content: "";
+      position: absolute;
+      width: 58px;
+      height: 38px;
+      top: 18px;
+      border: 8px solid #e33682;
+      border-bottom: 0;
+      border-radius: 30px 30px 0 0;
+    }
+
+    .copy {
+      color: #f2dfbb;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.18;
+      text-align: left;
+    }
+
+    .copy b { color: #fff0c5; }
+    .copy .fire { color: #ff704d; }
+    .copy .heart { color: #ff5c68; }
+    .copy .mana { color: #55bdf8; }
+    .copy .stamina { color: #77e866; }
+
+    .price {
+      align-self: end;
+      width: 156px;
+      justify-self: center;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: #ffe7af;
+      font-size: 29px;
+      font-weight: 700;
+      background: linear-gradient(180deg, #8b5719, #3d2107);
+      border: 3px solid #d79a31;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255, 238, 176, .15), 0 4px 0 rgba(0, 0, 0, .4);
+    }
+
+    .coin {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      color: #5e3306;
+      font-size: 15px;
+      background: radial-gradient(circle at 34% 28%, #fff1a8, #dfa338 46%, #7b480c 78%);
+      border: 1px solid #f4c669;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 3px rgba(95, 51, 7, .34);
+    }
+
+    .relic-banner {
+      margin-top: 0;
+      padding: 10px 14px 12px;
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 174px;
+      gap: 18px;
+      align-items: center;
+      background:
+        radial-gradient(circle at 18% 50%, rgba(172, 61, 250, .25), transparent 28%),
+        linear-gradient(180deg, rgba(24, 12, 26, .98), rgba(8, 8, 10, .98));
+      border: 2px solid rgba(167, 78, 190, .9);
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255, 230, 165, .06);
+    }
+
+    .relic-title-strip {
+      margin-top: 12px;
+      height: 32px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      color: #dca64b;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #000;
+      background:
+        linear-gradient(180deg, rgba(14, 12, 10, .88), rgba(4, 5, 6, .94));
+      border-left: 2px solid rgba(216, 155, 50, .54);
+      border-right: 2px solid rgba(216, 155, 50, .54);
+    }
+
+    .relic-title-strip::before,
+    .relic-title-strip::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(216, 155, 50, .72));
+    }
+
+    .relic-title-strip::after {
+      background: linear-gradient(90deg, rgba(216, 155, 50, .72), transparent);
+    }
+
+    .relic-art {
+      width: 220px;
+      aspect-ratio: 1.9;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(196, 91, 255, .6);
+      background: radial-gradient(circle, rgba(163, 52, 255, .3), rgba(0, 0, 0, .78) 64%);
+    }
+
+    .relic-art::before {
+      content: "";
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 42% 38%, #f3b4ff, #7824c7 38%, #120519 72%);
+      box-shadow: 0 0 0 12px rgba(70, 24, 90, .74), 0 0 34px rgba(196, 91, 255, .62);
+    }
+
+    .relic-copy {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .relic-name {
+      color: var(--purple);
+      font-size: 38px;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .relic-tier {
+      color: var(--purple);
+      font-size: 20px;
+      text-transform: uppercase;
+    }
+
+    .relic-desc {
+      color: #f2dfbb;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.18;
+    }
+
+    .action-row {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action {
+      min-height: 86px;
+      display: grid;
+      place-items: center;
+      padding: 8px 14px;
+      color: #f7e6bd;
+      font-weight: 700;
+      font-size: 27px;
+      line-height: 1.15;
+      text-align: center;
+      border: 3px solid rgba(216, 155, 50, .78);
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 1px rgba(255, 238, 176, .1), 0 4px 0 rgba(0, 0, 0, .36);
+    }
+
+    .action span {
+      display: block;
+      color: #f1c66f;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .reroll { background: linear-gradient(180deg, #0d426a, #061c2e); }
+    .continue { background: linear-gradient(180deg, #286b12, #113305); }
+
+    .notes {
+      margin-top: 12px;
+      color: var(--dim);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .mockup-wrap { padding: 10px; }
+      .phone { padding: 8px; }
+      .stock-grid { gap: 6px; }
+      .offer-card {
+        min-height: 285px;
+        padding: 8px;
+        grid-template-rows: 24px 58px 92px 1fr 44px;
+      }
+      .offer-name { font-size: 21px; }
+      .art { font-size: 66px; }
+      .copy { font-size: 13px; }
+      .price { width: 112px; height: 38px; font-size: 20px; }
+      .relic-banner {
+        grid-template-columns: 96px minmax(0, 1fr) 116px;
+        gap: 10px;
+      }
+      .relic-art { width: 88px; font-size: 54px; }
+      .relic-name { font-size: 22px; }
+      .relic-desc { font-size: 13px; }
+      .action-row { gap: 7px; }
+      .action { min-height: 58px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>Shop Stock Readability Plan</h1>
+      <p class="lede">Goal: make the stock cards, dungeon relic, and shop action row feel like the reference: larger art, stronger rarity identity, framed price badges, and action buttons that read as big fantasy controls.</p>
+    </header>
+
+    <div class="layout">
+      <section class="section">
+        <h2>Priority List</h2>
+        <div class="content">
+          <div class="priority">
+            <h3>P0 - Structure And Scale</h3>
+            <ul>
+              <li>Refactor the yellow/red section into clear parts: <code>stock-section</code>, <code>offer-grid</code>, <code>offer-card</code>, <code>relic-banner</code>, and <code>shop-action-row</code>.</li>
+              <li>Increase stock card height usage: rarity tab, large item name, large art well, compact effect copy, and framed price button.</li>
+              <li>Move away from current empty bordered rectangles and toward full-card rarity backgrounds.</li>
+            </ul>
+          </div>
+
+          <div class="priority">
+            <h3>P1 - Offer Cards</h3>
+            <ul>
+              <li>Use rarity-colored frames and title colors: epic purple, rare red, uncommon blue/green.</li>
+              <li>Make art the visual center of each card; generated or derived item art should be much larger than current icons.</li>
+              <li>Replace tiny state text with a large framed price badge. Disabled states should dim the whole card and show a readable badge.</li>
+            </ul>
+          </div>
+
+          <div class="priority">
+            <h3>P1 - Dungeon Relic</h3>
+            <ul>
+              <li>Turn the relic into a horizontal banner below stock cards.</li>
+              <li>Use big relic art on the left, name/tier/effect in the middle, and a large price badge on the right.</li>
+              <li>Keep sold out / not enough gold readable without turning the banner into two tiny warning buttons.</li>
+            </ul>
+          </div>
+
+          <div class="priority">
+            <h3>P2 - Action Row</h3>
+            <ul>
+              <li>Make reroll and continue equal-width framed fantasy buttons.</li>
+              <li>Put cost as a secondary line with a coin icon treatment, not plain inline text.</li>
+              <li>Remove the normal sell action from this row; selling should stay in the slot popover/help flow.</li>
+            </ul>
+          </div>
+
+          <div class="priority">
+            <h3>P3 - Enforcement</h3>
+            <ul>
+              <li>Add layout probe checks for card height, art prominence, relic banner placement, price badge size, and action button touch size.</li>
+              <li>Prefer component helpers in <code>shop_view.gd</code> so future stock/relic edits do not recreate private one-off layouts.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <aside class="section">
+        <h2>Component Shape</h2>
+        <div class="content component-map">
+          <div class="tree-node"><strong>shop-content</strong><br>stock-section + relic-banner + action-row</div>
+          <div class="tree-node"><strong>stock-section</strong><br>section-title + offer-grid</div>
+          <div class="tree-node"><strong>offer-card</strong><br>rarity-tab + name + art-stage + effect-copy + price-badge</div>
+          <div class="tree-node"><strong>relic-banner</strong><br>relic-art + relic-copy + relic-price/state</div>
+          <div class="tree-node"><strong>shop-action-row</strong><br>reroll-button + continue-button</div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="section" style="margin-top: 22px;">
+      <h2>Mockup</h2>
+      <div class="mockup-wrap">
+        <div class="phone">
+          <section class="shop-section" aria-label="Proposed shop stock section mockup">
+            <div class="section-title"><span>Shop Stock</span></div>
+            <div class="stock-grid">
+              <article class="offer-card">
+                <div class="rarity">Epic</div>
+                <div class="offer-name">Shadowsteel<br>Shortsword</div>
+                <div class="art sword"></div>
+                <div class="copy">+18 Attack<br>+10% Critical Chance<br>Attacks have a 15% chance to apply <b class="fire">Bleed</b>.</div>
+                <div class="price"><span class="coin">$</span>160</div>
+              </article>
+
+              <article class="offer-card rare">
+                <div class="rarity">Rare</div>
+                <div class="offer-name">Flamesurge<br>Mastery</div>
+                <div class="art flame"></div>
+                <div class="copy">+3 to <b class="fire">Fire</b> Gem damage<br>+5% <b class="fire">Fire</b> Damage<br>All <b class="fire">Fire</b> Gems gain +1 damage.</div>
+                <div class="price"><span class="coin">$</span>120</div>
+              </article>
+
+              <article class="offer-card uncommon">
+                <div class="rarity">Uncommon</div>
+                <div class="offer-name">Adventurer's<br>Pack</div>
+                <div class="art pack"></div>
+                <div class="copy">Gain the following:<br>2x <b class="heart">Health Potion</b><br>1x <b class="mana">Mana Potion</b><br>1x <b class="stamina">Stamina Elixir</b></div>
+                <div class="price"><span class="coin">$</span>80</div>
+              </article>
+            </div>
+
+            <div class="relic-title-strip"><span>Dungeon Relic</span></div>
+            <section class="relic-banner" aria-label="Proposed dungeon relic banner">
+              <div class="relic-art"></div>
+              <div class="relic-copy">
+                <div class="relic-name">Voidstone Pendant</div>
+                <div class="relic-tier">Epic Relic - Dungeon 1</div>
+                <div class="relic-desc">+15% Shadow Damage<br>+1 to all Gem damage<br>When you defeat an enemy, restore <b class="heart">5% Health</b>.</div>
+              </div>
+              <div class="price"><span class="coin">$</span>200</div>
+            </section>
+
+            <div class="action-row" aria-label="Proposed shop actions">
+              <div class="action reroll">Reroll<span><span class="coin">$</span> 25</span></div>
+              <div class="action continue">Continue<span>Leave Shop</span></div>
+            </div>
+            <p class="notes">Selling stays in the filled-slot popover and shop help, not as a permanent action-row button.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="margin-top: 22px;">
+      <h2>Implementation Plan</h2>
+      <div class="content">
+        <div class="priority">
+          <h3>Step 1 - Extract Layout Constants</h3>
+          <ul>
+            <li>Add named rects for stock title, offer card internals, relic banner internals, and action buttons.</li>
+            <li>Update <code>shop_layout_probe_snapshot()</code> with these rects before changing visuals.</li>
+          </ul>
+        </div>
+        <div class="priority">
+          <h3>Step 2 - Rebuild Cards</h3>
+          <ul>
+            <li>Replace current offer card drawing with a helper that builds rarity tab, large name, art stage, copy, and price badge.</li>
+            <li>Use rarity style data instead of scattered color logic.</li>
+          </ul>
+        </div>
+        <div class="priority">
+          <h3>Step 3 - Rebuild Relic And Actions</h3>
+          <ul>
+            <li>Convert relic to a banner layout with large art and large price/state area.</li>
+            <li>Make reroll and continue buttons equal visual weight and remove the visible sell tip from the normal row.</li>
+          </ul>
+        </div>
+        <div class="priority">
+          <h3>Step 4 - Verify</h3>
+          <ul>
+            <li>Run focused shop layout tests, <code>git diff --check</code>, and headless <code>res://scenes/shop.tscn --quit-after 2</code>.</li>
+            <li>Visually compare against this mockup and the reference image before committing.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

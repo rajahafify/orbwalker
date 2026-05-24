@@ -21,7 +21,7 @@ func build_hud_snapshot(data: Dictionary) -> Dictionary:
 		_combat_step_ordinal(String(data.get("current_step_key", ""))),
 	]
 	var top_enemy_step_text := _top_enemy_step_text(String(data.get("current_step_key", "")))
-	var top_gold_text := "$  %d" % player_gold
+	var top_gold_text := "$%d" % player_gold
 	var primary_intent_badge := _primary_intent_badge_snapshot(intent, _compact_formatter(data))
 	var hud_snapshot: Dictionary = build_snapshot(
 		{

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<!--
+Documentation artifact for the shop/collection readability implementation.
+-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop And Collection Card Readability</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1b211d;
+      --muted: #6c6355;
+      --paper: #fffaf0;
+      --paper-2: #f3ead8;
+      --line: #d4b36a;
+      --gold: #b77a24;
+      --blue: #1f78a8;
+      --purple: #7d3cc8;
+      --green: #1d6b42;
+      --code: #23190f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 17px/1.6 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 14% 0%, rgba(183, 122, 36, .18), transparent 30%),
+        radial-gradient(circle at 88% 8%, rgba(125, 60, 200, .12), transparent 28%),
+        linear-gradient(180deg, #eee3ce, #d8cab0);
+    }
+
+    main {
+      width: min(980px, calc(100vw - 32px));
+      margin: 28px auto 56px;
+      padding: 36px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: 0 18px 46px rgba(60, 43, 20, .14);
+    }
+
+    header {
+      margin: -36px -36px 30px;
+      padding: 38px 36px;
+      color: #fff3d1;
+      background:
+        linear-gradient(135deg, rgba(18, 19, 17, .98), rgba(47, 29, 14, .96)),
+        #191714;
+      border-bottom: 1px solid rgba(212, 179, 106, .55);
+    }
+
+    h1, h2, p, ul { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      max-width: 760px;
+      color: #ead8af;
+      font-size: 1.08rem;
+    }
+
+    h2 {
+      margin: 30px 0 10px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(212, 179, 106, .48);
+      color: #6b4614;
+      font-size: 1.35rem;
+    }
+
+    ul { padding-left: 22px; }
+    li + li { margin-top: 8px; }
+    code {
+      padding: 2px 5px;
+      color: var(--code);
+      background: var(--paper-2);
+      border: 1px solid rgba(212, 179, 106, .35);
+      border-radius: 3px;
+      font: .92em/1.4 Consolas, "Cascadia Mono", monospace;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin: 18px 0 4px;
+    }
+
+    .card {
+      padding: 16px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .72), rgba(243, 234, 216, .76));
+      border: 1px solid rgba(212, 179, 106, .72);
+      border-radius: 4px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #6b4614;
+      font-size: 1.05rem;
+    }
+
+    .ok { color: var(--green); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Shop And Collection Card Readability</h1>
+      <p class="summary">Documented May 25, 2026. This note records the shared asset-backed card renderer, shop reuse, top-header alignment, price badge cleanup, and validation evidence.</p>
+    </header>
+
+    <section>
+      <h2>Implementation Summary</h2>
+      <div class="grid">
+        <article class="card">
+          <strong>Shared Card Renderer</strong>
+          <p>The collection and shop item cards now share <code>scripts/ui/collection_card_renderer.gd</code>. Both screens use the same ornate frame geometry, rarity-colored surfaces, title region, art region, copy region, and bottom badge.</p>
+        </article>
+        <article class="card">
+          <strong>Shop Stock Reuse</strong>
+          <p>Shop stock offers reuse the same renderer as collection upgrade cards. The shop no longer carries a separate prototype-looking card implementation for stock items.</p>
+        </article>
+        <article class="card">
+          <strong>Header Reuse</strong>
+          <p>Combat and shop now use the same shared top-header scene contract for title, gold, help, and settings controls. Gold notation is standardized to compact dollar text.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Readability Rules</h2>
+      <ul>
+        <li>No visible rarity tag text on cards. Rarity is communicated through the card surface color.</li>
+        <li>Text, art, and badge regions are dedicated and do not overlap.</li>
+        <li>Shop card copy is compact and readable, using phrases like <code>+2 Attack</code>, <code>+1 Fire Mastery</code>, and <code>Choose 1 of 3 Fire rewards</code>.</li>
+        <li>Consumable conversion copy is explicit, for example <code>Convert 3 non-Ice orbs to Ice orbs</code>.</li>
+        <li>Prices use compact notation such as <code>$9</code>. Unaffordable cards keep the price and communicate disabled state visually instead of changing the label to <code>Need X</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Badge Cleanup</h2>
+      <p>The shared price badge asset at <code>resources/art/assetgen/runtime/collection_ui/price_badge.png</code> was cleaned so the center reads as a proper dark-gold button instead of a bright smeared highlight. Active badges no longer add an external rectangular glow or shadow; the button state is carried by the shared badge asset itself.</p>
+    </section>
+
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><span class="ok">Passed</span>: <code>ShopViewLayoutTest.run_all()</code> 8/8.</li>
+        <li><span class="ok">Passed</span>: <code>CollectionViewLayoutTest.run_all()</code> 4/4.</li>
+        <li><span class="ok">Passed</span>: <code>CollectionModelTest.run_all()</code> 5/5.</li>
+        <li><span class="ok">Passed</span>: <code>res://scenes/shop.tscn</code>, <code>res://scenes/collection.tscn</code>, and <code>res://scenes/combat.tscn</code> instantiated through Godot MCP.</li>
+        <li><span class="ok">Passed</span>: <code>git diff --check</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Out Of Scope</h2>
+      <p>The unrelated untracked file <code>raw/vlc-3.0.23-win64.exe</code> is not part of this UI pass and should remain outside the commit.</p>
+    </section>
+  </main>
+</body>
+</html>

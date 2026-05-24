@@ -3,42 +3,32 @@ class_name CollectionView
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+const COLLECTION_CARD_RENDERER_PATH := "res://scripts/ui/collection_card_renderer.gd"
+const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_renderer.gd")
 const BACKGROUND_PATH := "res://resources/art/assetgen/backgrounds/collection_background_candidate_01.png"
 
-const COLLECTION_CARD_SIZE := Vector2(340, 485)
-const COLLECTION_CARD_SURFACE_RECT := Rect2(Vector2(36, 48), Vector2(268, 380))
-const COLLECTION_CARD_TITLE_RECT := Rect2(Vector2(52, 42), Vector2(236, 84))
-const COLLECTION_CARD_TITLE_PREFIX_RECT := Rect2(Vector2(52, 42), Vector2(236, 32))
-const COLLECTION_CARD_TITLE_NAME_RECT := Rect2(Vector2(52, 68), Vector2(236, 52))
-const COLLECTION_CARD_ART_RECT := Rect2(Vector2(86, 138), Vector2(168, 168))
-const COLLECTION_CARD_COPY_RECT := Rect2(Vector2(52, 318), Vector2(236, 66))
-const COLLECTION_CARD_BADGE_RECT := Rect2(Vector2(86, 410), Vector2(168, 48))
+const COLLECTION_CARD_SIZE := COLLECTION_CARD_RENDERER.CARD_SIZE
+const COLLECTION_CARD_SURFACE_RECT := COLLECTION_CARD_RENDERER.CARD_SURFACE_RECT
+const COLLECTION_CARD_TITLE_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_RECT
+const COLLECTION_CARD_TITLE_PREFIX_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_PREFIX_RECT
+const COLLECTION_CARD_TITLE_NAME_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_NAME_RECT
+const COLLECTION_CARD_ART_RECT := COLLECTION_CARD_RENDERER.CARD_ART_RECT
+const COLLECTION_CARD_COPY_RECT := COLLECTION_CARD_RENDERER.CARD_COPY_RECT
+const COLLECTION_CARD_BADGE_RECT := COLLECTION_CARD_RENDERER.CARD_BADGE_RECT
 const COLLECTION_HUD_ICON_SIZE := Vector2(58, 58)
 const COLLECTION_HUD_ICON_INSET := 8.0
 const COLLECTION_CARD_GRID_GAP := 16.0
 const COLLECTION_FAMILY_PANEL_PADDING := 36.0
-const COLLECTION_CARD_COPY_MAX_CHARS := 24
+const COLLECTION_CARD_COPY_MAX_CHARS := COLLECTION_CARD_RENDERER.CARD_COPY_MAX_CHARS
 
 const GOLD_COLOR := Color(0.94, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.97, 0.90, 0.76, 1.0)
 const MUTED_COLOR := Color(0.72, 0.63, 0.47, 1.0)
 const POSITIVE_COLOR := Color(0.62, 0.88, 0.56, 1.0)
 const NEGATIVE_COLOR := Color(0.94, 0.45, 0.38, 1.0)
-const RARITY_TITLE_COLORS := {
-	"common": Color(1.0, 0.82, 0.47, 1.0),
-	"uncommon": Color(0.40, 0.82, 1.0, 1.0),
-	"rare": Color(0.76, 0.42, 1.0, 1.0),
-}
-const RARITY_SURFACE_COLORS := {
-	"common": Color(0.08, 0.07, 0.055, 0.94),
-	"uncommon": Color(0.02, 0.24, 0.34, 0.93),
-	"rare": Color(0.17, 0.06, 0.24, 0.94),
-}
-const RARITY_GLOW_COLORS := {
-	"common": Color(0.83, 0.55, 0.20, 0.32),
-	"uncommon": Color(0.17, 0.66, 1.0, 0.34),
-	"rare": Color(0.62, 0.22, 1.0, 0.36),
-}
+const RARITY_TITLE_COLORS := COLLECTION_CARD_RENDERER.RARITY_TITLE_COLORS
+const RARITY_SURFACE_COLORS := COLLECTION_CARD_RENDERER.RARITY_SURFACE_COLORS
+const RARITY_GLOW_COLORS := COLLECTION_CARD_RENDERER.RARITY_GLOW_COLORS
 
 var _background_texture: TextureRect
 var _overlay_tint: ColorRect
@@ -151,34 +141,42 @@ func enqueue_unlock_entries(entries: Array[Dictionary]) -> void:
 
 
 static func collection_card_layout_probe_snapshot() -> Dictionary:
-	var card_rect := Rect2(Vector2.ZERO, COLLECTION_CARD_SIZE)
-	var title := COLLECTION_CARD_TITLE_RECT
-	var art := COLLECTION_CARD_ART_RECT
-	var copy := COLLECTION_CARD_COPY_RECT
-	var badge := COLLECTION_CARD_BADGE_RECT
+	var card_renderer: GDScript = ResourceLoader.load(COLLECTION_CARD_RENDERER_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as GDScript
+	var card_snapshot: Dictionary = {}
+	var snapshot_value: Variant = card_renderer.call("layout_snapshot")
+	if snapshot_value is Dictionary:
+		card_snapshot = snapshot_value
 	return {
 		"family_count": 5,
 		"tiers_per_family": 3,
-		"card_rect": card_rect,
-		"title_rect": title,
-		"art_rect": art,
-		"copy_rect": copy,
-		"badge_rect": badge,
+		"card_rect": card_snapshot.get("card_rect", Rect2()),
+		"title_rect": card_snapshot.get("title_rect", Rect2()),
+		"art_rect": card_snapshot.get("art_rect", Rect2()),
+		"copy_rect": card_snapshot.get("copy_rect", Rect2()),
+		"badge_rect": card_snapshot.get("badge_rect", Rect2()),
 		"hud_icon_size": COLLECTION_HUD_ICON_SIZE,
-		"renders_rarity_tag": false,
-		"common_surface": RARITY_SURFACE_COLORS["common"],
-		"uncommon_surface": RARITY_SURFACE_COLORS["uncommon"],
-		"rare_surface": RARITY_SURFACE_COLORS["rare"],
+		"renders_rarity_tag": card_snapshot.get("renders_rarity_tag", false),
+		"common_surface": card_snapshot.get("common_surface", RARITY_SURFACE_COLORS["common"]),
+		"uncommon_surface": card_snapshot.get("uncommon_surface", RARITY_SURFACE_COLORS["uncommon"]),
+		"rare_surface": card_snapshot.get("rare_surface", RARITY_SURFACE_COLORS["rare"]),
 		"portrait_columns": 1,
 		"wide_columns": 3,
 		"uses_horizontal_scroll": false,
-		"copy_max_chars": COLLECTION_CARD_COPY_MAX_CHARS,
-		"title_overlaps_art": title.intersects(art),
-		"title_overlaps_copy": title.intersects(copy),
-		"art_overlaps_copy": art.intersects(copy),
-		"copy_overlaps_badge": copy.intersects(badge),
-		"badge_inside_card": card_rect.encloses(badge),
-		"art_inside_card": card_rect.encloses(art),
+		"copy_max_chars": card_snapshot.get("copy_max_chars", COLLECTION_CARD_COPY_MAX_CHARS),
+		"copy_font_size": card_snapshot.get("copy_font_size", COLLECTION_CARD_RENDERER.CARD_COPY_FONT_SIZE),
+		"badge_font_size": card_snapshot.get("badge_font_size", COLLECTION_CARD_RENDERER.CARD_BADGE_FONT_SIZE),
+		"copy_outline_size": card_snapshot.get("copy_outline_size", COLLECTION_CARD_RENDERER.CARD_COPY_OUTLINE_SIZE),
+		"badge_outline_size": card_snapshot.get("badge_outline_size", COLLECTION_CARD_RENDERER.CARD_BADGE_OUTLINE_SIZE),
+		"title_overlaps_art": card_snapshot.get("title_overlaps_art", false),
+		"title_overlaps_copy": card_snapshot.get("title_overlaps_copy", false),
+		"art_overlaps_copy": card_snapshot.get("art_overlaps_copy", false),
+		"copy_overlaps_badge": card_snapshot.get("copy_overlaps_badge", false),
+		"badge_inside_card": card_snapshot.get("badge_inside_card", false),
+		"art_inside_card": card_snapshot.get("art_inside_card", false),
+		"copy_uses_ellipsis": card_snapshot.get("copy_uses_ellipsis", true),
+		"active_badge_pops": card_snapshot.get("active_badge_pops", false),
+		"active_badge_uses_external_shadow": card_snapshot.get("active_badge_uses_external_shadow", true),
+		"active_badge_rect_glow_visible": card_snapshot.get("active_badge_rect_glow_visible", true),
 	}
 
 
@@ -235,81 +233,16 @@ func _make_card_unit(tier: Dictionary, claim_pressed: Callable) -> VBoxContainer
 
 
 func _make_tier_card(tier: Dictionary, claim_pressed: Callable) -> Button:
-	var rarity := _tier_rarity(tier)
-	var accent := _rarity_title_color(rarity)
 	var button := Button.new()
 	button.name = "CollectionTierCard_%s" % String(tier.get("item_id", "unknown"))
-	button.text = ""
-	button.custom_minimum_size = COLLECTION_CARD_SIZE
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	button.disabled = not bool(tier.get("card_claim_enabled", false))
-	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
-	button.tooltip_text = _card_tooltip_text(tier)
-	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if bool(tier.get("card_claim_enabled", false)) else Control.CURSOR_ARROW
-	_apply_card_button_style(button, rarity)
+	COLLECTION_CARD_RENDERER.render_card(button, _visuals, tier, {
+		"disabled": not bool(tier.get("card_claim_enabled", false)),
+		"tooltip_text": _card_tooltip_text(tier),
+		"mouse_cursor": Control.CURSOR_POINTING_HAND if bool(tier.get("card_claim_enabled", false)) else Control.CURSOR_ARROW,
+	})
 	if bool(tier.get("card_claim_enabled", false)):
 		button.pressed.connect(_on_claim_button_pressed.bind(claim_pressed, tier.duplicate(true)))
-
-	var root := Control.new()
-	root.name = "CardRoot"
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	root.custom_minimum_size = COLLECTION_CARD_SIZE
-	root.size = COLLECTION_CARD_SIZE
-	button.add_child(root)
-
-	var glow := ColorRect.new()
-	glow.name = "CardGlow"
-	glow.position = COLLECTION_CARD_SURFACE_RECT.position + Vector2(10, 58)
-	glow.size = Vector2(COLLECTION_CARD_SURFACE_RECT.size.x - 20, 116)
-	glow.color = Color(RARITY_GLOW_COLORS.get(rarity, RARITY_GLOW_COLORS["common"]))
-	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	root.add_child(glow)
-
-	var surface := Panel.new()
-	surface.name = "CardSurface"
-	surface.position = COLLECTION_CARD_SURFACE_RECT.position
-	surface.size = COLLECTION_CARD_SURFACE_RECT.size
-	surface.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	surface.add_theme_stylebox_override("panel", UI_UTILS.panel_style(_rarity_surface_color(rarity), Color(0, 0, 0, 0), 0, 20, Vector4.ZERO))
-	root.add_child(surface)
-
-	var frame := TextureRect.new()
-	frame.name = "CardFrame"
-	frame.position = Vector2.ZERO
-	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	frame.texture = _visuals.collection_card_frame(rarity)
-	frame.custom_minimum_size = COLLECTION_CARD_SIZE
-	frame.size = COLLECTION_CARD_SIZE
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	root.add_child(frame)
-
-	_make_card_title(root, String(tier.get("item_display_name", "Unknown Item")), accent)
-
-	var item_art := TextureRect.new()
-	item_art.name = "ItemArt"
-	item_art.position = COLLECTION_CARD_ART_RECT.position
-	item_art.clip_contents = true
-	item_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	item_art.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	item_art.texture = _visuals.icon_for_key(String(tier.get("icon_key", "")))
-	item_art.custom_minimum_size = COLLECTION_CARD_ART_RECT.size
-	item_art.size = COLLECTION_CARD_ART_RECT.size
-	item_art.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	root.add_child(item_art)
-
-	_make_card_label(
-		root,
-		"CardCopy",
-		_wrap_card_copy_text(String(tier.get("description", ""))),
-		COLLECTION_CARD_COPY_RECT,
-		INK_COLOR,
-		17,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		false
-	)
-
-	_make_badge(root, String(tier.get("card_badge_text", "")), COLLECTION_CARD_BADGE_RECT, bool(tier.get("card_claim_enabled", false)))
 	return button
 
 
@@ -357,90 +290,6 @@ func _make_hud_icon_preview(tier: Dictionary) -> Control:
 	return root
 
 
-func _make_badge(parent: Control, text: String, rect: Rect2, claim_enabled: bool) -> void:
-	var badge_texture := TextureRect.new()
-	badge_texture.name = "CardBadgeFrame"
-	badge_texture.position = rect.position
-	badge_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	badge_texture.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	badge_texture.texture = _visuals.collection_price_badge()
-	badge_texture.custom_minimum_size = rect.size
-	badge_texture.size = rect.size
-	badge_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(badge_texture)
-
-	var label := _make_card_label(
-		parent,
-		"CardBadgeLabel",
-		text,
-		rect,
-		Color(1.0, 0.88, 0.56, 1.0) if claim_enabled else Color(0.94, 0.80, 0.50, 1.0),
-		17,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		false
-	)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-
-
-func _make_card_title(parent: Control, display_name: String, color: Color) -> void:
-	var parts := _split_card_title(display_name)
-	_make_card_label(
-		parent,
-		"CardNamePrefix",
-		String(parts.get("prefix", display_name)),
-		COLLECTION_CARD_TITLE_PREFIX_RECT,
-		color,
-		24,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		false
-	)
-	_make_card_label(
-		parent,
-		"CardNameItem",
-		String(parts.get("name", "")),
-		COLLECTION_CARD_TITLE_NAME_RECT,
-		color,
-		29,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		true
-	)
-
-
-func _make_card_label(
-	parent: Control,
-	node_name: String,
-	text: String,
-	rect: Rect2,
-	color: Color,
-	font_size: int,
-	alignment: HorizontalAlignment,
-	should_wrap: bool = false
-) -> Label:
-	var label := Label.new()
-	label.name = node_name
-	label.text = text
-	label.position = rect.position
-	label.size = rect.size
-	label.horizontal_alignment = alignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	if should_wrap:
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	else:
-		label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
-	label.clip_contents = true
-	label.clip_text = true
-	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	label.custom_minimum_size = rect.size
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.96))
-	label.add_theme_constant_override("outline_size", 2)
-	parent.add_child(label)
-	label.position = rect.position
-	label.size = rect.size
-	return label
-
-
 func _card_column_count() -> int:
 	var available_width := 0.0
 	if _families_scroll != null:
@@ -453,52 +302,12 @@ func _card_column_count() -> int:
 	return clampi(columns, 1, 3)
 
 
-func _apply_card_button_style(button: Button, rarity: String) -> void:
-	var empty := StyleBoxFlat.new()
-	empty.bg_color = Color(0, 0, 0, 0)
-	empty.set_border_width_all(0)
-	var hover := StyleBoxFlat.new()
-	hover.bg_color = Color(RARITY_GLOW_COLORS.get(rarity, RARITY_GLOW_COLORS["common"]))
-	hover.set_border_width_all(0)
-	hover.set_corner_radius_all(10)
-	for state in ["normal", "pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(state, empty)
-	button.add_theme_stylebox_override("hover", hover)
-
-
 func _card_tooltip_text(tier: Dictionary) -> String:
 	if bool(tier.get("card_claim_enabled", false)):
 		return "Claim %s." % String(tier.get("item_display_name", "item"))
 	if bool(tier.get("unlocked", false)):
 		return "%s is already claimed." % String(tier.get("item_display_name", "Item"))
 	return String(tier.get("requirement_text", "Locked."))
-
-
-func _split_card_title(value: String) -> Dictionary:
-	var words := value.strip_edges().split(" ", false)
-	if words.size() <= 1:
-		return {"prefix": value, "name": ""}
-	var rest: Array[String] = []
-	for index in range(1, words.size()):
-		rest.append(String(words[index]))
-	return {"prefix": String(words[0]), "name": " ".join(rest)}
-
-
-func _wrap_card_copy_text(value: String) -> String:
-	var words := value.strip_edges().split(" ", false)
-	var lines: Array[String] = []
-	var current := ""
-	for word_value in words:
-		var word := String(word_value)
-		var candidate := word if current == "" else "%s %s" % [current, word]
-		if candidate.length() > COLLECTION_CARD_COPY_MAX_CHARS and current != "":
-			lines.append(current)
-			current = word
-		else:
-			current = candidate
-	if current != "":
-		lines.append(current)
-	return "\n".join(lines)
 
 
 func _tier_rarity(tier: Dictionary) -> String:
@@ -510,10 +319,6 @@ func _tier_rarity(tier: Dictionary) -> String:
 
 func _rarity_title_color(rarity: String) -> Color:
 	return Color(RARITY_TITLE_COLORS.get(rarity, RARITY_TITLE_COLORS["common"]))
-
-
-func _rarity_surface_color(rarity: String) -> Color:
-	return Color(RARITY_SURFACE_COLORS.get(rarity, RARITY_SURFACE_COLORS["common"]))
 
 
 func _on_claim_button_pressed(claim_pressed: Callable, payload: Dictionary) -> void:

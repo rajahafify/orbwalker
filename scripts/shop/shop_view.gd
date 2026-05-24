@@ -16,6 +16,7 @@ signal hud_sell_slot_requested(slot_type: String, slot_index: int)
 const PLAYER_HUD_SCENE := preload("res://scenes/ui/player_hud.tscn")
 const TOP_HEADER_SCENE := preload("res://scenes/ui/top_header.tscn")
 const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
+const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_renderer.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
@@ -42,32 +43,48 @@ const SHOP_HELP_MODAL_RECT := Rect2(Vector2(170, 560), Vector2(740, 420))
 const SHOP_HELP_MODAL_TITLE_RECT := Rect2(Vector2(58, 60), Vector2(620, 116))
 const SHOP_HELP_MODAL_BODY_RECT := Rect2(Vector2(58, 198), Vector2(620, 142))
 const SHOP_HELP_MODAL_CLOSE_RECT := Rect2(Vector2(662, 24), Vector2(56, 56))
-const ACTION_HINT_RECT := Rect2(Vector2(14, 6), Vector2(ACTION_ROW_RECT.size.x - 28.0, 52))
-const OFFER_CARD_SIZE := Vector2(332, 470)
-const OFFER_CARD_GAP := 8.0
-const OFFER_RARITY_RECT := Rect2(Vector2(50, 10), Vector2(232, 30))
-const OFFER_NAME_RECT := Rect2(Vector2(18, 42), Vector2(296, 82))
-const OFFER_TYPE_RECT := Rect2(Vector2(18, 124), Vector2(296, 30))
-const OFFER_ART_FRAME_RECT := Rect2(Vector2(46, 158), Vector2(240, 158))
-const OFFER_DESC_RECT := Rect2(Vector2(20, 322), Vector2(292, 62))
-const OFFER_STATE_RECT := Rect2(Vector2(20, 388), Vector2(292, 32))
-const OFFER_PRICE_RECT := Rect2(Vector2(44, 424), Vector2(244, 40))
-const RELIC_TITLE_RECT := Rect2(Vector2(24, 10), Vector2(1000, 30))
-const RELIC_ART_FRAME_RECT := Rect2(Vector2(20, 44), Vector2(176, 126))
-const RELIC_TIER_RECT := Rect2(Vector2(212, 44), Vector2(420, 28))
-const RELIC_NAME_RECT := Rect2(Vector2(212, 70), Vector2(520, 38))
-const RELIC_DESC_RECT := Rect2(Vector2(212, 108), Vector2(560, 62))
-const RELIC_PRICE_RECT := Rect2(Vector2(794, 44), Vector2(232, 62))
-const RELIC_STATE_RECT := Rect2(Vector2(794, 112), Vector2(232, 58))
+const ACTION_HINT_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const ACTION_BUTTON_SIZE := Vector2(516, 126)
+const ACTION_REROLL_RECT := Rect2(Vector2(0, 20), ACTION_BUTTON_SIZE)
+const ACTION_CONTINUE_RECT := Rect2(Vector2(532, 20), ACTION_BUTTON_SIZE)
+const OFFER_CARD_SIZE := COLLECTION_CARD_RENDERER.CARD_SIZE
+const OFFER_CARD_GAP := 0.0
+const OFFER_GRID_WIDTH := OFFER_CARD_SIZE.x * 3.0 + OFFER_CARD_GAP * 2.0
+const OFFER_GRID_RECT := Rect2(Vector2((STOCK_PANEL_RECT.size.x - OFFER_GRID_WIDTH) * 0.5, 62), Vector2(OFFER_GRID_WIDTH, OFFER_CARD_SIZE.y))
+const OFFER_SURFACE_RECT := COLLECTION_CARD_RENDERER.CARD_SURFACE_RECT
+const OFFER_RARITY_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const OFFER_NAME_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_RECT
+const OFFER_NAME_PREFIX_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_PREFIX_RECT
+const OFFER_NAME_ITEM_RECT := COLLECTION_CARD_RENDERER.CARD_TITLE_NAME_RECT
+const OFFER_TYPE_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const OFFER_ART_FRAME_RECT := COLLECTION_CARD_RENDERER.CARD_ART_RECT
+const OFFER_ICON_RECT := Rect2(Vector2.ZERO, COLLECTION_CARD_RENDERER.CARD_ART_RECT.size)
+const OFFER_DESC_RECT := COLLECTION_CARD_RENDERER.CARD_COPY_RECT
+const OFFER_STATE_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const OFFER_PRICE_RECT := COLLECTION_CARD_RENDERER.CARD_BADGE_RECT
+const OFFER_COPY_MAX_CHARS := COLLECTION_CARD_RENDERER.CARD_COPY_MAX_CHARS
+const RELIC_TITLE_STRIP_RECT := Rect2(Vector2(0, 0), Vector2(RELIC_PANEL_RECT.size.x, 36))
+const RELIC_TITLE_TEXT_RECT := Rect2(Vector2(348, 0), Vector2(352, 36))
+const RELIC_TITLE_LEFT_RAIL_RECT := Rect2(Vector2(28, 17), Vector2(304, 2))
+const RELIC_TITLE_RIGHT_RAIL_RECT := Rect2(Vector2(716, 17), Vector2(304, 2))
+const RELIC_BANNER_RECT := Rect2(Vector2(0, 36), Vector2(RELIC_PANEL_RECT.size.x, 152))
+const RELIC_ART_FRAME_RECT := Rect2(Vector2(30, 48), Vector2(258, 132))
+const RELIC_ICON_RECT := Rect2(Vector2(0, 0), Vector2(258, 132))
+const RELIC_TIER_RECT := Rect2(Vector2(320, 96), Vector2(420, 28))
+const RELIC_NAME_RECT := Rect2(Vector2(320, 48), Vector2(450, 52))
+const RELIC_DESC_RECT := Rect2(Vector2(320, 124), Vector2(410, 48))
+const RELIC_PRICE_RECT := Rect2(Vector2(820, 88), Vector2(178, 62))
+const RELIC_STATE_RECT := Rect2(Vector2(794, 46), Vector2(226, 38))
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
 const POSITIVE_COLOR := Color(0.60, 0.88, 0.42, 1.0)
 const NEGATIVE_COLOR := Color(1.0, 0.45, 0.38, 1.0)
 const RARITY_COLORS := {
-	"common": Color(0.82, 0.75, 0.62, 1.0),
-	"uncommon": Color(0.47, 0.86, 0.34, 1.0),
-	"rare": Color(0.96, 0.40, 0.30, 1.0),
+	"common": Color(0.92, 0.78, 0.55, 1.0),
+	"uncommon": Color(0.36, 0.76, 1.0, 1.0),
+	"rare": Color(0.76, 0.42, 1.0, 1.0),
+	"epic": Color(0.94, 0.46, 1.0, 1.0),
 }
 
 var _background: TextureRect
@@ -240,6 +257,7 @@ func _create_ui() -> void:
 	_action_row.name = "ActionRow"
 	_layout_root.add_child(_action_row)
 	_action_hint_label = _make_label("ActionHintLabel", _action_row, "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover.", 20, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_action_hint_label.visible = false
 	_reroll_button = _make_button("RerollButton", _action_row, "Reroll")
 	_sell_equipment_button = _make_button("SellEquipmentButton", _action_row, "Sell Selected")
 	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
@@ -351,7 +369,7 @@ func render(snapshot: Dictionary) -> void:
 
 	_title_label.text = "Dungeon %d-%d" % [int(snapshot.get("dungeon_level", 1)), int(snapshot.get("shop_ordinal", 1))]
 	_boss_preview_label.text = "Boss preview: %s" % String(snapshot.get("boss_preview", "-"))
-	_gold_label.text = "$  %d" % int(snapshot.get("gold", 0))
+	_gold_label.text = "$%d" % int(snapshot.get("gold", 0))
 	_detail_label.text = "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover."
 	set_status(String(snapshot.get("status_message", "")), bool(snapshot.get("status_positive", true)))
 
@@ -371,44 +389,23 @@ func render(snapshot: Dictionary) -> void:
 
 
 func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending: bool) -> void:
-	_clear_children(card)
-	card.text = ""
 	var rarity := String(offer.get("rarity", "common")).to_lower()
 	var sold_out := bool(offer.get("sold_out", false))
 	var price := int(offer.get("price", 0))
 	var affordable := bool(offer.get("affordable", false))
 	var disabled := sold_out or treasure_chest_pending or not affordable
-	card.disabled = disabled
-	card.modulate = Color(0.52, 0.52, 0.56, 0.90) if disabled else Color.WHITE
-	card.tooltip_text = ""
-	_apply_button_chrome(card, _card_bg_color(rarity, disabled), _rarity_color(rarity), Color(0.18, 0.13, 0.08, 1.0))
-
-	var root := _make_child_root(card)
-	_make_dynamic_label(root, rarity.to_upper(), OFFER_RARITY_RECT, _rarity_color(rarity), 22, HORIZONTAL_ALIGNMENT_CENTER)
-	_make_dynamic_label(root, String(offer.get("display_name", "Offer")), OFFER_NAME_RECT, _rarity_color(rarity), 32, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_dynamic_label(root, _offer_type_label(String(offer.get("type", "offer"))), OFFER_TYPE_RECT, MUTED_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER)
-
-	var art_frame := _make_dynamic_panel(root, OFFER_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0.04, 0.04, 0.05, 0.94), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
-	var icon := _make_texture("OfferIcon", art_frame)
-	icon.texture = _visuals.icon_for_key(String(offer.get("icon_key", "")))
-	icon.tooltip_text = ""
-	icon.position = Vector2(22, 14)
-	icon.size = Vector2(200, 118)
-	_make_dynamic_label(root, String(offer.get("description", "No details available.")), OFFER_DESC_RECT, INK_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_make_price_badge(root, OFFER_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
-	var state_text := ""
-	var state_color := NEGATIVE_COLOR
-	if sold_out:
-		state_text = "SOLD OUT"
-		state_color = NEGATIVE_COLOR
-	elif treasure_chest_pending:
-		state_text = "CHEST FIRST"
-		state_color = GOLD_COLOR
-	elif not affordable:
-		state_text = "NOT ENOUGH GOLD"
-		state_color = NEGATIVE_COLOR
-	if state_text != "":
-		_make_state_badge(root, OFFER_STATE_RECT, state_text, state_color)
+	var card_data := offer.duplicate(true)
+	card_data["display_name"] = String(offer.get("display_name", "Offer"))
+	card_data["rarity"] = rarity
+	card_data["description"] = _shop_card_description(offer)
+	card_data["badge_text"] = _price_text(price, sold_out, affordable, treasure_chest_pending)
+	card_data["badge_enabled"] = not disabled
+	COLLECTION_CARD_RENDERER.render_card(card, _visuals, card_data, {
+		"disabled": disabled,
+		"tooltip_text": "",
+		"mouse_cursor": Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND,
+		"modulate": Color(0.58, 0.58, 0.60, 0.72) if disabled else Color.WHITE,
+	})
 
 
 func _render_empty_offer_card(card: Button) -> void:
@@ -417,7 +414,7 @@ func _render_empty_offer_card(card: Button) -> void:
 	card.disabled = true
 	card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 	card.tooltip_text = ""
-	_apply_button_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
+	_apply_card_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
 	var root := _make_child_root(card)
 	_make_dynamic_label(root, "EMPTY", Rect2(Vector2(20, 190), Vector2(280, 50)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 	_make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
@@ -430,7 +427,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 		_relic_card.disabled = true
 		_relic_card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 		_relic_card.tooltip_text = ""
-		_apply_button_chrome(_relic_card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
+		_apply_card_chrome(_relic_card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
 		var empty_root := _make_child_root(_relic_card)
 		_make_dynamic_label(empty_root, "DUNGEON RELIC", Rect2(Vector2(24, 24), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 		_make_dynamic_label(empty_root, "Relic offer unavailable.", Rect2(Vector2(24, 86), Vector2(1000, 42)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
@@ -444,18 +441,23 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	_relic_card.disabled = disabled
 	_relic_card.modulate = Color(0.52, 0.52, 0.56, 0.90) if disabled else Color.WHITE
 	_relic_card.tooltip_text = ""
-	_apply_button_chrome(_relic_card, Color(0.18, 0.09, 0.12, 0.96), GOLD_COLOR, Color(0.25, 0.12, 0.16, 0.99))
+	_apply_card_chrome(_relic_card, Color(0.10, 0.04, 0.12, 0.96), _rarity_color(rarity), Color(0.18, 0.07, 0.20, 0.99))
 
 	var root := _make_child_root(_relic_card)
-	_make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_RECT, GOLD_COLOR, 30, HORIZONTAL_ALIGNMENT_CENTER)
+	_make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.03, 0.03, 0.03, 0.82), GOLD_COLOR.darkened(0.20), 0, 2, Vector4(0, 0, 0, 0)))
+	_make_dynamic_panel(root, RELIC_TITLE_LEFT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.15), GOLD_COLOR.darkened(0.15), 0, 0, Vector4(0, 0, 0, 0)))
+	_make_dynamic_panel(root, RELIC_TITLE_RIGHT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.15), GOLD_COLOR.darkened(0.15), 0, 0, Vector4(0, 0, 0, 0)))
+	_make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_TEXT_RECT, GOLD_COLOR, 32, HORIZONTAL_ALIGNMENT_CENTER)
+	_make_dynamic_panel(root, RELIC_BANNER_RECT, UI_UTILS.panel_style(Color(0.07, 0.03, 0.09, 0.84), _rarity_color(rarity), 2, 4, Vector4(8, 6, 8, 6)))
 	var art_frame := _make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
 	var icon := _make_texture("RelicIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
 	icon.tooltip_text = ""
-	icon.position = Vector2(20, 14)
-	icon.size = Vector2(148, 104)
-	_make_dynamic_label(root, "%s RELIC" % rarity.to_upper(), RELIC_TIER_RECT, _rarity_color(rarity), 21)
-	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, _rarity_color(rarity), 31, HORIZONTAL_ALIGNMENT_LEFT, true)
+	icon.position = RELIC_ICON_RECT.position
+	icon.size = RELIC_ICON_RECT.size
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
+	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, _rarity_color(rarity), 42, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_make_dynamic_label(root, "%s RELIC - DUNGEON 1" % rarity.to_upper(), RELIC_TIER_RECT, _rarity_color(rarity), 24)
 	_make_dynamic_label(root, String(relic_offer.get("description", "No details available.")), RELIC_DESC_RECT, INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
 	if sold_out:
@@ -469,9 +471,9 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
 	var active := bool(shop_snapshot.get("active", false))
 	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
-	_reroll_button.text = "REROLL\nFREE" if reroll_cost <= 0 else "REROLL\nCost %d G" % reroll_cost
+	_reroll_button.text = "REROLL\nFREE" if reroll_cost <= 0 else "REROLL\n$%d" % reroll_cost
 	_reroll_button.disabled = treasure_chest_pending or not active or not bool(shop_snapshot.get("reroll_enabled", false))
-	_action_hint_label.text = "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover."
+	_action_hint_label.visible = false
 	_sell_equipment_button.visible = false
 	_sell_equipment_button.disabled = true
 	_continue_button.text = "CONTINUE\nLeave Shop"
@@ -640,23 +642,84 @@ func _lookup_content_definition(content_id: String) -> Dictionary:
 
 
 func _offer_tooltip(offer: Dictionary) -> String:
-	return "%s\n%s\nPrice: %d gold" % [String(offer.get("display_name", "Offer")), String(offer.get("description", "")), int(offer.get("price", 0))]
+	return "%s\n%s\nPrice: $%d" % [String(offer.get("display_name", "Offer")), String(offer.get("description", "")), int(offer.get("price", 0))]
 
 
-func _price_text(price: int, sold_out: bool, affordable: bool, treasure_chest_pending: bool) -> String:
+func _price_text(price: int, sold_out: bool, _affordable: bool, treasure_chest_pending: bool) -> String:
 	if sold_out:
 		return "SOLD OUT"
 	if treasure_chest_pending:
 		return "WAIT CHEST"
-	if not affordable:
-		return "NEED %dG" % price
-	return "PRICE %dG" % price
+	return "$%d" % price
 
 
-func _offer_type_label(offer_type: String) -> String:
+func _shop_card_description(offer: Dictionary) -> String:
+	var content_id := String(offer.get("content_id", "")).to_lower()
+	var offer_type := String(offer.get("type", "")).to_lower()
+	var display_name := String(offer.get("display_name", "Offer"))
+	var description := String(offer.get("description", ""))
+	var amount := _first_signed_amount(description, 1)
+	if content_id.begins_with("shortsword"):
+		return "+%d Attack" % amount
+	if content_id.begins_with("buckler"):
+		return "Gain +%d Armor\neach turn" % amount
+	if content_id.begins_with("coin_purse"):
+		return "Gain +%d Gold\non Gold matches" % amount
+	if content_id.begins_with("healing_charm"):
+		return "Heal +%d more\non Hearts" % amount
+	if content_id.begins_with("leather_gloves"):
+		return "+%d Combo count\nfor damage" % amount
+	if offer_type == "mastery_card" or content_id.ends_with("_mastery"):
+		return "+%d %s\nMastery" % [_mastery_amount(description), _mastery_element_name(display_name, content_id)]
 	if offer_type == "treasure_chest":
-		return "TREASURE CHEST"
-	return offer_type.replace("_", " ").to_upper()
+		if content_id.find("fire") >= 0:
+			return "Choose 1 of 3\nFire rewards"
+		if content_id.find("earth") >= 0:
+			return "Choose 1 of 3\nEarth rewards"
+		if content_id.find("shadow") >= 0:
+			return "Choose 1 of 3\nShadow rewards"
+		if content_id.find("elemental") >= 0:
+			return "Choose 1 of 3\nElement rewards"
+		return "Choose 1 of 3\nrewards"
+	if offer_type == "consumable":
+		return _compact_consumable_description(display_name, description)
+	return description
+
+
+func _compact_consumable_description(display_name: String, description: String) -> String:
+	var amount := _first_signed_amount(description, 3)
+	var clean_name := display_name.replace(" Scroll", "")
+	if description.findn("Convert") >= 0:
+		return "Convert %d non-%s\norbs to %s orbs" % [amount, clean_name, clean_name]
+	return description
+
+
+func _mastery_element_name(display_name: String, content_id: String) -> String:
+	var clean_display := display_name.replace(" Mastery", "").strip_edges()
+	if clean_display != "":
+		return clean_display
+	var clean_id := content_id.replace("_mastery", "").replace("_", " ").strip_edges()
+	return clean_id.capitalize()
+
+
+func _mastery_amount(description: String) -> int:
+	var regex := RegEx.new()
+	if regex.compile("\\bby\\s+(\\d+)") != OK:
+		return 1
+	var result := regex.search(description)
+	if result == null:
+		return 1
+	return maxi(1, int(result.get_string(1)))
+
+
+func _first_signed_amount(description: String, default_value: int) -> int:
+	var regex := RegEx.new()
+	if regex.compile("\\+(\\d+)") != OK:
+		return default_value
+	var result := regex.search(description)
+	if result == null:
+		return default_value
+	return maxi(1, int(result.get_string(1)))
 
 
 func _is_full_slot_reason(reason: String) -> bool:
@@ -665,18 +728,6 @@ func _is_full_slot_reason(reason: String) -> bool:
 
 func _rarity_color(rarity: String) -> Color:
 	return RARITY_COLORS.get(rarity.to_lower(), RARITY_COLORS["common"])
-
-
-func _card_bg_color(rarity: String, disabled: bool) -> Color:
-	if disabled:
-		return Color(0.06, 0.06, 0.07, 0.94)
-	match rarity.to_lower():
-		"rare":
-			return Color(0.15, 0.06, 0.04, 0.96)
-		"uncommon":
-			return Color(0.05, 0.13, 0.08, 0.96)
-		_:
-			return Color(0.13, 0.09, 0.06, 0.96)
 
 
 func apply_layout() -> void:
@@ -710,13 +761,13 @@ func apply_layout() -> void:
 	_apply_rect(_detail_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 
 	_apply_rect(_stock_title_label, Rect2(Vector2(0, 12), Vector2(STOCK_PANEL_RECT.size.x, 44)))
-	_apply_rect(_offer_grid, Rect2(Vector2(14, 74), Vector2(STOCK_PANEL_RECT.size.x - 28.0, OFFER_CARD_SIZE.y)))
+	_apply_rect(_offer_grid, OFFER_GRID_RECT)
 	for index in _offer_cards.size():
 		_apply_rect(_offer_cards[index], Rect2(Vector2(float(index) * (OFFER_CARD_SIZE.x + OFFER_CARD_GAP), 0.0), OFFER_CARD_SIZE))
 
 	_apply_rect(_action_hint_label, ACTION_HINT_RECT)
-	_apply_rect(_reroll_button, Rect2(Vector2(0, 64), Vector2(516, 96)))
-	_apply_rect(_continue_button, Rect2(Vector2(532, 64), Vector2(516, 96)))
+	_apply_rect(_reroll_button, ACTION_REROLL_RECT)
+	_apply_rect(_continue_button, ACTION_CONTINUE_RECT)
 	_apply_rect(_sell_equipment_button, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
 
@@ -834,7 +885,7 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 	var action_bottom := ACTION_ROW_RECT.position.y + ACTION_ROW_RECT.size.y
 	var hud_bottom := hud_section.position.y + hud_section.size.y
 	var stock_total_width := OFFER_CARD_SIZE.x * 3.0 + OFFER_CARD_GAP * 2.0
-	var stock_content_width := STOCK_PANEL_RECT.size.x - 28.0
+	var stock_content_width := OFFER_GRID_RECT.size.x
 	var stock_bottom := STOCK_PANEL_RECT.position.y + STOCK_PANEL_RECT.size.y
 	var relic_bottom := RELIC_PANEL_RECT.position.y + RELIC_PANEL_RECT.size.y
 	var bottom_gap_before_hud := maxi(0, int(hud_section.position.y - action_bottom))
@@ -862,12 +913,17 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"body_text": "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.",
 		},
 		"stock_panel": STOCK_PANEL_RECT,
+		"offer_grid": OFFER_GRID_RECT,
 		"relic_panel": RELIC_PANEL_RECT,
 		"action_row": ACTION_ROW_RECT,
 		"action_row_content": {
 			"hint_label": ACTION_HINT_RECT,
-			"reroll_button": Rect2(Vector2(0, 64), Vector2(516, 96)),
-			"continue_button": Rect2(Vector2(532, 64), Vector2(516, 96)),
+			"reroll_button": ACTION_REROLL_RECT,
+			"continue_button": ACTION_CONTINUE_RECT,
+			"sell_button": Rect2(Vector2(-9999, -9999), Vector2(1, 1)),
+			"visible_primary_actions": ["reroll", "continue"],
+			"sell_button_visible": false,
+			"action_hint_visible": false,
 		},
 		"action_hint_bounds": ACTION_HINT_RECT,
 		"native_tooltips_disabled": {
@@ -879,6 +935,7 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"stock_card_gap": OFFER_CARD_GAP,
 		"stock_total_width": stock_total_width,
 		"stock_content_width": stock_content_width,
+		"stock_grid_side_margins": Vector2(OFFER_GRID_RECT.position.x, STOCK_PANEL_RECT.size.x - OFFER_GRID_RECT.end.x),
 		"stock_fits": stock_total_width <= stock_content_width,
 		"treasure_chest_terminology": {
 			"pending_state_badge": "CHEST FIRST",
@@ -894,16 +951,39 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"offer_state_price_gap": int(OFFER_PRICE_RECT.position.y - (OFFER_STATE_RECT.position.y + OFFER_STATE_RECT.size.y)),
 		"offer_card_readability": {
 			"card_size": OFFER_CARD_SIZE,
+			"uses_collection_card_renderer": true,
+			"uses_collection_card_frame": true,
+			"uses_collection_price_badge": true,
+			"uses_compact_shop_copy": true,
+			"button_hover_fill_visible": false,
+			"active_badge_pops": true,
+			"active_badge_uses_external_shadow": false,
+			"active_badge_rect_glow_visible": false,
+			"renders_rarity_tag": false,
+			"frame_rect": Rect2(Vector2.ZERO, OFFER_CARD_SIZE),
+			"surface_rect": OFFER_SURFACE_RECT,
 			"rarity_rect": OFFER_RARITY_RECT,
 			"name_rect": OFFER_NAME_RECT,
+			"name_prefix_rect": OFFER_NAME_PREFIX_RECT,
+			"name_item_rect": OFFER_NAME_ITEM_RECT,
 			"type_rect": OFFER_TYPE_RECT,
+			"art_rect": OFFER_ART_FRAME_RECT,
+			"icon_rect": OFFER_ICON_RECT,
 			"description_rect": OFFER_DESC_RECT,
 			"state_rect": OFFER_STATE_RECT,
+			"state_badge_visible": false,
 			"price_rect": OFFER_PRICE_RECT,
+			"copy_max_chars": OFFER_COPY_MAX_CHARS,
+			"copy_uses_ellipsis": false,
+			"price_text_when_affordable": "$9",
+			"price_text_when_unaffordable": "$11",
 		},
 		"relic_card_readability": {
 			"panel_size": RELIC_PANEL_RECT.size,
-			"title_rect": RELIC_TITLE_RECT,
+			"title_strip_rect": RELIC_TITLE_STRIP_RECT,
+			"title_text_rect": RELIC_TITLE_TEXT_RECT,
+			"banner_rect": RELIC_BANNER_RECT,
+			"art_rect": RELIC_ART_FRAME_RECT,
 			"name_rect": RELIC_NAME_RECT,
 			"description_rect": RELIC_DESC_RECT,
 			"state_rect": RELIC_STATE_RECT,
@@ -926,6 +1006,14 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 
 func layout_probe_snapshot() -> Dictionary:
 	return shop_layout_probe_snapshot()
+
+
+func _apply_card_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
+	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 3, 4, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.18), 3, 4, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 3, 4, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 3, 4, Vector4(8, 6, 8, 6)))
+	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 
 func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
@@ -1022,7 +1110,12 @@ func _make_dynamic_label(parent: Node, text: String, rect: Rect2, color: Color, 
 	_configure_label(label, text, font_size, color, align, enable_wrap)
 	label.position = rect.position
 	label.size = rect.size
+	label.custom_minimum_size = rect.size
+	label.clip_contents = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	parent.add_child(label)
+	label.position = rect.position
+	label.size = rect.size
 	return label
 
 
@@ -1035,6 +1128,8 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 		TextServer.AUTOWRAP_WORD_SMART if enable_wrap else TextServer.AUTOWRAP_OFF
 	) as TextServer.AutowrapMode
 	label.clip_text = true
+	label.clip_contents = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_constant_override("outline_size", 2)
@@ -1042,26 +1137,34 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 
 
 func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
-	var disabled_affordability := text.begins_with("NEED")
+	var disabled_affordability := disabled and text.begins_with("$")
 	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT CHEST"
-	var bg := Color(0.32, 0.18, 0.04, 0.96)
 	var border := GOLD_COLOR
 	var label_color := GOLD_COLOR
 	if disabled:
 		if disabled_affordability:
-			bg = Color(0.20, 0.07, 0.06, 0.96)
 			border = NEGATIVE_COLOR
 			label_color = NEGATIVE_COLOR
 		elif sold_or_blocked:
-			bg = Color(0.11, 0.08, 0.05, 0.96)
 			border = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 			label_color = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 		else:
-			bg = Color(0.07, 0.07, 0.08, 0.94)
 			border = Color(0.28, 0.28, 0.30, 0.92)
 			label_color = MUTED_COLOR
-	var badge := _make_dynamic_panel(parent, rect, UI_UTILS.panel_style(bg, border, 2, 6, Vector4(8, 6, 8, 6)))
-	_make_dynamic_label(badge, text, Rect2(Vector2.ZERO, rect.size), label_color, 22, HORIZONTAL_ALIGNMENT_CENTER)
+	var badge_texture_value: Texture2D = _visuals.collection_price_badge()
+	var badge_rect := rect.grow_individual(2, 1, 2, 1) if not disabled else rect
+	var badge_frame := _make_texture("PriceBadgeFrame", parent)
+	badge_frame.position = badge_rect.position
+	badge_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
+	badge_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
+	badge_frame.texture = badge_texture_value
+	badge_frame.custom_minimum_size = badge_rect.size
+	badge_frame.size = badge_rect.size
+	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else Color(0.72, 0.70, 0.66, 0.78)
+	if disabled:
+		_make_dynamic_panel(parent, rect, UI_UTILS.panel_style(Color(0.03, 0.02, 0.02, 0.42), border, 0, 6, Vector4.ZERO))
+	var font_size := 36 if rect.size.y >= 50.0 and text.begins_with("$") else 20
+	_make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _make_state_badge(parent: Node, rect: Rect2, text: String, color: Color, font_size: int = 17) -> void:

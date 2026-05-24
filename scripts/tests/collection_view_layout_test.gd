@@ -1,7 +1,7 @@
 extends RefCounted
 class_name CollectionViewLayoutTest
 
-const COLLECTION_VIEW_SCRIPT := preload("res://scripts/collection/collection_view.gd")
+const COLLECTION_VIEW_SCRIPT_PATH := "res://scripts/collection/collection_view.gd"
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
@@ -28,7 +28,7 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 
 
 func _test_card_geometry_is_non_overlapping() -> String:
-	var probe: Dictionary = COLLECTION_VIEW_SCRIPT.collection_card_layout_probe_snapshot()
+	var probe: Dictionary = _collection_view_script().collection_card_layout_probe_snapshot()
 	if int(probe.get("family_count", 0)) != 5:
 		return "Expected probe to cover five equipment families."
 	if int(probe.get("tiers_per_family", 0)) != 3:
@@ -55,11 +55,25 @@ func _test_card_geometry_is_non_overlapping() -> String:
 		return "Expected card copy rect to be large enough for wrapped effect text."
 	if int(probe.get("copy_max_chars", 99)) > 24:
 		return "Expected card copy to be pre-wrapped before it can overflow horizontally."
+	if bool(probe.get("copy_uses_ellipsis", true)):
+		return "Expected card copy to wrap instead of hiding text behind ellipses."
+	if not bool(probe.get("active_badge_pops", false)):
+		return "Expected available card badges to pop visually."
+	if bool(probe.get("active_badge_uses_external_shadow", true)):
+		return "Expected active card badges not to use an external glow or shadow."
+	if bool(probe.get("active_badge_rect_glow_visible", true)):
+		return "Expected active card badges not to use a rectangular glow panel."
+	if int(probe.get("copy_font_size", 0)) < 22:
+		return "Expected card copy font to stay readable at shop scale."
+	if int(probe.get("badge_font_size", 0)) < 24:
+		return "Expected card badge font to stay readable at shop scale."
+	if int(probe.get("copy_outline_size", 0)) < 3 or int(probe.get("badge_outline_size", 0)) < 3:
+		return "Expected card copy and badge text to keep strong outlines for dark art."
 	return ""
 
 
 func _test_rarity_surfaces_are_distinct_without_tags() -> String:
-	var probe: Dictionary = COLLECTION_VIEW_SCRIPT.collection_card_layout_probe_snapshot()
+	var probe: Dictionary = _collection_view_script().collection_card_layout_probe_snapshot()
 	if bool(probe.get("renders_rarity_tag", true)):
 		return "Expected collection cards not to render rarity tags."
 	var common: Color = probe.get("common_surface", Color.BLACK)
@@ -127,3 +141,7 @@ func _color_distance(a: Color, b: Color) -> float:
 	var dg := a.g - b.g
 	var db := a.b - b.b
 	return sqrt(dr * dr + dg * dg + db * db)
+
+
+func _collection_view_script() -> GDScript:
+	return ResourceLoader.load(COLLECTION_VIEW_SCRIPT_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as GDScript

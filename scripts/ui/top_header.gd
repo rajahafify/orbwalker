@@ -63,7 +63,7 @@ func set_gold_text(text: String) -> void:
 
 
 func set_gold_value(value: int) -> void:
-	set_gold_text("$  %d" % value)
+	set_gold_text("$%d" % value)
 
 
 func set_help_tooltip(text: String) -> void:
@@ -155,9 +155,9 @@ static func _offset_rect(rect: Rect2, offset: Vector2) -> Rect2:
 func _format_gold_text(text: String) -> String:
 	var clean_text := text.strip_edges()
 	if clean_text.begins_with("$"):
-		return clean_text
+		return "$%s" % clean_text.substr(1).strip_edges()
 	if clean_text.to_upper().begins_with("GOLD"):
-		return "$  %s" % clean_text.substr(4).strip_edges()
+		return "$%s" % clean_text.substr(4).strip_edges()
 	return clean_text
 
 

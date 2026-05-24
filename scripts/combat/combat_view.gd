@@ -754,10 +754,10 @@ func _sync_top_hud(snapshot: Dictionary) -> void:
 func _format_top_gold_text(text: String) -> String:
 	var clean_text := text.strip_edges()
 	if clean_text.begins_with("$"):
-		return clean_text
+		return "$%s" % clean_text.substr(1).strip_edges()
 	if clean_text.to_upper().begins_with("GOLD"):
 		var amount_text := clean_text.substr(4).strip_edges()
-		return "$  %s" % amount_text
+		return "$%s" % amount_text
 	return clean_text
 
 
