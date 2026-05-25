@@ -13,6 +13,7 @@ func run_all() -> Dictionary:
 	_run_case("shop_header_controls_remain_readable", _test_shop_header_controls_remain_readable, failures)
 	_run_case("shop_action_row_uses_two_primary_actions", _test_shop_action_row_uses_two_primary_actions, failures)
 	_run_case("merchant_header_uses_single_speech_panel", _test_merchant_header_uses_single_speech_panel, failures)
+	_run_case("adaptive_tall_phone_layout_uses_extra_height", _test_adaptive_tall_phone_layout_uses_extra_height, failures)
 	_run_case("action_row_connected_to_hud", _test_action_row_connected_to_hud, failures)
 	_run_case("stock_cards_fit", _test_stock_cards_fit, failures)
 	_run_case("treasure_chest_labels_use_chest_copy", _test_treasure_chest_labels_use_chest_copy, failures)
@@ -20,7 +21,7 @@ func run_all() -> Dictionary:
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 8,
+		"total": 9,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -159,6 +160,45 @@ func _test_action_row_connected_to_hud() -> String:
 	var gap_target: int = int(probe.get("action_hud_connected_target_max", 0))
 	if bottom_gap_before_hud > gap_target:
 		return "Expected action/HUD gap (%d) to stay within target (%d)." % [bottom_gap_before_hud, gap_target]
+	return ""
+
+
+func _test_adaptive_tall_phone_layout_uses_extra_height() -> String:
+	var probe := _probe_snapshot()
+	if String(probe.get("layout_mode", "")) != "adaptive_full_height_larger_shop":
+		return "Expected shop layout probe to report adaptive larger-shop layout mode."
+	if not bool(probe.get("uses_full_viewport_height", false)):
+		return "Expected shop layout to use full viewport height instead of centering a fixed 1920px canvas."
+	var samples: Dictionary = probe.get("adaptive_layout_samples", {})
+	var base: Dictionary = samples.get("1080x1920", {})
+	var tall: Dictionary = samples.get("1080x2400", {})
+	if base.is_empty() or tall.is_empty():
+		return "Expected adaptive layout samples for 1080x1920 and 1080x2400."
+	if float(tall.get("logical_height", 0.0)) < 2400.0:
+		return "Expected tall-phone layout sample to preserve the 2400px logical height."
+	if float(tall.get("top_unused_gap", 9999.0)) != 0.0 or float(tall.get("bottom_unused_gap", 9999.0)) != 0.0:
+		return "Expected tall-phone layout to remove top and bottom unused bands."
+	if not bool(tall.get("hud_bottom_aligned", false)):
+		return "Expected tall-phone player HUD to anchor to the bottom of the logical viewport."
+	if bool(tall.get("action_row_overlaps_hud", true)):
+		return "Expected tall-phone action row not to overlap the bottom-anchored HUD."
+	if int(tall.get("action_hud_gap", 9999)) > 16:
+		return "Expected tall-phone action row to stay visually connected to the HUD."
+	var base_merchant: Rect2 = base.get("merchant_stage", Rect2())
+	var tall_merchant: Rect2 = tall.get("merchant_stage", Rect2())
+	var base_stock: Rect2 = base.get("stock_panel", Rect2())
+	var tall_stock: Rect2 = tall.get("stock_panel", Rect2())
+	var tall_offer_grid: Rect2 = tall.get("offer_grid", Rect2())
+	if tall_merchant.size.y <= base_merchant.size.y:
+		return "Expected adaptive tall-phone layout to enlarge the merchant art section."
+	if tall_stock.size.y <= base_stock.size.y:
+		return "Expected adaptive tall-phone layout to enlarge the shop stock section."
+	if not _rect_contains(Rect2(Vector2.ZERO, tall_stock.size), tall_offer_grid):
+		return "Expected tall-phone offer grid to remain inside the enlarged stock panel."
+	if float(tall.get("stock_height_delta", 0.0)) <= 0.0:
+		return "Expected tall-phone stock height delta to be positive."
+	if float(tall.get("merchant_height_delta", 0.0)) <= 0.0:
+		return "Expected tall-phone merchant height delta to be positive."
 	return ""
 
 

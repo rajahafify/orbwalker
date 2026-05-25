@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop Vertical Spacing Options</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050607;
+      --panel: rgba(6, 8, 10, .92);
+      --panel-soft: rgba(10, 13, 16, .78);
+      --gold: #d99a31;
+      --gold-bright: #ffdda0;
+      --ink: #f8ead0;
+      --muted: #bfa77b;
+      --blue: #0b5577;
+      --green: #1f6f12;
+      --purple: #4c1d5f;
+      --bad: #ff5f4e;
+      --ok: #74e06b;
+      --line: rgba(217, 154, 49, .48);
+      --shadow: 0 26px 76px rgba(0, 0, 0, .62);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, .16), rgba(0, 0, 0, .92)),
+        url("../resources/art/assetgen/backgrounds/shop_background_candidate_01.png") center top / cover fixed,
+        var(--bg);
+    }
+
+    main {
+      width: min(1360px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 24px 0 56px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    header,
+    .section,
+    .option {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(217, 154, 49, .09), transparent 34%),
+        linear-gradient(180deg, rgba(8, 11, 13, .96), rgba(2, 3, 4, .91));
+      box-shadow: var(--shadow);
+    }
+
+    header {
+      display: grid;
+      gap: 12px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      color: var(--gold-bright);
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 1;
+      text-shadow: 0 3px 0 #000;
+    }
+
+    .summary {
+      max-width: 980px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .fact {
+      padding: 12px 14px;
+      border: 1px solid rgba(217, 154, 49, .24);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .24);
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .fact strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .section {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(217, 154, 49, .20);
+      padding-bottom: 12px;
+    }
+
+    h2 {
+      color: var(--gold-bright);
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      font-size: 30px;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .rank {
+      color: var(--ok);
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .option {
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      gap: 16px;
+      padding: 14px;
+      min-height: 610px;
+    }
+
+    .option-text {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.38;
+    }
+
+    h3 {
+      color: var(--gold-bright);
+      font-size: 24px;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .tag {
+      width: fit-content;
+      padding: 4px 8px;
+      border: 1px solid rgba(217, 154, 49, .42);
+      border-radius: 999px;
+      color: var(--gold-bright);
+      background: rgba(75, 43, 12, .52);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .option ul,
+    .plan-list {
+      display: grid;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .option li,
+    .plan-list li {
+      padding-left: 12px;
+      border-left: 2px solid rgba(217, 154, 49, .46);
+    }
+
+    code {
+      color: #ffe0a3;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: .95em;
+    }
+
+    .phone {
+      position: relative;
+      width: 288px;
+      height: 640px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 2px solid rgba(255, 221, 160, .42);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, .06), rgba(0, 0, 0, .54)),
+        url("../resources/art/assetgen/backgrounds/shop_background_candidate_01.png") center / cover;
+      box-shadow: 0 18px 52px rgba(0, 0, 0, .55);
+    }
+
+    .safe-label {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      z-index: 6;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255, 221, 160, .72);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .safe-label.top { top: 10px; }
+    .safe-label.bottom { bottom: 10px; }
+
+    .design-frame {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 512px;
+      border-block: 1px dashed rgba(255, 95, 78, .72);
+      background: rgba(0, 0, 0, .08);
+    }
+
+    .current .design-frame { top: 64px; }
+    .top-pin .design-frame { top: 12px; }
+    .adaptive .design-frame,
+    .balanced .design-frame,
+    .zoom .design-frame { top: 0; height: 640px; border-block-color: rgba(116, 224, 107, .56); }
+
+    .layout-piece {
+      position: absolute;
+      left: 9px;
+      right: 9px;
+      border: 1px solid rgba(217, 154, 49, .62);
+      border-radius: 5px;
+      background: rgba(6, 9, 11, .82);
+      box-shadow: inset 0 0 0 1px rgba(255, 221, 160, .07);
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 32px;
+      display: grid;
+      grid-template-columns: 1fr 60px 24px 24px;
+      gap: 6px;
+      align-items: center;
+      padding: 0 8px;
+      color: #ffd37e;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .topbar .gold,
+    .topbar .icon {
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(217, 154, 49, .72);
+      border-radius: 4px;
+      background: rgba(65, 33, 7, .80);
+    }
+
+    .topbar .icon {
+      border-radius: 50%;
+      background: rgba(3, 5, 7, .88);
+    }
+
+    .merchant {
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, .40), rgba(0, 0, 0, .12)),
+        url("../resources/art/assetgen/backgrounds/shop_background_candidate_01.png") center 23% / 380px auto;
+    }
+
+    .speech {
+      position: absolute;
+      left: 15px;
+      top: 20px;
+      width: 88px;
+      height: 38px;
+      padding: 5px;
+      border: 1px solid rgba(217, 154, 49, .58);
+      border-radius: 4px;
+      background: rgba(0, 0, 0, .55);
+      color: #f8ead0;
+      font-size: 7px;
+      line-height: 1.22;
+      font-weight: 900;
+    }
+
+    .stock-title,
+    .relic-title,
+    .hud-title {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 7px;
+      color: #d99a31;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 0 #000;
+    }
+
+    .cards {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .card {
+      position: relative;
+      min-height: 118px;
+      padding: 12px 7px 9px;
+      text-align: center;
+      background:
+        linear-gradient(180deg, rgba(28, 23, 16, .88), rgba(5, 5, 5, .92)),
+        url("../resources/art/assetgen/runtime/collection_ui/card_frame_common.png") center / 100% 100% no-repeat;
+    }
+
+    .card strong {
+      display: block;
+      color: #e4bc69;
+      font-size: 9px;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+
+    .card .art {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 221, 160, .62), rgba(217, 154, 49, .10) 55%, transparent 58%);
+    }
+
+    .card .copy {
+      color: rgba(248, 234, 208, .86);
+      font-size: 7px;
+      line-height: 1.15;
+    }
+
+    .card .price {
+      position: absolute;
+      left: 21px;
+      right: 21px;
+      bottom: 9px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      color: #ffd56f;
+      font-size: 8px;
+      font-weight: 900;
+      background: url("../resources/art/assetgen/runtime/collection_ui/price_badge.png") center / 100% 100% no-repeat;
+    }
+
+    .card.disabled {
+      opacity: .42;
+      filter: saturate(.7);
+    }
+
+    .relic {
+      background:
+        linear-gradient(90deg, rgba(31, 9, 40, .84), rgba(73, 26, 88, .70), rgba(18, 8, 28, .86)),
+        url("../resources/art/assetgen/runtime/collection_ui/relic_banner_frame_rare.png") center / 100% 100% no-repeat;
+    }
+
+    .relic .price-badge {
+      position: absolute;
+      right: 28px;
+      top: 35px;
+      width: 58px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      color: rgba(191, 155, 102, .70);
+      font-size: 9px;
+      font-weight: 900;
+      opacity: .52;
+      background: url("../resources/art/assetgen/runtime/collection_ui/price_badge.png") center / 100% 100% no-repeat;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 11px 16px;
+      border-color: transparent;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .action {
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: #f8ead0;
+      font-size: 9px;
+      font-weight: 900;
+      text-shadow: 0 1px 0 #000;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+
+    .action.reroll { background-image: url("../resources/art/assetgen/runtime/shop_ui/shop_action_button_reroll.png"); }
+    .action.continue { background-image: url("../resources/art/assetgen/runtime/shop_ui/shop_action_button_continue.png"); }
+
+    .hud {
+      background: rgba(3, 8, 13, .93);
+      border-color: rgba(217, 154, 49, .72);
+    }
+
+    .mastery-row {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 34px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+    }
+
+    .mastery-row span {
+      height: 23px;
+      border: 1px solid rgba(217, 154, 49, .32);
+      background: radial-gradient(circle, rgba(217, 154, 49, .46), transparent 54%);
+    }
+
+    .hp {
+      position: absolute;
+      left: 74px;
+      right: 28px;
+      top: 74px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border-radius: 3px;
+      background: #c92d2e;
+      color: white;
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .slots {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+
+    .slots span {
+      height: 23px;
+      background: rgba(24, 32, 48, .72);
+      border: 1px solid rgba(155, 180, 220, .48);
+      border-radius: 4px;
+    }
+
+    .current .topbar { top: 66px; }
+    .current .merchant { top: 103px; height: 91px; }
+    .current .stock { top: 200px; height: 148px; }
+    .current .relic { top: 352px; height: 58px; }
+    .current .actions { top: 415px; height: 45px; }
+    .current .hud { top: 465px; height: 147px; }
+
+    .top-pin .topbar { top: 14px; }
+    .top-pin .merchant { top: 51px; height: 91px; }
+    .top-pin .stock { top: 148px; height: 148px; }
+    .top-pin .relic { top: 300px; height: 58px; }
+    .top-pin .actions { top: 363px; height: 45px; }
+    .top-pin .hud { top: 413px; height: 147px; }
+
+    .adaptive .topbar { top: 12px; }
+    .adaptive .merchant { top: 51px; height: 126px; }
+    .adaptive .stock { top: 187px; height: 148px; }
+    .adaptive .relic { top: 343px; height: 58px; }
+    .adaptive .actions { top: 409px; height: 45px; }
+    .adaptive .hud { top: 477px; height: 151px; }
+
+    .balanced .topbar { top: 12px; }
+    .balanced .merchant { top: 51px; height: 106px; }
+    .balanced .stock { top: 168px; height: 160px; }
+    .balanced .relic { top: 342px; height: 66px; }
+    .balanced .actions { top: 417px; height: 45px; }
+    .balanced .hud { top: 474px; height: 154px; }
+
+    .zoom .topbar { top: 8px; left: -8px; right: -8px; height: 40px; }
+    .zoom .merchant { top: 54px; left: -8px; right: -8px; height: 120px; }
+    .zoom .stock { top: 181px; left: -8px; right: -8px; height: 184px; }
+    .zoom .relic { top: 373px; left: -8px; right: -8px; height: 72px; }
+    .zoom .actions { top: 455px; left: -8px; right: -8px; height: 52px; }
+    .zoom .hud { top: 516px; left: -8px; right: -8px; height: 122px; }
+
+    .waste {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 95, 78, .84);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 95, 78, .12),
+        rgba(255, 95, 78, .12) 8px,
+        rgba(0, 0, 0, .04) 8px,
+        rgba(0, 0, 0, .04) 16px
+      );
+      border-block: 1px solid rgba(255, 95, 78, .28);
+      pointer-events: none;
+    }
+
+    .current .waste.top { top: 0; height: 64px; }
+    .current .waste.bottom { bottom: 0; height: 64px; }
+    .top-pin .waste.bottom { bottom: 0; height: 80px; }
+
+    .plan {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, .8fr);
+      gap: 18px;
+    }
+
+    .code-card {
+      padding: 14px;
+      border: 1px solid rgba(217, 154, 49, .28);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, .32);
+      overflow: auto;
+    }
+
+    pre {
+      margin: 0;
+      color: #ffe0a3;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 1080px) {
+      .options-grid,
+      .plan,
+      .facts {
+        grid-template-columns: 1fr;
+      }
+
+      .option {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Shop Vertical Spacing</h1>
+      <p class="summary">
+        The current shop is designed at <code>1080x1920</code>, then centered inside the phone viewport.
+        On tall phones like <code>1080x2400</code>, that creates empty top and bottom bands. The fix should stop centering the fixed design vertically and let the shop layout use the full logical height.
+      </p>
+      <div class="facts">
+        <div class="fact"><strong>Current design</strong><code>DESIGN_SIZE = 1080x1920</code></div>
+        <div class="fact"><strong>Tall phone example</strong><code>1080x2400</code> logical viewport</div>
+        <div class="fact"><strong>Observed waste</strong>About <code>240px</code> top + <code>240px</code> bottom on 20:9 screens</div>
+        <div class="fact"><strong>Checkpoint</strong>Adaptive full-height layout is implemented. The later dense space-utilization mockup was rejected and is not part of this pass.</div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Options</h2>
+        <span class="rank">Checkpoint: Option 3</span>
+      </div>
+
+      <div class="options-grid">
+        <article class="option">
+          <div class="phone current">
+            <div class="waste top">unused top</div>
+            <div class="waste bottom">unused bottom</div>
+            <div class="design-frame"></div>
+            <div class="safe-label top"><span>phone top</span><span>current centered layout</span></div>
+            <div class="layout-piece topbar"><span>Dungeon 1-1</span><span class="gold">$10</span><span class="icon">?</span><span class="icon">⚙</span></div>
+            <div class="layout-piece merchant"><div class="speech">Well met, adventurer. New stock, fresh from the depths.</div></div>
+            <div class="layout-piece stock">
+              <div class="stock-title">Shop Stock</div>
+              <div class="cards">
+                <div class="card"><strong>Iron<br>Shortsword</strong><div class="art"></div><div class="copy">+2 Attack</div><div class="price">$10</div></div>
+                <div class="card"><strong>Fire<br>Chest</strong><div class="art"></div><div class="copy">Fire rewards</div><div class="price">$10</div></div>
+                <div class="card disabled"><strong>Armor<br>Mastery</strong><div class="art"></div><div class="copy">+1 Armor Mastery</div><div class="price">$12</div></div>
+              </div>
+            </div>
+            <div class="layout-piece relic"><div class="relic-title">Dungeon Relic</div><div class="price-badge">$24</div></div>
+            <div class="layout-piece actions"><div class="action reroll">REROLL ($1)</div><div class="action continue">CONTINUE</div></div>
+            <div class="layout-piece hud"><div class="hud-title">Mastery</div><div class="mastery-row"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="hp">HP 100 / 100</div><div class="slots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          </div>
+          <div class="option-text">
+            <span class="tag">Current behavior</span>
+            <h3>Fixed 16:9-ish design centered on tall phones</h3>
+            <p>The content is not actually too short; it is centered inside a taller phone. That makes the shop feel like it is floating with a big unused cap above and below.</p>
+            <ul>
+              <li>Root cause: <code>_layout_root.position = (viewport_size - scaled_size) * 0.5</code>.</li>
+              <li>On <code>1080x2400</code>, <code>scaled_size.y</code> stays <code>1920</code>.</li>
+              <li>The leftover <code>480px</code> is split into top and bottom bands.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="phone top-pin">
+            <div class="waste bottom">unused bottom</div>
+            <div class="design-frame"></div>
+            <div class="safe-label top"><span>top pinned</span><span>minimal change</span></div>
+            <div class="layout-piece topbar"><span>Dungeon 1-1</span><span class="gold">$10</span><span class="icon">?</span><span class="icon">⚙</span></div>
+            <div class="layout-piece merchant"><div class="speech">Well met, adventurer. New stock, fresh from the depths.</div></div>
+            <div class="layout-piece stock">
+              <div class="stock-title">Shop Stock</div>
+              <div class="cards">
+                <div class="card"><strong>Iron<br>Shortsword</strong><div class="art"></div><div class="copy">+2 Attack</div><div class="price">$10</div></div>
+                <div class="card"><strong>Fire<br>Chest</strong><div class="art"></div><div class="copy">Fire rewards</div><div class="price">$10</div></div>
+                <div class="card disabled"><strong>Armor<br>Mastery</strong><div class="art"></div><div class="copy">+1 Armor Mastery</div><div class="price">$12</div></div>
+              </div>
+            </div>
+            <div class="layout-piece relic"><div class="relic-title">Dungeon Relic</div><div class="price-badge">$24</div></div>
+            <div class="layout-piece actions"><div class="action reroll">REROLL ($1)</div><div class="action continue">CONTINUE</div></div>
+            <div class="layout-piece hud"><div class="hud-title">Mastery</div><div class="mastery-row"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="hp">HP 100 / 100</div><div class="slots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          </div>
+          <div class="option-text">
+            <span class="tag">Option 1</span>
+            <h3>Pin the fixed layout to the top</h3>
+            <p>This is the smallest possible code change. It removes the top gap, but the bottom gap remains, so the HUD still does not feel anchored to the phone.</p>
+            <ul>
+              <li>Set layout root <code>y = safe_top</code> instead of vertical center.</li>
+              <li>No component reflow required.</li>
+              <li>Good emergency patch, not the final feel.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="phone adaptive">
+            <div class="design-frame"></div>
+            <div class="safe-label top"><span>full height used</span><span>adaptive shop</span></div>
+            <div class="safe-label bottom"><span>hud anchored</span><span>no bottom waste</span></div>
+            <div class="layout-piece topbar"><span>Dungeon 1-1</span><span class="gold">$10</span><span class="icon">?</span><span class="icon">⚙</span></div>
+            <div class="layout-piece merchant"><div class="speech">Well met, adventurer. New stock, fresh from the depths.</div></div>
+            <div class="layout-piece stock">
+              <div class="stock-title">Shop Stock</div>
+              <div class="cards">
+                <div class="card"><strong>Iron<br>Shortsword</strong><div class="art"></div><div class="copy">+2 Attack</div><div class="price">$10</div></div>
+                <div class="card"><strong>Fire<br>Chest</strong><div class="art"></div><div class="copy">Fire rewards</div><div class="price">$10</div></div>
+                <div class="card disabled"><strong>Armor<br>Mastery</strong><div class="art"></div><div class="copy">+1 Armor Mastery</div><div class="price">$12</div></div>
+              </div>
+            </div>
+            <div class="layout-piece relic"><div class="relic-title">Dungeon Relic</div><div class="price-badge">$24</div></div>
+            <div class="layout-piece actions"><div class="action reroll">REROLL ($1)</div><div class="action continue">CONTINUE</div></div>
+            <div class="layout-piece hud"><div class="hud-title">Mastery</div><div class="mastery-row"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="hp">HP 100 / 100</div><div class="slots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          </div>
+          <div class="option-text">
+            <span class="tag">Option 2 - recommended</span>
+            <h3>Adaptive tall-phone layout</h3>
+            <p>Use the full logical viewport height. Pin the top header near the safe top, pin the shared player HUD to the bottom, and distribute extra height into the merchant art and controlled gaps.</p>
+            <ul>
+              <li>Best fix for the screenshot: removes both top and bottom waste.</li>
+              <li>Keeps card sizes stable, so shop readability work survives.</li>
+              <li>Matches how the combat layout already has viewport-aware behavior.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="phone balanced">
+            <div class="design-frame"></div>
+            <div class="safe-label top"><span>full height used</span><span>more shop breathing</span></div>
+            <div class="layout-piece topbar"><span>Dungeon 1-1</span><span class="gold">$10</span><span class="icon">?</span><span class="icon">⚙</span></div>
+            <div class="layout-piece merchant"><div class="speech">Well met, adventurer. New stock, fresh from the depths.</div></div>
+            <div class="layout-piece stock">
+              <div class="stock-title">Shop Stock</div>
+              <div class="cards">
+                <div class="card"><strong>Iron<br>Shortsword</strong><div class="art"></div><div class="copy">+2 Attack</div><div class="price">$10</div></div>
+                <div class="card"><strong>Fire<br>Chest</strong><div class="art"></div><div class="copy">Fire rewards</div><div class="price">$10</div></div>
+                <div class="card disabled"><strong>Armor<br>Mastery</strong><div class="art"></div><div class="copy">+1 Armor Mastery</div><div class="price">$12</div></div>
+              </div>
+            </div>
+            <div class="layout-piece relic"><div class="relic-title">Dungeon Relic</div><div class="price-badge">$24</div></div>
+            <div class="layout-piece actions"><div class="action reroll">REROLL ($1)</div><div class="action continue">CONTINUE</div></div>
+            <div class="layout-piece hud"><div class="hud-title">Mastery</div><div class="mastery-row"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="hp">HP 100 / 100</div><div class="slots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          </div>
+          <div class="option-text">
+            <span class="tag">Option 3 - selected</span>
+            <h3>Adaptive layout plus larger shop sections</h3>
+            <p>Same full-height anchoring as Option 2, but spend more of the extra height on the stock/relic area. This can make the shop feel richer, but it touches more component geometry.</p>
+            <ul>
+              <li>Can enlarge relic banner or add more air around cards.</li>
+              <li>Good once the core adaptive anchoring works.</li>
+              <li>Higher risk because stock/relic tests need more updates.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="option">
+          <div class="phone zoom">
+            <div class="design-frame"></div>
+            <div class="safe-label top"><span>fill by scale</span><span>risk: cropped width</span></div>
+            <div class="layout-piece topbar"><span>Dungeon 1-1</span><span class="gold">$10</span><span class="icon">?</span><span class="icon">⚙</span></div>
+            <div class="layout-piece merchant"><div class="speech">Well met, adventurer. New stock, fresh from the depths.</div></div>
+            <div class="layout-piece stock">
+              <div class="stock-title">Shop Stock</div>
+              <div class="cards">
+                <div class="card"><strong>Iron<br>Shortsword</strong><div class="art"></div><div class="copy">+2 Attack</div><div class="price">$10</div></div>
+                <div class="card"><strong>Fire<br>Chest</strong><div class="art"></div><div class="copy">Fire rewards</div><div class="price">$10</div></div>
+                <div class="card disabled"><strong>Armor<br>Mastery</strong><div class="art"></div><div class="copy">+1 Armor Mastery</div><div class="price">$12</div></div>
+              </div>
+            </div>
+            <div class="layout-piece relic"><div class="relic-title">Dungeon Relic</div><div class="price-badge">$24</div></div>
+            <div class="layout-piece actions"><div class="action reroll">REROLL ($1)</div><div class="action continue">CONTINUE</div></div>
+            <div class="layout-piece hud"><div class="hud-title">Mastery</div><div class="mastery-row"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="hp">HP 100 / 100</div><div class="slots"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+          </div>
+          <div class="option-text">
+            <span class="tag">Option 4</span>
+            <h3>Scale to height and crop width</h3>
+            <p>This fills the screen fast, but it is the wrong kind of fix for a UI-heavy game. It risks clipping left/right controls, card edges, popovers, and touch targets.</p>
+            <ul>
+              <li>Would use <code>max(widthScale, heightScale)</code>.</li>
+              <li>Looks full-screen, but becomes fragile across phones.</li>
+              <li>Not recommended for this shop.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Execution Plan</h2>
+        <span class="rank">Implemented Checkpoint</span>
+      </div>
+      <div class="plan">
+        <ul class="plan-list">
+          <li>Replace vertical centering in <code>ShopView.apply_layout()</code> with a tall-viewport aware layout frame.</li>
+          <li>Keep width scaling stable: calculate scale from width first, then derive <code>logical_height = viewport_size.y / scale_factor</code>.</li>
+          <li>Use <code>extra_height = max(0, logical_height - 1920)</code> to produce adaptive rects.</li>
+          <li>Pin <code>TOP_BAR_RECT</code> near top safe area, then place merchant/stock/relic/actions below it.</li>
+          <li>Pin the shared player HUD section to <code>logical_height - hud_height</code> instead of hardcoding <code>y = 1428</code>.</li>
+          <li>Distribute surplus cautiously: merchant art can grow first; card sizes should remain unchanged.</li>
+          <li>Update the shop layout probe to include <code>logical_height</code>, <code>top_unused_gap</code>, and <code>bottom_unused_gap</code> for <code>1080x1920</code> and <code>1080x2400</code>.</li>
+          <li>Chosen implementation: adaptive full-height layout plus larger merchant, stock, and relic sections.</li>
+          <li>Stopped here after phone review. A later denser space-usage exploration was rejected, so no extra density pass is included in this checkpoint.</li>
+          <li>Keep combat/header sharing untouched unless a shared viewport-layout helper emerges naturally.</li>
+        </ul>
+        <div class="code-card">
+          <pre><code>var scale_factor := viewport_size.x / DESIGN_SIZE.x
+var logical_height := viewport_size.y / scale_factor
+var extra_height := maxf(0.0, logical_height - DESIGN_SIZE.y)
+
+_layout_root.position = Vector2(
+  (viewport_size.x - DESIGN_SIZE.x * scale_factor) * 0.5,
+  0.0
+)
+_layout_root.size = Vector2(DESIGN_SIZE.x, logical_height)
+_layout_root.scale = Vector2(scale_factor, scale_factor)
+
+var merchant_extra := minf(extra_height * 0.38, 180.0)
+var hud_rect := Rect2(
+  Vector2(0, logical_height - 492.0),
+  Vector2(1080, 492)
+)
+
+# Then derive topbar, merchant, stock, relic,
+# action row, and HUD rects from these adaptive values.</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

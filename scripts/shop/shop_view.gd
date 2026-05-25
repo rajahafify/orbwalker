@@ -193,6 +193,8 @@ var _skip_treasure_chest_button: Button
 
 var _visuals
 var _player_loadout_hud
+var _current_shop_layout: Dictionary = {}
+var _current_player_hud_layout_override: Dictionary = {}
 
 func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 	_background = root_nodes.get("background") as TextureRect
@@ -823,28 +825,127 @@ func _relic_title_color(rarity: String) -> Color:
 			return Color(1.0, 0.82, 0.48, 1.0)
 
 
+static func _shop_layout_for_logical_height(logical_height: float) -> Dictionary:
+	var height := maxf(DESIGN_SIZE.y, logical_height)
+	var hud_layout := PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
+	var base_hud_rect: Rect2 = hud_layout.get("section", Rect2(Vector2(0, 1428), Vector2(1080, 492)))
+	var hud_rect := Rect2(Vector2(base_hud_rect.position.x, height - base_hud_rect.size.y), base_hud_rect.size)
+	var action_rect := ACTION_ROW_RECT
+	action_rect.position.y = hud_rect.position.y - 12.0 - ACTION_ROW_RECT.size.y
+
+	var extra_main := maxf(0.0, action_rect.position.y - ACTION_ROW_RECT.position.y)
+	var merchant_extra := minf(extra_main * 0.35, 180.0)
+	var stock_extra := minf(extra_main * 0.30, 160.0)
+	var relic_extra := minf(extra_main * 0.10, 48.0)
+	var remaining_extra := maxf(0.0, extra_main - merchant_extra - stock_extra - relic_extra)
+
+	var merchant_stock_gap := 14.0 + remaining_extra * 0.45
+	var stock_relic_gap := 14.0 + remaining_extra * 0.35
+
+	var merchant_rect := MERCHANT_STAGE_RECT
+	merchant_rect.size.y += merchant_extra
+	var stock_rect := STOCK_PANEL_RECT
+	stock_rect.position.y = merchant_rect.end.y + merchant_stock_gap
+	stock_rect.size.y += stock_extra
+	var relic_rect := RELIC_PANEL_RECT
+	relic_rect.position.y = stock_rect.end.y + stock_relic_gap
+	relic_rect.size.y += relic_extra
+
+	var offer_grid_rect := OFFER_GRID_RECT
+	offer_grid_rect.position.y = OFFER_GRID_RECT.position.y + (stock_rect.size.y - STOCK_PANEL_RECT.size.y) * 0.5
+	var merchant_bottom_rail_rect := Rect2(
+		Vector2(0, merchant_rect.size.y - SHOP_HEADER_BOTTOM_RAIL_RECT.size.y),
+		Vector2(merchant_rect.size.x, SHOP_HEADER_BOTTOM_RAIL_RECT.size.y)
+	)
+	return {
+		"logical_height": height,
+		"extra_height": height - DESIGN_SIZE.y,
+		"uses_full_height": true,
+		"top_unused_gap": 0.0,
+		"bottom_unused_gap": 0.0,
+		"top_bar": TOP_BAR_RECT,
+		"merchant_stage": merchant_rect,
+		"merchant_bottom_rail": merchant_bottom_rail_rect,
+		"stock_panel": stock_rect,
+		"offer_grid": offer_grid_rect,
+		"relic_panel": relic_rect,
+		"action_row": action_rect,
+		"player_hud_section": hud_rect,
+	}
+
+
+static func _shop_player_hud_layout_override_for(layout: Dictionary) -> Dictionary:
+	var override := PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
+	override["section"] = layout.get("player_hud_section", override.get("section", Rect2()))
+	return override
+
+
+static func _shop_layout_probe_for_layout(layout: Dictionary) -> Dictionary:
+	var logical_height := float(layout.get("logical_height", DESIGN_SIZE.y))
+	var action_row: Rect2 = layout.get("action_row", ACTION_ROW_RECT)
+	var hud_section: Rect2 = layout.get("player_hud_section", PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset().get("section", Rect2()))
+	return {
+		"logical_height": logical_height,
+		"extra_height": float(layout.get("extra_height", 0.0)),
+		"uses_full_height": bool(layout.get("uses_full_height", false)),
+		"top_unused_gap": float(layout.get("top_unused_gap", 9999.0)),
+		"bottom_unused_gap": float(layout.get("bottom_unused_gap", 9999.0)),
+		"top_bar": layout.get("top_bar", TOP_BAR_RECT),
+		"merchant_stage": layout.get("merchant_stage", MERCHANT_STAGE_RECT),
+		"merchant_bottom_rail": layout.get("merchant_bottom_rail", SHOP_HEADER_BOTTOM_RAIL_RECT),
+		"stock_panel": layout.get("stock_panel", STOCK_PANEL_RECT),
+		"offer_grid": layout.get("offer_grid", OFFER_GRID_RECT),
+		"relic_panel": layout.get("relic_panel", RELIC_PANEL_RECT),
+		"action_row": action_row,
+		"player_hud_section": hud_section,
+		"merchant_height_delta": Rect2(layout.get("merchant_stage", MERCHANT_STAGE_RECT)).size.y - MERCHANT_STAGE_RECT.size.y,
+		"stock_height_delta": Rect2(layout.get("stock_panel", STOCK_PANEL_RECT)).size.y - STOCK_PANEL_RECT.size.y,
+		"relic_height_delta": Rect2(layout.get("relic_panel", RELIC_PANEL_RECT)).size.y - RELIC_PANEL_RECT.size.y,
+		"action_hud_gap": int(hud_section.position.y - action_row.end.y),
+		"hud_bottom_aligned": is_equal_approx(hud_section.end.y, logical_height),
+		"action_row_overlaps_hud": (
+			hud_section.position.y < action_row.end.y
+			and action_row.position.y < hud_section.end.y
+		),
+	}
+
+
 func apply_layout() -> void:
 	var viewport_size := _layout_root.get_viewport_rect().size
-	if viewport_size.y <= 0.0:
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
 	var scale_factor: float = minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	var scaled_size := DESIGN_SIZE * scale_factor
-	_layout_root.position = (viewport_size - scaled_size) * 0.5
-	_layout_root.size = DESIGN_SIZE
+	var logical_height := viewport_size.y / scale_factor
+	var logical_size := Vector2(DESIGN_SIZE.x, maxf(DESIGN_SIZE.y, logical_height))
+	var scaled_size := logical_size * scale_factor
+	_current_shop_layout = _shop_layout_for_logical_height(logical_size.y)
+	_current_player_hud_layout_override = _shop_player_hud_layout_override_for(_current_shop_layout)
+	_player_loadout_hud.set_player_hud_layout_override(_current_player_hud_layout_override)
+	_layout_root.position = Vector2((viewport_size.x - scaled_size.x) * 0.5, 0.0)
+	_layout_root.size = logical_size
 	_layout_root.scale = Vector2(scale_factor, scale_factor)
 
-	_apply_rect(_top_bar, TOP_BAR_RECT)
-	_apply_rect(_merchant_stage, MERCHANT_STAGE_RECT)
-	_apply_rect(_stock_panel, STOCK_PANEL_RECT)
-	_apply_rect(_relic_card, RELIC_PANEL_RECT)
-	_apply_rect(_action_row, ACTION_ROW_RECT)
+	var top_bar_rect: Rect2 = _current_shop_layout.get("top_bar", TOP_BAR_RECT)
+	var merchant_rect: Rect2 = _current_shop_layout.get("merchant_stage", MERCHANT_STAGE_RECT)
+	var stock_rect: Rect2 = _current_shop_layout.get("stock_panel", STOCK_PANEL_RECT)
+	var relic_rect: Rect2 = _current_shop_layout.get("relic_panel", RELIC_PANEL_RECT)
+	var action_rect: Rect2 = _current_shop_layout.get("action_row", ACTION_ROW_RECT)
+	var offer_grid_rect: Rect2 = _current_shop_layout.get("offer_grid", OFFER_GRID_RECT)
+	var merchant_content_rect := Rect2(Vector2.ZERO, merchant_rect.size)
+	var merchant_bottom_rail_rect: Rect2 = _current_shop_layout.get("merchant_bottom_rail", SHOP_HEADER_BOTTOM_RAIL_RECT)
+
+	_apply_rect(_top_bar, top_bar_rect)
+	_apply_rect(_merchant_stage, merchant_rect)
+	_apply_rect(_stock_panel, stock_rect)
+	_apply_rect(_relic_card, relic_rect)
+	_apply_rect(_action_row, action_rect)
 
 	if _top_bar.has_method("apply_header_layout"):
 		_top_bar.call("apply_header_layout")
 
-	_apply_rect(_merchant_backdrop, SHOP_HEADER_MERCHANT_RECT)
-	_apply_rect(_merchant_scrim, SHOP_HEADER_MERCHANT_RECT)
-	_apply_rect(_merchant_counter, SHOP_HEADER_BOTTOM_RAIL_RECT)
+	_apply_rect(_merchant_backdrop, merchant_content_rect)
+	_apply_rect(_merchant_scrim, merchant_content_rect)
+	_apply_rect(_merchant_counter, merchant_bottom_rail_rect)
 	_apply_rect(_merchant_info_backdrop, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 	_apply_rect(_merchant_header_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 	_apply_rect(_speech_card, SHOP_HEADER_SPEECH_RECT)
@@ -853,8 +954,8 @@ func apply_layout() -> void:
 	_apply_rect(_summary_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 	_apply_rect(_detail_label, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 
-	_apply_rect(_stock_title_label, Rect2(Vector2(0, 12), Vector2(STOCK_PANEL_RECT.size.x, 44)))
-	_apply_rect(_offer_grid, OFFER_GRID_RECT)
+	_apply_rect(_stock_title_label, Rect2(Vector2(0, 12), Vector2(stock_rect.size.x, 44)))
+	_apply_rect(_offer_grid, offer_grid_rect)
 	for index in _offer_cards.size():
 		_apply_rect(_offer_cards[index], Rect2(Vector2(float(index) * (OFFER_CARD_SIZE.x + OFFER_CARD_GAP), 0.0), OFFER_CARD_SIZE))
 
@@ -862,18 +963,18 @@ func apply_layout() -> void:
 	_apply_rect(_reroll_button, ACTION_REROLL_RECT)
 	_apply_rect(_continue_button, ACTION_CONTINUE_RECT)
 	_apply_rect(_sell_equipment_button, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
-	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, DESIGN_SIZE))
+	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, logical_size))
 
 	_player_loadout_hud.update_player_hud_layout()
 
-	_apply_rect(_treasure_chest_overlay, Rect2(Vector2.ZERO, Vector2(DESIGN_SIZE.x, 1080.0)))
+	_apply_rect(_treasure_chest_overlay, Rect2(Vector2.ZERO, logical_size))
 	_apply_rect(_treasure_chest_modal, Rect2(Vector2(152, 382), Vector2(776, 420)))
 	_apply_rect(_treasure_chest_title_label, Rect2(Vector2(0, 30), Vector2(776, 42)))
 	_apply_rect(_treasure_chest_hint_label, Rect2(Vector2(80, 82), Vector2(616, 42)))
 	for index in _treasure_chest_option_buttons.size():
 		_apply_rect(_treasure_chest_option_buttons[index], Rect2(Vector2(46 + float(index) * 238.0, 150), Vector2(208, 236)))
 	_apply_rect(_skip_treasure_chest_button, Rect2(Vector2(302, 340), Vector2(172, 54)))
-	_apply_rect(_shop_help_overlay, SHOP_HELP_MODAL_OVERLAY_RECT)
+	_apply_rect(_shop_help_overlay, Rect2(Vector2.ZERO, logical_size))
 	_apply_rect(_shop_help_modal, SHOP_HELP_MODAL_RECT)
 	_apply_rect(_shop_help_title_label, SHOP_HELP_MODAL_TITLE_RECT)
 	_apply_rect(_shop_help_body_label, SHOP_HELP_MODAL_BODY_RECT)
@@ -970,31 +1071,52 @@ func _apply_visual_chrome() -> void:
 
 
 func _shop_player_hud_layout_override() -> Dictionary:
-	return PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
+	if _current_player_hud_layout_override.is_empty():
+		return _shop_player_hud_layout_override_for(_shop_layout_for_logical_height(DESIGN_SIZE.y))
+	return _current_player_hud_layout_override.duplicate(true)
 
 
 static func shop_layout_probe_snapshot() -> Dictionary:
-	var hud_layout := PLAYER_LOADOUT_HUD_SCRIPT.shop_player_hud_layout_preset()
-	var hud_section := Rect2(hud_layout.get("section", Rect2()))
+	var layout := _shop_layout_for_logical_height(DESIGN_SIZE.y)
+	var tall_layout := _shop_layout_for_logical_height(2400.0)
+	var layout_sample := _shop_layout_probe_for_layout(layout)
+	var tall_layout_sample := _shop_layout_probe_for_layout(tall_layout)
+	var hud_section: Rect2 = layout.get("player_hud_section", Rect2())
+	var action_row: Rect2 = layout.get("action_row", ACTION_ROW_RECT)
+	var merchant_stage: Rect2 = layout.get("merchant_stage", MERCHANT_STAGE_RECT)
+	var merchant_bottom_rail: Rect2 = layout.get("merchant_bottom_rail", SHOP_HEADER_BOTTOM_RAIL_RECT)
+	var stock_panel: Rect2 = layout.get("stock_panel", STOCK_PANEL_RECT)
+	var offer_grid: Rect2 = layout.get("offer_grid", OFFER_GRID_RECT)
+	var relic_panel: Rect2 = layout.get("relic_panel", RELIC_PANEL_RECT)
+	var hud_layout := _shop_player_hud_layout_override_for(layout)
 	var hud_footer := Rect2(hud_layout.get("footer_panel", Rect2()))
-	var action_bottom := ACTION_ROW_RECT.position.y + ACTION_ROW_RECT.size.y
+	var action_bottom := action_row.position.y + action_row.size.y
 	var hud_bottom := hud_section.position.y + hud_section.size.y
 	var stock_total_width := OFFER_CARD_SIZE.x * 3.0 + OFFER_CARD_GAP * 2.0
-	var stock_content_width := OFFER_GRID_RECT.size.x
-	var stock_bottom := STOCK_PANEL_RECT.position.y + STOCK_PANEL_RECT.size.y
-	var relic_bottom := RELIC_PANEL_RECT.position.y + RELIC_PANEL_RECT.size.y
+	var stock_content_width := offer_grid.size.x
+	var stock_bottom := stock_panel.position.y + stock_panel.size.y
+	var relic_bottom := relic_panel.position.y + relic_panel.size.y
 	var bottom_gap_before_hud := maxi(0, int(hud_section.position.y - action_bottom))
 	var action_hud_connected_target_max := 16
 	var hud_slot_popover_probe := PLAYER_LOADOUT_HUD_SCRIPT.slot_detail_popover_probe_snapshot()
 	return {
 		"design_size": DESIGN_SIZE,
+		"logical_height": layout_sample.get("logical_height", DESIGN_SIZE.y),
+		"layout_mode": "adaptive_full_height_larger_shop",
+		"uses_full_viewport_height": true,
+		"top_unused_gap": layout_sample.get("top_unused_gap", 0.0),
+		"bottom_unused_gap": layout_sample.get("bottom_unused_gap", 0.0),
+		"adaptive_layout_samples": {
+			"1080x1920": layout_sample,
+			"1080x2400": tall_layout_sample,
+		},
 		"merchant_header_asset_path": "res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
-		"top_bar": TOP_BAR_RECT,
-		"top_controls": TOP_HEADER_SCRIPT.layout_snapshot_for(Rect2(Vector2.ZERO, TOP_BAR_RECT.size)),
-		"merchant_stage": MERCHANT_STAGE_RECT,
+		"top_bar": layout.get("top_bar", TOP_BAR_RECT),
+		"top_controls": TOP_HEADER_SCRIPT.layout_snapshot_for(Rect2(Vector2.ZERO, Rect2(layout.get("top_bar", TOP_BAR_RECT)).size)),
+		"merchant_stage": merchant_stage,
 		"merchant_stage_content": {
 			"speech_card": SHOP_HEADER_SPEECH_RECT,
-			"bottom_rail": SHOP_HEADER_BOTTOM_RAIL_RECT,
+			"bottom_rail": merchant_bottom_rail,
 			"summary_detail_visible": false,
 			"boss_preview_visible": false,
 		},
@@ -1007,10 +1129,10 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"title_text": "Shop opened. Buy, reroll, sell, or continue.",
 			"body_text": "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.",
 		},
-		"stock_panel": STOCK_PANEL_RECT,
-		"offer_grid": OFFER_GRID_RECT,
-		"relic_panel": RELIC_PANEL_RECT,
-		"action_row": ACTION_ROW_RECT,
+		"stock_panel": stock_panel,
+		"offer_grid": offer_grid,
+		"relic_panel": relic_panel,
+		"action_row": action_row,
 		"action_row_content": {
 			"hint_label": ACTION_HINT_RECT,
 			"reroll_button": ACTION_REROLL_RECT,
@@ -1042,7 +1164,7 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 		"stock_card_gap": OFFER_CARD_GAP,
 		"stock_total_width": stock_total_width,
 		"stock_content_width": stock_content_width,
-		"stock_grid_side_margins": Vector2(OFFER_GRID_RECT.position.x, STOCK_PANEL_RECT.size.x - OFFER_GRID_RECT.end.x),
+		"stock_grid_side_margins": Vector2(offer_grid.position.x, stock_panel.size.x - offer_grid.end.x),
 		"stock_fits": stock_total_width <= stock_content_width,
 		"treasure_chest_terminology": {
 			"pending_state_badge": "CHEST FIRST",
@@ -1052,8 +1174,8 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"offer_type_label": "TREASURE CHEST",
 			"internal_offer_type": "treasure_chest",
 		},
-		"stock_relic_gap": int(RELIC_PANEL_RECT.position.y - stock_bottom),
-		"relic_action_gap": int(ACTION_ROW_RECT.position.y - relic_bottom),
+		"stock_relic_gap": int(relic_panel.position.y - stock_bottom),
+		"relic_action_gap": int(action_row.position.y - relic_bottom),
 		"offer_desc_state_gap": int(OFFER_STATE_RECT.position.y - (OFFER_DESC_RECT.position.y + OFFER_DESC_RECT.size.y)),
 		"offer_state_price_gap": int(OFFER_PRICE_RECT.position.y - (OFFER_STATE_RECT.position.y + OFFER_STATE_RECT.size.y)),
 		"offer_card_readability": {
@@ -1086,7 +1208,7 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"price_text_when_unaffordable": "$11",
 		},
 		"relic_card_readability": {
-			"panel_size": RELIC_PANEL_RECT.size,
+			"panel_size": relic_panel.size,
 			"title_strip_rect": RELIC_TITLE_STRIP_RECT,
 			"title_text_rect": RELIC_TITLE_TEXT_RECT,
 			"banner_rect": RELIC_BANNER_RECT,
