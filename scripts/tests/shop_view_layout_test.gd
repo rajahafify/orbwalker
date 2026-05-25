@@ -111,6 +111,18 @@ func _test_shop_action_row_uses_two_primary_actions() -> String:
 		return "Expected permanent sell button to be hidden from the normal action row."
 	if bool(content.get("action_hint_visible", true)):
 		return "Expected sell-tip action hint to be hidden from the normal action row."
+	if String(content.get("reroll_label", "")) != "REROLL ($1)":
+		return "Expected reroll action to use one-line cost label."
+	if String(content.get("continue_label", "")) != "CONTINUE":
+		return "Expected continue action to use a single one-line label."
+	if not bool(content.get("reroll_cost_inline", false)):
+		return "Expected reroll cost to be inline with the action label."
+	if bool(content.get("continue_subtitle_visible", true)):
+		return "Expected continue action not to show a Leave Shop subtitle."
+	if not bool(content.get("labels_use_native_button_text", false)):
+		return "Expected action labels to use native button text over the raster button art."
+	if not bool(content.get("uses_long_ui_strip_assets", false)):
+		return "Expected shop action row to use the Long UI Strip raster assets."
 	return ""
 
 
@@ -278,6 +290,24 @@ func _test_stock_cards_fit() -> String:
 		return "Expected relic banner to use the shared price badge asset."
 	if not bool(relic_readability.get("uses_compact_relic_copy", false)):
 		return "Expected relic banner to use compact readable relic copy."
+	if not bool(relic_readability.get("has_unavailable_state", false)):
+		return "Expected relic banner to expose an unavailable visual state."
+	if not bool(relic_readability.get("unavailable_state_dims_banner", false)):
+		return "Expected unavailable relic banner to dim the banner frame."
+	if not bool(relic_readability.get("unavailable_state_dims_art", false)):
+		return "Expected unavailable relic banner to dim relic art."
+	if not bool(relic_readability.get("unavailable_state_dims_text", false)):
+		return "Expected unavailable relic banner to dim title and copy."
+	if not bool(relic_readability.get("unavailable_state_keeps_price_text", false)):
+		return "Expected unavailable relic banner to keep compact $ price text."
+	if not bool(relic_readability.get("unavailable_price_badge_inactive", false)):
+		return "Expected unavailable relic banner to use an inactive price badge."
+	if not bool(relic_readability.get("unavailable_price_badge_strong_dim", false)):
+		return "Expected unavailable relic price badge to read clearly disabled."
+	if int(relic_readability.get("price_font_size", 0)) != COLLECTION_CARD_RENDERER.CARD_BADGE_FONT_SIZE:
+		return "Expected relic price font size to match shop card price font size."
+	if not bool(relic_readability.get("price_font_matches_offer_badge", false)):
+		return "Expected relic price font to stay visually aligned with stock card price badges."
 	if bool(relic_readability.get("native_button_chrome_visible", true)):
 		return "Expected relic banner button to have no native hover/focus chrome."
 	if bool(relic_readability.get("state_badge_visible", true)):

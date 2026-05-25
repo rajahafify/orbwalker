@@ -45,6 +45,11 @@ const SHOP_HELP_MODAL_BODY_RECT := Rect2(Vector2(58, 198), Vector2(620, 142))
 const SHOP_HELP_MODAL_CLOSE_RECT := Rect2(Vector2(662, 24), Vector2(56, 56))
 const ACTION_HINT_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const ACTION_BUTTON_SIZE := Vector2(516, 108)
+const ACTION_BUTTON_TEXTURE_MARGIN := 68
+const ACTION_BUTTON_CONTENT_MARGIN := 42.0
+const ACTION_BUTTON_FONT_SIZE := 32
+const ACTION_BUTTON_COST_FONT_SIZE := 32
+const RELIC_PRICE_FONT_SIZE := COLLECTION_CARD_RENDERER.CARD_BADGE_FONT_SIZE
 const ACTION_REROLL_RECT := Rect2(Vector2(0, 14), ACTION_BUTTON_SIZE)
 const ACTION_CONTINUE_RECT := Rect2(Vector2(532, 14), ACTION_BUTTON_SIZE)
 const OFFER_CARD_SIZE := COLLECTION_CARD_RENDERER.CARD_SIZE
@@ -80,6 +85,13 @@ const RELIC_DESC_RECT := Rect2(Vector2(330, 141), Vector2(410, 54))
 const RELIC_PRICE_RECT := Rect2(Vector2(768, 91), Vector2(214, 78))
 const RELIC_PRICE_DIVIDER_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const RELIC_STATE_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const RELIC_UNAVAILABLE_BANNER_MODULATE := Color(0.36, 0.32, 0.40, 0.58)
+const RELIC_UNAVAILABLE_VEIL_COLOR := Color(0.010, 0.008, 0.014, 0.60)
+const RELIC_UNAVAILABLE_ICON_MODULATE := Color(0.40, 0.38, 0.44, 0.58)
+const RELIC_UNAVAILABLE_TITLE_COLOR := Color(0.46, 0.40, 0.52, 0.84)
+const RELIC_UNAVAILABLE_COPY_COLOR := Color(0.50, 0.47, 0.52, 0.78)
+const RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE := Color(0.34, 0.28, 0.21, 0.52)
+const RELIC_UNAVAILABLE_PRICE_TEXT_COLOR := Color(0.52, 0.42, 0.30, 0.70)
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
@@ -444,8 +456,9 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	var affordable := bool(relic_offer.get("affordable", false))
 	var disabled := sold_out or treasure_chest_pending or not affordable
 	_relic_card.disabled = disabled
-	_relic_card.modulate = Color(0.88, 0.88, 0.90, 0.94) if disabled else Color.WHITE
+	_relic_card.modulate = Color.WHITE
 	_relic_card.tooltip_text = ""
+	_relic_card.mouse_default_cursor_shape = Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND
 	_apply_transparent_button_chrome(_relic_card)
 
 	var root := _make_child_root(_relic_card)
@@ -463,6 +476,9 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	banner_frame.size = RELIC_BANNER_FRAME_RECT.size
 	banner_frame.custom_minimum_size = RELIC_BANNER_FRAME_RECT.size
 	banner_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
+	banner_frame.modulate = RELIC_UNAVAILABLE_BANNER_MODULATE if disabled else Color.WHITE
+	if disabled:
+		_make_dynamic_panel(root, RELIC_BANNER_RECT, UI_UTILS.panel_style(RELIC_UNAVAILABLE_VEIL_COLOR, Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
 
 	var art_frame := _make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
 	art_frame.clip_contents = true
@@ -473,12 +489,15 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	icon.size = RELIC_ICON_RECT.size
 	icon.custom_minimum_size = RELIC_ICON_RECT.size
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	icon.modulate = RELIC_UNAVAILABLE_ICON_MODULATE if disabled else Color.WHITE
 	var title_color := _relic_title_color(rarity)
+	if disabled:
+		title_color = RELIC_UNAVAILABLE_TITLE_COLOR
 	var name_label := _make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, title_color, 34, HORIZONTAL_ALIGNMENT_LEFT)
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	var tier_label := _make_dynamic_label(root, "%s RELIC - DUNGEON %d" % [rarity.to_upper(), int(relic_offer.get("dungeon_level", 1))], RELIC_TIER_RECT, title_color, 18)
 	tier_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	var copy_label := _make_dynamic_label(root, _shop_relic_description(relic_offer), RELIC_DESC_RECT, INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
+	var copy_label := _make_dynamic_label(root, _shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
 	copy_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	copy_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
@@ -487,13 +506,25 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
 	var active := bool(shop_snapshot.get("active", false))
 	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
-	_reroll_button.text = "REROLL\nFREE" if reroll_cost <= 0 else "REROLL\n$%d" % reroll_cost
 	_reroll_button.disabled = treasure_chest_pending or not active or not bool(shop_snapshot.get("reroll_enabled", false))
+	_render_action_button_label(
+		_reroll_button,
+		"REROLL",
+		"(FREE)" if reroll_cost <= 0 else "($%d)" % reroll_cost,
+		_reroll_button.disabled
+	)
 	_action_hint_label.visible = false
 	_sell_equipment_button.visible = false
 	_sell_equipment_button.disabled = true
-	_continue_button.text = "CONTINUE\nLeave Shop"
 	_continue_button.disabled = treasure_chest_pending
+	_render_action_button_label(_continue_button, "CONTINUE", "", _continue_button.disabled)
+
+
+func _render_action_button_label(button: Button, action_text: String, cost_text: String, disabled: bool) -> void:
+	button.text = action_text if cost_text == "" else "%s %s" % [action_text, cost_text]
+	button.tooltip_text = ""
+	button.modulate = Color(0.62, 0.62, 0.64, 0.78) if disabled else Color.WHITE
+
 
 func _render_build_panel(snapshot: Dictionary) -> void:
 	var progression_snapshot: Dictionary = snapshot.get("progression", {})
@@ -908,9 +939,9 @@ func _apply_visual_chrome() -> void:
 	_shop_help_overlay.color = Color(0.0, 0.0, 0.0, 0.54)
 
 	_apply_round_button_chrome(_shop_help_close_button, Color(0.13, 0.09, 0.05, 0.96), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
-	_apply_button_chrome(_reroll_button, Color(0.05, 0.17, 0.27, 0.96), Color(0.31, 0.62, 0.84, 1.0), Color(0.08, 0.24, 0.36, 0.98))
+	_apply_action_button_chrome(_reroll_button, "reroll")
 	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
-	_apply_button_chrome(_continue_button, Color(0.12, 0.30, 0.06, 0.96), Color(0.54, 0.78, 0.24, 1.0), Color(0.18, 0.40, 0.08, 0.98))
+	_apply_action_button_chrome(_continue_button, "continue")
 	_apply_button_chrome(_skip_treasure_chest_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
 
 	for label in [_stock_title_label, _treasure_chest_title_label, _merchant_header_label]:
@@ -931,8 +962,10 @@ func _apply_visual_chrome() -> void:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 24)
 	_shop_help_close_button.add_theme_font_size_override("font_size", 30)
-	_reroll_button.add_theme_font_size_override("font_size", 30)
-	_continue_button.add_theme_font_size_override("font_size", 30)
+	_reroll_button.add_theme_color_override("font_color", Color(1.0, 0.90, 0.62, 1.0))
+	_continue_button.add_theme_color_override("font_color", Color(0.96, 0.91, 0.80, 1.0))
+	_reroll_button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
+	_continue_button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
 	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())
 
 
@@ -982,6 +1015,18 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"hint_label": ACTION_HINT_RECT,
 			"reroll_button": ACTION_REROLL_RECT,
 			"continue_button": ACTION_CONTINUE_RECT,
+			"reroll_label": "REROLL ($1)",
+			"continue_label": "CONTINUE",
+			"reroll_cost_inline": true,
+			"continue_subtitle_visible": false,
+			"labels_use_native_button_text": true,
+			"uses_long_ui_strip_assets": true,
+			"reroll_button_asset": "res://resources/art/assetgen/runtime/shop_ui/shop_action_button_reroll.png",
+			"continue_button_asset": "res://resources/art/assetgen/runtime/shop_ui/shop_action_button_continue.png",
+			"texture_margin": ACTION_BUTTON_TEXTURE_MARGIN,
+			"content_margin": ACTION_BUTTON_CONTENT_MARGIN,
+			"button_font_size": ACTION_BUTTON_FONT_SIZE,
+			"cost_font_size": ACTION_BUTTON_COST_FONT_SIZE,
 			"sell_button": Rect2(Vector2(-9999, -9999), Vector2(1, 1)),
 			"visible_primary_actions": ["reroll", "continue"],
 			"sell_button_visible": false,
@@ -1049,6 +1094,15 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"uses_collection_relic_banner_frame": true,
 			"uses_collection_price_badge": true,
 			"uses_compact_relic_copy": true,
+			"has_unavailable_state": true,
+			"unavailable_state_dims_banner": true,
+			"unavailable_state_dims_art": true,
+			"unavailable_state_dims_text": true,
+			"unavailable_state_keeps_price_text": true,
+			"unavailable_price_badge_inactive": true,
+			"unavailable_price_badge_strong_dim": true,
+			"price_font_size": RELIC_PRICE_FONT_SIZE,
+			"price_font_matches_offer_badge": true,
 			"native_button_chrome_visible": false,
 			"content_top_inset": RELIC_CONTENT_TOP_INSET,
 			"art_rect": RELIC_ART_FRAME_RECT,
@@ -1095,6 +1149,43 @@ func _apply_transparent_button_chrome(button: Button) -> void:
 	button.flat = true
 	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
 		button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+
+
+func _apply_action_button_chrome(button: Button, kind: String) -> void:
+	var texture: Texture2D = _visuals.shop_action_button_frame(kind)
+	var normal := _action_button_stylebox(texture, Color(1.0, 1.0, 1.0, 1.0))
+	var hover := _action_button_stylebox(texture, Color(1.08, 1.06, 0.98, 1.0))
+	var pressed := _action_button_stylebox(texture, Color(0.88, 0.86, 0.82, 1.0))
+	var disabled := _action_button_stylebox(texture, Color(0.52, 0.52, 0.54, 0.70))
+	button.flat = false
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("hover_pressed", pressed)
+	button.add_theme_stylebox_override("disabled", disabled)
+	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_color_override("font_color", INK_COLOR)
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.86, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(0.88, 0.84, 0.74, 1.0))
+	button.add_theme_color_override("font_disabled_color", Color(0.66, 0.66, 0.68, 0.82))
+	button.add_theme_constant_override("outline_size", 3)
+	button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.90))
+	button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
+
+
+func _action_button_stylebox(texture: Texture2D, modulate_color: Color) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = ACTION_BUTTON_TEXTURE_MARGIN
+	style.texture_margin_right = ACTION_BUTTON_TEXTURE_MARGIN
+	style.texture_margin_top = 28
+	style.texture_margin_bottom = 28
+	style.content_margin_left = ACTION_BUTTON_CONTENT_MARGIN
+	style.content_margin_right = ACTION_BUTTON_CONTENT_MARGIN
+	style.content_margin_top = 14.0
+	style.content_margin_bottom = 14.0
+	style.modulate_color = modulate_color
+	return style
 
 
 func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
@@ -1223,7 +1314,7 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 	var label_color := GOLD_COLOR
 	if disabled:
 		if disabled_affordability:
-			label_color = Color(0.82, 0.66, 0.43, 1.0)
+			label_color = RELIC_UNAVAILABLE_PRICE_TEXT_COLOR
 		elif sold_or_blocked:
 			label_color = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 		else:
@@ -1237,8 +1328,8 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 	badge_frame.texture = badge_texture_value
 	badge_frame.custom_minimum_size = badge_rect.size
 	badge_frame.size = badge_rect.size
-	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else Color(0.86, 0.80, 0.68, 0.82)
-	var font_size := 40 if rect.size.y >= 50.0 and text.begins_with("$") else 20
+	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE
+	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else 20
 	_make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
 
 
