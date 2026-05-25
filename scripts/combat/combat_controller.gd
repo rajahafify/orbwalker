@@ -101,6 +101,14 @@ const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
 const ELEMENTAL_CAST_SPOOL_SECONDS := 0.86
 const ELEMENTAL_CAST_LAUNCH_SECONDS := 0.82
 const ELEMENTAL_CAST_IMPACT_HOLD_SECONDS := 0.50
+const COMBAT_MASTERY_RESOLUTION_ORDER: Array[int] = [
+	OrbType.Id.HEART,
+	OrbType.Id.ARMOR,
+	OrbType.Id.GOLD,
+	OrbType.Id.FIRE,
+	OrbType.Id.ICE,
+	OrbType.Id.EARTH,
+]
 enum InputPhase {
 	PLAYER_INPUT,
 	RESOLVING,
@@ -1591,7 +1599,7 @@ func _reset_combat_mastery_preview() -> void:
 func _sync_combat_mastery_preview_totals() -> void:
 	if _view == null:
 		return
-	for orb_id in OrbType.ALL_TYPES:
+	for orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
 		var total: int = _model.combat_mastery_preview_total(int(orb_id))
 		_view.set_combat_mastery_feedback(int(orb_id), total)
 
@@ -1608,7 +1616,7 @@ func _release_combat_mastery_feedback(orb_id: int) -> void:
 func _release_remaining_combat_mastery_feedback() -> void:
 	if _view == null:
 		return
-	for orb_id in _model.consume_active_combat_mastery_feedback(OrbType.ALL_TYPES):
+	for orb_id in _model.consume_active_combat_mastery_feedback(COMBAT_MASTERY_RESOLUTION_ORDER):
 		_combat_mastery_preview_base_amounts.erase(int(orb_id))
 		_view.set_combat_mastery_feedback(int(orb_id), 0)
 		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
@@ -1636,7 +1644,7 @@ func _preview_match_base_feedback_value(group: Dictionary) -> int:
 
 
 func _sync_combat_mastery_preview_for_combo(combo_value: int) -> void:
-	for raw_orb_id in OrbType.ALL_TYPES:
+	for raw_orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
 		var orb_id := int(raw_orb_id)
 		var base_amount := int(_combat_mastery_preview_base_amounts.get(orb_id, 0))
 		var projected_amount := _project_combat_mastery_feedback_value(orb_id, base_amount, combo_value)
@@ -1767,50 +1775,6 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var gold_lifetime := _combat_speed_duration(0.55)
 	var label_lifetime := _combat_speed_duration(0.72)
 
-	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
-		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
-		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
-		if not _can_continue_after_async_wait():
-			return
-
-	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		if fire_damage > 0:
-			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
-			if not fire_replay_ok:
-				return
-		if ice_damage > 0:
-			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
-			if not ice_replay_ok:
-				return
-		if earth_damage > 0:
-			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
-			if not earth_replay_ok:
-				return
-	elif enemy_damage > 0:
-		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
-			var dominant_replay_ok: bool = await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
-			if not dominant_replay_ok:
-				return
-			_stage_hud_enemy_result()
-		else:
-			if vfx_presenter != null:
-				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
-				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
-				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
-			_play_mastery_effect_sfx("damage")
-			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-			if not _can_continue_after_async_wait():
-				return
-			_stage_hud_enemy_result()
-			_release_combat_mastery_feedback(impact_orb)
-	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		_stage_hud_enemy_result()
-	if enemy_blocked > 0:
-		if vfx_presenter != null:
-			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
-		_stage_hud_enemy_result()
-
 	if heart_heal > 0:
 		if applied_flat_heal_bonus > 0:
 			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _modifier_sources_for_key("flat_heal_bonus"))
@@ -1858,6 +1822,50 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			return
 		_stage_hud_gold(staged_gold_before_gain + gold_gain)
 		_release_combat_mastery_feedback(OrbType.Id.GOLD)
+
+	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
+		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
+		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
+		if not _can_continue_after_async_wait():
+			return
+
+	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
+		if fire_damage > 0:
+			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not fire_replay_ok:
+				return
+		if ice_damage > 0 and not _staged_enemy_defeated():
+			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not ice_replay_ok:
+				return
+		if earth_damage > 0 and not _staged_enemy_defeated():
+			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not earth_replay_ok:
+				return
+	elif enemy_damage > 0:
+		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
+		if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
+			var dominant_replay_ok: bool = await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			if not dominant_replay_ok:
+				return
+			_stage_hud_enemy_result()
+		else:
+			if vfx_presenter != null:
+				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
+				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
+				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
+			_play_mastery_effect_sfx("damage")
+			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
+			if not _can_continue_after_async_wait():
+				return
+			_stage_hud_enemy_result()
+			_release_combat_mastery_feedback(impact_orb)
+	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
+		_stage_hud_enemy_result()
+	if enemy_blocked > 0:
+		if vfx_presenter != null:
+			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
+		_stage_hud_enemy_result()
 	await _release_remaining_combat_mastery_feedback()
 	if not _can_continue_after_async_wait():
 		return
@@ -2032,6 +2040,12 @@ func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
 		return
 	_model.stage_enemy_damage_step(raw_damage, int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
 	_update_hud()
+
+
+func _staged_enemy_defeated() -> bool:
+	if _enemy_state == null:
+		return false
+	return _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp)) <= 0
 
 
 func _stage_hud_enemy_result() -> void:
@@ -2336,7 +2350,7 @@ func _result_label_kind_for_orb(orb_id: int) -> String:
 func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
 	var selected_orb: int = OrbType.Id.FIRE
 	var selected_count: int = -1
-	for orb_id in OrbType.ALL_TYPES:
+	for orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
 		var count: int = int(matched_counts.get(orb_id, 0))
 		if count > selected_count:
 			selected_count = count

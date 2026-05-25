@@ -20,12 +20,12 @@ const REAL_MASTERY_ICON_PATH_BY_ORB_ID := {
 	OrbType.Id.GOLD: "res://resources/art/first_pass/derived/icons/mastery_gold.png",
 }
 const ORB_IDS: Array[int] = [
-	OrbType.Id.FIRE,
-	OrbType.Id.ICE,
-	OrbType.Id.EARTH,
 	OrbType.Id.HEART,
 	OrbType.Id.ARMOR,
 	OrbType.Id.GOLD,
+	OrbType.Id.FIRE,
+	OrbType.Id.ICE,
+	OrbType.Id.EARTH,
 ]
 
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()

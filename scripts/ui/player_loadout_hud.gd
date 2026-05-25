@@ -41,12 +41,12 @@ const MODIFIER_SOURCE_WIGGLE_SECONDS := 0.30
 const MODIFIER_SOURCE_WIGGLE_DEGREES := 6.0
 const MODIFIER_SOURCE_WIGGLE_SCALE := 1.08
 const COMBAT_MASTERY_ORDER: Array[int] = [
-	OrbType.Id.FIRE,
-	OrbType.Id.ICE,
-	OrbType.Id.EARTH,
 	OrbType.Id.HEART,
 	OrbType.Id.ARMOR,
 	OrbType.Id.GOLD,
+	OrbType.Id.FIRE,
+	OrbType.Id.ICE,
+	OrbType.Id.EARTH,
 ]
 const RELIC_SLOT_SIZE := Vector2(64, 64)
 const RELIC_ICON_SIZE := Vector2(54, 54)
@@ -377,8 +377,8 @@ func _suppress_native_slot_tooltips() -> void:
 
 func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 	_clear_children(row)
-	for index in range(OrbType.ALL_TYPES.size()):
-		var orb_id: int = OrbType.ALL_TYPES[index]
+	for index in range(COMBAT_MASTERY_ORDER.size()):
+		var orb_id: int = COMBAT_MASTERY_ORDER[index]
 		var cell := Control.new()
 		cell.name = "MasteryCell%d" % orb_id
 		cell.size = Vector2(MASTERY_CELL_WIDTH, MASTERY_SLOT_SIZE.y)
@@ -547,7 +547,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 
 
 func clear_combat_mastery_feedback(row: Control) -> void:
-	for orb_id in OrbType.ALL_TYPES:
+	for orb_id in COMBAT_MASTERY_ORDER:
 		set_combat_mastery_feedback(row, int(orb_id), 0)
 
 
