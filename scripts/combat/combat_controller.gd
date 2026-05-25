@@ -1834,11 +1834,11 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not fire_replay_ok:
 				return
-		if ice_damage > 0:
+		if ice_damage > 0 and not _staged_enemy_defeated():
 			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not ice_replay_ok:
 				return
-		if earth_damage > 0:
+		if earth_damage > 0 and not _staged_enemy_defeated():
 			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not earth_replay_ok:
 				return
@@ -2040,6 +2040,12 @@ func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
 		return
 	_model.stage_enemy_damage_step(raw_damage, int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
 	_update_hud()
+
+
+func _staged_enemy_defeated() -> bool:
+	if _enemy_state == null:
+		return false
+	return _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp)) <= 0
 
 
 func _stage_hud_enemy_result() -> void:
