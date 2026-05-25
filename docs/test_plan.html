@@ -1367,6 +1367,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Validation passed: <code>git diff --check</code>; <code>CombatModelTest.run_all()</code> with <code>{passed=true,total=11,failed=0}</code>; focused combo overlay probe confirming the panel fills the board and the tuned label spacing is applied; and headless Godot project load. The headless load still reports the existing MCP port/capture warnings from the active editor integration, not a new game runtime error.</li>
 <li>This pass intentionally did not change combat math, resolver result shape, RunState routing, result values, staged HUD replay, elemental VFX timing, or <code>combat_speed</code> modes.</li>
 </ul>
+<p>Verification notes (2026-05-26, mastery order and replay sequence):</p>
+<ul>
+<li>Updated mastery presentation order across the shared player HUD and mastery variant gallery to <code>Heart / Armor / Gold / Fire / Ice / Earth</code>.</li>
+<li>Updated combat replay presentation so visible mastery resolution now follows <code>HP -&gt; Armor -&gt; Gold -&gt; Fire -&gt; Ice -&gt; Earth</code>. Core combat math already resolved heal, armor, and gold before elemental damage; this pass aligned replay/VFX feedback, residual mastery-feedback cleanup order, and fallback dominant-orb tie-breaks with the new order.</li>
+<li>Validation passed: <code>git diff --check</code>; Godot MCP <code>view_script</code> for <code>combat_controller.gd</code>, <code>player_loadout_hud.gd</code>, and <code>elemental_mastery_hud_variants.gd</code>; <code>CombatStateMachineTest.run_all()</code> returned <code>{passed=true,total=9,failed=0,failures=[]}</code>.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>
