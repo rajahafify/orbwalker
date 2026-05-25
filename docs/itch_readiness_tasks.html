@@ -289,32 +289,32 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <tr>
 <td>Board lock behavior during resolution and transitions.</td>
 <td>ITCH-03, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Full combat readability acceptance on mobile and PC, including target-viewport screenshot review and real touch drag QA.</td>
 <td>ITCH-01, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Shop Android/on-device QA and complete transaction click-through for buy, unaffordable buy, sell, reroll, and continue.</td>
 <td>ITCH-04, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Full route recovery and end-to-end run-loop QA after SceneRouter/rollback hardening.</td>
 <td>ITCH-03, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Board/orb visual pop-in and perceived Start Run feel on target hardware.</td>
 <td>ITCH-01, ITCH-03, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Merchant Compass free-first-reroll behavior.</td>
 <td>ITCH-04</td>
-<td><code>not started</code></td>
+<td><code>deferred</code></td>
 </tr>
 <tr>
 <td>Combat top-bar Back/Settings route hardening or explicit public-build decision.</td>
@@ -334,7 +334,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <tr>
 <td>Result/victory/defeat/final-summary screenshot polish and route checks.</td>
 <td>ITCH-05, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 <tr>
 <td>Player-facing notes, controls, known limitations, screenshots, and itch.io page copy.</td>
@@ -349,17 +349,19 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <tr>
 <td>Pre-drag mastery hover/manual visual QA across all six orb/card types and overlap/readability.</td>
 <td>ITCH-01, ITCH-08</td>
-<td><code>not started</code></td>
+<td><code>done</code></td>
 </tr>
 </tbody>
 </table></div>
 <h2 id="itch-01-combat-readability-pass">ITCH-01: Combat Readability Pass</h2>
 <ul>
 <li>Branch: <code>codex/itch-01-combat-readability</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: Combat screen readability for the player-facing <code>res://scenes/combat.tscn</code> flow.</li>
 <li>Goal: Make combat readable at a glance on mobile and PC without changing combat math, resolver outcomes, or accepted resolve timing.</li>
 <li>Current rationale: <code>todo.html</code> identifies mobile-first combat UI readability as the active Milestone 12 blocker. The launch snapshot identifies combat hierarchy as the highest-leverage improvement for itch readiness.</li>
+<li>Progress: 2026-05-26 MCP pass opened <code>res://scenes/combat.tscn</code>, loaded <code>combat_controller.gd</code>, <code>combat_view.gd</code>, <code>player_loadout_hud.gd</code>, and <code>combat_vfx_presenter.gd</code>, fixed unused-parameter reload warnings in the combat VFX presenter, and launched the current combat scene. The running scene reached <code>combat_first_usable_frame</code> at the 1080x1920 design surface with the expected TopBar, EnemyPanel, CombatStrip/TimerTrack, BoardPanel/Board, PlayerHudSection, OutcomeSummaryPanel, SlotDetailBubble, DebugOverlay, and VfxLayer/CombatMaxVfxOverlay nodes present.</li>
+<li>Closeout: Human QA passed on 2026-05-26 for combat readability, drag/resolve feel, mastery hover/detail readability across the six orb types, and no blocking overlap/tiny-text/confusing-state issue on the reviewed build. Remaining live-editor reload diagnostics are tracked by ITCH-06/ITCH-08 as public-build error-gate work rather than ITCH-01 readability blockers.</li>
 <li>Acceptance:</li>
 <ul>
 <li>Board cells and orb identities are immediately readable.</li>
@@ -410,9 +412,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-03-full-run-loop-stability">ITCH-03: Full Run Loop Stability</h2>
 <ul>
 <li>Branch: <code>codex/itch-03-run-loop-stability</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: End-to-end first playable loop stability and route confidence.</li>
 <li>Goal: The public alpha/demo should not break during normal play from launch through death/victory and return to menu.</li>
+<li>Closeout: Human QA passed on 2026-05-26 for the run-loop stability gate: launch/start run, combat entry, combat victory to shop, shop continue to next combat, boss reward/boss completion route behavior, defeat/final victory summary routing, summary return/main-menu retry, board lock behavior during resolve/transitions, and no blocker crash, stuck overlay, or missing route on the reviewed loop. Remaining live-editor reload diagnostics and any explicit public-build decision for combat top-bar Back/Settings are tracked under ITCH-06/ITCH-08 rather than this run-loop acceptance gate.</li>
 <li>Acceptance:</li>
 <ul>
 <li>Start Run enters combat reliably.</li>
@@ -440,9 +443,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-04-shop-decision-clarity">ITCH-04: Shop Decision Clarity</h2>
 <ul>
 <li>Branch: <code>codex/itch-04-shop-clarity</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: Player-facing shop readability and decision flow in <code>res://scenes/shop.tscn</code>.</li>
 <li>Goal: The shop should be understandable without external explanation.</li>
+<li>Closeout: Human QA passed on 2026-05-26 for shop decision clarity and complete transaction click-through: buy, unaffordable buy, sell, reroll, relic/treasure-chest visibility where present, and continue. Existing layout evidence remains valid for stock fit, action-to-HUD spacing, disabled native tooltips, compact Help/Settings controls, merchant text backing, and the shared player HUD contract. Merchant Compass free-first-reroll is explicitly deferred for this public demo pass; reroll keeps the existing cost behavior.</li>
 <li>Acceptance:</li>
 <ul>
 <li>It is obvious what can be bought, what is unaffordable, what is sold out, and what Continue does.</li>
@@ -466,9 +470,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-05-result-screen-polish">ITCH-05: Result Screen Polish</h2>
 <ul>
 <li>Branch: <code>codex/itch-05-result-screen-polish</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: Victory, defeat, and final run summary presentation.</li>
 <li>Goal: Result screens should feel intentional and close enough to the main menu quality that they do not break confidence.</li>
+<li>Closeout: Human QA passed on 2026-05-26 for the boss reward result-screen redesign. The combat-hosted boss victory reward overlay now uses a taller readable modal with stacked full-row relic choices, larger relic art/name/rarity/effect text, row-level hover/selection feedback, no visible Skip Relic action, and a visible Continue To Shop action after a relic is selected. A no-options fallback keeps routing safe by continuing to shop through the hidden skip path. Victory/defeat/final-summary screenshot polish outside this boss reward readability issue remains covered by ITCH-08 final release candidate QA.</li>
 <li>Acceptance:</li>
 <ul>
 <li>Combat victory overlay clearly shows reward, gold gained, and next action.</li>

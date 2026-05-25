@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Progress Report - 2026-05-26</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18231f;
+      --muted: #66736d;
+      --paper: #fffdf8;
+      --paper-2: #f5efe3;
+      --line: #d9cdbc;
+      --line-strong: #a99578;
+      --teal: #0f766e;
+      --teal-dark: #0b4f4b;
+      --gold: #b7802d;
+      --green: #167043;
+      --red: #b42318;
+      --blue: #255bb8;
+      --shadow: 0 18px 46px rgba(53, 43, 31, .13);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.6 Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, .045) 1px, transparent 1px),
+        #ebe5d8;
+      background-size: 34px 34px;
+    }
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 24px;
+    }
+    main, aside {
+      background: rgba(255, 253, 248, .96);
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+    }
+    main { min-width: 0; overflow: hidden; }
+    aside {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      padding: 16px;
+    }
+    .hero {
+      padding: 42px 38px 34px;
+      color: #fff9ed;
+      background: linear-gradient(135deg, rgba(15, 35, 33, .98), rgba(15, 118, 110, .94) 58%, rgba(132, 82, 24, .92));
+    }
+    .hero-label {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 249, 237, .42);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .10);
+      font: 700 .76rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { line-height: 1.14; letter-spacing: 0; }
+    h1 { margin: 0 0 12px; max-width: 900px; font-size: clamp(2.05rem, 4vw, 3.35rem); }
+    h2 {
+      margin: 2em 0 .75em;
+      padding-top: 1.15em;
+      border-top: 1px solid var(--line);
+      font-size: 1.55rem;
+    }
+    h3 { margin: 1.3em 0 .5em; color: var(--teal-dark); font-size: 1.12rem; }
+    p, li, td { max-width: 78ch; }
+    code {
+      background: #efe8da;
+      color: #2f3b35;
+      padding: .13em .38em;
+      border-radius: 3px;
+      font: .92em/1.45 Consolas, "Cascadia Mono", monospace;
+    }
+    a { color: var(--teal-dark); text-underline-offset: 3px; }
+    .content { padding: 0 38px 42px; }
+    .summary {
+      margin: 0;
+      max-width: 860px;
+      color: #e9f7f4;
+      border-left: 4px solid rgba(255, 249, 237, .55);
+      padding-left: 16px;
+      font-size: 1.08rem;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 249, 237, .34);
+      border-radius: 2px;
+      background: rgba(255, 249, 237, .12);
+      font: .88rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+    }
+    .toc-title {
+      margin-bottom: 10px;
+      color: var(--teal-dark);
+      font: 800 .82rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .toc a {
+      display: block;
+      padding: 7px 0;
+      color: var(--ink);
+      border-bottom: 1px solid rgba(216, 205, 189, .55);
+      font: .9rem/1.35 "Trebuchet MS", Verdana, sans-serif;
+      text-decoration: none;
+    }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    .metric, .card, .callout {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,242,232,.78));
+      box-shadow: 0 10px 22px rgba(53, 43, 31, .06);
+      padding: 16px;
+    }
+    .metric strong {
+      display: block;
+      color: var(--teal-dark);
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+    .metric span, .card span { color: var(--muted); font: .92rem/1.4 "Trebuchet MS", Verdana, sans-serif; }
+    .card b { display: block; margin-bottom: 6px; color: var(--teal-dark); }
+    .callout { border-left: 5px solid var(--gold); background: #fff8e8; }
+    .callout.ok { border-left-color: var(--green); background: #edf9f2; }
+    .callout.risk { border-left-color: var(--red); background: #fff1f0; }
+    .table-wrap { overflow: auto; margin: 20px 0; border: 1px solid var(--line); border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font: .94rem/1.55 "Trebuchet MS", Verdana, sans-serif; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--teal-dark); background: var(--paper-2); }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 99px;
+      border: 1px solid var(--line-strong);
+      background: #fffaf0;
+      font: 700 .78rem/1.2 "Trebuchet MS", Verdana, sans-serif;
+      white-space: nowrap;
+    }
+    .badge.good { border-color: #84c49e; color: var(--green); background: #edf9f2; }
+    .badge.warn { border-color: #d7a27a; color: #8a4a12; background: #fff4e5; }
+    .badge.risk { border-color: #df8a83; color: var(--red); background: #fff1f0; }
+    footer { margin-top: 36px; color: var(--muted); font-size: .92rem; }
+    @media (max-width: 900px) {
+      .layout { display: block; padding: 0; }
+      main, aside { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
+      aside { position: static; max-height: none; }
+      .content, .hero { padding-left: 22px; padding-right: 22px; }
+      .grid, .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <main>
+      <section class="hero">
+        <span class="hero-label">Progress Report</span>
+        <h1>Orbwalker Codebase Status - 2026-05-26</h1>
+        <p class="summary">The current tree is clean on <code>master</code> after the mastery HUD replay merge. The project reads as a playable Godot 4.6 portrait-first prototype with mature combat/shop/UI iteration, a large documentation trail, and an Android APK already produced today.</p>
+        <div class="chips">
+          <span class="chip">Branch: master</span>
+          <span class="chip">Latest commit: fbd5471</span>
+          <span class="chip">APK: Orbwalker.apk</span>
+          <span class="chip">Main scene: scenes/main_menu.tscn</span>
+        </div>
+      </section>
+
+      <div class="content">
+        <section id="snapshot">
+          <h2>Executive Snapshot</h2>
+          <div class="grid">
+            <div class="metric"><strong>85</strong><span>GDScript source files under <code>scripts/</code></span></div>
+            <div class="metric"><strong>70</strong><span>declared <code>class_name</code> types</span></div>
+            <div class="metric"><strong>12</strong><span>focused test scripts under <code>scripts/tests/</code></span></div>
+            <div class="metric"><strong>659 MB</strong><span>Android APK artifact built 2026-05-26 03:23</span></div>
+          </div>
+          <div class="callout ok">
+            <b>Overall status:</b> implementation appears substantially beyond a thin prototype. Core loop, combat feedback, shop, collection, run summary, generated visual assets, docs, and validation probes are all present.
+          </div>
+        </section>
+
+        <section id="what-changed">
+          <h2>Recent Progress</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Area</th><th>Evidence</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge good">Mastery HUD</span></td>
+                  <td>Latest history includes <code>Merge mastery HUD replay updates</code>, <code>Skip elemental replay after lethal damage</code>, and <code>Align mastery order and replay sequence</code>.</td>
+                  <td>Combat replay polish has recently focused on readable elemental/mastery feedback and avoiding invalid post-lethal presentation.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge good">Shop polish</span></td>
+                  <td>Recent commits include tall-phone shop layout adaptation, action button polish, relic banner improvements, and collection card readability.</td>
+                  <td>The shop is moving from functional placeholder toward mobile-ready presentation and clearer purchase states.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge good">Runtime package</span></td>
+                  <td><code>Orbwalker.apk</code> exists in the root, timestamped today at 03:23.</td>
+                  <td>There is at least one recent Android export artifact available for device smoke testing.</td>
+                </tr>
+                <tr>
+                  <td><span class="badge warn">Documentation</span></td>
+                  <td><code>docs/</code> has 93 files and <code>wiki/</code> has 13 files, with architecture, feature, QA, and known-issue pages.</td>
+                  <td>Project memory is strong, but keeping trackers synchronized is now its own maintenance task.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="architecture">
+          <h2>Architecture Read</h2>
+          <div class="cards">
+            <div class="card">
+              <b>Application shell</b>
+              <span><code>project.godot</code> names the project <code>Orbwalker</code>, launches <code>res://scenes/main_menu.tscn</code>, uses a 1080x1920 portrait viewport, and autoloads <code>RunState</code> plus <code>AudioManager</code>.</span>
+            </div>
+            <div class="card">
+              <b>Scene hosts</b>
+              <span><code>scripts/scenes/</code> contains thin entry scripts for main menu, combat, shop, collection, and run summary, while feature folders hold models, views, controllers, services, and presenters.</span>
+            </div>
+            <div class="card">
+              <b>Combat boundary</b>
+              <span><code>scripts/combat/</code> has dedicated collaborators for state, model, view, controller, state machine, layout, HUD, VFX, resolve replay, debug console, outcome overlay, consumables, and chrome.</span>
+            </div>
+            <div class="card">
+              <b>Board and content</b>
+              <span><code>scripts/board/</code> owns match resolution and board interaction, while <code>scripts/content/content_registry.gd</code> centralizes equipment, consumables, mastery cards, relics, enemies, bosses, pricing, and validation snapshots.</span>
+            </div>
+          </div>
+          <p>The codebase has a clear model/view/controller flavor and has already extracted many high-risk combat responsibilities into presenter and service classes. The main remaining architectural pressure is coordination complexity: combat orchestration still has many responsibilities even after helper extraction.</p>
+        </section>
+
+        <section id="product-state">
+          <h2>Product State</h2>
+          <ul>
+            <li><b>Core loop:</b> main menu, combat, shop, collection, run summary, routing state, and profile/run persistence are represented in code and docs.</li>
+            <li><b>Combat feel:</b> board resolve replay, combo counter, staged HUD values, enemy intent previews, armor/HP danger presentation, floating result labels, and transient VFX are implemented as named systems.</li>
+            <li><b>Shop experience:</b> mobile-first stock cards, relic card, reroll/continue actions, sell interactions, and shared player HUD integration are present.</li>
+            <li><b>Meta layer:</b> collection unlocks, profile repository, run summaries, achievements/toasts, and content contract tests indicate a developing progression wrapper around the combat loop.</li>
+          </ul>
+        </section>
+
+        <section id="validation">
+          <h2>Validation Surface</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Validation Type</th><th>Current Surface</th><th>Today Result</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>Static repository check</td>
+                  <td><code>git status --short --branch</code></td>
+                  <td><span class="badge good">Clean</span> <code>## master</code></td>
+                </tr>
+                <tr>
+                  <td>Automated tests</td>
+                  <td>12 GDScript test files covering board, combat model/state machine, shop, collection, run summary, content registry, and VFX gallery behavior.</td>
+                  <td><span class="badge warn">Not run</span> Godot executable/MCP was not available through this shell session.</td>
+                </tr>
+                <tr>
+                  <td>Manual/device QA</td>
+                  <td><code>docs/test_plan.html</code> and <code>docs/itch_readiness_tasks.html</code> describe route, readability, mobile, and release-readiness checks.</td>
+                  <td><span class="badge warn">Needs latest pass</span> Use the fresh APK for Android smoke coverage.</td>
+                </tr>
+                <tr>
+                  <td>Graphify</td>
+                  <td>No <code>graphify-out/</code> exists in the workspace. Full corpus has 2,352 files outside temp/log folders.</td>
+                  <td><span class="badge warn">Skipped full build</span> This report used scoped source/docs/history analysis.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="risks">
+          <h2>Risks And Watch Items</h2>
+          <div class="callout risk">
+            <b>Combat coordinator size:</b> docs still flag combat orchestration as a future refactor candidate. The helper extractions reduce risk, but routing, replay order, HUD application, input, and turn flow remain a dense integration point.
+          </div>
+          <div class="callout risk">
+            <b>Manual QA dependency:</b> many recent UX changes are visual/timing-sensitive. The test suite helps protect deterministic logic, but mobile/tall-phone readability and interaction feel still need device review.
+          </div>
+          <div class="callout risk">
+            <b>Asset pipeline gates:</b> wiki pages note generated asset approval, legal/license review, and runtime integration gates. Production art integration should stay explicit and auditable.
+          </div>
+          <div class="callout">
+            <b>Documentation drift:</b> the HTML docs are extensive and useful. The cost is that feature pages, trackers, known issues, and architecture notes must be updated when ownership or behavior changes.
+          </div>
+        </section>
+
+        <section id="next">
+          <h2>Recommended Next Actions</h2>
+          <ol>
+            <li>Run the existing GDScript test suite through the established Godot MCP/editor workflow, prioritizing board resolver, combat model/state machine, shop model, collection model/layout, and run summary tests.</li>
+            <li>Install and smoke test <code>Orbwalker.apk</code> on the target Android device: Start Run, resolve a combat turn, route to shop, buy/reroll/continue, return to combat, reach victory/defeat summary.</li>
+            <li>Capture a short fresh QA note in <code>docs/test_plan.html</code> or <code>docs/itch_readiness_tasks.html</code> with exact device, build timestamp, routes tested, and any UI overlap/readability issues.</li>
+            <li>Keep future combat changes inside the existing presenter/service boundaries unless the task truly belongs in orchestration.</li>
+            <li>Consider a scoped graphify run later on <code>scripts/</code>, <code>scenes/</code>, and selected docs rather than the entire repo with raw assets.</li>
+          </ol>
+        </section>
+
+        <section id="sources">
+          <h2>Sources Reviewed</h2>
+          <ul>
+            <li><code>git status --short --branch</code> and recent <code>git log</code> history.</li>
+            <li><code>project.godot</code> application, autoload, display, rendering, and main scene settings.</li>
+            <li>Source layout under <code>scripts/</code>, <code>scenes/</code>, <code>resources/</code>, <code>docs/</code>, <code>wiki/</code>, and <code>tools/</code>.</li>
+            <li>Documentation pages including <code>wiki/features.html</code>, <code>wiki/known-issues.html</code>, <code>wiki/file-map.html</code>, <code>docs/test_plan.html</code>, <code>docs/architecture_review_tasks.html</code>, and <code>docs/itch_readiness_tasks.html</code>.</li>
+          </ul>
+          <footer>Generated locally on 2026-05-26 for the workspace at <code>D:\godot\matchatro</code>.</footer>
+        </section>
+      </div>
+    </main>
+
+    <aside>
+      <div class="toc-title">Contents</div>
+      <nav class="toc">
+        <a href="#snapshot">Executive Snapshot</a>
+        <a href="#what-changed">Recent Progress</a>
+        <a href="#architecture">Architecture Read</a>
+        <a href="#product-state">Product State</a>
+        <a href="#validation">Validation Surface</a>
+        <a href="#risks">Risks And Watch Items</a>
+        <a href="#next">Recommended Next Actions</a>
+        <a href="#sources">Sources Reviewed</a>
+      </nav>
+    </aside>
+  </div>
+</body>
+</html>

@@ -13,6 +13,7 @@ var _boss_reward_buttons: Array[Button] = []
 var _boss_reward_skip_button: Button
 var _boss_reward_pending := false
 var _boss_reward_overlay_active := false
+var _boss_reward_selected_index := -1
 var _outcome_scrim: ColorRect
 
 var _config: Dictionary = {}
@@ -41,6 +42,19 @@ func set_boss_reward_pending(pending: bool) -> void:
 	_boss_reward_pending = pending
 
 
+func selected_boss_reward_index() -> int:
+	return _boss_reward_selected_index
+
+
+func set_selected_boss_reward_index(selected_index: int) -> void:
+	_boss_reward_selected_index = selected_index
+	for index in _boss_reward_buttons.size():
+		_apply_boss_reward_button_theme(_boss_reward_buttons[index], index == _boss_reward_selected_index)
+		var accent := _boss_reward_buttons[index].get_node_or_null("SelectedAccent") as ColorRect
+		if accent != null:
+			accent.visible = index == _boss_reward_selected_index
+
+
 func boss_reward_buttons() -> Array[Button]:
 	return _boss_reward_buttons
 
@@ -56,6 +70,7 @@ func show_summary(title: String, body: String, show_next: bool, button_text: Str
 		_outcome_body_label.text = body
 	_boss_reward_pending = false
 	_boss_reward_overlay_active = false
+	_boss_reward_selected_index = -1
 	set_boss_reward_controls_visible(false)
 	if _next_button != null:
 		_next_button.text = button_text
@@ -72,6 +87,7 @@ func hide() -> void:
 	set_boss_reward_controls_visible(false)
 	_boss_reward_pending = false
 	_boss_reward_overlay_active = false
+	_boss_reward_selected_index = -1
 	if _next_button != null:
 		_next_button.text = "Continue"
 		_next_button.visible = false
@@ -83,11 +99,12 @@ func show_boss_reward(body: String) -> void:
 	if _outcome_title_label != null:
 		_outcome_title_label.text = "Boss Victory"
 	if _outcome_body_label != null:
-		_outcome_body_label.text = "%s\nChoose one boss relic reward." % body
+		_outcome_body_label.text = "%s\nChoose one relic." % body
 	if _outcome_summary_panel != null:
 		_outcome_summary_panel.visible = true
 	_boss_reward_pending = true
 	_boss_reward_overlay_active = true
+	_boss_reward_selected_index = -1
 	if _next_button != null:
 		_next_button.text = "Continue To Shop"
 		_next_button.visible = true
@@ -100,7 +117,7 @@ func set_boss_reward_controls_visible(should_show: bool) -> void:
 	for button in _boss_reward_buttons:
 		button.visible = should_show
 	if _boss_reward_skip_button != null:
-		_boss_reward_skip_button.visible = should_show
+		_boss_reward_skip_button.visible = false
 
 
 func ensure_boss_reward_controls(on_claim_option: Callable, on_skip: Callable) -> void:
@@ -115,12 +132,12 @@ func ensure_boss_reward_controls(on_claim_option: Callable, on_skip: Callable) -
 		button.text = ""
 		button.pressed.connect(on_claim_option.bind(index))
 		_outcome_summary_root.add_child(button)
-		_apply_outcome_button_theme(button)
+		_apply_boss_reward_button_theme(button, false)
 		_ensure_boss_reward_card_children(button)
 		_boss_reward_buttons.append(button)
 	_boss_reward_skip_button = Button.new()
 	_boss_reward_skip_button.name = "BossRewardSkipButton"
-	_boss_reward_skip_button.text = "Skip Relic"
+	_boss_reward_skip_button.text = ""
 	_boss_reward_skip_button.visible = false
 	_boss_reward_skip_button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
 	_boss_reward_skip_button.z_index = 1
@@ -204,7 +221,6 @@ func layout_boss_reward() -> void:
 	var boss_reward_card_gap := float(_config.get("boss_reward_card_gap", 12.0))
 	var boss_reward_row_top := float(_config.get("boss_reward_row_top", 176.0))
 	var boss_reward_card_height := float(_config.get("boss_reward_card_height", 172.0))
-	var boss_reward_skip_button_size: Vector2 = _config.get("boss_reward_skip_button_size", Vector2(190, 58))
 	var boss_reward_next_button_size: Vector2 = _config.get("boss_reward_next_button_size", Vector2(280, 58))
 
 	_outcome_summary_root.position = Vector2(44.0, 38.0)
@@ -219,45 +235,45 @@ func layout_boss_reward() -> void:
 	_outcome_body_label.size = Vector2(_outcome_text_column.size.x, 70.0)
 
 	var row_width := _outcome_summary_root.size.x
-	var slot_width := floorf((row_width - (boss_reward_card_gap * 2.0)) / 3.0)
 	for index in _boss_reward_buttons.size():
-		var x := float(index) * (slot_width + boss_reward_card_gap)
-		_boss_reward_buttons[index].position = Vector2(x, boss_reward_row_top)
-		_boss_reward_buttons[index].size = Vector2(slot_width, boss_reward_card_height)
+		var y := boss_reward_row_top + (float(index) * (boss_reward_card_height + boss_reward_card_gap))
+		_boss_reward_buttons[index].position = Vector2(0.0, y)
+		_boss_reward_buttons[index].size = Vector2(row_width, boss_reward_card_height)
 		layout_boss_reward_card_children(_boss_reward_buttons[index])
 
 	if _boss_reward_skip_button != null:
-		_boss_reward_skip_button.size = boss_reward_skip_button_size
-		_boss_reward_skip_button.position = Vector2(
-			(_outcome_summary_root.size.x - boss_reward_skip_button_size.x - boss_reward_next_button_size.x - 18.0) * 0.5,
-			_outcome_summary_root.size.y - boss_reward_skip_button_size.y - 6.0
-		)
+		_boss_reward_skip_button.visible = false
 	_next_button.size = boss_reward_next_button_size
 	_next_button.position = Vector2(
-		_boss_reward_skip_button.position.x + boss_reward_skip_button_size.x + 18.0 if _boss_reward_skip_button != null else (_outcome_summary_root.size.x - _next_button.size.x) * 0.5,
+		(_outcome_summary_root.size.x - _next_button.size.x) * 0.5,
 		_outcome_summary_root.size.y - _next_button.size.y - 6.0
 	)
 
 
 func layout_boss_reward_card_children(button: Button) -> void:
 	var boss_reward_icon_size: Vector2 = _config.get("boss_reward_icon_size", Vector2(54, 54))
-	var content_width := maxf(0.0, button.size.x - 24.0)
+	var content_left := boss_reward_icon_size.x + 34.0
+	var content_width := maxf(0.0, button.size.x - content_left - 18.0)
 	var name_label := button.get_node_or_null("RelicName") as Label
 	if name_label != null:
-		name_label.position = Vector2(12.0, 12.0)
-		name_label.size = Vector2(content_width, 24.0)
+		name_label.position = Vector2(content_left, 18.0)
+		name_label.size = Vector2(content_width, 34.0)
 	var rarity_label := button.get_node_or_null("RelicRarity") as Label
 	if rarity_label != null:
-		rarity_label.position = Vector2(12.0, 36.0)
-		rarity_label.size = Vector2(content_width, 20.0)
+		rarity_label.position = Vector2(content_left, 54.0)
+		rarity_label.size = Vector2(content_width, 22.0)
 	var icon := button.get_node_or_null("RelicIcon") as TextureRect
 	if icon != null:
-		icon.position = Vector2((button.size.x - boss_reward_icon_size.x) * 0.5, 58.0)
+		icon.position = Vector2(18.0, (button.size.y - boss_reward_icon_size.y) * 0.5)
 		icon.size = boss_reward_icon_size
 	var description_label := button.get_node_or_null("RelicDescription") as Label
 	if description_label != null:
-		description_label.position = Vector2(12.0, 116.0)
-		description_label.size = Vector2(content_width, 44.0)
+		description_label.position = Vector2(content_left, 84.0)
+		description_label.size = Vector2(content_width, button.size.y - 94.0)
+	var accent := button.get_node_or_null("SelectedAccent") as ColorRect
+	if accent != null:
+		accent.position = Vector2(8.0, 8.0)
+		accent.size = Vector2(5.0, maxf(0.0, button.size.y - 16.0))
 
 
 func set_boss_reward_card_content(button: Button, icon_texture: Texture2D, display_name: String, rarity: String, description: String) -> void:
@@ -328,6 +344,43 @@ func _apply_outcome_button_theme(button: Button) -> void:
 	button.add_theme_stylebox_override("pressed", hover)
 
 
+func _apply_boss_reward_button_theme(button: Button, selected: bool) -> void:
+	button.add_theme_color_override("font_color", Color.TRANSPARENT)
+	button.add_theme_color_override("font_hover_color", Color.TRANSPARENT)
+	button.add_theme_color_override("font_pressed_color", Color.TRANSPARENT)
+	button.add_theme_color_override("font_disabled_color", Color.TRANSPARENT)
+	button.add_theme_font_size_override("font_size", 1)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.13, 0.18, 0.98)
+	style.border_color = Color(0.72, 0.54, 0.24, 0.92)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(7)
+	style.content_margin_left = 0.0
+	style.content_margin_right = 0.0
+	style.content_margin_top = 0.0
+	style.content_margin_bottom = 0.0
+	button.add_theme_stylebox_override("normal", style)
+	var hover := style.duplicate()
+	hover.bg_color = Color(0.10, 0.18, 0.25, 0.99)
+	hover.border_color = Color(0.96, 0.78, 0.34, 1.0)
+	button.add_theme_stylebox_override("hover", hover)
+	var pressed := hover.duplicate()
+	pressed.bg_color = Color(0.13, 0.21, 0.28, 1.0)
+	button.add_theme_stylebox_override("pressed", pressed)
+	var disabled := style.duplicate()
+	disabled.bg_color = Color(0.05, 0.07, 0.09, 0.8)
+	disabled.border_color = Color(0.22, 0.22, 0.22, 0.8)
+	button.add_theme_stylebox_override("disabled", disabled)
+	if selected:
+		var selected_style := style.duplicate()
+		selected_style.bg_color = Color(0.10, 0.19, 0.28, 0.99)
+		selected_style.border_color = Color(1.0, 0.86, 0.44, 1.0)
+		selected_style.set_border_width_all(4)
+		button.add_theme_stylebox_override("normal", selected_style)
+		button.add_theme_stylebox_override("hover", selected_style)
+		button.add_theme_stylebox_override("pressed", selected_style)
+
+
 func _ensure_boss_reward_card_children(button: Button) -> void:
 	if button.get_node_or_null("RelicIcon") != null:
 		return
@@ -339,31 +392,38 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
 	button.add_child(icon)
 
+	var accent := ColorRect.new()
+	accent.name = "SelectedAccent"
+	accent.visible = false
+	accent.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	accent.color = Color(1.0, 0.82, 0.32, 1.0)
+	button.add_child(accent)
+
 	var name_label := Label.new()
 	name_label.name = "RelicName"
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	name_label.add_theme_font_size_override("font_size", 13)
-	name_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.58, 1.0))
+	name_label.add_theme_font_size_override("font_size", 28)
+	name_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 1.0))
 	button.add_child(name_label)
 
 	var rarity_label := Label.new()
 	rarity_label.name = "RelicRarity"
 	rarity_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	rarity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	rarity_label.add_theme_font_size_override("font_size", 12)
-	rarity_label.add_theme_color_override("font_color", Color(0.92, 0.78, 0.36, 1.0))
+	rarity_label.add_theme_font_size_override("font_size", 15)
+	rarity_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.36, 1.0))
 	button.add_child(rarity_label)
 
 	var description_label := Label.new()
 	description_label.name = "RelicDescription"
 	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	description_label.add_theme_font_size_override("font_size", 12)
-	description_label.add_theme_color_override("font_color", Color(0.82, 0.79, 0.68, 1.0))
+	description_label.add_theme_font_size_override("font_size", 20)
+	description_label.add_theme_color_override("font_color", Color(0.90, 0.84, 0.73, 1.0))
 	button.add_child(description_label)

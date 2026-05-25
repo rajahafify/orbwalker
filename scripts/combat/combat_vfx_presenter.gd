@@ -1041,13 +1041,13 @@ func _spawn_screen_damage_event(layer_size: Vector2, focus_local: Vector2, durat
 		)
 
 
-func _spawn_replay_ring(global_center: Vector2, ring_size: Vector2, fill: Color, border: Color, border_width: int, lifetime: float, target_scale: Vector2, delay: float) -> void:
+func _spawn_replay_ring(global_center: Vector2, ring_size: Vector2, fill: Color, border: Color, _border_width: int, lifetime: float, target_scale: Vector2, delay: float) -> void:
 	var center_local := _global_to_vfx_local(global_center)
 	_spawn_runtime_sprite_local("PostMatchRingGlow", "soft_glow", center_local, ring_size * 1.18, fill, lifetime * 0.92, target_scale, delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_runtime_sprite_local("PostMatchRing", "ripple", center_local, ring_size, border, lifetime, target_scale, delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 
 
-func _spawn_replay_shield(global_center: Vector2, shield_size: Vector2, fill: Color, border: Color, border_width: int, lifetime: float) -> void:
+func _spawn_replay_shield(global_center: Vector2, shield_size: Vector2, fill: Color, border: Color, _border_width: int, lifetime: float) -> void:
 	var center_local := _global_to_vfx_local(global_center)
 	_spawn_runtime_sprite_local("PostMatchShieldGlow", "soft_glow", center_local, shield_size * 1.22, fill, lifetime, Vector2(1.18, 1.12), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
 	_spawn_runtime_sprite_local("PostMatchShield", "shield", center_local, shield_size * 1.08, border, lifetime, Vector2(1.14, 1.08), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
@@ -1918,7 +1918,7 @@ func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle:
 	)
 
 
-func _spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector2, fill: Color, border: Color, border_width: int, corner_radius: int, z_index: int, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, rotation: float = 0.0, move_ease: Tween.EaseType = Tween.EASE_OUT as Tween.EaseType) -> void:
+func _spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector2, fill: Color, border: Color, _border_width: int, corner_radius: int, z_index: int, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, rotation: float = 0.0, move_ease: Tween.EaseType = Tween.EASE_OUT as Tween.EaseType) -> void:
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
 	var texture_key := _runtime_texture_key_for_effect(name, size, corner_radius)

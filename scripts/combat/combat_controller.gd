@@ -65,13 +65,13 @@ const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
 const OUTCOME_SUMMARY_RECT := Rect2(Vector2(144, 168), Vector2(760, 452))
-const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(80, 520), Vector2(920, 540))
-const BOSS_REWARD_CARD_GAP := 12.0
-const BOSS_REWARD_ROW_TOP := 176.0
-const BOSS_REWARD_CARD_HEIGHT := 172.0
-const BOSS_REWARD_ICON_SIZE := Vector2(54, 54)
+const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(56, 390), Vector2(968, 860))
+const BOSS_REWARD_CARD_GAP := 16.0
+const BOSS_REWARD_ROW_TOP := 136.0
+const BOSS_REWARD_CARD_HEIGHT := 142.0
+const BOSS_REWARD_ICON_SIZE := Vector2(104, 104)
 const BOSS_REWARD_SKIP_BUTTON_SIZE := Vector2(190, 58)
-const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(280, 58)
+const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(420, 72)
 const OUTCOME_MODAL_Z_INDEX := 180
 const OUTCOME_SCRIM_Z_INDEX := 170
 const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
@@ -505,7 +505,7 @@ func _initialize_combat_state() -> void:
 		_refresh_character_portraits()
 		_refresh_build_icon_rows(_progression_state.to_snapshot())
 		_show_boss_reward_summary("Boss defeated.")
-		_set_status_text("Boss defeated. Choose a boss relic or skip before continuing.")
+		_set_status_text("Boss defeated. Choose one boss relic before continuing.")
 		_set_status_color(STATUS_COLOR_WARNING)
 		RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _flow_trace_route_id_value())
 		return
@@ -1126,7 +1126,7 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		_append_turn_log(turn_log)
 		if RunState.is_current_step_boss_reward():
 			_model.clear_pending_next_scene_path()
-			_set_status_text("Boss defeated. Choose a boss relic or skip before continuing.")
+			_set_status_text("Boss defeated. Choose one boss relic before continuing.")
 			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
 			_show_boss_reward_summary(_turn_log_presenter.build_victory_gold_summary(turn_log, transition))
 			_set_turn_summary_text("Turn Summary: Boss victory. Choose a relic.")
@@ -1188,8 +1188,16 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 
 func _on_next_button_pressed() -> void:
 	if _outcome_overlay != null and _outcome_overlay.is_boss_reward_pending():
-		_audio_play_sfx("error")
-		_set_status_text("Choose a boss relic or skip the reward before continuing.")
+		var options: Array = RunState.boss_relic_reward_options_snapshot()
+		if options.is_empty():
+			_skip_boss_reward_option()
+			return
+		var selected_index := _outcome_overlay.selected_boss_reward_index()
+		if selected_index < 0:
+			_audio_play_sfx("error")
+			_set_status_text("Choose one boss relic before continuing.")
+			return
+		_claim_boss_reward_option(selected_index)
 		return
 	if _model.pending_next_scene_path() == "":
 		return
@@ -1281,7 +1289,7 @@ func _hide_outcome_summary() -> void:
 func _ensure_boss_reward_controls() -> void:
 	if _outcome_overlay == null:
 		return
-	_outcome_overlay.ensure_boss_reward_controls(_claim_boss_reward_option, _skip_boss_reward_option)
+	_outcome_overlay.ensure_boss_reward_controls(_select_boss_reward_option, _skip_boss_reward_option)
 
 
 func _show_boss_reward_summary(body: String) -> void:
@@ -1307,7 +1315,7 @@ func _show_boss_reward_summary(body: String) -> void:
 			_visuals.clean_icon_for_key(String(content.get("icon_key", ""))),
 			String(option.get("display_name", content.get("display_name", "Relic"))),
 			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
-			_outcome_overlay.wrap_text_to_lines(description, 28, 2)
+			_outcome_overlay.wrap_text_to_lines(description, 48, 2)
 		)
 		button.tooltip_text = "%s\n%s\n%s" % [
 			String(option.get("display_name", content.get("display_name", "Relic"))),
@@ -1317,16 +1325,22 @@ func _show_boss_reward_summary(body: String) -> void:
 		button.disabled = false
 	if options.is_empty():
 		if _view != null:
-			_view.set_outcome_body_text("%s\nNo boss relic options generated. Use Skip Relic to continue." % body)
+			_view.set_outcome_body_text("%s\nNo boss relic options generated. Continue to shop." % body)
 		for button in boss_reward_buttons:
 			button.visible = false
 			button.disabled = true
-		var skip_button := _outcome_overlay.boss_reward_skip_button()
-		if skip_button != null:
-			skip_button.visible = true
-			skip_button.disabled = false
 		if _view != null:
-			_view.set_outcome_next_button_disabled(true)
+			_view.set_outcome_next_button_disabled(false)
+
+
+func _select_boss_reward_option(index: int) -> void:
+	if _outcome_overlay == null or not _outcome_overlay.is_boss_reward_pending():
+		return
+	_outcome_overlay.set_selected_boss_reward_index(index)
+	if _view != null:
+		_view.set_outcome_next_button_disabled(false)
+	_set_status_text("Boss relic selected. Continue to shop when ready.")
+	_audio_play_sfx("ui_accept")
 
 
 func _claim_boss_reward_option(index: int) -> void:

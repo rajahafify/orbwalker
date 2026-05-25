@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boss Reward HD Mockup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --void: #04070b;
+      --shade: #07101a;
+      --panel: #0d1722;
+      --panel-2: #142333;
+      --panel-3: #1a2b3a;
+      --line-blue: #79b7e0;
+      --line-gold: #d8a93f;
+      --gold: #ffd66e;
+      --gold-deep: #ad7224;
+      --text: #fff6df;
+      --soft: #d8c9aa;
+      --muted: #a99d89;
+      --good: #88d68c;
+      --button: #f3c65e;
+      --shadow: 0 28px 80px rgba(0, 0, 0, .62);
+      --font-ui: "Trebuchet MS", Verdana, Arial, sans-serif;
+      --font-title: Georgia, Cambria, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 10%, rgba(183, 122, 38, .34), transparent 27%),
+        radial-gradient(circle at 50% 42%, rgba(42, 84, 81, .22), transparent 38%),
+        linear-gradient(180deg, #17120e 0%, #07090d 45%, #020305 100%);
+      font-family: var(--font-ui);
+    }
+
+    main {
+      width: min(100%, 1480px);
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      margin: 0 auto 22px;
+      max-width: 1260px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font: 700 42px/1.05 var(--font-title);
+    }
+
+    .lede {
+      max-width: 820px;
+      margin: 0;
+      color: var(--soft);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      min-width: 120px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 214, 110, .32);
+      border-radius: 8px;
+      background: rgba(6, 12, 18, .78);
+      color: #ffe7a0;
+      text-align: center;
+      font-weight: 900;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .stage {
+      position: relative;
+      overflow: hidden;
+      max-width: 1260px;
+      min-height: 760px;
+      margin: 0 auto;
+      border: 1px solid rgba(121, 183, 224, .25);
+      border-radius: 10px;
+      background:
+        linear-gradient(rgba(0, 0, 0, .58), rgba(0, 0, 0, .72)),
+        radial-gradient(circle at 50% 24%, rgba(219, 143, 44, .18), transparent 24%),
+        linear-gradient(180deg, #221a13 0%, #121314 42%, #05080b 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .game-chrome {
+      position: absolute;
+      inset: 0;
+      opacity: .92;
+    }
+
+    .enemy-title {
+      position: absolute;
+      top: 18px;
+      left: 24px;
+      color: #bfa874;
+      font: 700 28px/1 var(--font-title);
+    }
+
+    .hp-bar {
+      position: absolute;
+      top: 58px;
+      left: 24px;
+      width: 420px;
+      height: 34px;
+      border: 1px solid rgba(216, 169, 63, .42);
+      border-radius: 5px;
+      color: rgba(255, 246, 223, .55);
+      text-align: center;
+      font: 900 20px/32px var(--font-ui);
+      background: rgba(7, 9, 11, .8);
+    }
+
+    .board {
+      position: absolute;
+      left: 50%;
+      bottom: 34px;
+      width: 540px;
+      height: 500px;
+      transform: translateX(-50%);
+      border: 2px solid rgba(216, 169, 63, .38);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        rgba(4, 7, 8, .62);
+      background-size: 90px 83px;
+      filter: blur(.2px);
+    }
+
+    .orb {
+      position: absolute;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), rgba(213, 151, 42, .95) 36%, #5f3c12 80%);
+      opacity: .44;
+    }
+
+    .modal {
+      position: relative;
+      z-index: 2;
+      width: min(980px, calc(100% - 64px));
+      margin: 62px auto 46px;
+      padding: 36px 38px 34px;
+      border: 2px solid rgba(121, 183, 224, .72);
+      border-radius: 10px;
+      background:
+        linear-gradient(180deg, rgba(15, 27, 39, .985), rgba(6, 13, 20, .985)),
+        var(--panel);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .04) inset,
+        0 30px 80px rgba(0, 0, 0, .72);
+    }
+
+    .modal-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-block h2 {
+      margin: 0;
+      color: var(--gold);
+      font: 700 50px/1.02 var(--font-title);
+      text-shadow: 0 3px 0 rgba(0, 0, 0, .45);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: #ffe8a5;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .gold-pill {
+      min-width: 178px;
+      padding: 14px 18px;
+      border: 1px solid rgba(255, 214, 110, .5);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 214, 110, .16), rgba(95, 58, 14, .24));
+      color: #ffe69b;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .choices {
+      display: grid;
+      gap: 16px;
+    }
+
+    .reward {
+      position: relative;
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 22px;
+      align-items: center;
+      min-height: 154px;
+      padding: 18px 20px;
+      border: 2px solid rgba(216, 169, 63, .64);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(255, 214, 110, .07), transparent 44%),
+        linear-gradient(180deg, var(--panel-2), #0a121b);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .24);
+      cursor: pointer;
+      transition:
+        transform .14s ease,
+        border-color .14s ease,
+        background .14s ease,
+        box-shadow .14s ease;
+    }
+
+    .reward:hover,
+    .reward:focus-visible {
+      border-color: rgba(255, 225, 138, .88);
+      background:
+        linear-gradient(90deg, rgba(255, 214, 110, .12), transparent 48%),
+        linear-gradient(180deg, #1a2f42, #0b151f);
+      box-shadow:
+        0 0 0 3px rgba(121, 183, 224, .13),
+        0 16px 34px rgba(0, 0, 0, .32);
+      outline: 0;
+      transform: translateY(-2px);
+    }
+
+    .reward.is-selected {
+      border-color: #ffe18a;
+      background:
+        linear-gradient(90deg, rgba(255, 214, 110, .16), transparent 48%),
+        linear-gradient(180deg, #193047, #0c1621);
+      box-shadow:
+        0 0 0 4px rgba(255, 214, 110, .14),
+        0 16px 34px rgba(0, 0, 0, .34);
+    }
+
+    .reward.is-selected::before {
+      content: "";
+      position: absolute;
+      inset: 8px auto 8px 8px;
+      width: 5px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #ffe18a, #b87822);
+      box-shadow: 0 0 18px rgba(255, 214, 110, .42);
+    }
+
+    .relic-icon {
+      display: grid;
+      place-items: center;
+      width: 104px;
+      height: 104px;
+      border: 2px solid rgba(216, 169, 63, .5);
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 229, 143, .2), transparent 42%),
+        linear-gradient(180deg, #26384a, #101820);
+      box-shadow: inset 0 0 24px rgba(0,0,0,.42);
+    }
+
+    .gem {
+      width: 56px;
+      height: 56px;
+      border: 3px solid rgba(255,255,255,.45);
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, #9164ff, #f1c55e 52%, #5bd38c);
+      box-shadow: 0 0 18px rgba(255, 214, 110, .32);
+    }
+
+    .chains {
+      width: 62px;
+      height: 62px;
+      border: 7px double #9e72d8;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 9px rgba(255, 214, 110, .2);
+    }
+
+    .idol {
+      width: 52px;
+      height: 68px;
+      border-radius: 22px 22px 12px 12px;
+      background: linear-gradient(180deg, #ffe089, #aa6e20);
+      box-shadow: inset 0 -10px 0 rgba(61, 32, 9, .28), 0 0 18px rgba(255, 214, 110, .3);
+    }
+
+    .reward-name {
+      margin: 0 0 6px;
+      color: #fff8de;
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .rarity {
+      color: var(--gold);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .desc {
+      max-width: 580px;
+      margin-top: 11px;
+      color: #e7dbc4;
+      font-size: 21px;
+      font-weight: 800;
+      line-height: 1.28;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, .42);
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .continue {
+      min-height: 72px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffde82, #b57724);
+      color: #1b1106;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 72px;
+      text-transform: uppercase;
+      box-shadow: 0 12px 28px rgba(255, 214, 110, .2);
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 1260px;
+      margin: 18px auto 0;
+    }
+
+    .note {
+      min-height: 110px;
+      padding: 16px;
+      border: 1px solid rgba(255, 214, 110, .22);
+      border-radius: 8px;
+      background: rgba(7, 13, 20, .82);
+    }
+
+    .note b {
+      display: block;
+      margin-bottom: 8px;
+      color: #ffe69b;
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+
+    .note span {
+      color: var(--soft);
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 920px) {
+      main { padding: 16px; }
+      .top { grid-template-columns: 1fr; }
+      .badges { justify-content: flex-start; }
+      .stage { min-height: 860px; }
+      .modal {
+        width: calc(100% - 24px);
+        margin-top: 36px;
+        padding: 24px 18px;
+      }
+      .modal-header,
+      .footer {
+        grid-template-columns: 1fr;
+      }
+      .title-block h2 { font-size: 40px; }
+      .reward {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 16px;
+      }
+      .relic-icon {
+        width: 82px;
+        height: 82px;
+      }
+      .reward-name { font-size: 25px; }
+      .desc { font-size: 19px; }
+      .notes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="top" aria-label="Mockup summary">
+      <div>
+        <h1>Option 1 HD Mockup</h1>
+        <p class="lede">Readable boss reward layout for the demo build: stacked rewards, bigger type, stronger contrast, no Skip Relic button, and row-level selection instead of separate action buttons.</p>
+      </div>
+      <div class="badges" aria-label="Design targets">
+        <div class="badge">No Skip</div>
+        <div class="badge">21px Body</div>
+        <div class="badge">Row Toggle</div>
+      </div>
+    </section>
+
+    <section class="stage" aria-label="HD game mockup">
+      <div class="game-chrome" aria-hidden="true">
+        <div class="enemy-title">Iron Gate</div>
+        <div class="hp-bar">HP 0 / 85</div>
+        <div class="board">
+          <div class="orb" style="left: 68px; top: 42px;"></div>
+          <div class="orb" style="left: 162px; top: 42px;"></div>
+          <div class="orb" style="left: 348px; top: 126px; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), #70a548 36%, #213d19 80%);"></div>
+          <div class="orb" style="left: 72px; top: 292px; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), #b94132 36%, #46110d 80%);"></div>
+          <div class="orb" style="left: 162px; top: 292px; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), #61a64d 36%, #173815 80%);"></div>
+        </div>
+      </div>
+
+      <div class="modal" role="img" aria-label="Boss Victory reward modal mockup">
+        <div class="modal-header">
+          <div class="title-block">
+            <h2>Boss Victory</h2>
+            <div class="subtitle">Choose one relic</div>
+          </div>
+          <div class="gold-pill">Gold +13</div>
+        </div>
+
+        <div class="choices">
+          <div class="reward is-selected" tabindex="0" aria-label="Deep Pockets selected">
+            <div class="relic-icon"><div class="gem"></div></div>
+            <div>
+              <h3 class="reward-name">Deep Pockets</h3>
+              <div class="rarity">Rare Relic</div>
+              <div class="desc">Gold orbs are worth +2, and matching gold grants bonus gold.</div>
+            </div>
+          </div>
+
+          <div class="reward" tabindex="0" aria-label="Choose Crown of Chains">
+            <div class="relic-icon"><div class="chains"></div></div>
+            <div>
+              <h3 class="reward-name">Crown of Chains</h3>
+              <div class="rarity">Rare Relic</div>
+              <div class="desc">Combo count +3 and +5 flat elemental damage each turn.</div>
+            </div>
+          </div>
+
+          <div class="reward" tabindex="0" aria-label="Choose Golden Idol">
+            <div class="relic-icon"><div class="idol"></div></div>
+            <div>
+              <h3 class="reward-name">Golden Idol</h3>
+              <div class="rarity">Rare Relic</div>
+              <div class="desc">Combo multiplier +12%, plus +2 bonus gold on gold matches.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="hint">The whole reward row is the interaction. Hover or tap changes the row state; Continue unlocks after one relic is chosen.</div>
+          <div class="continue">Continue to Shop</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="notes" aria-label="Implementation notes">
+      <div class="note">
+        <b>Readability</b>
+        <span>Use 30px relic names and 21px descriptions. Keep effect copy to two lines whenever possible.</span>
+      </div>
+      <div class="note">
+        <b>Layout</b>
+        <span>Use stacked rows around 154px tall inside a wider, taller boss reward modal.</span>
+      </div>
+      <div class="note">
+        <b>Flow</b>
+        <span>Remove Skip Relic from the visible boss reward flow. The player chooses one relic, then continues.</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
