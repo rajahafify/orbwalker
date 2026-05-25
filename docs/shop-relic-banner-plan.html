@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop Relic Banner Redesign</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --gold: #d99a31;
+      --gold-bright: #ffd98a;
+      --ink: #f8ead0;
+      --muted: #c7ab7c;
+      --rare: #cf78ff;
+      --rare-dim: #8d42bd;
+      --panel: rgba(6, 8, 10, .9);
+      --line: rgba(217, 154, 49, .55);
+      --shadow: 0 24px 70px rgba(0, 0, 0, .62);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      background:
+        linear-gradient(180deg, rgba(3, 4, 5, .42), rgba(3, 4, 5, .92)),
+        url("../resources/art/assetgen/backgrounds/collection_background_candidate_01.png") center top / cover fixed,
+        #050607;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    header {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 20px 22px;
+      background: linear-gradient(180deg, rgba(8, 12, 14, .94), rgba(4, 5, 6, .86));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      color: var(--gold-bright);
+      font-size: clamp(34px, 4.5vw, 58px);
+      line-height: 1;
+      text-shadow: 0 3px 0 #000, 0 0 24px rgba(217, 154, 49, .22);
+    }
+
+    .summary {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background:
+        radial-gradient(circle at 50% 0%, rgba(217, 154, 49, .08), transparent 34%),
+        linear-gradient(180deg, rgba(8, 12, 14, .92), rgba(3, 4, 5, .86));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-title {
+      padding: 14px 18px;
+      color: var(--gold-bright);
+      font-size: 22px;
+      line-height: 1.1;
+      background: rgba(0, 0, 0, .32);
+      border-bottom: 1px solid rgba(217, 154, 49, .28);
+    }
+
+    .panel-body {
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .shop-crop {
+      width: 560px;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 10px 8px 18px;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, .16), rgba(0, 0, 0, .78)),
+        url("../resources/art/assetgen/backgrounds/collection_background_candidate_01.png") center top / cover;
+      border: 1px solid rgba(217, 154, 49, .58);
+      box-shadow: inset 0 0 0 1px rgba(255, 231, 164, .05);
+    }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 14px;
+      height: 32px;
+      color: #c99028;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .section-title::before,
+    .section-title::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(217, 154, 49, .65));
+    }
+
+    .section-title::after {
+      background: linear-gradient(90deg, rgba(217, 154, 49, .65), transparent);
+    }
+
+    .banner-slot {
+      --scale: .5;
+      width: calc(1032px * var(--scale));
+      height: calc(178px * var(--scale));
+      margin-inline: auto;
+    }
+
+    .banner {
+      position: relative;
+      width: 1032px;
+      height: 178px;
+      transform: scale(var(--scale));
+      transform-origin: top left;
+      isolation: isolate;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, .58));
+    }
+
+    .banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: url("assets/shop-relic-banner/relic-banner-frame-rare-v3.png") center / 100% 100% no-repeat;
+      pointer-events: none;
+    }
+
+    .banner-content {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr) 250px;
+      column-gap: 30px;
+      align-items: center;
+      padding: 31px 58px 29px 42px;
+    }
+
+    .art-stage {
+      width: 184px;
+      height: 118px;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(152, 70, 202, .24), transparent 62%),
+        rgba(8, 5, 12, .38);
+      box-shadow:
+        inset 0 0 24px rgba(0, 0, 0, .38);
+    }
+
+    .art-stage img {
+      max-width: 112px;
+      max-height: 90px;
+      object-fit: contain;
+      filter: drop-shadow(0 7px 9px rgba(0, 0, 0, .62));
+    }
+
+    .copy {
+      min-width: 0;
+      align-self: center;
+      padding-top: 2px;
+    }
+
+    .name {
+      color: var(--rare);
+      font-size: 33px;
+      line-height: 1;
+      font-weight: 800;
+      text-shadow: 0 3px 0 #000, 0 0 16px rgba(207, 120, 255, .24);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tier {
+      margin-top: 5px;
+      color: #db9dff;
+      font-size: 17px;
+      line-height: 1;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .desc {
+      margin-top: 13px;
+      display: grid;
+      gap: 4px;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.05;
+      text-shadow: 0 2px 0 #000;
+    }
+
+    .price {
+      width: 214px;
+      height: 78px;
+      display: grid;
+      place-items: center;
+      justify-self: end;
+      color: #ffe5a6;
+      font-size: 39px;
+      font-weight: 800;
+      text-shadow: 0 3px 0 #000;
+      background: url("assets/shop-relic-banner/price-badge-simple.png") center / contain no-repeat;
+      filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .54));
+    }
+
+    .price.disabled {
+      color: #c6a26c;
+      opacity: .72;
+      filter: saturate(.75) brightness(.82) drop-shadow(0 8px 10px rgba(0, 0, 0, .54));
+    }
+
+    .large {
+      --scale: .86;
+    }
+
+    .large-wrap {
+      display: grid;
+      justify-content: center;
+      padding: 12px 8px 4px;
+      overflow-x: auto;
+    }
+
+    .stress-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stress {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(217, 154, 49, .26);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, .22);
+    }
+
+    .stress h3 {
+      color: var(--gold-bright);
+      font-size: 17px;
+    }
+
+    .notes {
+      display: grid;
+      gap: 12px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .notes li {
+      padding: 11px 12px;
+      border: 1px solid rgba(217, 154, 49, .22);
+      border-left: 4px solid var(--gold);
+      background: rgba(0, 0, 0, .18);
+      border-radius: 4px;
+    }
+
+    code {
+      padding: 1px 5px;
+      color: #ffe1a2;
+      background: rgba(0, 0, 0, .36);
+      border: 1px solid rgba(217, 154, 49, .22);
+      border-radius: 3px;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: .92em;
+    }
+
+    .spec {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      color: var(--muted);
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .spec strong {
+      color: var(--gold-bright);
+      font-family: Georgia, Cambria, "Times New Roman", serif;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .large { --scale: .5; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Shop Relic Banner Redesign</h1>
+      <p class="summary">This page is intentionally narrow: one target composition, then stress tests. The old mockup failed because the frame asset was a stretched card. This version uses a purpose-built horizontal raster frame with simple bevel lines and no decorative ornaments.</p>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <h2 class="panel-title">Target In Shop Context</h2>
+        <div class="panel-body">
+          <div class="shop-crop">
+            <div class="section-title">Dungeon Relic</div>
+            <div class="banner-slot" style="--scale: .5">
+              <article class="banner">
+                <div class="banner-content">
+                  <div class="art-stage">
+                    <img src="../resources/art/assetgen/runtime/relics/relic_deep_pockets.png" alt="">
+                  </div>
+                  <div class="copy">
+                    <div class="name">Deep Pockets</div>
+                    <div class="tier">Rare Relic - Dungeon 1</div>
+                    <div class="desc">
+                      <span>Gold value +2</span>
+                      <span>+2 bonus Gold</span>
+                    </div>
+                  </div>
+                  <div class="price disabled">$24</div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="large-wrap">
+            <div class="banner-slot large">
+              <article class="banner large">
+                <div class="banner-content">
+                  <div class="art-stage">
+                    <img src="../resources/art/assetgen/runtime/relics/relic_merchant_compass.png" alt="">
+                  </div>
+                  <div class="copy">
+                    <div class="name">Merchant Compass</div>
+                    <div class="tier">Rare Relic - Dungeon 1</div>
+                    <div class="desc">
+                      <span>+1 bonus Gold</span>
+                      <span>+2 Healing on Hearts</span>
+                    </div>
+                  </div>
+                  <div class="price disabled">$24</div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="stress-list">
+            <div class="stress">
+              <h3>Tall Icon Stress Test</h3>
+              <div class="banner-slot" style="--scale: .5">
+                <article class="banner">
+                  <div class="banner-content">
+                    <div class="art-stage">
+                      <img src="../resources/art/assetgen/runtime/relics/relic_deep_pockets.png" alt="">
+                    </div>
+                    <div class="copy">
+                      <div class="name">Deep Pockets</div>
+                      <div class="tier">Rare Relic - Dungeon 1</div>
+                      <div class="desc">
+                        <span>Gold value +2</span>
+                        <span>+2 bonus Gold</span>
+                      </div>
+                    </div>
+                    <div class="price disabled">$24</div>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div class="stress">
+              <h3>Wide Icon Stress Test</h3>
+              <div class="banner-slot" style="--scale: .5">
+                <article class="banner">
+                  <div class="banner-content">
+                    <div class="art-stage">
+                      <img src="../resources/art/assetgen/runtime/relics/relic_crown_of_chains.png" alt="">
+                    </div>
+                    <div class="copy">
+                      <div class="name">Crown of Chains</div>
+                      <div class="tier">Rare Relic - Dungeon 1</div>
+                      <div class="desc">
+                        <span>Combo count +3</span>
+                        <span>+5 Attack each turn</span>
+                      </div>
+                    </div>
+                    <div class="price">$25</div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 class="panel-title">Port Back Rules</h2>
+        <div class="panel-body">
+          <ul class="notes">
+            <li>The banner frame must be its own horizontal asset, not a resized collection card.</li>
+            <li>Remove decorative ornaments from this banner and future matching shop frames. No center clasp, no corner flourishes, no extra hardware. Keep the frame to bevel lines, texture, and readable content lanes.</li>
+            <li>Content starts below the rail. Target padding is <code>31px</code> top and <code>29px</code> bottom inside a <code>178px</code> banner.</li>
+            <li>Relic art is capped for spiky silhouettes. The stage is <code>184x118</code>; the image is capped to <code>112x90</code>.</li>
+            <li>The art stage uses a soft dark/purple well without its own border. The banner frame is already the container.</li>
+            <li>Title, tier, copy, and price are separate lanes. No text shares the top frame band.</li>
+            <li>The price badge is a simple padded asset with no side ornaments. The old ornate badge reads clipped in small shop scale and should be removed from this banner style.</li>
+            <li>Unavailable relics keep the real price, for example <code>$24</code>, and dim the price badge visually.</li>
+          </ul>
+
+          <div class="spec">
+            <strong>banner</strong><span>1032 x 178</span>
+            <strong>columns</strong><span>250 / fluid / 250</span>
+            <strong>gap</strong><span>30</span>
+            <strong>padding</strong><span>31 58 29 42</span>
+            <strong>art stage</strong><span>184 x 118</span>
+            <strong>icon cap</strong><span>112 x 90</span>
+            <strong>name</strong><span>33px</span>
+            <strong>tier</strong><span>17px</span>
+            <strong>copy</strong><span>20px, two lines</span>
+            <strong>price</strong><span>214 x 78, padded simple badge</span>
+          </div>
+
+          <ul class="notes">
+            <li>Runtime implementation copies this direction into <code>resources/art/assetgen/runtime/collection_ui/relic_banner_frame_*.png</code> and the shared <code>price_badge.png</code>.</li>
+            <li>Live shop geometry mirrors this mockup: the relic icon is centered inside a smaller cap, the text starts below the top rail, and the price badge is moved inward so it never clips at shop scale.</li>
+            <li>Keep this style deliberately plain. If another shop frame needs polish later, start from this no-ornament frame before adding any detail.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

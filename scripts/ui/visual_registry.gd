@@ -621,6 +621,14 @@ func collection_card_frame(rarity: String) -> Texture2D:
 	return texture if texture != null else placeholder_texture("collection_card_frame_%s_missing" % normalized, Color(0.12, 0.10, 0.08, 1.0), Vector2i(505, 720))
 
 
+func collection_relic_banner_frame(rarity: String) -> Texture2D:
+	var normalized := rarity.strip_edges().to_lower()
+	if normalized != "uncommon" and normalized != "rare":
+		normalized = "common"
+	var texture := _collection_ui_texture("relic_banner_frame_%s" % normalized)
+	return texture if texture != null else placeholder_texture("collection_relic_banner_frame_%s_missing" % normalized, Color(0.12, 0.07, 0.14, 1.0), Vector2i(1032, 178))
+
+
 func collection_price_badge() -> Texture2D:
 	var texture := _collection_ui_texture("price_badge")
 	return texture if texture != null else placeholder_texture("collection_price_badge_missing", Color(0.48, 0.27, 0.06, 1.0), Vector2i(486, 180))

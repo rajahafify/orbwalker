@@ -651,6 +651,7 @@ func _offer_from_content(content, entry_type: String, data: Dictionary, level: i
 		"icon_key": String(data.get("icon_key", "")),
 		"rarity": rarity,
 		"price": price,
+		"dungeon_level": level,
 		"sold_out": false,
 		"available": true,
 	}

@@ -96,6 +96,9 @@ func _test_collection_textures_resolve() -> String:
 		var frame: Texture2D = visuals.collection_card_frame(rarity)
 		if frame == null or frame.get_width() < 500 or frame.get_height() < 700:
 			return "Expected collection frame for %s to resolve to full card dimensions." % rarity
+		var relic_banner: Texture2D = visuals.collection_relic_banner_frame(rarity)
+		if relic_banner == null or relic_banner.get_width() < 1000 or relic_banner.get_height() < 140:
+			return "Expected collection relic banner frame for %s to resolve to a wide simple banner." % rarity
 	var badge: Texture2D = visuals.collection_price_badge()
 	if badge == null or badge.get_width() < 400 or badge.get_height() < 120:
 		return "Expected collection price badge to resolve."

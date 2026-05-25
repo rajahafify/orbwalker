@@ -24,8 +24,8 @@ const DESIGN_SIZE := Vector2(1080, 1920)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
 const MERCHANT_STAGE_RECT := Rect2(Vector2(16, 132), Vector2(1048, 338))
 const STOCK_PANEL_RECT := Rect2(Vector2(16, 484), Vector2(1048, 556))
-const RELIC_PANEL_RECT := Rect2(Vector2(16, 1054), Vector2(1048, 188))
-const ACTION_ROW_RECT := Rect2(Vector2(16, 1252), Vector2(1048, 164))
+const RELIC_PANEL_RECT := Rect2(Vector2(16, 1054), Vector2(1048, 218))
+const ACTION_ROW_RECT := Rect2(Vector2(16, 1282), Vector2(1048, 134))
 const SHOP_HEADER_TOPBAR_RECT := Rect2(Vector2.ZERO, TOP_BAR_RECT.size)
 const SHOP_HEADER_TITLE_RECT := Rect2(Vector2(34, 24), Vector2(560, 68))
 const SHOP_HEADER_GOLD_RECT := Rect2(Vector2(620, 20), Vector2(238, 76))
@@ -44,9 +44,9 @@ const SHOP_HELP_MODAL_TITLE_RECT := Rect2(Vector2(58, 60), Vector2(620, 116))
 const SHOP_HELP_MODAL_BODY_RECT := Rect2(Vector2(58, 198), Vector2(620, 142))
 const SHOP_HELP_MODAL_CLOSE_RECT := Rect2(Vector2(662, 24), Vector2(56, 56))
 const ACTION_HINT_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
-const ACTION_BUTTON_SIZE := Vector2(516, 126)
-const ACTION_REROLL_RECT := Rect2(Vector2(0, 20), ACTION_BUTTON_SIZE)
-const ACTION_CONTINUE_RECT := Rect2(Vector2(532, 20), ACTION_BUTTON_SIZE)
+const ACTION_BUTTON_SIZE := Vector2(516, 108)
+const ACTION_REROLL_RECT := Rect2(Vector2(0, 14), ACTION_BUTTON_SIZE)
+const ACTION_CONTINUE_RECT := Rect2(Vector2(532, 14), ACTION_BUTTON_SIZE)
 const OFFER_CARD_SIZE := COLLECTION_CARD_RENDERER.CARD_SIZE
 const OFFER_CARD_GAP := 0.0
 const OFFER_GRID_WIDTH := OFFER_CARD_SIZE.x * 3.0 + OFFER_CARD_GAP * 2.0
@@ -63,18 +63,23 @@ const OFFER_DESC_RECT := COLLECTION_CARD_RENDERER.CARD_COPY_RECT
 const OFFER_STATE_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const OFFER_PRICE_RECT := COLLECTION_CARD_RENDERER.CARD_BADGE_RECT
 const OFFER_COPY_MAX_CHARS := COLLECTION_CARD_RENDERER.CARD_COPY_MAX_CHARS
-const RELIC_TITLE_STRIP_RECT := Rect2(Vector2(0, 0), Vector2(RELIC_PANEL_RECT.size.x, 36))
-const RELIC_TITLE_TEXT_RECT := Rect2(Vector2(348, 0), Vector2(352, 36))
-const RELIC_TITLE_LEFT_RAIL_RECT := Rect2(Vector2(28, 17), Vector2(304, 2))
-const RELIC_TITLE_RIGHT_RAIL_RECT := Rect2(Vector2(716, 17), Vector2(304, 2))
-const RELIC_BANNER_RECT := Rect2(Vector2(0, 36), Vector2(RELIC_PANEL_RECT.size.x, 152))
-const RELIC_ART_FRAME_RECT := Rect2(Vector2(30, 48), Vector2(258, 132))
-const RELIC_ICON_RECT := Rect2(Vector2(0, 0), Vector2(258, 132))
-const RELIC_TIER_RECT := Rect2(Vector2(320, 96), Vector2(420, 28))
-const RELIC_NAME_RECT := Rect2(Vector2(320, 48), Vector2(450, 52))
-const RELIC_DESC_RECT := Rect2(Vector2(320, 124), Vector2(410, 48))
-const RELIC_PRICE_RECT := Rect2(Vector2(820, 88), Vector2(178, 62))
-const RELIC_STATE_RECT := Rect2(Vector2(794, 46), Vector2(226, 38))
+const RELIC_TITLE_STRIP_RECT := Rect2(Vector2(0, 0), Vector2(RELIC_PANEL_RECT.size.x, 40))
+const RELIC_TITLE_TEXT_RECT := Rect2(Vector2(344, 0), Vector2(360, 42))
+const RELIC_TITLE_LEFT_RAIL_RECT := Rect2(Vector2(42, 20), Vector2(282, 2))
+const RELIC_TITLE_RIGHT_RAIL_RECT := Rect2(Vector2(724, 20), Vector2(282, 2))
+const RELIC_BANNER_RECT := Rect2(Vector2(8, 40), Vector2(1032, 178))
+const RELIC_BANNER_FRAME_RECT := Rect2(Vector2.ZERO, RELIC_BANNER_RECT.size)
+const RELIC_CONTENT_TOP_INSET := 31.0
+const RELIC_ART_FRAME_RECT := Rect2(Vector2(83, 71), Vector2(184, 118))
+const RELIC_ART_GLOW_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const RELIC_ICON_RECT := Rect2(Vector2(36, 14), Vector2(112, 90))
+const RELIC_TEXT_BACKING_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const RELIC_NAME_RECT := Rect2(Vector2(330, 72), Vector2(410, 36))
+const RELIC_TIER_RECT := Rect2(Vector2(330, 111), Vector2(410, 22))
+const RELIC_DESC_RECT := Rect2(Vector2(330, 141), Vector2(410, 54))
+const RELIC_PRICE_RECT := Rect2(Vector2(768, 91), Vector2(214, 78))
+const RELIC_PRICE_DIVIDER_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+const RELIC_STATE_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
@@ -427,7 +432,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 		_relic_card.disabled = true
 		_relic_card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 		_relic_card.tooltip_text = ""
-		_apply_card_chrome(_relic_card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
+		_apply_transparent_button_chrome(_relic_card)
 		var empty_root := _make_child_root(_relic_card)
 		_make_dynamic_label(empty_root, "DUNGEON RELIC", Rect2(Vector2(24, 24), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 		_make_dynamic_label(empty_root, "Relic offer unavailable.", Rect2(Vector2(24, 86), Vector2(1000, 42)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
@@ -439,33 +444,44 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	var affordable := bool(relic_offer.get("affordable", false))
 	var disabled := sold_out or treasure_chest_pending or not affordable
 	_relic_card.disabled = disabled
-	_relic_card.modulate = Color(0.52, 0.52, 0.56, 0.90) if disabled else Color.WHITE
+	_relic_card.modulate = Color(0.88, 0.88, 0.90, 0.94) if disabled else Color.WHITE
 	_relic_card.tooltip_text = ""
-	_apply_card_chrome(_relic_card, Color(0.10, 0.04, 0.12, 0.96), _rarity_color(rarity), Color(0.18, 0.07, 0.20, 0.99))
+	_apply_transparent_button_chrome(_relic_card)
 
 	var root := _make_child_root(_relic_card)
-	_make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.03, 0.03, 0.03, 0.82), GOLD_COLOR.darkened(0.20), 0, 2, Vector4(0, 0, 0, 0)))
-	_make_dynamic_panel(root, RELIC_TITLE_LEFT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.15), GOLD_COLOR.darkened(0.15), 0, 0, Vector4(0, 0, 0, 0)))
-	_make_dynamic_panel(root, RELIC_TITLE_RIGHT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.15), GOLD_COLOR.darkened(0.15), 0, 0, Vector4(0, 0, 0, 0)))
-	_make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_TEXT_RECT, GOLD_COLOR, 32, HORIZONTAL_ALIGNMENT_CENTER)
-	_make_dynamic_panel(root, RELIC_BANNER_RECT, UI_UTILS.panel_style(Color(0.07, 0.03, 0.09, 0.84), _rarity_color(rarity), 2, 4, Vector4(8, 6, 8, 6)))
-	var art_frame := _make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0.05, 0.04, 0.08, 0.92), _rarity_color(rarity), 2, 8, Vector4(8, 6, 8, 6)))
+	_make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.02, 0.02, 0.018, 0.58), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
+	_make_dynamic_panel(root, RELIC_TITLE_LEFT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
+	_make_dynamic_panel(root, RELIC_TITLE_RIGHT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
+	_make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_TEXT_RECT, GOLD_COLOR, 34, HORIZONTAL_ALIGNMENT_CENTER)
+
+	var banner_root := _make_root("RelicBannerRoot", root)
+	banner_root.position = RELIC_BANNER_RECT.position
+	banner_root.size = RELIC_BANNER_RECT.size
+	var banner_frame := _make_texture("RelicBannerFrame", banner_root)
+	banner_frame.texture = _visuals.collection_relic_banner_frame(rarity)
+	banner_frame.position = RELIC_BANNER_FRAME_RECT.position
+	banner_frame.size = RELIC_BANNER_FRAME_RECT.size
+	banner_frame.custom_minimum_size = RELIC_BANNER_FRAME_RECT.size
+	banner_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
+
+	var art_frame := _make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
+	art_frame.clip_contents = true
 	var icon := _make_texture("RelicIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
 	icon.tooltip_text = ""
 	icon.position = RELIC_ICON_RECT.position
 	icon.size = RELIC_ICON_RECT.size
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
-	_make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, _rarity_color(rarity), 42, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_make_dynamic_label(root, "%s RELIC - DUNGEON 1" % rarity.to_upper(), RELIC_TIER_RECT, _rarity_color(rarity), 24)
-	_make_dynamic_label(root, String(relic_offer.get("description", "No details available.")), RELIC_DESC_RECT, INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
+	icon.custom_minimum_size = RELIC_ICON_RECT.size
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
+	var title_color := _relic_title_color(rarity)
+	var name_label := _make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, title_color, 34, HORIZONTAL_ALIGNMENT_LEFT)
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
+	var tier_label := _make_dynamic_label(root, "%s RELIC - DUNGEON %d" % [rarity.to_upper(), int(relic_offer.get("dungeon_level", 1))], RELIC_TIER_RECT, title_color, 18)
+	tier_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
+	var copy_label := _make_dynamic_label(root, _shop_relic_description(relic_offer), RELIC_DESC_RECT, INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
+	copy_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
+	copy_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
-	if sold_out:
-		_make_state_badge(root, RELIC_STATE_RECT, "SOLD OUT", NEGATIVE_COLOR, 18)
-	elif treasure_chest_pending:
-		_make_state_badge(root, RELIC_STATE_RECT, "CHEST FIRST", GOLD_COLOR, 18)
-	elif not affordable:
-		_make_state_badge(root, RELIC_STATE_RECT, "NOT ENOUGH GOLD", NEGATIVE_COLOR, 18)
 
 
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
@@ -694,6 +710,40 @@ func _compact_consumable_description(display_name: String, description: String) 
 	return description
 
 
+func _shop_relic_description(relic_offer: Dictionary) -> String:
+	var content_id := String(relic_offer.get("content_id", "")).to_lower()
+	var description := String(relic_offer.get("description", ""))
+	if content_id == "deep_pockets":
+		return "Gold value +2\n+2 bonus Gold"
+	if content_id == "stalwart_mantle":
+		return "Gain +6 Armor\nat turn start"
+	if content_id == "golden_idol":
+		return "Combo multiplier x1.20\n+2 bonus Gold"
+	if content_id == "crown_of_chains":
+		return "Combo count +3\n+5 Attack each turn"
+	if content_id == "merchant_compass":
+		return "+1 bonus Gold\n+2 Healing on Hearts"
+	return _wrap_relic_copy(description)
+
+
+func _wrap_relic_copy(value: String) -> String:
+	var lines: Array[String] = []
+	for raw_segment in value.strip_edges().split("\n", false):
+		var words := String(raw_segment).strip_edges().split(" ", false)
+		var current := ""
+		for word_value in words:
+			var word := String(word_value)
+			var candidate := word if current == "" else "%s %s" % [current, word]
+			if candidate.length() > 26 and current != "":
+				lines.append(current)
+				current = word
+			else:
+				current = candidate
+		if current != "":
+			lines.append(current)
+	return "\n".join(lines.slice(0, 2))
+
+
 func _mastery_element_name(display_name: String, content_id: String) -> String:
 	var clean_display := display_name.replace(" Mastery", "").strip_edges()
 	if clean_display != "":
@@ -728,6 +778,18 @@ func _is_full_slot_reason(reason: String) -> bool:
 
 func _rarity_color(rarity: String) -> Color:
 	return RARITY_COLORS.get(rarity.to_lower(), RARITY_COLORS["common"])
+
+
+func _relic_title_color(rarity: String) -> Color:
+	match rarity.to_lower():
+		"uncommon":
+			return Color(0.52, 0.88, 1.0, 1.0)
+		"rare":
+			return Color(0.92, 0.58, 1.0, 1.0)
+		"epic":
+			return Color(1.0, 0.52, 1.0, 1.0)
+		_:
+			return Color(1.0, 0.82, 0.48, 1.0)
 
 
 func apply_layout() -> void:
@@ -983,11 +1045,24 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 			"title_strip_rect": RELIC_TITLE_STRIP_RECT,
 			"title_text_rect": RELIC_TITLE_TEXT_RECT,
 			"banner_rect": RELIC_BANNER_RECT,
+			"banner_frame_rect": RELIC_BANNER_FRAME_RECT,
+			"uses_collection_relic_banner_frame": true,
+			"uses_collection_price_badge": true,
+			"uses_compact_relic_copy": true,
+			"native_button_chrome_visible": false,
+			"content_top_inset": RELIC_CONTENT_TOP_INSET,
 			"art_rect": RELIC_ART_FRAME_RECT,
+			"art_glow_rect": RELIC_ART_GLOW_RECT,
+			"art_backing_visible": false,
+			"icon_rect": RELIC_ICON_RECT,
 			"name_rect": RELIC_NAME_RECT,
+			"tier_rect": RELIC_TIER_RECT,
 			"description_rect": RELIC_DESC_RECT,
 			"state_rect": RELIC_STATE_RECT,
+			"state_badge_visible": false,
 			"price_rect": RELIC_PRICE_RECT,
+			"price_divider_rect": RELIC_PRICE_DIVIDER_RECT,
+			"price_text_when_unaffordable": "$24",
 		},
 		"slot_detail_popover_probe": hud_slot_popover_probe,
 		"player_hud_section": hud_section,
@@ -1014,6 +1089,12 @@ func _apply_card_chrome(button: Button, bg_color: Color, border_color: Color, ho
 	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 3, 4, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 3, 4, Vector4(8, 6, 8, 6)))
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
+
+
+func _apply_transparent_button_chrome(button: Button) -> void:
+	button.flat = true
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+		button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 
 
 func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
@@ -1139,17 +1220,13 @@ func _configure_label(label: Label, text: String, font_size: int, color: Color, 
 func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
 	var disabled_affordability := disabled and text.begins_with("$")
 	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT CHEST"
-	var border := GOLD_COLOR
 	var label_color := GOLD_COLOR
 	if disabled:
 		if disabled_affordability:
-			border = NEGATIVE_COLOR
-			label_color = NEGATIVE_COLOR
+			label_color = Color(0.82, 0.66, 0.43, 1.0)
 		elif sold_or_blocked:
-			border = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 			label_color = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
 		else:
-			border = Color(0.28, 0.28, 0.30, 0.92)
 			label_color = MUTED_COLOR
 	var badge_texture_value: Texture2D = _visuals.collection_price_badge()
 	var badge_rect := rect.grow_individual(2, 1, 2, 1) if not disabled else rect
@@ -1160,10 +1237,8 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 	badge_frame.texture = badge_texture_value
 	badge_frame.custom_minimum_size = badge_rect.size
 	badge_frame.size = badge_rect.size
-	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else Color(0.72, 0.70, 0.66, 0.78)
-	if disabled:
-		_make_dynamic_panel(parent, rect, UI_UTILS.panel_style(Color(0.03, 0.02, 0.02, 0.42), border, 0, 6, Vector4.ZERO))
-	var font_size := 36 if rect.size.y >= 50.0 and text.begins_with("$") else 20
+	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else Color(0.86, 0.80, 0.68, 0.82)
+	var font_size := 40 if rect.size.y >= 50.0 and text.begins_with("$") else 20
 	_make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
 
 

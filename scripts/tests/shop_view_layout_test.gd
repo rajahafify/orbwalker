@@ -262,15 +262,51 @@ func _test_stock_cards_fit() -> String:
 	var relic_title: Rect2 = relic_readability.get("title_strip_rect", Rect2())
 	var relic_banner: Rect2 = relic_readability.get("banner_rect", Rect2())
 	var relic_art: Rect2 = relic_readability.get("art_rect", Rect2())
+	var relic_icon: Rect2 = relic_readability.get("icon_rect", Rect2())
+	var relic_name: Rect2 = relic_readability.get("name_rect", Rect2())
+	var relic_tier: Rect2 = relic_readability.get("tier_rect", Rect2())
+	var relic_description: Rect2 = relic_readability.get("description_rect", Rect2())
 	var relic_price: Rect2 = relic_readability.get("price_rect", Rect2())
+	var relic_price_divider: Rect2 = relic_readability.get("price_divider_rect", Rect2())
 	if not _rect_contains(relic_bounds, relic_title) or not _rect_contains(relic_bounds, relic_banner):
 		return "Expected relic title strip and banner to stay inside relic panel."
 	if not is_equal_approx(relic_title.end.y, relic_banner.position.y):
 		return "Expected relic title strip to sit directly above the relic banner."
-	if relic_art.size.x < 250.0 or relic_art.size.y < 130.0:
-		return "Expected relic art region to be large."
-	if relic_price.size.x < 170.0 or relic_price.size.y < 60.0:
-		return "Expected relic price region to be large."
+	if not bool(relic_readability.get("uses_collection_relic_banner_frame", false)):
+		return "Expected relic banner to use the asset-backed collection relic frame."
+	if not bool(relic_readability.get("uses_collection_price_badge", false)):
+		return "Expected relic banner to use the shared price badge asset."
+	if not bool(relic_readability.get("uses_compact_relic_copy", false)):
+		return "Expected relic banner to use compact readable relic copy."
+	if bool(relic_readability.get("native_button_chrome_visible", true)):
+		return "Expected relic banner button to have no native hover/focus chrome."
+	if bool(relic_readability.get("state_badge_visible", true)):
+		return "Expected relic banner not to show a separate prototype state badge."
+	if String(relic_readability.get("price_text_when_unaffordable", "")) != "$24":
+		return "Expected unaffordable relic price to remain a compact price, not NEED text."
+	var content_top_inset := float(relic_readability.get("content_top_inset", 0.0))
+	if relic_name.position.y < relic_banner.position.y + content_top_inset:
+		return "Expected relic name to stay below the simple banner top rail."
+	if relic_art.position.y < relic_banner.position.y + content_top_inset:
+		return "Expected relic art to stay below the simple banner top rail."
+	if relic_art.size.x < 180.0 or relic_art.size.y < 110.0:
+		return "Expected relic art region to be large enough while staying contained."
+	if not _rect_contains(relic_bounds, relic_art) or not _rect_contains(relic_art, Rect2(relic_art.position + relic_icon.position, relic_icon.size)):
+		return "Expected relic icon to stay inside the dedicated art region."
+	if bool(relic_readability.get("art_backing_visible", true)):
+		return "Expected relic art to integrate into the banner without a separate prototype backing."
+	if relic_price.size.x < 200.0 or relic_price.size.y < 68.0:
+		return "Expected relic price badge to be large and reference-like."
+	if not _rect_contains(relic_bounds, relic_name) or not _rect_contains(relic_bounds, relic_tier) or not _rect_contains(relic_bounds, relic_description):
+		return "Expected relic text regions to stay inside the banner."
+	if relic_name.intersects(relic_art) or relic_description.intersects(relic_price) or relic_price_divider.intersects(relic_description):
+		return "Expected relic art, copy, divider, and price regions not to overlap."
+	var compact_relic: String = shop_view._shop_relic_description({
+		"content_id": "crown_of_chains",
+		"description": "Combo count +3 and +5 flat elemental damage each turn.",
+	})
+	if compact_relic != "Combo count +3\n+5 Attack each turn":
+		return "Expected relic copy to be compact and readable."
 	return ""
 
 
