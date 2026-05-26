@@ -190,11 +190,16 @@ var _treasure_chest_title_label: Label
 var _treasure_chest_hint_label: Label
 var _treasure_chest_option_buttons: Array[Button] = []
 var _skip_treasure_chest_button: Button
+var _tutorial_overlay: Control
+var _tutorial_focus_frame: Panel
+var _tutorial_prompt_panel: Panel
+var _tutorial_prompt_label: Label
 
 var _visuals
 var _player_loadout_hud
 var _current_shop_layout: Dictionary = {}
 var _current_player_hud_layout_override: Dictionary = {}
+var _current_tutorial_shop_phase := ""
 
 func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 	_background = root_nodes.get("background") as TextureRect
@@ -306,6 +311,7 @@ func _create_ui() -> void:
 	_shop_help_title_label = _make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_shop_help_body_label = _make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_shop_help_close_button = _make_button("ShopHelpCloseButton", _shop_help_modal, "x")
+	_create_tutorial_overlay()
 
 
 func _bind_shared_player_hud_scene() -> void:
@@ -385,6 +391,7 @@ func render(snapshot: Dictionary) -> void:
 	var progression_snapshot: Dictionary = snapshot.get("progression", {})
 	var pending_options: Array = snapshot.get("pending_treasure_chest_options", [])
 	var treasure_chest_pending := bool(snapshot.get("treasure_chest_pending", false))
+	_current_tutorial_shop_phase = String(snapshot.get("tutorial_shop_phase", ""))
 
 	_title_label.text = "Dungeon %d-%d" % [int(snapshot.get("dungeon_level", 1)), int(snapshot.get("shop_ordinal", 1))]
 	_boss_preview_label.text = "Boss preview: %s" % String(snapshot.get("boss_preview", "-"))
@@ -404,6 +411,7 @@ func render(snapshot: Dictionary) -> void:
 	_render_build_panel(snapshot)
 	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
 	_render_treasure_chest_overlay(pending_options)
+	_render_tutorial_overlay()
 	apply_layout()
 
 
@@ -412,18 +420,18 @@ func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending:
 	var sold_out := bool(offer.get("sold_out", false))
 	var price := int(offer.get("price", 0))
 	var affordable := bool(offer.get("affordable", false))
-	var disabled := sold_out or treasure_chest_pending or not affordable
+	var disabled := bool(offer.get("disabled", sold_out or treasure_chest_pending or not affordable))
 	var card_data := offer.duplicate(true)
 	card_data["display_name"] = String(offer.get("display_name", "Offer"))
 	card_data["rarity"] = rarity
 	card_data["description"] = _shop_card_description(offer)
 	card_data["badge_text"] = _price_text(price, sold_out, affordable, treasure_chest_pending)
-	card_data["badge_enabled"] = not disabled
+	card_data["badge_enabled"] = bool(offer.get("badge_enabled", not disabled))
 	COLLECTION_CARD_RENDERER.render_card(card, _visuals, card_data, {
 		"disabled": disabled,
 		"tooltip_text": "",
 		"mouse_cursor": Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND,
-		"modulate": Color(0.58, 0.58, 0.60, 0.72) if disabled else Color.WHITE,
+		"modulate": Color(0.45, 0.45, 0.48, 0.52) if disabled and _current_tutorial_shop_phase != "" else Color(0.58, 0.58, 0.60, 0.72) if disabled else Color.WHITE,
 	})
 
 
@@ -456,7 +464,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	var price := int(relic_offer.get("price", 0))
 	var sold_out := bool(relic_offer.get("sold_out", false))
 	var affordable := bool(relic_offer.get("affordable", false))
-	var disabled := sold_out or treasure_chest_pending or not affordable
+	var disabled := bool(relic_offer.get("disabled", sold_out or treasure_chest_pending or not affordable))
 	_relic_card.disabled = disabled
 	_relic_card.modulate = Color.WHITE
 	_relic_card.tooltip_text = ""
@@ -518,7 +526,7 @@ func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool)
 	_action_hint_label.visible = false
 	_sell_equipment_button.visible = false
 	_sell_equipment_button.disabled = true
-	_continue_button.disabled = treasure_chest_pending
+	_continue_button.disabled = not bool(shop_snapshot.get("continue_enabled", not treasure_chest_pending))
 	_render_action_button_label(_continue_button, "CONTINUE", "", _continue_button.disabled)
 
 
@@ -600,6 +608,60 @@ func lock_transitions(enabled: bool) -> void:
 		_help_button.disabled = enabled
 	if _settings_button != null:
 		_settings_button.disabled = enabled
+
+
+func _create_tutorial_overlay() -> void:
+	_tutorial_overlay = _make_root("TutorialShopOverlay", _hud_overlay)
+	_tutorial_overlay.visible = false
+	_tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_tutorial_overlay.z_index = 80
+	_tutorial_focus_frame = _make_panel("TutorialShopFocusFrame", _tutorial_overlay)
+	_tutorial_focus_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_tutorial_focus_frame.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(1.0, 0.82, 0.12, 0.08), Color(1.0, 0.85, 0.18, 1.0), 5, 8, Vector4(8, 6, 8, 6)))
+	_tutorial_prompt_panel = _make_panel("TutorialShopPrompt", _tutorial_overlay)
+	_tutorial_prompt_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_tutorial_prompt_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.045, 0.065, 0.085, 0.96), Color(1.0, 0.72, 0.16, 0.98), 3, 8, Vector4(12, 10, 12, 10)))
+	_tutorial_prompt_label = _make_label("TutorialShopPromptLabel", _tutorial_prompt_panel, "", 30, Color(1.0, 0.92, 0.68, 1.0), HORIZONTAL_ALIGNMENT_CENTER, true)
+	_tutorial_prompt_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+
+
+func _render_tutorial_overlay() -> void:
+	if _tutorial_overlay == null:
+		return
+	_tutorial_overlay.visible = _current_tutorial_shop_phase != ""
+	if not _tutorial_overlay.visible:
+		return
+	var message := ""
+	match _current_tutorial_shop_phase:
+		"buy_shortsword":
+			message = "Buy Iron Shortsword.\nEquipment makes future fights easier."
+		"reroll":
+			message = "Reroll changes shop stock.\nTap Reroll now."
+		"continue":
+			message = "Continue leaves the shop.\nTap Continue to enter the next fight."
+		_:
+			message = ""
+	_tutorial_prompt_label.text = message
+
+
+func _tutorial_focus_rect() -> Rect2:
+	match _current_tutorial_shop_phase:
+		"buy_shortsword":
+			if _offer_cards.size() > 0:
+				return _control_rect_in_overlay(_offer_cards[0]).grow(10.0)
+		"reroll":
+			return _control_rect_in_overlay(_reroll_button).grow(10.0)
+		"continue":
+			return _control_rect_in_overlay(_continue_button).grow(10.0)
+	return Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+
+
+func _control_rect_in_overlay(control: Control) -> Rect2:
+	if control == null or _tutorial_overlay == null:
+		return Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+	var inverse := _tutorial_overlay.get_global_transform().affine_inverse()
+	var rect := control.get_global_rect()
+	return Rect2(inverse * rect.position, rect.size)
 
 
 func handle_global_input(event: InputEvent) -> bool:
@@ -979,6 +1041,7 @@ func apply_layout() -> void:
 	_apply_rect(_shop_help_title_label, SHOP_HELP_MODAL_TITLE_RECT)
 	_apply_rect(_shop_help_body_label, SHOP_HELP_MODAL_BODY_RECT)
 	_apply_rect(_shop_help_close_button, SHOP_HELP_MODAL_CLOSE_RECT)
+	_apply_tutorial_overlay_layout(logical_size)
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
@@ -986,6 +1049,24 @@ func _apply_rect(control: Control, rect: Rect2) -> void:
 		return
 	control.position = rect.position
 	control.size = rect.size
+
+
+func _apply_tutorial_overlay_layout(logical_size: Vector2) -> void:
+	if _tutorial_overlay == null or _tutorial_focus_frame == null or _tutorial_prompt_panel == null or _tutorial_prompt_label == null:
+		return
+	_apply_rect(_tutorial_overlay, Rect2(Vector2.ZERO, logical_size))
+	if not _tutorial_overlay.visible:
+		return
+	var focus_rect := _tutorial_focus_rect()
+	_apply_rect(_tutorial_focus_frame, focus_rect)
+	var prompt_size := Vector2(720.0, 148.0)
+	var prompt_x := clampf(focus_rect.get_center().x - prompt_size.x * 0.5, 28.0, maxf(28.0, logical_size.x - prompt_size.x - 28.0))
+	var prompt_y := focus_rect.position.y - prompt_size.y - 18.0
+	if prompt_y < 140.0:
+		prompt_y = focus_rect.end.y + 18.0
+	prompt_y = clampf(prompt_y, 28.0, maxf(28.0, logical_size.y - prompt_size.y - 28.0))
+	_apply_rect(_tutorial_prompt_panel, Rect2(Vector2(prompt_x, prompt_y), prompt_size))
+	_apply_rect(_tutorial_prompt_label, Rect2(Vector2(22.0, 12.0), prompt_size - Vector2(44.0, 24.0)))
 
 
 func _shop_player_hud_nodes() -> Dictionary:

@@ -52,6 +52,9 @@ var orb_texture_map: Dictionary = {}:
 
 var _flash_cells: Dictionary = {}
 var _glow_cells: Dictionary = {} # cell index -> true
+var _tutorial_hint_cells: Array[Vector2i] = []
+var _tutorial_hint_from: Vector2i = Vector2i(-1, -1)
+var _tutorial_hint_to: Vector2i = Vector2i(-1, -1)
 var _overlay_orbs: Array[Dictionary] = []
 var _suppressed_cells: Dictionary = {}
 var _glow_pulse_time: float = 0.0
@@ -68,8 +71,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	var changed: bool = false
 
-	if not _glow_cells.is_empty():
-		_glow_pulse_time = fmod(_glow_pulse_time + delta, matched_orb_pulse_period)
+	if not _glow_cells.is_empty() or not _tutorial_hint_cells.is_empty():
+		_glow_pulse_time += delta
 		changed = true
 
 	var flash_keys: Array = _flash_cells.keys()
@@ -165,6 +168,9 @@ func _draw() -> void:
 	if not _input_enabled:
 		_draw_locked_overlay(board_rect.grow(board_padding * 0.35))
 
+	_draw_tutorial_focus_mask(board_rect, cell_size)
+	_draw_tutorial_hint()
+
 
 func clear_animations() -> void:
 	_flash_cells.clear()
@@ -172,6 +178,22 @@ func clear_animations() -> void:
 	_glow_pulse_time = 0.0
 	_overlay_orbs.clear()
 	_suppressed_cells.clear()
+	queue_redraw()
+
+
+func set_tutorial_hint(from_cell: Vector2i, to_cell: Vector2i, cells: Array[Vector2i] = []) -> void:
+	_tutorial_hint_from = from_cell
+	_tutorial_hint_to = to_cell
+	_tutorial_hint_cells = cells.duplicate()
+	if _tutorial_hint_cells.is_empty():
+		_tutorial_hint_cells = [from_cell, to_cell]
+	queue_redraw()
+
+
+func clear_tutorial_hint() -> void:
+	_tutorial_hint_cells.clear()
+	_tutorial_hint_from = Vector2i(-1, -1)
+	_tutorial_hint_to = Vector2i(-1, -1)
 	queue_redraw()
 
 
@@ -200,6 +222,7 @@ func update_drag_visual_state(selected: Vector2i, path: Array[Vector2i], pointer
 func clear_board_presentation() -> void:
 	clear_animations()
 	clear_match_glow()
+	clear_tutorial_hint()
 	reset_drag_visual_state()
 
 
@@ -471,6 +494,130 @@ func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float 
 func _draw_drag_cell_socket(center: Vector2, radius: float, fill_color: Color) -> void:
 	if fill_color.a > 0.0:
 		draw_circle(center, radius * 0.70, fill_color)
+
+
+func _draw_tutorial_hint() -> void:
+	if _tutorial_hint_cells.is_empty():
+		return
+	var pulse_period := 1.1
+	var pulse := 0.5 + 0.5 * sin((_glow_pulse_time / pulse_period) * TAU)
+	var board_rect := _calculate_board_rect()
+	var cell_size := _cell_size_for_rect(board_rect)
+	for cell in _tutorial_hint_cells:
+		if not is_cell_valid(cell):
+			continue
+		var center := get_cell_center(cell)
+		var cell_rect := Rect2(center - Vector2(cell_size, cell_size) * 0.5, Vector2(cell_size, cell_size))
+		draw_rect(cell_rect.grow(7.0 + pulse * 4.0), Color(1.0, 0.82, 0.06, 0.18 + pulse * 0.10), false, 8.0)
+		draw_rect(cell_rect.grow(2.0), Color(1.0, 0.90, 0.22, 0.92), false, 5.0)
+	if not is_cell_valid(_tutorial_hint_from) or not is_cell_valid(_tutorial_hint_to):
+		return
+	var path_points: Array[Vector2] = []
+	for cell in _tutorial_hint_cells:
+		if is_cell_valid(cell):
+			path_points.append(get_cell_center(cell))
+	if path_points.size() < 2:
+		return
+	for index in range(path_points.size() - 1):
+		_draw_tutorial_arrow_segment(path_points[index], path_points[index + 1])
+	_draw_tutorial_moving_arrow(path_points)
+
+
+func _draw_tutorial_arrow_segment(start: Vector2, end: Vector2) -> void:
+	var raw_direction := end - start
+	if raw_direction.length_squared() <= 0.01:
+		return
+	var direction := raw_direction.normalized()
+	var segment_start := start + direction * 28.0
+	var segment_end := end - direction * 34.0
+	draw_line(segment_start, segment_end, Color(1.0, 0.88, 0.04, 1.0), 12.0, true)
+	draw_line(segment_start, segment_end, Color(1.0, 0.55, 0.0, 1.0), 6.0, true)
+	_draw_tutorial_arrow_head(segment_end + direction * 18.0, direction, Color(1.0, 0.78, 0.02, 1.0), 0.92)
+
+
+func _draw_tutorial_arrow_head(tip: Vector2, direction: Vector2, color: Color, arrow_scale: float) -> void:
+	var normal := Vector2(-direction.y, direction.x)
+	var arrow_back := tip - direction * 28.0 * arrow_scale
+	draw_colored_polygon(
+		PackedVector2Array([
+			tip,
+			arrow_back + normal * 18.0 * arrow_scale,
+			arrow_back - normal * 18.0 * arrow_scale,
+		]),
+		color
+	)
+	draw_polyline(
+		PackedVector2Array([
+			tip,
+			arrow_back + normal * 18.0 * arrow_scale,
+			arrow_back - normal * 18.0 * arrow_scale,
+			tip,
+		]),
+		Color(1.0, 0.96, 0.36, color.a),
+		3.0 * arrow_scale,
+		true
+	)
+
+
+func _draw_tutorial_moving_arrow(path_points: Array[Vector2]) -> void:
+	var total_length := 0.0
+	for index in range(path_points.size() - 1):
+		total_length += path_points[index].distance_to(path_points[index + 1])
+	if total_length <= 0.0:
+		return
+	var travel_period := 1.45
+	var travel_ratio := fmod(_glow_pulse_time, travel_period) / travel_period
+	var sample := _sample_tutorial_path(path_points, total_length * travel_ratio)
+	var arrow_position: Vector2 = sample.get("position", path_points[0])
+	var direction: Vector2 = sample.get("direction", Vector2.DOWN)
+	var glow_origin := arrow_position - direction * 12.0
+	draw_circle(glow_origin, 20.0, Color(1.0, 0.90, 0.03, 0.20))
+	draw_circle(glow_origin, 10.0, Color(1.0, 0.55, 0.0, 0.28))
+	_draw_tutorial_arrow_head(arrow_position + direction * 20.0, direction, Color(1.0, 0.97, 0.05, 1.0), 1.25)
+
+
+func _sample_tutorial_path(path_points: Array[Vector2], distance: float) -> Dictionary:
+	var remaining_distance := distance
+	for index in range(path_points.size() - 1):
+		var segment_start: Vector2 = path_points[index]
+		var segment_end: Vector2 = path_points[index + 1]
+		var segment := segment_end - segment_start
+		var segment_length := segment.length()
+		if segment_length <= 0.01:
+			continue
+		var segment_direction := segment / segment_length
+		if remaining_distance <= segment_length:
+			return {
+				"position": segment_start + segment_direction * remaining_distance,
+				"direction": segment_direction,
+			}
+		remaining_distance -= segment_length
+	var final_start: Vector2 = path_points[path_points.size() - 2]
+	var final_end: Vector2 = path_points[path_points.size() - 1]
+	return {
+		"position": final_end,
+		"direction": (final_end - final_start).normalized(),
+	}
+
+
+func _draw_tutorial_focus_mask(board_rect: Rect2, cell_size: float) -> void:
+	if _tutorial_hint_cells.is_empty():
+		return
+	var focus_cells := {}
+	for cell in _tutorial_hint_cells:
+		if is_cell_valid(cell):
+			focus_cells[_cell_index(cell.x, cell.y)] = true
+	for row in BoardModel.ROW_COUNT:
+		for column in BoardModel.COLUMN_COUNT:
+			if focus_cells.has(_cell_index(column, row)):
+				continue
+			var pos := board_rect.position + Vector2(
+				column * (cell_size + cell_spacing),
+				row * (cell_size + cell_spacing)
+			)
+			var rect := Rect2(pos, Vector2(cell_size, cell_size))
+			draw_rect(rect.grow(-2.0), Color(0.0, 0.0, 0.0, 0.58), true)
+			draw_rect(rect.grow(-2.0), Color(0.05, 0.08, 0.11, 0.82), false, 2.0)
 
 
 func _draw_locked_overlay(rect: Rect2) -> void:

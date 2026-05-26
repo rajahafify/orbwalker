@@ -75,11 +75,11 @@ func ready() -> void:
 		{"ok": bool(open_result.get("ok", false))},
 		_flow_trace_route_id
 	)
-	_set_status(
-		"Shop opened. Buy, reroll, sell, or continue." if bool(open_result.get("ok", false))
-		else "Failed to open shop: %s" % String(open_result.get("reason", "unknown")),
-		bool(open_result.get("ok", false))
-	)
+	var shop_open_ok := bool(open_result.get("ok", false))
+	var status_message := "Failed to open shop: %s" % String(open_result.get("reason", "unknown"))
+	if shop_open_ok:
+		status_message = _tutorial_shop_status() if RunState.is_tutorial_run() else "Shop opened. Buy, reroll, sell, or continue."
+	_set_status(status_message, shop_open_ok)
 	_refresh_ui()
 	RunState.flow_trace_mark("shop_after_refresh_ui", {}, _flow_trace_route_id)
 	Callable(self, "_trace_flow_first_usable_frame").call_deferred()
@@ -176,9 +176,17 @@ func _buy_offer_at(index: int) -> void:
 	if index < 0 or index >= item_offers.size():
 		return
 	var offer: Dictionary = item_offers[index]
+	if _tutorial_shop_phase() != "":
+		if _tutorial_shop_phase() != "buy_shortsword" or String(offer.get("content_id", "")) != "shortsword":
+			_set_status(_tutorial_shop_status(), false)
+			_refresh_ui()
+			return
 	var result: Dictionary = RunState.buy_shop_offer(String(offer.get("offer_id", "")))
 	_play_shop_result_sfx(result, "purchase")
-	_set_status(_result_message("Buy %s" % String(offer.get("display_name", "offer")), result), bool(result.get("ok", false)))
+	if bool(result.get("ok", false)) and RunState.is_tutorial_run():
+		_set_status(_tutorial_shop_status(), true)
+	else:
+		_set_status(_result_message("Buy %s" % String(offer.get("display_name", "offer")), result), bool(result.get("ok", false)))
 	_refresh_ui()
 
 
@@ -186,6 +194,10 @@ func _buy_relic_offer() -> void:
 	if not _model.try_begin_shop_action():
 		return
 	_clear_inventory_focus()
+	if _tutorial_shop_phase() != "":
+		_set_status(_tutorial_shop_status(), false)
+		_refresh_ui()
+		return
 	var relic_offer: Dictionary = RunState.ensure_shop_state().relic_offer
 	if relic_offer.is_empty():
 		return
@@ -199,14 +211,25 @@ func _on_reroll_pressed() -> void:
 	if not _model.try_begin_shop_action():
 		return
 	_clear_inventory_focus()
+	if _tutorial_shop_phase() != "" and _tutorial_shop_phase() != "reroll":
+		_set_status(_tutorial_shop_status(), false)
+		_refresh_ui()
+		return
 	var result: Dictionary = RunState.reroll_shop_items()
 	_play_shop_result_sfx(result, "ui_accept")
-	_set_status(_result_message("Reroll", result), bool(result.get("ok", false)))
+	if bool(result.get("ok", false)) and RunState.is_tutorial_run():
+		_set_status(_tutorial_shop_status(), true)
+	else:
+		_set_status(_result_message("Reroll", result), bool(result.get("ok", false)))
 	_refresh_ui()
 
 
 func _on_sell_pressed() -> void:
 	if not _model.try_begin_shop_action():
+		return
+	if _tutorial_shop_phase() != "":
+		_set_status(_tutorial_shop_status(), false)
+		_refresh_ui()
 		return
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var selected_kind: String = _model.selected_slot_kind(progression_snapshot)
@@ -228,6 +251,10 @@ func _on_sell_pressed() -> void:
 
 func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
 	if not _model.try_begin_shop_action():
+		return
+	if _tutorial_shop_phase() != "":
+		_set_status(_tutorial_shop_status(), false)
+		_refresh_ui()
 		return
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
 	_play_shop_result_sfx(result, "gold")
@@ -295,6 +322,10 @@ func _select_consumable_slot(index: int) -> void:
 
 func _on_continue_pressed() -> void:
 	if _model.transition_locked:
+		return
+	if _tutorial_shop_phase() != "" and _tutorial_shop_phase() != "continue":
+		_set_status(_tutorial_shop_status(), false)
+		_refresh_ui()
 		return
 	_begin_transition_lock()
 	_clear_inventory_focus()
@@ -397,6 +428,39 @@ func _on_scene_change_post_ready_rollback(result: Dictionary) -> void:
 func _set_status(message: String, positive: bool) -> void:
 	_model.set_status(message, positive)
 	_view.set_status(message, positive)
+
+
+func _tutorial_shop_status() -> String:
+	match _tutorial_shop_phase():
+		"buy_shortsword":
+			return "Tutorial: buy Iron Shortsword first."
+		"reroll":
+			return "Tutorial: reroll once to see new shop stock."
+		"continue":
+			return "Tutorial: continue to the next fight."
+		_:
+			return "Tutorial: buy an item if you can afford it, reroll to change stock, then Continue to the next fight."
+
+
+func _tutorial_shop_phase() -> String:
+	if not RunState.is_tutorial_run():
+		return ""
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "shop":
+		return ""
+	if RunState.has_method("current_shop_ordinal_in_level") and int(RunState.current_shop_ordinal_in_level()) != 1:
+		return ""
+	var progression_snapshot := RunState.progression_snapshot()
+	var has_shortsword := false
+	for raw_id in progression_snapshot.get("equipment_slots", []):
+		if String(raw_id) == "shortsword":
+			has_shortsword = true
+			break
+	if not has_shortsword:
+		return "buy_shortsword"
+	var shop_snapshot: Dictionary = RunState.ensure_shop_state().to_snapshot()
+	if int(shop_snapshot.get("reroll_count", 0)) <= 0:
+		return "reroll"
+	return "continue"
 
 
 func _clear_inventory_focus() -> void:

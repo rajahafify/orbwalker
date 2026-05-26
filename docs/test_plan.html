@@ -1407,6 +1407,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Validation passed: <code>git diff --check</code>; Godot MCP <code>view_script</code> for <code>combat_outcome_overlay.gd</code> and <code>combat_controller.gd</code>; <code>play_scene current</code> launched <code>res://scenes/combat.tscn</code> and reached <code>combat_first_usable_frame</code> without new runtime errors. The live editor session still reports the existing <code>accent</code> reload diagnostic and two enum warnings, tracked under ITCH-06/ITCH-08 public-build error gating.</li>
 <li>User manual QA passed on 2026-05-26 after confirming the redesigned boss reward overlay is readable, the extra ON/Chosen state badge is removed, the Continue button is visible, and the boss reward result-screen polish is accepted for this pass.</li>
 </ul>
+<p>Verification notes (2026-05-26, ITCH-02 tutorial/onboarding pass):</p>
+<ul>
+<li>Tutorial mode now uses the normal combat and shop scenes with deterministic tutorial seeds. The first combat teaches Gold-to-Fire matching, enemy attack intent, Shield/Armor blocking, Heart healing, and a multi-combo finisher through forced highlighted paths.</li>
+<li>The first shop tutorial forces buying <code>Iron Shortsword</code>, rerolling, and continuing through the normal shop UI. The following combat breaks the post-shop explanation into separate animated highlights for Shortsword and Mastery, then shows the end-of-tutorial Continue/Main Menu modal.</li>
+<li>Godot MCP <code>view_script</code> checks passed for <code>res://scripts/combat/combat_controller.gd</code> and <code>res://scripts/combat/combat_view.gd</code>; <code>git diff --check</code> passed. The live editor still reports the existing reload diagnostics (<code>accent</code> unused and two enum warnings), which remain tracked under public-build QA rather than this tutorial pass.</li>
+<li>Android deployment: exported <code>D:\godot\matchatro\Orbwalker.apk</code> at 2026-05-26 12:37:34 and installed it to connected device <code>b21e3ea8</code> with <code>adb install -r</code>; install returned <code>Success</code>.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

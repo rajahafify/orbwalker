@@ -15,6 +15,7 @@ var _start_run_button: Button
 var _generate_log_toggle: CheckButton
 var _continue_button: Button
 var _collection_button: Button
+var _tutorial_button: Button
 var _settings_button: Button
 var _quit_button: Button
 var _element_row: HBoxContainer
@@ -52,6 +53,7 @@ func bind(root_nodes: Dictionary) -> void:
 	_generate_log_toggle = root_nodes.get("generate_log_toggle") as CheckButton
 	_continue_button = root_nodes.get("continue_button") as Button
 	_collection_button = root_nodes.get("collection_button") as Button
+	_tutorial_button = root_nodes.get("tutorial_button") as Button
 	_settings_button = root_nodes.get("settings_button") as Button
 	_quit_button = root_nodes.get("quit_button") as Button
 	_element_row = root_nodes.get("element_row") as HBoxContainer
@@ -138,6 +140,7 @@ func apply_static_text() -> void:
 	_generate_log_toggle.text = "GENERATE LOG"
 	_continue_button.text = "CONTINUE"
 	_collection_button.text = "COLLECTION"
+	_tutorial_button.text = "TUTORIAL"
 	_settings_button.text = "SETTINGS"
 	_quit_button.text = "QUIT"
 	_profile_button.text = "PROFILE"
@@ -148,6 +151,7 @@ func apply_static_text() -> void:
 	_status_label.visible = false
 	_continue_button.disabled = true
 	_collection_button.disabled = false
+	_tutorial_button.disabled = false
 	_settings_button.disabled = true
 	_quit_button.disabled = true
 	_profile_button.disabled = false
@@ -181,6 +185,7 @@ func apply_chrome_styles() -> void:
 	_apply_menu_button_style(_generate_log_toggle, false, false)
 	_apply_menu_button_style(_continue_button, false, true)
 	_apply_menu_button_style(_collection_button, false, false)
+	_apply_menu_button_style(_tutorial_button, false, false)
 	_apply_menu_button_style(_settings_button, false, true)
 	_apply_menu_button_style(_quit_button, false, true)
 	_apply_footer_button_style(_profile_button)
@@ -231,7 +236,7 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_footer_actions.add_theme_constant_override("separation", int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))))
 
 	var menu_button_min_height := int(round(viewport_size.y * 0.052))
-	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
+	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _tutorial_button, _settings_button, _quit_button]:
 		button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
@@ -288,6 +293,10 @@ func set_collection_locked(locked: bool) -> void:
 	_collection_button.disabled = locked
 
 
+func set_tutorial_locked(locked: bool) -> void:
+	_tutorial_button.disabled = locked
+
+
 func set_reset_profile_locked(locked: bool) -> void:
 	_reset_profile_button.disabled = locked
 
@@ -307,7 +316,7 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 	var version_size := maxi(12, int(round(18.0 * scale_factor)))
 	var status_size := maxi(10, int(round(13.0 * scale_factor)))
 
-	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _settings_button, _quit_button]:
+	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _tutorial_button, _settings_button, _quit_button]:
 		button.add_theme_font_size_override("font_size", menu_size)
 	for label_node in _element_labels:
 		var element_label := label_node as Label

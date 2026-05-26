@@ -14,6 +14,7 @@ const MAIN_MENU_CONTROLLER_SCRIPT := preload("res://scripts/main_menu/main_menu_
 @onready var _generate_log_toggle: CheckButton = %GenerateLogToggle
 @onready var _continue_button: Button = %ContinueButton
 @onready var _collection_button: Button = %CollectionButton
+@onready var _tutorial_button: Button = %TutorialButton
 @onready var _settings_button: Button = %SettingsButton
 @onready var _quit_button: Button = %QuitButton
 @onready var _element_row: HBoxContainer = %ElementRow
@@ -89,6 +90,12 @@ func _on_collection_button_pressed() -> void:
 	if _controller != null:
 		_controller._on_collection_button_pressed()
 
+
+func _on_tutorial_button_pressed() -> void:
+	if _controller != null:
+		_controller._on_tutorial_button_pressed()
+
+
 func _on_profile_button_pressed() -> void:
 	if _controller != null:
 		_controller._on_profile_button_pressed()
@@ -125,6 +132,7 @@ func _build_root_nodes() -> Dictionary:
 		"generate_log_toggle": _generate_log_toggle,
 		"continue_button": _continue_button,
 		"collection_button": _collection_button,
+		"tutorial_button": _tutorial_button,
 		"settings_button": _settings_button,
 		"quit_button": _quit_button,
 		"element_row": _element_row,

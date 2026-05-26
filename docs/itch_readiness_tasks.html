@@ -386,11 +386,20 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-02-first-run-clarity-and-onboarding">ITCH-02: First-Run Clarity And Onboarding</h2>
 <ul>
 <li>Branch: <code>codex/itch-02-first-run-clarity</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>in progress</code></li>
 <li>Owner/scope: First-time player guidance across main menu, first combat, first shop, and run summary.</li>
 <li>Goal: A new player should understand the basic loop without reading an external explanation.</li>
+<li>Progress: 2026-05-26 added a dedicated main-menu <code>TUTORIAL</code> action that starts a tutorial run and routes through FlowTrace into the normal <code>res://scenes/combat.tscn</code> surface. Tutorial mode uses the real combat UI, normal run progression, normal shop UI, deterministic combat board seeds per turn, and deterministic shop RNG per shop/reroll so the flow is repeatable while still exercising the real game screens. The first tutorial combat now opens with readable dialogue and board highlights for the predetermined Gold-to-Fire match, then follows with enemy-attack, Shield/Armor block, Heart heal, and multi-combo finisher prompts that force the intended moves and restore the board when the player drags the wrong path. The first shop tutorial forces buying <code>Iron Shortsword</code>, rerolling, and continuing, then the next combat breaks down the post-shop lesson into animated highlights for Shortsword equipment, Mastery, and an end-of-tutorial modal with Continue/Main Menu choices.</li>
 <li>Acceptance:</li>
 <ul>
+<li>A dedicated Tutorial entry is available from the main menu.</li>
+<li>The tutorial uses the normal combat UI with deterministic board seeds.</li>
+<li>The first tutorial combat asks the player to swap the highlighted Gold and Fire orbs using an in-combat dialogue and board coachmark.</li>
+<li>The first tutorial combat then explains the enemy attack intent and asks the player to match highlighted Shield/Armor orbs to block damage.</li>
+<li>The tutorial uses the normal shop UI with deterministic offer generation.</li>
+<li>The tutorial shop forces the first damage item purchase, then demonstrates reroll and continue using the normal shop controls.</li>
+<li>Post-shop tutorial messaging separately explains the bought Shortsword, then Mastery, before ending tutorial guidance.</li>
+<li>The repeatable tutorial run demonstrates basic match 3, free orb movement, mastery, item buying, and relic selection through real gameplay surfaces.</li>
 <li>The first run teaches or clearly signals drag-to-match.</li>
 <li>The player can infer that Fire/Ice/Earth damage enemies, Heart heals, Armor blocks, and Gold buys.</li>
 <li>Enemy intent and player HP danger are explained or visually obvious before the first serious mistake.</li>
@@ -399,6 +408,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 </ul>
 <li>Validation:</li>
 <ul>
+<li>Godot MCP scene smoke for the main-menu Tutorial entry routing into <code>res://scenes/combat.tscn</code>.</li>
 <li>Godot MCP scene smoke for main, combat, shop, and run summary.</li>
 <li>Fresh first-run manual QA from new-run state.</li>
 <li>Optional external-player observation: player reaches the first shop without verbal instruction.</li>

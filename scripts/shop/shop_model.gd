@@ -49,8 +49,9 @@ func snapshot() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var pending_options: Array = shop_snapshot.get("pending_treasure_chest_options", [])
 	var treasure_chest_pending := not pending_options.is_empty()
+	var tutorial_shop_phase := _tutorial_shop_phase(progression_snapshot, shop_snapshot)
 	_validate_selected_slots(progression_snapshot)
-	_enrich_shop_snapshot(shop_snapshot, treasure_chest_pending)
+	_enrich_shop_snapshot(shop_snapshot, treasure_chest_pending, tutorial_shop_phase)
 	return {
 		"shop": shop_snapshot,
 		"progression": progression_snapshot,
@@ -66,6 +67,7 @@ func snapshot() -> Dictionary:
 		"status_message": status_message,
 		"status_positive": status_positive,
 		"transition_locked": transition_locked,
+		"tutorial_shop_phase": tutorial_shop_phase,
 	}
 
 
@@ -106,16 +108,52 @@ func _validate_selected_slots(progression_snapshot: Dictionary) -> void:
 		selected_consumable_slot = -1
 
 
-func _enrich_shop_snapshot(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
+func _enrich_shop_snapshot(shop_snapshot: Dictionary, treasure_chest_pending: bool, tutorial_shop_phase: String = "") -> void:
 	var item_offers: Array = []
 	for raw_offer in shop_snapshot.get("item_offers", []):
 		var offer := Dictionary(raw_offer).duplicate(true)
 		offer.merge(offer_enabled_state(offer, treasure_chest_pending), true)
+		if tutorial_shop_phase != "":
+			var is_target_shortsword := String(offer.get("content_id", "")) == "shortsword"
+			var is_buy_target := tutorial_shop_phase == "buy_shortsword" and is_target_shortsword and not bool(offer.get("sold_out", false)) and bool(offer.get("affordable", false))
+			offer["disabled"] = not is_buy_target
+			offer["badge_enabled"] = is_buy_target
+			offer["tutorial_target"] = is_buy_target
 		item_offers.append(offer)
 	shop_snapshot["item_offers"] = item_offers
 
 	var relic_offer := Dictionary(shop_snapshot.get("relic_offer", {})).duplicate(true)
 	if not relic_offer.is_empty():
 		relic_offer.merge(offer_enabled_state(relic_offer, treasure_chest_pending), true)
+		if tutorial_shop_phase != "":
+			relic_offer["disabled"] = true
+			relic_offer["badge_enabled"] = false
 	shop_snapshot["relic_offer"] = relic_offer
-	shop_snapshot["reroll_enabled"] = reroll_enabled(shop_snapshot, treasure_chest_pending)
+	var can_reroll := reroll_enabled(shop_snapshot, treasure_chest_pending)
+	var continue_enabled := not treasure_chest_pending
+	if tutorial_shop_phase != "":
+		can_reroll = tutorial_shop_phase == "reroll" and can_reroll
+		continue_enabled = tutorial_shop_phase == "continue"
+	shop_snapshot["reroll_enabled"] = can_reroll
+	shop_snapshot["continue_enabled"] = continue_enabled
+
+
+func _tutorial_shop_phase(progression_snapshot: Dictionary, shop_snapshot: Dictionary) -> String:
+	if not RunState.is_tutorial_run():
+		return ""
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "shop":
+		return ""
+	if RunState.has_method("current_shop_ordinal_in_level") and int(RunState.current_shop_ordinal_in_level()) != 1:
+		return ""
+	if not _progression_has_equipment(progression_snapshot, "shortsword"):
+		return "buy_shortsword"
+	if int(shop_snapshot.get("reroll_count", 0)) <= 0:
+		return "reroll"
+	return "continue"
+
+
+func _progression_has_equipment(progression_snapshot: Dictionary, item_id: String) -> bool:
+	for raw_id in progression_snapshot.get("equipment_slots", []):
+		if String(raw_id) == item_id:
+			return true
+	return false

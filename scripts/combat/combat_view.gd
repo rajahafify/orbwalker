@@ -4,6 +4,8 @@ class_name CombatView
 signal enemy_intent_bubble_hovered(kind: String, entry: Dictionary)
 signal enemy_block_preview_hovered(preview: Dictionary)
 signal intent_hover_ended
+signal tutorial_end_continue_pressed
+signal tutorial_end_main_menu_pressed
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
@@ -152,6 +154,20 @@ var _outcome_overlay: Variant = null
 var _intent_preview_emphasis_tween: Tween = null
 var _intent_bubble_tweens: Array[Tween] = []
 var _intent_entry_buttons: Array[Button] = []
+var _tutorial_intent_focus_kind := ""
+var _tutorial_end_overlay: Control = null
+var _tutorial_end_scrim: ColorRect = null
+var _tutorial_end_equipment_focus: Panel = null
+var _tutorial_end_mastery_focus: Panel = null
+var _tutorial_end_attack_focus: Panel = null
+var _tutorial_end_modal: Panel = null
+var _tutorial_end_title_label: Label = null
+var _tutorial_end_body_label: Label = null
+var _tutorial_end_continue_button: Button = null
+var _tutorial_end_main_menu_button: Button = null
+var _tutorial_end_step := "end"
+var _tutorial_end_focus_tween: Tween = null
+var _tutorial_end_animated_focus: Panel = null
 var _enemy_block_preview_button: Control = null
 var _enemy_block_preview_fill: ColorRect = null
 var _enemy_block_preview_pulse_tween: Tween = null
@@ -441,6 +457,7 @@ func apply_combat_layout(viewport_size: Vector2, timer_seconds: float, timer_sta
 	sync_timer_display(timer_seconds, timer_state)
 	_apply_enemy_visual_profile(_current_enemy_visual_id)
 	_layout_enemy_block_intent_preview()
+	_layout_tutorial_end_overlay()
 	return layout_result
 
 
@@ -738,11 +755,289 @@ func start_enemy_intent_hover_emphasis(kind: String) -> void:
 		target.scale = Vector2(1.12, 1.12)
 
 
+func set_tutorial_enemy_intent_focus(kind: String) -> void:
+	_tutorial_intent_focus_kind = kind
+	_apply_tutorial_enemy_intent_focus()
+
+
+func clear_tutorial_enemy_intent_focus() -> void:
+	_tutorial_intent_focus_kind = ""
+	stop_enemy_intent_hover_emphasis()
+
+
+func show_tutorial_end_modal(step := "end") -> void:
+	_tutorial_end_step = String(step)
+	_ensure_tutorial_end_overlay()
+	if _tutorial_end_overlay == null:
+		return
+	_apply_tutorial_end_step_content()
+	_tutorial_end_overlay.visible = true
+	_layout_tutorial_end_overlay()
+
+
+func hide_tutorial_end_modal() -> void:
+	if _tutorial_end_overlay == null:
+		return
+	_tutorial_end_overlay.visible = false
+	_stop_tutorial_end_focus_animation()
+
+
+func is_tutorial_end_modal_visible() -> bool:
+	return _tutorial_end_overlay != null and _tutorial_end_overlay.visible
+
+
 func stop_enemy_intent_hover_emphasis() -> void:
 	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
 		_intent_preview_emphasis_tween.kill()
 	_intent_preview_emphasis_tween = null
 	_reset_enemy_intent_emphasis()
+
+
+func _ensure_tutorial_end_overlay() -> void:
+	if _tutorial_end_overlay != null and is_instance_valid(_tutorial_end_overlay):
+		return
+	if _layout_root == null:
+		return
+	_tutorial_end_overlay = Control.new()
+	_tutorial_end_overlay.name = "TutorialEndOverlay"
+	_tutorial_end_overlay.visible = false
+	_tutorial_end_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_tutorial_end_overlay.z_index = 190
+	_layout_root.add_child(_tutorial_end_overlay)
+
+	_tutorial_end_scrim = ColorRect.new()
+	_tutorial_end_scrim.name = "TutorialEndScrim"
+	_tutorial_end_scrim.color = Color(0.0, 0.0, 0.0, 0.48)
+	_tutorial_end_scrim.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_tutorial_end_overlay.add_child(_tutorial_end_scrim)
+
+	_tutorial_end_mastery_focus = _make_tutorial_end_focus("MasteryFocus")
+	_tutorial_end_attack_focus = _make_tutorial_end_focus("AttackFocus")
+	_tutorial_end_equipment_focus = _make_tutorial_end_focus("EquipmentFocus")
+
+	_tutorial_end_modal = Panel.new()
+	_tutorial_end_modal.name = "TutorialEndModal"
+	_tutorial_end_modal.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_tutorial_end_modal.add_theme_stylebox_override("panel", _tutorial_end_modal_style())
+	_tutorial_end_overlay.add_child(_tutorial_end_modal)
+
+	_tutorial_end_title_label = _make_tutorial_end_label("TutorialEndTitle", "End of tutorial", 42, Color(1.0, 0.82, 0.28, 1.0))
+	_tutorial_end_modal.add_child(_tutorial_end_title_label)
+	_tutorial_end_body_label = _make_tutorial_end_label(
+		"TutorialEndBody",
+		"Iron Shortsword adds +2 Attack.\nFire, Ice, and Earth matches now hit harder.",
+		29,
+		Color(0.96, 0.90, 0.76, 1.0)
+	)
+	_tutorial_end_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	_tutorial_end_modal.add_child(_tutorial_end_body_label)
+
+	_tutorial_end_continue_button = _make_tutorial_end_button("TutorialEndContinueButton", "CONTINUE")
+	_tutorial_end_main_menu_button = _make_tutorial_end_button("TutorialEndMainMenuButton", "MAIN MENU")
+	_tutorial_end_modal.add_child(_tutorial_end_continue_button)
+	_tutorial_end_modal.add_child(_tutorial_end_main_menu_button)
+	_tutorial_end_continue_button.pressed.connect(func() -> void: tutorial_end_continue_pressed.emit())
+	_tutorial_end_main_menu_button.pressed.connect(func() -> void: tutorial_end_main_menu_pressed.emit())
+
+
+func _apply_tutorial_end_step_content() -> void:
+	if _tutorial_end_title_label == null or _tutorial_end_body_label == null or _tutorial_end_continue_button == null:
+		return
+	if _tutorial_end_step == "shortsword":
+		_tutorial_end_title_label.text = "Iron Shortsword"
+		_tutorial_end_body_label.text = "Iron Shortsword adds +2 Attack.\nMore Attack makes damage matches hit harder."
+		_tutorial_end_continue_button.text = "NEXT"
+	elif _tutorial_end_step == "mastery":
+		_tutorial_end_title_label.text = "Mastery"
+		_tutorial_end_body_label.text = "Mastery is each orb type's base power.\nFire, Ice, and Earth use Attack for damage."
+		_tutorial_end_continue_button.text = "NEXT"
+	else:
+		_tutorial_end_title_label.text = "End of tutorial"
+		_tutorial_end_body_label.text = "You know the basics.\nContinue the run or return to the main menu."
+		_tutorial_end_continue_button.text = "CONTINUE"
+	if _tutorial_end_main_menu_button != null:
+		_tutorial_end_main_menu_button.visible = _tutorial_end_step == "end"
+
+
+func _make_tutorial_end_focus(node_name: String) -> Panel:
+	var focus := Panel.new()
+	focus.name = node_name
+	focus.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	focus.add_theme_stylebox_override("panel", _tutorial_end_focus_style())
+	_tutorial_end_overlay.add_child(focus)
+	return focus
+
+
+func _make_tutorial_end_label(node_name: String, text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.name = node_name
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	label.clip_text = true
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
+	label.add_theme_constant_override("outline_size", 3)
+	return label
+
+
+func _make_tutorial_end_button(node_name: String, text: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = text
+	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
+	button.add_theme_font_size_override("font_size", 32)
+	button.add_theme_color_override("font_color", Color(1.0, 0.93, 0.76, 1.0))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.86, 1.0))
+	button.add_theme_color_override("font_pressed_color", Color(0.86, 0.78, 0.62, 1.0))
+	button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.90))
+	button.add_theme_constant_override("outline_size", 3)
+	var normal := _tutorial_end_button_style(Color(0.13, 0.18, 0.13, 0.98), Color(0.42, 0.82, 0.32, 1.0))
+	var hover := _tutorial_end_button_style(Color(0.18, 0.25, 0.16, 1.0), Color(0.62, 0.96, 0.44, 1.0))
+	var pressed := _tutorial_end_button_style(Color(0.09, 0.13, 0.08, 1.0), Color(0.33, 0.66, 0.24, 1.0))
+	if node_name.ends_with("MainMenuButton"):
+		normal = _tutorial_end_button_style(Color(0.16, 0.10, 0.08, 0.98), Color(0.86, 0.46, 0.28, 1.0))
+		hover = _tutorial_end_button_style(Color(0.24, 0.13, 0.10, 1.0), Color(1.0, 0.62, 0.38, 1.0))
+		pressed = _tutorial_end_button_style(Color(0.12, 0.07, 0.06, 1.0), Color(0.70, 0.34, 0.22, 1.0))
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	return button
+
+
+func _layout_tutorial_end_overlay() -> void:
+	if _tutorial_end_overlay == null or not is_instance_valid(_tutorial_end_overlay):
+		return
+	var root_size := _layout_root.size if _layout_root != null else Vector2(1080, 1920)
+	_tutorial_end_overlay.position = Vector2.ZERO
+	_tutorial_end_overlay.size = root_size
+	if _tutorial_end_scrim != null:
+		_tutorial_end_scrim.position = Vector2.ZERO
+		_tutorial_end_scrim.size = root_size
+	if not _tutorial_end_overlay.visible:
+		return
+	if _tutorial_end_mastery_focus != null:
+		_tutorial_end_mastery_focus.visible = false
+	if _tutorial_end_attack_focus != null:
+		_tutorial_end_attack_focus.visible = false
+	if _tutorial_end_equipment_focus != null:
+		_tutorial_end_equipment_focus.visible = false
+	var active_focus: Panel = null
+	if _tutorial_end_step == "shortsword":
+		_apply_tutorial_focus_rect(_tutorial_end_equipment_focus, _tutorial_first_equipment_rect().grow(10.0))
+		active_focus = _tutorial_end_equipment_focus
+	elif _tutorial_end_step == "mastery":
+		_apply_tutorial_focus_rect(_tutorial_end_mastery_focus, _local_rect_for_control(_elemental_mastery_panel).grow(10.0))
+		active_focus = _tutorial_end_mastery_focus
+	_set_tutorial_end_focus_animation(active_focus)
+
+	var modal_height := 438.0 if _tutorial_end_step == "end" else 360.0
+	var modal_size := Vector2(minf(820.0, root_size.x - 96.0), modal_height)
+	var modal_x := (root_size.x - modal_size.x) * 0.5
+	var modal_y := clampf(_layout_board_panel_rect.position.y + 64.0, 170.0, maxf(170.0, root_size.y - modal_size.y - 56.0))
+	_tutorial_end_modal.position = Vector2(modal_x, modal_y)
+	_tutorial_end_modal.size = modal_size
+	_tutorial_end_title_label.position = Vector2(32.0, 26.0)
+	_tutorial_end_title_label.size = Vector2(modal_size.x - 64.0, 64.0)
+	_tutorial_end_body_label.position = Vector2(52.0, 104.0)
+	_tutorial_end_body_label.size = Vector2(modal_size.x - 104.0, 96.0 if _tutorial_end_step == "end" else 108.0)
+	var button_size := Vector2(modal_size.x - 160.0, 76.0)
+	_tutorial_end_continue_button.position = Vector2(80.0, modal_size.y - (192.0 if _tutorial_end_step == "end" else 112.0))
+	_tutorial_end_continue_button.size = button_size
+	if _tutorial_end_main_menu_button != null:
+		_tutorial_end_main_menu_button.visible = _tutorial_end_step == "end"
+		_tutorial_end_main_menu_button.position = Vector2(80.0, modal_size.y - 96.0)
+		_tutorial_end_main_menu_button.size = button_size
+
+
+func _apply_tutorial_focus_rect(focus: Panel, rect: Rect2) -> void:
+	if focus == null or not is_instance_valid(focus):
+		return
+	focus.position = rect.position
+	focus.size = rect.size
+	focus.pivot_offset = rect.size * 0.5
+	focus.visible = rect.size.x > 2.0 and rect.size.y > 2.0
+
+
+func _set_tutorial_end_focus_animation(focus: Panel) -> void:
+	if focus == null or not is_instance_valid(focus) or not focus.visible:
+		_stop_tutorial_end_focus_animation()
+		return
+	focus.pivot_offset = focus.size * 0.5
+	if _tutorial_end_animated_focus == focus and _tutorial_end_focus_tween != null and is_instance_valid(_tutorial_end_focus_tween):
+		return
+	_stop_tutorial_end_focus_animation()
+	_tutorial_end_animated_focus = focus
+	focus.scale = Vector2.ONE
+	focus.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_tutorial_end_focus_tween = focus.create_tween()
+	_tutorial_end_focus_tween.set_loops()
+	_tutorial_end_focus_tween.tween_property(focus, "scale", Vector2(1.12, 1.12), 0.46).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tutorial_end_focus_tween.parallel().tween_property(focus, "modulate", Color(1.0, 0.93, 0.44, 1.0), 0.46).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tutorial_end_focus_tween.tween_property(focus, "scale", Vector2.ONE, 0.58).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tutorial_end_focus_tween.parallel().tween_property(focus, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.58).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_tutorial_end_focus_animation() -> void:
+	if _tutorial_end_focus_tween != null and is_instance_valid(_tutorial_end_focus_tween):
+		_tutorial_end_focus_tween.kill()
+	_tutorial_end_focus_tween = null
+	if _tutorial_end_animated_focus != null and is_instance_valid(_tutorial_end_animated_focus):
+		_tutorial_end_animated_focus.scale = Vector2.ONE
+		_tutorial_end_animated_focus.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_tutorial_end_animated_focus = null
+
+
+func _tutorial_first_equipment_rect() -> Rect2:
+	if _equipment_icons != null and is_instance_valid(_equipment_icons) and _equipment_icons.get_child_count() > 0:
+		for child in _equipment_icons.get_children():
+			if child is Control and (child as Control).visible:
+				return _local_rect_for_control(child as Control)
+	return _local_rect_for_control(_equipment_icons)
+
+
+func _local_rect_for_control(control: Control) -> Rect2:
+	if control == null or not is_instance_valid(control) or _tutorial_end_overlay == null:
+		return Rect2(Vector2(-9999, -9999), Vector2(1, 1))
+	var inverse := _tutorial_end_overlay.get_global_transform().affine_inverse()
+	var rect := control.get_global_rect()
+	return Rect2(inverse * rect.position, rect.size)
+
+
+func _tutorial_end_focus_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 0.84, 0.12, 0.08)
+	style.border_color = Color(1.0, 0.86, 0.18, 1.0)
+	style.set_border_width_all(5)
+	style.set_corner_radius_all(8)
+	style.shadow_color = Color(1.0, 0.72, 0.14, 0.45)
+	style.shadow_size = 14
+	return style
+
+
+func _tutorial_end_modal_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.035, 0.050, 0.065, 0.98)
+	style.border_color = Color(1.0, 0.72, 0.16, 1.0)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(10)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.60)
+	style.shadow_size = 16
+	return style
+
+
+func _tutorial_end_button_style(bg_color: Color, border_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_color = border_color
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 18
+	style.content_margin_right = 18
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	return style
 
 
 func _sync_top_hud(snapshot: Dictionary) -> void:
@@ -848,6 +1143,36 @@ func _intent_bubble_targets(kind: String) -> Array[Control]:
 	return targets
 
 
+func _apply_tutorial_enemy_intent_focus() -> void:
+	if _tutorial_intent_focus_kind == "":
+		return
+	for tween in _intent_bubble_tweens:
+		if tween != null and is_instance_valid(tween):
+			tween.kill()
+	_intent_bubble_tweens.clear()
+	for button in _intent_entry_buttons:
+		if button == null or not is_instance_valid(button):
+			continue
+		if String(button.get_meta("intent_kind", "")) != _tutorial_intent_focus_kind:
+			continue
+		var focus_style := _intent_bubble_focus_stylebox(_tutorial_intent_focus_kind)
+		button.add_theme_stylebox_override("normal", focus_style)
+		button.add_theme_stylebox_override("hover", focus_style)
+		button.add_theme_stylebox_override("pressed", focus_style)
+		button.add_theme_color_override("font_color", Color(1.0, 0.92, 0.30, 1.0))
+		button.add_theme_font_size_override("font_size", 25)
+		button.modulate = Color(1.0, 0.34, 0.28, 1.0) if _tutorial_intent_focus_kind == "attack" else Color(0.90, 0.96, 1.0, 1.0)
+		button.scale = Vector2(1.18, 1.18)
+		if _tutorial_intent_focus_kind == "attack":
+			var pulse_tween := button.create_tween()
+			pulse_tween.set_loops()
+			pulse_tween.tween_property(button, "modulate", Color(1.0, 0.14, 0.10, 1.0), 0.26)
+			pulse_tween.parallel().tween_property(button, "scale", Vector2(1.24, 1.24), 0.26)
+			pulse_tween.tween_property(button, "modulate", Color(0.48, 0.03, 0.02, 1.0), 0.34)
+			pulse_tween.parallel().tween_property(button, "scale", Vector2(1.10, 1.10), 0.34)
+			_intent_bubble_tweens.append(pulse_tween)
+
+
 func _reset_enemy_intent_emphasis() -> void:
 	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	_intent_label.scale = Vector2.ONE
@@ -859,6 +1184,13 @@ func _reset_enemy_intent_emphasis() -> void:
 			continue
 		button.scale = Vector2.ONE
 		button.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		var kind := String(button.get_meta("intent_kind", ""))
+		if kind != "" and kind != _tutorial_intent_focus_kind:
+			button.add_theme_stylebox_override("normal", _intent_bubble_stylebox(kind, false))
+			button.add_theme_stylebox_override("hover", _intent_bubble_stylebox(kind, true))
+			button.add_theme_stylebox_override("pressed", _intent_bubble_stylebox(kind, true))
+	if _tutorial_intent_focus_kind != "":
+		_apply_tutorial_enemy_intent_focus()
 
 
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
@@ -883,6 +1215,7 @@ func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
 		_intent_row.add_child(button)
 		_intent_entry_buttons.append(button)
 		index += 1
+	_apply_tutorial_enemy_intent_focus()
 
 
 func _clear_enemy_intent_bubbles() -> void:
@@ -934,6 +1267,16 @@ func _intent_bubble_stylebox(kind: String, hover: bool) -> StyleBoxFlat:
 	style.content_margin_right = 12.0
 	style.content_margin_top = 6.0
 	style.content_margin_bottom = 6.0
+	return style
+
+
+func _intent_bubble_focus_stylebox(kind: String) -> StyleBoxFlat:
+	var style := _intent_bubble_stylebox(kind, true)
+	style.bg_color = Color(0.20, 0.02, 0.02, 0.98) if kind == "attack" else Color(0.10, 0.16, 0.22, 0.98)
+	style.border_color = Color(1.0, 0.82, 0.08, 1.0)
+	style.set_border_width_all(4)
+	style.shadow_color = Color(1.0, 0.55, 0.0, 0.70)
+	style.shadow_size = 12
 	return style
 
 

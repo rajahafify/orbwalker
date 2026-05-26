@@ -14,6 +14,7 @@ var _drag_input_result_callback: Callable
 var _hovered_orb_changed_callback: Callable
 var _swap_animation_seconds: float = 0.08
 var _input_enabled := true
+var _restricted_drag_path: Array[Vector2i] = []
 
 var _active_drag := false
 var _drag_touch_index: int = -1
@@ -190,6 +191,22 @@ func set_input_enabled(enabled: bool) -> void:
 		_emit_hovered_orb_id(-1)
 
 
+func set_restricted_swap(from_cell: Vector2i, to_cell: Vector2i) -> void:
+	set_restricted_drag_path([from_cell, to_cell])
+
+
+func clear_restricted_swap() -> void:
+	clear_restricted_drag_path()
+
+
+func set_restricted_drag_path(path: Array[Vector2i]) -> void:
+	_restricted_drag_path = path.duplicate()
+
+
+func clear_restricted_drag_path() -> void:
+	_restricted_drag_path.clear()
+
+
 func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
 	if not input_enabled and not _active_drag:
 		return {"handled": _is_pointer_event(event), "action": ACTION_NONE}
@@ -283,6 +300,8 @@ func _start_drag(board_local_position: Vector2, input_enabled: bool) -> Dictiona
 	var start_cell := _board_view.board_position_to_cell(board_local_position)
 	if not _board_view.is_cell_valid(start_cell):
 		return {"handled": false, "action": ACTION_NONE}
+	if _is_drag_restricted() and start_cell != _restricted_drag_path[0]:
+		return {"handled": true, "action": ACTION_NONE}
 
 	_active_drag = true
 	_move_time_left = _resolve_move_timer_seconds()
@@ -311,6 +330,12 @@ func _update_drag(board_local_position: Vector2) -> void:
 		return
 	if not _is_orthogonally_adjacent(_drag_current_cell, target_cell):
 		return
+	if _is_drag_restricted():
+		var next_path_index := _drag_path.size()
+		if next_path_index >= _restricted_drag_path.size():
+			return
+		if target_cell != _restricted_drag_path[next_path_index]:
+			return
 
 	var from_cell := _drag_current_cell
 	var moving_orb_id := _board_model.get_cell(from_cell.x, from_cell.y)
@@ -331,6 +356,7 @@ func _end_drag(timed_out: bool, handled: bool) -> Dictionary:
 		"handled": handled,
 		"action": ACTION_END,
 		"timed_out": timed_out,
+		"path": _drag_path.duplicate(),
 	}
 
 
@@ -343,6 +369,10 @@ func _resolve_move_timer_seconds() -> float:
 func _is_orthogonally_adjacent(from_cell: Vector2i, to_cell: Vector2i) -> bool:
 	var delta := to_cell - from_cell
 	return abs(delta.x) + abs(delta.y) == 1
+
+
+func _is_drag_restricted() -> bool:
+	return not _restricted_drag_path.is_empty()
 
 
 func _refresh_drag_match_glow() -> void:

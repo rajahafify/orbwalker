@@ -32,6 +32,40 @@ const TEST_EQUIPMENT_IDS: Array[String] = [
 	"buckler",
 ]
 const TEST_CONSUMABLE_ID := "fire_scroll"
+const TUTORIAL_FIRST_SWAP_FROM := Vector2i(0, 2)
+const TUTORIAL_FIRST_SWAP_TO := Vector2i(1, 2)
+const TUTORIAL_ARMOR_BLOCK_PATH: Array[Vector2i] = [
+	Vector2i(2, 2),
+	Vector2i(2, 3),
+	Vector2i(2, 4),
+	Vector2i(1, 4),
+	Vector2i(1, 5),
+]
+const TUTORIAL_HEART_HEAL_PATH: Array[Vector2i] = [
+	Vector2i(3, 3),
+	Vector2i(2, 3),
+]
+const TUTORIAL_COMBO_FINISHER_PATH: Array[Vector2i] = [
+	Vector2i(4, 0),
+	Vector2i(4, 1),
+	Vector2i(3, 1),
+	Vector2i(2, 1),
+	Vector2i(1, 1),
+	Vector2i(1, 2),
+	Vector2i(1, 3),
+	Vector2i(1, 4),
+	Vector2i(1, 5),
+	Vector2i(2, 5),
+	Vector2i(3, 5),
+	Vector2i(4, 5),
+	Vector2i(4, 4),
+	Vector2i(4, 3),
+	Vector2i(4, 2),
+	Vector2i(4, 1),
+]
+const TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD := "above_board"
+const TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT := "below_intent"
+const TUTORIAL_PROMPT_ANCHOR_BOTTOM := "bottom"
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
@@ -137,6 +171,13 @@ var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
 var _combat_consumable_service: Variant = null
+var _tutorial_prompt_panel: Panel = null
+var _tutorial_prompt_label: Label = null
+var _tutorial_prompt_parent: Control = null
+var _tutorial_prompt_anchor := TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
+var _tutorial_drag_board_snapshot: BoardModel = null
+var _tutorial_end_choice_dismissed := false
+var _tutorial_post_shop_step := "shortsword"
 var _host: Control = null
 var _model = null
 var _view = null
@@ -370,6 +411,8 @@ func _ready() -> void:
 		_view.enemy_intent_bubble_hovered.connect(_on_enemy_intent_bubble_hovered)
 		_view.enemy_block_preview_hovered.connect(_on_enemy_block_preview_hovered)
 		_view.intent_hover_ended.connect(_on_intent_damage_preview_hover_ended)
+		_view.tutorial_end_continue_pressed.connect(_on_tutorial_end_continue_pressed)
+		_view.tutorial_end_main_menu_pressed.connect(_on_tutorial_end_main_menu_pressed)
 	_initialize_combat_state()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
 	_create_new_board()
@@ -575,14 +618,19 @@ func _begin_turn_preview() -> void:
 	_set_input_phase(InputPhase.PLAYER_INPUT)
 	_model.clear_pending_next_scene_path()
 	_hide_outcome_summary()
-	_set_turn_summary_text("Turn Summary: Awaiting move.")
-	_set_status_text("%s | Turn %d." % [
-		RunState.level_sequence_label(),
-		_combat.turn_index,
-	])
+	_set_turn_summary_text(_tutorial_turn_summary_text() if RunState.is_tutorial_run() else "Turn Summary: Awaiting move.")
+	_set_status_text(
+		_tutorial_turn_status_text()
+		if RunState.is_tutorial_run()
+		else "%s | Turn %d." % [
+			RunState.level_sequence_label(),
+			_combat.turn_index,
+		]
+	)
 	_set_status_color(STATUS_COLOR_NEUTRAL)
 	_update_hud()
 	_clear_combat_mastery_hover_state()
+	_sync_tutorial_coachmark()
 	_append_combat_log(
 		"Turn %d intent: %s." % [
 			_combat.turn_index,
@@ -644,6 +692,43 @@ func _on_back_button_pressed() -> void:
 
 func _on_settings_button_pressed() -> void:
 	_set_status_text("Settings is visual-only in this prototype build.")
+
+
+func _on_tutorial_end_continue_pressed() -> void:
+	if _tutorial_post_shop_step == "shortsword":
+		_tutorial_post_shop_step = "mastery"
+		_show_shop_damage_tutorial_end_modal()
+		_audio_play_sfx("ui_accept")
+		return
+	if _tutorial_post_shop_step == "mastery":
+		_tutorial_post_shop_step = "end"
+		_show_shop_damage_tutorial_end_modal()
+		_audio_play_sfx("ui_accept")
+		return
+	_tutorial_end_choice_dismissed = true
+	if RunState.has_method("finish_tutorial_guidance"):
+		RunState.finish_tutorial_guidance()
+	if _view != null and _view.has_method("hide_tutorial_end_modal"):
+		_view.hide_tutorial_end_modal()
+	_audio_play_sfx("ui_accept")
+	_set_status_text("%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index if _combat != null else 1])
+	_set_status_color(STATUS_COLOR_NEUTRAL)
+	_update_hud()
+
+
+func _on_tutorial_end_main_menu_pressed() -> void:
+	_tutorial_end_choice_dismissed = true
+	if RunState.has_method("finish_tutorial_guidance"):
+		RunState.finish_tutorial_guidance()
+	if _view != null and _view.has_method("hide_tutorial_end_modal"):
+		_view.hide_tutorial_end_modal()
+	_audio_play_sfx("ui_accept")
+	_trace_and_change_scene_to_target(
+		"res://scenes/main_menu.tscn",
+		_flow_trace_route_id_value(),
+		"tutorial_end_main_menu",
+		"combat_before_change_scene_to_file_tutorial_end_main_menu"
+	)
 
 
 func _on_run_tests_button_pressed() -> void:
@@ -847,6 +932,9 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 	var action := String(result.get("action", ""))
 	if action == "start":
 		_clear_combat_mastery_hover_state()
+		var tutorial_start_path := _active_tutorial_drag_path()
+		if not tutorial_start_path.is_empty() and _board_model != null:
+			_tutorial_drag_board_snapshot = _board_model.clone()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		if _view != null:
 			_view.sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
@@ -854,6 +942,17 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		_set_status_color(STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
+		var drag_path: Array = result.get("path", [])
+		var tutorial_drag_path := _active_tutorial_drag_path()
+		if not tutorial_drag_path.is_empty():
+			if not _did_complete_tutorial_drag_path(drag_path, tutorial_drag_path):
+				_reset_incomplete_tutorial_drag()
+				_set_status_text(_active_tutorial_retry_status_text())
+				_set_status_color(STATUS_COLOR_WARNING)
+				_sync_tutorial_coachmark()
+				return
+			_tutorial_drag_board_snapshot = null
+			_hide_tutorial_coachmark()
 		_end_drag(bool(result.get("timed_out", false)))
 
 
@@ -864,10 +963,366 @@ func _create_new_board() -> void:
 		_set_status_text("Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index])
 	else:
 		_set_status_text("Seed: %d | Fight complete." % board_seed)
+	_sync_tutorial_coachmark()
 
 
 func _resolve_seed() -> int:
+	if RunState.has_method("tutorial_board_seed_for_turn") and RunState.is_tutorial_run():
+		var tutorial_seed := int(RunState.tutorial_board_seed_for_turn(_combat.turn_index if _combat != null else 1))
+		if tutorial_seed > 0:
+			return tutorial_seed
 	return int(Time.get_ticks_usec())
+
+
+func _tutorial_turn_summary_text() -> String:
+	return "Tutorial: drag to line up 3+ matching orbs. Mastery cards show what each orb type does."
+
+
+func _tutorial_turn_status_text() -> String:
+	var turn_index := int(_combat.turn_index if _combat != null else 1)
+	if turn_index <= 1:
+		return "Tutorial: swap the highlighted Gold and Fire orbs to make a vertical Fire match."
+	if turn_index == 2:
+		return "Tutorial: the enemy is attacking. Match Shield orbs to gain block before damage lands."
+	if turn_index == 3:
+		return "Tutorial: match Heart orbs to heal the damage you took."
+	if turn_index == 4:
+		return "Tutorial: make multiple combos to finish the Training Striker."
+	return "Tutorial: match Fire/Ice/Earth for damage, Heart to heal, Armor to block, and Gold for shop money."
+
+
+func _sync_tutorial_coachmark() -> void:
+	if _should_show_first_swap_tutorial():
+		var first_path: Array[Vector2i] = [TUTORIAL_FIRST_SWAP_FROM, TUTORIAL_FIRST_SWAP_TO]
+		_apply_tutorial_drag_coachmark(
+			first_path,
+			"Swap these two orbs.\nDrag Gold right into Fire.",
+			TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
+		)
+		return
+	if _should_show_armor_block_tutorial():
+		_focus_tutorial_enemy_attack_intent()
+		_apply_tutorial_drag_coachmark(
+			TUTORIAL_ARMOR_BLOCK_PATH,
+			"Enemy attack incoming.\nMove Earth: down 2, left 1, down 1.\nShield orbs block damage.",
+			TUTORIAL_PROMPT_ANCHOR_BOTTOM
+		)
+		return
+	if _should_show_heart_heal_tutorial():
+		_focus_tutorial_enemy_block_intent()
+		_apply_tutorial_drag_coachmark(
+			TUTORIAL_HEART_HEAL_PATH,
+			"You blocked the attack partially,\nbut still take some damage.\nMatch Heart Orbs to heal the damage.",
+			TUTORIAL_PROMPT_ANCHOR_BOTTOM
+		)
+		return
+	if _should_show_combo_finisher_tutorial():
+		_focus_tutorial_enemy_attack_intent()
+		_apply_tutorial_drag_coachmark(
+			TUTORIAL_COMBO_FINISHER_PATH,
+			"Win by manipulating the board to create multiple combo.\n(Damage is multiplied by combo counts)",
+			TUTORIAL_PROMPT_ANCHOR_BOTTOM
+		)
+		return
+	if _should_show_shop_damage_tutorial():
+		_show_shop_damage_tutorial_end_modal()
+		return
+	if _view != null and _view.has_method("is_tutorial_end_modal_visible") and bool(_view.is_tutorial_end_modal_visible()):
+		_view.hide_tutorial_end_modal()
+	_hide_tutorial_coachmark()
+
+
+func _apply_tutorial_drag_coachmark(path: Array[Vector2i], message: String, prompt_anchor: String) -> void:
+	if path.is_empty():
+		return
+	var from_cell := path[0]
+	var to_cell := path[path.size() - 1]
+	if _board_view != null and _board_view.has_method("set_tutorial_hint"):
+		_board_view.set_tutorial_hint(from_cell, to_cell, path)
+	if _board_controller != null:
+		if _board_controller.has_method("set_restricted_drag_path"):
+			_board_controller.set_restricted_drag_path(path)
+		elif path.size() >= 2 and _board_controller.has_method("set_restricted_swap"):
+			_board_controller.set_restricted_swap(path[0], path[1])
+	_show_tutorial_prompt(message, prompt_anchor)
+
+
+func _should_show_first_swap_tutorial() -> bool:
+	if not RunState.is_tutorial_run():
+		return false
+	if _combat == null or _combat.is_fight_over():
+		return false
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
+		return false
+	if int(_combat.turn_index) != 1:
+		return false
+	return _input_phase_value() == InputPhase.PLAYER_INPUT
+
+
+func _should_show_armor_block_tutorial() -> bool:
+	if not RunState.is_tutorial_run():
+		return false
+	if _combat == null or _combat.is_fight_over():
+		return false
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
+		return false
+	if int(_combat.turn_index) != 2:
+		return false
+	return _input_phase_value() == InputPhase.PLAYER_INPUT
+
+
+func _should_show_heart_heal_tutorial() -> bool:
+	if not RunState.is_tutorial_run():
+		return false
+	if _combat == null or _combat.is_fight_over():
+		return false
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
+		return false
+	if int(_combat.turn_index) != 3:
+		return false
+	return _input_phase_value() == InputPhase.PLAYER_INPUT
+
+
+func _should_show_combo_finisher_tutorial() -> bool:
+	if not RunState.is_tutorial_run():
+		return false
+	if _combat == null or _combat.is_fight_over():
+		return false
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
+		return false
+	if int(_combat.turn_index) != 4:
+		return false
+	return _input_phase_value() == InputPhase.PLAYER_INPUT
+
+
+func _should_show_shop_damage_tutorial() -> bool:
+	if _tutorial_end_choice_dismissed:
+		return false
+	if not RunState.is_tutorial_run():
+		return false
+	if _combat == null or _combat.is_fight_over():
+		return false
+	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_2":
+		return false
+	if int(_combat.turn_index) != 1:
+		return false
+	if _input_phase_value() != InputPhase.PLAYER_INPUT:
+		return false
+	var progression_snapshot: Dictionary = RunState.progression_snapshot()
+	for raw_id in progression_snapshot.get("equipment_slots", []):
+		if String(raw_id) == "shortsword":
+			return true
+	return false
+
+
+func _show_shop_damage_tutorial_end_modal() -> void:
+	_hide_tutorial_coachmark()
+	if _view == null or not _view.has_method("show_tutorial_end_modal"):
+		return
+	_view.show_tutorial_end_modal(_tutorial_post_shop_step)
+	if _tutorial_post_shop_step == "shortsword":
+		_set_status_text("Tutorial: Iron Shortsword adds +2 Attack.")
+	elif _tutorial_post_shop_step == "mastery":
+		_set_status_text("Tutorial: Mastery sets each orb type's base power.")
+	else:
+		_set_status_text("Tutorial complete.")
+	_set_status_color(STATUS_COLOR_WARNING)
+
+
+func _active_tutorial_drag_path() -> Array[Vector2i]:
+	if _should_show_first_swap_tutorial():
+		var first_path: Array[Vector2i] = [TUTORIAL_FIRST_SWAP_FROM, TUTORIAL_FIRST_SWAP_TO]
+		return first_path
+	if _should_show_armor_block_tutorial():
+		return TUTORIAL_ARMOR_BLOCK_PATH.duplicate()
+	if _should_show_heart_heal_tutorial():
+		return TUTORIAL_HEART_HEAL_PATH.duplicate()
+	if _should_show_combo_finisher_tutorial():
+		return TUTORIAL_COMBO_FINISHER_PATH.duplicate()
+	return []
+
+
+func _did_complete_tutorial_drag_path(drag_path: Array, expected_path: Array[Vector2i]) -> bool:
+	if drag_path.size() < expected_path.size():
+		return false
+	for index in expected_path.size():
+		if not (drag_path[index] is Vector2i):
+			return false
+		if (drag_path[index] as Vector2i) != expected_path[index]:
+			return false
+	return true
+
+
+func _active_tutorial_retry_status_text() -> String:
+	if _should_show_armor_block_tutorial():
+		return "Tutorial: free-move the highlighted Earth orb down 2, left 1, then down 1."
+	if _should_show_heart_heal_tutorial():
+		return "Tutorial: drag the highlighted Heart orb left to make a vertical Heart match."
+	if _should_show_combo_finisher_tutorial():
+		return "Tutorial: follow the highlighted path to build a finishing combo chain."
+	return "Tutorial: drag the highlighted Gold orb right into the highlighted Fire orb."
+
+
+func _focus_tutorial_enemy_attack_intent() -> void:
+	if _view == null:
+		return
+	if _view.has_method("set_tutorial_enemy_intent_focus"):
+		_view.set_tutorial_enemy_intent_focus("attack")
+	if _view.has_method("start_enemy_intent_hover_emphasis"):
+		_view.start_enemy_intent_hover_emphasis("attack")
+
+
+func _focus_tutorial_enemy_block_intent() -> void:
+	if _view == null:
+		return
+	if _view.has_method("set_tutorial_enemy_intent_focus"):
+		_view.set_tutorial_enemy_intent_focus("block")
+	if _view.has_method("start_enemy_intent_hover_emphasis"):
+		_view.start_enemy_intent_hover_emphasis("block")
+
+
+func _clear_tutorial_enemy_intent_focus() -> void:
+	if _view == null:
+		return
+	if _view.has_method("clear_tutorial_enemy_intent_focus"):
+		_view.clear_tutorial_enemy_intent_focus()
+	elif _view.has_method("stop_enemy_intent_hover_emphasis"):
+		_view.stop_enemy_intent_hover_emphasis()
+
+
+func _reset_incomplete_tutorial_drag() -> void:
+	if _board_controller == null:
+		return
+	if _tutorial_drag_board_snapshot != null:
+		_board_controller.abort()
+		_board_controller.set_board_model(_tutorial_drag_board_snapshot.clone())
+		_board_model = _board_controller.current_board_model()
+		_tutorial_drag_board_snapshot = null
+		return
+	var current_seed := int(_board_controller.board_seed()) if _board_controller.has_method("board_seed") else -1
+	if current_seed > 0:
+		_set_board_seed(current_seed)
+	elif _board_controller.has_method("reset_visuals"):
+		_board_controller.reset_visuals()
+
+
+func _show_tutorial_prompt(message: String, prompt_anchor: String = TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD) -> void:
+	_ensure_tutorial_prompt()
+	if _tutorial_prompt_panel == null or _tutorial_prompt_label == null:
+		return
+	_tutorial_prompt_anchor = prompt_anchor
+	_tutorial_prompt_label.add_theme_font_size_override(
+		"font_size",
+		38 if prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 20 if prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 24
+	)
+	_tutorial_prompt_label.text = message
+	_layout_tutorial_prompt()
+	_tutorial_prompt_panel.visible = true
+
+
+func _hide_tutorial_coachmark() -> void:
+	if _tutorial_prompt_panel != null:
+		_tutorial_prompt_panel.visible = false
+	_tutorial_drag_board_snapshot = null
+	_tutorial_prompt_anchor = TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
+	_clear_tutorial_enemy_intent_focus()
+	if _board_view != null and _board_view.has_method("clear_tutorial_hint"):
+		_board_view.clear_tutorial_hint()
+	if _board_controller != null:
+		if _board_controller.has_method("clear_restricted_drag_path"):
+			_board_controller.clear_restricted_drag_path()
+		elif _board_controller.has_method("clear_restricted_swap"):
+			_board_controller.clear_restricted_swap()
+
+
+func _ensure_tutorial_prompt() -> void:
+	if _tutorial_prompt_panel != null and is_instance_valid(_tutorial_prompt_panel):
+		return
+	if _host == null:
+		return
+	_tutorial_prompt_parent = _host.get_node_or_null("CombatLayoutRoot") as Control
+	if _tutorial_prompt_parent == null:
+		_tutorial_prompt_parent = _host
+	_tutorial_prompt_panel = Panel.new()
+	_tutorial_prompt_panel.name = "TutorialSwapPrompt"
+	_tutorial_prompt_panel.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
+	_tutorial_prompt_panel.z_index = 145
+	_tutorial_prompt_panel.add_theme_stylebox_override("panel", _tutorial_prompt_style())
+	_tutorial_prompt_parent.add_child(_tutorial_prompt_panel)
+
+	_tutorial_prompt_label = Label.new()
+	_tutorial_prompt_label.name = "TutorialSwapPromptLabel"
+	_tutorial_prompt_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
+	_tutorial_prompt_label.vertical_alignment = VerticalAlignment.VERTICAL_ALIGNMENT_CENTER
+	_tutorial_prompt_label.autowrap_mode = TextServer.AutowrapMode.AUTOWRAP_WORD_SMART
+	_tutorial_prompt_label.clip_text = true
+	_tutorial_prompt_label.add_theme_font_size_override("font_size", 24)
+	_tutorial_prompt_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.68, 1.0))
+	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
+	_tutorial_prompt_label.add_theme_constant_override("outline_size", 3)
+	_tutorial_prompt_panel.add_child(_tutorial_prompt_label)
+
+
+func _layout_tutorial_prompt() -> void:
+	if _tutorial_prompt_panel == null or _tutorial_prompt_label == null or _host == null:
+		return
+	var parent_control := _tutorial_prompt_parent if _tutorial_prompt_parent != null and is_instance_valid(_tutorial_prompt_parent) else _host
+	var board_rect := Rect2(Vector2(276.0, 650.0), Vector2(528.0, 126.0))
+	var board_panel := _host.get_node_or_null("CombatLayoutRoot/BoardPanel") as Control
+	if board_panel != null and is_instance_valid(board_panel):
+		var host_inverse := parent_control.get_global_transform().affine_inverse()
+		var panel_rect: Rect2 = board_panel.get_global_rect()
+		board_rect = Rect2(host_inverse * panel_rect.position, panel_rect.size)
+	var width := minf(860.0, maxf(520.0, board_rect.size.x + 228.0)) if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else minf(720.0, maxf(520.0, board_rect.size.x + 148.0))
+	var height := 236.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 96.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 116.0
+	var parent_width := maxf(parent_control.size.x, width + 56.0)
+	var x := clampf(board_rect.get_center().x - width * 0.5, 28.0, maxf(28.0, parent_width - width - 28.0))
+	var y := maxf(332.0, board_rect.position.y - height - 24.0)
+	if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT:
+		y = _tutorial_prompt_below_intent_y(parent_control, board_rect, height)
+	elif _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM:
+		y = _tutorial_prompt_bottom_y(parent_control, height)
+	_tutorial_prompt_panel.position = Vector2(x, y)
+	_tutorial_prompt_panel.size = Vector2(width, height)
+	var label_margin_y := 18.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 6.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 10.0
+	_tutorial_prompt_label.position = Vector2(20.0, label_margin_y)
+	_tutorial_prompt_label.size = _tutorial_prompt_panel.size - Vector2(40.0, label_margin_y * 2.0)
+
+
+func _tutorial_prompt_below_intent_y(parent_control: Control, board_rect: Rect2, prompt_height: float) -> float:
+	var intent_row := _host.get_node_or_null("CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/IntentRow") as Control
+	if intent_row != null and is_instance_valid(intent_row):
+		var host_inverse := parent_control.get_global_transform().affine_inverse()
+		var intent_rect: Rect2 = intent_row.get_global_rect()
+		var local_intent_rect := Rect2(host_inverse * intent_rect.position, intent_rect.size)
+		return local_intent_rect.end.y + 8.0
+	return maxf(236.0, board_rect.position.y - prompt_height - 12.0)
+
+
+func _tutorial_prompt_bottom_y(parent_control: Control, prompt_height: float) -> float:
+	var parent_height := maxf(parent_control.size.y, prompt_height + 56.0)
+	var player_hud := _host.get_node_or_null("CombatLayoutRoot/PlayerHudSection") as Control
+	if player_hud != null and is_instance_valid(player_hud):
+		var host_inverse := parent_control.get_global_transform().affine_inverse()
+		var player_rect: Rect2 = player_hud.get_global_rect()
+		var local_player_rect := Rect2(host_inverse * player_rect.position, player_rect.size)
+		return clampf(local_player_rect.position.y + 18.0, 28.0, parent_height - prompt_height - 28.0)
+	return parent_height - prompt_height - 36.0
+
+
+func _tutorial_prompt_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.045, 0.065, 0.085, 0.96)
+	style.border_color = Color(1.0, 0.72, 0.16, 0.98)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
+	style.shadow_size = 10
+	style.content_margin_left = 18
+	style.content_margin_right = 18
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	return style
 
 
 func _print_board_model() -> void:
@@ -2421,6 +2876,8 @@ func _apply_combat_layout() -> void:
 	)
 	if not bool(layout_result.get("applied", false)):
 		return
+	if _tutorial_prompt_panel != null and _tutorial_prompt_panel.visible:
+		_layout_tutorial_prompt()
 
 
 func _refresh_character_portraits() -> void:

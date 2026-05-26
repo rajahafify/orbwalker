@@ -19,6 +19,7 @@ var _menu_music_retry_time := 0.0
 var _menu_music_via_audio_manager := false
 var _start_run_transitioning := false
 var _collection_transitioning := false
+var _tutorial_transitioning := false
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
@@ -140,6 +141,43 @@ func _on_collection_button_pressed() -> void:
 	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
 	_view.show_status("Collection failed: %s" % failure_reason)
 	push_error("Collection transition failed: %s -> %s (%s)" % [route_id, COLLECTION_SCENE_PATH, failure_reason])
+
+
+func _on_tutorial_button_pressed() -> void:
+	if _tutorial_transitioning:
+		return
+	_tutorial_transitioning = true
+	_view.set_tutorial_locked(true)
+	_audio_play_sfx("ui_accept")
+	var route_id := RunState.flow_trace_begin("main_menu_to_tutorial_combat", COMBAT_SCENE_PATH, {"source": "main_menu.tutorial_button"})
+	var pre_run_state: Dictionary = RunState.snapshot_run_transition_state()
+	RunState.start_tutorial_run()
+	RunState.flow_trace_mark("before_change_scene_to_file", {"source": "main_menu.tutorial_button"}, route_id, COMBAT_SCENE_PATH)
+	var transition_result: Variant = RunState.flow_trace_change_scene(
+		_host.get_tree(),
+		COMBAT_SCENE_PATH,
+		route_id,
+		"main_menu.tutorial_button",
+		"",
+		_on_tutorial_post_ready_rollback,
+		pre_run_state
+	)
+	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
+		return
+	_tutorial_transitioning = false
+	_view.set_tutorial_locked(false)
+	if not pre_run_state.is_empty():
+		RunState.restore_run_transition_state(pre_run_state)
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
+	_view.show_status("Tutorial failed: %s" % failure_reason)
+	push_error("Tutorial transition failed: %s -> %s (%s)" % [route_id, COMBAT_SCENE_PATH, failure_reason])
+
+
+func _on_tutorial_post_ready_rollback(result: Dictionary) -> void:
+	_tutorial_transitioning = false
+	_view.set_tutorial_locked(false)
+	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
+	_view.show_status("Tutorial failed: %s" % failure_reason)
 
 
 func _on_collection_post_ready_rollback(result: Dictionary) -> void:

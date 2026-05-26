@@ -53,6 +53,7 @@ const _ENEMY_PORTRAIT_PATHS := {
 	"ruin_lancer": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
 	"vault_executioner": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
 	"goldbound_keeper": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
+	"training_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"training_goblin": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
 	"burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
@@ -63,6 +64,7 @@ const _ENEMY_PORTRAIT_PATHS := {
 }
 
 const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
+	"training_striker": "cavern_striker",
 	"training_goblin": "cavern_striker",
 	"striker": "cavern_striker",
 	"defender": "cavern_defender",
@@ -70,6 +72,7 @@ const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
 }
 
 const _RUNTIME_ENEMY_ALIAS_BY_ID := {
+	"training_striker": "enemy_cavern_striker",
 	"training_goblin": "enemy_cavern_striker",
 	"striker": "enemy_cavern_striker",
 	"defender": "enemy_cavern_defender",

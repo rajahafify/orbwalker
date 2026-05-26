@@ -24,6 +24,16 @@ var _rng := RandomNumberGenerator.new()
 var _seeded: bool = false
 
 
+func set_rng_seed(seed_value: int) -> void:
+	_rng.seed = maxi(1, seed_value)
+	_seeded = true
+
+
+func randomize_rng() -> void:
+	_rng.randomize()
+	_seeded = true
+
+
 func open_shop(run_state: Node, level: int = -1) -> Dictionary:
 	var content = run_state.ensure_content_registry()
 	var shop = run_state.ensure_shop_state()

@@ -27,6 +27,7 @@ const SCENE_COMBAT := "res://scenes/combat.tscn"
 const SCENE_SHOP := "res://scenes/shop.tscn"
 const SCENE_RUN_SUMMARY := "res://scenes/run_summary.tscn"
 const MAX_DUNGEON_LEVELS := 3
+const TUTORIAL_SEED := 271828
 const FLOW_TRACE_ENABLED := true
 const FLOW_TRACE_ROUTE_RETENTION_MAX := 50
 const LEVEL_SEQUENCE: Array[String] = [
@@ -56,6 +57,8 @@ var _relic_offer_ids_by_level: Dictionary = {}
 var _player_state_content_errors: Array[Dictionary] = []
 var run_active: bool = false
 var run_victory: bool = false
+var tutorial_run_active: bool = false
+var tutorial_seed: int = TUTORIAL_SEED
 var current_step_key: String = LEVEL_SEQUENCE[0]
 var _step_index: int = 0
 var enemies_defeated: int = 0
@@ -331,6 +334,7 @@ func run_contract_snapshot() -> Dictionary:
 			"reset_prototype_balance_levers",
 			"prototype_fight_gold_reward_for",
 			"current_shop_ordinal_in_level",
+			"finish_tutorial_guidance",
 			"profile_snapshot",
 			"reset_profile",
 			"create_default_profile",
@@ -557,6 +561,7 @@ func can_afford(amount: int) -> bool:
 
 
 func open_shop_for_current_level() -> Dictionary:
+	_apply_tutorial_shop_seed(0)
 	var result: Dictionary = ensure_shop_service().open_shop(self, dungeon_level)
 	var shop_snapshot: Dictionary = ensure_shop_state().to_snapshot()
 	_run_log_append(
@@ -574,6 +579,7 @@ func open_shop_for_current_level() -> Dictionary:
 func reroll_shop_items() -> Dictionary:
 	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
 	var gold_before := run_gold
+	_apply_tutorial_shop_seed(100 + ensure_shop_state().reroll_count)
 	var result: Dictionary = ensure_shop_service().reroll_shop_items(self)
 	_run_log_shop_action("reroll", result, {}, shop_before, gold_before)
 	return result
@@ -649,6 +655,13 @@ func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
 	_relic_offer_ids_by_level[maxi(1, level)] = relic_id
 
 
+func _apply_tutorial_shop_seed(action_offset: int) -> void:
+	if not tutorial_run_active:
+		return
+	var shop_seed := tutorial_seed + 50000 + dungeon_level * 1000 + _step_index * 100 + maxi(0, action_offset)
+	ensure_shop_service().set_rng_seed(shop_seed)
+
+
 func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
 	var signal_before := _capture_run_signal_state()
 	_flow_trace_bump_transition_generation()
@@ -664,6 +677,8 @@ func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
 	ensure_shop_state().reset_for_new_run()
 	run_active = false
 	run_victory = false
+	tutorial_run_active = false
+	tutorial_seed = TUTORIAL_SEED
 	current_step_key = LEVEL_SEQUENCE[0]
 	_step_index = 0
 	enemies_defeated = 0
@@ -683,6 +698,9 @@ func start_new_run() -> void:
 	var signal_before := _capture_run_signal_state()
 	_flow_trace_bump_transition_generation()
 	reset_run("start_new_run", false)
+	tutorial_run_active = false
+	_reward_rng.randomize()
+	ensure_shop_service().randomize_rng()
 	run_active = true
 	_run_log_append(
 		"run_start",
@@ -695,6 +713,28 @@ func start_new_run() -> void:
 	_emit_run_state_signals(signal_before, "start_new_run", "start_new_run")
 
 
+func start_tutorial_run(seed_value: int = TUTORIAL_SEED) -> void:
+	var signal_before := _capture_run_signal_state()
+	_flow_trace_bump_transition_generation()
+	reset_run("start_tutorial_run", false)
+	tutorial_run_active = true
+	tutorial_seed = maxi(1, seed_value)
+	run_active = true
+	_reward_rng.seed = tutorial_seed + 9000
+	_run_log_append(
+		"run_start",
+		{
+			"source": "tutorial",
+			"tutorial": true,
+			"seed": tutorial_seed,
+			"dungeon_level": dungeon_level,
+			"step": current_step_key,
+		}
+	)
+	_assign_current_fight()
+	_emit_run_state_signals(signal_before, "start_tutorial_run", "start_tutorial_run")
+
+
 func snapshot_run_transition_state() -> Dictionary:
 	var snapshot := {
 		"player_state": _snapshot_player_state_for_transition(),
@@ -702,6 +742,8 @@ func snapshot_run_transition_state() -> Dictionary:
 		"shop_state": _snapshot_shop_state_for_transition(),
 		"run_active": run_active,
 		"run_victory": run_victory,
+		"tutorial_run_active": tutorial_run_active,
+		"tutorial_seed": tutorial_seed,
 		"run_gold": run_gold,
 		"run_score": run_score,
 		"run_score_banked": _run_score_banked,
@@ -728,6 +770,8 @@ func restore_run_transition_state(snapshot: Dictionary) -> bool:
 	var signal_before := _capture_run_signal_state()
 	run_active = bool(snapshot.get("run_active", run_active))
 	run_victory = bool(snapshot.get("run_victory", run_victory))
+	tutorial_run_active = bool(snapshot.get("tutorial_run_active", tutorial_run_active))
+	tutorial_seed = maxi(1, int(snapshot.get("tutorial_seed", tutorial_seed)))
 	run_gold = maxi(0, int(snapshot.get("run_gold", run_gold)))
 	run_score = int(snapshot.get("run_score", run_score))
 	_run_score_banked = bool(snapshot.get("run_score_banked", _run_score_banked))
@@ -853,6 +897,31 @@ func _string_array_from_snapshot(raw_values: Variant, fixed_size: int = -1) -> A
 
 func is_current_step_fight() -> bool:
 	return current_step_key == "enemy_1" or current_step_key == "enemy_2" or current_step_key == "boss"
+
+
+func is_tutorial_run() -> bool:
+	return tutorial_run_active
+
+
+func finish_tutorial_guidance() -> void:
+	if not tutorial_run_active:
+		return
+	var signal_before := _capture_run_signal_state()
+	tutorial_run_active = false
+	_run_log_append("tutorial_end", {
+		"dungeon_level": dungeon_level,
+		"step": current_step_key,
+	})
+	_emit_run_state_signals(signal_before, "finish_tutorial_guidance", "")
+
+
+func tutorial_board_seed_for_turn(turn_index: int) -> int:
+	if not tutorial_run_active:
+		return -1
+	var step_seed := (_step_index + 1) * 1000
+	var level_seed := dungeon_level * 10000
+	var turn_seed := maxi(1, turn_index) * 37
+	return tutorial_seed + level_seed + step_seed + turn_seed
 
 
 func is_current_step_shop() -> bool:
@@ -1178,13 +1247,18 @@ func _assign_current_fight() -> void:
 		return
 
 	var encounter: Dictionary = {}
-	if current_step_key == "boss":
-		encounter = Dictionary(_boss_encounters_by_level.get(dungeon_level, {})).duplicate(true)
-	else:
-		var fights: Array = _normal_encounters_by_level.get(dungeon_level, [])
-		var fight_index := 0 if current_step_key == "enemy_1" else 1
-		if fight_index >= 0 and fight_index < fights.size():
-			encounter = Dictionary(fights[fight_index]).duplicate(true)
+	var uses_tutorial_encounter := false
+	if tutorial_run_active:
+		encounter = _tutorial_encounter_for_current_step()
+		uses_tutorial_encounter = not encounter.is_empty()
+	if encounter.is_empty():
+		if current_step_key == "boss":
+			encounter = Dictionary(_boss_encounters_by_level.get(dungeon_level, {})).duplicate(true)
+		else:
+			var fights: Array = _normal_encounters_by_level.get(dungeon_level, [])
+			var fight_index := 0 if current_step_key == "enemy_1" else 1
+			if fight_index >= 0 and fight_index < fights.size():
+				encounter = Dictionary(fights[fight_index]).duplicate(true)
 
 	if encounter.is_empty():
 		encounter = {
@@ -1195,7 +1269,8 @@ func _assign_current_fight() -> void:
 			"intent_cycle": [],
 		}
 
-	encounter = _ensure_balance_manager().apply_to_encounter(encounter, dungeon_level, MAX_DUNGEON_LEVELS)
+	if not uses_tutorial_encounter:
+		encounter = _ensure_balance_manager().apply_to_encounter(encounter, dungeon_level, MAX_DUNGEON_LEVELS)
 	encounter["dungeon_level"] = dungeon_level
 	encounter["step_key"] = current_step_key
 	encounter["boss_preview_name"] = current_level_boss_name()
@@ -1207,6 +1282,23 @@ func _assign_current_fight() -> void:
 			"encounter": _current_encounter.duplicate(true),
 		}
 	)
+
+
+func _tutorial_encounter_for_current_step() -> Dictionary:
+	if dungeon_level != 1 or current_step_key != "enemy_1":
+		return {}
+	return {
+		"enemy_id": "training_striker",
+		"display_name": "Training Striker",
+		"max_hp": 15,
+		"is_boss": false,
+		"intent_cycle": [
+			{"type": 1, "attack": 0, "block": 8, "label": "Brace"},
+			{"type": 2, "attack": 30, "block": 6, "label": "Punishing Bash"},
+			{"type": 1, "attack": 0, "block": 10, "label": "Guard"},
+			{"type": 0, "attack": 20, "block": 0, "label": "Heavy Slash"},
+		],
+	}
 
 
 func _prepare_boss_relic_reward_options() -> void:
