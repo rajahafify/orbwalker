@@ -1415,6 +1415,15 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Android deployment: exported <code>D:\godot\matchatro\Orbwalker.apk</code> at 2026-05-26 12:37:34 and installed it to connected device <code>b21e3ea8</code> with <code>adb install -r</code>; install returned <code>Success</code>.</li>
 <li>User manual QA passed on 2026-05-26 for the installed Android tutorial build. ITCH-02 is accepted as <code>done</code>; remaining public-build export diagnostics stay tracked under ITCH-06/ITCH-08.</li>
 </ul>
+<p>Verification notes (2026-05-26, ITCH-06 public Android packaging pass):</p>
+<ul>
+<li>Android export metadata is now intentional for the demo: package id <code>com.artifisi.orbwalker</code>, package name <code>Orbwalker Demo</code>, version code <code>2</code>, version name <code>0.1.0-demo</code>, and launcher visibility enabled.</li>
+<li>The main menu visible build label now reads <code>DEMO 0.1.0</code>. Project launch still targets <code>res://scenes/main_menu.tscn</code>, and Android build artifacts remain ignored by repo policy through <code>*.apk</code>, <code>*.aab</code>, <code>*.apks</code>, and <code>*.idsig</code>.</li>
+<li>Debug exposure audit: the combat debug overlay and debug toggle remain hidden by runtime setup; Android export keeps OpenGL debug disabled. The editor MCP plugin Android <code>arm64</code> warning remains a known export hygiene caveat if it appears during export, but it has not blocked APK creation.</li>
+<li>Fresh Android export produced <code>D:\godot\matchatro\Orbwalker.apk</code> at 2026-05-26 12:56:04 with size <code>658979894</code> bytes. The Godot console export again wrote the APK then failed to exit cleanly; after the APK size was stable, only the spawned exporter process was stopped. Export stderr contained the known GDAI MCP plugin Android <code>arm64</code> warning and no APK-blocking error.</li>
+<li>Android install on connected device <code>b21e3ea8</code> returned <code>Success</code>. Package verification reported <code>com.artifisi.orbwalker</code>, <code>versionCode=2</code>, and <code>versionName=0.1.0-demo</code>.</li>
+<li>Target-platform smoke passed: launching <code>com.artifisi.orbwalker</code> focused <code>com.godot.game.GodotAppLauncher</code> and showed the main menu with <code>DEMO 0.1.0</code>; tapping Start Run reached Dungeon 1-1 combat. Filtered logcat tails after launch and Start Run showed no Godot crash, AndroidRuntime fatal error, or package blocker.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

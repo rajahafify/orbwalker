@@ -508,7 +508,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-06-public-build-packaging">ITCH-06: Public Build Packaging</h2>
 <ul>
 <li>Branch: <code>codex/itch-06-public-build-packaging</code></li>
-<li>Status: <code>not started</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: Export configuration, build output, title/icon/version, and accidental debug exposure.</li>
 <li>Goal: Produce a clean itch.io alpha/demo build that a player can run without developer setup.</li>
 <li>Acceptance:</li>
@@ -532,6 +532,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Update <code>wiki/setup.html</code> if export or install steps change.</li>
 <li>Update <code>wiki/known-issues.html</code> for any public-build caveats.</li>
 </ul>
+<li>Closeout: Android public demo packaging passed on 2026-05-26. Export metadata now uses package id <code>com.artifisi.orbwalker</code>, package name <code>Orbwalker Demo</code>, version <code>0.1.0-demo</code> / code <code>2</code>, launcher visibility enabled, and visible main-menu label <code>DEMO 0.1.0</code>. Fresh APK export wrote <code>D:\godot\matchatro\Orbwalker.apk</code>, installed successfully on device <code>b21e3ea8</code>, launched to the main menu, and Start Run reached Dungeon 1-1 combat without a filtered Godot/AndroidRuntime crash. The known Godot CLI export shutdown warning remains documented as a tooling caveat rather than a build blocker.</li>
 </ul>
 <h2 id="itch-07-itch-io-page-and-screenshot-pack">ITCH-07: Itch.io Page And Screenshot Pack</h2>
 <ul>

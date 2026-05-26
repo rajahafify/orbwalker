@@ -146,7 +146,7 @@ func apply_static_text() -> void:
 	_profile_button.text = "PROFILE"
 	_achievements_button.text = "ACHIEVEMENTS"
 	_footer_settings_button.text = "SETTINGS"
-	_version_label.text = "VERSION 0.1"
+	_version_label.text = "DEMO 0.1.0"
 	_status_label.text = "Main menu runtime surface."
 	_status_label.visible = false
 	_continue_button.disabled = true
