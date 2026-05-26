@@ -1424,6 +1424,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Android install on connected device <code>b21e3ea8</code> returned <code>Success</code>. Package verification reported <code>com.artifisi.orbwalker</code>, <code>versionCode=2</code>, and <code>versionName=0.1.0-demo</code>.</li>
 <li>Target-platform smoke passed: launching <code>com.artifisi.orbwalker</code> focused <code>com.godot.game.GodotAppLauncher</code> and showed the main menu with <code>DEMO 0.1.0</code>; tapping Start Run reached Dungeon 1-1 combat. Filtered logcat tails after launch and Start Run showed no Godot crash, AndroidRuntime fatal error, or package blocker.</li>
 </ul>
+<p>Verification notes (2026-05-26, ITCH-07 itch.io page/screenshot pack draft):</p>
+<ul>
+<li>Created <code>docs/itch_page_pack.html</code> as the itch.io page draft with short description, page body, controls, APK install notes, known limitations, and screenshot review checklist.</li>
+<li>Saved the verified Android launch-smoke screenshots into <code>docs/itch_page_assets/</code>: <code>orbwalker_demo_main_menu_android.png</code> and <code>orbwalker_demo_combat_android.png</code>, both captured from the installed <code>com.artifisi.orbwalker</code> <code>0.1.0-demo</code> build at <code>1080 x 2376</code>.</li>
+<li>Remaining ITCH-07 screenshot captures before publish: shop, boss reward, and run summary from the same APK, followed by full-size and thumbnail-size readability review.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>
