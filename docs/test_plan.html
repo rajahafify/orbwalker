@@ -1428,7 +1428,15 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Created <code>docs/itch_page_pack.html</code> as the itch.io page draft with short description, page body, controls, APK install notes, known limitations, and screenshot review checklist.</li>
 <li>Saved the verified Android launch-smoke screenshots into <code>docs/itch_page_assets/</code>: <code>orbwalker_demo_main_menu_android.png</code> and <code>orbwalker_demo_combat_android.png</code>, both captured from the installed <code>com.artifisi.orbwalker</code> <code>0.1.0-demo</code> build at <code>1080 x 2376</code>.</li>
-<li>Remaining ITCH-07 screenshot captures before publish: shop, boss reward, and run summary from the same APK, followed by full-size and thumbnail-size readability review.</li>
+<li>2026-05-27 follow-up: pulled the accepted human-captured Android screenshot set from device <code>b21e3ea8</code> into <code>docs/itch_page_assets/</code>: <code>orbwalker_demo_main_menu_android_latest.jpg</code>, <code>orbwalker_demo_combat_android_latest.jpg</code>, <code>orbwalker_demo_shop_android.jpg</code>, <code>orbwalker_demo_boss_reward_android.jpg</code>, and <code>orbwalker_demo_defeat_summary_android.jpg</code>. <code>docs/itch_page_pack.html</code> now uses all five real captures and no longer has missing shop/reward/summary placeholders. Human review accepted this screenshot pack for the first public itch.io page pass; a selected-relic boss reward variant remains optional polish rather than a blocker.</li>
+</ul>
+<p>Verification notes (2026-05-27, HTML export asset/header smoke):</p>
+<ul>
+<li>Removed the obsolete tracked main-menu art under <code>resources/art/first_pass/menu/</code> and updated <code>MainMenuModel</code> plus <code>assets.json</code> so fallback menu art resolves to the current <code>resources/art/assetgen/main_menu/</code> files.</li>
+<li>Added the Web export preset and narrowed its exclude filter for development folders, page-pack sources, old menu art, and local export artifacts. Local <code>build/</code> outputs are ignored by git because generated HTML zips and <code>index.pck</code> files are large, repeatable artifacts.</li>
+<li>Changed the shared top-header Settings control from a text gear to a drawn glyph and added runtime signal binding for combat header buttons so the in-combat Settings menu opens correctly in the Web build.</li>
+<li>Added <code>scripts/core/gdai_mcp_runtime_proxy.gd</code> so exported builds do not autoload the editor-only GDAI MCP script path while the local editor can still instantiate the runtime server when that class is available.</li>
+<li>Local browser smoke passed against the exported HTML zip at <code>http://127.0.0.1:8127/index.html?headerfix=20260527-012949</code>: main menu showed the current Orbwalker art, Start Run reached Dungeon 1-1 combat, the Settings glyph opened the combat Settings overlay, and browser logs were clear after the proxy autoload fix. The generated <code>index.pck</code> remains about <code>176 MiB</code>, so itch.io browser upload still needs a selected-resource Web export pass before publish.</li>
 </ul>
 <p>Verification notes (2026-05-26, main menu/settings/continue polish):</p>
 <ul>

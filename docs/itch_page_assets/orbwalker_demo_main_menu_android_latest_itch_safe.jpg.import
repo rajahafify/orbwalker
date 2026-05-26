@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwnodp2tcywnb"
-path="res://.godot/imported/main_menu_bg_orbwalker_cavern_city_v1.png-6cd067ca651fcbc9b2f547a40d1c9908.ctex"
+uid="uid://c5w5b8igfvxw"
+path="res://.godot/imported/orbwalker_demo_main_menu_android_latest_itch_safe.jpg-dbeedec988d7f6f3f82e2e7110f0e506.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
-dest_files=["res://.godot/imported/main_menu_bg_orbwalker_cavern_city_v1.png-6cd067ca651fcbc9b2f547a40d1c9908.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_main_menu_android_latest_itch_safe.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_main_menu_android_latest_itch_safe.jpg-dbeedec988d7f6f3f82e2e7110f0e506.ctex"]
 
 [params]
 

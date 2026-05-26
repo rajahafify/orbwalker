@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvllp357pahrr"
-path="res://.godot/imported/main_menu_button_primary_v1.png-2cf8854db6db0d6e9b255c63e8149192.ctex"
+uid="uid://6ls0m263cw65"
+path="res://.godot/imported/orbwalker_itch_cover_1920x1080.jpg-89cf73c0345ee40f8d382640e0bbfaa3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_button_primary_v1.png"
-dest_files=["res://.godot/imported/main_menu_button_primary_v1.png-2cf8854db6db0d6e9b255c63e8149192.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_itch_cover_1920x1080.jpg"
+dest_files=["res://.godot/imported/orbwalker_itch_cover_1920x1080.jpg-89cf73c0345ee40f8d382640e0bbfaa3.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dno45h8dthew1"
-path="res://.godot/imported/main_menu_icon_mastery_progress_v1.png-8160b0d5146dbb7b8b097a676bb75e4b.ctex"
+uid="uid://ccl0qf6ptejmt"
+path="res://.godot/imported/orbwalker_demo_combat_android_latest_itch_safe.jpg-32fe9228708b67a1e2e9c538b30edf97.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png"
-dest_files=["res://.godot/imported/main_menu_icon_mastery_progress_v1.png-8160b0d5146dbb7b8b097a676bb75e4b.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_combat_android_latest_itch_safe.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_combat_android_latest_itch_safe.jpg-32fe9228708b67a1e2e9c538b30edf97.ctex"]
 
 [params]
 

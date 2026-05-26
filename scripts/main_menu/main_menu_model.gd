@@ -3,12 +3,12 @@ class_name MainMenuModel
 
 const MENU_ASSET_MAP_PATH := "res://resources/visual/first_pass_asset_map.json"
 
-const FALLBACK_BG_PATH := "res://resources/art/first_pass/menu/main_menu_bg_orbwalker_cavern_city_v1.png"
-const FALLBACK_LOGO_PATH := "res://resources/art/first_pass/menu/main_menu_logo_orbwalker_v1_alpha.png"
-const FALLBACK_OUTER_BORDER_PATH := "res://resources/art/first_pass/menu/main_menu_border_outer_v1.png"
-const FALLBACK_BUTTON_PRIMARY_PATH := "res://resources/art/first_pass/menu/main_menu_button_primary_v1.png"
-const FALLBACK_BUTTON_SECONDARY_PATH := "res://resources/art/first_pass/menu/main_menu_button_secondary_v1.png"
-const FALLBACK_STATS_PANEL_PATH := "res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png"
+const FALLBACK_BG_PATH := "res://resources/art/assetgen/main_menu/main_menu_background_candidate_01.png"
+const FALLBACK_LOGO_PATH := "res://resources/art/assetgen/main_menu/game_title_logo_candidate_01_alpha.png"
+const FALLBACK_OUTER_BORDER_PATH := "res://resources/art/assetgen/main_menu/main_menu_border_outer_candidate_05.png"
+const FALLBACK_BUTTON_PRIMARY_PATH := "res://resources/art/assetgen/main_menu/main_menu_button_primary_candidate_05.png"
+const FALLBACK_BUTTON_SECONDARY_PATH := "res://resources/art/assetgen/main_menu/main_menu_button_secondary_candidate_05.png"
+const FALLBACK_STATS_PANEL_PATH := "res://resources/art/assetgen/main_menu/main_menu_stats_panel_candidate_05.png"
 
 const ELEMENT_KEYS: Array[String] = ["fire", "ice", "earth", "heart", "armor", "gold"]
 const ELEMENT_ICON_FALLBACK_PATHS: Array[String] = [
@@ -21,15 +21,15 @@ const ELEMENT_ICON_FALLBACK_PATHS: Array[String] = [
 ]
 const STAT_MENU_ICON_KEYS: Array[String] = ["relics_unlocked", "mastery_progress", "best_run"]
 const STAT_ICON_FALLBACK_PATHS: Array[String] = [
-	"res://resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png",
-	"res://resources/art/first_pass/menu/main_menu_icon_mastery_progress_v1.png",
-	"res://resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_relic_chest_candidate_05_semantic.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_mastery_progress_candidate_05_semantic.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_best_run_candidate_05_semantic.png",
 ]
 const FOOTER_MENU_ICON_KEYS: Array[String] = ["profile", "achievements", "settings"]
 const FOOTER_ICON_FALLBACK_PATHS: Array[String] = [
-	"res://resources/art/first_pass/menu/main_menu_icon_profile_v1.png",
-	"res://resources/art/first_pass/menu/main_menu_icon_achievements_v1.png",
-	"res://resources/art/first_pass/menu/main_menu_icon_settings_v1.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_profile_candidate_05_semantic.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_achievements_candidate_05_semantic.png",
+	"res://resources/art/assetgen/main_menu/main_menu_icon_settings_candidate_05_semantic.png",
 ]
 
 var _asset_map: Dictionary = {}

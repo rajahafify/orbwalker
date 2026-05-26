@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5ki64rebffa8"
-path="res://.godot/imported/main_menu_button_secondary_v1.png-5a313f026d6da4890b59c7ab7bf4d9d9.ctex"
+uid="uid://bvasrtm237t13"
+path="res://.godot/imported/orbwalker_demo_shop_android_itch_safe.jpg-0457f3c23c1abe303e464c55875799e7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_button_secondary_v1.png"
-dest_files=["res://.godot/imported/main_menu_button_secondary_v1.png-5a313f026d6da4890b59c7ab7bf4d9d9.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_shop_android_itch_safe.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_shop_android_itch_safe.jpg-0457f3c23c1abe303e464c55875799e7.ctex"]
 
 [params]
 

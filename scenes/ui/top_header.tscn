@@ -33,7 +33,7 @@ text = "?"
 [node name="SettingsButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-text = "⚙"
+text = ""
 
 [node name="MainMenuButton" type="Button" parent="."]
 unique_name_in_owner = true

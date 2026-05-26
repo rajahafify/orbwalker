@@ -51,7 +51,7 @@
       border: 1px solid var(--line);
       background:
         linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.82)),
-        url("itch_page_assets/orbwalker_demo_main_menu_android.png") center 13% / cover no-repeat;
+        url("itch_page_assets/orbwalker_demo_main_menu_android_latest.jpg") center 13% / cover no-repeat;
     }
     .tagline {
       max-width: 820px;
@@ -192,10 +192,13 @@ This demo focuses on the first playable run loop: main menu, tutorial, combat, s
     <section class="section">
       <ul>
         <li>Build file: <code>Orbwalker.apk</code></li>
+        <li>HTML build file: <code>Orbwalker-web-html-0.1.0-demo.zip</code>, containing <code>index.html</code> and the required Godot Web files.</li>
         <li>Platform: Android, portrait orientation.</li>
+        <li>Browser play is experimental for this demo; Android remains the primary tested target.</li>
         <li>Package id: <code>com.artifisi.orbwalker</code></li>
         <li>Version: <code>0.1.0-demo</code> / version code <code>2</code></li>
         <li>Install by downloading the APK to an Android device and accepting Android's sideload/install prompt.</li>
+        <li>For browser play on itch.io, upload the HTML zip and set it as playable in browser.</li>
       </ul>
     </section>
 
@@ -211,18 +214,18 @@ This demo focuses on the first playable run loop: main menu, tutorial, combat, s
 
     <h2>Screenshot Pack</h2>
     <section class="section">
-      <p class="note">Captured screenshots are from the installed Android demo build on 2026-05-26 at 1080 x 2376. Remaining slots should be captured from the same APK before publishing.</p>
+      <p class="note">Accepted screenshots are from the installed Android demo build on 2026-05-27 at 1080 x 2376. Use this set for the first public itch.io page pass.</p>
       <div class="grid">
         <article class="shot">
-          <img src="itch_page_assets/orbwalker_demo_main_menu_android.png" alt="Orbwalker main menu on Android">
+          <img src="itch_page_assets/orbwalker_demo_main_menu_android_latest_itch_safe.jpg" alt="Orbwalker main menu on Android">
           <div class="shot-body">
             <span class="status captured">Captured</span>
             <h3>Main Menu</h3>
-            <p>Use as the first itch screenshot or page hero crop. Shows the logo, core menu actions, and demo version label.</p>
+            <p>Use as the first itch screenshot or page hero crop. Shows the logo and primary demo actions clearly.</p>
           </div>
         </article>
         <article class="shot">
-          <img src="itch_page_assets/orbwalker_demo_combat_android.png" alt="Orbwalker combat board on Android">
+          <img src="itch_page_assets/orbwalker_demo_combat_android_latest_itch_safe.jpg" alt="Orbwalker combat board on Android">
           <div class="shot-body">
             <span class="status captured">Captured</span>
             <h3>Combat</h3>
@@ -230,27 +233,27 @@ This demo focuses on the first playable run loop: main menu, tutorial, combat, s
           </div>
         </article>
         <article class="shot">
-          <div class="placeholder">Capture needed: Shop with three stock cards, reroll, continue, and HUD visible.</div>
+          <img src="itch_page_assets/orbwalker_demo_shop_android_itch_safe.jpg" alt="Orbwalker shop on Android">
           <div class="shot-body">
-            <span class="status needed">Needed</span>
+            <span class="status captured">Captured</span>
             <h3>Shop</h3>
-            <p>Best after first victory or tutorial shop. Show readable item names/prices and the big action buttons.</p>
+            <p>Shows the merchant, three stock cards, dungeon relic offer, reroll, continue, and persistent player HUD.</p>
           </div>
         </article>
         <article class="shot">
-          <div class="placeholder">Capture needed: Boss victory or reward selection with readable card rewards.</div>
+          <img src="itch_page_assets/orbwalker_demo_boss_reward_android_itch_safe.jpg" alt="Orbwalker boss reward selection on Android">
           <div class="shot-body">
-            <span class="status needed">Needed</span>
+            <span class="status captured">Captured</span>
             <h3>Boss Reward</h3>
-            <p>Use the redesigned boss victory reward overlay to prove reward readability at phone scale.</p>
+            <p>Shows boss victory and relic reward choices. Prefer a selected-relic variant later if a clearer enabled Continue state is needed.</p>
           </div>
         </article>
         <article class="shot">
-          <div class="placeholder">Capture needed: Victory or defeat run summary with action buttons visible.</div>
+          <img src="itch_page_assets/orbwalker_demo_defeat_summary_android_itch_safe.jpg" alt="Orbwalker defeat run summary on Android">
           <div class="shot-body">
-            <span class="status needed">Needed</span>
+            <span class="status captured">Captured</span>
             <h3>Run Summary</h3>
-            <p>Use a final victory or defeat screen to show the run has a complete end state.</p>
+            <p>Shows the run ending cleanly with stats, equipment, relics, and retry/menu actions visible.</p>
           </div>
         </article>
       </div>
@@ -260,8 +263,8 @@ This demo focuses on the first playable run loop: main menu, tutorial, combat, s
     <section class="section">
       <ul>
         <li>Review page copy before publishing.</li>
-        <li>Capture remaining shop, boss reward, and summary screenshots from <code>com.artifisi.orbwalker</code> version <code>0.1.0-demo</code>.</li>
-        <li>Check each screenshot full-size and thumbnail-size for text readability.</li>
+        <li>Use the accepted five-shot set: main menu, combat, shop, boss reward, and defeat summary.</li>
+        <li>Check each screenshot full-size and thumbnail-size for text readability before upload.</li>
         <li>Run final ITCH-08 smoke on the exact uploaded APK after page materials are accepted.</li>
       </ul>
     </section>

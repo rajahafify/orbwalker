@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://o77tpuvd2dsm"
-path="res://.godot/imported/main_menu_icon_best_run_demon_v1.png-0a99d88bb89e751db4af8f19ab4de350.ctex"
+uid="uid://ch2tqs2liau8w"
+path="res://.godot/imported/orbwalker_demo_defeat_summary_android.jpg-1a952bf036d9ec136ef53cf3c77b255f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_icon_best_run_demon_v1.png"
-dest_files=["res://.godot/imported/main_menu_icon_best_run_demon_v1.png-0a99d88bb89e751db4af8f19ab4de350.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_defeat_summary_android.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_defeat_summary_android.jpg-1a952bf036d9ec136ef53cf3c77b255f.ctex"]
 
 [params]
 

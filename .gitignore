@@ -5,6 +5,7 @@
 .memsearch/
 logs/
 tmp/
+/build/
 
 # Android export/build artifacts
 *.apk

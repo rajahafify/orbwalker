@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vr5ce0hdx20k"
-path="res://.godot/imported/main_menu_icon_relic_chest_v1.png-8eb4a59001bbbc43462236d5f64e9e64.ctex"
+uid="uid://cpubl1mrysqkh"
+path="res://.godot/imported/orbwalker_demo_combat_android_latest.jpg-6af8ab9661fe7d74083111fcce62b720.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_icon_relic_chest_v1.png"
-dest_files=["res://.godot/imported/main_menu_icon_relic_chest_v1.png-8eb4a59001bbbc43462236d5f64e9e64.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_combat_android_latest.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_combat_android_latest.jpg-6af8ab9661fe7d74083111fcce62b720.ctex"]
 
 [params]
 

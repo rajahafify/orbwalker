@@ -117,6 +117,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	_ensure_mvc()
+	_connect_header_buttons()
 	_controller.bind(self, _build_root_nodes(), _model, _view)
 	_controller.ready()
 
@@ -154,6 +155,20 @@ func _on_debug_toggle_button_pressed() -> void:
 func _on_settings_button_pressed() -> void:
 	if _controller != null:
 		_controller.on_settings_button_pressed()
+
+
+func _connect_header_buttons() -> void:
+	_connect_button_pressed(_back_button, Callable(self, "_on_back_button_pressed"))
+	_connect_button_pressed(_debug_toggle_button, Callable(self, "_on_debug_toggle_button_pressed"))
+	_connect_button_pressed(_settings_button, Callable(self, "_on_settings_button_pressed"))
+
+
+func _connect_button_pressed(button: Button, callback: Callable) -> void:
+	if button == null:
+		return
+	if button.pressed.is_connected(callback):
+		return
+	button.pressed.connect(callback)
 
 
 func _on_next_button_pressed() -> void:

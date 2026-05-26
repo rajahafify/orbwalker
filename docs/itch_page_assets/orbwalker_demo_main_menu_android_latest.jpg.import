@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://crob332nmtp6k"
-path="res://.godot/imported/main_menu_stats_triptych_panel_v1.png-77cddd71e3dbec99127a598626886c95.ctex"
+uid="uid://cd138eo1xio0n"
+path="res://.godot/imported/orbwalker_demo_main_menu_android_latest.jpg-999223ff30f180d409f89868da683b97.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_stats_triptych_panel_v1.png"
-dest_files=["res://.godot/imported/main_menu_stats_triptych_panel_v1.png-77cddd71e3dbec99127a598626886c95.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_main_menu_android_latest.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_main_menu_android_latest.jpg-999223ff30f180d409f89868da683b97.ctex"]
 
 [params]
 

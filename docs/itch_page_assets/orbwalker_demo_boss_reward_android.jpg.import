@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnxm1txq8yo0v"
-path="res://.godot/imported/main_menu_icon_profile_v1.png-032fa6e005df73ec9883af48b27832cd.ctex"
+uid="uid://dos1inv6143be"
+path="res://.godot/imported/orbwalker_demo_boss_reward_android.jpg-d0876b16b859bd408308eb292f4513eb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/art/first_pass/menu/main_menu_icon_profile_v1.png"
-dest_files=["res://.godot/imported/main_menu_icon_profile_v1.png-032fa6e005df73ec9883af48b27832cd.ctex"]
+source_file="res://docs/itch_page_assets/orbwalker_demo_boss_reward_android.jpg"
+dest_files=["res://.godot/imported/orbwalker_demo_boss_reward_android.jpg-d0876b16b859bd408308eb292f4513eb.ctex"]
 
 [params]
 

@@ -18,7 +18,7 @@ config/icon="res://resources/art/assetgen/system/app_icon_candidate_01.png"
 
 [autoload]
 
-GDAIMCPRuntime="*uid://dcne7ryelpxmn"
+GDAIMCPRuntime="*res://scripts/core/gdai_mcp_runtime_proxy.gd"
 RunState="*res://scripts/core/run_state.gd"
 AudioManager="*res://scripts/core/audio_manager.gd"
 

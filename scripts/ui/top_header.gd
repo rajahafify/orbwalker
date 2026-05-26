@@ -17,6 +17,26 @@ const HIDDEN_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.95, 0.91, 0.82, 1.0)
 
+class SettingsGlyph:
+	extends Control
+
+	var glyph_color := Color(0.95, 0.91, 0.82, 1.0)
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		var center := size * 0.5
+		var radius := minf(size.x, size.y) * 0.23
+		var tooth_inner := radius + 3.0
+		var tooth_outer := radius + 9.0
+		draw_arc(center, radius, 0.0, TAU, 36, glyph_color, 3.0, true)
+		for index in range(8):
+			var angle := TAU * float(index) / 8.0
+			var direction := Vector2(cos(angle), sin(angle))
+			draw_line(center + direction * tooth_inner, center + direction * tooth_outer, glyph_color, 3.0, true)
+		draw_circle(center, 5.0, glyph_color)
+
 @onready var title_label: Label = %TitleLabel
 @onready var gold_pill: Panel = %GoldPill
 @onready var gold_label: Label = %GoldLabel
@@ -29,11 +49,16 @@ const INK_COLOR := Color(0.95, 0.91, 0.82, 1.0)
 @onready var enemy_step_label: Label = %EnemyStepLabel
 @onready var debug_toggle_button: Button = %DebugToggleButton
 
+var _settings_glyph: SettingsGlyph = null
+
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	help_button.tooltip_text = "Help"
 	settings_button.tooltip_text = "Settings"
+	settings_button.text = ""
+	settings_button.focus_mode = Control.FOCUS_NONE
+	help_button.focus_mode = Control.FOCUS_NONE
 	main_menu_button.visible = false
 	crest_panel.visible = false
 	crest_label.visible = false
@@ -43,6 +68,7 @@ func _ready() -> void:
 	help_button.pressed.connect(func() -> void: help_pressed.emit())
 	settings_button.pressed.connect(func() -> void: settings_pressed.emit())
 	main_menu_button.pressed.connect(func() -> void: menu_pressed.emit())
+	_ensure_settings_glyph()
 	_apply_chrome()
 	apply_header_layout()
 
@@ -96,6 +122,7 @@ func apply_header_layout() -> void:
 	_apply_rect(gold_label, Rect2(Vector2.ZERO, gold_pill.size))
 	_apply_rect(help_button, _local_help_rect(size))
 	_apply_rect(settings_button, _local_settings_rect(size))
+	_layout_settings_glyph()
 	_apply_rect(main_menu_button, HIDDEN_RECT)
 	_apply_rect(crest_panel, HIDDEN_RECT)
 	_apply_rect(crest_label, Rect2(Vector2.ZERO, Vector2(1, 1)))
@@ -182,7 +209,7 @@ func _apply_chrome() -> void:
 	_apply_round_button_chrome(help_button)
 	_apply_round_button_chrome(settings_button)
 	help_button.add_theme_font_size_override("font_size", 34)
-	settings_button.add_theme_font_size_override("font_size", 32)
+	settings_button.add_theme_font_size_override("font_size", 1)
 
 
 func _apply_round_button_chrome(button: Button) -> void:
@@ -194,3 +221,20 @@ func _apply_round_button_chrome(button: Button) -> void:
 	button.add_theme_color_override("font_color", INK_COLOR)
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_color_override("font_pressed_color", GOLD_COLOR)
+
+
+func _ensure_settings_glyph() -> void:
+	if _settings_glyph != null and is_instance_valid(_settings_glyph):
+		return
+	_settings_glyph = SettingsGlyph.new()
+	_settings_glyph.name = "SettingsGlyph"
+	_settings_glyph.glyph_color = INK_COLOR
+	settings_button.add_child(_settings_glyph)
+
+
+func _layout_settings_glyph() -> void:
+	if _settings_glyph == null or not is_instance_valid(_settings_glyph):
+		return
+	_settings_glyph.position = Vector2.ZERO
+	_settings_glyph.size = settings_button.size
+	_settings_glyph.queue_redraw()

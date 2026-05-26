@@ -533,11 +533,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Update <code>wiki/known-issues.html</code> for any public-build caveats.</li>
 </ul>
 <li>Closeout: Android public demo packaging passed on 2026-05-26. Export metadata now uses package id <code>com.artifisi.orbwalker</code>, package name <code>Orbwalker Demo</code>, version <code>0.1.0-demo</code> / code <code>2</code>, launcher visibility enabled, and visible main-menu label <code>DEMO 0.1.0</code>. Fresh APK export wrote <code>D:\godot\matchatro\Orbwalker.apk</code>, installed successfully on device <code>b21e3ea8</code>, launched to the main menu, and Start Run reached Dungeon 1-1 combat without a filtered Godot/AndroidRuntime crash. The known Godot CLI export shutdown warning remains documented as a tooling caveat rather than a build blocker.</li>
+<li>HTML follow-up: On 2026-05-27, the Web preset was added for local/itch HTML export, obsolete first-pass main-menu art was removed from the repo, and the main-menu fallback paths now point at the current assetgen menu art. A localhost smoke of the exported HTML build reached the updated main menu, started combat, and opened the in-combat Settings overlay after replacing the problematic text gear with a drawn settings glyph. Remaining Web packaging caveat: the exported <code>index.pck</code> is still too large for itch.io browser upload until the Web preset is changed away from <code>all_resources</code> or the runtime resource set is otherwise pruned.</li>
 </ul>
 <h2 id="itch-07-itch-io-page-and-screenshot-pack">ITCH-07: Itch.io Page And Screenshot Pack</h2>
 <ul>
 <li>Branch: <code>codex/itch-07-page-screenshot-pack</code></li>
-<li>Status: <code>in progress</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: Store/page copy, screenshot curation, controls, scope wording, and public caveats.</li>
 <li>Goal: Publish with a page that is attractive, honest, and clear about alpha/demo status.</li>
 <li>Acceptance:</li>
@@ -561,6 +562,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Update <code>docs/test_plan.html</code> with final release candidate evidence.</li>
 <li>Append <code>wiki/log.html</code> if the wiki changes.</li>
 </ul>
+<li>Closeout: Human screenshot review accepted the 2026-05-27 Android capture set pulled from device <code>b21e3ea8</code>: main menu, combat, shop, boss reward, and defeat summary. <code>docs/itch_page_pack.html</code> now uses the accepted five-shot set from <code>docs/itch_page_assets/</code>, with page copy, controls, Android install notes, known limitations, and review checklist updated for the public itch.io page pass. The boss reward capture is acceptable for the pack, with a selected-relic/enabled-Continue variant noted as optional polish rather than a blocker.</li>
 </ul>
 <h2 id="itch-08-final-release-candidate-qa">ITCH-08: Final Release Candidate QA</h2>
 <ul>
