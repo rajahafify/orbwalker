@@ -386,9 +386,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="itch-02-first-run-clarity-and-onboarding">ITCH-02: First-Run Clarity And Onboarding</h2>
 <ul>
 <li>Branch: <code>codex/itch-02-first-run-clarity</code></li>
-<li>Status: <code>in progress</code></li>
+<li>Status: <code>done</code></li>
 <li>Owner/scope: First-time player guidance across main menu, first combat, first shop, and run summary.</li>
 <li>Goal: A new player should understand the basic loop without reading an external explanation.</li>
+<li>Closeout: Human QA passed on 2026-05-26 after the installed Android build demonstrated the full guided tutorial sequence: normal combat/shop surfaces, forced tutorial moves, wrong-path board recovery, first-shop Shortsword/reroll/continue guidance, post-shop Shortsword and Mastery highlight breakdown, and end-of-tutorial Continue/Main Menu choices. ITCH-02 is accepted as <code>done</code>. Remaining public-build export diagnostics stay tracked under ITCH-06/ITCH-08.</li>
 <li>Progress: 2026-05-26 added a dedicated main-menu <code>TUTORIAL</code> action that starts a tutorial run and routes through FlowTrace into the normal <code>res://scenes/combat.tscn</code> surface. Tutorial mode uses the real combat UI, normal run progression, normal shop UI, deterministic combat board seeds per turn, and deterministic shop RNG per shop/reroll so the flow is repeatable while still exercising the real game screens. The first tutorial combat now opens with readable dialogue and board highlights for the predetermined Gold-to-Fire match, then follows with enemy-attack, Shield/Armor block, Heart heal, and multi-combo finisher prompts that force the intended moves and restore the board when the player drags the wrong path. The first shop tutorial forces buying <code>Iron Shortsword</code>, rerolling, and continuing, then the next combat breaks down the post-shop lesson into animated highlights for Shortsword equipment, Mastery, and an end-of-tutorial modal with Continue/Main Menu choices.</li>
 <li>Acceptance:</li>
 <ul>
