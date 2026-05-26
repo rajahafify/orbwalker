@@ -31,10 +31,15 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 
 func ready() -> void:
 	_view.configure_ui_nodes(_host)
+	if not _view.settings_speed_selected.is_connected(_on_settings_speed_selected):
+		_view.settings_speed_selected.connect(_on_settings_speed_selected)
+	if not _view.settings_closed.is_connected(_on_settings_closed):
+		_view.settings_closed.connect(_on_settings_closed)
 	_model.load_menu_assets()
 	_view.apply_textures(_model.menu_texture_paths())
 	_view.apply_static_text()
 	_sync_generate_log_toggle()
+	_view.set_continue_enabled(bool(RunState.run_active))
 	_refresh_profile_overlay()
 	_view.apply_chrome_styles()
 	_view.layout_ui(_host.get_viewport_rect().size)
@@ -143,6 +148,32 @@ func _on_collection_button_pressed() -> void:
 	push_error("Collection transition failed: %s -> %s (%s)" % [route_id, COLLECTION_SCENE_PATH, failure_reason])
 
 
+func _on_continue_button_pressed() -> void:
+	if not bool(RunState.run_active):
+		_view.show_status("No run to continue.")
+		_view.set_continue_enabled(false)
+		return
+	_audio_play_sfx("ui_accept")
+	var next_scene := RunState.next_scene_path()
+	if next_scene == "":
+		next_scene = COMBAT_SCENE_PATH
+	var route_id := RunState.flow_trace_begin("main_menu_continue_run", next_scene, {"source": "main_menu.continue_button"})
+	RunState.flow_trace_mark("before_change_scene_to_file", {"source": "main_menu.continue_button"}, route_id, next_scene)
+	var transition_result: Variant = RunState.flow_trace_change_scene(
+		_host.get_tree(),
+		next_scene,
+		route_id,
+		"main_menu.continue_button",
+		"",
+		_on_continue_post_ready_rollback
+	)
+	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
+		return
+	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(transition_result)
+	_view.show_status("Continue failed: %s" % failure_reason)
+	push_error("Continue transition failed: %s -> %s (%s)" % [route_id, next_scene, failure_reason])
+
+
 func _on_tutorial_button_pressed() -> void:
 	if _tutorial_transitioning:
 		return
@@ -187,6 +218,28 @@ func _on_collection_post_ready_rollback(result: Dictionary) -> void:
 	_view.show_status("Collection failed: %s" % failure_reason)
 
 
+func _on_continue_post_ready_rollback(result: Dictionary) -> void:
+	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
+	_view.show_status("Continue failed: %s" % failure_reason)
+
+
+func _on_settings_button_pressed() -> void:
+	_audio_play_sfx("ui_accept")
+	RunState.load_user_settings()
+	_view.show_settings(RunState.vfx_speed())
+
+
+func _on_settings_speed_selected(speed: String) -> void:
+	RunState.set_vfx_speed(speed)
+	_view.show_settings(RunState.vfx_speed())
+	_view.show_status("VFX speed: %s." % RunState.vfx_speed().capitalize())
+
+
+func _on_settings_closed() -> void:
+	_audio_play_sfx("ui_accept")
+	_view.hide_settings()
+
+
 func _on_profile_button_pressed() -> void:
 	_audio_play_sfx("ui_accept")
 	_refresh_profile_overlay()
@@ -209,6 +262,11 @@ func _on_reset_profile_button_pressed() -> void:
 	_refresh_profile_overlay()
 	_view.show_status("Profile reset.")
 	_view.set_reset_profile_locked(false)
+
+
+func _on_quit_button_pressed() -> void:
+	_audio_play_sfx("ui_accept")
+	_host.get_tree().quit()
 
 
 func _on_generate_log_toggle_toggled(enabled: bool) -> void:

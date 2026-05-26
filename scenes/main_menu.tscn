@@ -371,8 +371,11 @@ size_flags_horizontal = 3
 text = "Close"
 
 [connection signal="pressed" from="MenuButtonColumn/StartRunButton" to="." method="_on_start_fight_button_pressed"]
+[connection signal="pressed" from="MenuButtonColumn/ContinueButton" to="." method="_on_continue_button_pressed"]
 [connection signal="pressed" from="MenuButtonColumn/CollectionButton" to="." method="_on_collection_button_pressed"]
 [connection signal="pressed" from="MenuButtonColumn/TutorialButton" to="." method="_on_tutorial_button_pressed"]
+[connection signal="pressed" from="MenuButtonColumn/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="MenuButtonColumn/QuitButton" to="." method="_on_quit_button_pressed"]
 [connection signal="toggled" from="MenuButtonColumn/GenerateLogToggle" to="." method="_on_generate_log_toggle_toggled"]
 [connection signal="pressed" from="FooterActions/ProfileButton" to="." method="_on_profile_button_pressed"]
 [connection signal="pressed" from="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow/ResetProfileButton" to="." method="_on_reset_profile_button_pressed"]

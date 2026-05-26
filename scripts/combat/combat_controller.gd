@@ -413,6 +413,10 @@ func _ready() -> void:
 		_view.intent_hover_ended.connect(_on_intent_damage_preview_hover_ended)
 		_view.tutorial_end_continue_pressed.connect(_on_tutorial_end_continue_pressed)
 		_view.tutorial_end_main_menu_pressed.connect(_on_tutorial_end_main_menu_pressed)
+		_view.settings_continue_pressed.connect(_on_settings_continue_pressed)
+		_view.settings_new_run_pressed.connect(_on_settings_new_run_pressed)
+		_view.settings_main_menu_pressed.connect(_on_settings_main_menu_pressed)
+		_view.settings_speed_selected.connect(_on_settings_speed_selected)
 	_initialize_combat_state()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
 	_create_new_board()
@@ -465,6 +469,7 @@ func _bind_combat_vfx_presenter() -> void:
 	var view_bindings: Variant = _view.vfx_presenter_bindings(_visuals, _player_loadout_hud, _host)
 	if view_bindings is Dictionary:
 		_combat_vfx_presenter.bind(view_bindings)
+		_apply_vfx_speed_setting()
 
 
 func _bind_board_controller() -> void:
@@ -687,11 +692,47 @@ func _on_print_board_button_pressed() -> void:
 
 
 func _on_back_button_pressed() -> void:
-	_set_status_text("Combat help is visual-only in this prototype build.")
+	_on_settings_button_pressed()
 
 
 func _on_settings_button_pressed() -> void:
-	_set_status_text("Settings is visual-only in this prototype build.")
+	if _view != null:
+		RunState.load_user_settings()
+		_view.show_settings_overlay(RunState.vfx_speed())
+	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
+	_set_status_text("Settings opened.")
+
+
+func _on_settings_continue_pressed() -> void:
+	if _view != null:
+		_view.hide_settings_overlay()
+	_set_input_phase(InputPhase.PLAYER_INPUT)
+	_set_status_text("%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index if _combat != null else 1])
+	_set_status_color(STATUS_COLOR_NEUTRAL)
+
+
+func _on_settings_new_run_pressed() -> void:
+	if _view != null:
+		_view.hide_settings_overlay()
+	RunState.start_new_run()
+	_trace_and_change_scene_to_target("res://scenes/combat.tscn", _flow_trace_route_id_value(), "combat.settings_new_run", "combat_before_change_scene_to_file_settings_new_run")
+
+
+func _on_settings_main_menu_pressed() -> void:
+	if _view != null:
+		_view.hide_settings_overlay()
+	_trace_and_change_scene_to_target("res://scenes/main_menu.tscn", _flow_trace_route_id_value(), "combat.settings_main_menu", "combat_before_change_scene_to_file_settings_main_menu")
+
+
+func _on_settings_speed_selected(speed: String) -> void:
+	RunState.set_vfx_speed(speed)
+	_model.set_combat_speed(RunState.vfx_speed())
+	if _resolve_presenter != null:
+		_resolve_presenter.set_combat_speed(_combat_speed_value())
+	_apply_vfx_speed_setting()
+	if _view != null:
+		_view.show_settings_overlay(RunState.vfx_speed())
+	_set_status_text("VFX speed: %s." % RunState.vfx_speed().capitalize())
 
 
 func _on_tutorial_end_continue_pressed() -> void:
@@ -1952,7 +1993,10 @@ func _ensure_model() -> CombatModel:
 
 func _sync_model_state() -> void:
 	var model := _ensure_model()
-	model.set_combat_speed(model.combat_speed())
+	if RunState.has_method("vfx_speed"):
+		model.set_combat_speed(RunState.vfx_speed())
+	else:
+		model.set_combat_speed(model.combat_speed())
 
 
 func _flow_trace_route_id_value() -> String:
@@ -1969,6 +2013,20 @@ func _input_phase_value() -> InputPhase:
 
 func _combat_speed_value() -> String:
 	return _ensure_model().combat_speed()
+
+
+func _apply_vfx_speed_setting() -> void:
+	if _combat_vfx_presenter == null or not _combat_vfx_presenter.has_method("set_post_match_vfx_speed_scale"):
+		return
+	match _combat_speed_value():
+		COMBAT_SPEED_SLOW:
+			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.35)
+		COMBAT_SPEED_FAST:
+			_combat_vfx_presenter.set_post_match_vfx_speed_scale(1.0)
+		COMBAT_SPEED_INSTANT:
+			_combat_vfx_presenter.set_post_match_vfx_speed_scale(2.0)
+		_:
+			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.55)
 
 
 func _timer_ready_seconds() -> float:

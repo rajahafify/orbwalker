@@ -22,6 +22,12 @@ const RUN_LOG_EXPORT_DIR := "res://logs"
 const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
 const USER_SETTINGS_SECTION := "run_log"
 const USER_SETTINGS_GENERATE_LOG_KEY := "generate_log"
+const USER_SETTINGS_GAMEPLAY_SECTION := "gameplay"
+const USER_SETTINGS_VFX_SPEED_KEY := "vfx_speed"
+const VFX_SPEED_SLOW := "slow"
+const VFX_SPEED_NORMAL := "normal"
+const VFX_SPEED_FAST := "fast"
+const VFX_SPEED_INSTANT := "instant"
 const SCENE_MAIN := "res://scenes/main_menu.tscn"
 const SCENE_COMBAT := "res://scenes/combat.tscn"
 const SCENE_SHOP := "res://scenes/shop.tscn"
@@ -73,6 +79,7 @@ var _run_logger
 var _scene_router
 var _profile_repository
 var _balance_manager
+var _vfx_speed := VFX_SPEED_NORMAL
 
 var _normal_encounters_by_level := {
 	1: [
@@ -1172,10 +1179,38 @@ func set_generate_run_log_files_enabled(enabled: bool) -> void:
 
 func load_user_settings() -> void:
 	_ensure_run_logger().load_user_settings(USER_SETTINGS_PATH, USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY)
+	var config := ConfigFile.new()
+	var error := config.load(USER_SETTINGS_PATH)
+	if error == OK:
+		_vfx_speed = _normalized_vfx_speed(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)))
+
+
+func vfx_speed() -> String:
+	return _vfx_speed
+
+
+func set_vfx_speed(speed: String) -> void:
+	_vfx_speed = _normalized_vfx_speed(speed)
+	_save_user_settings()
 
 
 func _save_user_settings() -> void:
-	_ensure_run_logger().save_user_settings(USER_SETTINGS_PATH, USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY)
+	var config := ConfigFile.new()
+	config.load(USER_SETTINGS_PATH)
+	config.set_value(USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY, generate_run_log_files_enabled())
+	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)
+	var error := config.save(USER_SETTINGS_PATH)
+	if error != OK:
+		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])
+
+
+func _normalized_vfx_speed(speed: String) -> String:
+	var normalized := speed.strip_edges().to_lower()
+	match normalized:
+		VFX_SPEED_SLOW, VFX_SPEED_NORMAL, VFX_SPEED_FAST, VFX_SPEED_INSTANT:
+			return normalized
+		_:
+			return VFX_SPEED_NORMAL
 
 
 func _load_meta_profile() -> void:

@@ -1430,6 +1430,14 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Saved the verified Android launch-smoke screenshots into <code>docs/itch_page_assets/</code>: <code>orbwalker_demo_main_menu_android.png</code> and <code>orbwalker_demo_combat_android.png</code>, both captured from the installed <code>com.artifisi.orbwalker</code> <code>0.1.0-demo</code> build at <code>1080 x 2376</code>.</li>
 <li>Remaining ITCH-07 screenshot captures before publish: shop, boss reward, and run summary from the same APK, followed by full-size and thumbnail-size readability review.</li>
 </ul>
+<p>Verification notes (2026-05-26, main menu/settings/continue polish):</p>
+<ul>
+<li>Main menu release polish now presents only the intended actions: <code>START RUN</code>, <code>CONTINUE</code>, <code>TUTORIAL</code>, <code>SETTINGS</code>, <code>PROFILE</code>, and <code>QUIT</code>. The generate-log toggle, Collection button, decorative ornament/frame, fake stats panel, footer action strip, and visible build label are hidden from the simplified demo menu.</li>
+<li><code>CONTINUE</code> is wired from the main menu through <code>RunState.next_scene_path()</code> when a run is active; the button disables itself and reports no active run when there is nothing to resume. <code>QUIT</code> now exits through the scene tree.</li>
+<li>The Settings modal now persists <code>VFX Speed</code> in <code>user://matchatro_settings.cfg</code> with <code>slow</code>, <code>normal</code>, <code>fast</code>, and <code>instant</code> options. The same setting is available from combat, where the modal can close back to the fight, start a new run, or return to the main menu.</li>
+<li>Follow-up layout QA tightened the Settings overlay spacing on the main menu and combat surfaces so speed choices and action buttons have visible separation and the bottom buttons stay inside the modal at the reviewed portrait sizes.</li>
+<li>Validation passed before commit: <code>git diff --check</code>; Godot MCP <code>play_scene main</code> after the settings-helper rename and layout fixes; final <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

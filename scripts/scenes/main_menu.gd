@@ -96,6 +96,16 @@ func _on_tutorial_button_pressed() -> void:
 		_controller._on_tutorial_button_pressed()
 
 
+func _on_continue_button_pressed() -> void:
+	if _controller != null:
+		_controller._on_continue_button_pressed()
+
+
+func _on_settings_button_pressed() -> void:
+	if _controller != null:
+		_controller._on_settings_button_pressed()
+
+
 func _on_profile_button_pressed() -> void:
 	if _controller != null:
 		_controller._on_profile_button_pressed()
@@ -107,6 +117,10 @@ func _on_close_profile_button_pressed() -> void:
 func _on_reset_profile_button_pressed() -> void:
 	if _controller != null:
 		_controller._on_reset_profile_button_pressed()
+
+func _on_quit_button_pressed() -> void:
+	if _controller != null:
+		_controller._on_quit_button_pressed()
 
 func _on_generate_log_toggle_toggled(enabled: bool) -> void:
 	if _controller != null:

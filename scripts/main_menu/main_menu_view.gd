@@ -1,6 +1,9 @@
 extends RefCounted
 class_name MainMenuView
 
+signal settings_speed_selected(speed: String)
+signal settings_closed
+
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
@@ -34,6 +37,10 @@ var _profile_name_label: Label
 var _profile_score_label: Label
 var _reset_profile_button: Button
 var _close_profile_button: Button
+var _settings_overlay: Control = null
+var _settings_panel: Panel = null
+var _settings_speed_buttons: Array[Button] = []
+var _settings_close_button: Button = null
 var _element_icons: Array = []
 var _element_labels: Array = []
 var _stat_icons: Array = []
@@ -87,8 +94,19 @@ func configure_ui_nodes(host: Control) -> void:
 	_outer_border_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	_outer_border_texture.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 	_menu_button_column.alignment = BoxContainer.ALIGNMENT_CENTER
-	_generate_log_toggle.visible = true
+	_generate_log_toggle.visible = false
+	_collection_button.visible = false
 	_element_row.visible = false
+	_stats_panel.visible = false
+	_footer_actions.visible = false
+	_outer_border_texture.visible = false
+	_version_label.visible = false
+
+	if _profile_button.get_parent() != _menu_button_column:
+		_profile_button.reparent(_menu_button_column)
+	var ordered_buttons := _main_menu_buttons()
+	for button_index in range(mini(ordered_buttons.size(), _menu_button_column.get_child_count())):
+		_menu_button_column.move_child(ordered_buttons[button_index], button_index)
 
 	for icon_node in _element_icons:
 		var icon := icon_node as TextureRect
@@ -111,6 +129,7 @@ func configure_ui_nodes(host: Control) -> void:
 	_element_row.clip_contents = true
 	_stats_panel.clip_contents = true
 	_footer_actions.clip_contents = true
+	_ensure_settings_overlay(host)
 
 
 func apply_textures(paths: Dictionary) -> void:
@@ -130,9 +149,7 @@ func apply_textures(paths: Dictionary) -> void:
 	var footer_paths: Array = Array(paths.get("footer_icons", []))
 	var footer_buttons := [_profile_button, _achievements_button, _footer_settings_button]
 	for i in mini(footer_buttons.size(), footer_paths.size()):
-		var icon := _safe_load_texture(String(footer_paths[i]), "footer_%d" % i)
-		if icon != null:
-			footer_buttons[i].icon = _scaled_texture(icon, 84)
+		footer_buttons[i].icon = null
 
 
 func apply_static_text() -> void:
@@ -152,8 +169,8 @@ func apply_static_text() -> void:
 	_continue_button.disabled = true
 	_collection_button.disabled = false
 	_tutorial_button.disabled = false
-	_settings_button.disabled = true
-	_quit_button.disabled = true
+	_settings_button.disabled = false
+	_quit_button.disabled = false
 	_profile_button.disabled = false
 	_achievements_button.disabled = true
 	_footer_settings_button.disabled = true
@@ -174,24 +191,18 @@ func apply_static_text() -> void:
 
 
 func apply_chrome_styles() -> void:
-	_stats_panel.add_theme_stylebox_override(
-		"panel",
-		_make_panel_style(Color(0.03, 0.08, 0.14, 0.88), Color(0.66, 0.52, 0.24, 0.90), 2, 8)
-	)
-	if _stats_panel_texture != null:
-		_stats_panel.add_theme_stylebox_override("panel", _make_texture_style(_stats_panel_texture, 0.0, 26.0, 18.0, 0.0))
-
 	_apply_menu_button_style(_start_run_button, true, false)
 	_apply_menu_button_style(_generate_log_toggle, false, false)
-	_apply_menu_button_style(_continue_button, false, true)
+	_apply_menu_button_style(_continue_button, false, _continue_button.disabled)
 	_apply_menu_button_style(_collection_button, false, false)
 	_apply_menu_button_style(_tutorial_button, false, false)
-	_apply_menu_button_style(_settings_button, false, true)
-	_apply_menu_button_style(_quit_button, false, true)
-	_apply_footer_button_style(_profile_button)
+	_apply_menu_button_style(_settings_button, false, false)
+	_apply_menu_button_style(_profile_button, false, false)
+	_apply_menu_button_style(_quit_button, false, false)
 	_apply_footer_button_style(_achievements_button)
 	_apply_footer_button_style(_footer_settings_button)
 	_apply_profile_overlay_style()
+	_apply_settings_overlay_style()
 
 	_set_label_style(_version_label, Color(0.86, 0.73, 0.46, 0.96), Color(0.05, 0.06, 0.10, 0.95), 2)
 	_set_label_style(_status_label, Color(0.86, 0.73, 0.46, 0.88), Color(0.05, 0.06, 0.10, 0.95), 2)
@@ -218,8 +229,8 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_set_control_rect(_overlay_tint, Rect2(Vector2.ZERO, viewport_size))
 	_set_control_rect(_outer_frame, Rect2(Vector2.ZERO, viewport_size))
 	_set_control_rect(_outer_border_texture, _inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)))
-	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.00, 0.085, 1.00, 0.24))
-	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.21, 0.33, 0.58, 0.33))
+	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.06, 0.11, 0.88, 0.20))
+	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.18, 0.34, 0.64, 0.44))
 	_set_control_rect(_element_row, _rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12))
 	_set_control_rect(_stats_panel, _rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14))
 	_set_control_rect(_footer_actions, _rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077))
@@ -232,11 +243,11 @@ func layout_ui(viewport_size: Vector2) -> void:
 			Vector2(_stats_panel.size.x * 0.89, _stats_panel.size.y * 0.48)
 		)
 	)
-	_menu_button_column.add_theme_constant_override("separation", int(round(clampf(6.0 * (viewport_size.y / DESIGN_SIZE.y), 4.0, 10.0))))
+	_menu_button_column.add_theme_constant_override("separation", int(round(clampf(16.0 * (viewport_size.y / DESIGN_SIZE.y), 10.0, 24.0))))
 	_footer_actions.add_theme_constant_override("separation", int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))))
 
-	var menu_button_min_height := int(round(viewport_size.y * 0.052))
-	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _tutorial_button, _settings_button, _quit_button]:
+	var menu_button_min_height := int(round(viewport_size.y * 0.060))
+	for button in _main_menu_buttons():
 		button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
@@ -257,7 +268,7 @@ func layout_ui(viewport_size: Vector2) -> void:
 
 	var footer_button_height := int(round(_footer_actions.size.y))
 	var footer_icon_max_width := int(round(clampf(72.0 * scale_factor, 36.0, 84.0)))
-	for button in [_profile_button, _achievements_button, _footer_settings_button]:
+	for button in [_achievements_button, _footer_settings_button]:
 		button.custom_minimum_size = Vector2(0.0, float(footer_button_height))
 		button.add_theme_constant_override("icon_max_width", footer_icon_max_width)
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -274,6 +285,23 @@ func layout_ui(viewport_size: Vector2) -> void:
 
 func set_generate_log_toggle(enabled: bool) -> void:
 	_generate_log_toggle.set_pressed_no_signal(enabled)
+
+
+func set_continue_enabled(enabled: bool) -> void:
+	_continue_button.disabled = not enabled
+	_apply_menu_button_style(_continue_button, false, not enabled)
+
+
+func show_settings(speed: String) -> void:
+	if _settings_overlay == null:
+		return
+	_settings_overlay.visible = true
+	_update_settings_speed_buttons(speed)
+
+
+func hide_settings() -> void:
+	if _settings_overlay != null:
+		_settings_overlay.visible = false
 
 
 func set_profile_overlay_visible(visible: bool) -> void:
@@ -316,7 +344,7 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 	var version_size := maxi(12, int(round(18.0 * scale_factor)))
 	var status_size := maxi(10, int(round(13.0 * scale_factor)))
 
-	for button in [_start_run_button, _generate_log_toggle, _continue_button, _collection_button, _tutorial_button, _settings_button, _quit_button]:
+	for button in _main_menu_buttons():
 		button.add_theme_font_size_override("font_size", menu_size)
 	for label_node in _element_labels:
 		var element_label := label_node as Label
@@ -330,7 +358,7 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 		var stat_value := value_node as Label
 		if stat_value != null:
 			stat_value.add_theme_font_size_override("font_size", stat_value_size)
-	for button in [_profile_button, _achievements_button, _footer_settings_button]:
+	for button in [_achievements_button, _footer_settings_button]:
 		button.add_theme_font_size_override("font_size", footer_size)
 	_profile_title_label.add_theme_font_size_override("font_size", maxi(32, int(round(52.0 * scale_factor))))
 	_profile_name_label.add_theme_font_size_override("font_size", maxi(24, int(round(34.0 * scale_factor))))
@@ -339,6 +367,102 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 	_close_profile_button.add_theme_font_size_override("font_size", maxi(18, int(round(28.0 * scale_factor))))
 	_version_label.add_theme_font_size_override("font_size", version_size)
 	_status_label.add_theme_font_size_override("font_size", status_size)
+
+
+func _main_menu_buttons() -> Array:
+	return [_start_run_button, _continue_button, _tutorial_button, _settings_button, _profile_button, _quit_button]
+
+
+func _ensure_settings_overlay(host: Control) -> void:
+	if _settings_overlay != null or host == null:
+		return
+	_settings_overlay = Control.new()
+	_settings_overlay.name = "SettingsOverlay"
+	_settings_overlay.visible = false
+	_settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_settings_overlay.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
+	host.add_child(_settings_overlay)
+
+	var scrim := ColorRect.new()
+	scrim.name = "SettingsScrim"
+	scrim.color = Color(0.0, 0.0, 0.0, 0.66)
+	scrim.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	scrim.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
+	_settings_overlay.add_child(scrim)
+
+	var center := CenterContainer.new()
+	center.name = "SettingsCenter"
+	center.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
+	_settings_overlay.add_child(center)
+
+	_settings_panel = Panel.new()
+	_settings_panel.name = "SettingsPanel"
+	_settings_panel.custom_minimum_size = Vector2(680.0, 650.0)
+	center.add_child(_settings_panel)
+
+	var box := VBoxContainer.new()
+	box.name = "SettingsBox"
+	box.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
+	box.offset_left = 42.0
+	box.offset_top = 36.0
+	box.offset_right = -42.0
+	box.offset_bottom = -36.0
+	box.add_theme_constant_override("separation", 14)
+	_settings_panel.add_child(box)
+
+	var title := Label.new()
+	title.name = "SettingsTitle"
+	title.text = "Settings"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 42)
+	box.add_child(title)
+
+	var speed_label := Label.new()
+	speed_label.name = "SettingsSpeedLabel"
+	speed_label.text = "VFX Speed"
+	speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	speed_label.add_theme_font_size_override("font_size", 26)
+	box.add_child(speed_label)
+
+	for speed in ["slow", "normal", "fast", "instant"]:
+		var button := Button.new()
+		button.name = "Speed%sButton" % speed.capitalize()
+		button.text = speed.to_upper()
+		button.custom_minimum_size = Vector2(0.0, 62.0)
+		button.pressed.connect(func() -> void: settings_speed_selected.emit(speed))
+		_settings_speed_buttons.append(button)
+		box.add_child(button)
+
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0.0, 18.0)
+	box.add_child(gap)
+
+	_settings_close_button = Button.new()
+	_settings_close_button.name = "SettingsCloseButton"
+	_settings_close_button.text = "CLOSE"
+	_settings_close_button.custom_minimum_size = Vector2(0.0, 62.0)
+	_settings_close_button.pressed.connect(func() -> void: settings_closed.emit())
+	box.add_child(_settings_close_button)
+	_apply_settings_overlay_style()
+
+
+func _apply_settings_overlay_style() -> void:
+	if _settings_panel != null:
+		_settings_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.045, 0.065, 0.085, 0.98), Color(0.78, 0.58, 0.20, 1.0), 2, 8, Vector4(32, 28, 32, 28)))
+	for button in _settings_speed_buttons:
+		_apply_menu_button_style(button, false, false)
+		button.add_theme_font_size_override("font_size", 24)
+	if _settings_close_button != null:
+		_apply_menu_button_style(_settings_close_button, false, false)
+		_settings_close_button.add_theme_font_size_override("font_size", 24)
+
+
+func _update_settings_speed_buttons(speed: String) -> void:
+	var normalized := speed.strip_edges().to_lower()
+	for button in _settings_speed_buttons:
+		var button_speed := button.text.replace("  *", "").to_lower()
+		var selected := button_speed == normalized
+		button.text = ("%s  *" % button_speed.to_upper()) if selected else button_speed.to_upper()
 
 
 func _apply_menu_button_style(button: Button, is_primary: bool, is_disabled: bool) -> void:

@@ -6,11 +6,16 @@ signal enemy_block_preview_hovered(preview: Dictionary)
 signal intent_hover_ended
 signal tutorial_end_continue_pressed
 signal tutorial_end_main_menu_pressed
+signal settings_continue_pressed
+signal settings_new_run_pressed
+signal settings_main_menu_pressed
+signal settings_speed_selected(speed: String)
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 
+const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const MOVE_TIMER_MAX_SECONDS := 5.0
 const TIMER_WARNING_SECONDS := 2.0
 const TIMER_CRITICAL_SECONDS := 1.0
@@ -168,6 +173,12 @@ var _tutorial_end_main_menu_button: Button = null
 var _tutorial_end_step := "end"
 var _tutorial_end_focus_tween: Tween = null
 var _tutorial_end_animated_focus: Panel = null
+var _settings_overlay: Control = null
+var _settings_panel: Panel = null
+var _settings_speed_buttons: Array[Button] = []
+var _settings_continue_button: Button = null
+var _settings_new_run_button: Button = null
+var _settings_main_menu_button: Button = null
 var _enemy_block_preview_button: Control = null
 var _enemy_block_preview_fill: ColorRect = null
 var _enemy_block_preview_pulse_tween: Tween = null
@@ -247,6 +258,19 @@ func set_debug_overlay_visible(visible: bool) -> void:
 		_debug_overlay.visible = visible
 	if _debug_console != null:
 		_debug_console.set_overlay_visible(visible)
+
+
+func show_settings_overlay(speed: String) -> void:
+	_ensure_settings_overlay()
+	if _settings_overlay == null:
+		return
+	_settings_overlay.visible = true
+	_update_settings_speed_buttons(speed)
+
+
+func hide_settings_overlay() -> void:
+	if _settings_overlay != null:
+		_settings_overlay.visible = false
 
 
 func toggle_debug_overlay() -> bool:
@@ -376,6 +400,7 @@ func setup_rendering_helpers() -> void:
 	_ensure_enemy_ground_shadow_node()
 	_ensure_enemy_text_scrim_node()
 	_ensure_enemy_block_preview_nodes()
+	_ensure_settings_overlay()
 
 
 func bind_layout_presenter() -> void:
@@ -1315,6 +1340,115 @@ func _ensure_enemy_block_preview_nodes() -> void:
 		if existing_fill_parent != null:
 			existing_fill_parent.remove_child(_enemy_block_preview_fill)
 		_enemy_block_preview_button.add_child(_enemy_block_preview_fill)
+
+
+func _ensure_settings_overlay() -> void:
+	if _settings_overlay != null or _layout_root == null:
+		return
+	_settings_overlay = Control.new()
+	_settings_overlay.name = "CombatSettingsOverlay"
+	_settings_overlay.visible = false
+	_settings_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_settings_overlay.z_index = 260
+	_settings_overlay.position = Vector2.ZERO
+	_settings_overlay.size = DESIGN_SIZE
+	_layout_root.add_child(_settings_overlay)
+
+	var scrim := ColorRect.new()
+	scrim.name = "SettingsScrim"
+	scrim.color = Color(0.0, 0.0, 0.0, 0.66)
+	scrim.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	scrim.position = Vector2.ZERO
+	scrim.size = DESIGN_SIZE
+	_settings_overlay.add_child(scrim)
+
+	_settings_panel = Panel.new()
+	_settings_panel.name = "SettingsPanel"
+	_settings_panel.position = Vector2(190.0, 320.0)
+	_settings_panel.size = Vector2(700.0, 880.0)
+	_settings_panel.add_theme_stylebox_override("panel", _settings_panel_style())
+	_settings_overlay.add_child(_settings_panel)
+
+	var box := VBoxContainer.new()
+	box.name = "SettingsBox"
+	box.position = Vector2(46.0, 38.0)
+	box.size = Vector2(608.0, 804.0)
+	box.add_theme_constant_override("separation", 14)
+	_settings_panel.add_child(box)
+
+	box.add_child(_settings_label("Settings", 44))
+	box.add_child(_settings_label("VFX Speed", 28))
+	for speed in ["slow", "normal", "fast", "instant"]:
+		var button := _make_settings_menu_button(speed.to_upper())
+		button.pressed.connect(func() -> void: settings_speed_selected.emit(speed))
+		_settings_speed_buttons.append(button)
+		box.add_child(button)
+
+	box.add_child(_settings_group_gap())
+	_settings_continue_button = _make_settings_menu_button("CONTINUE")
+	_settings_new_run_button = _make_settings_menu_button("NEW RUN")
+	_settings_main_menu_button = _make_settings_menu_button("MAIN MENU")
+	_settings_continue_button.pressed.connect(func() -> void: settings_continue_pressed.emit())
+	_settings_new_run_button.pressed.connect(func() -> void: settings_new_run_pressed.emit())
+	_settings_main_menu_button.pressed.connect(func() -> void: settings_main_menu_pressed.emit())
+	box.add_child(_settings_continue_button)
+	box.add_child(_settings_new_run_button)
+	box.add_child(_settings_main_menu_button)
+
+
+func _settings_label(text: String, font_size: int) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.36, 1.0))
+	label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 1.0))
+	label.add_theme_constant_override("outline_size", 2)
+	return label
+
+
+func _settings_group_gap() -> Control:
+	var gap := Control.new()
+	gap.custom_minimum_size = Vector2(0.0, 20.0)
+	return gap
+
+
+func _make_settings_menu_button(text: String) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0.0, 70.0)
+	button.add_theme_stylebox_override("normal", _settings_button_style(Color(0.055, 0.085, 0.12, 0.98), Color(0.38, 0.50, 0.62, 1.0)))
+	button.add_theme_stylebox_override("hover", _settings_button_style(Color(0.075, 0.115, 0.16, 1.0), Color(0.55, 0.70, 0.84, 1.0)))
+	button.add_theme_stylebox_override("pressed", _settings_button_style(Color(0.035, 0.055, 0.08, 1.0), Color(0.32, 0.43, 0.54, 1.0)))
+	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
+	button.add_theme_font_size_override("font_size", 30)
+	return button
+
+
+func _settings_button_style(fill: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 16.0
+	style.content_margin_right = 16.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
+	return style
+
+
+func _settings_panel_style() -> StyleBoxFlat:
+	return _settings_button_style(Color(0.035, 0.05, 0.065, 0.99), Color(0.82, 0.62, 0.22, 1.0))
+
+
+func _update_settings_speed_buttons(speed: String) -> void:
+	var normalized := speed.strip_edges().to_lower()
+	for button in _settings_speed_buttons:
+		var button_speed := button.text.replace(" *", "").to_lower()
+		var selected := button_speed == normalized
+		button.text = ("%s *" % button_speed.to_upper()) if selected else button_speed.to_upper()
 
 
 func _sync_enemy_block_intent_preview(preview: Dictionary) -> void:
