@@ -285,31 +285,7 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_ready_start", {}, _flow_trace_route_id_value())
 	_audio_play_music("combat")
 	RunState.flow_trace_mark("combat_after_music", {}, _flow_trace_route_id_value())
-	if _visuals == null:
-		_visuals = VISUAL_REGISTRY_SCRIPT.new()
-	if _player_loadout_hud == null:
-		_player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
-	_player_loadout_hud.set_visual_registry(_visuals)
-	if _outcome_overlay == null:
-		_outcome_overlay = COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
-	if _turn_log_presenter == null:
-		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
-	if _debug_console == null:
-		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
-	if _debug_command_adapter == null:
-		_debug_command_adapter = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.new()
-	if _combat_vfx_presenter == null:
-		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	if _board_controller == null:
-		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
-	if _hud_presenter == null:
-		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
-	if _combat_consumable_service == null:
-		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
-	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
-		_combat_consumable_service.bind({
-			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
-		})
+	_ensure_runtime_helpers()
 	_bind_outcome_overlay()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
@@ -332,46 +308,7 @@ func _ready() -> void:
 		)
 	_resolve_presenter.bind(resolve_presenter_bindings)
 	_resolve_presenter.set_combat_speed(_combat_speed_value())
-	_debug_command_adapter.bind(
-		{
-			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
-			"default_victory_scene": "res://scenes/main_menu.tscn",
-			"callbacks": {
-				"set_status_text": Callable(self, "_console_set_status_text"),
-				"combat_state": Callable(self, "_debug_combat_state"),
-				"enemy_state": Callable(self, "_debug_enemy_state"),
-				"player_hp": Callable(self, "_debug_player_hp"),
-				"player_max_hp": Callable(self, "_debug_player_max_hp"),
-				"player_armor": Callable(self, "_debug_player_armor"),
-				"enemy_display_name": Callable(self, "_debug_enemy_display_name"),
-				"enemy_hp": Callable(self, "_debug_enemy_hp"),
-				"enemy_max_hp": Callable(self, "_debug_enemy_max_hp"),
-				"enemy_turn_block": Callable(self, "_debug_enemy_turn_block"),
-				"input_phase_value": Callable(self, "_debug_input_phase_value"),
-				"format_intent": Callable(self, "_debug_format_intent"),
-				"on_skip_success": Callable(self, "_console_on_skip_success"),
-				"board_seed": Callable(self, "_debug_board_seed"),
-				"board_debug_text": Callable(self, "_debug_board_debug_text"),
-				"create_new_board": Callable(self, "_create_new_board"),
-				"set_board_seed": Callable(self, "_set_board_seed"),
-				"update_hud": Callable(self, "_update_hud"),
-				"set_input_phase": Callable(self, "_debug_set_input_phase"),
-				"set_pending_next_scene_path": Callable(self, "_debug_set_pending_next_scene_path"),
-				"show_outcome_summary": Callable(self, "_show_outcome_summary"),
-				"build_run_outcome_summary": Callable(self, "_build_run_outcome_summary"),
-			},
-		}
-	)
-	_debug_console.bind(
-		_view.debug_console_nodes() if _view != null else {},
-		{
-			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
-			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
-			"initial_log_level": LOG_LEVEL_NORMAL,
-			"turn_log_presenter": _turn_log_presenter,
-			"callbacks": _debug_command_adapter.command_callbacks(),
-		}
-	)
+	_bind_debug_console()
 	_consumable_rng.randomize()
 	if _view != null:
 		_view.bootstrap_background()
@@ -407,16 +344,7 @@ func _ready() -> void:
 	_player_loadout_hud.intent_preview_hovered.connect(_on_intent_damage_preview_hovered)
 	_player_loadout_hud.intent_block_preview_hovered.connect(_on_intent_block_preview_hovered)
 	_player_loadout_hud.intent_preview_hover_ended.connect(_on_intent_damage_preview_hover_ended)
-	if _view != null:
-		_view.enemy_intent_bubble_hovered.connect(_on_enemy_intent_bubble_hovered)
-		_view.enemy_block_preview_hovered.connect(_on_enemy_block_preview_hovered)
-		_view.intent_hover_ended.connect(_on_intent_damage_preview_hover_ended)
-		_view.tutorial_end_continue_pressed.connect(_on_tutorial_end_continue_pressed)
-		_view.tutorial_end_main_menu_pressed.connect(_on_tutorial_end_main_menu_pressed)
-		_view.settings_continue_pressed.connect(_on_settings_continue_pressed)
-		_view.settings_new_run_pressed.connect(_on_settings_new_run_pressed)
-		_view.settings_main_menu_pressed.connect(_on_settings_main_menu_pressed)
-		_view.settings_speed_selected.connect(_on_settings_speed_selected)
+	_connect_view_signals()
 	_initialize_combat_state()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
 	_create_new_board()
@@ -437,6 +365,96 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _flow_trace_route_id_value())
 	call_deferred("_trace_flow_first_usable_frame")
 	call_deferred("_apply_orb_texture_map_deferred")
+
+
+func _ensure_runtime_helpers() -> void:
+	if _visuals == null:
+		_visuals = VISUAL_REGISTRY_SCRIPT.new()
+	if _player_loadout_hud == null:
+		_player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+	_player_loadout_hud.set_visual_registry(_visuals)
+	if _outcome_overlay == null:
+		_outcome_overlay = COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
+	if _turn_log_presenter == null:
+		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
+	if _debug_console == null:
+		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
+	if _debug_command_adapter == null:
+		_debug_command_adapter = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.new()
+	if _combat_vfx_presenter == null:
+		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	if _board_controller == null:
+		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
+	if _hud_presenter == null:
+		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+	if _combat_consumable_service == null:
+		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
+		_combat_consumable_service.bind({
+			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
+		})
+
+
+func _bind_debug_console() -> void:
+	if _debug_command_adapter != null:
+		_debug_command_adapter.bind({
+			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
+			"default_victory_scene": "res://scenes/main_menu.tscn",
+			"callbacks": _debug_command_callbacks(),
+		})
+	if _debug_console == null:
+		return
+	_debug_console.bind(
+		_view.debug_console_nodes() if _view != null else {},
+		{
+			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
+			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
+			"initial_log_level": LOG_LEVEL_NORMAL,
+			"turn_log_presenter": _turn_log_presenter,
+			"callbacks": _debug_command_adapter.command_callbacks() if _debug_command_adapter != null else {},
+		}
+	)
+
+
+func _debug_command_callbacks() -> Dictionary:
+	return {
+		"set_status_text": Callable(self, "_console_set_status_text"),
+		"combat_state": Callable(self, "_debug_combat_state"),
+		"enemy_state": Callable(self, "_debug_enemy_state"),
+		"player_hp": Callable(self, "_debug_player_hp"),
+		"player_max_hp": Callable(self, "_debug_player_max_hp"),
+		"player_armor": Callable(self, "_debug_player_armor"),
+		"enemy_display_name": Callable(self, "_debug_enemy_display_name"),
+		"enemy_hp": Callable(self, "_debug_enemy_hp"),
+		"enemy_max_hp": Callable(self, "_debug_enemy_max_hp"),
+		"enemy_turn_block": Callable(self, "_debug_enemy_turn_block"),
+		"input_phase_value": Callable(self, "_debug_input_phase_value"),
+		"format_intent": Callable(self, "_debug_format_intent"),
+		"on_skip_success": Callable(self, "_console_on_skip_success"),
+		"board_seed": Callable(self, "_debug_board_seed"),
+		"board_debug_text": Callable(self, "_debug_board_debug_text"),
+		"create_new_board": Callable(self, "_create_new_board"),
+		"set_board_seed": Callable(self, "_set_board_seed"),
+		"update_hud": Callable(self, "_update_hud"),
+		"set_input_phase": Callable(self, "_debug_set_input_phase"),
+		"set_pending_next_scene_path": Callable(self, "_debug_set_pending_next_scene_path"),
+		"show_outcome_summary": Callable(self, "_show_outcome_summary"),
+		"build_run_outcome_summary": Callable(self, "_build_run_outcome_summary"),
+	}
+
+
+func _connect_view_signals() -> void:
+	if _view == null:
+		return
+	_view.enemy_intent_bubble_hovered.connect(_on_enemy_intent_bubble_hovered)
+	_view.enemy_block_preview_hovered.connect(_on_enemy_block_preview_hovered)
+	_view.intent_hover_ended.connect(_on_intent_damage_preview_hover_ended)
+	_view.tutorial_end_continue_pressed.connect(_on_tutorial_end_continue_pressed)
+	_view.tutorial_end_main_menu_pressed.connect(_on_tutorial_end_main_menu_pressed)
+	_view.settings_continue_pressed.connect(_on_settings_continue_pressed)
+	_view.settings_new_run_pressed.connect(_on_settings_new_run_pressed)
+	_view.settings_main_menu_pressed.connect(_on_settings_main_menu_pressed)
+	_view.settings_speed_selected.connect(_on_settings_speed_selected)
 
 
 func _exit_tree() -> void:

@@ -298,6 +298,14 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-05-30-combat-scene-binding-contract-cleanup">2026-05-30 - Combat scene binding contract cleanup</h2>
+<ul>
+<li>Reduced combat scene host duplication by replacing the large <code>@onready</code> node mirror and hand-maintained root dictionary with a single <code>ROOT_NODE_BINDINGS</code> map in <code>scripts/scenes/combat.gd</code>. The existing <code>CombatController.bind(host, root_nodes, model, view)</code> and <code>CombatView.bind(root_nodes)</code> interfaces were preserved.</li>
+<li>Removed duplicate runtime wiring for the combat Help, Debug, and Settings header buttons. Their persistent <code>pressed</code> connections now live only in <code>scenes/combat.tscn</code>, and <code>CONTRIBUTING.html</code> records the scene-signal ownership convention plus generated-artifact policy.</li>
+<li>Grouped combat controller setup into named helper methods for runtime helper creation, debug-console binding, and view-signal binding. This was a readability-only split around existing behavior.</li>
+<li>Added <code>scripts/tests/combat_scene_contract_test.gd</code> to verify the combat scene root-node contract, <code>BoardView</code> resolution, and scene-owned header button signal connections.</li>
+<li>Removed the ignored local root APK export artifact from the working tree. Validation passed with <code>git diff --check</code>, Godot MCP script checks, source-backed lightweight test runners, <code>play_scene main</code>, and a clean final <code>get_godot_errors</code>.</li>
+</ul>
 <h2 id="2026-05-06-scene-and-root-script-naming-refactor">2026-05-06 - Scene And Root Script Naming Refactor</h2>
 <ul>
 <li>Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behavior-equivalent under the new names. (source: <code>project.godot</code>, <code>scripts/core/run_state.gd</code>, <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, <code>scenes/collection.tscn</code>)</li>
