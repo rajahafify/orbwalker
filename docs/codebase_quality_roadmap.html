@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>17</code> suites and <code>92</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>17</code> suites and <code>93</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -279,14 +279,15 @@
 
     <div class="card c-p2">
       <h4><span class="id">P2-1</span> Typed accessor over the node binding dictionary</h4>
-      <p class="why"><code>ROOT_NODE_BINDINGS</code> + <code>_build_root_nodes()</code> is a clean win for de-duplication, but it traded away the old per-field <code>as Label</code> / <code>as ProgressBar</code> casts. Values now cross into the controller as untyped <code>Node</code>. <code>combat_scene_contract_test.gd</code> asserts non-null, but <b>not</b> the node's class — so a scene node of the wrong type resolves fine and fails later at use.</p>
+      <p class="why"><code>ROOT_NODE_BINDINGS</code> + <code>_build_root_nodes()</code> is a clean win for de-duplication, and now has an explicit <code>ROOT_NODE_TYPES</code> contract so the old per-field <code>as Label</code> / <code>as ProgressBar</code> safety is restored at the scene boundary. Keep this contract current whenever a root binding changes.</p>
       <div class="lab">Actions</div>
       <ul class="act">
-        <li>Add the expected type to each binding (e.g. <code>{"path": ^"%StatusLabel", "type": "Label"}</code> or a parallel type map).</li>
+        <li>Maintain the expected type for each binding in <code>ROOT_NODE_TYPES</code>.</li>
         <li>Have <code>_build_root_nodes()</code> verify <code>is</code>-type on resolve and <code>push_error</code> on mismatch.</li>
-        <li>Extend the contract test to assert type, not just presence.</li>
+        <li>Keep <code>combat_scene_contract_test.gd</code> asserting type, not just presence.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> changing a node's class in <code>combat.tscn</code> to the wrong type fails <code>combat_scene_contract_test</code> in CI with a precise message.</div>
+      <div class="ac"><b>Current evidence:</b> <code>combat_scene_contract_test.gd</code> now includes <code>combat_root_node_bindings_have_expected_types</code>, and the aggregate runner passes it under Godot 4.6.3.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
       <div class="tags"><span class="files">scripts/scenes/combat.gd · scripts/tests/combat_scene_contract_test.gd</span></div>
     </div>

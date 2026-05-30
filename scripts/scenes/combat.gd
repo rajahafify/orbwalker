@@ -106,6 +106,109 @@ const ROOT_NODE_BINDINGS := {
 	"_corner_bottom_right": ^"%CornerBottomRight",
 }
 
+const ROOT_NODE_TYPES := {
+	"_board": "Control",
+	"_background": "TextureRect",
+	"_background_scrim": "TextureRect",
+	"_status_label": "Label",
+	"_timer_label": "Label",
+	"_run_progress_label": "Label",
+	"_turn_summary_label": "Label",
+	"_player_label": "Label",
+	"_enemy_label": "Label",
+	"_enemy_step_label": "Label",
+	"_enemy_debug_label": "Label",
+	"_intent_label": "Label",
+	"_phase_label": "Label",
+	"_combat_log_text": "RichTextLabel",
+	"_console_input": "LineEdit",
+	"_next_button": "Button",
+	"_back_button": "Button",
+	"_debug_toggle_button": "Button",
+	"_settings_button": "Button",
+	"_board_view_control": "Control",
+	"_layout_root": "Control",
+	"_top_bar": "TopHeader",
+	"_enemy_panel": "PanelContainer",
+	"_enemy_panel_root": "Control",
+	"_intent_row": "HBoxContainer",
+	"_enemy_stage": "Control",
+	"_enemy_hp_row": "Control",
+	"_enemy_name_label": "Label",
+	"_enemy_hp_text_label": "Label",
+	"_combat_strip": "PanelContainer",
+	"_timer_track": "Control",
+	"_timer_fill": "ColorRect",
+	"_timer_icon": "TextureRect",
+	"_timer_state_label": "Label",
+	"_timer_center_marker": "TextureRect",
+	"_board_frame": "PanelContainer",
+	"_board_panel": "Control",
+	"_board_shadow": "Panel",
+	"_outcome_summary_panel": "Panel",
+	"_outcome_summary_root": "Control",
+	"_outcome_text_column": "Control",
+	"_outcome_title_label": "Label",
+	"_outcome_body_label": "Label",
+	"_player_hud_section": "Panel",
+	"_player_panel": "Panel",
+	"_player_panel_root": "Control",
+	"_hero_card": "Panel",
+	"_hero_card_root": "Control",
+	"_hero_level_badge": "PanelContainer",
+	"_vitals_panel": "Control",
+	"_vitals_frame": "Panel",
+	"_player_hp_label": "Label",
+	"_player_armor_label": "Label",
+	"_armor_badge": "PanelContainer",
+	"_armor_badge_label": "Label",
+	"_stat_chip_row": "HBoxContainer",
+	"_attack_stat_label": "Label",
+	"_armor_stat_label": "Label",
+	"_heart_stat_label": "Label",
+	"_gold_stat_label": "Label",
+	"_combat_meta_row": "HBoxContainer",
+	"_loadout_frame": "Panel",
+	"_loadout_root": "Control",
+	"_mastery_strip": "Panel",
+	"_mastery_root": "Control",
+	"_combat_log_frame": "PanelContainer",
+	"_debug_overlay": "PanelContainer",
+	"_title_label": "Label",
+	"_hint_label": "Label",
+	"_enemy_portrait": "TextureRect",
+	"_intent_badge": "TextureRect",
+	"_primary_intent_text_column": "VBoxContainer",
+	"_primary_intent_title_label": "Label",
+	"_primary_intent_amount_label": "Label",
+	"_primary_intent_detail_label": "Label",
+	"_enemy_hp_bar": "ProgressBar",
+	"_player_hp_bar": "ProgressBar",
+	"_player_armor_bar": "ProgressBar",
+	"_player_portrait": "TextureRect",
+	"_equipment_icons": "Control",
+	"_consumable_icons": "Control",
+	"_relic_icons": "HBoxContainer",
+	"_mastery_icons": "Control",
+	"_elemental_mastery_cards": "Control",
+	"_elemental_mastery_panel": "Panel",
+	"_elemental_mastery_title": "Label",
+	"_relic_row": "HBoxContainer",
+	"_equipment_row_label": "Label",
+	"_consumable_row_label": "Label",
+	"_relic_row_label": "Label",
+	"_mastery_row_label": "Label",
+	"_vfx_layer": "Control",
+	"_divider_enemy_timer": "TextureRect",
+	"_divider_timer_board": "TextureRect",
+	"_divider_board_player": "TextureRect",
+	"_corner_top_left": "TextureRect",
+	"_corner_top_right": "TextureRect",
+	"_corner_bottom_left": "TextureRect",
+	"_corner_bottom_right": "TextureRect",
+	"_board_view": "BoardView",
+}
+
 var _model
 var _view
 var _controller
@@ -185,9 +288,28 @@ func _build_root_nodes() -> Dictionary:
 		var node: Node = _resolve_bound_node(ROOT_NODE_BINDINGS[node_name], hud_section)
 		if node == null:
 			push_error("Combat scene root node binding failed: %s -> %s" % [node_name, _binding_label(ROOT_NODE_BINDINGS[node_name])])
+		elif not _node_matches_expected_type(node, String(ROOT_NODE_TYPES.get(node_name, ""))):
+			push_error("Combat scene root node binding type mismatch: %s expected %s, got %s at %s" % [
+				node_name,
+				String(ROOT_NODE_TYPES.get(node_name, "")),
+				_node_type_label(node),
+				_binding_label(ROOT_NODE_BINDINGS[node_name]),
+			])
+			node = null
 		nodes[node_name] = node
-	nodes["_board_view"] = _resolve_board_view(nodes)
+	var board_view: BoardView = _resolve_board_view(nodes)
+	if board_view != null and not _node_matches_expected_type(board_view, String(ROOT_NODE_TYPES.get("_board_view", ""))):
+		push_error("Combat scene root node binding type mismatch: _board_view expected %s, got %s" % [
+			String(ROOT_NODE_TYPES.get("_board_view", "")),
+			_node_type_label(board_view),
+		])
+		board_view = null
+	nodes["_board_view"] = board_view
 	return nodes
+
+
+func _root_node_types() -> Dictionary:
+	return ROOT_NODE_TYPES.duplicate()
 
 
 func _resolve_bound_node(binding: Variant, hud_section: Node) -> Node:
@@ -199,6 +321,28 @@ func _resolve_bound_node(binding: Variant, hud_section: Node) -> Node:
 		if binding_parts.size() == 2 and String(binding_parts[0]) == "player_hud":
 			return _player_hud_node(String(binding_parts[1]), hud_section)
 	return null
+
+
+func _node_matches_expected_type(node: Node, expected_type: String) -> bool:
+	if node == null or expected_type == "":
+		return expected_type == ""
+	match expected_type:
+		"BoardView":
+			return node is BoardView
+		"TopHeader":
+			return node is TopHeader
+		_:
+			return node.is_class(expected_type)
+
+
+func _node_type_label(node: Node) -> String:
+	if node == null:
+		return "<null>"
+	if node is BoardView:
+		return "BoardView"
+	if node is TopHeader:
+		return "TopHeader"
+	return node.get_class()
 
 
 func _binding_label(binding: Variant) -> String:
