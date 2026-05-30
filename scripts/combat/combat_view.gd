@@ -15,9 +15,8 @@ const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_lay
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_SURFACE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_surface_presenter.gd")
 const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
-const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
-const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_bubble_presenter.gd")
+const COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_presenter.gd")
 const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
 const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
 const COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_presenter.gd")
@@ -137,9 +136,8 @@ var _zone_guides_enabled := false
 var _combat_layout_presenter: Variant = null
 var _surface_presenter: Variant = null
 var _settings_overlay_presenter: Variant = null
-var _enemy_block_preview_presenter: Variant = null
 var _tutorial_end_overlay_presenter: Variant = null
-var _enemy_intent_bubble_presenter: Variant = null
+var _enemy_intent_presenter: Variant = null
 var _enemy_stage_presenter: Variant = null
 var _player_hud_presenter: Variant = null
 var _hud_snapshot_presenter: Variant = null
@@ -359,7 +357,9 @@ func setup_rendering_helpers() -> void:
 	_ensure_enemy_stage_backdrop_node()
 	_ensure_enemy_ground_shadow_node()
 	_ensure_enemy_text_scrim_node()
-	_ensure_enemy_block_preview_nodes()
+	_ensure_enemy_intent_presenter()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.ensure_block_preview_nodes()
 	_ensure_settings_overlay()
 
 
@@ -521,20 +521,20 @@ func sync_timer_display(seconds_left: float, state: String) -> void:
 
 
 func start_enemy_intent_hover_emphasis(kind: String) -> void:
-	_ensure_enemy_intent_bubble_presenter()
-	if _enemy_intent_bubble_presenter != null:
-		_enemy_intent_bubble_presenter.start_hover_emphasis(kind)
+	_ensure_enemy_intent_presenter()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.start_hover_emphasis(kind)
 
 
 func set_tutorial_enemy_intent_focus(kind: String) -> void:
-	_ensure_enemy_intent_bubble_presenter()
-	if _enemy_intent_bubble_presenter != null:
-		_enemy_intent_bubble_presenter.set_tutorial_focus(kind)
+	_ensure_enemy_intent_presenter()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.set_tutorial_focus(kind)
 
 
 func clear_tutorial_enemy_intent_focus() -> void:
-	if _enemy_intent_bubble_presenter != null:
-		_enemy_intent_bubble_presenter.clear_tutorial_focus()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.clear_tutorial_focus()
 
 
 func show_tutorial_end_modal(step := "end") -> void:
@@ -553,8 +553,8 @@ func is_tutorial_end_modal_visible() -> bool:
 
 
 func stop_enemy_intent_hover_emphasis() -> void:
-	if _enemy_intent_bubble_presenter != null:
-		_enemy_intent_bubble_presenter.stop_hover_emphasis()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.stop_hover_emphasis()
 
 
 func _ensure_tutorial_end_overlay_presenter() -> void:
@@ -595,39 +595,31 @@ func _emit_tutorial_end_main_menu_pressed() -> void:
 
 
 func _sync_enemy_stage(snapshot: Dictionary) -> void:
-	_intent_label.text = ""
-	_intent_label.visible = false
+	if _intent_label != null:
+		_intent_label.text = ""
+		_intent_label.visible = false
 	var preview := Dictionary(snapshot.get("enemy_intent_preview", {}))
-	_sync_enemy_intent_bubbles(preview)
+	_ensure_enemy_intent_presenter()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.sync_intent_bubbles(preview)
 	_ensure_enemy_stage_presenter()
 	if _enemy_stage_presenter != null:
 		var result: Dictionary = _enemy_stage_presenter.apply_snapshot(snapshot, _current_enemy_visual_id, _layout_enemy_panel_rect)
 		_current_enemy_visual_id = String(result.get("enemy_id", _current_enemy_visual_id))
 		_sync_enemy_stage_presenter_nodes()
-	_sync_enemy_block_intent_preview(preview)
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.sync_block_intent_preview(preview)
 
 
-func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
-	_ensure_enemy_intent_bubble_presenter()
-	if _enemy_intent_bubble_presenter != null:
-		_enemy_intent_bubble_presenter.sync(preview)
-
-
-func _ensure_enemy_intent_bubble_presenter() -> void:
-	if _intent_row == null:
-		return
-	if _enemy_intent_bubble_presenter == null:
-		_enemy_intent_bubble_presenter = COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.new()
-	_enemy_intent_bubble_presenter.bind(
+func _ensure_enemy_intent_presenter() -> void:
+	if _enemy_intent_presenter == null:
+		_enemy_intent_presenter = COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.new()
+	_enemy_intent_presenter.bind(
+		_root_nodes,
 		{
-			"intent_row": _intent_row,
-			"intent_label": _intent_label,
-			"intent_badge": _intent_badge,
-			"primary_intent_text_column": _primary_intent_text_column,
-		},
-		{
-			COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.CALLBACK_HOVERED: Callable(self, "_emit_enemy_intent_bubble_hovered"),
-			COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
+			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_INTENT_HOVERED: Callable(self, "_emit_enemy_intent_bubble_hovered"),
+			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_BLOCK_HOVERED: Callable(self, "_emit_enemy_block_preview_hovered"),
+			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
 		}
 	)
 
@@ -638,22 +630,6 @@ func _emit_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 
 func _on_intent_damage_preview_hover_ended() -> void:
 	intent_hover_ended.emit()
-
-
-func _ensure_enemy_block_preview_nodes() -> void:
-	if _enemy_hp_row == null:
-		return
-	if _enemy_block_preview_presenter == null:
-		_enemy_block_preview_presenter = COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.new()
-	_enemy_block_preview_presenter.bind(
-		_enemy_hp_row,
-		_enemy_hp_bar,
-		{
-			COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.CALLBACK_HOVERED: Callable(self, "_emit_enemy_block_preview_hovered"),
-			COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
-		}
-	)
-	_enemy_block_preview_presenter.ensure_nodes()
 
 
 func _ensure_settings_overlay() -> void:
@@ -690,16 +666,10 @@ func _emit_settings_speed_selected(speed: String) -> void:
 	settings_speed_selected.emit(speed)
 
 
-func _sync_enemy_block_intent_preview(preview: Dictionary) -> void:
-	_ensure_enemy_block_preview_nodes()
-	if _enemy_block_preview_presenter != null:
-		_enemy_block_preview_presenter.sync(preview)
-
-
 func _layout_enemy_block_intent_preview() -> void:
-	_ensure_enemy_block_preview_nodes()
-	if _enemy_block_preview_presenter != null:
-		_enemy_block_preview_presenter.layout()
+	_ensure_enemy_intent_presenter()
+	if _enemy_intent_presenter != null:
+		_enemy_intent_presenter.layout_block_intent_preview()
 
 
 func _emit_enemy_block_preview_hovered(preview: Dictionary) -> void:
