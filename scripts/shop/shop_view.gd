@@ -20,6 +20,7 @@ const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_rend
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
+const SHOP_HELP_MODAL_PRESENTER := preload("res://scripts/shop/shop_help_modal_presenter.gd")
 const SHOP_RELIC_CARD_PRESENTER := preload("res://scripts/shop/shop_relic_card_presenter.gd")
 const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_treasure_chest_overlay_presenter.gd")
 const SHOP_TUTORIAL_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_tutorial_overlay_presenter.gd")
@@ -35,10 +36,6 @@ const RELIC_PANEL_RECT := SHOP_LAYOUT_METRICS.RELIC_PANEL_RECT
 const ACTION_ROW_RECT := SHOP_LAYOUT_METRICS.ACTION_ROW_RECT
 const SHOP_HEADER_SPEECH_RECT := SHOP_LAYOUT_METRICS.SHOP_HEADER_SPEECH_RECT
 const SHOP_HEADER_BOTTOM_RAIL_RECT := SHOP_LAYOUT_METRICS.SHOP_HEADER_BOTTOM_RAIL_RECT
-const SHOP_HELP_MODAL_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_RECT
-const SHOP_HELP_MODAL_TITLE_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_TITLE_RECT
-const SHOP_HELP_MODAL_BODY_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_BODY_RECT
-const SHOP_HELP_MODAL_CLOSE_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_CLOSE_RECT
 const ACTION_HINT_RECT := SHOP_LAYOUT_METRICS.ACTION_HINT_RECT
 const ACTION_BUTTON_FONT_SIZE := SHOP_LAYOUT_METRICS.ACTION_BUTTON_FONT_SIZE
 const ACTION_REROLL_RECT := SHOP_LAYOUT_METRICS.ACTION_REROLL_RECT
@@ -66,11 +63,7 @@ var _gold_label: Label
 var _main_menu_button: Button
 var _help_button: Button
 var _settings_button: Button
-var _shop_help_overlay: ColorRect
-var _shop_help_modal: Panel
-var _shop_help_title_label: Label
-var _shop_help_body_label: Label
-var _shop_help_close_button: Button
+var _shop_help_modal_presenter: Variant = null
 var _merchant_stage: Panel
 var _merchant_backdrop: TextureRect
 var _merchant_scrim: ColorRect
@@ -230,15 +223,9 @@ func _create_ui() -> void:
 	_treasure_chest_overlay_presenter.bind(_layout_root, _visuals, Callable(self, "_lookup_content_definition"))
 	_treasure_chest_overlay_presenter.ensure_overlay()
 
-	_shop_help_overlay = SHOP_VIEW_NODE_FACTORY.make_color_rect("ShopHelpOverlay", _layout_root, Color(0.0, 0.0, 0.0, 0.54))
-	_shop_help_overlay.visible = false
-	_shop_help_overlay.z_index = 70
-	_shop_help_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	_shop_help_modal = SHOP_VIEW_NODE_FACTORY.make_panel("ShopHelpModal", _shop_help_overlay)
-	_shop_help_modal.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	_shop_help_title_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_shop_help_body_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_shop_help_close_button = SHOP_VIEW_NODE_FACTORY.make_button("ShopHelpCloseButton", _shop_help_modal, "x")
+	_shop_help_modal_presenter = SHOP_HELP_MODAL_PRESENTER.new()
+	_shop_help_modal_presenter.bind(_layout_root)
+	_shop_help_modal_presenter.ensure_modal()
 	_tutorial_overlay_presenter = SHOP_TUTORIAL_OVERLAY_PRESENTER.new()
 	_tutorial_overlay_presenter.bind(_hud_overlay, {
 		"offer_cards": _offer_cards,
@@ -310,8 +297,6 @@ func _connect_signals() -> void:
 	_main_menu_button.pressed.connect(_emit_main_menu_pressed)
 	_help_button.pressed.connect(_on_help_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
-	_shop_help_overlay.gui_input.connect(_on_shop_help_overlay_gui_input)
-	_shop_help_close_button.pressed.connect(_hide_shop_help_modal)
 	_treasure_chest_overlay_presenter.option_pressed.connect(_emit_treasure_chest_option_pressed)
 	_treasure_chest_overlay_presenter.skip_pressed.connect(_emit_skip_treasure_chest_pressed)
 	_player_loadout_hud.equipment_slot_selected.connect(_emit_equipment_slot_selected)
@@ -445,11 +430,8 @@ func lock_transitions(enabled: bool) -> void:
 
 
 func handle_global_input(event: InputEvent) -> bool:
-	if _shop_help_overlay != null and _shop_help_overlay.visible:
-		if event is InputEventKey and event.pressed and not event.echo:
-			if event.keycode == KEY_ESCAPE or event.keycode == KEY_BACK:
-				_hide_shop_help_modal()
-				return true
+	if _shop_help_modal_presenter != null and _shop_help_modal_presenter.handle_global_input(event):
+		return true
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		return _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position)
 	if event is InputEventScreenTouch and event.pressed:
@@ -484,32 +466,11 @@ func _emit_main_menu_pressed() -> void:
 
 
 func _on_help_pressed() -> void:
-	_show_shop_help_modal()
+	_shop_help_modal_presenter.show()
 
 
 func _on_settings_pressed() -> void:
 	set_status("Settings is visual-only in this prototype build.", true)
-
-
-func _show_shop_help_modal() -> void:
-	if _shop_help_overlay == null:
-		return
-	_shop_help_overlay.visible = true
-
-
-func _hide_shop_help_modal() -> void:
-	if _shop_help_overlay == null:
-		return
-	_shop_help_overlay.visible = false
-
-
-func _on_shop_help_overlay_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_hide_shop_help_modal()
-		(_shop_help_overlay as Control).accept_event()
-	elif event is InputEventScreenTouch and event.pressed:
-		_hide_shop_help_modal()
-		(_shop_help_overlay as Control).accept_event()
 
 
 func _emit_skip_treasure_chest_pressed() -> void:
@@ -618,11 +579,7 @@ func apply_layout() -> void:
 	_player_loadout_hud.update_player_hud_layout()
 
 	_treasure_chest_overlay_presenter.layout(logical_size)
-	_apply_rect(_shop_help_overlay, Rect2(Vector2.ZERO, logical_size))
-	_apply_rect(_shop_help_modal, SHOP_HELP_MODAL_RECT)
-	_apply_rect(_shop_help_title_label, SHOP_HELP_MODAL_TITLE_RECT)
-	_apply_rect(_shop_help_body_label, SHOP_HELP_MODAL_BODY_RECT)
-	_apply_rect(_shop_help_close_button, SHOP_HELP_MODAL_CLOSE_RECT)
+	_shop_help_modal_presenter.layout(logical_size)
 	_tutorial_overlay_presenter.layout(logical_size)
 
 
@@ -680,10 +637,8 @@ func _apply_visual_chrome() -> void:
 	_merchant_stage.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.03, 0.04, 0.05, 0.55), Color(0.70, 0.50, 0.22, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
 	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
 	_treasure_chest_overlay_presenter.apply_chrome()
-	_shop_help_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.07, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
-	_shop_help_overlay.color = Color(0.0, 0.0, 0.0, 0.54)
+	_shop_help_modal_presenter.apply_chrome()
 
-	SHOP_VIEW_CHROME_STYLER.apply_round_button_chrome(_shop_help_close_button, Color(0.13, 0.09, 0.05, 0.96), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
 	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_reroll_button, _visuals, "reroll")
 	SHOP_VIEW_CHROME_STYLER.apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
 	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_continue_button, _visuals, "continue")
@@ -696,16 +651,13 @@ func _apply_visual_chrome() -> void:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
 	_detail_label.add_theme_color_override("font_color", INK_COLOR)
 	_action_hint_label.add_theme_color_override("font_color", GOLD_COLOR)
-	_shop_help_title_label.add_theme_color_override("font_color", POSITIVE_COLOR)
-	_shop_help_body_label.add_theme_color_override("font_color", INK_COLOR)
 	for label in [_speech_label, _hp_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for button in [_reroll_button, _sell_equipment_button, _continue_button, _shop_help_close_button]:
+	for button in [_reroll_button, _sell_equipment_button, _continue_button]:
 		(button as Button).add_theme_color_override("font_color", INK_COLOR)
 		(button as Button).add_theme_font_size_override("font_size", 24)
-	_shop_help_close_button.add_theme_font_size_override("font_size", 30)
 	_reroll_button.add_theme_color_override("font_color", Color(1.0, 0.90, 0.62, 1.0))
 	_continue_button.add_theme_color_override("font_color", Color(0.96, 0.91, 0.80, 1.0))
 	_reroll_button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
