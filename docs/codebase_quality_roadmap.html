@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>19</code> suites and <code>103</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>20</code> suites and <code>108</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -235,7 +235,7 @@
       <div class="lab">Actions (extract collaborators it already references)</div>
       <ul class="act">
         <li><code>CombatTimerService</code> — the <code>MOVE_TIMER_*</code> / <code>TIMER_*</code> constants and tick logic.</li>
-        <li><code>TutorialDirector</code> — all <code>TUTORIAL_*</code> constants and scripted-step state (see P2-2).</li>
+        <li><code>TutorialDirector</code> — scripted tutorial step state now lives outside the controller; keep pushing tutorial orchestration behind that collaborator (see P2-2).</li>
         <li>Fold the already-extracted <code>_bind_debug_console()</code> / <code>_debug_command_callbacks()</code> into the existing <code>combat_debug_*</code> classes so the controller just hands off.</li>
         <li>Move outcome/summary geometry constants into <code>combat_outcome_overlay.gd</code>.</li>
         <li>Leave the controller as an orchestrator: receive input, advance state machine, delegate.</li>
@@ -288,23 +288,24 @@
         <li>Keep <code>combat_scene_contract_test.gd</code> asserting type, not just presence.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> changing a node's class in <code>combat.tscn</code> to the wrong type fails <code>combat_scene_contract_test</code> in CI with a precise message.</div>
-      <div class="ac"><b>Current evidence:</b> <code>combat_scene_contract_test.gd</code> now includes <code>combat_root_node_bindings_have_expected_types</code>, and the aggregate runner passes it under Godot 4.6.3.</div>
+      <div class="ac"><b>Current evidence:</b> <code>combat_scene_contract_test.gd</code> now includes <code>combat_scene_script_is_attached</code> and <code>combat_root_node_bindings_have_expected_types</code>, and the aggregate runner passes both under Godot 4.6.3.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
       <div class="tags"><span class="files">scripts/scenes/combat.gd · scripts/tests/combat_scene_contract_test.gd</span></div>
     </div>
 
     <div class="card c-p2">
       <h4><span class="id">P2-2</span> Extract the tutorial system out of combat</h4>
-      <p class="why">The tutorial is currently a set of <code>TUTORIAL_*</code> constants and scripted swap-paths living inside <code>combat_controller.gd</code>, while <code>scenes/tutorial.tscn</code> is an empty <code>extends Control</code> stub (reached via the main-menu Tutorial button → <code>start_tutorial_run()</code> → combat). The logic is real but buried, and the stub scene is dead weight. Also: <code>tutorial.tscn</code> carries a non-standard <code>unique_id=…</code> node attribute worth cleaning. <span class="dim">(verify the stub is truly unused before deleting.)</span></p>
+      <p class="why">The tutorial used to be a set of <code>TUTORIAL_*</code> constants and scripted swap-paths living inside <code>combat_controller.gd</code>, while <code>scenes/tutorial.tscn</code> was an empty <code>extends Control</code> stub. The tutorial logic is real and routes through <code>start_tutorial_run()</code> into combat, so it needs a cohesive owner rather than another branch inside the combat controller.</p>
       <div class="lab">Actions</div>
       <ul class="act">
-        <li>Introduce a <code>TutorialDirector</code> collaborator (part of P1-1) that drives scripted steps and prompts; the controller asks it "what now?" rather than embedding step data.</li>
-        <li>Either give <code>tutorial.tscn</code> a real purpose or delete it and its stub script + the odd <code>unique_id</code> attribute.</li>
-        <li>Add a tutorial flow test (P3-1) so the scripted path can't silently break.</li>
+        <li>Keep <code>TutorialDirector</code> as the owner of scripted steps and prompts; the controller asks it "what now?" rather than embedding step data.</li>
+        <li>Keep the old <code>tutorial.tscn</code> stub deleted unless a future dedicated tutorial screen has a real runtime purpose.</li>
+        <li>Keep tutorial director and flow tests so the scripted path can't silently break.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> tutorial step data lives in one cohesive class with its own tests; no orphan <code>tutorial.tscn</code>/<code>tutorial.gd</code>; combat controller no longer references <code>TUTORIAL_*</code> constants directly.</div>
+      <div class="ac"><b>Current evidence:</b> <code>tutorial_director.gd</code> owns scripted tutorial steps, prompts, drag paths, retry text, intent focus, and post-shop modal state. <code>tutorial_director_test.gd</code> validates the first combat steps, inactive contexts, post-shop modal progression, and path completion checks. The unused <code>scenes/tutorial.tscn</code> stub and <code>scripts/scenes/tutorial.gd</code> were removed after no runtime references were found.</div>
       <div class="tags"><span class="t">Effort <b>L</b></span></div>
-      <div class="tags"><span class="files">scripts/combat/combat_controller.gd · scenes/tutorial.tscn · scripts/scenes/tutorial.gd</span></div>
+      <div class="tags"><span class="files">scripts/combat/tutorial_director.gd · scripts/tests/tutorial_director_test.gd · scripts/combat/combat_controller.gd</span></div>
     </div>
 
     <div class="card c-p2">

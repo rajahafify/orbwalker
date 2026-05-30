@@ -6,6 +6,7 @@ const COMBAT_SCENE := preload("res://scenes/combat.tscn")
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
+	_run_case("combat_scene_script_is_attached", _test_combat_scene_script_is_attached, failures)
 	_run_case("combat_root_node_bindings_resolve", _test_combat_root_node_bindings_resolve, failures)
 	_run_case("combat_root_node_bindings_have_expected_types", _test_combat_root_node_bindings_have_expected_types, failures)
 	_run_case("board_view_resolves_from_combat_scene", _test_board_view_resolves_from_combat_scene, failures)
@@ -13,7 +14,7 @@ func run_all() -> Dictionary:
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -23,6 +24,23 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 	var error_text: String = callable.call()
 	if error_text != "":
 		failures.append("%s: %s" % [case_name, error_text])
+
+
+func _test_combat_scene_script_is_attached() -> String:
+	var root := _instantiate_combat_scene()
+	if root == null:
+		return "Expected combat scene to instantiate."
+	var has_script := root.get_script() != null
+	var has_root_builder := root.has_method("_build_root_nodes")
+	var has_type_contract := root.has_method("_root_node_types")
+	root.free()
+	if not has_script:
+		return "Expected combat scene root script to be attached and compiled."
+	if not has_root_builder:
+		return "Expected combat scene root to expose _build_root_nodes()."
+	if not has_type_contract:
+		return "Expected combat scene root to expose _root_node_types()."
+	return ""
 
 
 func _test_combat_root_node_bindings_resolve() -> String:

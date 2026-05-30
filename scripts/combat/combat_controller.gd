@@ -25,6 +25,7 @@ const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.g
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
+const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 const TEST_EQUIPMENT_IDS: Array[String] = [
@@ -32,40 +33,6 @@ const TEST_EQUIPMENT_IDS: Array[String] = [
 	"buckler",
 ]
 const TEST_CONSUMABLE_ID := "fire_scroll"
-const TUTORIAL_FIRST_SWAP_FROM := Vector2i(0, 2)
-const TUTORIAL_FIRST_SWAP_TO := Vector2i(1, 2)
-const TUTORIAL_ARMOR_BLOCK_PATH: Array[Vector2i] = [
-	Vector2i(2, 2),
-	Vector2i(2, 3),
-	Vector2i(2, 4),
-	Vector2i(1, 4),
-	Vector2i(1, 5),
-]
-const TUTORIAL_HEART_HEAL_PATH: Array[Vector2i] = [
-	Vector2i(3, 3),
-	Vector2i(2, 3),
-]
-const TUTORIAL_COMBO_FINISHER_PATH: Array[Vector2i] = [
-	Vector2i(4, 0),
-	Vector2i(4, 1),
-	Vector2i(3, 1),
-	Vector2i(2, 1),
-	Vector2i(1, 1),
-	Vector2i(1, 2),
-	Vector2i(1, 3),
-	Vector2i(1, 4),
-	Vector2i(1, 5),
-	Vector2i(2, 5),
-	Vector2i(3, 5),
-	Vector2i(4, 5),
-	Vector2i(4, 4),
-	Vector2i(4, 3),
-	Vector2i(4, 2),
-	Vector2i(4, 1),
-]
-const TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD := "above_board"
-const TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT := "below_intent"
-const TUTORIAL_PROMPT_ANCHOR_BOTTOM := "bottom"
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
@@ -171,13 +138,12 @@ var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
 var _combat_consumable_service: Variant = null
+var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
 var _tutorial_prompt_label: Label = null
 var _tutorial_prompt_parent: Control = null
-var _tutorial_prompt_anchor := TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
+var _tutorial_prompt_anchor := "above_board"
 var _tutorial_drag_board_snapshot: BoardModel = null
-var _tutorial_end_choice_dismissed := false
-var _tutorial_post_shop_step := "shortsword"
 var _host: Control = null
 var _model = null
 var _view = null
@@ -389,6 +355,8 @@ func _ensure_runtime_helpers() -> void:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+	if _tutorial_director == null:
+		_tutorial_director = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
 	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
 		_combat_consumable_service.bind({
 			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
@@ -754,17 +722,10 @@ func _on_settings_speed_selected(speed: String) -> void:
 
 
 func _on_tutorial_end_continue_pressed() -> void:
-	if _tutorial_post_shop_step == "shortsword":
-		_tutorial_post_shop_step = "mastery"
+	if _tutorial_director != null and _tutorial_director.advance_post_shop_step() != "":
 		_show_shop_damage_tutorial_end_modal()
 		_audio_play_sfx("ui_accept")
 		return
-	if _tutorial_post_shop_step == "mastery":
-		_tutorial_post_shop_step = "end"
-		_show_shop_damage_tutorial_end_modal()
-		_audio_play_sfx("ui_accept")
-		return
-	_tutorial_end_choice_dismissed = true
 	if RunState.has_method("finish_tutorial_guidance"):
 		RunState.finish_tutorial_guidance()
 	if _view != null and _view.has_method("hide_tutorial_end_modal"):
@@ -776,7 +737,8 @@ func _on_tutorial_end_continue_pressed() -> void:
 
 
 func _on_tutorial_end_main_menu_pressed() -> void:
-	_tutorial_end_choice_dismissed = true
+	if _tutorial_director != null:
+		_tutorial_director.dismiss_end_choice()
 	if RunState.has_method("finish_tutorial_guidance"):
 		RunState.finish_tutorial_guidance()
 	if _view != null and _view.has_method("hide_tutorial_end_modal"):
@@ -1006,7 +968,7 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		var drag_path: Array = result.get("path", [])
 		var tutorial_drag_path := _active_tutorial_drag_path()
 		if not tutorial_drag_path.is_empty():
-			if not _did_complete_tutorial_drag_path(drag_path, tutorial_drag_path):
+			if _tutorial_director == null or not _tutorial_director.did_complete_drag_path(drag_path, tutorial_drag_path):
 				_reset_incomplete_tutorial_drag()
 				_set_status_text(_active_tutorial_retry_status_text())
 				_set_status_color(STATUS_COLOR_WARNING)
@@ -1036,57 +998,30 @@ func _resolve_seed() -> int:
 
 
 func _tutorial_turn_summary_text() -> String:
-	return "Tutorial: drag to line up 3+ matching orbs. Mastery cards show what each orb type does."
+	if _tutorial_director == null:
+		return ""
+	return _tutorial_director.turn_summary_text()
 
 
 func _tutorial_turn_status_text() -> String:
-	var turn_index := int(_combat.turn_index if _combat != null else 1)
-	if turn_index <= 1:
-		return "Tutorial: swap the highlighted Gold and Fire orbs to make a vertical Fire match."
-	if turn_index == 2:
-		return "Tutorial: the enemy is attacking. Match Shield orbs to gain block before damage lands."
-	if turn_index == 3:
-		return "Tutorial: match Heart orbs to heal the damage you took."
-	if turn_index == 4:
-		return "Tutorial: make multiple combos to finish the Training Striker."
-	return "Tutorial: match Fire/Ice/Earth for damage, Heart to heal, Armor to block, and Gold for shop money."
+	if _tutorial_director == null:
+		return ""
+	return _tutorial_director.turn_status_text(int(_combat.turn_index if _combat != null else 1))
 
 
 func _sync_tutorial_coachmark() -> void:
-	if _should_show_first_swap_tutorial():
-		var first_path: Array[Vector2i] = [TUTORIAL_FIRST_SWAP_FROM, TUTORIAL_FIRST_SWAP_TO]
-		_apply_tutorial_drag_coachmark(
-			first_path,
-			"Swap these two orbs.\nDrag Gold right into Fire.",
-			TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
-		)
-		return
-	if _should_show_armor_block_tutorial():
-		_focus_tutorial_enemy_attack_intent()
-		_apply_tutorial_drag_coachmark(
-			TUTORIAL_ARMOR_BLOCK_PATH,
-			"Enemy attack incoming.\nMove Earth: down 2, left 1, down 1.\nShield orbs block damage.",
-			TUTORIAL_PROMPT_ANCHOR_BOTTOM
-		)
-		return
-	if _should_show_heart_heal_tutorial():
-		_focus_tutorial_enemy_block_intent()
-		_apply_tutorial_drag_coachmark(
-			TUTORIAL_HEART_HEAL_PATH,
-			"You blocked the attack partially,\nbut still take some damage.\nMatch Heart Orbs to heal the damage.",
-			TUTORIAL_PROMPT_ANCHOR_BOTTOM
-		)
-		return
-	if _should_show_combo_finisher_tutorial():
-		_focus_tutorial_enemy_attack_intent()
-		_apply_tutorial_drag_coachmark(
-			TUTORIAL_COMBO_FINISHER_PATH,
-			"Win by manipulating the board to create multiple combo.\n(Damage is multiplied by combo counts)",
-			TUTORIAL_PROMPT_ANCHOR_BOTTOM
-		)
-		return
-	if _should_show_shop_damage_tutorial():
+	var step := _active_tutorial_step()
+	if step == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.STEP_SHOP_DAMAGE:
 		_show_shop_damage_tutorial_end_modal()
+		return
+	var tutorial_path := _active_tutorial_drag_path_for_step(step)
+	if not tutorial_path.is_empty():
+		_focus_tutorial_intent_for_step(step)
+		_apply_tutorial_drag_coachmark(
+			tutorial_path,
+			_tutorial_director.prompt_message(step),
+			_tutorial_director.prompt_anchor(step)
+		)
 		return
 	if _view != null and _view.has_method("is_tutorial_end_modal_visible") and bool(_view.is_tutorial_end_modal_visible()):
 		_view.hide_tutorial_end_modal()
@@ -1108,120 +1043,55 @@ func _apply_tutorial_drag_coachmark(path: Array[Vector2i], message: String, prom
 	_show_tutorial_prompt(message, prompt_anchor)
 
 
-func _should_show_first_swap_tutorial() -> bool:
-	if not RunState.is_tutorial_run():
-		return false
-	if _combat == null or _combat.is_fight_over():
-		return false
-	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
-		return false
-	if int(_combat.turn_index) != 1:
-		return false
-	return _input_phase_value() == InputPhase.PLAYER_INPUT
-
-
-func _should_show_armor_block_tutorial() -> bool:
-	if not RunState.is_tutorial_run():
-		return false
-	if _combat == null or _combat.is_fight_over():
-		return false
-	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
-		return false
-	if int(_combat.turn_index) != 2:
-		return false
-	return _input_phase_value() == InputPhase.PLAYER_INPUT
-
-
-func _should_show_heart_heal_tutorial() -> bool:
-	if not RunState.is_tutorial_run():
-		return false
-	if _combat == null or _combat.is_fight_over():
-		return false
-	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
-		return false
-	if int(_combat.turn_index) != 3:
-		return false
-	return _input_phase_value() == InputPhase.PLAYER_INPUT
-
-
-func _should_show_combo_finisher_tutorial() -> bool:
-	if not RunState.is_tutorial_run():
-		return false
-	if _combat == null or _combat.is_fight_over():
-		return false
-	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_1":
-		return false
-	if int(_combat.turn_index) != 4:
-		return false
-	return _input_phase_value() == InputPhase.PLAYER_INPUT
-
-
-func _should_show_shop_damage_tutorial() -> bool:
-	if _tutorial_end_choice_dismissed:
-		return false
-	if not RunState.is_tutorial_run():
-		return false
-	if _combat == null or _combat.is_fight_over():
-		return false
-	if RunState.dungeon_level != 1 or String(RunState.current_step_key) != "enemy_2":
-		return false
-	if int(_combat.turn_index) != 1:
-		return false
-	if _input_phase_value() != InputPhase.PLAYER_INPUT:
-		return false
-	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	for raw_id in progression_snapshot.get("equipment_slots", []):
-		if String(raw_id) == "shortsword":
-			return true
-	return false
+func _active_tutorial_step() -> String:
+	if _tutorial_director == null:
+		return COMBAT_GUIDANCE_DIRECTOR_SCRIPT.STEP_NONE
+	return _tutorial_director.active_step({
+		"tutorial_run_active": RunState.is_tutorial_run(),
+		"fight_over": _combat == null or _combat.is_fight_over(),
+		"input_is_player_input": _input_phase_value() == InputPhase.PLAYER_INPUT,
+		"dungeon_level": RunState.dungeon_level,
+		"step_key": String(RunState.current_step_key),
+		"turn_index": int(_combat.turn_index if _combat != null else 1),
+		"progression_snapshot": RunState.progression_snapshot(),
+	})
 
 
 func _show_shop_damage_tutorial_end_modal() -> void:
 	_hide_tutorial_coachmark()
 	if _view == null or not _view.has_method("show_tutorial_end_modal"):
 		return
-	_view.show_tutorial_end_modal(_tutorial_post_shop_step)
-	if _tutorial_post_shop_step == "shortsword":
-		_set_status_text("Tutorial: Iron Shortsword adds +2 Attack.")
-	elif _tutorial_post_shop_step == "mastery":
-		_set_status_text("Tutorial: Mastery sets each orb type's base power.")
-	else:
-		_set_status_text("Tutorial complete.")
+	var post_shop_step: String = _tutorial_director.post_shop_step() if _tutorial_director != null else COMBAT_GUIDANCE_DIRECTOR_SCRIPT.POST_SHOP_END
+	_view.show_tutorial_end_modal(post_shop_step)
+	if _tutorial_director != null:
+		_set_status_text(_tutorial_director.end_modal_status_text(post_shop_step))
 	_set_status_color(STATUS_COLOR_WARNING)
 
 
 func _active_tutorial_drag_path() -> Array[Vector2i]:
-	if _should_show_first_swap_tutorial():
-		var first_path: Array[Vector2i] = [TUTORIAL_FIRST_SWAP_FROM, TUTORIAL_FIRST_SWAP_TO]
-		return first_path
-	if _should_show_armor_block_tutorial():
-		return TUTORIAL_ARMOR_BLOCK_PATH.duplicate()
-	if _should_show_heart_heal_tutorial():
-		return TUTORIAL_HEART_HEAL_PATH.duplicate()
-	if _should_show_combo_finisher_tutorial():
-		return TUTORIAL_COMBO_FINISHER_PATH.duplicate()
-	return []
+	return _active_tutorial_drag_path_for_step(_active_tutorial_step())
 
 
-func _did_complete_tutorial_drag_path(drag_path: Array, expected_path: Array[Vector2i]) -> bool:
-	if drag_path.size() < expected_path.size():
-		return false
-	for index in expected_path.size():
-		if not (drag_path[index] is Vector2i):
-			return false
-		if (drag_path[index] as Vector2i) != expected_path[index]:
-			return false
-	return true
+func _active_tutorial_drag_path_for_step(step: String) -> Array[Vector2i]:
+	if _tutorial_director == null:
+		return []
+	return _tutorial_director.drag_path_for_step(step)
 
 
 func _active_tutorial_retry_status_text() -> String:
-	if _should_show_armor_block_tutorial():
-		return "Tutorial: free-move the highlighted Earth orb down 2, left 1, then down 1."
-	if _should_show_heart_heal_tutorial():
-		return "Tutorial: drag the highlighted Heart orb left to make a vertical Heart match."
-	if _should_show_combo_finisher_tutorial():
-		return "Tutorial: follow the highlighted path to build a finishing combo chain."
-	return "Tutorial: drag the highlighted Gold orb right into the highlighted Fire orb."
+	if _tutorial_director == null:
+		return ""
+	return _tutorial_director.retry_status_text(_active_tutorial_step())
+
+
+func _focus_tutorial_intent_for_step(step: String) -> void:
+	if _tutorial_director == null:
+		return
+	match _tutorial_director.intent_focus_kind(step):
+		"attack":
+			_focus_tutorial_enemy_attack_intent()
+		"block":
+			_focus_tutorial_enemy_block_intent()
 
 
 func _focus_tutorial_enemy_attack_intent() -> void:
@@ -1267,14 +1137,14 @@ func _reset_incomplete_tutorial_drag() -> void:
 		_board_controller.reset_visuals()
 
 
-func _show_tutorial_prompt(message: String, prompt_anchor: String = TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD) -> void:
+func _show_tutorial_prompt(message: String, prompt_anchor: String = "above_board") -> void:
 	_ensure_tutorial_prompt()
 	if _tutorial_prompt_panel == null or _tutorial_prompt_label == null:
 		return
 	_tutorial_prompt_anchor = prompt_anchor
 	_tutorial_prompt_label.add_theme_font_size_override(
 		"font_size",
-		38 if prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 20 if prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 24
+		38 if prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 20 if prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 24
 	)
 	_tutorial_prompt_label.text = message
 	_layout_tutorial_prompt()
@@ -1285,7 +1155,7 @@ func _hide_tutorial_coachmark() -> void:
 	if _tutorial_prompt_panel != null:
 		_tutorial_prompt_panel.visible = false
 	_tutorial_drag_board_snapshot = null
-	_tutorial_prompt_anchor = TUTORIAL_PROMPT_ANCHOR_ABOVE_BOARD
+	_tutorial_prompt_anchor = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_ABOVE_BOARD
 	_clear_tutorial_enemy_intent_focus()
 	if _board_view != null and _board_view.has_method("clear_tutorial_hint"):
 		_board_view.clear_tutorial_hint()
@@ -1334,18 +1204,18 @@ func _layout_tutorial_prompt() -> void:
 		var host_inverse := parent_control.get_global_transform().affine_inverse()
 		var panel_rect: Rect2 = board_panel.get_global_rect()
 		board_rect = Rect2(host_inverse * panel_rect.position, panel_rect.size)
-	var width := minf(860.0, maxf(520.0, board_rect.size.x + 228.0)) if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else minf(720.0, maxf(520.0, board_rect.size.x + 148.0))
-	var height := 236.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 96.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 116.0
+	var width := minf(860.0, maxf(520.0, board_rect.size.x + 228.0)) if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else minf(720.0, maxf(520.0, board_rect.size.x + 148.0))
+	var height := 236.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 96.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 116.0
 	var parent_width := maxf(parent_control.size.x, width + 56.0)
 	var x := clampf(board_rect.get_center().x - width * 0.5, 28.0, maxf(28.0, parent_width - width - 28.0))
 	var y := maxf(332.0, board_rect.position.y - height - 24.0)
-	if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT:
+	if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT:
 		y = _tutorial_prompt_below_intent_y(parent_control, board_rect, height)
-	elif _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM:
+	elif _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM:
 		y = _tutorial_prompt_bottom_y(parent_control, height)
 	_tutorial_prompt_panel.position = Vector2(x, y)
 	_tutorial_prompt_panel.size = Vector2(width, height)
-	var label_margin_y := 18.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BOTTOM else 6.0 if _tutorial_prompt_anchor == TUTORIAL_PROMPT_ANCHOR_BELOW_INTENT else 10.0
+	var label_margin_y := 18.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 6.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 10.0
 	_tutorial_prompt_label.position = Vector2(20.0, label_margin_y)
 	_tutorial_prompt_label.size = _tutorial_prompt_panel.size - Vector2(40.0, label_margin_y * 2.0)
 
