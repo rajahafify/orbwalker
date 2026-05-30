@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>18</code> suites and <code>97</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>19</code> suites and <code>103</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -350,8 +350,9 @@
         <li>Assert end-state (HP, gold, scene transition, run state), not pixels.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> at least 4 flow tests run headless in CI and would fail if any single step in the loop breaks.</div>
+      <div class="ac"><b>Current evidence:</b> <code>run_flow_test.gd</code> adds 6 deterministic headless flow checks for Start Run -&gt; Combat, Combat victory -&gt; Shop, shop buy/reroll/continue -&gt; next Combat, boss reward -&gt; Shop, combat defeat -&gt; Run Summary, and the tutorial first-step encounter/shop offer.</div>
       <div class="tags"><span class="t">Effort <b>L</b></span></div>
-      <div class="tags"><span class="files">+ scripts/tests/integrations/*_flow_test.gd</span></div>
+      <div class="tags"><span class="files">scripts/tests/integrations/run_flow_test.gd</span></div>
     </div>
 
     <div class="card c-p3">
