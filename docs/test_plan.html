@@ -308,6 +308,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_mastery_preview_coordinator_test.gd</code> now covers hover routing to model/view, duplicate-hover no-ops, invalid-hover clearing, full hover cleanup, and hover payload contents for orb values, mastery levels, and combat modifiers.</li>
 <li>Validation passed with Godot 4.6.3 headless: aggregate runner <code>73</code> suites, <code>291</code> cases, <code>0</code> failed; script-load validation <code>scanned=188</code>, <code>loaded=188</code>, <code>failed=0</code>; test-surface coverage <code>82</code>/<code>111</code> production scripts (<code>73.87%</code>, floor <code>71.00%</code>); throwaway pre-commit environment passed the changed-file hook set. The console still prints the existing VisualShader graph-offset warning, resolver max-step warnings in resolver tests, and exit-time GDAI/resource cleanup noise.</li>
 </ul>
+<p>Verification notes (2026-05-30, combat PlayerHUD refresh boundary):</p>
+<ul>
+<li><code>CombatPlayerHudRefreshCoordinator</code> now owns PlayerHUD loadout payload assembly, staged HP/armor display values, intent-preview payload handoff, mastery feedback totals, and mastery hover payload wiring. <code>CombatController</code> keeps the HUD refresh callback surface and binds current combat collaborators before delegating.</li>
+<li><code>combat_player_hud_refresh_coordinator_test.gd</code> covers base payload/render behavior, staged display values feeding the intent preview, callback-gated preview suppression, and payload construction when no view is bound.</li>
+<li>Validation passed with Godot 4.6.3 headless: aggregate runner <code>74</code> suites, <code>295</code> cases, <code>0</code> failed; script-load validation <code>scanned=190</code>, <code>loaded=190</code>, <code>failed=0</code>; test-surface coverage <code>83</code>/<code>112</code> production scripts (<code>74.11%</code>, floor <code>71.00%</code>); throwaway pre-commit environment passed the changed-file hook set. The console still prints the existing VisualShader graph-offset warning, resolver max-step warnings in resolver tests, and exit-time GDAI/resource cleanup noise.</li>
+</ul>
 <p>Verification notes (2026-05-30, profile save migration guard):</p>
 <ul>
 <li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>
@@ -325,7 +331,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li><code>tools/quality/script_load_validation.gd</code> now cache-ignored loads every GDScript file under <code>res://scripts</code> and exits non-zero if any script fails to load.</li>
 <li>GitHub Actions runs the gate after script-size budget reporting and before the aggregate test runner, so parse/load regressions in production scripts fail CI even when no test suite reaches that file. The workflow also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail in CI.</li>
-<li>Validation passed locally with Godot 4.6.3: <code>scanned=188</code>, <code>loaded=188</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
+<li>Validation passed locally with Godot 4.6.3: <code>scanned=190</code>, <code>loaded=190</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
 </ul>
 <p>Verification notes (2026-05-30, changed-file gdformat/gdlint gate):</p>
 <ul>
@@ -337,7 +343,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <p>Verification notes (2026-05-30, test surface coverage gate):</p>
 <ul>
 <li><code>tools/quality/test_surface_coverage.gd</code> scans production GDScript files under the runtime <code>scripts/*</code> areas, then scans tests, debug probes, and QA harnesses for explicit script paths, scene-instantiated scripts, and Godot <code>class_name</code> usage.</li>
-<li>GitHub Actions now runs the coverage-surface gate before the aggregate runner. The current floor is <code>71.00%</code>; the local Godot 4.6.3 run reported <code>82</code> covered scripts out of <code>111</code> production scripts (<code>73.87%</code>), so adding unreferenced production scripts or removing test references will fail CI once it drops below the floor.</li>
+<li>GitHub Actions now runs the coverage-surface gate before the aggregate runner. The current floor is <code>71.00%</code>; the local Godot 4.6.3 run reported <code>83</code> covered scripts out of <code>112</code> production scripts (<code>74.11%</code>), so adding unreferenced production scripts or removing test references will fail CI once it drops below the floor.</li>
 <li><code>test_surface_coverage_test.gd</code> covers the report/floor contract through the shared runner. This is a test-surface visibility floor, not full line coverage; instrumented line coverage remains a separate ratchet.</li>
 </ul>
 <p>Verification notes (2026-05-30, main-menu localization gate):</p>

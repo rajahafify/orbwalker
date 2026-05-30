@@ -28,6 +28,7 @@ const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
 const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
 const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
+const COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_player_hud_refresh_coordinator.gd")
 const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
 const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
@@ -121,6 +122,7 @@ var _board_controller: Variant = null
 var _hud_presenter: Variant = null
 var _hud_stage_coordinator: Variant = null
 var _mastery_preview_coordinator: Variant = null
+var _player_hud_refresh_coordinator: Variant = null
 var _loadout_command_handler: Variant = null
 var _intent_hover_handler: Variant = null
 var _scene_transition_handler: Variant = null
@@ -348,6 +350,8 @@ func _ensure_runtime_helpers() -> void:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	if _mastery_preview_coordinator == null:
 		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
+	if _player_hud_refresh_coordinator == null:
+		_player_hud_refresh_coordinator = COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
 	if _loadout_command_handler == null:
 		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
 	if _intent_hover_handler == null:
@@ -1781,6 +1785,27 @@ func _bind_mastery_preview_coordinator() -> void:
 	})
 
 
+func _bind_player_hud_refresh_coordinator() -> void:
+	if _player_hud_refresh_coordinator == null:
+		_player_hud_refresh_coordinator = COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
+	_ensure_hud_presenter()
+	_bind_mastery_preview_coordinator()
+	_player_hud_refresh_coordinator.bind(
+		{
+			"model": _model,
+			"player_state": _player_state,
+			"enemy_state": _enemy_state,
+			"visuals": _visuals,
+			"view": _view,
+			"hud_presenter": _hud_presenter,
+			"mastery_preview_coordinator": _mastery_preview_coordinator,
+		},
+		{
+			COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.CALLBACK_SHOULD_SHOW_INTENT_DAMAGE_PREVIEW: Callable(self, "_should_show_intent_damage_preview"),
+		}
+	)
+
+
 func _bind_loadout_command_handler() -> void:
 	if _loadout_command_handler == null:
 		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
@@ -2036,37 +2061,8 @@ func debug_console_log(message: String) -> void:
 
 
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
-	var player_display_values := {}
-	var visible_player_hp := int(_player_state.current_hp)
-	var visible_player_armor := int(_player_state.armor)
-	if _model.is_hud_staging_active():
-		visible_player_hp = _model.staged_hud_value("player_hp", visible_player_hp)
-		visible_player_armor = _model.staged_hud_value("player_armor", visible_player_armor)
-	player_display_values["current_hp"] = visible_player_hp
-	player_display_values["current_armor"] = visible_player_armor
-	var intent_preview: Dictionary = {}
-	if _should_show_intent_damage_preview():
-		_ensure_hud_presenter()
-		intent_preview = _hud_presenter.build_intent_damage_preview(
-			_enemy_state.get_current_intent(),
-			visible_player_hp,
-			visible_player_armor
-		)
-	_bind_mastery_preview_coordinator()
-	var loadout_payload := {
-		"player_state": _player_state,
-		"progression": progression_snapshot,
-		"hero_portrait": _visuals.hero_portrait(),
-		"max_visible_relics": 2,
-		"selectable_equipment": true,
-		"selectable_consumables": true,
-		"display_values": player_display_values,
-		"intent_damage_preview": intent_preview,
-		"combat_mastery_feedback_totals": _model.combat_mastery_preview_totals_snapshot(),
-		"combat_mastery_hover_payload": _mastery_preview_coordinator.build_hover_payload(progression_snapshot),
-	}
-	if _view != null:
-		_view.render_player_loadout(loadout_payload, true)
+	_bind_player_hud_refresh_coordinator()
+	_player_hud_refresh_coordinator.refresh_build_icon_rows(progression_snapshot)
 
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
