@@ -5,8 +5,54 @@ signal settings_speed_selected(speed: String)
 signal settings_closed
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
+const LOCALIZATION_BOOTSTRAP := preload("res://scripts/ui/localization_bootstrap.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
+const TEXT_KEYS := {
+	"start_run": "MAIN_MENU_START_RUN",
+	"generate_log": "MAIN_MENU_GENERATE_LOG",
+	"continue": "MAIN_MENU_CONTINUE",
+	"collection": "MAIN_MENU_COLLECTION",
+	"tutorial": "MAIN_MENU_TUTORIAL",
+	"settings": "MAIN_MENU_SETTINGS",
+	"quit": "MAIN_MENU_QUIT",
+	"profile": "MAIN_MENU_PROFILE",
+	"achievements": "MAIN_MENU_ACHIEVEMENTS",
+	"version": "MAIN_MENU_DEMO_VERSION",
+	"runtime_status": "MAIN_MENU_RUNTIME_STATUS",
+	"profile_title": "MAIN_MENU_PROFILE",
+	"profile_default": "MAIN_MENU_DEFAULT_PROFILE",
+	"profile_score_zero": "MAIN_MENU_PROFILE_SCORE_ZERO",
+	"reset_profile": "MAIN_MENU_RESET_PROFILE",
+	"close": "MAIN_MENU_CLOSE",
+	"settings_title": "MAIN_MENU_SETTINGS_TITLE",
+	"settings_vfx_speed": "MAIN_MENU_SETTINGS_VFX_SPEED",
+}
+const ELEMENT_LABEL_KEYS := [
+	"MAIN_MENU_ELEMENT_FIRE",
+	"MAIN_MENU_ELEMENT_ICE",
+	"MAIN_MENU_ELEMENT_EARTH",
+	"MAIN_MENU_ELEMENT_HEART",
+	"MAIN_MENU_ELEMENT_ARMOR",
+	"MAIN_MENU_ELEMENT_GOLD",
+]
+const STAT_TITLE_KEYS := [
+	"MAIN_MENU_RELICS_UNLOCKED",
+	"MAIN_MENU_MASTERY_PROGRESS",
+	"MAIN_MENU_BEST_RUN",
+]
+const STAT_VALUE_KEYS := [
+	"MAIN_MENU_STAT_RELICS_VALUE",
+	"MAIN_MENU_STAT_MASTERY_VALUE",
+	"MAIN_MENU_STAT_BEST_RUN_VALUE",
+]
+const SPEED_ORDER := ["slow", "normal", "fast", "instant"]
+const SPEED_LABEL_KEYS := {
+	"slow": "MAIN_MENU_SPEED_SLOW",
+	"normal": "MAIN_MENU_SPEED_NORMAL",
+	"fast": "MAIN_MENU_SPEED_FAST",
+	"instant": "MAIN_MENU_SPEED_INSTANT",
+}
 
 var _background_texture: TextureRect
 var _overlay_tint: ColorRect
@@ -153,18 +199,19 @@ func apply_textures(paths: Dictionary) -> void:
 
 
 func apply_static_text() -> void:
-	_start_run_button.text = "START RUN"
-	_generate_log_toggle.text = "GENERATE LOG"
-	_continue_button.text = "CONTINUE"
-	_collection_button.text = "COLLECTION"
-	_tutorial_button.text = "TUTORIAL"
-	_settings_button.text = "SETTINGS"
-	_quit_button.text = "QUIT"
-	_profile_button.text = "PROFILE"
-	_achievements_button.text = "ACHIEVEMENTS"
-	_footer_settings_button.text = "SETTINGS"
-	_version_label.text = "DEMO 0.1.0"
-	_status_label.text = "Main menu runtime surface."
+	LOCALIZATION_BOOTSTRAP.ensure_loaded()
+	_start_run_button.text = _text("start_run")
+	_generate_log_toggle.text = _text("generate_log")
+	_continue_button.text = _text("continue")
+	_collection_button.text = _text("collection")
+	_tutorial_button.text = _text("tutorial")
+	_settings_button.text = _text("settings")
+	_quit_button.text = _text("quit")
+	_profile_button.text = _text("profile")
+	_achievements_button.text = _text("achievements")
+	_footer_settings_button.text = _text("settings")
+	_version_label.text = _text("version")
+	_status_label.text = _text("runtime_status")
 	_status_label.visible = false
 	_continue_button.disabled = true
 	_collection_button.disabled = false
@@ -174,6 +221,27 @@ func apply_static_text() -> void:
 	_profile_button.disabled = false
 	_achievements_button.disabled = true
 	_footer_settings_button.disabled = true
+
+	for index in mini(_element_labels.size(), ELEMENT_LABEL_KEYS.size()):
+		var label := _element_labels[index] as Label
+		if label != null:
+			label.text = tr(ELEMENT_LABEL_KEYS[index])
+
+	for index in mini(_stat_titles.size(), STAT_TITLE_KEYS.size()):
+		var title := _stat_titles[index] as Label
+		if title != null:
+			title.text = tr(STAT_TITLE_KEYS[index])
+
+	for index in mini(_stat_values.size(), STAT_VALUE_KEYS.size()):
+		var value := _stat_values[index] as Label
+		if value != null:
+			value.text = tr(STAT_VALUE_KEYS[index])
+
+	_profile_title_label.text = _text("profile_title")
+	_profile_name_label.text = _text("profile_default")
+	_profile_score_label.text = _text("profile_score_zero")
+	_reset_profile_button.text = _text("reset_profile")
+	_close_profile_button.text = _text("close")
 
 	for label_node in _element_labels:
 		var label := label_node as Label
@@ -185,9 +253,10 @@ func apply_static_text() -> void:
 		if title != null:
 			title.text = title.text.to_upper()
 
-	var value_label := _stat_values[2] as Label
-	if value_label != null:
-		value_label.text = value_label.text.to_upper()
+	for value_node in _stat_values:
+		var value_label := value_node as Label
+		if value_label != null:
+			value_label.text = value_label.text.to_upper()
 
 
 func apply_chrome_styles() -> void:
@@ -414,6 +483,7 @@ func _main_menu_buttons() -> Array:
 func _ensure_settings_overlay(host: Control) -> void:
 	if _settings_overlay != null or host == null:
 		return
+	LOCALIZATION_BOOTSTRAP.ensure_loaded()
 	_settings_overlay = Control.new()
 	_settings_overlay.name = "SettingsOverlay"
 	_settings_overlay.visible = false
@@ -450,22 +520,23 @@ func _ensure_settings_overlay(host: Control) -> void:
 
 	var title := Label.new()
 	title.name = "SettingsTitle"
-	title.text = "Settings"
+	title.text = _text("settings_title")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 42)
 	box.add_child(title)
 
 	var speed_label := Label.new()
 	speed_label.name = "SettingsSpeedLabel"
-	speed_label.text = "VFX Speed"
+	speed_label.text = _text("settings_vfx_speed")
 	speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	speed_label.add_theme_font_size_override("font_size", 26)
 	box.add_child(speed_label)
 
-	for speed in ["slow", "normal", "fast", "instant"]:
+	for speed in SPEED_ORDER:
 		var button := Button.new()
 		button.name = "Speed%sButton" % speed.capitalize()
-		button.text = speed.to_upper()
+		button.text = _speed_label(speed)
+		button.set_meta("speed", speed)
 		button.custom_minimum_size = Vector2(0.0, 62.0)
 		button.pressed.connect(func() -> void: settings_speed_selected.emit(speed))
 		_settings_speed_buttons.append(button)
@@ -477,7 +548,7 @@ func _ensure_settings_overlay(host: Control) -> void:
 
 	_settings_close_button = Button.new()
 	_settings_close_button.name = "SettingsCloseButton"
-	_settings_close_button.text = "CLOSE"
+	_settings_close_button.text = _text("close")
 	_settings_close_button.custom_minimum_size = Vector2(0.0, 62.0)
 	_settings_close_button.pressed.connect(func() -> void: settings_closed.emit())
 	box.add_child(_settings_close_button)
@@ -498,9 +569,34 @@ func _apply_settings_overlay_style() -> void:
 func _update_settings_speed_buttons(speed: String) -> void:
 	var normalized := speed.strip_edges().to_lower()
 	for button in _settings_speed_buttons:
-		var button_speed := button.text.replace("  *", "").to_lower()
+		var button_speed := String(button.get_meta("speed", "")).to_lower()
 		var selected := button_speed == normalized
-		button.text = ("%s  *" % button_speed.to_upper()) if selected else button_speed.to_upper()
+		var label := _speed_label(button_speed)
+		button.text = ("%s  *" % label) if selected else label
+
+
+func _text(key_name: String) -> String:
+	return tr(String(TEXT_KEYS.get(key_name, key_name)))
+
+
+func _speed_label(speed: String) -> String:
+	return tr(String(SPEED_LABEL_KEYS.get(speed, speed))).to_upper()
+
+
+static func localization_keys() -> Array[String]:
+	var keys: Array[String] = []
+	for value in TEXT_KEYS.values():
+		keys.append(String(value))
+	for value in ELEMENT_LABEL_KEYS:
+		keys.append(String(value))
+	for value in STAT_TITLE_KEYS:
+		keys.append(String(value))
+	for value in STAT_VALUE_KEYS:
+		keys.append(String(value))
+	for value in SPEED_LABEL_KEYS.values():
+		keys.append(String(value))
+	keys.sort()
+	return keys
 
 
 func _apply_menu_button_style(button: Button, is_primary: bool, is_disabled: bool) -> void:

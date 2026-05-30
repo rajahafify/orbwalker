@@ -48,46 +48,46 @@ theme_override_constants/separation = 10
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Start Run"
+text = "MAIN_MENU_START_RUN"
 
 [node name="GenerateLogToggle" type="CheckButton" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Generate Log"
+text = "MAIN_MENU_GENERATE_LOG"
 
 [node name="ContinueButton" type="Button" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 disabled = true
-text = "Continue"
+text = "MAIN_MENU_CONTINUE"
 
 [node name="CollectionButton" type="Button" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Collection"
+text = "MAIN_MENU_COLLECTION"
 
 [node name="TutorialButton" type="Button" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-text = "Tutorial"
+text = "MAIN_MENU_TUTORIAL"
 
 [node name="SettingsButton" type="Button" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 disabled = true
-text = "Settings"
+text = "MAIN_MENU_SETTINGS"
 
 [node name="QuitButton" type="Button" parent="MenuButtonColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 disabled = true
-text = "Quit"
+text = "MAIN_MENU_QUIT"
 
 [node name="ElementRow" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
@@ -109,7 +109,7 @@ stretch_mode = 5
 [node name="FireLabel" type="Label" parent="ElementRow/FireCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Fire"
+text = "MAIN_MENU_ELEMENT_FIRE"
 
 [node name="IceCell" type="VBoxContainer" parent="ElementRow"]
 layout_mode = 2
@@ -124,7 +124,7 @@ stretch_mode = 5
 [node name="IceLabel" type="Label" parent="ElementRow/IceCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Ice"
+text = "MAIN_MENU_ELEMENT_ICE"
 
 [node name="EarthCell" type="VBoxContainer" parent="ElementRow"]
 layout_mode = 2
@@ -139,7 +139,7 @@ stretch_mode = 5
 [node name="EarthLabel" type="Label" parent="ElementRow/EarthCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Earth"
+text = "MAIN_MENU_ELEMENT_EARTH"
 
 [node name="HeartCell" type="VBoxContainer" parent="ElementRow"]
 layout_mode = 2
@@ -154,7 +154,7 @@ stretch_mode = 5
 [node name="HeartLabel" type="Label" parent="ElementRow/HeartCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Heart"
+text = "MAIN_MENU_ELEMENT_HEART"
 
 [node name="ArmorCell" type="VBoxContainer" parent="ElementRow"]
 layout_mode = 2
@@ -169,7 +169,7 @@ stretch_mode = 5
 [node name="ArmorLabel" type="Label" parent="ElementRow/ArmorCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Armor"
+text = "MAIN_MENU_ELEMENT_ARMOR"
 
 [node name="GoldCell" type="VBoxContainer" parent="ElementRow"]
 layout_mode = 2
@@ -184,7 +184,7 @@ stretch_mode = 5
 [node name="GoldLabel" type="Label" parent="ElementRow/GoldCell"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "Gold"
+text = "MAIN_MENU_ELEMENT_GOLD"
 
 [node name="StatsPanel" type="Panel" parent="."]
 unique_name_in_owner = true
@@ -213,11 +213,11 @@ theme_override_constants/separation = 2
 
 [node name="RelicsTitle" type="Label" parent="StatsPanel/StatsRow/RelicsStat/RelicsText"]
 layout_mode = 2
-text = "Relics Unlocked"
+text = "MAIN_MENU_RELICS_UNLOCKED"
 
 [node name="RelicsValue" type="Label" parent="StatsPanel/StatsRow/RelicsStat/RelicsText"]
 layout_mode = 2
-text = "18 / 36"
+text = "MAIN_MENU_STAT_RELICS_VALUE"
 
 [node name="MasteryStat" type="HBoxContainer" parent="StatsPanel/StatsRow"]
 layout_mode = 2
@@ -235,11 +235,11 @@ theme_override_constants/separation = 2
 
 [node name="MasteryTitle" type="Label" parent="StatsPanel/StatsRow/MasteryStat/MasteryText"]
 layout_mode = 2
-text = "Mastery Progress"
+text = "MAIN_MENU_MASTERY_PROGRESS"
 
 [node name="MasteryValue" type="Label" parent="StatsPanel/StatsRow/MasteryStat/MasteryText"]
 layout_mode = 2
-text = "27%"
+text = "MAIN_MENU_STAT_MASTERY_VALUE"
 
 [node name="BestRunStat" type="HBoxContainer" parent="StatsPanel/StatsRow"]
 layout_mode = 2
@@ -257,11 +257,11 @@ theme_override_constants/separation = 2
 
 [node name="BestRunTitle" type="Label" parent="StatsPanel/StatsRow/BestRunStat/BestRunText"]
 layout_mode = 2
-text = "Best Run"
+text = "MAIN_MENU_BEST_RUN"
 
 [node name="BestRunValue" type="Label" parent="StatsPanel/StatsRow/BestRunStat/BestRunText"]
 layout_mode = 2
-text = "Depth 23"
+text = "MAIN_MENU_STAT_BEST_RUN_VALUE"
 
 [node name="FooterActions" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
@@ -272,32 +272,32 @@ theme_override_constants/separation = 10
 [node name="ProfileButton" type="Button" parent="FooterActions"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Profile"
+text = "MAIN_MENU_PROFILE"
 
 [node name="AchievementsButton" type="Button" parent="FooterActions"]
 layout_mode = 2
 size_flags_horizontal = 3
 disabled = true
-text = "Achievements"
+text = "MAIN_MENU_ACHIEVEMENTS"
 
 [node name="FooterSettingsButton" type="Button" parent="FooterActions"]
 layout_mode = 2
 size_flags_horizontal = 3
 disabled = true
-text = "Settings"
+text = "MAIN_MENU_SETTINGS"
 
 [node name="VersionLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
 horizontal_alignment = 1
-text = "Version 0.1"
+text = "MAIN_MENU_DEMO_VERSION"
 
 [node name="StatusLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Main menu ready."
+text = "MAIN_MENU_RUNTIME_STATUS"
 
 [node name="ProfileOverlay" type="Control" parent="."]
 unique_name_in_owner = true
@@ -339,19 +339,19 @@ theme_override_constants/separation = 16
 [node name="ProfileTitleLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Profile"
+text = "MAIN_MENU_PROFILE"
 horizontal_alignment = 1
 
 [node name="ProfileNameLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Default Profile"
+text = "MAIN_MENU_DEFAULT_PROFILE"
 horizontal_alignment = 1
 
 [node name="ProfileScoreLabel" type="Label" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Total Score: 0"
+text = "MAIN_MENU_PROFILE_SCORE_ZERO"
 horizontal_alignment = 1
 
 [node name="ProfileActionRow" type="HBoxContainer" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox"]
@@ -362,13 +362,13 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Reset Profile"
+text = "MAIN_MENU_RESET_PROFILE"
 
 [node name="CloseProfileButton" type="Button" parent="ProfileOverlay/ProfileCenter/ProfilePanel/ProfileBox/ProfileActionRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Close"
+text = "MAIN_MENU_CLOSE"
 
 [connection signal="pressed" from="MenuButtonColumn/StartRunButton" to="." method="_on_start_fight_button_pressed"]
 [connection signal="pressed" from="MenuButtonColumn/ContinueButton" to="." method="_on_continue_button_pressed"]

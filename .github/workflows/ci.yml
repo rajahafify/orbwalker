@@ -80,5 +80,8 @@ jobs:
       - name: Check test surface coverage
         run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/test_surface_coverage.gd
 
+      - name: Audit main menu localization
+        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_localization_audit.gd
+
       - name: Run tests
         run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd
