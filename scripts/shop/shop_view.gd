@@ -18,6 +18,7 @@ const TOP_HEADER_SCENE := preload("res://scenes/ui/top_header.tscn")
 const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
 const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_renderer.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := Vector2(1080, 1920)
@@ -97,13 +98,6 @@ const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
 const POSITIVE_COLOR := Color(0.60, 0.88, 0.42, 1.0)
 const NEGATIVE_COLOR := Color(1.0, 0.45, 0.38, 1.0)
-const RARITY_COLORS := {
-	"common": Color(0.92, 0.78, 0.55, 1.0),
-	"uncommon": Color(0.36, 0.76, 1.0, 1.0),
-	"rare": Color(0.76, 0.42, 1.0, 1.0),
-	"epic": Color(0.94, 0.46, 1.0, 1.0),
-}
-
 var _background: TextureRect
 var _backdrop_tint: ColorRect
 var _layout_root: Control
@@ -424,8 +418,8 @@ func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending:
 	var card_data := offer.duplicate(true)
 	card_data["display_name"] = String(offer.get("display_name", "Offer"))
 	card_data["rarity"] = rarity
-	card_data["description"] = _shop_card_description(offer)
-	card_data["badge_text"] = _price_text(price, sold_out, affordable, treasure_chest_pending)
+	card_data["description"] = SHOP_COPY_FORMATTER.shop_card_description(offer)
+	card_data["badge_text"] = SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending)
 	card_data["badge_enabled"] = bool(offer.get("badge_enabled", not disabled))
 	COLLECTION_CARD_RENDERER.render_card(card, _visuals, card_data, {
 		"disabled": disabled,
@@ -500,17 +494,17 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	icon.custom_minimum_size = RELIC_ICON_RECT.size
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 	icon.modulate = RELIC_UNAVAILABLE_ICON_MODULATE if disabled else Color.WHITE
-	var title_color := _relic_title_color(rarity)
+	var title_color := SHOP_COPY_FORMATTER.relic_title_color(rarity)
 	if disabled:
 		title_color = RELIC_UNAVAILABLE_TITLE_COLOR
 	var name_label := _make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, title_color, 34, HORIZONTAL_ALIGNMENT_LEFT)
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	var tier_label := _make_dynamic_label(root, "%s RELIC - DUNGEON %d" % [rarity.to_upper(), int(relic_offer.get("dungeon_level", 1))], RELIC_TIER_RECT, title_color, 18)
 	tier_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	var copy_label := _make_dynamic_label(root, _shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
+	var copy_label := _make_dynamic_label(root, SHOP_COPY_FORMATTER.shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
 	copy_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	copy_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
-	_make_price_badge(root, RELIC_PRICE_RECT, _price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
+	_make_price_badge(root, RELIC_PRICE_RECT, SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
 
 
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
@@ -752,139 +746,16 @@ func _lookup_content_definition(content_id: String) -> Dictionary:
 	return _player_loadout_hud.lookup_content_definition(content_id)
 
 
-func _offer_tooltip(offer: Dictionary) -> String:
-	return "%s\n%s\nPrice: $%d" % [String(offer.get("display_name", "Offer")), String(offer.get("description", "")), int(offer.get("price", 0))]
-
-
 func _price_text(price: int, sold_out: bool, _affordable: bool, treasure_chest_pending: bool) -> String:
-	if sold_out:
-		return "SOLD OUT"
-	if treasure_chest_pending:
-		return "WAIT CHEST"
-	return "$%d" % price
+	return SHOP_COPY_FORMATTER.price_text(price, sold_out, _affordable, treasure_chest_pending)
 
 
 func _shop_card_description(offer: Dictionary) -> String:
-	var content_id := String(offer.get("content_id", "")).to_lower()
-	var offer_type := String(offer.get("type", "")).to_lower()
-	var display_name := String(offer.get("display_name", "Offer"))
-	var description := String(offer.get("description", ""))
-	var amount := _first_signed_amount(description, 1)
-	if content_id.begins_with("shortsword"):
-		return "+%d Attack" % amount
-	if content_id.begins_with("buckler"):
-		return "Gain +%d Armor\neach turn" % amount
-	if content_id.begins_with("coin_purse"):
-		return "Gain +%d Gold\non Gold matches" % amount
-	if content_id.begins_with("healing_charm"):
-		return "Heal +%d more\non Hearts" % amount
-	if content_id.begins_with("leather_gloves"):
-		return "+%d Combo count\nfor damage" % amount
-	if offer_type == "mastery_card" or content_id.ends_with("_mastery"):
-		return "+%d %s\nMastery" % [_mastery_amount(description), _mastery_element_name(display_name, content_id)]
-	if offer_type == "treasure_chest":
-		if content_id.find("fire") >= 0:
-			return "Choose 1 of 3\nFire rewards"
-		if content_id.find("earth") >= 0:
-			return "Choose 1 of 3\nEarth rewards"
-		if content_id.find("shadow") >= 0:
-			return "Choose 1 of 3\nShadow rewards"
-		if content_id.find("elemental") >= 0:
-			return "Choose 1 of 3\nElement rewards"
-		return "Choose 1 of 3\nrewards"
-	if offer_type == "consumable":
-		return _compact_consumable_description(display_name, description)
-	return description
-
-
-func _compact_consumable_description(display_name: String, description: String) -> String:
-	var amount := _first_signed_amount(description, 3)
-	var clean_name := display_name.replace(" Scroll", "")
-	if description.findn("Convert") >= 0:
-		return "Convert %d non-%s\norbs to %s orbs" % [amount, clean_name, clean_name]
-	return description
+	return SHOP_COPY_FORMATTER.shop_card_description(offer)
 
 
 func _shop_relic_description(relic_offer: Dictionary) -> String:
-	var content_id := String(relic_offer.get("content_id", "")).to_lower()
-	var description := String(relic_offer.get("description", ""))
-	if content_id == "deep_pockets":
-		return "Gold value +2\n+2 bonus Gold"
-	if content_id == "stalwart_mantle":
-		return "Gain +6 Armor\nat turn start"
-	if content_id == "golden_idol":
-		return "Combo multiplier x1.20\n+2 bonus Gold"
-	if content_id == "crown_of_chains":
-		return "Combo count +3\n+5 Attack each turn"
-	if content_id == "merchant_compass":
-		return "+1 bonus Gold\n+2 Healing on Hearts"
-	return _wrap_relic_copy(description)
-
-
-func _wrap_relic_copy(value: String) -> String:
-	var lines: Array[String] = []
-	for raw_segment in value.strip_edges().split("\n", false):
-		var words := String(raw_segment).strip_edges().split(" ", false)
-		var current := ""
-		for word_value in words:
-			var word := String(word_value)
-			var candidate := word if current == "" else "%s %s" % [current, word]
-			if candidate.length() > 26 and current != "":
-				lines.append(current)
-				current = word
-			else:
-				current = candidate
-		if current != "":
-			lines.append(current)
-	return "\n".join(lines.slice(0, 2))
-
-
-func _mastery_element_name(display_name: String, content_id: String) -> String:
-	var clean_display := display_name.replace(" Mastery", "").strip_edges()
-	if clean_display != "":
-		return clean_display
-	var clean_id := content_id.replace("_mastery", "").replace("_", " ").strip_edges()
-	return clean_id.capitalize()
-
-
-func _mastery_amount(description: String) -> int:
-	var regex := RegEx.new()
-	if regex.compile("\\bby\\s+(\\d+)") != OK:
-		return 1
-	var result := regex.search(description)
-	if result == null:
-		return 1
-	return maxi(1, int(result.get_string(1)))
-
-
-func _first_signed_amount(description: String, default_value: int) -> int:
-	var regex := RegEx.new()
-	if regex.compile("\\+(\\d+)") != OK:
-		return default_value
-	var result := regex.search(description)
-	if result == null:
-		return default_value
-	return maxi(1, int(result.get_string(1)))
-
-
-func _is_full_slot_reason(reason: String) -> bool:
-	return reason == "equipment_slots_full" or reason == "consumable_slots_full"
-
-
-func _rarity_color(rarity: String) -> Color:
-	return RARITY_COLORS.get(rarity.to_lower(), RARITY_COLORS["common"])
-
-
-func _relic_title_color(rarity: String) -> Color:
-	match rarity.to_lower():
-		"uncommon":
-			return Color(0.52, 0.88, 1.0, 1.0)
-		"rare":
-			return Color(0.92, 0.58, 1.0, 1.0)
-		"epic":
-			return Color(1.0, 0.52, 1.0, 1.0)
-		_:
-			return Color(1.0, 0.82, 0.48, 1.0)
+	return SHOP_COPY_FORMATTER.shop_relic_description(relic_offer)
 
 
 static func _shop_layout_for_logical_height(logical_height: float) -> Dictionary:
@@ -1542,17 +1413,6 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE
 	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else 20
 	_make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
-
-
-func _make_state_badge(parent: Node, rect: Rect2, text: String, color: Color, font_size: int = 17) -> void:
-	var bg := Color(0.09, 0.06, 0.04, 0.94)
-	var border := color.darkened(0.18)
-	if color == NEGATIVE_COLOR:
-		bg = Color(0.18, 0.05, 0.05, 0.96)
-	elif color == GOLD_COLOR:
-		bg = Color(0.24, 0.15, 0.04, 0.96)
-	var badge := _make_dynamic_panel(parent, rect, UI_UTILS.panel_style(bg, border, 2, 6, Vector4(8, 6, 8, 6)))
-	_make_dynamic_label(badge, text, Rect2(Vector2.ZERO, rect.size), color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _clear_children(node: Node) -> void:
