@@ -16,6 +16,7 @@ const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_TIMER_DISPLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_timer_display_presenter.gd")
 const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
+const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
@@ -133,6 +134,7 @@ var _corner_bottom_right: TextureRect = null
 var _zone_guides_enabled := false
 var _combat_layout_presenter: Variant = null
 var _settings_overlay_presenter: Variant = null
+var _enemy_block_preview_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -162,10 +164,6 @@ var _tutorial_end_main_menu_button: Button = null
 var _tutorial_end_step := "end"
 var _tutorial_end_focus_tween: Tween = null
 var _tutorial_end_animated_focus: Panel = null
-var _enemy_block_preview_button: Control = null
-var _enemy_block_preview_fill: ColorRect = null
-var _enemy_block_preview_pulse_tween: Tween = null
-var _enemy_block_intent_preview: Dictionary = {}
 var _enemy_intent_entries: Array[Dictionary] = []
 var _current_enemy_visual_id := "cavern_striker"
 
@@ -1253,30 +1251,17 @@ func _on_intent_damage_preview_hover_ended() -> void:
 func _ensure_enemy_block_preview_nodes() -> void:
 	if _enemy_hp_row == null:
 		return
-	if _enemy_block_preview_button == null or not is_instance_valid(_enemy_block_preview_button):
-		_enemy_block_preview_button = Control.new()
-		_enemy_block_preview_button.name = "EnemyBlockIntentPreviewButton"
-		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		_enemy_block_preview_button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND as Control.CursorShape
-		_enemy_block_preview_button.mouse_entered.connect(_on_enemy_block_preview_node_hovered)
-		_enemy_block_preview_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
-	if _enemy_block_preview_button.get_parent() != _enemy_hp_row:
-		var existing_parent := _enemy_block_preview_button.get_parent()
-		if existing_parent != null:
-			existing_parent.remove_child(_enemy_block_preview_button)
-		_enemy_hp_row.add_child(_enemy_block_preview_button)
-	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
-		_enemy_block_preview_fill = ColorRect.new()
-		_enemy_block_preview_fill.name = "EnemyBlockIntentPreviewFill"
-		_enemy_block_preview_fill.color = Color(0.86, 0.90, 0.94, 0.68)
-		_enemy_block_preview_fill.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		_enemy_block_preview_fill.visible = false
-	if _enemy_block_preview_fill.get_parent() != _enemy_block_preview_button:
-		var existing_fill_parent := _enemy_block_preview_fill.get_parent()
-		if existing_fill_parent != null:
-			existing_fill_parent.remove_child(_enemy_block_preview_fill)
-		_enemy_block_preview_button.add_child(_enemy_block_preview_fill)
+	if _enemy_block_preview_presenter == null:
+		_enemy_block_preview_presenter = COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.new()
+	_enemy_block_preview_presenter.bind(
+		_enemy_hp_row,
+		_enemy_hp_bar,
+		{
+			COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.CALLBACK_HOVERED: Callable(self, "_emit_enemy_block_preview_hovered"),
+			COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
+		}
+	)
+	_enemy_block_preview_presenter.ensure_nodes()
 
 
 func _ensure_settings_overlay() -> void:
@@ -1314,60 +1299,19 @@ func _emit_settings_speed_selected(speed: String) -> void:
 
 
 func _sync_enemy_block_intent_preview(preview: Dictionary) -> void:
-	_enemy_block_intent_preview = preview.duplicate(true)
-	_layout_enemy_block_intent_preview()
+	_ensure_enemy_block_preview_nodes()
+	if _enemy_block_preview_presenter != null:
+		_enemy_block_preview_presenter.sync(preview)
 
 
 func _layout_enemy_block_intent_preview() -> void:
 	_ensure_enemy_block_preview_nodes()
-	if _enemy_block_preview_button != null and is_instance_valid(_enemy_block_preview_button):
-		_enemy_block_preview_button.visible = false
-		_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
-		_enemy_block_preview_fill.visible = false
-	_stop_enemy_block_preview_pulse()
-	if _enemy_block_intent_preview.is_empty():
-		return
-	if _enemy_hp_bar == null or _enemy_block_preview_button == null or _enemy_block_preview_fill == null:
-		return
-	var block := maxi(0, int(_enemy_block_intent_preview.get("block", 0)))
-	var max_hp := maxi(1, int(_enemy_block_intent_preview.get("max_hp", int(_enemy_hp_bar.max_value))))
-	if block <= 0:
-		return
-	var bar_width := maxf(0.0, _enemy_hp_bar.size.x)
-	if bar_width <= 0.0:
-		return
-	var preview_width := bar_width * clampf(float(block) / float(max_hp), 0.0, 1.0)
-	if preview_width <= 0.0:
-		return
-	_enemy_block_preview_button.position = _enemy_hp_bar.position
-	_enemy_block_preview_button.size = Vector2(preview_width, _enemy_hp_bar.size.y)
-	_enemy_block_preview_button.visible = true
-	_enemy_block_preview_button.mouse_filter = Control.MouseFilter.MOUSE_FILTER_STOP as Control.MouseFilter
-	_enemy_block_preview_fill.position = Vector2.ZERO
-	_enemy_block_preview_fill.size = _enemy_block_preview_button.size
-	_enemy_block_preview_fill.visible = true
-	_start_enemy_block_preview_pulse()
+	if _enemy_block_preview_presenter != null:
+		_enemy_block_preview_presenter.layout()
 
 
-func _start_enemy_block_preview_pulse() -> void:
-	if _enemy_block_preview_fill == null or not is_instance_valid(_enemy_block_preview_fill):
-		return
-	_stop_enemy_block_preview_pulse()
-	_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	_enemy_block_preview_pulse_tween = null
-
-
-func _stop_enemy_block_preview_pulse() -> void:
-	if _enemy_block_preview_pulse_tween != null and is_instance_valid(_enemy_block_preview_pulse_tween):
-		_enemy_block_preview_pulse_tween.kill()
-	_enemy_block_preview_pulse_tween = null
-	if _enemy_block_preview_fill != null and is_instance_valid(_enemy_block_preview_fill):
-		_enemy_block_preview_fill.modulate = Color(1.0, 1.0, 1.0, 0.68)
-
-
-func _on_enemy_block_preview_node_hovered() -> void:
-	enemy_block_preview_hovered.emit(_enemy_block_intent_preview.duplicate(true))
+func _emit_enemy_block_preview_hovered(preview: Dictionary) -> void:
+	enemy_block_preview_hovered.emit(preview)
 
 
 func _intent_entry_label(kind: String, amount: int) -> String:
