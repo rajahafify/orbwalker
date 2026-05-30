@@ -32,6 +32,7 @@ const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/com
 const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
+const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -121,6 +122,7 @@ var _loadout_command_handler: Variant = null
 var _intent_hover_handler: Variant = null
 var _scene_transition_handler: Variant = null
 var _tutorial_prompt_presenter: Variant = null
+var _tutorial_coachmark_coordinator: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
@@ -346,6 +348,8 @@ func _ensure_runtime_helpers() -> void:
 		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
 	if _tutorial_prompt_presenter == null:
 		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
+	if _tutorial_coachmark_coordinator == null:
+		_tutorial_coachmark_coordinator = COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -890,115 +894,23 @@ func _tutorial_turn_status_text() -> String:
 
 
 func _sync_tutorial_coachmark() -> void:
-	var step := _active_tutorial_step()
-	if step == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.STEP_SHOP_DAMAGE:
-		_show_shop_damage_tutorial_end_modal()
-		return
-	var tutorial_path := _active_tutorial_drag_path_for_step(step)
-	if not tutorial_path.is_empty():
-		_focus_tutorial_intent_for_step(step)
-		_apply_tutorial_drag_coachmark(
-			tutorial_path,
-			_tutorial_director.prompt_message(step),
-			_tutorial_director.prompt_anchor(step)
-		)
-		return
-	if _view != null and _view.has_method("is_tutorial_end_modal_visible") and bool(_view.is_tutorial_end_modal_visible()):
-		_view.hide_tutorial_end_modal()
-	_hide_tutorial_coachmark()
-
-
-func _apply_tutorial_drag_coachmark(path: Array[Vector2i], message: String, prompt_anchor: String) -> void:
-	if path.is_empty():
-		return
-	var from_cell := path[0]
-	var to_cell := path[path.size() - 1]
-	if _board_view != null and _board_view.has_method("set_tutorial_hint"):
-		_board_view.set_tutorial_hint(from_cell, to_cell, path)
-	if _board_controller != null:
-		if _board_controller.has_method("set_restricted_drag_path"):
-			_board_controller.set_restricted_drag_path(path)
-		elif path.size() >= 2 and _board_controller.has_method("set_restricted_swap"):
-			_board_controller.set_restricted_swap(path[0], path[1])
-	_show_tutorial_prompt(message, prompt_anchor)
-
-
-func _active_tutorial_step() -> String:
-	if _tutorial_director == null:
-		return COMBAT_GUIDANCE_DIRECTOR_SCRIPT.STEP_NONE
-	return _tutorial_director.active_step({
-		"tutorial_run_active": RunState.is_tutorial_run(),
-		"fight_over": _combat == null or _combat.is_fight_over(),
-		"input_is_player_input": _input_phase_value() == InputPhase.PLAYER_INPUT,
-		"dungeon_level": RunState.dungeon_level,
-		"step_key": String(RunState.current_step_key),
-		"turn_index": int(_combat.turn_index if _combat != null else 1),
-		"progression_snapshot": RunState.progression_snapshot(),
-	})
+	_bind_tutorial_coachmark_coordinator()
+	_tutorial_coachmark_coordinator.sync()
 
 
 func _show_shop_damage_tutorial_end_modal() -> void:
-	_hide_tutorial_coachmark()
-	if _view == null or not _view.has_method("show_tutorial_end_modal"):
-		return
-	var post_shop_step: String = _tutorial_director.post_shop_step() if _tutorial_director != null else COMBAT_GUIDANCE_DIRECTOR_SCRIPT.POST_SHOP_END
-	_view.show_tutorial_end_modal(post_shop_step)
-	if _tutorial_director != null:
-		_set_status_text(_tutorial_director.end_modal_status_text(post_shop_step))
-	_set_status_color(STATUS_COLOR_WARNING)
+	_bind_tutorial_coachmark_coordinator()
+	_tutorial_coachmark_coordinator.show_shop_damage_modal()
 
 
 func _active_tutorial_drag_path() -> Array[Vector2i]:
-	return _active_tutorial_drag_path_for_step(_active_tutorial_step())
-
-
-func _active_tutorial_drag_path_for_step(step: String) -> Array[Vector2i]:
-	if _tutorial_director == null:
-		return []
-	return _tutorial_director.drag_path_for_step(step)
+	_bind_tutorial_coachmark_coordinator()
+	return _tutorial_coachmark_coordinator.active_drag_path()
 
 
 func _active_tutorial_retry_status_text() -> String:
-	if _tutorial_director == null:
-		return ""
-	return _tutorial_director.retry_status_text(_active_tutorial_step())
-
-
-func _focus_tutorial_intent_for_step(step: String) -> void:
-	if _tutorial_director == null:
-		return
-	match _tutorial_director.intent_focus_kind(step):
-		"attack":
-			_focus_tutorial_enemy_attack_intent()
-		"block":
-			_focus_tutorial_enemy_block_intent()
-
-
-func _focus_tutorial_enemy_attack_intent() -> void:
-	if _view == null:
-		return
-	if _view.has_method("set_tutorial_enemy_intent_focus"):
-		_view.set_tutorial_enemy_intent_focus("attack")
-	if _view.has_method("start_enemy_intent_hover_emphasis"):
-		_view.start_enemy_intent_hover_emphasis("attack")
-
-
-func _focus_tutorial_enemy_block_intent() -> void:
-	if _view == null:
-		return
-	if _view.has_method("set_tutorial_enemy_intent_focus"):
-		_view.set_tutorial_enemy_intent_focus("block")
-	if _view.has_method("start_enemy_intent_hover_emphasis"):
-		_view.start_enemy_intent_hover_emphasis("block")
-
-
-func _clear_tutorial_enemy_intent_focus() -> void:
-	if _view == null:
-		return
-	if _view.has_method("clear_tutorial_enemy_intent_focus"):
-		_view.clear_tutorial_enemy_intent_focus()
-	elif _view.has_method("stop_enemy_intent_hover_emphasis"):
-		_view.stop_enemy_intent_hover_emphasis()
+	_bind_tutorial_coachmark_coordinator()
+	return _tutorial_coachmark_coordinator.active_retry_status_text()
 
 
 func _reset_incomplete_tutorial_drag() -> void:
@@ -1023,17 +935,9 @@ func _show_tutorial_prompt(message: String, prompt_anchor: String = "above_board
 
 
 func _hide_tutorial_coachmark() -> void:
-	_bind_tutorial_prompt_presenter()
-	_tutorial_prompt_presenter.hide()
+	_bind_tutorial_coachmark_coordinator()
+	_tutorial_coachmark_coordinator.hide_coachmark()
 	_tutorial_drag_board_snapshot = null
-	_clear_tutorial_enemy_intent_focus()
-	if _board_view != null and _board_view.has_method("clear_tutorial_hint"):
-		_board_view.clear_tutorial_hint()
-	if _board_controller != null:
-		if _board_controller.has_method("clear_restricted_drag_path"):
-			_board_controller.clear_restricted_drag_path()
-		elif _board_controller.has_method("clear_restricted_swap"):
-			_board_controller.clear_restricted_swap()
 
 
 func _print_board_model() -> void:
@@ -2021,6 +1925,32 @@ func _bind_tutorial_prompt_presenter() -> void:
 	if _tutorial_prompt_presenter == null:
 		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
 	_tutorial_prompt_presenter.bind(_host)
+
+
+func _bind_tutorial_coachmark_coordinator() -> void:
+	if _tutorial_coachmark_coordinator == null:
+		_tutorial_coachmark_coordinator = COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
+	_bind_tutorial_prompt_presenter()
+	_tutorial_coachmark_coordinator.bind(
+		{
+			"run_state": RunState,
+			"combat": _combat,
+			"tutorial_director": _tutorial_director,
+			"view": _view,
+			"board_view": _board_view,
+			"board_controller": _board_controller,
+			"prompt_presenter": _tutorial_prompt_presenter,
+		},
+		{
+			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
+			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
+		},
+		{
+			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
+			"warning_status_color": STATUS_COLOR_WARNING,
+		}
+	)
 
 
 func _hud_snapshot_input_data() -> Dictionary:
