@@ -55,5 +55,8 @@ jobs:
       - name: Warn on script size budget
         run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_size_budget.gd
 
+      - name: Validate script loading
+        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_load_validation.gd
+
       - name: Run tests
         run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd

@@ -284,6 +284,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>The documented resolver budget is average <code>&lt;= 3000us</code>, p95 <code>&lt;= 8000us</code>, and max sample <code>&lt;= 16000us</code> for the benchmarked board-resolution slice. A regression beyond those thresholds fails the shared runner.</li>
 <li>Validation passed through the aggregate Godot 4.6.3 headless runner at <code>65</code> suites and <code>267</code> cases. Low-end Android profiling for resolve/refill/VFX remains separate manual/device evidence.</li>
 </ul>
+<p>Verification notes (2026-05-30, script load validation gate):</p>
+<ul>
+<li><code>tools/quality/script_load_validation.gd</code> now cache-ignored loads every GDScript file under <code>res://scripts</code> and exits non-zero if any script fails to load.</li>
+<li>GitHub Actions runs the gate after script-size budget reporting and before the aggregate test runner, so parse/load regressions in production scripts fail CI even when no test suite reaches that file.</li>
+<li>Validation passed locally with Godot 4.6.3: <code>scanned=174</code>, <code>loaded=174</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
+</ul>
 <p>Verification notes (2026-05-07, treasure chest runtime terminology rename):</p>
 <ul>
 <li>Runtime/API terminology now uses <code>treasure_chest</code> for the shop/content chest flow: content registry pools and ids, shop state snapshots, shop service methods/reasons, shop model/view/controller signals, RunState wrappers, run-log payload/reporting keys, visual icon keys, and focused regression tests. Player-facing copy continues to use Treasure Chest/Chest wording.</li>
