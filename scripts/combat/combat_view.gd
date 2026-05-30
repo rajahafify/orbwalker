@@ -20,11 +20,9 @@ const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/comb
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
 const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_bubble_presenter.gd")
 const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
+const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
-const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
-const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 132), Vector2(1048, 432))
 const COMBAT_STRIP_RECT := Rect2(Vector2(16, 576), Vector2(1048, 64))
@@ -141,6 +139,7 @@ var _enemy_block_preview_presenter: Variant = null
 var _tutorial_end_overlay_presenter: Variant = null
 var _enemy_intent_bubble_presenter: Variant = null
 var _enemy_stage_presenter: Variant = null
+var _player_hud_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -287,36 +286,44 @@ func next_button_text() -> String:
 
 
 func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:
-	if _player_loadout_hud == null:
-		return
-	var resolved_popover_parent: Control = popover_parent if popover_parent != null else _layout_root
-	_player_loadout_hud.bind_player_hud(_combat_player_hud_nodes(resolved_popover_parent, popover_z_index))
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.bind_player_hud(popover_parent, popover_z_index)
 
 
 func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	return _control_target_global(_enemy_portrait, vertical_bias)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
+		return Vector2.ZERO
+	return _player_hud_presenter.vfx_target_global("_enemy_portrait", vertical_bias)
 
 
 func enemy_vfx_size() -> Vector2:
-	if _enemy_portrait == null:
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
 		return Vector2.ZERO
-	var rect := _enemy_portrait.get_global_rect()
-	return rect.size
+	return _player_hud_presenter.vfx_size("_enemy_portrait")
 
 
 func player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	return _control_target_global(_player_portrait, vertical_bias)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
+		return Vector2.ZERO
+	return _player_hud_presenter.vfx_target_global("_player_portrait", vertical_bias)
 
 
 func player_hp_bar_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
-	return _control_target_global(_player_hp_bar, vertical_bias)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
+		return Vector2.ZERO
+	return _player_hud_presenter.vfx_target_global("_player_hp_bar", vertical_bias)
 
 
 func player_hp_bar_vfx_size() -> Vector2:
-	if _player_hp_bar == null:
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
 		return Vector2.ZERO
-	var rect := _player_hp_bar.get_global_rect()
-	return rect.size
+	return _player_hud_presenter.vfx_size("_player_hp_bar")
 
 
 func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Variant, timer_owner: Node) -> Dictionary:
@@ -457,75 +464,73 @@ func apply_loadout_rail_layout() -> void:
 	if _combat_layout_presenter != null:
 		_combat_layout_presenter.apply_loadout_rail_layout()
 		return
-	if _player_loadout_hud != null:
-		_player_loadout_hud.apply_loadout_rail_layout(_equipment_icons, EQUIPMENT_RAIL_RECT, _consumable_icons, CONSUMABLE_RAIL_RECT)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.apply_loadout_rail_layout()
 
 
 func render_player_loadout(payload: Dictionary, deferred_layout: bool = true) -> void:
-	if _player_loadout_hud == null:
-		return
-	_player_loadout_hud.update_player_data(payload)
-	apply_loadout_rail_layout()
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.render_player_loadout(payload)
 	if deferred_layout:
 		call_deferred("apply_loadout_rail_layout")
-	if _relic_row != null:
-		_relic_row.visible = false
-	if _mastery_strip != null:
-		_mastery_strip.visible = false
 
 
 func handle_player_hud_global_click(global_position: Vector2) -> bool:
-	if _player_loadout_hud == null:
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
 		return false
-	return bool(_player_loadout_hud.handle_global_click(global_position))
+	return bool(_player_hud_presenter.handle_global_click(global_position))
 
 
 func hide_player_hud_slot_popover() -> void:
-	if _player_loadout_hud == null:
-		return
-	_player_loadout_hud.hide_slot_detail_popover()
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.hide_slot_popover()
 
 
 func lookup_player_hud_content_definition(item_id: String) -> Dictionary:
-	if _player_loadout_hud == null:
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter == null:
 		return {}
-	return _player_loadout_hud.lookup_content_definition(item_id)
+	return _player_hud_presenter.lookup_content_definition(item_id)
 
 
 func clear_hovered_combat_mastery() -> void:
-	if _player_loadout_hud == null or _elemental_mastery_cards == null:
-		return
-	_player_loadout_hud.clear_hovered_combat_mastery(_elemental_mastery_cards)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.clear_hovered_mastery()
 
 
 func set_hovered_combat_mastery(orb_id: int) -> void:
-	if _player_loadout_hud == null or _elemental_mastery_cards == null:
-		return
-	_player_loadout_hud.set_hovered_combat_mastery(_elemental_mastery_cards, orb_id)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.set_hovered_mastery(orb_id)
 
 
 func clear_combat_mastery_feedback() -> void:
-	if _player_loadout_hud == null or _elemental_mastery_cards == null:
-		return
-	_player_loadout_hud.clear_combat_mastery_feedback(_elemental_mastery_cards)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.clear_mastery_feedback()
 
 
 func set_combat_mastery_feedback(orb_id: int, total: int) -> void:
-	if _player_loadout_hud == null or _elemental_mastery_cards == null:
-		return
-	_player_loadout_hud.set_combat_mastery_feedback(_elemental_mastery_cards, orb_id, total)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.set_mastery_feedback(orb_id, total)
 
 
 func pulse_combat_modifier_sources(sources: Array) -> void:
-	if _player_loadout_hud == null:
-		return
-	_player_loadout_hud.pulse_modifier_sources(sources)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.pulse_modifier_sources(sources)
 
 
 func clear_combat_mastery_hover_ui() -> void:
-	if _player_loadout_hud == null or _elemental_mastery_cards == null:
-		return
-	_player_loadout_hud.clear_combat_mastery_hover_ui(_elemental_mastery_cards)
+	_ensure_player_hud_presenter()
+	if _player_hud_presenter != null:
+		_player_hud_presenter.clear_mastery_hover_ui()
 
 
 func apply_visual_chrome(style_config: Dictionary) -> void:
@@ -1031,57 +1036,10 @@ func _set_zone_guide(zone: Control, label_text: String) -> void:
 
 
 func _combat_player_hud_nodes(popover_parent: Control = null, popover_z_index: int = 210) -> Dictionary:
-	var nodes := {
-		"section": _player_hud_section,
-		"mastery_panel": _elemental_mastery_panel,
-		"mastery_title": _elemental_mastery_title,
-		"mastery_cards": _elemental_mastery_cards,
-		"footer_panel": _player_panel,
-		"footer_root": _player_panel_root,
-		"root": _player_panel_root,
-		"hero_card": _hero_card,
-		"hero_card_root": _hero_card_root,
-		"hero_portrait": _player_portrait,
-		"hero_level_badge": _hero_level_badge,
-		"vitals_panel": _vitals_panel,
-		"vitals_frame": _vitals_frame,
-		"hp_bar": _player_hp_bar,
-		"hp_label": _player_hp_label,
-		"armor_bar": _player_armor_bar,
-		"armor_label": _player_armor_label,
-		"armor_badge": _armor_badge,
-		"armor_badge_label": _armor_badge_label,
-		"loadout_frame": _loadout_frame,
-		"loadout_root": _loadout_root,
-		"equipment_label": _equipment_row_label,
-		"equipment_icons": _equipment_icons,
-		"consumable_label": _consumable_row_label,
-		"consumable_icons": _consumable_icons,
-		"relic_label": _relic_row_label,
-		"relic_icons": _relic_icons,
-		"relic_row": _relic_row,
-		"mastery_strip": _mastery_strip,
-		"mastery_root": _mastery_root,
-		"mastery_label": _mastery_row_label,
-		"mastery_icons": _mastery_icons,
-		"stat_chip_row": _stat_chip_row,
-		"combat_meta_row": _combat_meta_row,
-		"combat_phase_label": _phase_label,
-		"turn_summary_label": _turn_summary_label,
-	}
-	if popover_parent != null:
-		nodes["popover_parent"] = popover_parent
-		nodes["popover_z_index"] = popover_z_index
-	return nodes
+	return COMBAT_PLAYER_HUD_PRESENTER_SCRIPT.hud_nodes_from_root_nodes(_root_nodes, popover_parent, popover_z_index)
 
 
-func _control_target_global(control: Control, vertical_bias: float = 0.5) -> Vector2:
-	if control == null:
-		return Vector2.ZERO
-	var rect := control.get_global_rect()
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return Vector2.ZERO
-	return Vector2(
-		rect.position.x + rect.size.x * 0.5,
-		rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0)
-	)
+func _ensure_player_hud_presenter() -> void:
+	if _player_hud_presenter == null:
+		_player_hud_presenter = COMBAT_PLAYER_HUD_PRESENTER_SCRIPT.new()
+	_player_hud_presenter.bind(_player_loadout_hud, _root_nodes)
