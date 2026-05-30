@@ -1,5 +1,84 @@
 extends RefCounted
 
+const CHROME_NODE_BINDINGS := {
+	"board_view": "_board_view",
+	"background": "_background",
+	"backdrop_scrim": "_background_scrim",
+	"top_bar": "_top_bar",
+	"enemy_panel": "_enemy_panel",
+	"enemy_portrait": "_enemy_portrait",
+	"enemy_hp_row": "_enemy_hp_row",
+	"combat_strip": "_combat_strip",
+	"board_frame": "_board_frame",
+	"debug_overlay": "_debug_overlay",
+	"combat_log_frame": "_combat_log_frame",
+	"enemy_hp_bar": "_enemy_hp_bar",
+	"player_hp_bar": "_player_hp_bar",
+	"player_armor_bar": "_player_armor_bar",
+	"title_label": "_title_label",
+	"hint_label": "_hint_label",
+	"enemy_step_label": "_enemy_step_label",
+	"timer_label": "_timer_label",
+	"run_progress_label": "_run_progress_label",
+	"phase_label": "_phase_label",
+	"turn_summary_label": "_turn_summary_label",
+	"player_label": "_player_label",
+	"player_armor_label": "_player_armor_label",
+	"attack_stat_label": "_attack_stat_label",
+	"armor_stat_label": "_armor_stat_label",
+	"heart_stat_label": "_heart_stat_label",
+	"gold_stat_label": "_gold_stat_label",
+	"enemy_label": "_enemy_label",
+	"enemy_name_label": "_enemy_name_label",
+	"enemy_hp_text_label": "_enemy_hp_text_label",
+	"intent_label": "_intent_label",
+	"primary_intent_title_label": "_primary_intent_title_label",
+	"primary_intent_amount_label": "_primary_intent_amount_label",
+	"primary_intent_detail_label": "_primary_intent_detail_label",
+	"equipment_row_label": "_equipment_row_label",
+	"consumable_row_label": "_consumable_row_label",
+	"relic_row_label": "_relic_row_label",
+	"mastery_row_label": "_mastery_row_label",
+	"armor_badge_label": "_armor_badge_label",
+	"timer_state_label": "_timer_state_label",
+	"back_button": "_back_button",
+	"debug_toggle_button": "_debug_toggle_button",
+	"settings_button": "_settings_button",
+	"next_button": "_next_button",
+	"timer_track": "_timer_track",
+	"timer_center_marker": "_timer_center_marker",
+	"intent_badge": "_intent_badge",
+	"loadout_frame": "_loadout_frame",
+	"mastery_strip": "_mastery_strip",
+	"hero_card": "_hero_card",
+	"vitals_frame": "_vitals_frame",
+	"hero_level_badge": "_hero_level_badge",
+	"armor_badge": "_armor_badge",
+	"board_shadow": "_board_shadow",
+	"outcome_summary_panel": "_outcome_summary_panel",
+	"outcome_title_label": "_outcome_title_label",
+	"outcome_body_label": "_outcome_body_label",
+	"status_label": "_status_label",
+	"enemy_debug_label": "_enemy_debug_label",
+	"combat_log_text": "_combat_log_text",
+	"divider_enemy_timer": "_divider_enemy_timer",
+	"divider_timer_board": "_divider_timer_board",
+	"divider_board_player": "_divider_board_player",
+	"corner_top_left": "_corner_top_left",
+	"corner_top_right": "_corner_top_right",
+	"corner_bottom_left": "_corner_bottom_left",
+	"corner_bottom_right": "_corner_bottom_right",
+}
+
+
+static func nodes_from_root_nodes(root_nodes: Dictionary, extras: Dictionary = {}) -> Dictionary:
+	var nodes := {}
+	for chrome_key in CHROME_NODE_BINDINGS.keys():
+		nodes[chrome_key] = root_nodes.get(String(CHROME_NODE_BINDINGS[chrome_key]), null)
+	for key in extras.keys():
+		nodes[key] = extras[key]
+	return nodes
+
 
 static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 	var visuals: Variant = nodes.get("visual_registry", null)
