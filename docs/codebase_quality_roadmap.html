@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>63</code> suites and <code>262</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>64</code> suites and <code>265</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -450,6 +450,8 @@
         <li>Keep fixtures of each historical save shape and a test that migrates them to current.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> loading every historical save fixture yields a valid current-schema profile with no data loss, verified in CI.</div>
+      <div class="ac"><b>Current evidence:</b> <code>player_profile_state.gd</code> now exposes an explicit current-schema migration step, <code>meta_profile_state.gd</code> canonicalizes historical score/unlock aliases, and <code>profile_repository.gd</code> rejects unsupported future profile schemas while saving successful migrations back to the current profile file. <code>profile_migration_test.gd</code> loads fixtures for legacy profile aliases, current schema saves, and legacy meta-profile saves, then asserts current-schema snapshots preserve display name, score, unlocked equipment, and recent unlocks.</div>
+      <div class="tags"><span class="files">scripts/run/player_profile_state.gd &middot; scripts/run/meta_profile_state.gd &middot; scripts/core/profile_repository.gd &middot; scripts/tests/profile_migration_test.gd &middot; scripts/tests/fixtures/profile_saves/*</span></div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
     </div>
 

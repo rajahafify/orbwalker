@@ -271,6 +271,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Validation passed: <code>git diff --check</code>; Godot MCP <code>view_script</code> for <code>res://scripts/scenes/combat.gd</code>, <code>res://scripts/combat/combat_controller.gd</code>, and <code>res://scripts/tests/combat_scene_contract_test.gd</code>; source-backed Godot test runners with <code>ResourceLoader.CACHE_MODE_IGNORE</code> for combat scene contract, combat model/state machine, board model/resolver, shop model/layout, collection model/layout, main-menu model, and run-summary model; <code>play_scene main</code>; final <code>get_godot_errors</code> reported <code>Session has no errors</code>.</li>
 <li>The ignored local root export artifact <code>D:\godot\matchatro\Orbwalker.apk</code> was removed from the working tree. No git-history rewrite was performed.</li>
 </ul>
+<p>Verification notes (2026-05-30, profile save migration guard):</p>
+<ul>
+<li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>
+<li><code>MetaProfileState</code> canonicalizes historical profile/meta keys including nested <code>stats.total_score</code>, legacy unlocked-equipment id aliases, and legacy recent-unlock arrays while preserving score, unlocked equipment, and recent unlock payloads.</li>
+<li><code>ProfileRepository</code> records schema-migration metadata in load results and saves successful migrated profile or legacy-meta loads back through the current profile path.</li>
+<li><code>profile_migration_test.gd</code> loads fixture saves from <code>scripts/tests/fixtures/profile_saves/</code> for legacy profile aliases, current schema saves, and legacy meta-profile saves; validation passed through the aggregate Godot 4.6.3 headless runner at <code>64</code> suites and <code>265</code> cases.</li>
+</ul>
 <p>Verification notes (2026-05-07, treasure chest runtime terminology rename):</p>
 <ul>
 <li>Runtime/API terminology now uses <code>treasure_chest</code> for the shop/content chest flow: content registry pools and ids, shop state snapshots, shop service methods/reasons, shop model/view/controller signals, RunState wrappers, run-log payload/reporting keys, visual icon keys, and focused regression tests. Player-facing copy continues to use Treasure Chest/Chest wording.</li>
