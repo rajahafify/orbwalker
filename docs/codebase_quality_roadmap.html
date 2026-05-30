@@ -307,14 +307,15 @@
 
     <div class="card c-p2">
       <h4><span class="id">P2-3</span> Replace source-grep contracts with runtime contracts</h4>
-      <p class="why"><code>player_hud_contract_probe.gd</code> enforces structure by reading other files as strings and searching for <code>func name()</code> and quoted keys. This is brittle (whitespace, params, renames all break it for the wrong reasons) and was the root cause of the P0-3 false failure. Contracts should assert on <i>behavior/values</i>, not source bytes.</p>
+      <p class="why"><code>player_hud_contract_probe.gd</code> now asserts runtime values instead of reading other files as strings and searching for quoted keys. Keep this invariant: contracts should assert on <i>behavior/values</i>, not source bytes.</p>
       <div class="lab">Actions</div>
       <ul class="act">
         <li>Instantiate the relevant scene/object and assert the actual returned binding dictionary contains the required keys mapping to live, correctly-typed nodes.</li>
-        <li>Delete the <code>FileAccess.get_file_as_string()</code> + <code>source.find(...)</code> machinery.</li>
-        <li>Apply the same treatment to the shop-side checks in the probe.</li>
+        <li>Keep <code>FileAccess.get_file_as_string()</code> + <code>source.find(...)</code> machinery out of test/probe contracts.</li>
+        <li>Expose explicit script/scene path accessors for shop-side contracts that need to assert collaborator ownership.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> no test/probe in the repo enforces a contract by reading source text; renaming a private function with identical behavior does not fail any test.</div>
+      <div class="ac"><b>Current evidence:</b> <code>rg</code> finds no <code>FileAccess</code>, <code>get_file_as_string</code>, <code>source.find</code>, or <code>source.contains</code> contract checks under <code>scripts/debug</code> or <code>scripts/tests</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
       <div class="tags"><span class="files">scripts/debug/player_hud_contract_probe.gd · scripts/shop/shop_view.gd</span></div>
     </div>

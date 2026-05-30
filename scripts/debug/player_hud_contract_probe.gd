@@ -6,6 +6,8 @@ const COMBAT_SCENE_PATH := "res://scenes/combat.tscn"
 const SHOP_HOST_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
 const SHOP_VIEW_SCRIPT_PATH := "res://scripts/shop/shop_view.gd"
 const COMBAT_VIEW_SCRIPT_PATH := "res://scripts/combat/combat_view.gd"
+const SHOP_HOST_SCRIPT := preload(SHOP_HOST_SCRIPT_PATH)
+const SHOP_VIEW_SCRIPT := preload(SHOP_VIEW_SCRIPT_PATH)
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 
 const REQUIRED_SHARED_NODE_NAMES := [
@@ -138,20 +140,12 @@ static func _check_combat_instances_shared_scene(failures: Array[String]) -> voi
 
 
 static func _check_shop_instances_shared_scene(failures: Array[String]) -> void:
-	var host_source := FileAccess.get_file_as_string(SHOP_HOST_SCRIPT_PATH)
-	if host_source.is_empty():
-		failures.append("Shop host script failed to read: %s" % SHOP_HOST_SCRIPT_PATH)
-	elif not host_source.contains('SHOP_VIEW_SCRIPT := preload("%s")' % SHOP_VIEW_SCRIPT_PATH):
-		failures.append("Shop host must preload ShopView script")
-
-	var shop_source := FileAccess.get_file_as_string(SHOP_VIEW_SCRIPT_PATH)
-	if shop_source.is_empty():
-		failures.append("Shop view script failed to read: %s" % SHOP_VIEW_SCRIPT_PATH)
-		return
-	if not shop_source.contains('PLAYER_HUD_SCENE := preload("%s")' % PLAYER_HUD_SCENE_PATH):
-		failures.append("Shop view must preload the shared PlayerHUD scene instead of building a private HUD")
-	if not shop_source.contains("_player_hud_section = PLAYER_HUD_SCENE.instantiate()"):
-		failures.append("Shop view must instance PLAYER_HUD_SCENE for PlayerHudSection")
+	var shop_view_path := String(SHOP_HOST_SCRIPT.shop_view_script_path())
+	if shop_view_path != SHOP_VIEW_SCRIPT_PATH:
+		failures.append("Shop host must use %s, got %s" % [SHOP_VIEW_SCRIPT_PATH, shop_view_path])
+	var player_hud_path := String(SHOP_VIEW_SCRIPT.player_hud_scene_path())
+	if player_hud_path != PLAYER_HUD_SCENE_PATH:
+		failures.append("Shop view must instance %s for PlayerHudSection, got %s" % [PLAYER_HUD_SCENE_PATH, player_hud_path])
 
 
 static func _check_binding_key_contract(failures: Array[String]) -> void:

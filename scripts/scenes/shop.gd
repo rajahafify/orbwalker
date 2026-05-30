@@ -43,6 +43,11 @@ static func shop_layout_probe_snapshot() -> Dictionary:
 	return shop_view_script.shop_layout_probe_snapshot()
 
 
+static func shop_view_script_path() -> String:
+	var script := ResourceLoader.load("res://scripts/shop/shop_view.gd", "", ResourceLoader.CACHE_MODE_IGNORE) as Script
+	return script.resource_path if script != null else ""
+
+
 func _shop_layout_probe_snapshot() -> Dictionary:
 	return shop_layout_probe_snapshot()
 
