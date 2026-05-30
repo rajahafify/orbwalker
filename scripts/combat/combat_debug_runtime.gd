@@ -12,35 +12,29 @@ var _command_adapter: Variant = null
 
 
 func bind_for_combat_controller(
-	view: Variant,
-	turn_log_presenter: Variant,
-	controller: Object,
-	locked_input_phase_value: int,
-	config: Dictionary = {}
+	view: Variant, turn_log_presenter: Variant, controller: Object, locked_input_phase_value: int, config: Dictionary = {}, state_callbacks: Dictionary = {}
 ) -> void:
 	var merged_config := config.duplicate()
 	merged_config["locked_input_phase_value"] = locked_input_phase_value
-	bind(
-		view,
-		turn_log_presenter,
-		COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.controller_callbacks(controller),
-		merged_config
-	)
+	var callbacks: Dictionary = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.controller_callbacks(controller)
+	for key in state_callbacks.keys():
+		callbacks[key] = state_callbacks[key]
+	bind(view, turn_log_presenter, callbacks, merged_config)
 
 
-func bind(
-	view: Variant,
-	turn_log_presenter: Variant,
-	controller_callbacks: Dictionary,
-	config: Dictionary = {}
-) -> void:
+func bind(view: Variant, turn_log_presenter: Variant, controller_callbacks: Dictionary, config: Dictionary = {}) -> void:
 	_ensure_instances()
 	_view = view
-	_command_adapter.bind({
-		"locked_input_phase_value": int(config.get("locked_input_phase_value", 2)),
-		"default_victory_scene": String(config.get("default_victory_scene", DEFAULT_VICTORY_SCENE)),
-		"callbacks": controller_callbacks,
-	})
+	(
+		_command_adapter
+		. bind(
+			{
+				"locked_input_phase_value": int(config.get("locked_input_phase_value", 2)),
+				"default_victory_scene": String(config.get("default_victory_scene", DEFAULT_VICTORY_SCENE)),
+				"callbacks": controller_callbacks,
+			}
+		)
+	)
 
 	var console_nodes: Dictionary = {}
 	if _view != null and _view.has_method("debug_console_nodes"):
@@ -48,15 +42,18 @@ func bind(
 		if raw_nodes is Dictionary:
 			console_nodes = raw_nodes
 
-	_console.bind(
-		console_nodes,
-		{
-			"command_output_log_color": config.get("command_output_log_color", Color(0.45, 0.95, 0.45, 1.0)),
-			"max_combat_log_lines": int(config.get("max_combat_log_lines", 120)),
-			"initial_log_level": String(config.get("initial_log_level", CombatDebugConsole.LOG_LEVEL_NORMAL)),
-			"turn_log_presenter": turn_log_presenter,
-			"callbacks": _command_adapter.command_callbacks(),
-		}
+	(
+		_console
+		. bind(
+			console_nodes,
+			{
+				"command_output_log_color": config.get("command_output_log_color", Color(0.45, 0.95, 0.45, 1.0)),
+				"max_combat_log_lines": int(config.get("max_combat_log_lines", 120)),
+				"initial_log_level": String(config.get("initial_log_level", CombatDebugConsole.LOG_LEVEL_NORMAL)),
+				"turn_log_presenter": turn_log_presenter,
+				"callbacks": _command_adapter.command_callbacks(),
+			}
+		)
 	)
 
 

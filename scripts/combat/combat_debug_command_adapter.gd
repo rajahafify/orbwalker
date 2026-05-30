@@ -1,3 +1,5 @@
+# gdlint: disable=max-public-methods
+
 extends RefCounted
 class_name CombatDebugCommandAdapter
 
@@ -7,20 +9,7 @@ var _default_victory_scene := "res://scenes/main_menu.tscn"
 
 const CONTROLLER_CALLBACK_METHODS := {
 	"set_status_text": "_console_set_status_text",
-	"combat_state": "_debug_combat_state",
-	"enemy_state": "_debug_enemy_state",
-	"player_hp": "_debug_player_hp",
-	"player_max_hp": "_debug_player_max_hp",
-	"player_armor": "_debug_player_armor",
-	"enemy_display_name": "_debug_enemy_display_name",
-	"enemy_hp": "_debug_enemy_hp",
-	"enemy_max_hp": "_debug_enemy_max_hp",
-	"enemy_turn_block": "_debug_enemy_turn_block",
-	"input_phase_value": "_debug_input_phase_value",
-	"format_intent": "_debug_format_intent",
 	"on_skip_success": "_console_on_skip_success",
-	"board_seed": "_debug_board_seed",
-	"board_debug_text": "_debug_board_debug_text",
 	"create_new_board": "_create_new_board",
 	"set_board_seed": "_set_board_seed",
 	"update_hud": "_update_hud",
@@ -84,31 +73,36 @@ func state_snapshot_data() -> Dictionary:
 		if formatter.is_valid():
 			intent_text = String(formatter.call(enemy_state.get_current_intent()))
 	return {
-		"run": {
+		"run":
+		{
 			"active": RunState.run_active,
 			"level": int(RunState.dungeon_level),
 			"step": String(RunState.current_step_key),
 			"label": RunState.level_sequence_label(),
 		},
-		"combat": {
+		"combat":
+		{
 			"turn": int(combat.turn_index if combat != null else 0),
-			"phase": (combat.phase_name() if combat != null and _has_method(combat, "phase_name") else "N/A"),
+			"phase": combat.phase_name() if combat != null and _has_method(combat, "phase_name") else "N/A",
 			"input_phase": int(_call("input_phase_value")),
 		},
-		"player": {
+		"player":
+		{
 			"hp": int(_call("player_hp")),
 			"max_hp": int(_call("player_max_hp")),
 			"armor": int(_call("player_armor")),
 			"gold": int(RunState.run_gold),
 		},
-		"enemy": {
+		"enemy":
+		{
 			"display_name": String(encounter.get("display_name", _call("enemy_display_name"))),
 			"hp": int(_call("enemy_hp")),
 			"max_hp": int(_call("enemy_max_hp")),
 			"turn_block": int(_call("enemy_turn_block")),
 			"intent": intent_text,
 		},
-		"progression": {
+		"progression":
+		{
 			"equipment_slots": progression.get("equipment_slots", []),
 			"consumable_slots": progression.get("consumable_slots", []),
 			"relic_ids": progression.get("relic_ids", []),

@@ -110,15 +110,18 @@ func _fixture() -> Dictionary:
 	var view := FakeView.new()
 	var controller := FakeController.new()
 	var runtime: Variant = RUNTIME_SCRIPT.new()
-	runtime.bind_for_combat_controller(
-		view,
-		null,
-		controller,
-		2,
-		{
-			"max_combat_log_lines": 10,
-			"initial_log_level": "normal",
-		}
+	(
+		runtime
+		. bind_for_combat_controller(
+			view,
+			null,
+			controller,
+			2,
+			{
+				"max_combat_log_lines": 10,
+				"initial_log_level": "normal",
+			}
+		)
 	)
 	return {
 		"runtime": runtime,

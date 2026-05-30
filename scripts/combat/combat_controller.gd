@@ -36,6 +36,7 @@ const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/com
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
+const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
@@ -127,6 +128,7 @@ var _tutorial_coachmark_coordinator: Variant = null
 var _tutorial_end_command_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _combat_audio_cue_player: Variant = null
+var _debug_state_provider: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
@@ -358,6 +360,7 @@ func _ensure_runtime_helpers() -> void:
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	_bind_audio_cue_player()
+	_bind_debug_state_provider()
 	if _tutorial_director == null:
 		_tutorial_director = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
 	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
@@ -372,9 +375,24 @@ func _bind_audio_cue_player() -> void:
 	_combat_audio_cue_player.bind(_host)
 
 
+func _bind_debug_state_provider() -> void:
+	if _debug_state_provider == null:
+		_debug_state_provider = COMBAT_DEBUG_STATE_PROVIDER_SCRIPT.new()
+	_debug_state_provider.bind({
+		"combat": _combat,
+		"enemy_state": _enemy_state,
+		"player_state": _player_state,
+		"board_model": _board_model,
+		"board_controller": _board_controller,
+		"turn_log_presenter": _turn_log_presenter,
+		"input_phase_value": Callable(self, "_input_phase_value"),
+	})
+
+
 func _bind_debug_console() -> void:
 	if _debug_runtime == null:
 		_debug_runtime = COMBAT_DEBUG_RUNTIME_SCRIPT.new()
+	_bind_debug_state_provider()
 	_debug_runtime.bind_for_combat_controller(
 		_view,
 		_turn_log_presenter,
@@ -384,7 +402,8 @@ func _bind_debug_console() -> void:
 			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
 			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
 			"initial_log_level": LOG_LEVEL_NORMAL,
-		}
+		},
+		_debug_state_provider.callbacks()
 	)
 	_debug_console = _debug_runtime.console()
 
@@ -542,6 +561,7 @@ func _initialize_combat_state() -> void:
 		_show_boss_reward_summary("Boss defeated.")
 		_set_status_text("Boss defeated. Choose one boss relic before continuing.")
 		_set_status_color(STATUS_COLOR_WARNING)
+		_bind_debug_state_provider()
 		RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _flow_trace_route_id_value())
 		return
 	if not RunState.is_current_step_fight():
@@ -598,6 +618,7 @@ func _initialize_combat_state() -> void:
 		_append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
 		for error in content_errors:
 			_append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
+	_bind_debug_state_provider()
 
 
 func _begin_turn_preview() -> void:
@@ -627,7 +648,7 @@ func _begin_turn_preview() -> void:
 	_append_combat_log(
 		"Turn %d intent: %s." % [
 			_combat.turn_index,
-			_debug_format_intent(_enemy_state.get_current_intent()),
+			_format_intent(_enemy_state.get_current_intent()),
 		]
 	)
 
@@ -945,6 +966,7 @@ func _set_board_seed(board_seed: int) -> void:
 	_board_model = _board_controller.current_board_model()
 	if _combat != null and not _combat.is_fight_over():
 		_set_input_phase(InputPhase.PLAYER_INPUT)
+	_bind_debug_state_provider()
 
 
 func _print_board_model_to_console() -> void:
@@ -993,61 +1015,9 @@ func _console_on_skip_success() -> void:
 	_create_new_board()
 	_begin_turn_preview()
 
-func _debug_combat_state() -> Variant:
-	return _combat
-
-
-func _debug_enemy_state() -> Variant:
-	return _enemy_state
-
-
-func _debug_player_hp() -> int:
-	return int(_player_state.current_hp if _player_state != null else 0)
-
-
-func _debug_player_max_hp() -> int:
-	return int(_player_state.max_hp if _player_state != null else 0)
-
-
-func _debug_player_armor() -> int:
-	return int(_player_state.armor if _player_state != null else 0)
-
-
-func _debug_enemy_display_name() -> String:
-	return String(_enemy_state.display_name if _enemy_state != null else "Unknown")
-
-
-func _debug_enemy_hp() -> int:
-	return int(_enemy_state.current_hp if _enemy_state != null else 0)
-
-
-func _debug_enemy_max_hp() -> int:
-	return int(_enemy_state.max_hp if _enemy_state != null else 0)
-
-
-func _debug_enemy_turn_block() -> int:
-	return int(_enemy_state.current_turn_block if _enemy_state != null else 0)
-
-
-func _debug_input_phase_value() -> int:
-	return int(_input_phase_value())
-
-
-func _debug_format_intent(intent: Dictionary) -> String:
-	if _turn_log_presenter != null:
-		return _turn_log_presenter.format_intent(intent)
-	var label := String(intent.get("label", "Unknown"))
-	var attack := int(intent.get("attack", 0))
-	var block := int(intent.get("block", 0))
-	return "%s (Atk %d / Block %d)" % [label, attack, block]
-
-
-func _debug_board_seed() -> int:
-	return int(_board_controller.board_seed() if _board_controller != null else _board_model.rng_seed)
-
-
-func _debug_board_debug_text() -> String:
-	return String(_board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string())
+func _format_intent(intent: Dictionary) -> String:
+	_bind_debug_state_provider()
+	return String(_debug_state_provider.format_intent(intent))
 
 
 func _debug_set_input_phase(raw_phase: int) -> void:
@@ -1875,6 +1845,7 @@ func _bind_loadout_command_handler() -> void:
 func _bind_intent_hover_handler() -> void:
 	if _intent_hover_handler == null:
 		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
+	_bind_debug_state_provider()
 	_intent_hover_handler.bind(
 		{
 			"run_state": RunState,
@@ -1888,7 +1859,7 @@ func _bind_intent_hover_handler() -> void:
 			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
 			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
 			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(self, "_set_turn_summary_text"),
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(self, "_debug_format_intent"),
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(_debug_state_provider, "format_intent"),
 		},
 		{
 			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
