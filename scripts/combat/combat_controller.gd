@@ -35,8 +35,8 @@ const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/c
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
+const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
-const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
@@ -126,6 +126,7 @@ var _tutorial_prompt_presenter: Variant = null
 var _tutorial_coachmark_coordinator: Variant = null
 var _tutorial_end_command_handler: Variant = null
 var _combat_consumable_service: Variant = null
+var _combat_audio_cue_player: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
@@ -356,12 +357,19 @@ func _ensure_runtime_helpers() -> void:
 		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+	_bind_audio_cue_player()
 	if _tutorial_director == null:
 		_tutorial_director = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
 	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
 		_combat_consumable_service.bind({
 			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
 		})
+
+
+func _bind_audio_cue_player() -> void:
+	if _combat_audio_cue_player == null:
+		_combat_audio_cue_player = COMBAT_AUDIO_CUE_PLAYER_SCRIPT.new()
+	_combat_audio_cue_player.bind(_host)
 
 
 func _bind_debug_console() -> void:
@@ -1259,37 +1267,23 @@ func _on_next_button_pressed() -> void:
 
 
 func _play_turn_result_sfx(turn_log: Dictionary) -> void:
-	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
-	if int(enemy_attack.get("hp_damage", 0)) > 0:
-		_audio_play_sfx("hit")
+	_bind_audio_cue_player()
+	_combat_audio_cue_player.play_turn_result(turn_log)
 
 
 func _play_mastery_effect_sfx(effect_kind: String) -> void:
-	match effect_kind:
-		"damage":
-			_audio_play_sfx("hit")
-		"heal":
-			_audio_play_sfx("heal")
-		"armor":
-			_audio_play_sfx("armor")
-		"gold":
-			_audio_play_sfx("gold")
+	_bind_audio_cue_player()
+	_combat_audio_cue_player.play_mastery_effect(effect_kind)
 
 
 func _audio_play_music(key: String) -> void:
-	var audio := _audio_manager_node()
-	if audio != null and audio.has_method("play_music"):
-		audio.call("play_music", key)
+	_bind_audio_cue_player()
+	_combat_audio_cue_player.play_music(key)
 
 
 func _audio_play_sfx(key: String) -> void:
-	var audio := _audio_manager_node()
-	if audio != null and audio.has_method("play_sfx"):
-		audio.call("play_sfx", key)
-
-
-func _audio_manager_node() -> Node:
-	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(_host.get_tree())
+	_bind_audio_cue_player()
+	_combat_audio_cue_player.play_sfx(key)
 
 
 func _bind_outcome_overlay() -> void:
@@ -1669,7 +1663,14 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
 		if fire_damage > 0:
-			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			var fire_replay_ok: bool = await _replay_elemental_damage_result(
+				OrbType.Id.FIRE,
+				fire_damage,
+				enemy_target,
+				enemy_impact_size,
+				damage_lifetime,
+				label_lifetime
+			)
 			if not fire_replay_ok:
 				return
 		if ice_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
@@ -1677,13 +1678,27 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			if not ice_replay_ok:
 				return
 		if earth_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
-			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			var earth_replay_ok: bool = await _replay_elemental_damage_result(
+				OrbType.Id.EARTH,
+				earth_damage,
+				enemy_target,
+				enemy_impact_size,
+				damage_lifetime,
+				label_lifetime
+			)
 			if not earth_replay_ok:
 				return
 	elif enemy_damage > 0:
 		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
 		if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
-			var dominant_replay_ok: bool = await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
+			var dominant_replay_ok: bool = await _replay_elemental_damage_result(
+				impact_orb,
+				enemy_damage,
+				enemy_target,
+				enemy_impact_size,
+				damage_lifetime,
+				label_lifetime
+			)
 			if not dominant_replay_ok:
 				return
 			_hud_stage_coordinator.stage_enemy_result()
@@ -1721,7 +1736,14 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	_reset_combat_mastery_preview()
 
 
-func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_target: Vector2, enemy_impact_size: Vector2, damage_lifetime: float, label_lifetime: float) -> bool:
+func _replay_elemental_damage_result(
+	orb_id: int,
+	damage_amount: int,
+	enemy_target: Vector2,
+	enemy_impact_size: Vector2,
+	damage_lifetime: float,
+	label_lifetime: float
+) -> bool:
 	_bind_hud_stage_coordinator()
 	var vfx_presenter: Variant = _combat_vfx_presenter
 	if vfx_presenter != null:
@@ -2158,7 +2180,13 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	_hud_stage_coordinator.stage_player_final()
 
 
-func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
+func _spawn_vfx_texture(
+	texture: Texture2D,
+	global_center: Vector2,
+	draw_size: Vector2,
+	lifetime: float,
+	modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+) -> void:
 	if _combat_vfx_presenter == null:
 		return
 	_combat_vfx_presenter.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)

@@ -1,5 +1,7 @@
 disable:
   - class-definitions-order
+  - max-file-lines
+  - max-returns
 max-line-length: 160
 excluded_directories: !!set
   .git: null

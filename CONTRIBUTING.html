@@ -90,7 +90,7 @@
 
     <h2>Pre-commit GDScript Checks</h2>
     <p>The repo includes <code>.pre-commit-config.yaml</code>, <code>gdformatrc</code>, and <code>gdlintrc</code> for gdtoolkit's <code>gdformat</code> and <code>gdlint</code>. Install Python 3, then run <code>python -m pip install pre-commit</code> and <code>pre-commit install</code> to enable local checks before commit.</p>
-    <p>GitHub Actions validates the pre-commit config and runs <code>gdformat --check</code> plus <code>gdlint</code> on changed <code>*.gd</code> files. This is intentionally changed-file enforcement while the historical full-repo gdformat/gdlint baseline is being ratcheted down.</p>
+    <p>GitHub Actions validates the pre-commit config and runs <code>gdformat --check</code> plus <code>gdlint</code> on changed <code>*.gd</code> files. This is intentionally changed-file enforcement while the historical full-repo gdformat/gdlint baseline is being ratcheted down. The legacy <code>combat_controller.gd</code> file is temporarily excluded from <code>gdformat</code> only, because formatter adoption for that file would be a large standalone churn pass; <code>gdlint</code>, script-load validation, tests, and the size roadmap still cover it.</p>
 
     <h2>Asset Path Contracts</h2>
     <p>Runtime asset maps and fallback constants should be validated through <code>res://scripts/tests/asset_pipeline_test.gd</code>. When adding a new stable fallback texture path, expose it from the owning class's <code>asset_contract_paths()</code> helper so the shared runner can prove the import exists and loads.</p>

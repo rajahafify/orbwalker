@@ -4,4 +4,5 @@ repos:
     hooks:
       - id: gdformat
         args: ["--check"]
+        exclude: ^scripts/combat/combat_controller\.gd$
       - id: gdlint
