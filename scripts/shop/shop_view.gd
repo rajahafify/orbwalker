@@ -18,6 +18,7 @@ const TOP_HEADER_SCENE := preload("res://scenes/ui/top_header.tscn")
 const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
 const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_renderer.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const SHOP_ACTION_ROW_PRESENTER := preload("res://scripts/shop/shop_action_row_presenter.gd")
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
 const SHOP_HELP_MODAL_PRESENTER := preload("res://scripts/shop/shop_help_modal_presenter.gd")
@@ -36,10 +37,6 @@ const RELIC_PANEL_RECT := SHOP_LAYOUT_METRICS.RELIC_PANEL_RECT
 const ACTION_ROW_RECT := SHOP_LAYOUT_METRICS.ACTION_ROW_RECT
 const SHOP_HEADER_SPEECH_RECT := SHOP_LAYOUT_METRICS.SHOP_HEADER_SPEECH_RECT
 const SHOP_HEADER_BOTTOM_RAIL_RECT := SHOP_LAYOUT_METRICS.SHOP_HEADER_BOTTOM_RAIL_RECT
-const ACTION_HINT_RECT := SHOP_LAYOUT_METRICS.ACTION_HINT_RECT
-const ACTION_BUTTON_FONT_SIZE := SHOP_LAYOUT_METRICS.ACTION_BUTTON_FONT_SIZE
-const ACTION_REROLL_RECT := SHOP_LAYOUT_METRICS.ACTION_REROLL_RECT
-const ACTION_CONTINUE_RECT := SHOP_LAYOUT_METRICS.ACTION_CONTINUE_RECT
 const OFFER_CARD_SIZE := SHOP_LAYOUT_METRICS.OFFER_CARD_SIZE
 const OFFER_CARD_GAP := SHOP_LAYOUT_METRICS.OFFER_CARD_GAP
 const OFFER_GRID_RECT := SHOP_LAYOUT_METRICS.OFFER_GRID_RECT
@@ -80,11 +77,7 @@ var _stock_title_label: Label
 var _offer_grid: Control
 var _offer_cards: Array[Button] = []
 var _relic_card: Button
-var _action_row: Control
-var _action_hint_label: Label
-var _reroll_button: Button
-var _sell_equipment_button: Button
-var _continue_button: Button
+var _action_row_presenter: Variant = null
 var _player_hud_section: Panel
 var _build_panel: Panel
 var _elemental_mastery_panel: Panel
@@ -209,14 +202,9 @@ func _create_ui() -> void:
 		_offer_cards.append(card)
 
 	_relic_card = SHOP_VIEW_NODE_FACTORY.make_button("RelicCard", _layout_root, "")
-	_action_row = Control.new()
-	_action_row.name = "ActionRow"
-	_layout_root.add_child(_action_row)
-	_action_hint_label = SHOP_VIEW_NODE_FACTORY.make_label("ActionHintLabel", _action_row, "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover.", 20, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
-	_action_hint_label.visible = false
-	_reroll_button = SHOP_VIEW_NODE_FACTORY.make_button("RerollButton", _action_row, "Reroll")
-	_sell_equipment_button = SHOP_VIEW_NODE_FACTORY.make_button("SellEquipmentButton", _action_row, "Sell Selected")
-	_continue_button = SHOP_VIEW_NODE_FACTORY.make_button("ContinueButton", _action_row, "Continue")
+	_action_row_presenter = SHOP_ACTION_ROW_PRESENTER.new()
+	_action_row_presenter.bind(_layout_root, _visuals)
+	_action_row_presenter.ensure_row()
 
 	_bind_shared_player_hud_scene()
 	_treasure_chest_overlay_presenter = SHOP_TREASURE_CHEST_OVERLAY_PRESENTER.new()
@@ -229,8 +217,8 @@ func _create_ui() -> void:
 	_tutorial_overlay_presenter = SHOP_TUTORIAL_OVERLAY_PRESENTER.new()
 	_tutorial_overlay_presenter.bind(_hud_overlay, {
 		"offer_cards": _offer_cards,
-		"reroll_button": _reroll_button,
-		"continue_button": _continue_button,
+		"reroll_button": _action_row_presenter.reroll_button(),
+		"continue_button": _action_row_presenter.continue_button(),
 	})
 	_tutorial_overlay_presenter.ensure_overlay()
 
@@ -291,9 +279,9 @@ func _connect_signals() -> void:
 	for index in _offer_cards.size():
 		_offer_cards[index].pressed.connect(func(): emit_signal("offer_pressed", index))
 	_relic_card.pressed.connect(_emit_relic_pressed)
-	_reroll_button.pressed.connect(_emit_reroll_pressed)
-	_sell_equipment_button.pressed.connect(_emit_sell_pressed)
-	_continue_button.pressed.connect(_emit_continue_pressed)
+	_action_row_presenter.reroll_pressed.connect(_emit_reroll_pressed)
+	_action_row_presenter.sell_pressed.connect(_emit_sell_pressed)
+	_action_row_presenter.continue_pressed.connect(_emit_continue_pressed)
 	_main_menu_button.pressed.connect(_emit_main_menu_pressed)
 	_help_button.pressed.connect(_on_help_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
@@ -370,26 +358,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 
 
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
-	var active := bool(shop_snapshot.get("active", false))
-	var reroll_cost := int(shop_snapshot.get("reroll_cost", 0))
-	_reroll_button.disabled = treasure_chest_pending or not active or not bool(shop_snapshot.get("reroll_enabled", false))
-	_render_action_button_label(
-		_reroll_button,
-		"REROLL",
-		"(FREE)" if reroll_cost <= 0 else "($%d)" % reroll_cost,
-		_reroll_button.disabled
-	)
-	_action_hint_label.visible = false
-	_sell_equipment_button.visible = false
-	_sell_equipment_button.disabled = true
-	_continue_button.disabled = not bool(shop_snapshot.get("continue_enabled", not treasure_chest_pending))
-	_render_action_button_label(_continue_button, "CONTINUE", "", _continue_button.disabled)
-
-
-func _render_action_button_label(button: Button, action_text: String, cost_text: String, disabled: bool) -> void:
-	button.text = action_text if cost_text == "" else "%s %s" % [action_text, cost_text]
-	button.tooltip_text = ""
-	button.modulate = Color(0.62, 0.62, 0.64, 0.78) if disabled else Color.WHITE
+	_action_row_presenter.render(shop_snapshot, treasure_chest_pending)
 
 
 func _render_build_panel(snapshot: Dictionary) -> void:
@@ -419,8 +388,8 @@ func set_status(message: String, positive: bool) -> void:
 
 
 func lock_transitions(enabled: bool) -> void:
-	if _continue_button != null:
-		_continue_button.disabled = enabled
+	if _action_row_presenter != null and _action_row_presenter.continue_button() != null:
+		_action_row_presenter.continue_button().disabled = enabled
 	if _main_menu_button != null:
 		_main_menu_button.disabled = enabled
 	if _help_button != null:
@@ -549,7 +518,7 @@ func apply_layout() -> void:
 	_apply_rect(_merchant_stage, merchant_rect)
 	_apply_rect(_stock_panel, stock_rect)
 	_apply_rect(_relic_card, relic_rect)
-	_apply_rect(_action_row, action_rect)
+	_action_row_presenter.layout(action_rect)
 
 	if _top_bar.has_method("apply_header_layout"):
 		_top_bar.call("apply_header_layout")
@@ -570,10 +539,6 @@ func apply_layout() -> void:
 	for index in _offer_cards.size():
 		_apply_rect(_offer_cards[index], Rect2(Vector2(float(index) * (OFFER_CARD_SIZE.x + OFFER_CARD_GAP), 0.0), OFFER_CARD_SIZE))
 
-	_apply_rect(_action_hint_label, ACTION_HINT_RECT)
-	_apply_rect(_reroll_button, ACTION_REROLL_RECT)
-	_apply_rect(_continue_button, ACTION_CONTINUE_RECT)
-	_apply_rect(_sell_equipment_button, Rect2(Vector2(-9999, -9999), Vector2(1, 1)))
 	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, logical_size))
 
 	_player_loadout_hud.update_player_hud_layout()
@@ -638,10 +603,7 @@ func _apply_visual_chrome() -> void:
 	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
 	_treasure_chest_overlay_presenter.apply_chrome()
 	_shop_help_modal_presenter.apply_chrome()
-
-	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_reroll_button, _visuals, "reroll")
-	SHOP_VIEW_CHROME_STYLER.apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
-	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_continue_button, _visuals, "continue")
+	_action_row_presenter.apply_chrome()
 
 	for label in [_stock_title_label, _merchant_header_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
@@ -650,18 +612,10 @@ func _apply_visual_chrome() -> void:
 	for label in [_boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
 	_detail_label.add_theme_color_override("font_color", INK_COLOR)
-	_action_hint_label.add_theme_color_override("font_color", GOLD_COLOR)
 	for label in [_speech_label, _hp_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for button in [_reroll_button, _sell_equipment_button, _continue_button]:
-		(button as Button).add_theme_color_override("font_color", INK_COLOR)
-		(button as Button).add_theme_font_size_override("font_size", 24)
-	_reroll_button.add_theme_color_override("font_color", Color(1.0, 0.90, 0.62, 1.0))
-	_continue_button.add_theme_color_override("font_color", Color(0.96, 0.91, 0.80, 1.0))
-	_reroll_button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
-	_continue_button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
 	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())
 
 

@@ -13,7 +13,7 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/shop/shop_view.gd": {
 		"owner": "P1-3",
-		"reason": "Large shop presentation facade; split remaining merchant/header/action/player-HUD presentation into helpers before removing the exception.",
+		"reason": "Large shop presentation facade; split remaining merchant/header/player-HUD presentation into helpers before removing the exception.",
 	},
 }
 
