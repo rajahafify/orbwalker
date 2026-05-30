@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>51</code> suites and <code>217</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>52</code> suites and <code>222</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -270,9 +270,9 @@
         <li>Apply the P1-1/P1-2 extraction recipe wherever the budget is blown, then remove the documented exception.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> no script &gt; the agreed budget without a documented exception; the budget check runs in CI.</div>
-      <div class="ac"><b>Current evidence:</b> <code>tools/quality/script_size_budget.gd</code> scans shop, collection, and run-summary scripts; CI runs it as a warning step; <code>shop_transition_handler.gd</code> now owns shop ready redirects, Continue routing, main-menu routing, transition locking, rollback recovery, and route trace metadata, with <code>shop_transition_handler_test.gd</code> covering tutorial gating, combat routing, failure rollback, main-menu routing, and post-ready rollback. <code>shop_controller.gd</code> is back under the controller budget, and <code>docs/script_size_budget.html</code> now documents only the remaining shop view/service exceptions.</div>
+      <div class="ac"><b>Current evidence:</b> <code>tools/quality/script_size_budget.gd</code> scans shop, collection, and run-summary scripts; CI runs it as a warning step; <code>shop_transition_handler.gd</code> now owns shop ready redirects, Continue routing, main-menu routing, transition locking, rollback recovery, and route trace metadata, with <code>shop_transition_handler_test.gd</code> covering tutorial gating, combat routing, failure rollback, main-menu routing, and post-ready rollback. <code>shop_offer_policy.gd</code> now owns shop item/relic/treasure offer generation plus pricing and reroll math, with <code>shop_offer_policy_test.gd</code> covering price scaling, reroll clamps, first-shop guarantees, equipped-item filtering, treasure chest inclusion, and chest option filters. <code>shop_controller.gd</code> and <code>shop_service.gd</code> are back under their budgets, and <code>docs/script_size_budget.html</code> now documents only the remaining shop view exception.</div>
       <div class="tags"><span class="t">Effort <b>L</b></span></div>
-      <div class="tags"><span class="files">scripts/shop/shop_controller.gd &middot; scripts/shop/shop_transition_handler.gd &middot; scripts/tests/shop_transition_handler_test.gd &middot; tools/quality/script_size_budget.gd &middot; docs/script_size_budget.html &middot; scripts/collection/* &middot; scripts/run_summary/*</span></div>
+      <div class="tags"><span class="files">scripts/shop/shop_controller.gd &middot; scripts/shop/shop_transition_handler.gd &middot; scripts/shop/shop_offer_policy.gd &middot; scripts/tests/shop_transition_handler_test.gd &middot; scripts/tests/shop_offer_policy_test.gd &middot; tools/quality/script_size_budget.gd &middot; docs/script_size_budget.html &middot; scripts/collection/* &middot; scripts/run_summary/*</span></div>
     </div>
   </section>
 
