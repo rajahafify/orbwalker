@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matchatro Architecture Overview And Decisions</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #151d29;
+      --panel-2: #1a2433;
+      --line: #2a3546;
+      --ink: #eef4fb;
+      --muted: #a9b7c8;
+      --gold: #e7ac54;
+      --blue: #6bb3ee;
+      --green: #66d69a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: linear-gradient(180deg, #0a0e14, var(--bg) 260px);
+      font: 15px/1.62 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      max-width: 860px;
+      font-size: 38px;
+      line-height: 1.12;
+    }
+
+    h2 {
+      margin: 42px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      color: var(--gold);
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 24px 0 8px;
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    p {
+      max-width: 78ch;
+      margin: 0 0 15px;
+      color: var(--muted);
+    }
+
+    code {
+      padding: 2px 5px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      color: #f7dfa9;
+      background: #0b1119;
+      font: .9em/1.45 "SF Mono", Consolas, "Cascadia Code", monospace;
+    }
+
+    pre {
+      overflow: auto;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #080d13;
+      color: #dce8f5;
+    }
+
+    pre code {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 20px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    th,
+    td {
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: var(--ink);
+      background: #101823;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: var(--muted);
+    }
+
+    ul,
+    ol {
+      max-width: 82ch;
+      margin: 8px 0 18px;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    .summary {
+      max-width: 820px;
+      margin-bottom: 24px;
+      color: #d6e2f0;
+      font-size: 16px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 24px 0 32px;
+    }
+
+    .nav a,
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .nav a {
+      padding: 7px 11px;
+    }
+
+    .badge {
+      margin: 0 8px 8px 0;
+      padding: 4px 8px;
+      color: var(--green);
+    }
+
+    .card {
+      margin: 14px 0;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--gold);
+      border-radius: 10px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    }
+
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .flow-note {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 16px 0 8px;
+    }
+
+    .flow-note div {
+      min-height: 116px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .flow-note b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Matchatro Architecture Overview And Decisions</h1>
+    <p class="summary">Contributor-facing map for the live prototype. This page explains where gameplay commands flow, which modules own which responsibilities, and why the current contract and asset conventions exist.</p>
+
+    <div class="nav">
+      <a href="../CONTRIBUTING.html">Contributor Guide</a>
+      <a href="system_architecture.html">System Architecture</a>
+      <a href="codebase_quality_roadmap.html">Quality Roadmap</a>
+      <a href="../wiki/decisions.html">Project Decisions Wiki</a>
+    </div>
+
+    <h2 id="architecture-overview">Architecture Overview</h2>
+    <p>The live code follows a local MVC pattern at each major screen boundary. A scene host owns the Godot scene lifecycle, resolves scene nodes, and binds a model, view, and controller. Controllers handle player commands and orchestration. Models and services own gameplay truth. Views render already-decided state onto scene nodes.</p>
+
+    <table aria-label="Module map">
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Owns</th>
+          <th>Should Not Own</th>
+          <th>Common Files</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>scripts/core/</code></td>
+          <td>Run-level singleton state, profile integration, scene routing, shared result boundaries.</td>
+          <td>Screen-local layout or per-scene rendering details.</td>
+          <td><code>run_state.gd</code></td>
+        </tr>
+        <tr>
+          <td><code>scripts/run/</code></td>
+          <td>Dungeon sequence, progression rewards, victory/defeat transitions, run service helpers.</td>
+          <td>Board matching or combat damage math.</td>
+          <td><code>player_progression_service.gd</code></td>
+        </tr>
+        <tr>
+          <td><code>scripts/board/</code></td>
+          <td>Board model state, movement legality, match resolution, gravity, refill, board view coordination.</td>
+          <td>Combat reward routing or shop inventory decisions.</td>
+          <td><code>board_model.gd</code>, <code>board_resolver.gd</code>, <code>board_view.gd</code></td>
+        </tr>
+        <tr>
+          <td><code>scripts/combat/</code></td>
+          <td>Combat state machine, input orchestration, enemy intent, resolve timing, overlays, combat-specific services.</td>
+          <td>Persistent run routing decisions or generic shared HUD internals.</td>
+          <td><code>combat_controller.gd</code>, <code>combat_model.gd</code>, <code>combat_view.gd</code></td>
+        </tr>
+        <tr>
+          <td><code>scripts/shop/</code></td>
+          <td>Shop offers, pricing, buy/reroll/sell commands, shop rendering and shop flow handoff.</td>
+          <td>Combat board resolution or content storage backend migration logic.</td>
+          <td><code>shop_controller.gd</code>, <code>shop_model.gd</code>, <code>shop_view.gd</code></td>
+        </tr>
+        <tr>
+          <td><code>scripts/ui/</code></td>
+          <td>Shared presentation widgets, HUD surfaces, visual lookup helpers, reusable rendering helpers.</td>
+          <td>Gameplay rule changes or command authorization.</td>
+          <td><code>player_loadout_hud.gd</code>, <code>visual_registry.gd</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="mvc-data-flow">MVC Data Flow</h3>
+    <pre><code>Persistent scene signal or runtime-created UI event
+        |
+        v
+Scene host, such as scripts/scenes/combat.gd
+        |
+        v
+Controller command handler
+        |
+        +--> Model and services mutate gameplay truth
+        |
+        +--> View receives render/layout calls
+                 |
+                 v
+             Scene nodes update
+</code></pre>
+
+    <div class="flow-note">
+      <div>
+        <b>Combat Input</b>
+        Header buttons are connected in <code>scenes/combat.tscn</code> to forwarding methods on <code>scripts/scenes/combat.gd</code>. The host forwards commands to <code>CombatController</code>; board input reaches the combat/board controllers through the same controller-owned command path.
+      </div>
+      <div>
+        <b>Combat Rendering</b>
+        <code>CombatController</code> decides when state changes. <code>CombatView</code> receives the bound root nodes and renders labels, bars, overlays, HUD layout, and visual surfaces without owning gameplay decisions.
+      </div>
+      <div>
+        <b>Menu Textures</b>
+        <code>MainMenuModel</code> loads <code>resources/visual/first_pass_asset_map.json</code>, resolves texture paths, and falls back to declared constants. <code>MainMenuView</code> only loads and applies the resolved texture paths.
+      </div>
+    </div>
+
+    <h2 id="decision-records">Decision Records</h2>
+
+    <section class="card" id="adr-001">
+      <h3>ADR-001: Use Declarative Root Node Bindings</h3>
+      <span class="badge">Status: Accepted</span>
+      <p><strong>Context.</strong> Combat scene binding used to be mirrored manually across node declarations and root-node dictionary construction. That made layout edits tedious and easy to desynchronize.</p>
+      <p><strong>Decision.</strong> Scene hosts declare a single binding map, such as <code>ROOT_NODE_BINDINGS</code> in <code>scripts/scenes/combat.gd</code>, and generate the dictionary passed into the existing <code>CombatController.bind(host, root_nodes, model, view)</code> interface.</p>
+      <p><strong>Consequences.</strong> Node ownership stays visible in one place, while the controller interface remains stable. Every binding must also declare its expected class in <code>ROOT_NODE_TYPES</code> so type mistakes fail at the scene boundary.</p>
+      <p><strong>Validation.</strong> <code>res://scripts/tests/combat_scene_contract_test.gd</code> instantiates <code>res://scenes/combat.tscn</code>, resolves the binding map, checks expected node types, and verifies <code>BoardView</code> resolution.</p>
+    </section>
+
+    <section class="card" id="adr-002">
+      <h3>ADR-002: Scene Files Own Persistent Signal Connections</h3>
+      <span class="badge">Status: Accepted</span>
+      <p><strong>Context.</strong> Persistent header controls were previously wired in both <code>combat.tscn</code> and combat scene code, creating mixed ownership and duplicate connection risk.</p>
+      <p><strong>Decision.</strong> Scene-owned controls keep persistent connections in the <code>.tscn</code>. Runtime-created nodes connect signals in code at the point where the node is created or bound.</p>
+      <p><strong>Consequences.</strong> Signal ownership can be found from the scene file for persistent UI and from the creator code for dynamic UI. If ownership moves, remove the old connection and add or update a contract test in the same change.</p>
+      <p><strong>Validation.</strong> <code>combat_scene_contract_test.gd</code> asserts the combat help, debug toggle, and settings buttons are connected from <code>scenes/combat.tscn</code>.</p>
+    </section>
+
+    <section class="card" id="adr-003">
+      <h3>ADR-003: Prefer Runtime Contracts Over Source-Grep Contracts</h3>
+      <span class="badge">Status: Accepted</span>
+      <p><strong>Context.</strong> A source-grep contract can fail when a private helper is renamed even though behavior remains correct, or pass while runtime behavior is broken.</p>
+      <p><strong>Decision.</strong> Tests and probes should assert runtime values, instantiated scenes, loaded scripts, exposed accessor dictionaries, and behavior. Avoid <code>FileAccess.get_file_as_string()</code> checks that search source text for private implementation details.</p>
+      <p><strong>Consequences.</strong> Refactors can rename private code without breaking unrelated checks, while real contract regressions still fail. When a test needs ownership information, expose a small script-level accessor instead of reading another file as text.</p>
+      <p><strong>Validation.</strong> The aggregate headless runner includes runtime scene and HUD probes, and the roadmap tracks that no contract under <code>scripts/tests/</code> or <code>scripts/debug/</code> relies on source-grep checks.</p>
+    </section>
+
+    <section class="card" id="adr-004">
+      <h3>ADR-004: Resolve Assets Through Maps, Manifests, And Declared Fallbacks</h3>
+      <span class="badge">Status: Accepted</span>
+      <p><strong>Context.</strong> The project has generated art, first-pass derived art, runtime manifests, and explicit fallback textures. Broken paths are easy to miss visually and expensive to debug late.</p>
+      <p><strong>Decision.</strong> Runtime texture resolution must flow through owning helpers: <code>MainMenuModel.menu_texture_paths()</code> for the main menu and <code>VisualRegistry</code> for shared visual surfaces. Stable fallback paths are declared by the owner and exposed through <code>asset_contract_paths()</code>.</p>
+      <p><strong>Consequences.</strong> Views receive resolved paths or textures instead of knowing the fallback order. Asset migrations can repoint maps and manifests while tests still prove the fallback inventory imports.</p>
+      <p><strong>Validation.</strong> <code>res://scripts/tests/asset_pipeline_test.gd</code> validates <code>resources/visual/first_pass_asset_map.json</code>, <code>resources/art/assetgen/runtime/manifest.json</code>, <code>assets.json</code>, and the fallback texture contracts exposed by their owning scripts.</p>
+    </section>
+
+    <section class="card" id="adr-005">
+      <h3>ADR-005: Keep Views Focused On Rendering And Layout</h3>
+      <span class="badge">Status: Accepted</span>
+      <p><strong>Context.</strong> <code>CombatView</code> is large because it owns many scene surfaces, but moving gameplay decisions into it would make combat behavior harder to test and reason about.</p>
+      <p><strong>Decision.</strong> <code>CombatView</code> should stay focused on node rendering, layout, and visual state. <code>CombatController</code> keeps state-machine orchestration and delegates clear side surfaces, such as debug console and settings command handling, to helpers when ownership is obvious.</p>
+      <p><strong>Consequences.</strong> View extraction work should target presentation subcomponents, not gameplay rules. Controller extraction work should move cohesive orchestration helpers without changing public gameplay behavior.</p>
+      <p><strong>Validation.</strong> Flow tests under <code>scripts/tests/integrations/run_flow_test.gd</code> cover combat/shop routing, while the script-size budget warns when large surfaces need a documented extraction path.</p>
+    </section>
+  </main>
+</body>
+</html>

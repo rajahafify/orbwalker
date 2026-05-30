@@ -39,6 +39,25 @@
       color: #d7dde8;
     }
 
+    a {
+      color: #8cc8ff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    ul {
+      margin: 0 0 18px;
+      padding-left: 22px;
+      color: #d7dde8;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
     code {
       padding: 2px 5px;
       border-radius: 4px;
@@ -50,6 +69,13 @@
 <body>
   <main>
     <h1>Matchatro Codebase Conventions</h1>
+
+    <h2>Architecture Map And Decisions</h2>
+    <p>Use <a href="docs/architecture_decisions.html">docs/architecture_decisions.html</a> for the live contributor-facing module map, MVC command flow, and lightweight ADRs behind scene binding, signal ownership, runtime contracts, asset fallback resolution, and combat view/controller boundaries.</p>
+    <ul>
+      <li><a href="docs/system_architecture.html">docs/system_architecture.html</a> is the broad system architecture baseline.</li>
+      <li><a href="docs/codebase_quality_roadmap.html">docs/codebase_quality_roadmap.html</a> tracks quality gaps, acceptance criteria, and current evidence.</li>
+    </ul>
 
     <h2>Scene Signal Ownership</h2>
     <p>Scene-owned controls should declare their persistent signal connections in the <code>.tscn</code> file. Runtime-created nodes should connect their signals in code at the point where the node is created or bound.</p>
