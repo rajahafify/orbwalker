@@ -20,6 +20,7 @@ const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_rend
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
+const SHOP_VIEW_CHROME_STYLER := preload("res://scripts/shop/shop_view_chrome_styler.gd")
 const SHOP_VIEW_NODE_FACTORY := preload("res://scripts/shop/shop_view_node_factory.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
@@ -36,10 +37,7 @@ const SHOP_HELP_MODAL_TITLE_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_TITLE_RE
 const SHOP_HELP_MODAL_BODY_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_BODY_RECT
 const SHOP_HELP_MODAL_CLOSE_RECT := SHOP_LAYOUT_METRICS.SHOP_HELP_MODAL_CLOSE_RECT
 const ACTION_HINT_RECT := SHOP_LAYOUT_METRICS.ACTION_HINT_RECT
-const ACTION_BUTTON_TEXTURE_MARGIN := SHOP_LAYOUT_METRICS.ACTION_BUTTON_TEXTURE_MARGIN
-const ACTION_BUTTON_CONTENT_MARGIN := SHOP_LAYOUT_METRICS.ACTION_BUTTON_CONTENT_MARGIN
 const ACTION_BUTTON_FONT_SIZE := SHOP_LAYOUT_METRICS.ACTION_BUTTON_FONT_SIZE
-const RELIC_PRICE_FONT_SIZE := SHOP_LAYOUT_METRICS.RELIC_PRICE_FONT_SIZE
 const ACTION_REROLL_RECT := SHOP_LAYOUT_METRICS.ACTION_REROLL_RECT
 const ACTION_CONTINUE_RECT := SHOP_LAYOUT_METRICS.ACTION_CONTINUE_RECT
 const OFFER_CARD_SIZE := SHOP_LAYOUT_METRICS.OFFER_CARD_SIZE
@@ -62,8 +60,6 @@ const RELIC_UNAVAILABLE_VEIL_COLOR := Color(0.010, 0.008, 0.014, 0.60)
 const RELIC_UNAVAILABLE_ICON_MODULATE := Color(0.40, 0.38, 0.44, 0.58)
 const RELIC_UNAVAILABLE_TITLE_COLOR := Color(0.46, 0.40, 0.52, 0.84)
 const RELIC_UNAVAILABLE_COPY_COLOR := Color(0.50, 0.47, 0.52, 0.78)
-const RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE := Color(0.34, 0.28, 0.21, 0.52)
-const RELIC_UNAVAILABLE_PRICE_TEXT_COLOR := Color(0.52, 0.42, 0.30, 0.70)
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
@@ -406,7 +402,7 @@ func _render_empty_offer_card(card: Button) -> void:
 	card.disabled = true
 	card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 	card.tooltip_text = ""
-	_apply_card_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
+	SHOP_VIEW_CHROME_STYLER.apply_card_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
 	var root := SHOP_VIEW_NODE_FACTORY.make_child_root(card)
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "EMPTY", Rect2(Vector2(20, 190), Vector2(280, 50)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
@@ -419,7 +415,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 		_relic_card.disabled = true
 		_relic_card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 		_relic_card.tooltip_text = ""
-		_apply_transparent_button_chrome(_relic_card)
+		SHOP_VIEW_CHROME_STYLER.apply_transparent_button_chrome(_relic_card)
 		var empty_root := SHOP_VIEW_NODE_FACTORY.make_child_root(_relic_card)
 		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(empty_root, "DUNGEON RELIC", Rect2(Vector2(24, 24), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(empty_root, "Relic offer unavailable.", Rect2(Vector2(24, 86), Vector2(1000, 42)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
@@ -434,7 +430,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	_relic_card.modulate = Color.WHITE
 	_relic_card.tooltip_text = ""
 	_relic_card.mouse_default_cursor_shape = Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND
-	_apply_transparent_button_chrome(_relic_card)
+	SHOP_VIEW_CHROME_STYLER.apply_transparent_button_chrome(_relic_card)
 
 	var root := SHOP_VIEW_NODE_FACTORY.make_child_root(_relic_card)
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.02, 0.02, 0.018, 0.58), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
@@ -475,7 +471,7 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	var copy_label := SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, SHOP_COPY_FORMATTER.shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
 	copy_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	copy_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
-	_make_price_badge(root, RELIC_PRICE_RECT, SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
+	SHOP_VIEW_CHROME_STYLER.make_price_badge(root, _visuals, RELIC_PRICE_RECT, SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
 
 
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
@@ -542,7 +538,7 @@ func _render_treasure_chest_overlay(pending_options: Array) -> void:
 		button.visible = true
 		button.disabled = false
 		var option: Dictionary = pending_options[index]
-		_apply_button_chrome(button, Color(0.10, 0.08, 0.13, 0.98), GOLD_COLOR, Color(0.18, 0.13, 0.08, 1.0))
+		SHOP_VIEW_CHROME_STYLER.apply_button_chrome(button, Color(0.10, 0.08, 0.13, 0.98), GOLD_COLOR, Color(0.18, 0.13, 0.08, 1.0))
 		var root := SHOP_VIEW_NODE_FACTORY.make_child_root(button)
 		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("type", "option")).replace("_", " ").to_upper(), Rect2(Vector2(14, 8), Vector2(180, 22)), MUTED_COLOR, 14, HORIZONTAL_ALIGNMENT_CENTER)
 		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("display_name", "Option")), Rect2(Vector2(14, 36), Vector2(180, 54)), INK_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER, true)
@@ -889,11 +885,11 @@ func _apply_visual_chrome() -> void:
 	_shop_help_modal.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.05, 0.06, 0.07, 0.98), GOLD_COLOR, 3, 12, Vector4(8, 6, 8, 6)))
 	_shop_help_overlay.color = Color(0.0, 0.0, 0.0, 0.54)
 
-	_apply_round_button_chrome(_shop_help_close_button, Color(0.13, 0.09, 0.05, 0.96), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
-	_apply_action_button_chrome(_reroll_button, "reroll")
-	_apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
-	_apply_action_button_chrome(_continue_button, "continue")
-	_apply_button_chrome(_skip_treasure_chest_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
+	SHOP_VIEW_CHROME_STYLER.apply_round_button_chrome(_shop_help_close_button, Color(0.13, 0.09, 0.05, 0.96), GOLD_COLOR, Color(0.23, 0.15, 0.07, 0.98))
+	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_reroll_button, _visuals, "reroll")
+	SHOP_VIEW_CHROME_STYLER.apply_button_chrome(_sell_equipment_button, Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0), Color(0.28, 0.18, 0.09, 0.98))
+	SHOP_VIEW_CHROME_STYLER.apply_action_button_chrome(_continue_button, _visuals, "continue")
+	SHOP_VIEW_CHROME_STYLER.apply_button_chrome(_skip_treasure_chest_button, Color(0.20, 0.07, 0.06, 0.96), Color(0.90, 0.36, 0.30, 1.0), Color(0.30, 0.10, 0.08, 0.98))
 
 	for label in [_stock_title_label, _treasure_chest_title_label, _merchant_header_label]:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
@@ -940,95 +936,3 @@ static func top_header_scene_path() -> String:
 
 static func player_hud_scene_path() -> String:
 	return PLAYER_HUD_SCENE.resource_path
-
-
-func _apply_card_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
-	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 3, 4, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.18), 3, 4, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 3, 4, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 3, 4, Vector4(8, 6, 8, 6)))
-	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
-
-
-func _apply_transparent_button_chrome(button: Button) -> void:
-	button.flat = true
-	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
-
-
-func _apply_action_button_chrome(button: Button, kind: String) -> void:
-	var texture: Texture2D = _visuals.shop_action_button_frame(kind)
-	var normal := _action_button_stylebox(texture, Color(1.0, 1.0, 1.0, 1.0))
-	var hover := _action_button_stylebox(texture, Color(1.08, 1.06, 0.98, 1.0))
-	var pressed := _action_button_stylebox(texture, Color(0.88, 0.86, 0.82, 1.0))
-	var disabled := _action_button_stylebox(texture, Color(0.52, 0.52, 0.54, 0.70))
-	button.flat = false
-	button.add_theme_stylebox_override("normal", normal)
-	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", pressed)
-	button.add_theme_stylebox_override("hover_pressed", pressed)
-	button.add_theme_stylebox_override("disabled", disabled)
-	button.add_theme_stylebox_override("focus", hover)
-	button.add_theme_color_override("font_color", INK_COLOR)
-	button.add_theme_color_override("font_hover_color", Color(1.0, 0.96, 0.86, 1.0))
-	button.add_theme_color_override("font_pressed_color", Color(0.88, 0.84, 0.74, 1.0))
-	button.add_theme_color_override("font_disabled_color", Color(0.66, 0.66, 0.68, 0.82))
-	button.add_theme_constant_override("outline_size", 3)
-	button.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.90))
-	button.add_theme_font_size_override("font_size", ACTION_BUTTON_FONT_SIZE)
-
-
-func _action_button_stylebox(texture: Texture2D, modulate_color: Color) -> StyleBoxTexture:
-	var style := StyleBoxTexture.new()
-	style.texture = texture
-	style.texture_margin_left = ACTION_BUTTON_TEXTURE_MARGIN
-	style.texture_margin_right = ACTION_BUTTON_TEXTURE_MARGIN
-	style.texture_margin_top = 28
-	style.texture_margin_bottom = 28
-	style.content_margin_left = ACTION_BUTTON_CONTENT_MARGIN
-	style.content_margin_right = ACTION_BUTTON_CONTENT_MARGIN
-	style.content_margin_top = 14.0
-	style.content_margin_bottom = 14.0
-	style.modulate_color = modulate_color
-	return style
-
-
-func _apply_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
-	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 8, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 8, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 8, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
-	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
-
-
-func _apply_round_button_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
-	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 32, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 32, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 32, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 32, Vector4(8, 6, 8, 6)))
-	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
-
-
-func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
-	var disabled_affordability := disabled and text.begins_with("$")
-	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT CHEST"
-	var label_color := GOLD_COLOR
-	if disabled:
-		if disabled_affordability:
-			label_color = RELIC_UNAVAILABLE_PRICE_TEXT_COLOR
-		elif sold_or_blocked:
-			label_color = GOLD_COLOR if text == "WAIT CHEST" else NEGATIVE_COLOR
-		else:
-			label_color = MUTED_COLOR
-	var badge_texture_value: Texture2D = _visuals.collection_price_badge()
-	var badge_rect := rect.grow_individual(2, 1, 2, 1) if not disabled else rect
-	var badge_frame := SHOP_VIEW_NODE_FACTORY.make_texture("PriceBadgeFrame", parent)
-	badge_frame.position = badge_rect.position
-	badge_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	badge_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	badge_frame.texture = badge_texture_value
-	badge_frame.custom_minimum_size = badge_rect.size
-	badge_frame.size = badge_rect.size
-	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE
-	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else 20
-	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
