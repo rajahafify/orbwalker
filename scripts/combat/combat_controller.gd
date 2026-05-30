@@ -37,6 +37,7 @@ const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/comba
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
+const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_board_debug_command_handler.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
@@ -129,6 +130,7 @@ var _tutorial_end_command_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _combat_audio_cue_player: Variant = null
 var _debug_state_provider: Variant = null
+var _board_debug_command_handler: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
@@ -359,6 +361,8 @@ func _ensure_runtime_helpers() -> void:
 		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+	if _board_debug_command_handler == null:
+		_board_debug_command_handler = COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
 	_bind_audio_cue_player()
 	_bind_debug_state_provider()
 	if _tutorial_director == null:
@@ -387,6 +391,27 @@ func _bind_debug_state_provider() -> void:
 		"turn_log_presenter": _turn_log_presenter,
 		"input_phase_value": Callable(self, "_input_phase_value"),
 	})
+
+
+func _bind_board_debug_command_handler() -> void:
+	if _board_debug_command_handler == null:
+		_board_debug_command_handler = COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
+	_board_debug_command_handler.bind(
+		{
+			"board_controller": _board_controller,
+			"board_model": _board_model,
+			"settings": _settings,
+			"combat": _combat,
+			"run_state": RunState,
+			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
+		},
+		{
+			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(self, "_debug_set_input_phase"),
+			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
+			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(self, "_sync_tutorial_coachmark"),
+		}
+	)
 
 
 func _bind_debug_console() -> void:
@@ -876,21 +901,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 
 
 func _create_new_board() -> void:
-	var board_seed := _resolve_seed()
-	_set_board_seed(board_seed)
-	if _combat != null and not _combat.is_fight_over():
-		_set_status_text("Seed: %d | Turn %d ready." % [board_seed, _combat.turn_index])
-	else:
-		_set_status_text("Seed: %d | Fight complete." % board_seed)
-	_sync_tutorial_coachmark()
-
-
-func _resolve_seed() -> int:
-	if RunState.has_method("tutorial_board_seed_for_turn") and RunState.is_tutorial_run():
-		var tutorial_seed := int(RunState.tutorial_board_seed_for_turn(_combat.turn_index if _combat != null else 1))
-		if tutorial_seed > 0:
-			return tutorial_seed
-	return int(Time.get_ticks_usec())
+	_bind_board_debug_command_handler()
+	_sync_board_debug_command_result(_board_debug_command_handler.create_new_board())
 
 
 func _tutorial_turn_summary_text() -> String:
@@ -948,34 +960,19 @@ func _hide_tutorial_coachmark() -> void:
 
 
 func _print_board_model() -> void:
-	var debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
-	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
-	print("\n[Board Debug] Seed=", board_seed)
-	print(debug_text)
-	_print_board_model_to_console()
-	_set_status_text("Printed board for seed %d to output." % board_seed)
+	_bind_board_debug_command_handler()
+	_board_debug_command_handler.print_board_model()
 
 
 func _set_board_seed(board_seed: int) -> void:
-	if _board_controller == null:
-		push_error("CombatPlayerController._set_board_seed called before BoardController was bound.")
-		return
-	_board_controller.abort()
-	_board_controller.clear_board_presentation()
-	_board_controller.initialize_board(board_seed, _settings)
-	_board_model = _board_controller.current_board_model()
-	if _combat != null and not _combat.is_fight_over():
-		_set_input_phase(InputPhase.PLAYER_INPUT)
+	_bind_board_debug_command_handler()
+	_sync_board_debug_command_result(_board_debug_command_handler.set_board_seed(board_seed))
+
+
+func _sync_board_debug_command_result(result: Dictionary) -> void:
+	if result.has("board_model") and result.get("board_model") != null:
+		_board_model = result["board_model"]
 	_bind_debug_state_provider()
-
-
-func _print_board_model_to_console() -> void:
-	var board_seed: int = _board_controller.board_seed() if _board_controller != null else _board_model.rng_seed
-	var board_debug_text: String = _board_controller.board_debug_string() if _board_controller != null else _board_model.to_debug_string()
-	_append_combat_log("Board seed: %d" % board_seed)
-	var lines: PackedStringArray = board_debug_text.split("\n", false)
-	for line in lines:
-		_append_combat_log("  %s" % line)
 
 
 func _on_console_input_text_submitted(text: String) -> void:
