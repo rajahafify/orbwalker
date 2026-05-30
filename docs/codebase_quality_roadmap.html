@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>62</code> suites and <code>259</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>63</code> suites and <code>262</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -487,8 +487,9 @@
         <li>Verify the export preset strips dev autoloads/tools; add a test asserting debug classes aren't reachable in a release feature profile.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a release export contains no debug probe/console code path; verified by an export-config check.</div>
+      <div class="ac"><b>Current evidence:</b> <code>export_release_guard_test.gd</code> parses <code>export_presets.cfg</code> and <code>project.godot</code>, verifies Android and Web export presets exclude <code>addons/*</code>, <code>scripts/debug/*</code>, <code>scenes/debug/*</code>, local tool/build/doc/cache folders, and APK/AAB-style artifacts, and asserts <code>GDAIMCPRuntime</code> autoloads the guarded <code>gdai_mcp_runtime_proxy.gd</code> instead of the editor MCP addon directly.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
-      <div class="tags"><span class="files">scripts/debug/* · scripts/core/gdai_mcp_runtime_proxy.gd · export_presets.cfg</span></div>
+      <div class="tags"><span class="files">scripts/tests/export_release_guard_test.gd · scripts/debug/* · scripts/core/gdai_mcp_runtime_proxy.gd · export_presets.cfg · project.godot</span></div>
     </div>
   </section>
 
