@@ -288,7 +288,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li><code>tools/quality/script_load_validation.gd</code> now cache-ignored loads every GDScript file under <code>res://scripts</code> and exits non-zero if any script fails to load.</li>
 <li>GitHub Actions runs the gate after script-size budget reporting and before the aggregate test runner, so parse/load regressions in production scripts fail CI even when no test suite reaches that file. The workflow also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail in CI.</li>
-<li>Validation passed locally with Godot 4.6.3: <code>scanned=177</code>, <code>loaded=177</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
+<li>Validation passed locally with Godot 4.6.3: <code>scanned=178</code>, <code>loaded=178</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
 </ul>
 <p>Verification notes (2026-05-30, test surface coverage gate):</p>
 <ul>
@@ -300,7 +300,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li><code>localization_bootstrap.gd</code> registers tracked English and Spanish <code>Translation</code> resources with Godot's <code>TranslationServer</code>. <code>MainMenuView</code> now applies key-backed text through <code>tr(...)</code> for static menu/profile/settings labels, and the runtime-created settings overlay keeps speed ids in metadata instead of deriving commands from visible English text.</li>
 <li><code>scenes/main_menu.tscn</code> stores <code>MAIN_MENU_*</code> keys for audited static display properties, while <code>main_menu_localization_audit.gd</code> fails CI if the scene/view reintroduces literal display text or either locale misses a required key.</li>
-<li><code>main_menu_localization_test.gd</code> verifies every main-menu localization key resolves in both <code>en</code> and <code>es</code>, and checks the Spanish locale on Start, Settings, Profile, settings title, selected Fast speed, and Close controls. The shared runner now passes at <code>67</code> suites and <code>271</code> cases.</li>
+<li><code>main_menu_localization_test.gd</code> verifies every main-menu localization key resolves in both <code>en</code> and <code>es</code>, and checks the Spanish locale on Start, Settings, Profile, settings title, selected Fast speed, and Close controls.</li>
+</ul>
+<p>Verification notes (2026-05-30, main-menu accessibility gate):</p>
+<ul>
+<li><code>MainMenuView</code> now names the color constants used for main-menu chrome and exposes <code>accessibility_audit_snapshot()</code> with contrast pairs, touch-target expectations, and keyboard-focus control coverage.</li>
+<li><code>main_menu_accessibility_audit.gd</code> runs headless and checks two portrait viewports against <code>4.5:1</code> text contrast, <code>3:1</code> non-text contrast, and <code>48px</code> touch-target floors. The audit initially caught the menu focus-border contrast at <code>2.80:1</code>; the actual focus-border color was brightened and the rerun passed with <code>28</code> contrast pairs, <code>6</code> touch targets, and <code>20</code> focus-control entries checked.</li>
+<li><code>main_menu_accessibility_test.gd</code> covers the audit/report contract through the shared runner, which now passes at <code>68</code> suites and <code>273</code> cases.</li>
 </ul>
 <p>Verification notes (2026-05-07, treasure chest runtime terminology rename):</p>
 <ul>

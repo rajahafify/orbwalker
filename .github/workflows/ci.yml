@@ -83,5 +83,8 @@ jobs:
       - name: Audit main menu localization
         run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_localization_audit.gd
 
+      - name: Audit main menu accessibility
+        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_accessibility_audit.gd
+
       - name: Run tests
         run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd
