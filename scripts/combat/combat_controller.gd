@@ -17,8 +17,7 @@ const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outcome_overlay.gd")
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
-const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
-const COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT := preload("res://scripts/combat/combat_debug_command_adapter.gd")
+const COMBAT_DEBUG_RUNTIME_SCRIPT := preload("res://scripts/combat/combat_debug_runtime.gd")
 const COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
@@ -130,8 +129,8 @@ var _consumable_rng := RandomNumberGenerator.new()
 var _visuals: VisualRegistry = null
 var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
+var _debug_runtime: Variant = null
 var _debug_console: CombatDebugConsole = null
-var _debug_command_adapter: Variant = null
 var _settings_command_handler: Variant = null
 var _turn_log_presenter: Variant = null
 var _zone_guides_enabled := false
@@ -318,12 +317,8 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
 	_create_new_board()
 	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id_value())
-	if _view != null:
-		_view.set_debug_overlay_visible(false)
-		_view.set_debug_toggle_button_visible(false)
-		_view.connect_debug_console_submit(Callable(self, "_on_console_input_text_submitted"))
-	elif _debug_console != null:
-		_debug_console.set_overlay_visible(false)
+	if _debug_runtime != null:
+		_debug_runtime.bootstrap_hidden(Callable(self, "_on_console_input_text_submitted"))
 	_host.get_viewport().size_changed.connect(_on_viewport_size_changed)
 	if _view != null:
 		_view.set_vfx_layer_visible(true)
@@ -346,10 +341,9 @@ func _ensure_runtime_helpers() -> void:
 		_outcome_overlay = COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
 	if _turn_log_presenter == null:
 		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
-	if _debug_console == null:
-		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
-	if _debug_command_adapter == null:
-		_debug_command_adapter = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.new()
+	if _debug_runtime == null:
+		_debug_runtime = COMBAT_DEBUG_RUNTIME_SCRIPT.new()
+	_debug_console = _debug_runtime.console()
 	if _settings_command_handler == null:
 		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_vfx_presenter == null:
@@ -369,28 +363,20 @@ func _ensure_runtime_helpers() -> void:
 
 
 func _bind_debug_console() -> void:
-	if _debug_command_adapter != null:
-		_debug_command_adapter.bind({
-			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
-			"default_victory_scene": "res://scenes/main_menu.tscn",
-			"callbacks": _debug_command_callbacks(),
-		})
-	if _debug_console == null:
-		return
-	_debug_console.bind(
-		_view.debug_console_nodes() if _view != null else {},
+	if _debug_runtime == null:
+		_debug_runtime = COMBAT_DEBUG_RUNTIME_SCRIPT.new()
+	_debug_runtime.bind_for_combat_controller(
+		_view,
+		_turn_log_presenter,
+		self,
+		int(InputPhase.LOCKED_EXTERNAL),
 		{
 			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
 			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
 			"initial_log_level": LOG_LEVEL_NORMAL,
-			"turn_log_presenter": _turn_log_presenter,
-			"callbacks": _debug_command_adapter.command_callbacks() if _debug_command_adapter != null else {},
 		}
 	)
-
-
-func _debug_command_callbacks() -> Dictionary:
-	return COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.controller_callbacks(self)
+	_debug_console = _debug_runtime.console()
 
 
 func _bind_settings_command_handler() -> void:
@@ -587,8 +573,8 @@ func _initialize_combat_state() -> void:
 	_model.clear_pending_next_scene_path()
 	_hide_outcome_summary()
 	_update_hud()
-	if _debug_console != null:
-		_debug_console.clear_log()
+	if _debug_runtime != null:
+		_debug_runtime.clear_log()
 	_append_combat_log("Run flow: %s" % RunState.level_sequence_label())
 	if String(encounter.get("step_key", "")) == "enemy_1":
 		_append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
@@ -668,8 +654,8 @@ func _on_debug_toggle_button_pressed() -> void:
 
 
 func _toggle_debug_overlay() -> void:
-	if _view != null:
-		_view.toggle_debug_overlay()
+	if _debug_runtime != null:
+		_debug_runtime.toggle_overlay()
 	_update_hud()
 
 
@@ -1276,8 +1262,8 @@ func _print_board_model_to_console() -> void:
 
 
 func _on_console_input_text_submitted(text: String) -> void:
-	if _debug_console != null:
-		_debug_console.handle_submitted_text(text)
+	if _debug_runtime != null:
+		_debug_runtime.handle_submitted_text(text)
 
 
 func _console_set_status_text(message: String) -> void:
@@ -2609,8 +2595,8 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		"orb_values_by_id": _orb_values_by_id(),
 	}
 	var log_level := LOG_LEVEL_NORMAL
-	if _debug_console != null:
-		log_level = _debug_console.log_level()
+	if _debug_runtime != null:
+		log_level = _debug_runtime.log_level()
 	var lines: Array[String] = _turn_log_presenter.build_turn_log_lines(turn_log, log_level, context)
 	for line in lines:
 		_append_combat_log(line)
@@ -2639,8 +2625,8 @@ func _orb_values_by_id() -> Dictionary:
 
 
 func _append_combat_log(message: String, is_command_output: bool = false) -> void:
-	if _debug_console != null:
-		_debug_console.append_log(message, is_command_output)
+	if _debug_runtime != null:
+		_debug_runtime.append_log(message, is_command_output)
 
 
 func debug_console_log(message: String) -> void:
