@@ -5,6 +5,38 @@ var _callbacks: Dictionary = {}
 var _locked_input_phase_value := 2
 var _default_victory_scene := "res://scenes/main_menu.tscn"
 
+const CONTROLLER_CALLBACK_METHODS := {
+	"set_status_text": "_console_set_status_text",
+	"combat_state": "_debug_combat_state",
+	"enemy_state": "_debug_enemy_state",
+	"player_hp": "_debug_player_hp",
+	"player_max_hp": "_debug_player_max_hp",
+	"player_armor": "_debug_player_armor",
+	"enemy_display_name": "_debug_enemy_display_name",
+	"enemy_hp": "_debug_enemy_hp",
+	"enemy_max_hp": "_debug_enemy_max_hp",
+	"enemy_turn_block": "_debug_enemy_turn_block",
+	"input_phase_value": "_debug_input_phase_value",
+	"format_intent": "_debug_format_intent",
+	"on_skip_success": "_console_on_skip_success",
+	"board_seed": "_debug_board_seed",
+	"board_debug_text": "_debug_board_debug_text",
+	"create_new_board": "_create_new_board",
+	"set_board_seed": "_set_board_seed",
+	"update_hud": "_update_hud",
+	"set_input_phase": "_debug_set_input_phase",
+	"set_pending_next_scene_path": "_debug_set_pending_next_scene_path",
+	"show_outcome_summary": "_show_outcome_summary",
+	"build_run_outcome_summary": "_build_run_outcome_summary",
+}
+
+
+static func controller_callbacks(controller: Object) -> Dictionary:
+	var callbacks := {}
+	for key in CONTROLLER_CALLBACK_METHODS.keys():
+		callbacks[key] = Callable(controller, String(CONTROLLER_CALLBACK_METHODS[key]))
+	return callbacks
+
 
 func bind(config: Dictionary) -> void:
 	_callbacks = config.get("callbacks", {})

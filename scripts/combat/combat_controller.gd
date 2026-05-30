@@ -19,6 +19,7 @@ const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outc
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const COMBAT_DEBUG_CONSOLE_SCRIPT := preload("res://scripts/combat/combat_debug_console.gd")
 const COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT := preload("res://scripts/combat/combat_debug_command_adapter.gd")
+const COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
@@ -131,6 +132,7 @@ var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
 var _debug_console: CombatDebugConsole = null
 var _debug_command_adapter: Variant = null
+var _settings_command_handler: Variant = null
 var _turn_log_presenter: Variant = null
 var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
@@ -275,6 +277,7 @@ func _ready() -> void:
 	_resolve_presenter.bind(resolve_presenter_bindings)
 	_resolve_presenter.set_combat_speed(_combat_speed_value())
 	_bind_debug_console()
+	_bind_settings_command_handler()
 	_consumable_rng.randomize()
 	if _view != null:
 		_view.bootstrap_background()
@@ -347,6 +350,8 @@ func _ensure_runtime_helpers() -> void:
 		_debug_console = COMBAT_DEBUG_CONSOLE_SCRIPT.new()
 	if _debug_command_adapter == null:
 		_debug_command_adapter = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.new()
+	if _settings_command_handler == null:
+		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_vfx_presenter == null:
 		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if _board_controller == null:
@@ -385,30 +390,29 @@ func _bind_debug_console() -> void:
 
 
 func _debug_command_callbacks() -> Dictionary:
-	return {
-		"set_status_text": Callable(self, "_console_set_status_text"),
-		"combat_state": Callable(self, "_debug_combat_state"),
-		"enemy_state": Callable(self, "_debug_enemy_state"),
-		"player_hp": Callable(self, "_debug_player_hp"),
-		"player_max_hp": Callable(self, "_debug_player_max_hp"),
-		"player_armor": Callable(self, "_debug_player_armor"),
-		"enemy_display_name": Callable(self, "_debug_enemy_display_name"),
-		"enemy_hp": Callable(self, "_debug_enemy_hp"),
-		"enemy_max_hp": Callable(self, "_debug_enemy_max_hp"),
-		"enemy_turn_block": Callable(self, "_debug_enemy_turn_block"),
-		"input_phase_value": Callable(self, "_debug_input_phase_value"),
-		"format_intent": Callable(self, "_debug_format_intent"),
-		"on_skip_success": Callable(self, "_console_on_skip_success"),
-		"board_seed": Callable(self, "_debug_board_seed"),
-		"board_debug_text": Callable(self, "_debug_board_debug_text"),
-		"create_new_board": Callable(self, "_create_new_board"),
-		"set_board_seed": Callable(self, "_set_board_seed"),
-		"update_hud": Callable(self, "_update_hud"),
-		"set_input_phase": Callable(self, "_debug_set_input_phase"),
-		"set_pending_next_scene_path": Callable(self, "_debug_set_pending_next_scene_path"),
-		"show_outcome_summary": Callable(self, "_show_outcome_summary"),
-		"build_run_outcome_summary": Callable(self, "_build_run_outcome_summary"),
-	}
+	return COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.controller_callbacks(self)
+
+
+func _bind_settings_command_handler() -> void:
+	if _settings_command_handler == null:
+		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
+	_settings_command_handler.bind_for_combat_controller(
+		_view,
+		_model,
+		_resolve_presenter,
+		self,
+		int(InputPhase.PLAYER_INPUT),
+		int(InputPhase.LOCKED_EXTERNAL),
+		STATUS_COLOR_NEUTRAL
+	)
+
+
+func _settings_current_turn_index() -> int:
+	return int(_combat.turn_index if _combat != null else 1)
+
+
+func _settings_trace_and_change_scene(scene_path: String, trace_source: String, trace_mark: String) -> void:
+	_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), trace_source, trace_mark)
 
 
 func _connect_view_signals() -> void:
@@ -682,43 +686,28 @@ func _on_back_button_pressed() -> void:
 
 
 func _on_settings_button_pressed() -> void:
-	if _view != null:
-		RunState.load_user_settings()
-		_view.show_settings_overlay(RunState.vfx_speed())
-	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	_set_status_text("Settings opened.")
+	_bind_settings_command_handler()
+	_settings_command_handler.open()
 
 
 func _on_settings_continue_pressed() -> void:
-	if _view != null:
-		_view.hide_settings_overlay()
-	_set_input_phase(InputPhase.PLAYER_INPUT)
-	_set_status_text("%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index if _combat != null else 1])
-	_set_status_color(STATUS_COLOR_NEUTRAL)
+	_bind_settings_command_handler()
+	_settings_command_handler.continue_combat()
 
 
 func _on_settings_new_run_pressed() -> void:
-	if _view != null:
-		_view.hide_settings_overlay()
-	RunState.start_new_run()
-	_trace_and_change_scene_to_target("res://scenes/combat.tscn", _flow_trace_route_id_value(), "combat.settings_new_run", "combat_before_change_scene_to_file_settings_new_run")
+	_bind_settings_command_handler()
+	_settings_command_handler.start_new_run()
 
 
 func _on_settings_main_menu_pressed() -> void:
-	if _view != null:
-		_view.hide_settings_overlay()
-	_trace_and_change_scene_to_target("res://scenes/main_menu.tscn", _flow_trace_route_id_value(), "combat.settings_main_menu", "combat_before_change_scene_to_file_settings_main_menu")
+	_bind_settings_command_handler()
+	_settings_command_handler.return_to_main_menu()
 
 
 func _on_settings_speed_selected(speed: String) -> void:
-	RunState.set_vfx_speed(speed)
-	_model.set_combat_speed(RunState.vfx_speed())
-	if _resolve_presenter != null:
-		_resolve_presenter.set_combat_speed(_combat_speed_value())
-	_apply_vfx_speed_setting()
-	if _view != null:
-		_view.show_settings_overlay(RunState.vfx_speed())
-	_set_status_text("VFX speed: %s." % RunState.vfx_speed().capitalize())
+	_bind_settings_command_handler()
+	_settings_command_handler.select_speed(speed)
 
 
 func _on_tutorial_end_continue_pressed() -> void:
