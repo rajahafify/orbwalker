@@ -28,15 +28,11 @@ const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
 const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
 const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
+const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
-const TEST_EQUIPMENT_IDS: Array[String] = [
-	"shortsword",
-	"buckler",
-]
-const TEST_CONSUMABLE_ID := "fire_scroll"
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
@@ -118,6 +114,7 @@ var _board_controller: Variant = null
 var _hud_presenter: Variant = null
 var _hud_stage_coordinator: Variant = null
 var _mastery_preview_coordinator: Variant = null
+var _loadout_command_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
@@ -339,6 +336,8 @@ func _ensure_runtime_helpers() -> void:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	if _mastery_preview_coordinator == null:
 		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
+	if _loadout_command_handler == null:
+		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -731,109 +730,28 @@ func _on_run_tests_button_pressed() -> void:
 
 
 func _on_add_test_equipment_button_pressed() -> void:
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var candidate_item_id := ""
-	for item_id in TEST_EQUIPMENT_IDS:
-		if not progression_state.equipped_item_ids.has(item_id):
-			candidate_item_id = item_id
-			break
-	if candidate_item_id == "":
-		candidate_item_id = TEST_EQUIPMENT_IDS[0]
-
-	var result: Dictionary = progression_service.equip_item(progression_state, candidate_item_id, content)
-	if bool(result.get("ok", false)):
-		_set_status_text("Added test equipment: %s" % candidate_item_id)
-		_append_combat_log("Debug add equipment OK: %s" % candidate_item_id)
-	else:
-		var reason := String(result.get("reason", "unknown_error"))
-		_set_status_text("Add test equipment failed: %s" % reason)
-		_append_combat_log("Debug add equipment failed: %s" % reason)
-	_update_hud()
+	_bind_loadout_command_handler()
+	_loadout_command_handler.add_test_equipment()
 
 
 func _on_add_test_consumable_button_pressed() -> void:
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var result: Dictionary = progression_service.add_consumable(progression_state, TEST_CONSUMABLE_ID, content)
-	if bool(result.get("ok", false)):
-		_set_status_text("Added test consumable: %s" % TEST_CONSUMABLE_ID)
-		_append_combat_log("Debug add consumable OK: %s" % TEST_CONSUMABLE_ID)
-	else:
-		var reason := String(result.get("reason", "unknown_error"))
-		_set_status_text("Add test consumable failed: %s" % reason)
-		_append_combat_log("Debug add consumable failed: %s" % reason)
-	_update_hud()
+	_bind_loadout_command_handler()
+	_loadout_command_handler.add_test_consumable()
 
 
 func _try_use_first_consumable() -> void:
-	_try_use_consumable_slot(0)
+	_bind_loadout_command_handler()
+	_loadout_command_handler.try_use_first_consumable()
 
 
 func _try_use_consumable_slot(slot_index: int) -> void:
-	if _combat == null or _combat.is_fight_over():
-		return
-	if _input_phase_value() != InputPhase.PLAYER_INPUT:
-		_set_status_text("Consumables can only be used during player input.")
-		return
-
-	var progression_state: Variant = RunState.ensure_player_progression_state()
-	var progression_service: Variant = RunState.ensure_player_progression_service()
-	var content: Variant = RunState.ensure_content_registry()
-	var use_result: Dictionary = progression_service.use_consumable(progression_state, slot_index, content)
-	if not bool(use_result.get("ok", false)):
-		var reason := String(use_result.get("reason", "unknown_error"))
-		_set_status_text("Use consumable failed: %s" % reason)
-		_append_combat_log("Use consumable failed: %s" % reason)
-		_update_hud()
-		return
-
-	var payload: Dictionary = use_result.get("result", {})
-	var consumable_id := String(payload.get("consumable_id", ""))
-	var effects: Array = payload.get("effects", [])
-	var conversion_total := _apply_consumable_effects(effects)
-	if _board_controller != null:
-		_board_controller.bind_view_model()
-	else:
-		_board_view.set_board_presentation_model(_board_model)
-	if _board_controller != null:
-		_board_controller.refresh_match_glow()
-	_set_status_text("Used %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
-	_append_combat_log("Consumable used: %s from slot %d. Converted %d orbs." % [consumable_id, slot_index + 1, conversion_total])
-	_update_hud()
+	_bind_loadout_command_handler()
+	_loadout_command_handler.try_use_consumable_slot(slot_index)
 
 
 func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
-	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var slots: Array = progression_snapshot.get("equipment_slots", []) if slot_type == "equipment" else progression_snapshot.get("consumable_slots", [])
-	if slot_index < 0 or slot_index >= slots.size() or String(slots[slot_index]) == "":
-		_set_status_text("Sell failed: select an occupied equipment or consumable slot first.")
-		_append_combat_log("Sell failed: no occupied loadout slot selected.")
-		return
-	var item_id := String(slots[slot_index])
-	var item_content: Dictionary = {}
-	if _view != null:
-		item_content = _view.lookup_player_hud_content_definition(item_id)
-	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
-	var display_name := String(item_content.get("display_name", item_id))
-	if bool(result.get("ok", false)):
-		_set_status_text("Sold %s for gold. Gold %d." % [display_name, RunState.run_gold])
-		_append_combat_log("Sold %s from %s slot %d. Gold %d." % [display_name, slot_type, slot_index + 1, RunState.run_gold])
-		if _view != null:
-			_view.hide_player_hud_slot_popover()
-	else:
-		var reason := String(result.get("reason", "unknown_error"))
-		_set_status_text("Sell failed: %s" % reason)
-		_append_combat_log("Sell %s failed: %s" % [display_name, reason])
-	_update_hud()
-
-
-func _apply_consumable_effects(effects: Array) -> int:
-	if _combat_consumable_service == null:
-		return 0
-	return int(_combat_consumable_service.apply_effects(effects, _consumable_rng))
+	_bind_loadout_command_handler()
+	_loadout_command_handler.sell_slot_requested(slot_type, slot_index)
 
 
 func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
@@ -2151,6 +2069,30 @@ func _bind_mastery_preview_coordinator() -> void:
 		"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
 		"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
 	})
+
+
+func _bind_loadout_command_handler() -> void:
+	if _loadout_command_handler == null:
+		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
+	_loadout_command_handler.bind(
+		{
+			"run_state": RunState,
+			"combat": _combat,
+			"view": _view,
+			"board_controller": _board_controller,
+			"board_view": _board_view,
+			"board_model": _board_model,
+			"consumable_service": _combat_consumable_service,
+			"consumable_rng": _consumable_rng,
+		},
+		{
+			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
+			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
+			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
+		},
+		{"player_input_phase_value": int(InputPhase.PLAYER_INPUT)}
+	)
 
 
 func _hud_snapshot_input_data() -> Dictionary:
