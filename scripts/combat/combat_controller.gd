@@ -33,6 +33,7 @@ const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
+const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -123,6 +124,7 @@ var _intent_hover_handler: Variant = null
 var _scene_transition_handler: Variant = null
 var _tutorial_prompt_presenter: Variant = null
 var _tutorial_coachmark_coordinator: Variant = null
+var _tutorial_end_command_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
@@ -350,6 +352,8 @@ func _ensure_runtime_helpers() -> void:
 		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
 	if _tutorial_coachmark_coordinator == null:
 		_tutorial_coachmark_coordinator = COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
+	if _tutorial_end_command_handler == null:
+		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -697,34 +701,13 @@ func _on_settings_speed_selected(speed: String) -> void:
 
 
 func _on_tutorial_end_continue_pressed() -> void:
-	if _tutorial_director != null and _tutorial_director.advance_post_shop_step() != "":
-		_show_shop_damage_tutorial_end_modal()
-		_audio_play_sfx("ui_accept")
-		return
-	if RunState.has_method("finish_tutorial_guidance"):
-		RunState.finish_tutorial_guidance()
-	if _view != null and _view.has_method("hide_tutorial_end_modal"):
-		_view.hide_tutorial_end_modal()
-	_audio_play_sfx("ui_accept")
-	_set_status_text("%s | Turn %d." % [RunState.level_sequence_label(), _combat.turn_index if _combat != null else 1])
-	_set_status_color(STATUS_COLOR_NEUTRAL)
-	_update_hud()
+	_bind_tutorial_end_command_handler()
+	_tutorial_end_command_handler.continue_pressed()
 
 
 func _on_tutorial_end_main_menu_pressed() -> void:
-	if _tutorial_director != null:
-		_tutorial_director.dismiss_end_choice()
-	if RunState.has_method("finish_tutorial_guidance"):
-		RunState.finish_tutorial_guidance()
-	if _view != null and _view.has_method("hide_tutorial_end_modal"):
-		_view.hide_tutorial_end_modal()
-	_audio_play_sfx("ui_accept")
-	_trace_and_change_scene_to_target(
-		"res://scenes/main_menu.tscn",
-		_flow_trace_route_id_value(),
-		"tutorial_end_main_menu",
-		"combat_before_change_scene_to_file_tutorial_end_main_menu"
-	)
+	_bind_tutorial_end_command_handler()
+	_tutorial_end_command_handler.main_menu_pressed()
 
 
 func _on_run_tests_button_pressed() -> void:
@@ -927,11 +910,6 @@ func _reset_incomplete_tutorial_drag() -> void:
 		_set_board_seed(current_seed)
 	elif _board_controller.has_method("reset_visuals"):
 		_board_controller.reset_visuals()
-
-
-func _show_tutorial_prompt(message: String, prompt_anchor: String = "above_board") -> void:
-	_bind_tutorial_prompt_presenter()
-	_tutorial_prompt_presenter.show(message, prompt_anchor)
 
 
 func _hide_tutorial_coachmark() -> void:
@@ -1950,6 +1928,18 @@ func _bind_tutorial_coachmark_coordinator() -> void:
 			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
 			"warning_status_color": STATUS_COLOR_WARNING,
 		}
+	)
+
+
+func _bind_tutorial_end_command_handler() -> void:
+	if _tutorial_end_command_handler == null:
+		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
+	_tutorial_end_command_handler.bind_for_combat_controller(
+		RunState,
+		_tutorial_director,
+		_view,
+		self,
+		STATUS_COLOR_NEUTRAL
 	)
 
 
