@@ -38,6 +38,7 @@ const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_c
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
 const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_board_debug_command_handler.gd")
+const COMBAT_INPUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_input_command_handler.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
 
@@ -114,7 +115,6 @@ var _settings_command_handler: Variant = null
 var _combat_timer_service: Variant = null
 var _boss_reward_handler: Variant = null
 var _turn_log_presenter: Variant = null
-var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
 var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
@@ -131,6 +131,7 @@ var _combat_consumable_service: Variant = null
 var _combat_audio_cue_player: Variant = null
 var _debug_state_provider: Variant = null
 var _board_debug_command_handler: Variant = null
+var _input_command_handler: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
@@ -363,6 +364,8 @@ func _ensure_runtime_helpers() -> void:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _board_debug_command_handler == null:
 		_board_debug_command_handler = COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
+	if _input_command_handler == null:
+		_input_command_handler = COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
 	_bind_audio_cue_player()
 	_bind_debug_state_provider()
 	if _tutorial_director == null:
@@ -410,6 +413,21 @@ func _bind_board_debug_command_handler() -> void:
 			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
 			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
 			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(self, "_sync_tutorial_coachmark"),
+		}
+	)
+
+
+func _bind_input_command_handler() -> void:
+	if _input_command_handler == null:
+		_input_command_handler = COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
+	_input_command_handler.bind(
+		{"view": _view},
+		{
+			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: Callable(self, "_toggle_debug_overlay"),
+			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: Callable(self, "_create_new_board"),
+			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: Callable(self, "_print_board_model"),
+			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(self, "_try_use_first_consumable"),
+			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: Callable(self, "_set_viewport_input_handled"),
 		}
 	)
 
@@ -679,32 +697,13 @@ func _begin_turn_preview() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_F1:
-			_toggle_debug_overlay()
-			_host.get_viewport().set_input_as_handled()
-			return
-		if event.keycode == KEY_F2:
-			_zone_guides_enabled = not _zone_guides_enabled
-			if _view != null:
-				_view.set_zone_guides_enabled(_zone_guides_enabled)
-			_host.get_viewport().set_input_as_handled()
-			return
-		if event.keycode == KEY_R:
-			_create_new_board()
-			_host.get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_P:
-			_print_board_model()
-			_host.get_viewport().set_input_as_handled()
-		elif event.keycode == KEY_C:
-			_try_use_first_consumable()
-			_host.get_viewport().set_input_as_handled()
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var handled_click := false
-		if _view != null:
-			handled_click = bool(_view.handle_player_hud_global_click((event as InputEventMouseButton).position))
-		if handled_click:
-			_host.get_viewport().set_input_as_handled()
+	_bind_input_command_handler()
+	_input_command_handler.handle_unhandled_input(event)
+
+
+func _set_viewport_input_handled() -> void:
+	if _host != null and is_instance_valid(_host) and _host.get_viewport() != null:
+		_host.get_viewport().set_input_as_handled()
 
 
 func _on_debug_toggle_button_pressed() -> void:
