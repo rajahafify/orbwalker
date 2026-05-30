@@ -3,21 +3,12 @@
 extends RefCounted
 class_name CombatDebugCommandAdapter
 
+const CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
+const CONTROLLER_CALLBACK_METHODS := CALLBACK_KEYS.CONTROLLER_ACTION_METHODS
+
 var _callbacks: Dictionary = {}
 var _locked_input_phase_value := 2
 var _default_victory_scene := "res://scenes/main_menu.tscn"
-
-const CONTROLLER_CALLBACK_METHODS := {
-	"set_status_text": "_console_set_status_text",
-	"on_skip_success": "_console_on_skip_success",
-	"create_new_board": "_create_new_board",
-	"set_board_seed": "_set_board_seed",
-	"update_hud": "_update_hud",
-	"set_input_phase": "_debug_set_input_phase",
-	"set_pending_next_scene_path": "_debug_set_pending_next_scene_path",
-	"show_outcome_summary": "_show_outcome_summary",
-	"build_run_outcome_summary": "_build_run_outcome_summary",
-}
 
 
 static func controller_callbacks(controller: Object) -> Dictionary:
@@ -35,41 +26,41 @@ func bind(config: Dictionary) -> void:
 
 func command_callbacks() -> Dictionary:
 	return {
-		"set_status_text": Callable(self, "set_status_text"),
-		"state_snapshot_data": Callable(self, "state_snapshot_data"),
-		"skip_to_fight": Callable(self, "skip_to_fight"),
-		"board_print_data": Callable(self, "board_print_data"),
-		"board_reroll": Callable(self, "board_reroll"),
-		"board_seed": Callable(self, "board_seed"),
-		"gold_add": Callable(self, "gold_add"),
-		"gold_set": Callable(self, "gold_set"),
-		"mastery_add": Callable(self, "mastery_add"),
-		"mastery_list": Callable(self, "mastery_list"),
-		"consumable_add": Callable(self, "consumable_add"),
-		"consumable_list": Callable(self, "consumable_list"),
-		"equipment_list": Callable(self, "equipment_list"),
-		"equipment_details": Callable(self, "equipment_details"),
-		"equipment_add": Callable(self, "equipment_add"),
-		"relic_list": Callable(self, "relic_list"),
-		"relic_details": Callable(self, "relic_details"),
-		"relic_add": Callable(self, "relic_add"),
-		"fight_win": Callable(self, "fight_win"),
-		"fight_lose": Callable(self, "fight_lose"),
+		CALLBACK_KEYS.SET_STATUS_TEXT: Callable(self, "set_status_text"),
+		CALLBACK_KEYS.STATE_SNAPSHOT_DATA: Callable(self, "state_snapshot_data"),
+		CALLBACK_KEYS.SKIP_TO_FIGHT: Callable(self, "skip_to_fight"),
+		CALLBACK_KEYS.BOARD_PRINT_DATA: Callable(self, "board_print_data"),
+		CALLBACK_KEYS.BOARD_REROLL: Callable(self, "board_reroll"),
+		CALLBACK_KEYS.BOARD_SEED: Callable(self, "board_seed"),
+		CALLBACK_KEYS.GOLD_ADD: Callable(self, "gold_add"),
+		CALLBACK_KEYS.GOLD_SET: Callable(self, "gold_set"),
+		CALLBACK_KEYS.MASTERY_ADD: Callable(self, "mastery_add"),
+		CALLBACK_KEYS.MASTERY_LIST: Callable(self, "mastery_list"),
+		CALLBACK_KEYS.CONSUMABLE_ADD: Callable(self, "consumable_add"),
+		CALLBACK_KEYS.CONSUMABLE_LIST: Callable(self, "consumable_list"),
+		CALLBACK_KEYS.EQUIPMENT_LIST: Callable(self, "equipment_list"),
+		CALLBACK_KEYS.EQUIPMENT_DETAILS: Callable(self, "equipment_details"),
+		CALLBACK_KEYS.EQUIPMENT_ADD: Callable(self, "equipment_add"),
+		CALLBACK_KEYS.RELIC_LIST: Callable(self, "relic_list"),
+		CALLBACK_KEYS.RELIC_DETAILS: Callable(self, "relic_details"),
+		CALLBACK_KEYS.RELIC_ADD: Callable(self, "relic_add"),
+		CALLBACK_KEYS.FIGHT_WIN: Callable(self, "fight_win"),
+		CALLBACK_KEYS.FIGHT_LOSE: Callable(self, "fight_lose"),
 	}
 
 
 func set_status_text(message: String) -> void:
-	_call("set_status_text", [message])
+	_call(CALLBACK_KEYS.SET_STATUS_TEXT, [message])
 
 
 func state_snapshot_data() -> Dictionary:
 	var progression: Dictionary = RunState.progression_snapshot()
 	var encounter: Dictionary = RunState.current_encounter_snapshot()
-	var enemy_state: Variant = _call("enemy_state")
-	var combat: Variant = _call("combat_state")
+	var enemy_state: Variant = _call(CALLBACK_KEYS.ENEMY_STATE)
+	var combat: Variant = _call(CALLBACK_KEYS.COMBAT_STATE)
 	var intent_text := "-"
 	if enemy_state != null and _has_method(enemy_state, "get_current_intent"):
-		var formatter: Callable = _callback("format_intent")
+		var formatter: Callable = _callback(CALLBACK_KEYS.FORMAT_INTENT)
 		if formatter.is_valid():
 			intent_text = String(formatter.call(enemy_state.get_current_intent()))
 	return {
@@ -84,21 +75,21 @@ func state_snapshot_data() -> Dictionary:
 		{
 			"turn": int(combat.turn_index if combat != null else 0),
 			"phase": combat.phase_name() if combat != null and _has_method(combat, "phase_name") else "N/A",
-			"input_phase": int(_call("input_phase_value")),
+			"input_phase": int(_call(CALLBACK_KEYS.INPUT_PHASE_VALUE)),
 		},
 		"player":
 		{
-			"hp": int(_call("player_hp")),
-			"max_hp": int(_call("player_max_hp")),
-			"armor": int(_call("player_armor")),
+			"hp": int(_call(CALLBACK_KEYS.PLAYER_HP)),
+			"max_hp": int(_call(CALLBACK_KEYS.PLAYER_MAX_HP)),
+			"armor": int(_call(CALLBACK_KEYS.PLAYER_ARMOR)),
 			"gold": int(RunState.run_gold),
 		},
 		"enemy":
 		{
-			"display_name": String(encounter.get("display_name", _call("enemy_display_name"))),
-			"hp": int(_call("enemy_hp")),
-			"max_hp": int(_call("enemy_max_hp")),
-			"turn_block": int(_call("enemy_turn_block")),
+			"display_name": String(encounter.get("display_name", _call(CALLBACK_KEYS.ENEMY_DISPLAY_NAME))),
+			"hp": int(_call(CALLBACK_KEYS.ENEMY_HP)),
+			"max_hp": int(_call(CALLBACK_KEYS.ENEMY_MAX_HP)),
+			"turn_block": int(_call(CALLBACK_KEYS.ENEMY_TURN_BLOCK)),
 			"intent": intent_text,
 		},
 		"progression":
@@ -115,7 +106,7 @@ func skip_to_fight(level: int, fight: int) -> Dictionary:
 	var result: Dictionary = RunState.skip_to_fight(level, fight)
 	if not bool(result.get("ok", false)):
 		return result
-	_call("on_skip_success")
+	_call(CALLBACK_KEYS.ON_SKIP_SUCCESS)
 	var label := RunState.level_sequence_label()
 	set_status_text("Skipped to %s." % label)
 	return {
@@ -126,27 +117,27 @@ func skip_to_fight(level: int, fight: int) -> Dictionary:
 
 func board_print_data() -> Dictionary:
 	return {
-		"seed": int(_call("board_seed")),
-		"debug_text": String(_call("board_debug_text")),
+		"seed": int(_call(CALLBACK_KEYS.BOARD_SEED)),
+		"debug_text": String(_call(CALLBACK_KEYS.BOARD_DEBUG_TEXT)),
 	}
 
 
 func board_reroll() -> Dictionary:
-	_call("create_new_board")
-	return {"seed": int(_call("board_seed"))}
+	_call(CALLBACK_KEYS.CREATE_NEW_BOARD)
+	return {"seed": int(_call(CALLBACK_KEYS.BOARD_SEED))}
 
 
 func board_seed(seed_value: int) -> Dictionary:
-	_call("set_board_seed", [seed_value])
+	_call(CALLBACK_KEYS.SET_BOARD_SEED, [seed_value])
 	return {
 		"ok": true,
-		"seed": int(_call("board_seed")),
+		"seed": int(_call(CALLBACK_KEYS.BOARD_SEED)),
 	}
 
 
 func gold_add(amount: int) -> Dictionary:
 	var added := RunState.add_gold(amount)
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {
 		"ok": true,
 		"added": added,
@@ -156,7 +147,7 @@ func gold_add(amount: int) -> Dictionary:
 
 func gold_set(amount: int) -> Dictionary:
 	RunState.set_gold(amount)
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {
 		"ok": true,
 		"current": RunState.run_gold,
@@ -173,7 +164,7 @@ func mastery_add(orb_id: int, mastery_amount: int) -> Dictionary:
 			"reason": String(mastery_result.get("reason", "unknown_error")),
 		}
 	var mastery_payload: Dictionary = mastery_result.get("result", {})
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {
 		"ok": true,
 		"granted": int(mastery_payload.get("granted", 0)),
@@ -196,7 +187,7 @@ func consumable_add(consumable_id: String) -> Dictionary:
 			"ok": false,
 			"reason": String(consumable_result.get("reason", "unknown_error")),
 		}
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {"ok": true}
 
 
@@ -236,7 +227,7 @@ func equipment_add(equipment_id: String) -> Dictionary:
 			"reason": String(equip_result.get("reason", "unknown_error")),
 		}
 	var payload: Dictionary = equip_result.get("result", {})
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {
 		"ok": true,
 		"slot_index": int(payload.get("slot_index", -1)),
@@ -273,7 +264,7 @@ func relic_add(relic_id: String) -> Dictionary:
 			"ok": false,
 			"reason": String(relic_result.get("reason", "unknown_error")),
 		}
-	_call("update_hud")
+	_call(CALLBACK_KEYS.UPDATE_HUD)
 	return {"ok": true}
 
 
@@ -284,20 +275,20 @@ func fight_win() -> Dictionary:
 			"ok": false,
 			"reason": String(win_transition.get("reason", "unknown_error")),
 		}
-	_call("set_input_phase", [_locked_input_phase_value])
-	_call("set_pending_next_scene_path", [String(win_transition.get("next_scene", _default_victory_scene))])
-	_call("update_hud")
-	_call("show_outcome_summary", ["Victory", String(_call("build_run_outcome_summary", ["Debug command."])), true, "Continue"])
+	_call(CALLBACK_KEYS.SET_INPUT_PHASE, [_locked_input_phase_value])
+	_call(CALLBACK_KEYS.SET_PENDING_NEXT_SCENE_PATH, [String(win_transition.get("next_scene", _default_victory_scene))])
+	_call(CALLBACK_KEYS.UPDATE_HUD)
+	_call(CALLBACK_KEYS.SHOW_OUTCOME_SUMMARY, ["Victory", String(_call(CALLBACK_KEYS.BUILD_RUN_OUTCOME_SUMMARY, ["Debug command."])), true, "Continue"])
 	set_status_text("Debug victory queued. Press Continue.")
 	return {"ok": true}
 
 
 func fight_lose() -> Dictionary:
 	var lose_transition: Dictionary = RunState.mark_player_defeated("Debug command.")
-	_call("set_input_phase", [_locked_input_phase_value])
-	_call("set_pending_next_scene_path", [String(lose_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY))])
-	_call("update_hud")
-	_call("show_outcome_summary", ["Defeat", String(_call("build_run_outcome_summary", ["Debug command."])), true, "Run Summary"])
+	_call(CALLBACK_KEYS.SET_INPUT_PHASE, [_locked_input_phase_value])
+	_call(CALLBACK_KEYS.SET_PENDING_NEXT_SCENE_PATH, [String(lose_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY))])
+	_call(CALLBACK_KEYS.UPDATE_HUD)
+	_call(CALLBACK_KEYS.SHOW_OUTCOME_SUMMARY, ["Defeat", String(_call(CALLBACK_KEYS.BUILD_RUN_OUTCOME_SUMMARY, ["Debug command."])), true, "Run Summary"])
 	set_status_text("Debug defeat queued. Run Summary available.")
 	return {"ok": true}
 

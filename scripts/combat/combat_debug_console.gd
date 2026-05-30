@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CombatDebugConsole
 
+const CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
+
 const LOG_LEVEL_NORMAL := "normal"
 const LOG_LEVEL_DETAILED := "detailed"
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
@@ -76,10 +78,7 @@ func append_log(message: String, is_command_output: bool = false) -> void:
 	_combat_log_command_flags.append(is_command_output)
 	if _combat_log_lines.size() > _max_combat_log_lines:
 		_combat_log_lines = _combat_log_lines.slice(_combat_log_lines.size() - _max_combat_log_lines, _combat_log_lines.size())
-		_combat_log_command_flags = _combat_log_command_flags.slice(
-			_combat_log_command_flags.size() - _max_combat_log_lines,
-			_combat_log_command_flags.size()
-		)
+		_combat_log_command_flags = _combat_log_command_flags.slice(_combat_log_command_flags.size() - _max_combat_log_lines, _combat_log_command_flags.size())
 	refresh_display()
 
 
@@ -206,7 +205,7 @@ func _handle_skip_command(parts: PackedStringArray) -> void:
 		return
 	var level := level_text.to_int()
 	var fight := fight_text.to_int()
-	var result: Dictionary = _callback_dict("skip_to_fight", [level, fight])
+	var result: Dictionary = _callback_dict(CALLBACK_KEYS.SKIP_TO_FIGHT, [level, fight])
 	if not bool(result.get("ok", false)):
 		_command_error("skip failed: %s" % String(result.get("reason", "unknown_error")))
 		return
@@ -220,10 +219,10 @@ func _handle_board_command(parts: PackedStringArray) -> void:
 	var board_sub := String(parts[1]).to_lower()
 	match board_sub:
 		"print":
-			var board_data: Dictionary = _callback_dict("board_print_data")
+			var board_data: Dictionary = _callback_dict(CALLBACK_KEYS.BOARD_PRINT_DATA)
 			_append_board_model_snapshot(board_data)
 		"reroll":
-			var reroll_data: Dictionary = _callback_dict("board_reroll")
+			var reroll_data: Dictionary = _callback_dict(CALLBACK_KEYS.BOARD_REROLL)
 			append_log("Board rerolled (seed %d)." % int(reroll_data.get("seed", 0)))
 		"seed":
 			if parts.size() < 3:
@@ -234,7 +233,7 @@ func _handle_board_command(parts: PackedStringArray) -> void:
 				_command_error("seed must be an integer")
 				return
 			var seed_value := seed_token.to_int()
-			var set_result: Dictionary = _callback_dict("board_seed", [seed_value])
+			var set_result: Dictionary = _callback_dict(CALLBACK_KEYS.BOARD_SEED, [seed_value])
 			if not bool(set_result.get("ok", true)):
 				_command_error(String(set_result.get("reason", "seed must be an integer")))
 				return
@@ -258,13 +257,13 @@ func _handle_gold_command(parts: PackedStringArray) -> void:
 			if amount <= 0:
 				_command_error("gold add requires a positive amount")
 				return
-			var add_result: Dictionary = _callback_dict("gold_add", [amount])
+			var add_result: Dictionary = _callback_dict(CALLBACK_KEYS.GOLD_ADD, [amount])
 			if not bool(add_result.get("ok", false)):
 				_command_error(String(add_result.get("reason", "unknown_error")))
 				return
 			append_log("Gold added: +%d (now %d)." % [int(add_result.get("added", 0)), int(add_result.get("current", 0))])
 		"set":
-			var set_result: Dictionary = _callback_dict("gold_set", [amount])
+			var set_result: Dictionary = _callback_dict(CALLBACK_KEYS.GOLD_SET, [amount])
 			if not bool(set_result.get("ok", false)):
 				_command_error(String(set_result.get("reason", "unknown_error")))
 				return
@@ -296,19 +295,22 @@ func _handle_mastery_command(parts: PackedStringArray) -> void:
 			if mastery_amount <= 0:
 				_command_error("mastery amount must be positive")
 				return
-			var mastery_result: Dictionary = _callback_dict("mastery_add", [orb_id, mastery_amount])
+			var mastery_result: Dictionary = _callback_dict(CALLBACK_KEYS.MASTERY_ADD, [orb_id, mastery_amount])
 			if not bool(mastery_result.get("ok", false)):
 				_command_error("mastery add failed: %s" % String(mastery_result.get("reason", "unknown_error")))
 				return
 			append_log(
-				"Mastery added: %s +%d (new level %d)." % [
-					OrbType.display_name(orb_id),
-					int(mastery_result.get("granted", 0)),
-					int(mastery_result.get("new_level", 0)),
-				]
+				(
+					"Mastery added: %s +%d (new level %d)."
+					% [
+						OrbType.display_name(orb_id),
+						int(mastery_result.get("granted", 0)),
+						int(mastery_result.get("new_level", 0)),
+					]
+				)
 			)
 		"list":
-			_print_content_id_list("Mastery IDs", _callback_array("mastery_list"))
+			_print_content_id_list("Mastery IDs", _callback_array(CALLBACK_KEYS.MASTERY_LIST))
 		_:
 			_command_error("unknown /mastery subcommand: %s" % mastery_sub)
 
@@ -324,13 +326,13 @@ func _handle_consumable_command(parts: PackedStringArray) -> void:
 				_command_error("usage: /consumable add <id>")
 				return
 			var consumable_id := String(parts[2])
-			var add_result: Dictionary = _callback_dict("consumable_add", [consumable_id])
+			var add_result: Dictionary = _callback_dict(CALLBACK_KEYS.CONSUMABLE_ADD, [consumable_id])
 			if not bool(add_result.get("ok", false)):
 				_command_error("consumable add failed: %s" % String(add_result.get("reason", "unknown_error")))
 				return
 			append_log("Consumable added: %s." % consumable_id)
 		"list":
-			_print_content_id_list("Consumable IDs", _callback_array("consumable_list"))
+			_print_content_id_list("Consumable IDs", _callback_array(CALLBACK_KEYS.CONSUMABLE_LIST))
 		_:
 			_command_error("unknown /consumable subcommand: %s" % consumable_sub)
 
@@ -342,7 +344,7 @@ func _handle_equipment_command(parts: PackedStringArray) -> void:
 	var equipment_sub := String(parts[1]).to_lower()
 	match equipment_sub:
 		"list":
-			_print_content_id_list("Equipment IDs", _callback_array("equipment_list"))
+			_print_content_id_list("Equipment IDs", _callback_array(CALLBACK_KEYS.EQUIPMENT_LIST))
 		"show":
 			if parts.size() < 3:
 				_command_error("usage: /equipment show <id>")
@@ -354,7 +356,7 @@ func _handle_equipment_command(parts: PackedStringArray) -> void:
 				_command_error("usage: /equipment add <id>")
 				return
 			var equipment_id := String(parts[2]).strip_edges()
-			var add_result: Dictionary = _callback_dict("equipment_add", [equipment_id])
+			var add_result: Dictionary = _callback_dict(CALLBACK_KEYS.EQUIPMENT_ADD, [equipment_id])
 			if not bool(add_result.get("ok", false)):
 				_command_error("equipment add failed: %s" % String(add_result.get("reason", "unknown_error")))
 				return
@@ -370,7 +372,7 @@ func _handle_relic_command(parts: PackedStringArray) -> void:
 	var relic_sub := String(parts[1]).to_lower()
 	match relic_sub:
 		"list":
-			_print_content_id_list("Relic IDs", _callback_array("relic_list"))
+			_print_content_id_list("Relic IDs", _callback_array(CALLBACK_KEYS.RELIC_LIST))
 		"show":
 			if parts.size() < 3:
 				_command_error("usage: /relic show <id>")
@@ -382,7 +384,7 @@ func _handle_relic_command(parts: PackedStringArray) -> void:
 				_command_error("usage: /relic add <id>")
 				return
 			var relic_id := String(parts[2]).strip_edges()
-			var add_result: Dictionary = _callback_dict("relic_add", [relic_id])
+			var add_result: Dictionary = _callback_dict(CALLBACK_KEYS.RELIC_ADD, [relic_id])
 			if not bool(add_result.get("ok", false)):
 				_command_error("relic add failed: %s" % String(add_result.get("reason", "unknown_error")))
 				return
@@ -398,13 +400,13 @@ func _handle_fight_command(parts: PackedStringArray) -> void:
 	var fight_sub := String(parts[1]).to_lower()
 	match fight_sub:
 		"win":
-			var win_result: Dictionary = _callback_dict("fight_win")
+			var win_result: Dictionary = _callback_dict(CALLBACK_KEYS.FIGHT_WIN)
 			if not bool(win_result.get("ok", false)):
 				_command_error("fight win failed: %s" % String(win_result.get("reason", "unknown_error")))
 				return
 			append_log("Fight win queued. Press Next to continue.")
 		"lose":
-			var lose_result: Dictionary = _callback_dict("fight_lose")
+			var lose_result: Dictionary = _callback_dict(CALLBACK_KEYS.FIGHT_LOSE)
 			if not bool(lose_result.get("ok", false)):
 				_command_error("fight lose failed: %s" % String(lose_result.get("reason", "unknown_error")))
 				return
@@ -414,7 +416,7 @@ func _handle_fight_command(parts: PackedStringArray) -> void:
 
 
 func _print_state_snapshot() -> void:
-	var snapshot: Dictionary = _callback_dict("state_snapshot_data")
+	var snapshot: Dictionary = _callback_dict(CALLBACK_KEYS.STATE_SNAPSHOT_DATA)
 	for line in _turn_log_presenter.build_state_snapshot_lines(snapshot):
 		append_log(line)
 
@@ -444,7 +446,7 @@ func _show_equipment_details(equipment_id: String) -> void:
 	if equipment_id == "":
 		_command_error("equipment id is required")
 		return
-	var result: Dictionary = _callback_dict("equipment_details", [equipment_id])
+	var result: Dictionary = _callback_dict(CALLBACK_KEYS.EQUIPMENT_DETAILS, [equipment_id])
 	if not bool(result.get("ok", false)):
 		_command_error(String(result.get("reason", "unknown_error")))
 		return
@@ -460,12 +462,15 @@ func _show_equipment_details(equipment_id: String) -> void:
 	append_log("  Name: %s" % String(equipment.get("display_name", equipment_id)))
 	append_log("  Rarity: %s | Target: %s" % [String(equipment.get("rarity", "common")), target_orb])
 	append_log(
-		"  Price: %d | Sell: %d | Levels: %d-%d" % [
-			int(equipment.get("base_price", 0)),
-			int(equipment.get("sell_value", equipment.get("base_price", 0))),
-			int(equipment.get("min_level", 1)),
-			int(equipment.get("max_level", 3)),
-		]
+		(
+			"  Price: %d | Sell: %d | Levels: %d-%d"
+			% [
+				int(equipment.get("base_price", 0)),
+				int(equipment.get("sell_value", equipment.get("base_price", 0))),
+				int(equipment.get("min_level", 1)),
+				int(equipment.get("max_level", 3)),
+			]
+		)
 	)
 	append_log("  Icon: %s" % String(equipment.get("icon_key", "")))
 	append_log("  Description: %s" % String(equipment.get("description", "")))
@@ -479,7 +484,7 @@ func _show_relic_details(relic_id: String) -> void:
 	if relic_id == "":
 		_command_error("relic id is required")
 		return
-	var result: Dictionary = _callback_dict("relic_details", [relic_id])
+	var result: Dictionary = _callback_dict(CALLBACK_KEYS.RELIC_DETAILS, [relic_id])
 	if not bool(result.get("ok", false)):
 		_command_error(String(result.get("reason", "unknown_error")))
 		return
@@ -490,11 +495,14 @@ func _show_relic_details(relic_id: String) -> void:
 	append_log("  Name: %s" % String(relic.get("display_name", relic_id)))
 	append_log("  Rarity: %s" % String(relic.get("rarity", "common")))
 	append_log(
-		"  Price: %d | Levels: %d-%d" % [
-			int(relic.get("base_price", 0)),
-			int(relic.get("min_level", 1)),
-			int(relic.get("max_level", 3)),
-		]
+		(
+			"  Price: %d | Levels: %d-%d"
+			% [
+				int(relic.get("base_price", 0)),
+				int(relic.get("min_level", 1)),
+				int(relic.get("max_level", 3)),
+			]
+		)
 	)
 	append_log("  Icon: %s" % String(relic.get("icon_key", "")))
 	append_log("  Description: %s" % String(relic.get("description", "")))
@@ -523,7 +531,7 @@ func _orb_id_from_token(token: String) -> int:
 
 
 func _set_status_text(message: String) -> void:
-	var callback: Callable = _get_callback("set_status_text")
+	var callback: Callable = _get_callback(CALLBACK_KEYS.SET_STATUS_TEXT)
 	if callback.is_valid():
 		callback.call(message)
 

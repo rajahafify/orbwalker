@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CombatDebugStateProvider
 
+const CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
+
 var _combat: Variant = null
 var _enemy_state: Variant = null
 var _player_state: Variant = null
@@ -26,19 +28,19 @@ func bind(context: Dictionary) -> void:
 
 func callbacks() -> Dictionary:
 	return {
-		"combat_state": Callable(self, "combat_state"),
-		"enemy_state": Callable(self, "enemy_state"),
-		"player_hp": Callable(self, "player_hp"),
-		"player_max_hp": Callable(self, "player_max_hp"),
-		"player_armor": Callable(self, "player_armor"),
-		"enemy_display_name": Callable(self, "enemy_display_name"),
-		"enemy_hp": Callable(self, "enemy_hp"),
-		"enemy_max_hp": Callable(self, "enemy_max_hp"),
-		"enemy_turn_block": Callable(self, "enemy_turn_block"),
-		"input_phase_value": Callable(self, "input_phase_value"),
-		"format_intent": Callable(self, "format_intent"),
-		"board_seed": Callable(self, "board_seed"),
-		"board_debug_text": Callable(self, "board_debug_text"),
+		CALLBACK_KEYS.COMBAT_STATE: Callable(self, "combat_state"),
+		CALLBACK_KEYS.ENEMY_STATE: Callable(self, "enemy_state"),
+		CALLBACK_KEYS.PLAYER_HP: Callable(self, "player_hp"),
+		CALLBACK_KEYS.PLAYER_MAX_HP: Callable(self, "player_max_hp"),
+		CALLBACK_KEYS.PLAYER_ARMOR: Callable(self, "player_armor"),
+		CALLBACK_KEYS.ENEMY_DISPLAY_NAME: Callable(self, "enemy_display_name"),
+		CALLBACK_KEYS.ENEMY_HP: Callable(self, "enemy_hp"),
+		CALLBACK_KEYS.ENEMY_MAX_HP: Callable(self, "enemy_max_hp"),
+		CALLBACK_KEYS.ENEMY_TURN_BLOCK: Callable(self, "enemy_turn_block"),
+		CALLBACK_KEYS.INPUT_PHASE_VALUE: Callable(self, "input_phase_value"),
+		CALLBACK_KEYS.FORMAT_INTENT: Callable(self, "format_intent"),
+		CALLBACK_KEYS.BOARD_SEED: Callable(self, "board_seed"),
+		CALLBACK_KEYS.BOARD_DEBUG_TEXT: Callable(self, "board_debug_text"),
 	}
 
 
