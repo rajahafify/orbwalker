@@ -1,11 +1,14 @@
 extends RefCounted
 class_name CombatEnemyStagePresenter
 
+const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
+const DEFAULT_ENEMY_ID := "cavern_striker"
 const FALLBACK_PANEL_RECT := Rect2(Vector2.ZERO, Vector2(1048.0, 432.0))
 
 var _enemy_stage: Control = null
 var _enemy_portrait: TextureRect = null
 var _visuals: Variant = null
+var _snapshot_nodes: Dictionary = {}
 var _backdrop: TextureRect = null
 var _ground_shadow: Panel = null
 var _text_scrim: ColorRect = null
@@ -15,6 +18,10 @@ func bind(enemy_stage: Control, enemy_portrait: TextureRect, visuals: Variant = 
 	_enemy_stage = enemy_stage
 	_enemy_portrait = enemy_portrait
 	_visuals = visuals
+
+
+func bind_snapshot_nodes(nodes: Dictionary) -> void:
+	_snapshot_nodes = nodes
 
 
 func ensure_nodes() -> void:
@@ -121,6 +128,19 @@ func apply_visual_profile(enemy_id: String, enemy_panel_rect: Rect2 = FALLBACK_P
 	_ground_shadow.add_theme_stylebox_override("panel", shadow_style)
 
 
+func apply_snapshot(snapshot: Dictionary, current_enemy_visual_id: String = DEFAULT_ENEMY_ID, enemy_panel_rect: Rect2 = FALLBACK_PANEL_RECT) -> Dictionary:
+	var resolved_enemy_id := _resolved_enemy_id(snapshot, current_enemy_visual_id)
+	ensure_backdrop()
+	_apply_backdrop_texture(snapshot.get("enemy_stage_texture", null), resolved_enemy_id)
+	_apply_enemy_portrait_texture(snapshot.get("enemy_portrait_texture", null), resolved_enemy_id)
+	apply_visual_profile(resolved_enemy_id, enemy_panel_rect)
+	_apply_enemy_stats(snapshot)
+	return {
+		"enemy_id": resolved_enemy_id,
+		"enemy_intent_preview": Dictionary(snapshot.get("enemy_intent_preview", {})),
+	}
+
+
 func backdrop() -> TextureRect:
 	return _backdrop
 
@@ -131,6 +151,56 @@ func ground_shadow() -> Panel:
 
 func text_scrim() -> ColorRect:
 	return _text_scrim
+
+
+func _resolved_enemy_id(snapshot: Dictionary, current_enemy_visual_id: String) -> String:
+	var enemy_id := String(snapshot.get("enemy_id", current_enemy_visual_id)).strip_edges()
+	if enemy_id == "":
+		enemy_id = current_enemy_visual_id.strip_edges()
+	if enemy_id == "":
+		enemy_id = DEFAULT_ENEMY_ID
+	return enemy_id
+
+
+func _apply_backdrop_texture(raw_texture: Variant, _enemy_id: String) -> void:
+	if _backdrop == null or not is_instance_valid(_backdrop):
+		return
+	var backdrop_texture := raw_texture as Texture2D
+	if backdrop_texture == null and _visuals != null:
+		backdrop_texture = _visuals.combat_enemy_stage_texture(DEFAULT_ENEMY_ID)
+	if backdrop_texture == null:
+		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_backdrop.texture = backdrop_texture
+	_backdrop.visible = true
+
+
+func _apply_enemy_portrait_texture(raw_texture: Variant, _enemy_id: String) -> void:
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	var enemy_figure_texture := raw_texture as Texture2D
+	if enemy_figure_texture == null and _visuals != null:
+		enemy_figure_texture = _visuals.enemy_sprite(DEFAULT_ENEMY_ID)
+	if enemy_figure_texture == null:
+		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_figure_texture
+	_enemy_portrait.visible = true
+
+
+func _apply_enemy_stats(snapshot: Dictionary) -> void:
+	var enemy_hp_bar := _snapshot_nodes.get("enemy_hp_bar") as ProgressBar
+	if enemy_hp_bar != null:
+		enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
+		enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
+	var name_text := String(snapshot.get("enemy_name_text", "Enemy"))
+	var enemy_name_label := _snapshot_nodes.get("enemy_name_label") as Label
+	if enemy_name_label != null:
+		enemy_name_label.text = name_text
+	var enemy_label := _snapshot_nodes.get("enemy_label") as Label
+	if enemy_label != null:
+		enemy_label.text = name_text
+	var enemy_hp_text_label := _snapshot_nodes.get("enemy_hp_text_label") as Label
+	if enemy_hp_text_label != null:
+		enemy_hp_text_label.text = String(snapshot.get("enemy_hp_text", "HP 0 / 0"))
 
 
 func _reparent_to_stage(node: Control) -> void:

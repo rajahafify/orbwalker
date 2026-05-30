@@ -7,6 +7,23 @@ const PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_prese
 class VisualRegistryStub:
 	extends RefCounted
 
+	var stage_texture: Texture2D = null
+	var sprite_texture: Texture2D = null
+
+	func _init(p_stage_texture: Texture2D = null, p_sprite_texture: Texture2D = null) -> void:
+		stage_texture = p_stage_texture
+		sprite_texture = p_sprite_texture
+
+	func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
+		if enemy_id == "cavern_striker":
+			return stage_texture
+		return null
+
+	func enemy_sprite(enemy_id: String) -> Texture2D:
+		if enemy_id == "cavern_striker":
+			return sprite_texture
+		return null
+
 	func enemy_visual_profile(enemy_id: String) -> Dictionary:
 		if enemy_id == "wide":
 			return {
@@ -23,9 +40,11 @@ func run_all() -> Dictionary:
 	_run_case("ensure_nodes_creates_stage_chrome", _test_ensure_nodes_creates_stage_chrome, failures)
 	_run_case("visual_profile_applies_offsets_and_shadow", _test_visual_profile_applies_offsets_and_shadow, failures)
 	_run_case("visual_profile_uses_layout_fallback_size", _test_visual_profile_uses_layout_fallback_size, failures)
+	_run_case("stage_snapshot_applies_textures_stats_and_preview", _test_stage_snapshot_applies_textures_stats_and_preview, failures)
+	_run_case("stage_snapshot_uses_default_registry_texture_fallbacks", _test_stage_snapshot_uses_default_registry_texture_fallbacks, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -116,6 +135,69 @@ func _test_visual_profile_uses_layout_fallback_size() -> String:
 	return ""
 
 
+func _test_stage_snapshot_applies_textures_stats_and_preview() -> String:
+	var fixture := _fixture(Vector2(400.0, 220.0), VisualRegistryStub.new())
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	var portrait: TextureRect = fixture["portrait"]
+	var nodes := _bind_snapshot_nodes(root, presenter)
+	var stage_texture := _texture()
+	var enemy_texture := _texture()
+	var result: Dictionary = presenter.apply_snapshot(
+		{
+			"enemy_id": "wide",
+			"enemy_stage_texture": stage_texture,
+			"enemy_portrait_texture": enemy_texture,
+			"enemy_hp_max": 30,
+			"enemy_hp_value": 12,
+			"enemy_name_text": "Crystal Bat",
+			"enemy_hp_text": "HP 12 / 30",
+			"enemy_intent_preview": {"block": 5},
+		},
+		"cavern_striker"
+	)
+	var hp_bar := nodes.get("enemy_hp_bar") as ProgressBar
+	if String(result.get("enemy_id", "")) != "wide" or int(Dictionary(result.get("enemy_intent_preview", {})).get("block", 0)) != 5:
+		root.free()
+		return "Expected snapshot result to carry resolved enemy id and preview."
+	if presenter.backdrop().texture != stage_texture or portrait.texture != enemy_texture:
+		root.free()
+		return "Expected explicit snapshot textures to be applied."
+	if not portrait.visible or not presenter.backdrop().visible:
+		root.free()
+		return "Expected portrait and backdrop to be visible."
+	if hp_bar.max_value != 30.0 or hp_bar.value != 12.0:
+		root.free()
+		return "Expected enemy HP bar values."
+	if nodes.get("enemy_name_label").text != "Crystal Bat" or nodes.get("enemy_label").text != "Crystal Bat":
+		root.free()
+		return "Expected enemy name labels to match snapshot."
+	if nodes.get("enemy_hp_text_label").text != "HP 12 / 30":
+		root.free()
+		return "Expected enemy HP text label."
+	root.free()
+	return ""
+
+
+func _test_stage_snapshot_uses_default_registry_texture_fallbacks() -> String:
+	var stage_texture := _texture()
+	var sprite_texture := _texture()
+	var fixture := _fixture(Vector2(400.0, 220.0), VisualRegistryStub.new(stage_texture, sprite_texture))
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	var portrait: TextureRect = fixture["portrait"]
+	_bind_snapshot_nodes(root, presenter)
+	var result: Dictionary = presenter.apply_snapshot({"enemy_id": ""}, "wide")
+	if String(result.get("enemy_id", "")) != "wide":
+		root.free()
+		return "Expected blank snapshot enemy id to keep current id."
+	if presenter.backdrop().texture != stage_texture or portrait.texture != sprite_texture:
+		root.free()
+		return "Expected missing snapshot textures to use default registry fallbacks."
+	root.free()
+	return ""
+
+
 func _fixture(stage_size: Vector2, visuals: Variant = null) -> Dictionary:
 	var root := Control.new()
 	root.name = "Root"
@@ -134,6 +216,27 @@ func _fixture(stage_size: Vector2, visuals: Variant = null) -> Dictionary:
 		"portrait": portrait,
 		"presenter": presenter,
 	}
+
+
+func _bind_snapshot_nodes(root: Control, presenter: Variant) -> Dictionary:
+	var nodes := {
+		"enemy_hp_bar": ProgressBar.new(),
+		"enemy_name_label": Label.new(),
+		"enemy_label": Label.new(),
+		"enemy_hp_text_label": Label.new(),
+	}
+	for key in nodes.keys():
+		var node := nodes.get(key) as Node
+		node.name = String(key)
+		root.add_child(node)
+	presenter.bind_snapshot_nodes(nodes)
+	return nodes
+
+
+func _texture() -> Texture2D:
+	var image := Image.create(1, 1, false, Image.FORMAT_RGBA8)
+	image.fill(Color(1.0, 1.0, 1.0, 1.0))
+	return ImageTexture.create_from_image(image)
 
 
 func _vector_equal(left: Vector2, right: Vector2) -> bool:

@@ -776,33 +776,14 @@ func _emit_tutorial_end_main_menu_pressed() -> void:
 func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_intent_label.text = ""
 	_intent_label.visible = false
-	_sync_enemy_intent_bubbles(Dictionary(snapshot.get("enemy_intent_preview", {})))
-	var enemy_id := String(snapshot.get("enemy_id", _current_enemy_visual_id))
-	if enemy_id.strip_edges() != "":
-		_current_enemy_visual_id = enemy_id.strip_edges()
-	var enemy_stage_texture: Texture2D = snapshot.get("enemy_stage_texture", null)
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		var backdrop_texture: Texture2D = enemy_stage_texture
-		if backdrop_texture == null and _visuals != null:
-			backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
-		if backdrop_texture == null:
-			backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-		_enemy_stage_backdrop.texture = backdrop_texture
-		_enemy_stage_backdrop.visible = true
-	var enemy_figure_texture: Texture2D = snapshot.get("enemy_portrait_texture", null)
-	if enemy_figure_texture == null and _visuals != null:
-		enemy_figure_texture = _visuals.enemy_sprite("cavern_striker")
-	if enemy_figure_texture == null:
-		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.texture = enemy_figure_texture
-	_enemy_portrait.visible = true
-	_apply_enemy_visual_profile(_current_enemy_visual_id)
-	_enemy_hp_bar.max_value = float(maxi(1, int(snapshot.get("enemy_hp_max", 1))))
-	_enemy_hp_bar.value = float(int(snapshot.get("enemy_hp_value", 0)))
-	_enemy_name_label.text = String(snapshot.get("enemy_name_text", "Enemy"))
-	_enemy_label.text = _enemy_name_label.text
-	_enemy_hp_text_label.text = String(snapshot.get("enemy_hp_text", "HP 0 / 0"))
-	_sync_enemy_block_intent_preview(Dictionary(snapshot.get("enemy_intent_preview", {})))
+	var preview := Dictionary(snapshot.get("enemy_intent_preview", {}))
+	_sync_enemy_intent_bubbles(preview)
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null:
+		var result: Dictionary = _enemy_stage_presenter.apply_snapshot(snapshot, _current_enemy_visual_id, _layout_enemy_panel_rect)
+		_current_enemy_visual_id = String(result.get("enemy_id", _current_enemy_visual_id))
+		_sync_enemy_stage_presenter_nodes()
+	_sync_enemy_block_intent_preview(preview)
 
 
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
@@ -962,6 +943,12 @@ func _ensure_enemy_stage_presenter() -> void:
 	if _enemy_stage_presenter == null:
 		_enemy_stage_presenter = COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT.new()
 	_enemy_stage_presenter.bind(_enemy_stage, _enemy_portrait, _visuals)
+	_enemy_stage_presenter.bind_snapshot_nodes({
+		"enemy_hp_bar": _enemy_hp_bar,
+		"enemy_name_label": _enemy_name_label,
+		"enemy_label": _enemy_label,
+		"enemy_hp_text_label": _enemy_hp_text_label,
+	})
 
 
 func _sync_enemy_stage_presenter_nodes() -> void:
