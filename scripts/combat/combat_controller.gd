@@ -27,6 +27,7 @@ const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.g
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
 const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
+const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -116,6 +117,7 @@ var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
 var _hud_stage_coordinator: Variant = null
+var _mastery_preview_coordinator: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
@@ -126,8 +128,6 @@ var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
 var _model = null
 var _view = null
-var _combat_mastery_preview_base_amounts: Dictionary = {}
-var _combat_mastery_preview_modifiers: Dictionary = {}
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
@@ -337,6 +337,8 @@ func _ensure_runtime_helpers() -> void:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
 	if _hud_stage_coordinator == null:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
+	if _mastery_preview_coordinator == null:
+		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -1858,162 +1860,41 @@ func _wait_combat_speed(base_seconds: float) -> void:
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
-	if _player_state == null:
-		return
-	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
-	if not OrbType.is_valid_id(orb_id):
-		return
-	var base_amount := _preview_match_base_feedback_value(group)
-	if base_amount <= 0:
-		return
-	_combat_mastery_preview_base_amounts[orb_id] = int(_combat_mastery_preview_base_amounts.get(orb_id, 0)) + base_amount
-	_pulse_combat_modifier_sources(_preview_modifier_sources_for_orb(orb_id))
-	_sync_combat_mastery_preview_for_combo(combo_value)
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.show_match_feedback(group, combo_value)
 
 
 func _reset_combat_mastery_preview() -> void:
-	_combat_mastery_preview_base_amounts.clear()
-	_combat_mastery_preview_modifiers = _current_combat_modifiers_snapshot()
-	_model.reset_combat_mastery_preview()
-	if _view != null:
-		_view.clear_combat_mastery_feedback()
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.reset(RunState.current_combat_modifiers())
 
 
 func _sync_combat_mastery_preview_totals() -> void:
-	if _view == null:
-		return
-	for orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
-		var total: int = _model.combat_mastery_preview_total(int(orb_id))
-		_view.set_combat_mastery_feedback(int(orb_id), total)
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.sync_totals()
 
 
 func _release_combat_mastery_feedback(orb_id: int) -> void:
-	if not OrbType.is_valid_id(orb_id):
-		return
-	_combat_mastery_preview_base_amounts.erase(orb_id)
-	_model.release_combat_mastery_feedback(orb_id)
-	if _view != null:
-		_view.set_combat_mastery_feedback(orb_id, 0)
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.release_feedback(orb_id)
 
 
 func _release_remaining_combat_mastery_feedback() -> void:
-	if _view == null:
-		return
-	for orb_id in _model.consume_active_combat_mastery_feedback(COMBAT_MASTERY_RESOLUTION_ORDER):
-		_combat_mastery_preview_base_amounts.erase(int(orb_id))
-		_view.set_combat_mastery_feedback(int(orb_id), 0)
-		await _wait_combat_speed(COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
+	_bind_mastery_preview_coordinator()
+	await _mastery_preview_coordinator.release_remaining(
+		Callable(self, "_wait_combat_speed"),
+		Callable(self, "_can_continue_after_async_wait")
+	)
 
 
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
-	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
-	var base_amount := _preview_match_base_feedback_value(group)
-	return _project_combat_mastery_feedback_value(orb_id, base_amount, combo_value)
-
-
-func _preview_match_base_feedback_value(group: Dictionary) -> int:
-	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
-	if not OrbType.is_valid_id(orb_id) or _player_state == null:
-		return 0
-	var cells: Array = group.get("cells", [])
-	var matched_count := cells.size()
-	if matched_count <= 0:
-		return 0
-	var orb_bonus_by_id: Dictionary = _combat_mastery_preview_modifiers.get("orb_bonus_by_id", {})
-	var orb_value := _player_state.orb_value(orb_id) + int(orb_bonus_by_id.get(orb_id, 0))
-	return matched_count * maxi(0, orb_value)
-
-
-func _sync_combat_mastery_preview_for_combo(combo_value: int) -> void:
-	for raw_orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
-		var orb_id := int(raw_orb_id)
-		var base_amount := int(_combat_mastery_preview_base_amounts.get(orb_id, 0))
-		var projected_amount := _project_combat_mastery_feedback_value(orb_id, base_amount, combo_value)
-		_model.set_combat_mastery_preview_total(orb_id, projected_amount)
-		if _view != null:
-			_view.set_combat_mastery_feedback(orb_id, projected_amount)
-
-
-func _project_combat_mastery_feedback_value(orb_id: int, base_amount: int, combo_value: int) -> int:
-	if base_amount <= 0 or not OrbType.is_valid_id(orb_id) or _player_state == null:
-		return 0
-	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
-			var combo_flat_bonus := int(_combat_mastery_preview_modifiers.get("combo_flat_bonus", 0))
-			var combo_multiplier_mult := maxf(0.0, float(_combat_mastery_preview_modifiers.get("combo_multiplier_mult", 1.0)))
-			return int(round(float(base_amount) * _player_state.combo_multiplier(combo_value + combo_flat_bonus) * combo_multiplier_mult))
-		_:
-			return base_amount
-
-
-func _current_combat_modifiers_snapshot() -> Dictionary:
-	var modifiers := RunState.current_combat_modifiers()
-	return modifiers.duplicate(true)
-
-
-func _preview_modifier_sources_for_orb(orb_id: int) -> Array[Dictionary]:
-	var sources: Array[Dictionary] = []
-	sources.append_array(_modifier_sources_for_orb_bonus(orb_id))
-	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
-			sources.append_array(_modifier_sources_for_combo_scaling())
-	return _unique_modifier_sources(sources)
-
-
-func _modifier_sources_for_orb_bonus(orb_id: int) -> Array[Dictionary]:
-	var sources: Array[Dictionary] = []
-	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
-		var source: Dictionary = raw_source
-		var modifiers: Dictionary = source.get("combat_modifiers", {})
-		var orb_bonus_by_id: Dictionary = modifiers.get("orb_bonus_by_id", {})
-		if int(orb_bonus_by_id.get(orb_id, 0)) != 0:
-			sources.append(source)
-	return sources
-
-
-func _modifier_sources_for_combo_scaling() -> Array[Dictionary]:
-	var sources: Array[Dictionary] = []
-	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
-		var source: Dictionary = raw_source
-		var modifiers: Dictionary = source.get("combat_modifiers", {})
-		if int(modifiers.get("combo_flat_bonus", 0)) != 0 \
-				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0):
-			sources.append(source)
-	return sources
+	_bind_mastery_preview_coordinator()
+	return int(_mastery_preview_coordinator.preview_match_feedback_value(group, combo_value))
 
 
 func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
-	var sources: Array[Dictionary] = []
-	for raw_source in Array(_combat_mastery_preview_modifiers.get("sources", [])):
-		var source: Dictionary = raw_source
-		var modifiers: Dictionary = source.get("combat_modifiers", {})
-		if key == "combo_multiplier_mult":
-			if not is_equal_approx(float(modifiers.get(key, 1.0)), 1.0):
-				sources.append(source)
-			continue
-		if int(modifiers.get(key, 0)) != 0:
-			sources.append(source)
-	return _unique_modifier_sources(sources)
-
-
-func _unique_modifier_sources(sources: Array[Dictionary]) -> Array[Dictionary]:
-	var unique_sources: Array[Dictionary] = []
-	var seen := {}
-	for source in sources:
-		var source_key := "%s:%s" % [String(source.get("source_type", "")), String(source.get("source_id", ""))]
-		if seen.has(source_key):
-			continue
-		seen[source_key] = true
-		unique_sources.append(source)
-	return unique_sources
-
-
-func _pulse_combat_modifier_sources(sources: Array[Dictionary]) -> void:
-	if sources.is_empty() or _view == null:
-		return
-	_view.pulse_combat_modifier_sources(sources)
+	_bind_mastery_preview_coordinator()
+	return _mastery_preview_coordinator.modifier_sources_for_key(key)
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
@@ -2218,14 +2099,13 @@ func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int,
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
-	if amount <= 0 or not OrbType.is_valid_id(orb_id):
-		return
-	_pulse_combat_modifier_sources(sources)
-	var next_total: int = int(_model.combat_mastery_preview_total(orb_id)) + amount
-	_model.set_combat_mastery_preview_total(orb_id, next_total)
-	if _view != null:
-		_view.set_combat_mastery_feedback(orb_id, next_total)
-	await _wait_combat_speed(0.16)
+	_bind_mastery_preview_coordinator()
+	await _mastery_preview_coordinator.apply_end_modifier_feedback(
+		orb_id,
+		amount,
+		sources,
+		Callable(self, "_wait_combat_speed")
+	)
 
 
 func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
@@ -2261,6 +2141,15 @@ func _bind_hud_stage_coordinator() -> void:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	_hud_stage_coordinator.bind(_model, _player_state, _enemy_state, {
 		COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
+	})
+
+
+func _bind_mastery_preview_coordinator() -> void:
+	if _mastery_preview_coordinator == null:
+		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
+	_mastery_preview_coordinator.bind(_model, _player_state, _view, {
+		"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
+		"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
 	})
 
 
