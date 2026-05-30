@@ -19,6 +19,7 @@ const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outc
 const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
 const COMBAT_DEBUG_RUNTIME_SCRIPT := preload("res://scripts/combat/combat_debug_runtime.gd")
 const COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
+const COMBAT_TIMER_SERVICE_SCRIPT := preload("res://scripts/combat/combat_timer_service.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
@@ -37,21 +38,6 @@ const TEST_CONSUMABLE_ID := "fire_scroll"
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
 const COMBAT_PHASE_DEFEAT := 7
-const MOVE_TIMER_MAX_SECONDS := 5.0
-const TIMER_WARNING_SECONDS := 2.0
-const TIMER_CRITICAL_SECONDS := 1.0
-const TIMER_SAFE_COLOR := Color(0.60, 0.90, 1.0, 1.0)
-const TIMER_WARNING_COLOR := Color(1.0, 0.82, 0.36, 1.0)
-const TIMER_CRITICAL_COLOR := Color(1.0, 0.42, 0.38, 1.0)
-const TIMER_READY_COLOR := Color(0.30, 0.56, 0.72, 1.0)
-const TIMER_LOCKED_COLOR := Color(0.22, 0.24, 0.28, 1.0)
-const TIMER_TEXT_COLOR := Color(0.96, 0.98, 1.0, 1.0)
-const TIMER_TEXT_WARNING_COLOR := Color(1.0, 0.94, 0.68, 1.0)
-const TIMER_TEXT_CRITICAL_COLOR := Color(1.0, 0.88, 0.84, 1.0)
-const TIMER_TEXT_LOCKED_COLOR := Color(0.68, 0.72, 0.78, 1.0)
-const TIMER_STATE_READY := "ready"
-const TIMER_STATE_ACTIVE := "active"
-const TIMER_STATE_LOCKED := "locked"
 const MAX_COMBAT_LOG_LINES := 120
 const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
 const LOG_LEVEL_NORMAL := "normal"
@@ -65,8 +51,6 @@ const SLOT_SIZE := Vector2(88, 88)
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
-const TIMER_TRACK_SIZE := Vector2(720, 36)
-const TIMER_TRACK_PADDING := 5.0
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
 const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
 const FONT_SIZE_TITLE := 20
@@ -121,6 +105,7 @@ var _outcome_overlay: CombatOutcomeOverlay = null
 var _debug_runtime: Variant = null
 var _debug_console: CombatDebugConsole = null
 var _settings_command_handler: Variant = null
+var _combat_timer_service: Variant = null
 var _turn_log_presenter: Variant = null
 var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
@@ -335,6 +320,8 @@ func _ensure_runtime_helpers() -> void:
 	_debug_console = _debug_runtime.console()
 	if _settings_command_handler == null:
 		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
+	if _combat_timer_service == null:
+		_combat_timer_service = COMBAT_TIMER_SERVICE_SCRIPT.new()
 	if _combat_vfx_presenter == null:
 		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if _board_controller == null:
@@ -467,19 +454,19 @@ func _drag_match_groups() -> Array:
 
 
 func _drag_move_timer_seconds() -> float:
-	if _player_state == null:
-		return MOVE_TIMER_MAX_SECONDS
-	return _player_state.move_timer_seconds
+	return _timer_ready_seconds()
 
 
 func _drag_active() -> bool:
-	return _board_controller != null and bool(_board_controller.active_drag())
+	if _combat_timer_service == null:
+		return false
+	return _combat_timer_service.drag_active(_board_controller)
 
 
 func _drag_move_time_left() -> float:
-	if _board_controller == null:
+	if _combat_timer_service == null:
 		return 0.0
-	return float(_board_controller.move_time_left())
+	return _combat_timer_service.move_time_left(_board_controller)
 
 
 func _apply_visual_chrome() -> void:
@@ -843,25 +830,15 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: Random
 
 
 func _process(delta: float) -> void:
-	if _player_state == null:
+	if _combat_timer_service == null:
 		return
-	if _board_controller == null:
-		return
-	if not _drag_active():
-		if _input_phase_value() == InputPhase.PLAYER_INPUT:
-			if _view != null:
-				_view.sync_timer_display(_timer_ready_seconds(), TIMER_STATE_READY)
-		else:
-			if _view != null:
-				_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
-		return
-
-	var drag_update: Dictionary = _board_controller.update(
+	var drag_update: Dictionary = _combat_timer_service.process(
+		_board_controller,
+		_view,
+		_player_state,
 		delta,
 		_input_phase_value() == InputPhase.PLAYER_INPUT
 	)
-	if _view != null:
-		_view.sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
 	_handle_drag_input_result(drag_update)
 
 
@@ -924,7 +901,7 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 			_tutorial_drag_board_snapshot = _board_model.clone()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		if _view != null:
-			_view.sync_timer_display(_drag_move_time_left(), TIMER_STATE_ACTIVE)
+			_view.sync_timer_display(_drag_move_time_left(), COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
 		_set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
 		_set_status_color(STATUS_COLOR_NEUTRAL)
 		return
@@ -1357,7 +1334,7 @@ func _end_drag(timed_out: bool) -> void:
 		return
 
 	if _view != null:
-		_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
+		_view.sync_timer_display(0.0, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 	var move_end_reason := "released"
 	if timed_out:
 		move_end_reason = "timer expired"
@@ -1869,16 +1846,16 @@ func _apply_vfx_speed_setting() -> void:
 
 
 func _timer_ready_seconds() -> float:
-	if _player_state == null:
-		return MOVE_TIMER_MAX_SECONDS
-	return _player_state.move_timer_seconds
+	if _combat_timer_service == null:
+		return COMBAT_TIMER_SERVICE_SCRIPT.MOVE_TIMER_MAX_SECONDS
+	return _combat_timer_service.ready_seconds(_player_state)
 
 
 func _abort_active_drag() -> void:
 	if _board_controller != null:
 		_board_controller.abort()
 	if _view != null:
-		_view.sync_timer_display(0.0, TIMER_STATE_LOCKED)
+		_view.sync_timer_display(0.0, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
 func _play_resolve_animations(
@@ -2768,8 +2745,8 @@ func _apply_combat_layout() -> void:
 		return
 	var layout_result: Dictionary = _view.apply_combat_layout(
 		_host.get_viewport_rect().size,
-		_drag_move_time_left() if _drag_active() else _timer_ready_seconds(),
-		TIMER_STATE_ACTIVE if _drag_active() else TIMER_STATE_READY
+		_combat_timer_service.layout_timer_seconds(_board_controller, _player_state) if _combat_timer_service != null else 0.0,
+		_combat_timer_service.layout_timer_state(_board_controller) if _combat_timer_service != null else COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
 	)
 	if not bool(layout_result.get("applied", false)):
 		return
