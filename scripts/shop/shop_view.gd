@@ -13,15 +13,13 @@ signal equipment_slot_selected(index: int)
 signal consumable_slot_selected(index: int)
 signal hud_sell_slot_requested(slot_type: String, slot_index: int)
 
-const PLAYER_HUD_SCENE := preload("res://scenes/ui/player_hud.tscn")
 const TOP_HEADER_SCENE := preload("res://scenes/ui/top_header.tscn")
-const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
 const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_renderer.gd")
-const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_ACTION_ROW_PRESENTER := preload("res://scripts/shop/shop_action_row_presenter.gd")
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
 const SHOP_HELP_MODAL_PRESENTER := preload("res://scripts/shop/shop_help_modal_presenter.gd")
+const SHOP_PLAYER_HUD_PRESENTER := preload("res://scripts/shop/shop_player_hud_presenter.gd")
 const SHOP_RELIC_CARD_PRESENTER := preload("res://scripts/shop/shop_relic_card_presenter.gd")
 const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_treasure_chest_overlay_presenter.gd")
 const SHOP_TUTORIAL_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_tutorial_overlay_presenter.gd")
@@ -78,45 +76,7 @@ var _offer_grid: Control
 var _offer_cards: Array[Button] = []
 var _relic_card: Button
 var _action_row_presenter: Variant = null
-var _player_hud_section: Panel
-var _build_panel: Panel
-var _elemental_mastery_panel: Panel
-var _elemental_mastery_title: Label
-var _elemental_mastery_cards: Control
-var _player_panel_root: Control
-var _hero_card: Panel
-var _hero_card_root: Control
-var _hero_level_badge: PanelContainer
-var _hero_portrait: TextureRect
-var _vitals_panel: Control
-var _vitals_frame: Panel
-var _hp_bar: ProgressBar
-var _hp_label: Label
-var _armor_bar: ProgressBar
-var _armor_label: Label
-var _armor_badge: PanelContainer
-var _armor_badge_label: Label
-var _stat_chip_row: HBoxContainer
-var _attack_stat_label: Label
-var _armor_stat_label: Label
-var _heart_stat_label: Label
-var _gold_stat_label: Label
-var _combat_meta_row: HBoxContainer
-var _combat_phase_label: Label
-var _turn_summary_label: Label
-var _equipment_label: Label
-var _equipment_slots_root: Control
-var _consumable_label: Label
-var _consumable_slots_root: Control
-var _relic_label: Label
-var _relic_icons_root: Control
-var _relic_row: HBoxContainer
-var _loadout_frame: Panel
-var _loadout_root: Control
-var _mastery_strip: Panel
-var _mastery_root: Control
-var _mastery_label: Label
-var _mastery_icons: Control
+var _player_hud_presenter: Variant = null
 var _treasure_chest_overlay_presenter: Variant = null
 var _tutorial_overlay_presenter: Variant = null
 
@@ -137,11 +97,8 @@ func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 	if _backdrop_tint != null:
 		_backdrop_tint.color = Color(0.0, 0.0, 0.0, 0.33)
 	_create_ui()
-	_player_loadout_hud.bind_player_hud(_shop_player_hud_nodes().merged({
-		"popover_parent": _hud_overlay,
-		"popover_z_index": 51,
-	}, true))
-	_player_loadout_hud.set_player_hud_layout_override(_shop_player_hud_layout_override())
+	_player_hud_presenter.bind_player_hud(_hud_overlay, 51)
+	_player_hud_presenter.set_layout_override(_shop_player_hud_layout_override())
 	_apply_visual_chrome()
 	_connect_signals()
 	apply_layout()
@@ -206,7 +163,9 @@ func _create_ui() -> void:
 	_action_row_presenter.bind(_layout_root, _visuals)
 	_action_row_presenter.ensure_row()
 
-	_bind_shared_player_hud_scene()
+	_player_hud_presenter = SHOP_PLAYER_HUD_PRESENTER.new()
+	_player_hud_presenter.bind(_layout_root, _player_loadout_hud, _visuals)
+	_player_hud_presenter.ensure_scene()
 	_treasure_chest_overlay_presenter = SHOP_TREASURE_CHEST_OVERLAY_PRESENTER.new()
 	_treasure_chest_overlay_presenter.bind(_layout_root, _visuals, Callable(self, "_lookup_content_definition"))
 	_treasure_chest_overlay_presenter.ensure_overlay()
@@ -223,58 +182,6 @@ func _create_ui() -> void:
 	_tutorial_overlay_presenter.ensure_overlay()
 
 
-func _bind_shared_player_hud_scene() -> void:
-	_player_hud_section = PLAYER_HUD_SCENE.instantiate() as Panel
-	_player_hud_section.name = "PlayerHudSection"
-	_player_hud_section.clip_contents = false
-	_layout_root.add_child(_player_hud_section)
-
-	_elemental_mastery_panel = _shared_player_hud_node("ElementalMasteryPanel") as Panel
-	_elemental_mastery_title = _shared_player_hud_node("ElementalMasteryTitle") as Label
-	_elemental_mastery_cards = _shared_player_hud_node("ElementalMasteryCards") as Control
-	_build_panel = _shared_player_hud_node("PlayerPanel") as Panel
-	_player_panel_root = _shared_player_hud_node("PlayerPanelRoot") as Control
-	_hero_card = _shared_player_hud_node("HeroCard") as Panel
-	_hero_card_root = _shared_player_hud_node("HeroCardRoot") as Control
-	_hero_level_badge = _shared_player_hud_node("HeroLevelBadge") as PanelContainer
-	_hero_portrait = _shared_player_hud_node("PlayerPortrait") as TextureRect
-	_vitals_panel = _shared_player_hud_node("VitalsPanel") as Control
-	_vitals_frame = _shared_player_hud_node("VitalsFrame") as Panel
-	_hp_bar = _shared_player_hud_node("PlayerHpBar") as ProgressBar
-	_hp_label = _shared_player_hud_node("PlayerHpLabel") as Label
-	_armor_bar = _shared_player_hud_node("PlayerArmorBar") as ProgressBar
-	_armor_label = _shared_player_hud_node("PlayerArmorLabel") as Label
-	_armor_badge = _shared_player_hud_node("ArmorBadge") as PanelContainer
-	_armor_badge_label = _shared_player_hud_node("ArmorBadgeLabel") as Label
-	_stat_chip_row = _shared_player_hud_node("StatChipRow") as HBoxContainer
-	_attack_stat_label = _shared_player_hud_node("AttackStatLabel") as Label
-	_armor_stat_label = _shared_player_hud_node("ArmorStatLabel") as Label
-	_heart_stat_label = _shared_player_hud_node("HeartStatLabel") as Label
-	_gold_stat_label = _shared_player_hud_node("GoldStatLabel") as Label
-	_combat_meta_row = _shared_player_hud_node("CombatMetaRow") as HBoxContainer
-	_combat_phase_label = _shared_player_hud_node("CombatPhaseLabel") as Label
-	_turn_summary_label = _shared_player_hud_node("TurnSummaryLabel") as Label
-	_loadout_frame = _shared_player_hud_node("LoadoutFrame") as Panel
-	_loadout_root = _shared_player_hud_node("LoadoutRoot") as Control
-	_equipment_label = _shared_player_hud_node("EquipmentLabel") as Label
-	_equipment_slots_root = _shared_player_hud_node("EquipmentIcons") as Control
-	_consumable_label = _shared_player_hud_node("ConsumableLabel") as Label
-	_consumable_slots_root = _shared_player_hud_node("ConsumableIcons") as Control
-	_relic_label = _shared_player_hud_node("RelicLabel") as Label
-	_relic_icons_root = _shared_player_hud_node("RelicIcons") as Control
-	_relic_row = _shared_player_hud_node("RelicRow") as HBoxContainer
-	_mastery_strip = _shared_player_hud_node("MasteryStrip") as Panel
-	_mastery_root = _shared_player_hud_node("MasteryRoot") as Control
-	_mastery_label = _shared_player_hud_node("MasteryLabel") as Label
-	_mastery_icons = _shared_player_hud_node("MasteryIcons") as Control
-
-
-func _shared_player_hud_node(unique_name: String) -> Node:
-	if _player_hud_section == null:
-		return null
-	return _player_hud_section.get_node_or_null("%s%s" % ["%", unique_name])
-
-
 func _connect_signals() -> void:
 	for index in _offer_cards.size():
 		_offer_cards[index].pressed.connect(func(): emit_signal("offer_pressed", index))
@@ -287,9 +194,9 @@ func _connect_signals() -> void:
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_treasure_chest_overlay_presenter.option_pressed.connect(_emit_treasure_chest_option_pressed)
 	_treasure_chest_overlay_presenter.skip_pressed.connect(_emit_skip_treasure_chest_pressed)
-	_player_loadout_hud.equipment_slot_selected.connect(_emit_equipment_slot_selected)
-	_player_loadout_hud.consumable_slot_selected.connect(_emit_consumable_slot_selected)
-	_player_loadout_hud.sell_slot_requested.connect(_emit_hud_sell_slot_requested)
+	_player_hud_presenter.equipment_slot_selected.connect(_emit_equipment_slot_selected)
+	_player_hud_presenter.consumable_slot_selected.connect(_emit_consumable_slot_selected)
+	_player_hud_presenter.sell_slot_requested.connect(_emit_hud_sell_slot_requested)
 
 
 func render(snapshot: Dictionary) -> void:
@@ -312,7 +219,7 @@ func render(snapshot: Dictionary) -> void:
 		else:
 			_render_offer_card(_offer_cards[index], Dictionary(item_offers[index]), treasure_chest_pending)
 
-	_render_relic_card(Dictionary(shop_snapshot.get("relic_offer", {})), treasure_chest_pending)
+	SHOP_RELIC_CARD_PRESENTER.render(_relic_card, _visuals, Dictionary(shop_snapshot.get("relic_offer", {})), treasure_chest_pending)
 	_render_action_row(shop_snapshot, treasure_chest_pending)
 	_render_build_panel(snapshot)
 	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
@@ -353,31 +260,16 @@ func _render_empty_offer_card(card: Button) -> void:
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
 
 
-func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -> void:
-	SHOP_RELIC_CARD_PRESENTER.render(_relic_card, _visuals, relic_offer, treasure_chest_pending)
-
-
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
 	_action_row_presenter.render(shop_snapshot, treasure_chest_pending)
 
 
 func _render_build_panel(snapshot: Dictionary) -> void:
-	var progression_snapshot: Dictionary = snapshot.get("progression", {})
-	var player_state = snapshot.get("player_state")
-	_player_loadout_hud.set_selected_equipment_slot(int(snapshot.get("selected_equipment_slot", -1)))
-	_player_loadout_hud.set_selected_consumable_slot(int(snapshot.get("selected_consumable_slot", -1)))
-	_player_loadout_hud.update_player_data({
-		"player_state": player_state,
-		"progression": progression_snapshot,
-		"hero_portrait": _visuals.hero_portrait(),
-		"max_visible_relics": 2,
-		"selectable_equipment": true,
-		"selectable_consumables": true,
-	})
+	_player_hud_presenter.render_player_build(snapshot)
 
 
 func _render_elemental_mastery_panel(mastery_levels: Dictionary) -> void:
-	_player_loadout_hud.populate_combat_mastery_panel(_elemental_mastery_cards, mastery_levels)
+	_player_hud_presenter.render_elemental_mastery_panel(mastery_levels)
 
 
 func set_status(message: String, positive: bool) -> void:
@@ -402,16 +294,14 @@ func handle_global_input(event: InputEvent) -> bool:
 	if _shop_help_modal_presenter != null and _shop_help_modal_presenter.handle_global_input(event):
 		return true
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		return _player_loadout_hud.handle_global_click((event as InputEventMouseButton).position)
+		return _player_hud_presenter.handle_global_click((event as InputEventMouseButton).position)
 	if event is InputEventScreenTouch and event.pressed:
-		return _player_loadout_hud.handle_global_click((event as InputEventScreenTouch).position)
+		return _player_hud_presenter.handle_global_click((event as InputEventScreenTouch).position)
 	return false
 
 
 func clear_inventory_focus() -> void:
-	_player_loadout_hud.set_selected_equipment_slot(-1)
-	_player_loadout_hud.set_selected_consumable_slot(-1)
-	_player_loadout_hud.hide_slot_detail_popover()
+	_player_hud_presenter.clear_inventory_focus()
 
 
 func _emit_relic_pressed() -> void:
@@ -463,7 +353,7 @@ func _emit_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
 
 
 func _lookup_content_definition(content_id: String) -> Dictionary:
-	return _player_loadout_hud.lookup_content_definition(content_id)
+	return _player_hud_presenter.lookup_content_definition(content_id)
 
 
 func _price_text(price: int, sold_out: bool, _affordable: bool, treasure_chest_pending: bool) -> String:
@@ -500,7 +390,7 @@ func apply_layout() -> void:
 	var scaled_size := logical_size * scale_factor
 	_current_shop_layout = _shop_layout_for_logical_height(logical_size.y)
 	_current_player_hud_layout_override = _shop_player_hud_layout_override_for(_current_shop_layout)
-	_player_loadout_hud.set_player_hud_layout_override(_current_player_hud_layout_override)
+	_player_hud_presenter.set_layout_override(_current_player_hud_layout_override)
 	_layout_root.position = Vector2((viewport_size.x - scaled_size.x) * 0.5, 0.0)
 	_layout_root.size = logical_size
 	_layout_root.scale = Vector2(scale_factor, scale_factor)
@@ -541,7 +431,7 @@ func apply_layout() -> void:
 
 	_apply_rect(_hud_overlay, Rect2(Vector2.ZERO, logical_size))
 
-	_player_loadout_hud.update_player_hud_layout()
+	_player_hud_presenter.update_layout()
 
 	_treasure_chest_overlay_presenter.layout(logical_size)
 	_shop_help_modal_presenter.layout(logical_size)
@@ -556,44 +446,9 @@ func _apply_rect(control: Control, rect: Rect2) -> void:
 
 
 func _shop_player_hud_nodes() -> Dictionary:
-	return {
-		"section": _player_hud_section,
-		"mastery_panel": _elemental_mastery_panel,
-		"mastery_title": _elemental_mastery_title,
-		"mastery_cards": _elemental_mastery_cards,
-		"footer_panel": _build_panel,
-		"footer_root": _player_panel_root,
-		"root": _player_panel_root,
-		"hero_card": _hero_card,
-		"hero_card_root": _hero_card_root,
-		"hero_portrait": _hero_portrait,
-		"hero_level_badge": _hero_level_badge,
-		"vitals_panel": _vitals_panel,
-		"vitals_frame": _vitals_frame,
-		"hp_bar": _hp_bar,
-		"hp_label": _hp_label,
-		"armor_bar": _armor_bar,
-		"armor_label": _armor_label,
-		"armor_badge": _armor_badge,
-		"armor_badge_label": _armor_badge_label,
-		"loadout_frame": _loadout_frame,
-		"loadout_root": _loadout_root,
-		"equipment_label": _equipment_label,
-		"equipment_icons": _equipment_slots_root,
-		"consumable_label": _consumable_label,
-		"consumable_icons": _consumable_slots_root,
-		"relic_label": _relic_label,
-		"relic_icons": _relic_icons_root,
-		"relic_row": _relic_row,
-		"mastery_strip": _mastery_strip,
-		"mastery_root": _mastery_root,
-		"mastery_label": _mastery_label,
-		"mastery_icons": _mastery_icons,
-		"stat_chip_row": _stat_chip_row,
-		"combat_meta_row": _combat_meta_row,
-		"combat_phase_label": _combat_phase_label,
-		"turn_summary_label": _turn_summary_label,
-	}
+	if _player_hud_presenter == null:
+		return SHOP_PLAYER_HUD_PRESENTER.empty_hud_nodes()
+	return _player_hud_presenter.hud_nodes()
 
 
 func _apply_visual_chrome() -> void:
@@ -609,14 +464,14 @@ func _apply_visual_chrome() -> void:
 		(label as Label).add_theme_color_override("font_color", GOLD_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	for label in [_boss_preview_label, _equipment_label, _consumable_label, _relic_label, _elemental_mastery_title]:
+	for label in [_boss_preview_label]:
 		(label as Label).add_theme_color_override("font_color", MUTED_COLOR)
 	_detail_label.add_theme_color_override("font_color", INK_COLOR)
-	for label in [_speech_label, _hp_label]:
+	for label in [_speech_label]:
 		(label as Label).add_theme_color_override("font_color", INK_COLOR)
 		(label as Label).add_theme_constant_override("outline_size", 2)
 		(label as Label).add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	_player_loadout_hud.apply_player_hud_chrome(_shop_player_hud_nodes())
+	_player_hud_presenter.apply_chrome()
 
 
 func _shop_player_hud_layout_override() -> Dictionary:
@@ -638,4 +493,4 @@ static func top_header_scene_path() -> String:
 
 
 static func player_hud_scene_path() -> String:
-	return PLAYER_HUD_SCENE.resource_path
+	return SHOP_PLAYER_HUD_PRESENTER.player_hud_scene_path()

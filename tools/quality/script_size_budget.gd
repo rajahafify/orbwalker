@@ -10,12 +10,7 @@ const VIEW_BUDGET := 500
 const DEFAULT_BUDGET := 650
 const DOC_PATH := "res://docs/script_size_budget.html"
 
-const DOCUMENTED_EXCEPTIONS := {
-	"res://scripts/shop/shop_view.gd": {
-		"owner": "P1-3",
-		"reason": "Large shop presentation facade; split remaining merchant/header/player-HUD presentation into helpers before removing the exception.",
-	},
-}
+const DOCUMENTED_EXCEPTIONS := {}
 
 
 func _initialize() -> void:
