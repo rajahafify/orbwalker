@@ -13,7 +13,6 @@ signal settings_speed_selected(speed: String)
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
-const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_TIMER_DISPLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_timer_display_presenter.gd")
 const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
 const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
@@ -22,6 +21,7 @@ const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/comb
 const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
 const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
 const COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_presenter.gd")
+const COMBAT_CHARACTER_VISUALS_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_character_visuals_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
@@ -142,6 +142,7 @@ var _enemy_intent_bubble_presenter: Variant = null
 var _enemy_stage_presenter: Variant = null
 var _player_hud_presenter: Variant = null
 var _hud_snapshot_presenter: Variant = null
+var _character_visuals_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -618,8 +619,9 @@ func apply_visual_chrome(style_config: Dictionary) -> void:
 		},
 		style_config
 	)
-	_player_portrait.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_ensure_placeholder_visuals()
+	_ensure_character_visuals_presenter()
+	if _character_visuals_presenter != null:
+		_character_visuals_presenter.ensure_placeholders()
 	_apply_zone_guides()
 
 
@@ -647,42 +649,10 @@ func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) ->
 
 
 func refresh_character_portraits(enemy_id: String) -> void:
-	_ensure_enemy_stage_backdrop_node()
-	_ensure_enemy_ground_shadow_node()
-	var resolved_enemy_id := enemy_id.strip_edges()
-	if resolved_enemy_id == "":
-		resolved_enemy_id = "cavern_striker"
-	_current_enemy_visual_id = resolved_enemy_id
-
-	var backdrop_texture: Texture2D = null
-	if _visuals != null:
-		backdrop_texture = _visuals.combat_enemy_stage_texture(resolved_enemy_id)
-		if backdrop_texture == null:
-			backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
-	if backdrop_texture == null:
-		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture = backdrop_texture
-		_enemy_stage_backdrop.visible = true
-
-	var enemy_figure_texture: Texture2D = null
-	if _visuals != null:
-		enemy_figure_texture = _visuals.enemy_sprite(resolved_enemy_id)
-		if enemy_figure_texture == null:
-			enemy_figure_texture = _visuals.enemy_sprite("cavern_striker")
-	if enemy_figure_texture == null:
-		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	_enemy_portrait.texture = enemy_figure_texture
-	_enemy_portrait.visible = true
-	_apply_enemy_visual_profile(resolved_enemy_id)
-
-	var hero_texture: Texture2D = null
-	if _visuals != null:
-		hero_texture = _visuals.hero_portrait()
-	if hero_texture == null:
-		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
-	_player_portrait.texture = hero_texture
-	_player_portrait.visible = true
+	_ensure_character_visuals_presenter()
+	if _character_visuals_presenter != null:
+		_current_enemy_visual_id = _character_visuals_presenter.refresh_character_portraits(enemy_id)
+		_sync_enemy_stage_presenter_nodes()
 
 
 func sync_timer_display(seconds_left: float, state: String) -> void:
@@ -885,30 +855,6 @@ func _emit_enemy_block_preview_hovered(preview: Dictionary) -> void:
 	enemy_block_preview_hovered.emit(preview)
 
 
-func _ensure_placeholder_visuals() -> void:
-	if _timer_icon.texture == null:
-		_timer_icon.texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_timer_placeholder_texture()
-	_timer_icon.visible = true
-	_intent_badge.visible = false
-	_intent_label.visible = false
-	_primary_intent_text_column.visible = false
-	var backdrop_texture: Texture2D = null
-	if _visuals != null:
-		backdrop_texture = _visuals.combat_enemy_stage_texture("cavern_striker")
-	if backdrop_texture == null:
-		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture = backdrop_texture
-		_enemy_stage_backdrop.visible = true
-	var hero_texture: Texture2D = null
-	if _visuals != null:
-		hero_texture = _visuals.hero_portrait()
-	if hero_texture == null:
-		hero_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_hero_placeholder_texture()
-	_player_portrait.texture = hero_texture
-	_player_portrait.visible = true
-
-
 func _ensure_enemy_stage_backdrop_node() -> void:
 	_ensure_enemy_stage_presenter()
 	if _enemy_stage_presenter != null:
@@ -985,3 +931,10 @@ func _ensure_hud_snapshot_presenter() -> void:
 	if _hud_snapshot_presenter == null:
 		_hud_snapshot_presenter = COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT.new()
 	_hud_snapshot_presenter.bind(_root_nodes)
+
+
+func _ensure_character_visuals_presenter() -> void:
+	_ensure_enemy_stage_presenter()
+	if _character_visuals_presenter == null:
+		_character_visuals_presenter = COMBAT_CHARACTER_VISUALS_PRESENTER_SCRIPT.new()
+	_character_visuals_presenter.bind(_root_nodes, _visuals, _enemy_stage_presenter, _layout_enemy_panel_rect)

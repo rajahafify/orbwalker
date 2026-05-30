@@ -141,6 +141,23 @@ func apply_snapshot(snapshot: Dictionary, current_enemy_visual_id: String = DEFA
 	}
 
 
+func ensure_backdrop_placeholder() -> void:
+	ensure_backdrop()
+	_apply_backdrop_texture(null, DEFAULT_ENEMY_ID)
+
+
+func refresh_enemy_visuals(enemy_id: String, enemy_panel_rect: Rect2 = FALLBACK_PANEL_RECT) -> String:
+	var resolved_enemy_id := enemy_id.strip_edges()
+	if resolved_enemy_id == "":
+		resolved_enemy_id = DEFAULT_ENEMY_ID
+	ensure_backdrop()
+	ensure_ground_shadow()
+	_apply_backdrop_texture_for_enemy(resolved_enemy_id)
+	_apply_enemy_portrait_texture_for_enemy(resolved_enemy_id)
+	apply_visual_profile(resolved_enemy_id, enemy_panel_rect)
+	return resolved_enemy_id
+
+
 func backdrop() -> TextureRect:
 	return _backdrop
 
@@ -180,6 +197,34 @@ func _apply_enemy_portrait_texture(raw_texture: Variant, _enemy_id: String) -> v
 	var enemy_figure_texture := raw_texture as Texture2D
 	if enemy_figure_texture == null and _visuals != null:
 		enemy_figure_texture = _visuals.enemy_sprite(DEFAULT_ENEMY_ID)
+	if enemy_figure_texture == null:
+		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_enemy_portrait.texture = enemy_figure_texture
+	_enemy_portrait.visible = true
+
+
+func _apply_backdrop_texture_for_enemy(enemy_id: String) -> void:
+	if _backdrop == null or not is_instance_valid(_backdrop):
+		return
+	var backdrop_texture: Texture2D = null
+	if _visuals != null:
+		backdrop_texture = _visuals.combat_enemy_stage_texture(enemy_id)
+		if backdrop_texture == null:
+			backdrop_texture = _visuals.combat_enemy_stage_texture(DEFAULT_ENEMY_ID)
+	if backdrop_texture == null:
+		backdrop_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
+	_backdrop.texture = backdrop_texture
+	_backdrop.visible = true
+
+
+func _apply_enemy_portrait_texture_for_enemy(enemy_id: String) -> void:
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	var enemy_figure_texture: Texture2D = null
+	if _visuals != null:
+		enemy_figure_texture = _visuals.enemy_sprite(enemy_id)
+		if enemy_figure_texture == null:
+			enemy_figure_texture = _visuals.enemy_sprite(DEFAULT_ENEMY_ID)
 	if enemy_figure_texture == null:
 		enemy_figure_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
 	_enemy_portrait.texture = enemy_figure_texture

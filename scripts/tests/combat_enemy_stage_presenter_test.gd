@@ -15,12 +15,12 @@ class VisualRegistryStub:
 		sprite_texture = p_sprite_texture
 
 	func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
-		if enemy_id == "cavern_striker":
+		if enemy_id == "wide" or enemy_id == "cavern_striker":
 			return stage_texture
 		return null
 
 	func enemy_sprite(enemy_id: String) -> Texture2D:
-		if enemy_id == "cavern_striker":
+		if enemy_id == "wide" or enemy_id == "cavern_striker":
 			return sprite_texture
 		return null
 
@@ -42,9 +42,10 @@ func run_all() -> Dictionary:
 	_run_case("visual_profile_uses_layout_fallback_size", _test_visual_profile_uses_layout_fallback_size, failures)
 	_run_case("stage_snapshot_applies_textures_stats_and_preview", _test_stage_snapshot_applies_textures_stats_and_preview, failures)
 	_run_case("stage_snapshot_uses_default_registry_texture_fallbacks", _test_stage_snapshot_uses_default_registry_texture_fallbacks, failures)
+	_run_case("refresh_enemy_visuals_uses_specific_registry_textures", _test_refresh_enemy_visuals_uses_specific_registry_textures, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -194,6 +195,30 @@ func _test_stage_snapshot_uses_default_registry_texture_fallbacks() -> String:
 	if presenter.backdrop().texture != stage_texture or portrait.texture != sprite_texture:
 		root.free()
 		return "Expected missing snapshot textures to use default registry fallbacks."
+	root.free()
+	return ""
+
+
+func _test_refresh_enemy_visuals_uses_specific_registry_textures() -> String:
+	var stage_texture := _texture()
+	var sprite_texture := _texture()
+	var fixture := _fixture(Vector2(400.0, 220.0), VisualRegistryStub.new(stage_texture, sprite_texture))
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	var portrait: TextureRect = fixture["portrait"]
+	var resolved: String = presenter.refresh_enemy_visuals("wide", Rect2(Vector2.ZERO, Vector2(300.0, 120.0)))
+	if resolved != "wide":
+		root.free()
+		return "Expected refresh to return resolved enemy id."
+	if presenter.backdrop().texture != stage_texture or portrait.texture != sprite_texture:
+		root.free()
+		return "Expected refresh to use enemy-specific registry textures."
+	if not portrait.visible or not presenter.backdrop().visible:
+		root.free()
+		return "Expected refreshed portrait and backdrop to be visible."
+	if portrait.position != Vector2(12.0, -18.0):
+		root.free()
+		return "Expected refresh to apply enemy visual profile."
 	root.free()
 	return ""
 
