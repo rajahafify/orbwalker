@@ -31,6 +31,7 @@ const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat
 const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
 const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
+const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -119,12 +120,9 @@ var _mastery_preview_coordinator: Variant = null
 var _loadout_command_handler: Variant = null
 var _intent_hover_handler: Variant = null
 var _scene_transition_handler: Variant = null
+var _tutorial_prompt_presenter: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
-var _tutorial_prompt_panel: Panel = null
-var _tutorial_prompt_label: Label = null
-var _tutorial_prompt_parent: Control = null
-var _tutorial_prompt_anchor := "above_board"
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
 var _model = null
@@ -346,6 +344,8 @@ func _ensure_runtime_helpers() -> void:
 		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
 	if _scene_transition_handler == null:
 		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
+	if _tutorial_prompt_presenter == null:
+		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -1018,24 +1018,14 @@ func _reset_incomplete_tutorial_drag() -> void:
 
 
 func _show_tutorial_prompt(message: String, prompt_anchor: String = "above_board") -> void:
-	_ensure_tutorial_prompt()
-	if _tutorial_prompt_panel == null or _tutorial_prompt_label == null:
-		return
-	_tutorial_prompt_anchor = prompt_anchor
-	_tutorial_prompt_label.add_theme_font_size_override(
-		"font_size",
-		38 if prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 20 if prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 24
-	)
-	_tutorial_prompt_label.text = message
-	_layout_tutorial_prompt()
-	_tutorial_prompt_panel.visible = true
+	_bind_tutorial_prompt_presenter()
+	_tutorial_prompt_presenter.show(message, prompt_anchor)
 
 
 func _hide_tutorial_coachmark() -> void:
-	if _tutorial_prompt_panel != null:
-		_tutorial_prompt_panel.visible = false
+	_bind_tutorial_prompt_presenter()
+	_tutorial_prompt_presenter.hide()
 	_tutorial_drag_board_snapshot = null
-	_tutorial_prompt_anchor = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_ABOVE_BOARD
 	_clear_tutorial_enemy_intent_focus()
 	if _board_view != null and _board_view.has_method("clear_tutorial_hint"):
 		_board_view.clear_tutorial_hint()
@@ -1044,96 +1034,6 @@ func _hide_tutorial_coachmark() -> void:
 			_board_controller.clear_restricted_drag_path()
 		elif _board_controller.has_method("clear_restricted_swap"):
 			_board_controller.clear_restricted_swap()
-
-
-func _ensure_tutorial_prompt() -> void:
-	if _tutorial_prompt_panel != null and is_instance_valid(_tutorial_prompt_panel):
-		return
-	if _host == null:
-		return
-	_tutorial_prompt_parent = _host.get_node_or_null("CombatLayoutRoot") as Control
-	if _tutorial_prompt_parent == null:
-		_tutorial_prompt_parent = _host
-	_tutorial_prompt_panel = Panel.new()
-	_tutorial_prompt_panel.name = "TutorialSwapPrompt"
-	_tutorial_prompt_panel.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE
-	_tutorial_prompt_panel.z_index = 145
-	_tutorial_prompt_panel.add_theme_stylebox_override("panel", _tutorial_prompt_style())
-	_tutorial_prompt_parent.add_child(_tutorial_prompt_panel)
-
-	_tutorial_prompt_label = Label.new()
-	_tutorial_prompt_label.name = "TutorialSwapPromptLabel"
-	_tutorial_prompt_label.horizontal_alignment = HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.vertical_alignment = VerticalAlignment.VERTICAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.autowrap_mode = TextServer.AutowrapMode.AUTOWRAP_WORD_SMART
-	_tutorial_prompt_label.clip_text = true
-	_tutorial_prompt_label.add_theme_font_size_override("font_size", 24)
-	_tutorial_prompt_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.68, 1.0))
-	_tutorial_prompt_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.95))
-	_tutorial_prompt_label.add_theme_constant_override("outline_size", 3)
-	_tutorial_prompt_panel.add_child(_tutorial_prompt_label)
-
-
-func _layout_tutorial_prompt() -> void:
-	if _tutorial_prompt_panel == null or _tutorial_prompt_label == null or _host == null:
-		return
-	var parent_control := _tutorial_prompt_parent if _tutorial_prompt_parent != null and is_instance_valid(_tutorial_prompt_parent) else _host
-	var board_rect := Rect2(Vector2(276.0, 650.0), Vector2(528.0, 126.0))
-	var board_panel := _host.get_node_or_null("CombatLayoutRoot/BoardPanel") as Control
-	if board_panel != null and is_instance_valid(board_panel):
-		var host_inverse := parent_control.get_global_transform().affine_inverse()
-		var panel_rect: Rect2 = board_panel.get_global_rect()
-		board_rect = Rect2(host_inverse * panel_rect.position, panel_rect.size)
-	var width := minf(860.0, maxf(520.0, board_rect.size.x + 228.0)) if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else minf(720.0, maxf(520.0, board_rect.size.x + 148.0))
-	var height := 236.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 96.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 116.0
-	var parent_width := maxf(parent_control.size.x, width + 56.0)
-	var x := clampf(board_rect.get_center().x - width * 0.5, 28.0, maxf(28.0, parent_width - width - 28.0))
-	var y := maxf(332.0, board_rect.position.y - height - 24.0)
-	if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT:
-		y = _tutorial_prompt_below_intent_y(parent_control, board_rect, height)
-	elif _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM:
-		y = _tutorial_prompt_bottom_y(parent_control, height)
-	_tutorial_prompt_panel.position = Vector2(x, y)
-	_tutorial_prompt_panel.size = Vector2(width, height)
-	var label_margin_y := 18.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BOTTOM else 6.0 if _tutorial_prompt_anchor == COMBAT_GUIDANCE_DIRECTOR_SCRIPT.PROMPT_ANCHOR_BELOW_INTENT else 10.0
-	_tutorial_prompt_label.position = Vector2(20.0, label_margin_y)
-	_tutorial_prompt_label.size = _tutorial_prompt_panel.size - Vector2(40.0, label_margin_y * 2.0)
-
-
-func _tutorial_prompt_below_intent_y(parent_control: Control, board_rect: Rect2, prompt_height: float) -> float:
-	var intent_row := _host.get_node_or_null("CombatLayoutRoot/EnemyPanel/EnemyPanelRoot/IntentRow") as Control
-	if intent_row != null and is_instance_valid(intent_row):
-		var host_inverse := parent_control.get_global_transform().affine_inverse()
-		var intent_rect: Rect2 = intent_row.get_global_rect()
-		var local_intent_rect := Rect2(host_inverse * intent_rect.position, intent_rect.size)
-		return local_intent_rect.end.y + 8.0
-	return maxf(236.0, board_rect.position.y - prompt_height - 12.0)
-
-
-func _tutorial_prompt_bottom_y(parent_control: Control, prompt_height: float) -> float:
-	var parent_height := maxf(parent_control.size.y, prompt_height + 56.0)
-	var player_hud := _host.get_node_or_null("CombatLayoutRoot/PlayerHudSection") as Control
-	if player_hud != null and is_instance_valid(player_hud):
-		var host_inverse := parent_control.get_global_transform().affine_inverse()
-		var player_rect: Rect2 = player_hud.get_global_rect()
-		var local_player_rect := Rect2(host_inverse * player_rect.position, player_rect.size)
-		return clampf(local_player_rect.position.y + 18.0, 28.0, parent_height - prompt_height - 28.0)
-	return parent_height - prompt_height - 36.0
-
-
-func _tutorial_prompt_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.045, 0.065, 0.085, 0.96)
-	style.border_color = Color(1.0, 0.72, 0.16, 0.98)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
-	style.shadow_size = 10
-	style.content_margin_left = 18
-	style.content_margin_right = 18
-	style.content_margin_top = 10
-	style.content_margin_bottom = 10
-	return style
 
 
 func _print_board_model() -> void:
@@ -2117,6 +2017,12 @@ func _bind_scene_transition_handler() -> void:
 	)
 
 
+func _bind_tutorial_prompt_presenter() -> void:
+	if _tutorial_prompt_presenter == null:
+		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
+	_tutorial_prompt_presenter.bind(_host)
+
+
 func _hud_snapshot_input_data() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var intent := _enemy_state.get_current_intent()
@@ -2420,8 +2326,8 @@ func _apply_combat_layout() -> void:
 	)
 	if not bool(layout_result.get("applied", false)):
 		return
-	if _tutorial_prompt_panel != null and _tutorial_prompt_panel.visible:
-		_layout_tutorial_prompt()
+	if _tutorial_prompt_presenter != null and _tutorial_prompt_presenter.is_visible():
+		_tutorial_prompt_presenter.layout()
 
 
 func _refresh_character_portraits() -> void:
