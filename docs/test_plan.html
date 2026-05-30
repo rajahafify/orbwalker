@@ -278,6 +278,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>ProfileRepository</code> records schema-migration metadata in load results and saves successful migrated profile or legacy-meta loads back through the current profile path.</li>
 <li><code>profile_migration_test.gd</code> loads fixture saves from <code>scripts/tests/fixtures/profile_saves/</code> for legacy profile aliases, current schema saves, and legacy meta-profile saves; validation passed through the aggregate Godot 4.6.3 headless runner at <code>64</code> suites and <code>265</code> cases.</li>
 </ul>
+<p>Verification notes (2026-05-30, board resolver performance guard):</p>
+<ul>
+<li><code>board_resolver_performance_test.gd</code> adds a deterministic headless micro-benchmark for representative match boards and a known cascade board, with <code>180</code> measured iterations after warmup.</li>
+<li>The documented resolver budget is average <code>&lt;= 3000us</code>, p95 <code>&lt;= 8000us</code>, and max sample <code>&lt;= 16000us</code> for the benchmarked board-resolution slice. A regression beyond those thresholds fails the shared runner.</li>
+<li>Validation passed through the aggregate Godot 4.6.3 headless runner at <code>65</code> suites and <code>267</code> cases. Low-end Android profiling for resolve/refill/VFX remains separate manual/device evidence.</li>
+</ul>
 <p>Verification notes (2026-05-07, treasure chest runtime terminology rename):</p>
 <ul>
 <li>Runtime/API terminology now uses <code>treasure_chest</code> for the shop/content chest flow: content registry pools and ids, shop state snapshots, shop service methods/reasons, shop model/view/controller signals, RunState wrappers, run-log payload/reporting keys, visual icon keys, and focused regression tests. Player-facing copy continues to use Treasure Chest/Chest wording.</li>

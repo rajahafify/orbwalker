@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>64</code> suites and <code>265</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>65</code> suites and <code>267</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -464,8 +464,9 @@
         <li>Add a headless micro-benchmark for the match resolver with a regression threshold.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> board resolution stays within a documented time budget; a perf regression beyond threshold fails CI.</div>
+      <div class="ac"><b>Current evidence:</b> <code>board_resolver_performance_test.gd</code> now runs in the shared headless test runner and measures deterministic representative match/cascade boards for <code>180</code> iterations after warmup. It fails if average resolver time exceeds <code>3000us</code>, p95 exceeds <code>8000us</code>, or any sample exceeds the documented <code>16000us</code> frame-slice budget. Low-end Android profiling for resolve/refill/VFX remains the next P5-2 task.</div>
       <div class="tags"><span class="t">Effort <b>L</b></span></div>
-      <div class="tags"><span class="files">scripts/board/board_match_resolver_service.gd · scripts/combat/combat_vfx_presenter.gd</span></div>
+      <div class="tags"><span class="files">scripts/tests/board_resolver_performance_test.gd &middot; scripts/board/board_match_resolver_service.gd &middot; scripts/combat/combat_vfx_presenter.gd</span></div>
     </div>
 
     <div class="card c-p5">
