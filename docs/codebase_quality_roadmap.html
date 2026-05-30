@@ -403,7 +403,7 @@
         <li>Enable Godot's own script warnings-as-errors for the project in CI (untyped, unused, unsafe casts).</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> CI rejects unformatted code and new lint/warning violations; <code>gdformat --check</code> is clean.</div>
-      <div class="ac"><b>Current evidence:</b> <code>script_load_validation.gd</code> now runs in CI and cache-ignored loads every <code>res://scripts</code> GDScript file as an early static gate; the local Godot 4.6.3 run loaded <code>174</code> scripts with <code>0</code> failures. Full <code>gdformat</code>/<code>gdlint</code>, pre-commit hooks, and warnings-as-errors remain the next P4-1 tasks.</div>
+      <div class="ac"><b>Current evidence:</b> <code>script_load_validation.gd</code> now runs in CI and cache-ignored loads every <code>res://scripts</code> GDScript file as an early static gate; the local Godot 4.6.3 run loaded <code>174</code> scripts with <code>0</code> failures. CI also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail before import/tests. Full <code>gdformat</code>/<code>gdlint</code>, pre-commit hooks, and warnings-as-errors remain the next P4-1 tasks.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
       <div class="tags"><span class="files">tools/quality/script_load_validation.gd &middot; .github/workflows/ci.yml</span></div>
     </div>

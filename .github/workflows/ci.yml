@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check tracked generated artifacts
         shell: bash
@@ -25,6 +27,23 @@ jobs:
             echo "${tracked_artifacts}"
             exit 1
           fi
+
+      - name: Check changed-file whitespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            base_commit="$(git merge-base FETCH_HEAD HEAD)"
+          else
+            before_commit="${{ github.event.before }}"
+            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
+              base_commit="$(git rev-list --max-parents=0 HEAD)"
+            else
+              base_commit="${before_commit}"
+            fi
+          fi
+          git diff --check "${base_commit}" HEAD
 
       - name: Disable editor-only MCP runtime
         shell: bash
