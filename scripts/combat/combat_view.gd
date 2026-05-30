@@ -21,6 +21,7 @@ const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/com
 const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_bubble_presenter.gd")
 const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
 const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
+const COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
@@ -140,6 +141,7 @@ var _tutorial_end_overlay_presenter: Variant = null
 var _enemy_intent_bubble_presenter: Variant = null
 var _enemy_stage_presenter: Variant = null
 var _player_hud_presenter: Variant = null
+var _hud_snapshot_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -363,10 +365,13 @@ func bootstrap_background() -> void:
 
 
 func set_top_bar_text(level_text: String, hint_text: String) -> void:
-	if _title_label != null:
-		_title_label.text = level_text
-	if _hint_label != null:
-		_hint_label.text = _format_top_gold_text(hint_text)
+	_ensure_hud_snapshot_presenter()
+	if _hud_snapshot_presenter != null:
+		_hud_snapshot_presenter.apply_top_hud({
+			"level_text": level_text,
+			"enemy_step_text": _enemy_step_label.text if _enemy_step_label != null else "FIGHT",
+			"gold_text": hint_text,
+		})
 
 
 func setup_rendering_helpers() -> void:
@@ -630,12 +635,15 @@ func set_vfx_layer_visible(visible: bool) -> void:
 
 
 func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) -> void:
-	_sync_top_hud(hud_snapshot.get("top_hud", {}))
+	_ensure_hud_snapshot_presenter()
+	if _hud_snapshot_presenter != null:
+		_hud_snapshot_presenter.apply_top_hud(hud_snapshot.get("top_hud", {}))
 	_sync_enemy_stage(hud_snapshot.get("enemy_stage", {}))
-	_sync_primary_intent_badge(hud_snapshot.get("primary_intent_badge", {}))
-	_sync_tempo_row(hud_snapshot.get("tempo_row", {}))
-	_sync_player_strip(hud_snapshot.get("player_strip", {}), callbacks)
-	_sync_debug_overlay(hud_snapshot.get("debug_overlay", {}))
+	if _hud_snapshot_presenter != null:
+		_hud_snapshot_presenter.apply_primary_intent_badge(hud_snapshot.get("primary_intent_badge", {}))
+		_hud_snapshot_presenter.apply_tempo_row(hud_snapshot.get("tempo_row", {}))
+		_hud_snapshot_presenter.apply_player_strip(hud_snapshot.get("player_strip", {}), callbacks)
+		_hud_snapshot_presenter.apply_debug_overlay(hud_snapshot.get("debug_overlay", {}))
 
 
 func refresh_character_portraits(enemy_id: String) -> void:
@@ -765,22 +773,6 @@ func _emit_tutorial_end_main_menu_pressed() -> void:
 	tutorial_end_main_menu_pressed.emit()
 
 
-func _sync_top_hud(snapshot: Dictionary) -> void:
-	_title_label.text = String(snapshot.get("level_text", "LEVEL"))
-	_enemy_step_label.text = String(snapshot.get("enemy_step_text", "FIGHT"))
-	_hint_label.text = _format_top_gold_text(String(snapshot.get("gold_text", "GOLD 0")))
-
-
-func _format_top_gold_text(text: String) -> String:
-	var clean_text := text.strip_edges()
-	if clean_text.begins_with("$"):
-		return "$%s" % clean_text.substr(1).strip_edges()
-	if clean_text.to_upper().begins_with("GOLD"):
-		var amount_text := clean_text.substr(4).strip_edges()
-		return "$%s" % amount_text
-	return clean_text
-
-
 func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_intent_label.text = ""
 	_intent_label.visible = false
@@ -811,49 +803,6 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 	_enemy_label.text = _enemy_name_label.text
 	_enemy_hp_text_label.text = String(snapshot.get("enemy_hp_text", "HP 0 / 0"))
 	_sync_enemy_block_intent_preview(Dictionary(snapshot.get("enemy_intent_preview", {})))
-
-
-func _sync_primary_intent_badge(_snapshot: Dictionary) -> void:
-	_intent_badge.visible = false
-	_primary_intent_text_column.visible = false
-	_primary_intent_title_label.visible = false
-	_primary_intent_amount_label.visible = false
-	_primary_intent_detail_label.visible = false
-
-
-func _sync_tempo_row(snapshot: Dictionary) -> void:
-	_phase_label.text = String(snapshot.get("phase_text", ""))
-	sync_timer_display(
-		float(snapshot.get("timer_seconds", 0.0)),
-		String(snapshot.get("timer_state", "ready"))
-	)
-
-
-func _sync_player_strip(snapshot: Dictionary, callbacks: Dictionary) -> void:
-	_player_label.text = String(snapshot.get("player_text", ""))
-	_player_hp_bar.max_value = float(maxi(1, int(snapshot.get("player_hp_max", 1))))
-	_player_hp_bar.value = float(int(snapshot.get("player_hp_value", 0)))
-	_player_armor_bar.max_value = float(maxi(1, int(snapshot.get("player_armor_max", 1))))
-	_player_armor_bar.value = float(maxi(0, int(snapshot.get("player_armor_value", 0))))
-	_player_armor_label.text = String(snapshot.get("player_armor_text", "0 / 0"))
-	_armor_badge.visible = false
-	_armor_badge_label.text = String(snapshot.get("armor_badge_text", ""))
-	_attack_stat_label.text = String(snapshot.get("attack_stat_text", ""))
-	_armor_stat_label.text = String(snapshot.get("armor_stat_text", ""))
-	_heart_stat_label.text = String(snapshot.get("heart_stat_text", ""))
-	_gold_stat_label.text = String(snapshot.get("gold_stat_text", ""))
-	_run_progress_label.text = String(snapshot.get("run_progress_text", ""))
-	_phase_label.text = String(snapshot.get("phase_text", ""))
-	_turn_summary_label.text = String(snapshot.get("turn_summary_text", ""))
-	var progression_snapshot: Dictionary = snapshot.get("progression_snapshot", {})
-	var refresh_callback: Variant = callbacks.get("refresh_build_icon_rows", Callable())
-	if refresh_callback is Callable and (refresh_callback as Callable).is_valid():
-		(refresh_callback as Callable).call(progression_snapshot)
-
-
-func _sync_debug_overlay(snapshot: Dictionary) -> void:
-	_status_label.text = String(snapshot.get("status_text", ""))
-	_enemy_debug_label.text = String(snapshot.get("enemy_text", ""))
 
 
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
@@ -1043,3 +992,9 @@ func _ensure_player_hud_presenter() -> void:
 	if _player_hud_presenter == null:
 		_player_hud_presenter = COMBAT_PLAYER_HUD_PRESENTER_SCRIPT.new()
 	_player_hud_presenter.bind(_player_loadout_hud, _root_nodes)
+
+
+func _ensure_hud_snapshot_presenter() -> void:
+	if _hud_snapshot_presenter == null:
+		_hud_snapshot_presenter = COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT.new()
+	_hud_snapshot_presenter.bind(_root_nodes)
