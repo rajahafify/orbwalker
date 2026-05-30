@@ -4,7 +4,7 @@ class_name ShopController
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
-const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
+const SHOP_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/shop/shop_transition_handler.gd")
 
 var _host: Control
 var _model
@@ -13,6 +13,7 @@ var _flow_trace_route_id := ""
 var _signals_connected := false
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+var _transition_handler: Variant = null
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
@@ -108,42 +109,8 @@ func _trace_flow_first_usable_frame() -> void:
 
 
 func _queue_ready_redirect(target_scene: String, source: String) -> void:
-	RunState.flow_trace_mark(
-		"shop_ready_redirect_before_change_scene",
-		{"source": source},
-		_flow_trace_route_id,
-		target_scene
-	)
-	Callable(self, "_deferred_ready_redirect").bind(target_scene, source).call_deferred()
-
-
-func _deferred_ready_redirect(target_scene: String, source: String) -> void:
-	if _model.transition_locked:
-		return
-	_begin_transition_lock()
-	var transition_source := "shop_ready_redirect_%s" % source
-	var scene_change_result := RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		target_scene,
-		_flow_trace_route_id,
-		transition_source,
-		"",
-		Callable(self, "_on_scene_change_post_ready_rollback")
-	)
-	if scene_change_result == OK:
-		return
-	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result)
-	_set_status("Redirect failed: %s" % failure_reason, false)
-	RunState.flow_trace_mark(
-		"shop_ready_redirect_change_scene_failed",
-		{
-			"source": source,
-			"reason": failure_reason,
-		},
-		_flow_trace_route_id,
-		target_scene
-	)
-	_end_transition_lock()
+	_bind_transition_handler()
+	_transition_handler.queue_ready_redirect(target_scene, source)
 
 
 func _connect_view_signals() -> void:
@@ -321,108 +288,13 @@ func _select_consumable_slot(index: int) -> void:
 
 
 func _on_continue_pressed() -> void:
-	if _model.transition_locked:
-		return
-	if _tutorial_shop_phase() != "" and _tutorial_shop_phase() != "continue":
-		_set_status(_tutorial_shop_status(), false)
-		_refresh_ui()
-		return
-	_begin_transition_lock()
-	_clear_inventory_focus()
-	RunState.flow_trace_mark(
-		"shop_continue_button_pressed",
-		{"button_text": "Continue"},
-		_flow_trace_route_id
-	)
-	var pre_transition_state := RunState.snapshot_run_transition_state()
-	RunState.flow_trace_mark("shop_before_advance_after_shop", {}, _flow_trace_route_id)
-	var transition: Dictionary = RunState.advance_after_shop(false)
-	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
-	RunState.flow_trace_mark(
-		"shop_after_advance_after_shop",
-		{
-			"ok": bool(transition.get("ok", false)),
-			"step": String(transition.get("step", "")),
-		},
-		_flow_trace_route_id,
-		next_scene
-	)
-	if not bool(transition.get("ok", false)):
-		_set_status("Continue failed: %s" % String(transition.get("reason", "unknown")), false)
-		_restore_transition_snapshot(pre_transition_state)
-		_end_transition_lock()
-		return
-	var route_id := _flow_trace_route_id
-	if next_scene.find("combat.tscn") >= 0:
-		route_id = RunState.flow_trace_begin(
-			"shop_to_combat",
-			next_scene,
-			{"source": "shop_continue_button"}
-		)
-	RunState.flow_trace_mark(
-		"shop_before_change_scene_to_file",
-		{"source": "shop_continue_button"},
-		route_id,
-		next_scene
-	)
-	var scene_change_result := RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		next_scene,
-		route_id,
-		"shop_continue_button",
-		"",
-		Callable(self, "_on_scene_change_post_ready_rollback"),
-		pre_transition_state
-	)
-	if scene_change_result != OK:
-		_set_status("Continue failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
-		_restore_transition_snapshot(pre_transition_state)
-		_end_transition_lock()
+	_bind_transition_handler()
+	_transition_handler.continue_pressed()
 
 
 func _on_main_menu_pressed() -> void:
-	if _model.transition_locked:
-		return
-	_begin_transition_lock()
-	_clear_inventory_focus()
-	RunState.flow_trace_mark(
-		"shop_main_menu_button_pressed",
-		{"button_text": "Menu"},
-		_flow_trace_route_id,
-		"res://scenes/main_menu.tscn"
-	)
-	RunState.flow_trace_mark(
-		"shop_before_change_scene_to_file_main_menu",
-		{"source": "shop_main_menu_button"},
-		_flow_trace_route_id,
-		"res://scenes/main_menu.tscn"
-	)
-	var scene_change_result := RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		"res://scenes/main_menu.tscn",
-		_flow_trace_route_id,
-		"shop_main_menu_button",
-		"",
-		Callable(self, "_on_scene_change_post_ready_rollback")
-	)
-	if scene_change_result != OK:
-		_set_status("Main menu failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
-		_end_transition_lock()
-
-
-func _on_scene_change_post_ready_rollback(result: Dictionary) -> void:
-	var failure_reason := String(result.get("reason", "prepared_scene_post_ready_check_failed"))
-	_set_status("Transition failed: %s" % failure_reason, false)
-	RunState.flow_trace_mark(
-		"shop_post_ready_scene_change_failed",
-		{
-			"source": String(result.get("source", "shop")),
-			"reason": failure_reason,
-		},
-		String(result.get("route_id", _flow_trace_route_id)),
-		String(result.get("target_scene", ""))
-	)
-	_end_transition_lock()
+	_bind_transition_handler()
+	_transition_handler.main_menu_pressed()
 
 
 func _set_status(message: String, positive: bool) -> void:
@@ -468,26 +340,31 @@ func _clear_inventory_focus() -> void:
 	_view.clear_inventory_focus()
 
 
-func _begin_transition_lock() -> void:
-	_model.begin_transition_lock()
-	_view.lock_transitions(true)
-
-
-func _end_transition_lock() -> void:
-	_model.end_transition_lock()
-	_view.lock_transitions(false)
+func _bind_transition_handler() -> void:
+	if _transition_handler == null:
+		_transition_handler = SHOP_TRANSITION_HANDLER_SCRIPT.new()
+	_transition_handler.bind(
+		{
+			"run_state": RunState,
+			"host": _host,
+			"model": _model,
+			"view": _view,
+		},
+		{
+			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS: Callable(self, "_set_status"),
+			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_CLEAR_INVENTORY_FOCUS: Callable(self, "_clear_inventory_focus"),
+			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_PHASE: Callable(self, "_tutorial_shop_phase"),
+			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_STATUS: Callable(self, "_tutorial_shop_status"),
+			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_REFRESH_UI: Callable(self, "_refresh_ui"),
+		},
+		{"route_id": _flow_trace_route_id}
+	)
 
 
 func _result_message(action: String, result: Dictionary) -> String:
 	if bool(result.get("ok", false)):
 		return "%s: OK. Gold %d." % [action, RunState.run_gold]
 	return "%s: failed (%s)." % [action, String(result.get("reason", "unknown"))]
-
-
-func _restore_transition_snapshot(snapshot: Dictionary) -> void:
-	if snapshot.is_empty():
-		return
-	RunState.restore_run_transition_state(snapshot)
 
 
 func _play_shop_result_sfx(result: Dictionary, success_key: String) -> void:

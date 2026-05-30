@@ -15,10 +15,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"owner": "P1-3",
 		"reason": "Large shop presentation facade; split merchant/header/action/player-HUD presentation into helpers before removing the exception.",
 	},
-	"res://scripts/shop/shop_controller.gd": {
-		"owner": "P1-3",
-		"reason": "Over controller budget; extract routing/input command helpers before removing the exception.",
-	},
 	"res://scripts/shop/shop_service.gd": {
 		"owner": "P1-3",
 		"reason": "Over default module budget; extract pricing/offer policy helpers before removing the exception.",
