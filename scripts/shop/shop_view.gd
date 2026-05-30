@@ -20,6 +20,7 @@ const COLLECTION_CARD_RENDERER := preload("res://scripts/ui/collection_card_rend
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
+const SHOP_VIEW_NODE_FACTORY := preload("res://scripts/shop/shop_view_node_factory.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := SHOP_LAYOUT_METRICS.DESIGN_SIZE
@@ -187,7 +188,7 @@ func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 
 func _create_ui() -> void:
 	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_hud_overlay = _make_root("HudOverlay", _layout_root)
+	_hud_overlay = SHOP_VIEW_NODE_FACTORY.make_root("HudOverlay", _layout_root)
 	_hud_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_hud_overlay.z_index = 50
 	_hud_overlay.clip_contents = false
@@ -212,43 +213,43 @@ func _create_ui() -> void:
 	_main_menu_button.visible = false
 	_settings_button.visible = true
 
-	_merchant_stage = _make_panel("MerchantStage", _layout_root)
-	_merchant_backdrop = _make_texture("MerchantBackdrop", _merchant_stage)
+	_merchant_stage = SHOP_VIEW_NODE_FACTORY.make_panel("MerchantStage", _layout_root)
+	_merchant_backdrop = SHOP_VIEW_NODE_FACTORY.make_texture("MerchantBackdrop", _merchant_stage)
 	_merchant_backdrop.texture = _visuals.shop_merchant_header()
 	_merchant_backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
-	_merchant_scrim = _make_color_rect("MerchantScrim", _merchant_stage, Color(0.0, 0.0, 0.0, 0.30))
-	_merchant_counter = _make_color_rect("MerchantCounter", _merchant_stage, Color(0.08, 0.045, 0.025, 0.88))
-	_merchant_info_backdrop = _make_color_rect("MerchantInfoBackdrop", _merchant_stage, Color(0.02, 0.03, 0.04, 0.70))
-	_merchant_header_label = _make_label("MerchantHeaderLabel", _merchant_stage, "", 32, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_merchant_scrim = SHOP_VIEW_NODE_FACTORY.make_color_rect("MerchantScrim", _merchant_stage, Color(0.0, 0.0, 0.0, 0.30))
+	_merchant_counter = SHOP_VIEW_NODE_FACTORY.make_color_rect("MerchantCounter", _merchant_stage, Color(0.08, 0.045, 0.025, 0.88))
+	_merchant_info_backdrop = SHOP_VIEW_NODE_FACTORY.make_color_rect("MerchantInfoBackdrop", _merchant_stage, Color(0.02, 0.03, 0.04, 0.70))
+	_merchant_header_label = SHOP_VIEW_NODE_FACTORY.make_label("MerchantHeaderLabel", _merchant_stage, "", 32, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_merchant_header_label.visible = false
-	_speech_card = _make_panel("SpeechCard", _merchant_stage)
-	_speech_label = _make_label("SpeechLabel", _speech_card, "Well met, adventurer. New stock, fresh from the depths.", 25, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_boss_preview_label = _make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 16, MUTED_COLOR)
-	_summary_label = _make_label("SummaryLabel", _merchant_stage, "-", 21, POSITIVE_COLOR)
-	_detail_label = _make_label("DetailLabel", _merchant_stage, "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover.", 19, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_speech_card = SHOP_VIEW_NODE_FACTORY.make_panel("SpeechCard", _merchant_stage)
+	_speech_label = SHOP_VIEW_NODE_FACTORY.make_label("SpeechLabel", _speech_card, "Well met, adventurer. New stock, fresh from the depths.", 25, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_boss_preview_label = SHOP_VIEW_NODE_FACTORY.make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 16, MUTED_COLOR)
+	_summary_label = SHOP_VIEW_NODE_FACTORY.make_label("SummaryLabel", _merchant_stage, "-", 21, POSITIVE_COLOR)
+	_detail_label = SHOP_VIEW_NODE_FACTORY.make_label("DetailLabel", _merchant_stage, "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover.", 19, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_merchant_info_backdrop.visible = false
 	_boss_preview_label.visible = false
 	_summary_label.visible = false
 	_detail_label.visible = false
 
-	_stock_panel = _make_panel("StockPanel", _layout_root)
-	_stock_title_label = _make_label("StockTitleLabel", _stock_panel, "SHOP STOCK", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_stock_panel = SHOP_VIEW_NODE_FACTORY.make_panel("StockPanel", _layout_root)
+	_stock_title_label = SHOP_VIEW_NODE_FACTORY.make_label("StockTitleLabel", _stock_panel, "SHOP STOCK", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_offer_grid = Control.new()
 	_offer_grid.name = "OfferGrid"
 	_stock_panel.add_child(_offer_grid)
 	for index in 3:
-		var card := _make_button("OfferCard%d" % (index + 1), _offer_grid, "")
+		var card := SHOP_VIEW_NODE_FACTORY.make_button("OfferCard%d" % (index + 1), _offer_grid, "")
 		_offer_cards.append(card)
 
-	_relic_card = _make_button("RelicCard", _layout_root, "")
+	_relic_card = SHOP_VIEW_NODE_FACTORY.make_button("RelicCard", _layout_root, "")
 	_action_row = Control.new()
 	_action_row.name = "ActionRow"
 	_layout_root.add_child(_action_row)
-	_action_hint_label = _make_label("ActionHintLabel", _action_row, "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover.", 20, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_action_hint_label = SHOP_VIEW_NODE_FACTORY.make_label("ActionHintLabel", _action_row, "SELL TIP: Tap a filled loadout slot, then press Sell in the slot popover.", 20, INK_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	_action_hint_label.visible = false
-	_reroll_button = _make_button("RerollButton", _action_row, "Reroll")
-	_sell_equipment_button = _make_button("SellEquipmentButton", _action_row, "Sell Selected")
-	_continue_button = _make_button("ContinueButton", _action_row, "Continue")
+	_reroll_button = SHOP_VIEW_NODE_FACTORY.make_button("RerollButton", _action_row, "Reroll")
+	_sell_equipment_button = SHOP_VIEW_NODE_FACTORY.make_button("SellEquipmentButton", _action_row, "Sell Selected")
+	_continue_button = SHOP_VIEW_NODE_FACTORY.make_button("ContinueButton", _action_row, "Continue")
 
 	_bind_shared_player_hud_scene()
 	_treasure_chest_overlay = ColorRect.new()
@@ -256,25 +257,25 @@ func _create_ui() -> void:
 	_treasure_chest_overlay.visible = false
 	_treasure_chest_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_layout_root.add_child(_treasure_chest_overlay)
-	_treasure_chest_modal = _make_panel("TreasureChestModal", _treasure_chest_overlay)
+	_treasure_chest_modal = SHOP_VIEW_NODE_FACTORY.make_panel("TreasureChestModal", _treasure_chest_overlay)
 	_treasure_chest_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
-	_treasure_chest_title_label = _make_label("TreasureChestTitleLabel", _treasure_chest_modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_treasure_chest_hint_label = _make_label("TreasureChestHintLabel", _treasure_chest_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_treasure_chest_title_label = SHOP_VIEW_NODE_FACTORY.make_label("TreasureChestTitleLabel", _treasure_chest_modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
+	_treasure_chest_hint_label = SHOP_VIEW_NODE_FACTORY.make_label("TreasureChestHintLabel", _treasure_chest_modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
 	for index in 3:
-		var button := _make_button("TreasureChestOptionButton%d" % (index + 1), _treasure_chest_modal, "")
+		var button := SHOP_VIEW_NODE_FACTORY.make_button("TreasureChestOptionButton%d" % (index + 1), _treasure_chest_modal, "")
 		_treasure_chest_option_buttons.append(button)
-	_skip_treasure_chest_button = _make_button("SkipTreasureChestButton", _treasure_chest_modal, "Skip")
+	_skip_treasure_chest_button = SHOP_VIEW_NODE_FACTORY.make_button("SkipTreasureChestButton", _treasure_chest_modal, "Skip")
 	_skip_treasure_chest_button.visible = false
 
-	_shop_help_overlay = _make_color_rect("ShopHelpOverlay", _layout_root, Color(0.0, 0.0, 0.0, 0.54))
+	_shop_help_overlay = SHOP_VIEW_NODE_FACTORY.make_color_rect("ShopHelpOverlay", _layout_root, Color(0.0, 0.0, 0.0, 0.54))
 	_shop_help_overlay.visible = false
 	_shop_help_overlay.z_index = 70
 	_shop_help_overlay.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	_shop_help_modal = _make_panel("ShopHelpModal", _shop_help_overlay)
+	_shop_help_modal = SHOP_VIEW_NODE_FACTORY.make_panel("ShopHelpModal", _shop_help_overlay)
 	_shop_help_modal.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	_shop_help_title_label = _make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_shop_help_body_label = _make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_shop_help_close_button = _make_button("ShopHelpCloseButton", _shop_help_modal, "x")
+	_shop_help_title_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_shop_help_body_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_shop_help_close_button = SHOP_VIEW_NODE_FACTORY.make_button("ShopHelpCloseButton", _shop_help_modal, "x")
 	_create_tutorial_overlay()
 
 
@@ -400,28 +401,28 @@ func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending:
 
 
 func _render_empty_offer_card(card: Button) -> void:
-	_clear_children(card)
+	SHOP_VIEW_NODE_FACTORY.clear_children(card)
 	card.text = ""
 	card.disabled = true
 	card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 	card.tooltip_text = ""
 	_apply_card_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
-	var root := _make_child_root(card)
-	_make_dynamic_label(root, "EMPTY", Rect2(Vector2(20, 190), Vector2(280, 50)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
-	_make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
+	var root := SHOP_VIEW_NODE_FACTORY.make_child_root(card)
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "EMPTY", Rect2(Vector2(20, 190), Vector2(280, 50)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
 
 
 func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -> void:
-	_clear_children(_relic_card)
+	SHOP_VIEW_NODE_FACTORY.clear_children(_relic_card)
 	_relic_card.text = ""
 	if relic_offer.is_empty():
 		_relic_card.disabled = true
 		_relic_card.modulate = Color(0.65, 0.65, 0.70, 0.75)
 		_relic_card.tooltip_text = ""
 		_apply_transparent_button_chrome(_relic_card)
-		var empty_root := _make_child_root(_relic_card)
-		_make_dynamic_label(empty_root, "DUNGEON RELIC", Rect2(Vector2(24, 24), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
-		_make_dynamic_label(empty_root, "Relic offer unavailable.", Rect2(Vector2(24, 86), Vector2(1000, 42)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
+		var empty_root := SHOP_VIEW_NODE_FACTORY.make_child_root(_relic_card)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(empty_root, "DUNGEON RELIC", Rect2(Vector2(24, 24), Vector2(1000, 30)), GOLD_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(empty_root, "Relic offer unavailable.", Rect2(Vector2(24, 86), Vector2(1000, 42)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
 		return
 
 	var rarity := String(relic_offer.get("rarity", "rare")).to_lower()
@@ -435,16 +436,16 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	_relic_card.mouse_default_cursor_shape = Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND
 	_apply_transparent_button_chrome(_relic_card)
 
-	var root := _make_child_root(_relic_card)
-	_make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.02, 0.02, 0.018, 0.58), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
-	_make_dynamic_panel(root, RELIC_TITLE_LEFT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
-	_make_dynamic_panel(root, RELIC_TITLE_RIGHT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
-	_make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_TEXT_RECT, GOLD_COLOR, 34, HORIZONTAL_ALIGNMENT_CENTER)
+	var root := SHOP_VIEW_NODE_FACTORY.make_child_root(_relic_card)
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_TITLE_STRIP_RECT, UI_UTILS.panel_style(Color(0.02, 0.02, 0.018, 0.58), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_TITLE_LEFT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_TITLE_RIGHT_RAIL_RECT, UI_UTILS.panel_style(GOLD_COLOR.darkened(0.10), GOLD_COLOR.darkened(0.10), 0, 0, Vector4.ZERO))
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "DUNGEON RELIC", RELIC_TITLE_TEXT_RECT, GOLD_COLOR, 34, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var banner_root := _make_root("RelicBannerRoot", root)
+	var banner_root := SHOP_VIEW_NODE_FACTORY.make_root("RelicBannerRoot", root)
 	banner_root.position = RELIC_BANNER_RECT.position
 	banner_root.size = RELIC_BANNER_RECT.size
-	var banner_frame := _make_texture("RelicBannerFrame", banner_root)
+	var banner_frame := SHOP_VIEW_NODE_FACTORY.make_texture("RelicBannerFrame", banner_root)
 	banner_frame.texture = _visuals.collection_relic_banner_frame(rarity)
 	banner_frame.position = RELIC_BANNER_FRAME_RECT.position
 	banner_frame.size = RELIC_BANNER_FRAME_RECT.size
@@ -452,11 +453,11 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	banner_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
 	banner_frame.modulate = RELIC_UNAVAILABLE_BANNER_MODULATE if disabled else Color.WHITE
 	if disabled:
-		_make_dynamic_panel(root, RELIC_BANNER_RECT, UI_UTILS.panel_style(RELIC_UNAVAILABLE_VEIL_COLOR, Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_BANNER_RECT, UI_UTILS.panel_style(RELIC_UNAVAILABLE_VEIL_COLOR, Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
 
-	var art_frame := _make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
+	var art_frame := SHOP_VIEW_NODE_FACTORY.make_dynamic_panel(root, RELIC_ART_FRAME_RECT, UI_UTILS.panel_style(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 0, Vector4.ZERO))
 	art_frame.clip_contents = true
-	var icon := _make_texture("RelicIcon", art_frame)
+	var icon := SHOP_VIEW_NODE_FACTORY.make_texture("RelicIcon", art_frame)
 	icon.texture = _visuals.icon_for_key(String(relic_offer.get("icon_key", "")))
 	icon.tooltip_text = ""
 	icon.position = RELIC_ICON_RECT.position
@@ -467,11 +468,11 @@ func _render_relic_card(relic_offer: Dictionary, treasure_chest_pending: bool) -
 	var title_color := SHOP_COPY_FORMATTER.relic_title_color(rarity)
 	if disabled:
 		title_color = RELIC_UNAVAILABLE_TITLE_COLOR
-	var name_label := _make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, title_color, 34, HORIZONTAL_ALIGNMENT_LEFT)
+	var name_label := SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(relic_offer.get("display_name", "Relic")), RELIC_NAME_RECT, title_color, 34, HORIZONTAL_ALIGNMENT_LEFT)
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	var tier_label := _make_dynamic_label(root, "%s RELIC - DUNGEON %d" % [rarity.to_upper(), int(relic_offer.get("dungeon_level", 1))], RELIC_TIER_RECT, title_color, 18)
+	var tier_label := SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "%s RELIC - DUNGEON %d" % [rarity.to_upper(), int(relic_offer.get("dungeon_level", 1))], RELIC_TIER_RECT, title_color, 18)
 	tier_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	var copy_label := _make_dynamic_label(root, SHOP_COPY_FORMATTER.shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
+	var copy_label := SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, SHOP_COPY_FORMATTER.shop_relic_description(relic_offer), RELIC_DESC_RECT, RELIC_UNAVAILABLE_COPY_COLOR if disabled else INK_COLOR, 21, HORIZONTAL_ALIGNMENT_LEFT, true)
 	copy_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	copy_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	_make_price_badge(root, RELIC_PRICE_RECT, SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending), disabled)
@@ -532,7 +533,7 @@ func _render_treasure_chest_overlay(pending_options: Array) -> void:
 		button.visible = true
 	for index in _treasure_chest_option_buttons.size():
 		var button := _treasure_chest_option_buttons[index]
-		_clear_children(button)
+		SHOP_VIEW_NODE_FACTORY.clear_children(button)
 		button.text = ""
 		if index >= pending_options.size():
 			button.visible = false
@@ -542,15 +543,15 @@ func _render_treasure_chest_overlay(pending_options: Array) -> void:
 		button.disabled = false
 		var option: Dictionary = pending_options[index]
 		_apply_button_chrome(button, Color(0.10, 0.08, 0.13, 0.98), GOLD_COLOR, Color(0.18, 0.13, 0.08, 1.0))
-		var root := _make_child_root(button)
-		_make_dynamic_label(root, String(option.get("type", "option")).replace("_", " ").to_upper(), Rect2(Vector2(14, 8), Vector2(180, 22)), MUTED_COLOR, 14, HORIZONTAL_ALIGNMENT_CENTER)
-		_make_dynamic_label(root, String(option.get("display_name", "Option")), Rect2(Vector2(14, 36), Vector2(180, 54)), INK_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER, true)
+		var root := SHOP_VIEW_NODE_FACTORY.make_child_root(button)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("type", "option")).replace("_", " ").to_upper(), Rect2(Vector2(14, 8), Vector2(180, 22)), MUTED_COLOR, 14, HORIZONTAL_ALIGNMENT_CENTER)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("display_name", "Option")), Rect2(Vector2(14, 36), Vector2(180, 54)), INK_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER, true)
 		var content := _lookup_content_definition(String(option.get("content_id", "")))
-		var icon := _make_texture("TreasureChestOptionIcon", root)
+		var icon := SHOP_VIEW_NODE_FACTORY.make_texture("TreasureChestOptionIcon", root)
 		icon.texture = _visuals.icon_for_key(String(content.get("icon_key", "")))
 		icon.position = Vector2(42, 92)
 		icon.size = Vector2(124, 104)
-		_make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
 	_skip_treasure_chest_button.visible = true
 	_skip_treasure_chest_button.disabled = false
 
@@ -575,17 +576,17 @@ func lock_transitions(enabled: bool) -> void:
 
 
 func _create_tutorial_overlay() -> void:
-	_tutorial_overlay = _make_root("TutorialShopOverlay", _hud_overlay)
+	_tutorial_overlay = SHOP_VIEW_NODE_FACTORY.make_root("TutorialShopOverlay", _hud_overlay)
 	_tutorial_overlay.visible = false
 	_tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_tutorial_overlay.z_index = 80
-	_tutorial_focus_frame = _make_panel("TutorialShopFocusFrame", _tutorial_overlay)
+	_tutorial_focus_frame = SHOP_VIEW_NODE_FACTORY.make_panel("TutorialShopFocusFrame", _tutorial_overlay)
 	_tutorial_focus_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_tutorial_focus_frame.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(1.0, 0.82, 0.12, 0.08), Color(1.0, 0.85, 0.18, 1.0), 5, 8, Vector4(8, 6, 8, 6)))
-	_tutorial_prompt_panel = _make_panel("TutorialShopPrompt", _tutorial_overlay)
+	_tutorial_prompt_panel = SHOP_VIEW_NODE_FACTORY.make_panel("TutorialShopPrompt", _tutorial_overlay)
 	_tutorial_prompt_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_tutorial_prompt_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.045, 0.065, 0.085, 0.96), Color(1.0, 0.72, 0.16, 0.98), 3, 8, Vector4(12, 10, 12, 10)))
-	_tutorial_prompt_label = _make_label("TutorialShopPromptLabel", _tutorial_prompt_panel, "", 30, Color(1.0, 0.92, 0.68, 1.0), HORIZONTAL_ALIGNMENT_CENTER, true)
+	_tutorial_prompt_label = SHOP_VIEW_NODE_FACTORY.make_label("TutorialShopPromptLabel", _tutorial_prompt_panel, "", 30, Color(1.0, 0.92, 0.68, 1.0), HORIZONTAL_ALIGNMENT_CENTER, true)
 	_tutorial_prompt_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 
 
@@ -1008,110 +1009,6 @@ func _apply_round_button_chrome(button: Button, bg_color: Color, border_color: C
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 
-func _make_panel(node_name: String, parent: Node) -> Panel:
-	var panel := Panel.new()
-	panel.name = node_name
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(panel)
-	return panel
-
-
-func _make_button(node_name: String, parent: Node, button_text: String) -> Button:
-	var button := Button.new()
-	button.name = node_name
-	button.text = button_text
-	button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
-	parent.add_child(button)
-	return button
-
-
-func _make_root(node_name: String, parent: Node) -> Control:
-	var control := Control.new()
-	control.name = node_name
-	control.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(control)
-	return control
-
-
-func _make_texture(node_name: String, parent: Node) -> TextureRect:
-	var texture := TextureRect.new()
-	texture.name = node_name
-	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
-	texture.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-	texture.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(texture)
-	return texture
-
-
-func _make_color_rect(node_name: String, parent: Node, color: Color) -> ColorRect:
-	var rect := ColorRect.new()
-	rect.name = node_name
-	rect.color = color
-	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(rect)
-	return rect
-
-
-func _make_label(node_name: String, parent: Node, text: String, font_size: int, color: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, enable_wrap: bool = false) -> Label:
-	var label := Label.new()
-	label.name = node_name
-	_configure_label(label, text, font_size, color, align, enable_wrap)
-	parent.add_child(label)
-	return label
-
-
-func _make_child_root(parent: Control) -> Control:
-	var root := Control.new()
-	root.name = "CardRoot"
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	root.position = Vector2.ZERO
-	root.size = parent.size
-	parent.add_child(root)
-	return root
-
-
-func _make_dynamic_panel(parent: Node, rect: Rect2, style: StyleBox) -> Panel:
-	var panel := Panel.new()
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	panel.position = rect.position
-	panel.size = rect.size
-	panel.add_theme_stylebox_override("panel", style)
-	parent.add_child(panel)
-	return panel
-
-
-func _make_dynamic_label(parent: Node, text: String, rect: Rect2, color: Color, font_size: int, align: int = HORIZONTAL_ALIGNMENT_LEFT, enable_wrap: bool = false) -> Label:
-	var label := Label.new()
-	_configure_label(label, text, font_size, color, align, enable_wrap)
-	label.position = rect.position
-	label.size = rect.size
-	label.custom_minimum_size = rect.size
-	label.clip_contents = true
-	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	parent.add_child(label)
-	label.position = rect.position
-	label.size = rect.size
-	return label
-
-
-func _configure_label(label: Label, text: String, font_size: int, color: Color, align: int, enable_wrap: bool) -> void:
-	label.text = text
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	label.horizontal_alignment = align as HorizontalAlignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.autowrap_mode = (
-		TextServer.AUTOWRAP_WORD_SMART if enable_wrap else TextServer.AUTOWRAP_OFF
-	) as TextServer.AutowrapMode
-	label.clip_text = true
-	label.clip_contents = true
-	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_constant_override("outline_size", 2)
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.74))
-
-
 func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) -> void:
 	var disabled_affordability := disabled and text.begins_with("$")
 	var sold_or_blocked := text == "SOLD OUT" or text == "WAIT CHEST"
@@ -1125,7 +1022,7 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 			label_color = MUTED_COLOR
 	var badge_texture_value: Texture2D = _visuals.collection_price_badge()
 	var badge_rect := rect.grow_individual(2, 1, 2, 1) if not disabled else rect
-	var badge_frame := _make_texture("PriceBadgeFrame", parent)
+	var badge_frame := SHOP_VIEW_NODE_FACTORY.make_texture("PriceBadgeFrame", parent)
 	badge_frame.position = badge_rect.position
 	badge_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	badge_frame.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
@@ -1134,8 +1031,4 @@ func _make_price_badge(parent: Node, rect: Rect2, text: String, disabled: bool) 
 	badge_frame.size = badge_rect.size
 	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE
 	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else 20
-	_make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
-
-
-func _clear_children(node: Node) -> void:
-	UI_UTILS.clear_children(node)
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)
