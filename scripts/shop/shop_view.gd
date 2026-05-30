@@ -21,6 +21,7 @@ const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.
 const SHOP_COPY_FORMATTER := preload("res://scripts/shop/shop_copy_formatter.gd")
 const SHOP_LAYOUT_METRICS := preload("res://scripts/shop/shop_layout_metrics.gd")
 const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_treasure_chest_overlay_presenter.gd")
+const SHOP_TUTORIAL_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_tutorial_overlay_presenter.gd")
 const SHOP_VIEW_CHROME_STYLER := preload("res://scripts/shop/shop_view_chrome_styler.gd")
 const SHOP_VIEW_NODE_FACTORY := preload("res://scripts/shop/shop_view_node_factory.gd")
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
@@ -147,10 +148,7 @@ var _mastery_root: Control
 var _mastery_label: Label
 var _mastery_icons: Control
 var _treasure_chest_overlay_presenter: Variant = null
-var _tutorial_overlay: Control
-var _tutorial_focus_frame: Panel
-var _tutorial_prompt_panel: Panel
-var _tutorial_prompt_label: Label
+var _tutorial_overlay_presenter: Variant = null
 
 var _visuals
 var _player_loadout_hud
@@ -257,7 +255,13 @@ func _create_ui() -> void:
 	_shop_help_title_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpTitleLabel", _shop_help_modal, "Shop opened. Buy, reroll, sell, or continue.", 34, POSITIVE_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_shop_help_body_label = SHOP_VIEW_NODE_FACTORY.make_label("ShopHelpBodyLabel", _shop_help_modal, "Tap stock or relic cards to buy. Sell filled loadout slots from the slot popover.", 26, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
 	_shop_help_close_button = SHOP_VIEW_NODE_FACTORY.make_button("ShopHelpCloseButton", _shop_help_modal, "x")
-	_create_tutorial_overlay()
+	_tutorial_overlay_presenter = SHOP_TUTORIAL_OVERLAY_PRESENTER.new()
+	_tutorial_overlay_presenter.bind(_hud_overlay, {
+		"offer_cards": _offer_cards,
+		"reroll_button": _reroll_button,
+		"continue_button": _continue_button,
+	})
+	_tutorial_overlay_presenter.ensure_overlay()
 
 
 func _bind_shared_player_hud_scene() -> void:
@@ -356,7 +360,7 @@ func render(snapshot: Dictionary) -> void:
 	_render_build_panel(snapshot)
 	_render_elemental_mastery_panel(Dictionary(progression_snapshot.get("mastery_levels", {})))
 	_treasure_chest_overlay_presenter.render(pending_options)
-	_render_tutorial_overlay()
+	_tutorial_overlay_presenter.render(_current_tutorial_shop_phase)
 	apply_layout()
 
 
@@ -516,60 +520,6 @@ func lock_transitions(enabled: bool) -> void:
 		_help_button.disabled = enabled
 	if _settings_button != null:
 		_settings_button.disabled = enabled
-
-
-func _create_tutorial_overlay() -> void:
-	_tutorial_overlay = SHOP_VIEW_NODE_FACTORY.make_root("TutorialShopOverlay", _hud_overlay)
-	_tutorial_overlay.visible = false
-	_tutorial_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_tutorial_overlay.z_index = 80
-	_tutorial_focus_frame = SHOP_VIEW_NODE_FACTORY.make_panel("TutorialShopFocusFrame", _tutorial_overlay)
-	_tutorial_focus_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_tutorial_focus_frame.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(1.0, 0.82, 0.12, 0.08), Color(1.0, 0.85, 0.18, 1.0), 5, 8, Vector4(8, 6, 8, 6)))
-	_tutorial_prompt_panel = SHOP_VIEW_NODE_FACTORY.make_panel("TutorialShopPrompt", _tutorial_overlay)
-	_tutorial_prompt_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_tutorial_prompt_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.045, 0.065, 0.085, 0.96), Color(1.0, 0.72, 0.16, 0.98), 3, 8, Vector4(12, 10, 12, 10)))
-	_tutorial_prompt_label = SHOP_VIEW_NODE_FACTORY.make_label("TutorialShopPromptLabel", _tutorial_prompt_panel, "", 30, Color(1.0, 0.92, 0.68, 1.0), HORIZONTAL_ALIGNMENT_CENTER, true)
-	_tutorial_prompt_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-
-
-func _render_tutorial_overlay() -> void:
-	if _tutorial_overlay == null:
-		return
-	_tutorial_overlay.visible = _current_tutorial_shop_phase != ""
-	if not _tutorial_overlay.visible:
-		return
-	var message := ""
-	match _current_tutorial_shop_phase:
-		"buy_shortsword":
-			message = "Buy Iron Shortsword.\nEquipment makes future fights easier."
-		"reroll":
-			message = "Reroll changes shop stock.\nTap Reroll now."
-		"continue":
-			message = "Continue leaves the shop.\nTap Continue to enter the next fight."
-		_:
-			message = ""
-	_tutorial_prompt_label.text = message
-
-
-func _tutorial_focus_rect() -> Rect2:
-	match _current_tutorial_shop_phase:
-		"buy_shortsword":
-			if _offer_cards.size() > 0:
-				return _control_rect_in_overlay(_offer_cards[0]).grow(10.0)
-		"reroll":
-			return _control_rect_in_overlay(_reroll_button).grow(10.0)
-		"continue":
-			return _control_rect_in_overlay(_continue_button).grow(10.0)
-	return Rect2(Vector2(-9999, -9999), Vector2(1, 1))
-
-
-func _control_rect_in_overlay(control: Control) -> Rect2:
-	if control == null or _tutorial_overlay == null:
-		return Rect2(Vector2(-9999, -9999), Vector2(1, 1))
-	var inverse := _tutorial_overlay.get_global_transform().affine_inverse()
-	var rect := control.get_global_rect()
-	return Rect2(inverse * rect.position, rect.size)
 
 
 func handle_global_input(event: InputEvent) -> bool:
@@ -751,7 +701,7 @@ func apply_layout() -> void:
 	_apply_rect(_shop_help_title_label, SHOP_HELP_MODAL_TITLE_RECT)
 	_apply_rect(_shop_help_body_label, SHOP_HELP_MODAL_BODY_RECT)
 	_apply_rect(_shop_help_close_button, SHOP_HELP_MODAL_CLOSE_RECT)
-	_apply_tutorial_overlay_layout(logical_size)
+	_tutorial_overlay_presenter.layout(logical_size)
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
@@ -759,24 +709,6 @@ func _apply_rect(control: Control, rect: Rect2) -> void:
 		return
 	control.position = rect.position
 	control.size = rect.size
-
-
-func _apply_tutorial_overlay_layout(logical_size: Vector2) -> void:
-	if _tutorial_overlay == null or _tutorial_focus_frame == null or _tutorial_prompt_panel == null or _tutorial_prompt_label == null:
-		return
-	_apply_rect(_tutorial_overlay, Rect2(Vector2.ZERO, logical_size))
-	if not _tutorial_overlay.visible:
-		return
-	var focus_rect := _tutorial_focus_rect()
-	_apply_rect(_tutorial_focus_frame, focus_rect)
-	var prompt_size := Vector2(720.0, 148.0)
-	var prompt_x := clampf(focus_rect.get_center().x - prompt_size.x * 0.5, 28.0, maxf(28.0, logical_size.x - prompt_size.x - 28.0))
-	var prompt_y := focus_rect.position.y - prompt_size.y - 18.0
-	if prompt_y < 140.0:
-		prompt_y = focus_rect.end.y + 18.0
-	prompt_y = clampf(prompt_y, 28.0, maxf(28.0, logical_size.y - prompt_size.y - 28.0))
-	_apply_rect(_tutorial_prompt_panel, Rect2(Vector2(prompt_x, prompt_y), prompt_size))
-	_apply_rect(_tutorial_prompt_label, Rect2(Vector2(22.0, 12.0), prompt_size - Vector2(44.0, 24.0)))
 
 
 func _shop_player_hud_nodes() -> Dictionary:
