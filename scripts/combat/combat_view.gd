@@ -18,6 +18,7 @@ const COMBAT_TIMER_DISPLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/com
 const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
 const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
+const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_bubble_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
@@ -137,6 +138,7 @@ var _combat_layout_presenter: Variant = null
 var _settings_overlay_presenter: Variant = null
 var _enemy_block_preview_presenter: Variant = null
 var _tutorial_end_overlay_presenter: Variant = null
+var _enemy_intent_bubble_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -149,11 +151,6 @@ var _player_loadout_hud: Variant = null
 var _debug_console: Variant = null
 var _outcome_overlay: Variant = null
 
-var _intent_preview_emphasis_tween: Tween = null
-var _intent_bubble_tweens: Array[Tween] = []
-var _intent_entry_buttons: Array[Button] = []
-var _tutorial_intent_focus_kind := ""
-var _enemy_intent_entries: Array[Dictionary] = []
 var _current_enemy_visual_id := "cavern_striker"
 
 
@@ -688,30 +685,20 @@ func sync_timer_display(seconds_left: float, state: String) -> void:
 
 
 func start_enemy_intent_hover_emphasis(kind: String) -> void:
-	for tween in _intent_bubble_tweens:
-		if tween != null and is_instance_valid(tween):
-			tween.kill()
-	_intent_bubble_tweens.clear()
-	_reset_enemy_intent_emphasis()
-	var targets := _intent_bubble_targets(kind)
-	if targets.is_empty():
-		return
-	var tint := Color(1.0, 0.30, 0.24, 1.0) if kind == "attack" else Color(0.86, 0.92, 1.0, 1.0)
-	for target in targets:
-		if target == null or not is_instance_valid(target):
-			continue
-		target.modulate = tint
-		target.scale = Vector2(1.12, 1.12)
+	_ensure_enemy_intent_bubble_presenter()
+	if _enemy_intent_bubble_presenter != null:
+		_enemy_intent_bubble_presenter.start_hover_emphasis(kind)
 
 
 func set_tutorial_enemy_intent_focus(kind: String) -> void:
-	_tutorial_intent_focus_kind = kind
-	_apply_tutorial_enemy_intent_focus()
+	_ensure_enemy_intent_bubble_presenter()
+	if _enemy_intent_bubble_presenter != null:
+		_enemy_intent_bubble_presenter.set_tutorial_focus(kind)
 
 
 func clear_tutorial_enemy_intent_focus() -> void:
-	_tutorial_intent_focus_kind = ""
-	stop_enemy_intent_hover_emphasis()
+	if _enemy_intent_bubble_presenter != null:
+		_enemy_intent_bubble_presenter.clear_tutorial_focus()
 
 
 func show_tutorial_end_modal(step := "end") -> void:
@@ -730,10 +717,8 @@ func is_tutorial_end_modal_visible() -> bool:
 
 
 func stop_enemy_intent_hover_emphasis() -> void:
-	if _intent_preview_emphasis_tween != null and is_instance_valid(_intent_preview_emphasis_tween):
-		_intent_preview_emphasis_tween.kill()
-	_intent_preview_emphasis_tween = null
-	_reset_enemy_intent_emphasis()
+	if _enemy_intent_bubble_presenter != null:
+		_enemy_intent_bubble_presenter.stop_hover_emphasis()
 
 
 func _ensure_tutorial_end_overlay_presenter() -> void:
@@ -864,156 +849,32 @@ func _sync_debug_overlay(snapshot: Dictionary) -> void:
 	_enemy_debug_label.text = String(snapshot.get("enemy_text", ""))
 
 
-func _intent_bubble_targets(kind: String) -> Array[Control]:
-	var targets: Array[Control] = []
-	for button in _intent_entry_buttons:
-		if button == null or not is_instance_valid(button):
-			continue
-		if String(button.get_meta("intent_kind", "")) == kind:
-			targets.append(button)
-	if targets.is_empty() and _intent_badge != null and _intent_badge.visible:
-		targets.append(_intent_badge)
-	return targets
-
-
-func _apply_tutorial_enemy_intent_focus() -> void:
-	if _tutorial_intent_focus_kind == "":
-		return
-	for tween in _intent_bubble_tweens:
-		if tween != null and is_instance_valid(tween):
-			tween.kill()
-	_intent_bubble_tweens.clear()
-	for button in _intent_entry_buttons:
-		if button == null or not is_instance_valid(button):
-			continue
-		if String(button.get_meta("intent_kind", "")) != _tutorial_intent_focus_kind:
-			continue
-		var focus_style := _intent_bubble_focus_stylebox(_tutorial_intent_focus_kind)
-		button.add_theme_stylebox_override("normal", focus_style)
-		button.add_theme_stylebox_override("hover", focus_style)
-		button.add_theme_stylebox_override("pressed", focus_style)
-		button.add_theme_color_override("font_color", Color(1.0, 0.92, 0.30, 1.0))
-		button.add_theme_font_size_override("font_size", 25)
-		button.modulate = Color(1.0, 0.34, 0.28, 1.0) if _tutorial_intent_focus_kind == "attack" else Color(0.90, 0.96, 1.0, 1.0)
-		button.scale = Vector2(1.18, 1.18)
-		if _tutorial_intent_focus_kind == "attack":
-			var pulse_tween := button.create_tween()
-			pulse_tween.set_loops()
-			pulse_tween.tween_property(button, "modulate", Color(1.0, 0.14, 0.10, 1.0), 0.26)
-			pulse_tween.parallel().tween_property(button, "scale", Vector2(1.24, 1.24), 0.26)
-			pulse_tween.tween_property(button, "modulate", Color(0.48, 0.03, 0.02, 1.0), 0.34)
-			pulse_tween.parallel().tween_property(button, "scale", Vector2(1.10, 1.10), 0.34)
-			_intent_bubble_tweens.append(pulse_tween)
-
-
-func _reset_enemy_intent_emphasis() -> void:
-	_intent_row.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_intent_label.scale = Vector2.ONE
-	_intent_badge.scale = Vector2.ONE
-	_intent_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_intent_badge.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	for button in _intent_entry_buttons:
-		if button == null or not is_instance_valid(button):
-			continue
-		button.scale = Vector2.ONE
-		button.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		var kind := String(button.get_meta("intent_kind", ""))
-		if kind != "" and kind != _tutorial_intent_focus_kind:
-			button.add_theme_stylebox_override("normal", _intent_bubble_stylebox(kind, false))
-			button.add_theme_stylebox_override("hover", _intent_bubble_stylebox(kind, true))
-			button.add_theme_stylebox_override("pressed", _intent_bubble_stylebox(kind, true))
-	if _tutorial_intent_focus_kind != "":
-		_apply_tutorial_enemy_intent_focus()
-
-
 func _sync_enemy_intent_bubbles(preview: Dictionary) -> void:
-	_enemy_intent_entries.clear()
-	_clear_enemy_intent_bubbles()
-	if preview.has("entries") and preview.get("entries") is Array:
-		for raw in Array(preview.get("entries", [])):
-			if raw is Dictionary:
-				_enemy_intent_entries.append((raw as Dictionary).duplicate(true))
+	_ensure_enemy_intent_bubble_presenter()
+	if _enemy_intent_bubble_presenter != null:
+		_enemy_intent_bubble_presenter.sync(preview)
+
+
+func _ensure_enemy_intent_bubble_presenter() -> void:
 	if _intent_row == null:
 		return
-	var has_entries := not _enemy_intent_entries.is_empty()
-	_intent_badge.visible = false
-	_intent_label.visible = false
-	_primary_intent_text_column.visible = false
-	_intent_row.visible = has_entries
-	if not has_entries:
-		return
-	var index := 0
-	for entry in _enemy_intent_entries:
-		var button := _make_intent_entry_button(entry, index)
-		_intent_row.add_child(button)
-		_intent_entry_buttons.append(button)
-		index += 1
-	_apply_tutorial_enemy_intent_focus()
+	if _enemy_intent_bubble_presenter == null:
+		_enemy_intent_bubble_presenter = COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.new()
+	_enemy_intent_bubble_presenter.bind(
+		{
+			"intent_row": _intent_row,
+			"intent_label": _intent_label,
+			"intent_badge": _intent_badge,
+			"primary_intent_text_column": _primary_intent_text_column,
+		},
+		{
+			COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.CALLBACK_HOVERED: Callable(self, "_emit_enemy_intent_bubble_hovered"),
+			COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
+		}
+	)
 
 
-func _clear_enemy_intent_bubbles() -> void:
-	for tween in _intent_bubble_tweens:
-		if tween != null and is_instance_valid(tween):
-			tween.kill()
-	_intent_bubble_tweens.clear()
-	for button in _intent_entry_buttons:
-		if button != null and is_instance_valid(button):
-			button.queue_free()
-	_intent_entry_buttons.clear()
-
-
-func _make_intent_entry_button(entry: Dictionary, index: int) -> Button:
-	var button := Button.new()
-	var kind := String(entry.get("kind", ""))
-	var amount := maxi(0, int(entry.get("amount", 0)))
-	button.name = "EnemyIntent%s%d" % [kind.capitalize(), index]
-	button.text = String(entry.get("label", _intent_entry_label(kind, amount)))
-	button.custom_minimum_size = INTENT_BUBBLE_SIZE
-	button.size = INTENT_BUBBLE_SIZE
-	button.focus_mode = Control.FocusMode.FOCUS_NONE as Control.FocusMode
-	button.mouse_default_cursor_shape = Control.CursorShape.CURSOR_POINTING_HAND as Control.CursorShape
-	button.pivot_offset = INTENT_BUBBLE_SIZE * 0.5
-	button.set_meta("intent_kind", kind)
-	button.add_theme_font_size_override("font_size", 24)
-	button.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0, 1.0))
-	button.add_theme_constant_override("outline_size", 2)
-	button.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.03, 0.95))
-	button.add_theme_stylebox_override("normal", _intent_bubble_stylebox(kind, false))
-	button.add_theme_stylebox_override("hover", _intent_bubble_stylebox(kind, true))
-	button.add_theme_stylebox_override("pressed", _intent_bubble_stylebox(kind, true))
-	button.mouse_entered.connect(_on_enemy_intent_bubble_hovered.bind(kind, entry.duplicate(true)))
-	button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
-	return button
-
-
-func _intent_bubble_stylebox(kind: String, hover: bool) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var bg := Color(0.12, 0.04, 0.04, 0.94) if kind == "attack" else Color(0.10, 0.13, 0.16, 0.90)
-	var border := Color(1.0, 0.22, 0.20, 1.0) if kind == "attack" else Color(0.72, 0.82, 0.92, 0.95)
-	if hover:
-		bg = bg.lightened(0.08)
-	style.bg_color = bg
-	style.border_color = border
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 12.0
-	style.content_margin_right = 12.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	return style
-
-
-func _intent_bubble_focus_stylebox(kind: String) -> StyleBoxFlat:
-	var style := _intent_bubble_stylebox(kind, true)
-	style.bg_color = Color(0.20, 0.02, 0.02, 0.98) if kind == "attack" else Color(0.10, 0.16, 0.22, 0.98)
-	style.border_color = Color(1.0, 0.82, 0.08, 1.0)
-	style.set_border_width_all(4)
-	style.shadow_color = Color(1.0, 0.55, 0.0, 0.70)
-	style.shadow_size = 12
-	return style
-
-
-func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
+func _emit_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 	enemy_intent_bubble_hovered.emit(kind, entry)
 
 
@@ -1085,16 +946,6 @@ func _layout_enemy_block_intent_preview() -> void:
 
 func _emit_enemy_block_preview_hovered(preview: Dictionary) -> void:
 	enemy_block_preview_hovered.emit(preview)
-
-
-func _intent_entry_label(kind: String, amount: int) -> String:
-	match kind:
-		"attack":
-			return "Attack %d" % amount
-		"block":
-			return "Block %d" % amount
-		_:
-			return "%s %d" % [kind.capitalize(), amount]
 
 
 func _ensure_placeholder_visuals() -> void:
