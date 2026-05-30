@@ -13,7 +13,7 @@ signal settings_speed_selected(speed: String)
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
-const COMBAT_TIMER_DISPLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_timer_display_presenter.gd")
+const COMBAT_SURFACE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_surface_presenter.gd")
 const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
 const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
@@ -135,6 +135,7 @@ var _corner_bottom_left: TextureRect = null
 var _corner_bottom_right: TextureRect = null
 var _zone_guides_enabled := false
 var _combat_layout_presenter: Variant = null
+var _surface_presenter: Variant = null
 var _settings_overlay_presenter: Variant = null
 var _enemy_block_preview_presenter: Variant = null
 var _tutorial_end_overlay_presenter: Variant = null
@@ -163,6 +164,7 @@ func bind(root_nodes: Dictionary) -> void:
 	for node_name in root_nodes.keys():
 		if node_name in self:
 			set(node_name, root_nodes[node_name])
+	_sync_surface_presenter()
 
 
 func nodes_snapshot() -> Dictionary:
@@ -174,61 +176,52 @@ func set_dependencies(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud", _player_loadout_hud)
 	_debug_console = dependencies.get("debug_console", _debug_console)
 	_outcome_overlay = dependencies.get("outcome_overlay", _outcome_overlay)
+	_sync_surface_presenter()
 
 
 func set_status_text(text: String) -> void:
-	if _status_label != null:
-		_status_label.text = text
+	_ensure_surface_presenter()
+	_surface_presenter.set_status_text(text)
 
 
 func set_status_color(color: Color) -> void:
-	if _status_label != null:
-		_status_label.modulate = color
+	_ensure_surface_presenter()
+	_surface_presenter.set_status_color(color)
 
 
 func set_turn_summary_text(text: String) -> void:
-	if _turn_summary_label != null:
-		_turn_summary_label.text = text
+	_ensure_surface_presenter()
+	_surface_presenter.set_turn_summary_text(text)
 
 
 func turn_summary_text() -> String:
-	if _turn_summary_label == null:
-		return ""
-	return _turn_summary_label.text
+	_ensure_surface_presenter()
+	return _surface_presenter.turn_summary_text()
 
 
 func pulse_turn_summary(tint: Color) -> void:
-	if _turn_summary_label == null:
-		return
-	_turn_summary_label.modulate = tint
-	_turn_summary_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_ensure_surface_presenter()
+	_surface_presenter.pulse_turn_summary(tint)
 
 
 func debug_console_nodes() -> Dictionary:
-	return {
-		"combat_log_text": _combat_log_text,
-		"console_input": _console_input,
-	}
+	_ensure_surface_presenter()
+	return _surface_presenter.debug_console_nodes()
 
 
 func connect_debug_console_submit(on_submitted: Callable) -> void:
-	if _console_input == null or not _console_input.visible:
-		return
-	if _console_input.text_submitted.is_connected(on_submitted):
-		return
-	_console_input.text_submitted.connect(on_submitted)
+	_ensure_surface_presenter()
+	_surface_presenter.connect_debug_console_submit(on_submitted)
 
 
 func set_debug_toggle_button_visible(visible: bool) -> void:
-	if _debug_toggle_button != null:
-		_debug_toggle_button.visible = visible
+	_ensure_surface_presenter()
+	_surface_presenter.set_debug_toggle_button_visible(visible)
 
 
 func set_debug_overlay_visible(visible: bool) -> void:
-	if _debug_overlay != null:
-		_debug_overlay.visible = visible
-	if _debug_console != null:
-		_debug_console.set_overlay_visible(visible)
+	_ensure_surface_presenter()
+	_surface_presenter.set_debug_overlay_visible(visible)
 
 
 func show_settings_overlay(speed: String) -> void:
@@ -243,49 +236,38 @@ func hide_settings_overlay() -> void:
 
 
 func toggle_debug_overlay() -> bool:
-	var visible := not is_debug_overlay_visible()
-	set_debug_overlay_visible(visible)
-	return visible
+	_ensure_surface_presenter()
+	return _surface_presenter.toggle_debug_overlay()
 
 
 func is_debug_overlay_visible() -> bool:
-	if _debug_overlay == null:
-		return false
-	return _debug_overlay.visible
+	_ensure_surface_presenter()
+	return _surface_presenter.is_debug_overlay_visible()
 
 
 func outcome_overlay_nodes() -> Dictionary:
-	return {
-		"layout_root": _layout_root,
-		"summary_panel": _outcome_summary_panel,
-		"summary_root": _outcome_summary_root,
-		"text_column": _outcome_text_column,
-		"title_label": _outcome_title_label,
-		"body_label": _outcome_body_label,
-		"next_button": _next_button,
-	}
+	_ensure_surface_presenter()
+	return _surface_presenter.outcome_overlay_nodes()
 
 
 func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary = {}) -> void:
-	if outcome_overlay == null:
-		return
-	outcome_overlay.bind(outcome_overlay_nodes(), config)
+	_ensure_surface_presenter()
+	_surface_presenter.bind_outcome_overlay(outcome_overlay, config)
 
 
 func set_outcome_body_text(text: String) -> void:
-	if _outcome_body_label != null:
-		_outcome_body_label.text = text
+	_ensure_surface_presenter()
+	_surface_presenter.set_outcome_body_text(text)
 
 
 func set_outcome_next_button_disabled(disabled: bool) -> void:
-	if _next_button != null:
-		_next_button.disabled = disabled
+	_ensure_surface_presenter()
+	_surface_presenter.set_outcome_next_button_disabled(disabled)
 
 
 func next_button_text() -> String:
-	if _next_button == null:
-		return ""
-	return _next_button.text
+	_ensure_surface_presenter()
+	return _surface_presenter.next_button_text()
 
 
 func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:
@@ -359,10 +341,8 @@ func resolve_presenter_bindings(
 
 
 func bootstrap_background() -> void:
-	if _background == null:
-		return
-	_background.texture = null
-	_background.modulate = Color(0.16, 0.17, 0.20, 1.0)
+	_ensure_surface_presenter()
+	_surface_presenter.bootstrap_background()
 
 
 func set_top_bar_text(level_text: String, hint_text: String) -> void:
@@ -512,9 +492,8 @@ func set_zone_guides_enabled(enabled: bool) -> void:
 
 
 func set_vfx_layer_visible(visible: bool) -> void:
-	if _vfx_layer == null:
-		return
-	_vfx_layer.visible = visible
+	_ensure_surface_presenter()
+	_surface_presenter.set_vfx_layer_visible(visible)
 
 
 func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) -> void:
@@ -537,17 +516,8 @@ func refresh_character_portraits(enemy_id: String) -> void:
 
 
 func sync_timer_display(seconds_left: float, state: String) -> void:
-	COMBAT_TIMER_DISPLAY_PRESENTER_SCRIPT.apply_to_nodes(
-		{
-			"timer_track": _timer_track,
-			"timer_fill": _timer_fill,
-			"timer_label": _timer_label,
-			"timer_state_label": _timer_state_label,
-			"timer_icon": _timer_icon,
-		},
-		seconds_left,
-		state
-	)
+	_ensure_surface_presenter()
+	_surface_presenter.sync_timer_display(seconds_left, state)
 
 
 func start_enemy_intent_hover_emphasis(kind: String) -> void:
@@ -796,6 +766,18 @@ func _apply_zone_guides() -> void:
 
 func _set_zone_guide(zone: Control, label_text: String) -> void:
 	COMBAT_CHROME_STYLER_SCRIPT.apply_zone_guide(zone, label_text, _zone_guides_enabled)
+
+
+func _ensure_surface_presenter() -> void:
+	if _surface_presenter == null:
+		_surface_presenter = COMBAT_SURFACE_PRESENTER_SCRIPT.new()
+	_sync_surface_presenter()
+
+
+func _sync_surface_presenter() -> void:
+	if _surface_presenter == null:
+		return
+	_surface_presenter.bind(_root_nodes, {"debug_console": _debug_console})
 
 
 func _combat_player_hud_nodes(popover_parent: Control = null, popover_z_index: int = 210) -> Dictionary:
