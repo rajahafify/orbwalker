@@ -39,6 +39,25 @@ var _profile_snapshot: Dictionary = {}
 var _profile_name: String = "Default Profile"
 var _profile_total_score: int = 0
 
+
+static func asset_contract_paths() -> Dictionary:
+	var fallback_paths: Array[String] = [
+		FALLBACK_BG_PATH,
+		FALLBACK_LOGO_PATH,
+		FALLBACK_OUTER_BORDER_PATH,
+		FALLBACK_BUTTON_PRIMARY_PATH,
+		FALLBACK_BUTTON_SECONDARY_PATH,
+		FALLBACK_STATS_PANEL_PATH,
+	]
+	fallback_paths.append_array(ELEMENT_ICON_FALLBACK_PATHS)
+	fallback_paths.append_array(STAT_ICON_FALLBACK_PATHS)
+	fallback_paths.append_array(FOOTER_ICON_FALLBACK_PATHS)
+	return {
+		"json_files": [MENU_ASSET_MAP_PATH],
+		"imported_textures": _unique_contract_paths(fallback_paths),
+	}
+
+
 func load_menu_assets() -> void:
 	_asset_map = _load_asset_map()
 	_menu_assets = Dictionary(_asset_map.get("menu", {}))
@@ -92,6 +111,18 @@ func _load_asset_map() -> Dictionary:
 	if parsed is Dictionary:
 		return parsed
 	return {}
+
+
+static func _unique_contract_paths(paths: Array[String]) -> Array[String]:
+	var seen := {}
+	var unique_paths: Array[String] = []
+	for path in paths:
+		if path == "" or seen.has(path):
+			continue
+		seen[path] = true
+		unique_paths.append(path)
+	unique_paths.sort()
+	return unique_paths
 
 
 func _resolve_background_path() -> String:

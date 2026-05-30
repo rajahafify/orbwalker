@@ -62,6 +62,10 @@
     <p>Use <code>res://scripts/tests/run_all_tests.gd</code> as the single headless test entrypoint. It discovers <code>*_test.gd</code> suites under <code>scripts/tests/</code> and <code>*_probe.gd</code> contracts under <code>scripts/debug/</code>; each discovered file must expose <code>run_all() -&gt; Dictionary</code> with <code>passed</code>, <code>total</code>, <code>failed</code>, and <code>failures</code>.</p>
     <p>Local command: <code>godot --headless --path . --script res://scripts/tests/run_all_tests.gd</code>. GitHub Actions runs the same gate and also rejects tracked generated artifacts such as APKs, build output, logs, temp files, and Android export output.</p>
 
+    <h2>Asset Path Contracts</h2>
+    <p>Runtime asset maps and fallback constants should be validated through <code>res://scripts/tests/asset_pipeline_test.gd</code>. When adding a new stable fallback texture path, expose it from the owning class's <code>asset_contract_paths()</code> helper so the shared runner can prove the import exists and loads.</p>
+    <p><code>assets.json</code> is the production inventory, not a runtime texture registry. Keep its schema and <code>res://</code> references valid, and keep runtime texture paths in <code>resources/visual/first_pass_asset_map.json</code> or <code>resources/art/assetgen/runtime/manifest.json</code> where the validation test can import-load them.</p>
+
     <h2>Script Size Budget</h2>
     <p>Shop, collection, and run-summary scripts have a warning-only size budget checked by <code>res://tools/quality/script_size_budget.gd</code>. Oversized scripts need a documented exception in <code>docs/script_size_budget.html</code> with a concrete removal path.</p>
   </main>

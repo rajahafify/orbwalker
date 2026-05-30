@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>17</code> suites and <code>93</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>18</code> suites and <code>97</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -412,15 +412,16 @@
 
     <div class="card c-p4">
       <h4><span class="id">P4-3</span> Asset pipeline validation</h4>
-      <p class="why">There's a real asset-map + fallback system (<code>main_menu_model.gd</code>, <code>assets.json</code>, the <code>resources/art/assetgen/</code> tree). Migrations like the recent <code>first_pass → assetgen</code> repoint are exactly where a typo'd path ships a blank texture. Make broken references impossible to merge.</p>
+      <p class="why">There's a real asset-map + fallback system (<code>main_menu_model.gd</code>, <code>assets.json</code>, the <code>resources/art/assetgen/</code> tree). Migrations like the recent <code>first_pass -&gt; assetgen</code> repoint are exactly where a typo'd path ships a blank texture. Make broken references impossible to merge.</p>
       <div class="lab">Actions</div>
       <ul class="act">
         <li>A test that loads every fallback constant and asset-map entry and asserts the resource exists and imports.</li>
         <li>Validate <code>assets.json</code> against a schema in CI.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR introducing a non-existent texture path (constant or asset-map) fails CI.</div>
+      <div class="ac"><b>Current evidence:</b> <code>asset_pipeline_test.gd</code> validates fallback texture contracts, <code>first_pass_asset_map.json</code>, <code>runtime/manifest.json</code>, and the <code>assets.json</code> schema/path inventory through the shared headless runner.</div>
       <div class="tags"><span class="t">Effort <b>S</b></span></div>
-      <div class="tags"><span class="files">scripts/main_menu/main_menu_model.gd · assets.json · resources/art/assetgen/</span></div>
+      <div class="tags"><span class="files">scripts/tests/asset_pipeline_test.gd · scripts/main_menu/main_menu_model.gd · scripts/ui/visual_registry.gd · assets.json · resources/art/assetgen/</span></div>
     </div>
   </section>
 
