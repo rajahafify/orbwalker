@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>28</code> suites and <code>133</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>29</code> suites and <code>136</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -249,16 +249,16 @@
 
     <div class="card c-p1">
       <h4><span class="id">P1-2</span> Decompose <code>combat_view.gd</code></h4>
-      <p class="why"><code>combat_view.gd</code> is still ~1,418 lines. It owns background bootstrap, HUD node wiring, popover parenting, layout, and the player-HUD binding dictionary. Same problem, presentation side.</p>
+      <p class="why"><code>combat_view.gd</code> is still ~1,346 lines. It owns background bootstrap, HUD node wiring, popover parenting, layout, and the player-HUD binding dictionary. Same problem, presentation side.</p>
       <div class="lab">Actions</div>
       <ul class="act">
         <li>Split presentation concerns into focused presenters (HUD, intent, outcome, timer) — several already exist (<code>combat_hud_presenter.gd</code>, <code>combat_layout_presenter.gd</code>); push more responsibility into them.</li>
         <li>The view becomes a thin facade that owns node refs and forwards to presenters.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> <code>combat_view.gd</code> &lt; ~500 lines; presenters are independently unit-testable; no visual regression vs. baseline screenshots (P3-2).</div>
-      <div class="ac"><b>Current evidence:</b> <code>combat_timer_display_presenter.gd</code> now owns timer label/state/fill/color presentation rules, with <code>combat_timer_display_presenter_test.gd</code> covering ready, locked, warning, and deterministic critical snapshots. <code>combat_view.gd</code> delegates timer node application to that presenter instead of owning the threshold/color logic inline.</div>
+      <div class="ac"><b>Current evidence:</b> <code>combat_timer_display_presenter.gd</code> now owns timer label/state/fill/color presentation rules, with <code>combat_timer_display_presenter_test.gd</code> covering ready, locked, warning, and deterministic critical snapshots. <code>combat_settings_overlay_presenter.gd</code> now owns runtime settings overlay construction, speed-selection text, and menu-button callbacks, with <code>combat_settings_overlay_presenter_test.gd</code> covering show/hide, speed refresh, and callback forwarding. <code>combat_view.gd</code> delegates those node applications instead of owning the presentation rules inline.</div>
       <div class="tags"><span class="t">Effort <b>XL</b></span></div>
-      <div class="tags"><span class="files">scripts/combat/combat_view.gd &middot; scripts/combat/combat_timer_display_presenter.gd &middot; scripts/tests/combat_timer_display_presenter_test.gd</span></div>
+      <div class="tags"><span class="files">scripts/combat/combat_view.gd &middot; scripts/combat/combat_timer_display_presenter.gd &middot; scripts/combat/combat_settings_overlay_presenter.gd &middot; scripts/tests/combat_timer_display_presenter_test.gd &middot; scripts/tests/combat_settings_overlay_presenter_test.gd</span></div>
     </div>
 
     <div class="card c-p1">
