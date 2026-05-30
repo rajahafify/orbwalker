@@ -5,7 +5,7 @@ const PLAYER_HUD_SCENE_PATH := "res://scenes/ui/player_hud.tscn"
 const COMBAT_SCENE_PATH := "res://scenes/combat.tscn"
 const SHOP_HOST_SCRIPT_PATH := "res://scripts/scenes/shop.gd"
 const SHOP_VIEW_SCRIPT_PATH := "res://scripts/shop/shop_view.gd"
-const COMBAT_SCRIPT_PATH := "res://scripts/scenes/combat.gd"
+const COMBAT_VIEW_SCRIPT_PATH := "res://scripts/combat/combat_view.gd"
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 
 const REQUIRED_SHARED_NODE_NAMES := [
@@ -142,22 +142,29 @@ static func _check_shop_instances_shared_scene(failures: Array[String]) -> void:
 
 
 static func _check_binding_key_contract(failures: Array[String]) -> void:
-	_check_source_contains_binding_keys(COMBAT_SCRIPT_PATH, "_combat_player_hud_nodes", failures)
-	_check_source_contains_binding_keys(SHOP_VIEW_SCRIPT_PATH, "_shop_player_hud_nodes", failures)
+	_check_callable_binding_keys(COMBAT_VIEW_SCRIPT_PATH, "_combat_player_hud_nodes", failures)
+	_check_callable_binding_keys(SHOP_VIEW_SCRIPT_PATH, "_shop_player_hud_nodes", failures)
 
 
-static func _check_source_contains_binding_keys(path: String, function_name: String, failures: Array[String]) -> void:
-	var source := FileAccess.get_file_as_string(path)
-	if source.is_empty():
-		failures.append("Failed to read binding source: %s" % path)
+static func _check_callable_binding_keys(path: String, function_name: String, failures: Array[String]) -> void:
+	var script := ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE) as Script
+	if script == null:
+		failures.append("Failed to load binding script: %s" % path)
 		return
-	var function_index := source.find("func %s()" % function_name)
-	if function_index == -1:
+	var owner: Variant = script.new()
+	if owner == null:
+		failures.append("Failed to instantiate binding script: %s" % path)
+		return
+	if not owner.has_method(function_name):
 		failures.append("Missing %s in %s" % [function_name, path])
 		return
-	var source_slice := source.substr(function_index, 2400)
+	var result: Variant = owner.call(function_name)
+	if not (result is Dictionary):
+		failures.append("%s in %s must return a Dictionary" % [function_name, path])
+		return
+	var bindings: Dictionary = result
 	for key in REQUIRED_HUD_BINDING_KEYS:
-		if not source_slice.contains('"%s"' % key):
+		if not bindings.has(key):
 			failures.append("%s is missing HUD binding key: %s" % [function_name, key])
 
 

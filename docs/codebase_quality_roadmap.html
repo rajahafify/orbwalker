@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbwalker — Codebase Quality Roadmap (8 → 10)</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#131a24; --panel:#161e2b;
+    --panel2:#1b2433; --line:#26303f; --ink:#e7edf5; --muted:#9fb0c3;
+    --gold:#eba945; --gold-soft:#caa15a; --green:#4fc78a; --red:#f0676a;
+    --blue:#5aa7e6; --purple:#a98be0; --chip:#212c3c;
+    --p0:#f0676a; --p1:#eba945; --p2:#5aa7e6; --p3:#4fc78a; --p4:#a98be0; --p5:#7d8da0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0f16,#0d1117 240px);
+    color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.86em}
+  code{background:#0b1119;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#d6e2f0}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px 90px}
+
+  header.hero{
+    padding:54px 22px 30px;max-width:1080px;margin:0 auto;
+  }
+  .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--gold-soft);font-weight:700}
+  h1{font-size:34px;margin:.25em 0 .15em;line-height:1.15}
+  .sub{color:var(--muted);font-size:16px;max-width:760px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .pill{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:12.5px;color:var(--muted)}
+  .pill b{color:var(--ink)}
+
+  .scoreband{display:flex;align-items:center;gap:18px;margin:26px 0 6px;flex-wrap:wrap}
+  .score{
+    font-size:40px;font-weight:800;line-height:1;letter-spacing:-.02em;
+    background:linear-gradient(180deg,#f3c777,#d6932f);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .bar{flex:1;min-width:220px;height:12px;border-radius:99px;background:#0b1119;border:1px solid var(--line);overflow:hidden}
+  .bar>i{display:block;height:100%;width:80%;background:linear-gradient(90deg,#d6932f,#f3c777)}
+
+  h2.section{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:46px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 6px}
+  .legend .l{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px}
+  .legend .l b{display:block;color:var(--ink);margin-bottom:2px}
+
+  table.grid{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:13.5px}
+  table.grid th,table.grid td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .dim{color:var(--muted)}
+  .n{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+  .phase{margin:30px 0}
+  .phase-head{display:flex;align-items:center;gap:12px;margin:0 0 4px}
+  .ptag{font-weight:800;font-size:13px;color:#0d1117;border-radius:7px;padding:4px 10px;letter-spacing:.03em}
+  .phase-head h3{font-size:21px;margin:0}
+  .phase-goal{color:var(--muted);margin:2px 0 16px;font-size:14.5px}
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-left:3px solid var(--line);
+    border-radius:12px;padding:16px 18px;margin:12px 0;
+  }
+  .card h4{margin:0 0 2px;font-size:16.5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .id{font-family:ui-monospace,monospace;font-size:12px;color:#0d1117;background:var(--gold-soft);border-radius:5px;padding:2px 7px;font-weight:700}
+  .why{color:var(--muted);margin:8px 0 12px}
+  .lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft);font-weight:700;margin:12px 0 5px}
+  ul.act{margin:4px 0 0;padding-left:20px}
+  ul.act li{margin:3px 0}
+  .ac{background:#0b1119;border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin-top:11px;font-size:13.5px;color:var(--green)}
+  .ac b{color:var(--ink);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+  .t{font-size:11.5px;background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:3px 9px;color:var(--muted)}
+  .t b{color:var(--ink)}
+  .files{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--gold-soft)}
+
+  .callout{background:#1a1410;border:1px solid #4a3a1f;border-radius:11px;padding:14px 17px;margin:16px 0;color:#e9d6b3}
+  .callout b{color:var(--gold)}
+
+  .def{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .def .d{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+  .def .d h5{margin:0 0 6px;font-size:14px;color:var(--gold)}
+  .def .d p{margin:0;color:var(--muted);font-size:13.5px}
+
+  footer{color:var(--muted);font-size:12.5px;margin-top:50px;border-top:1px solid var(--line);padding-top:18px}
+
+  /* priority color hooks */
+  .c-p0{border-left-color:var(--p0)} .c-p1{border-left-color:var(--p1)}
+  .c-p2{border-left-color:var(--p2)} .c-p3{border-left-color:var(--p3)}
+  .c-p4{border-left-color:var(--p4)} .c-p5{border-left-color:var(--p5)}
+  .pt-p0{background:var(--p0)} .pt-p1{background:var(--p1)} .pt-p2{background:var(--p2)}
+  .pt-p3{background:var(--p3)} .pt-p4{background:var(--p4)} .pt-p5{background:var(--p5);color:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Orbwalker · Engineering</div>
+  <h1>Codebase Quality Roadmap</h1>
+  <p class="sub">A prioritized, P0&ndash;P5 plan to move the codebase from a verified <b>8/10</b> to a defensible <b>10/10</b>. Every item below traces to something read directly in the tree, with concrete actions and acceptance criteria so "done" is unambiguous.</p>
+
+  <div class="meta">
+    <span class="pill">Engine <b>Godot 4.6</b></span>
+    <span class="pill">Architecture <b>MVC (model/view/controller)</b></span>
+    <span class="pill">Language <b>GDScript, statically typed</b></span>
+    <span class="pill">Generated <b>2026-05-30</b></span>
+  </div>
+
+  <div class="scoreband">
+    <span class="score">8.0 → 10</span>
+    <span class="bar"><i></i></span>
+  </div>
+
+  <div class="toc">
+    <a href="#scorecard">Scorecard</a>
+    <a href="#p0">P0 Integrity</a>
+    <a href="#p1">P1 Structure</a>
+    <a href="#p2">P2 Contracts</a>
+    <a href="#p3">P3 Test depth</a>
+    <a href="#p4">P4 Tooling/DX</a>
+    <a href="#p5">P5 Resilience</a>
+    <a href="#definition">Definition of 10</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2 class="section">How to read this</h2>
+  <div class="legend">
+    <div class="l"><b>Priority</b>P0 = trust/correctness blocker · P5 = long-horizon polish. Do them roughly in order; later phases assume earlier ones landed.</div>
+    <div class="l"><b>Effort</b>S = &lt;½ day · M = 1&ndash;3 days · L = ~1 week · XL = multi-week, do incrementally.</div>
+    <div class="l"><b>Acceptance</b>The green line is the objective, testable bar. If it isn't measurable, it isn't done.</div>
+    <div class="l"><b>Confidence</b>Items marked <i>verify</i> rest on one fact I couldn't confirm under a degraded tool channel; check it before acting.</div>
+  </div>
+
+  <div class="callout">
+    <b>The thesis.</b> This codebase is already well-architected: real MVC separation, broad behavioral tests, typed and defensive code. The gap to 10 is not "write more features" — it's <b>removing the two god-objects, making contracts self-enforcing instead of grep-based, and proving correctness through an enforced gate</b>. A 10/10 codebase is one where a stranger can change anything and the system tells them immediately if they broke it.
+  </div>
+
+  <!-- SCORECARD -->
+  <h2 class="section" id="scorecard">Current scorecard</h2>
+  <table class="grid">
+    <thead><tr><th>Dimension</th><th>Now</th><th>Target</th><th>Gap closed by</th></tr></thead>
+    <tbody>
+      <tr><td>Architecture &amp; separation</td><td class="n">9</td><td class="n">10</td><td class="dim">P1 (decompose god-objects)</td></tr>
+      <tr><td>Correctness safety net (tests)</td><td class="n">7</td><td class="n">10</td><td class="dim">P0 CI gate, P3 depth/coverage</td></tr>
+      <tr><td>Contract / invariant enforcement</td><td class="n">6</td><td class="n">10</td><td class="dim">P2 (replace source-grep probes)</td></tr>
+      <tr><td>Type safety at boundaries</td><td class="n">7</td><td class="n">10</td><td class="dim">P2 (typed node accessors)</td></tr>
+      <tr><td>Repo hygiene / DX</td><td class="n">5</td><td class="n">10</td><td class="dim">P0 hygiene, P4 tooling</td></tr>
+      <tr><td>Documentation</td><td class="n">7</td><td class="n">10</td><td class="dim">P4 (arch docs + ADRs)</td></tr>
+      <tr><td>Resilience (save/migration/perf)</td><td class="n">7</td><td class="n">10</td><td class="dim">P5</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===================== P0 ===================== -->
+  <section class="phase" id="p0">
+    <div class="phase-head"><span class="ptag pt-p0">P0</span><h3>Foundational integrity</h3></div>
+    <p class="phase-goal">Things that are actively broken, erode trust, or mean "green" doesn't yet mean "safe." Nothing else matters until the safety net is real and the repo is clean. Target: <b>1 week</b>.</p>
+
+    <div class="card c-p0">
+      <h4><span class="id">P0-1</span> Enforce the existing tests in CI</h4>
+      <p class="why">You already have ~15 <code>run_all()</code> suites plus <code>combat_scene_contract_test.gd</code> — but I found no evidence they run on every push. Untriggered tests are documentation, not a safety net. This is the single highest-leverage change in the whole document.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Add a headless test runner script (<code>scripts/tests/run_all_tests.gd</code>) that discovers every suite exposing <code>run_all()</code> and aggregates pass/fail counts, exiting non-zero on any failure.</li>
+        <li>Run it via <code>godot --headless --script res://scripts/tests/run_all_tests.gd</code> in GitHub Actions (or your CI) against a pinned Godot 4.6 image.</li>
+        <li>Gate merges on it. Add a status badge to <code>CONTRIBUTING.html</code>.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
+      <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
+    </div>
+
+    <div class="card c-p0">
+      <h4><span class="id">P0-2</span> Keep generated artifacts out of the tree and history</h4>
+      <p class="why"><code>Orbwalker.apk</code> existed locally as an ignored root-level export artifact and has been removed from the working tree. A repo audit shows <code>git log --all -- Orbwalker.apk</code> already returns nothing, so the priority is preserving that invariant and keeping <code>build/</code>, <code>.godot/</code>, <code>tmp/</code>, logs, and Android export output out of source control.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Move release binaries to CI artifacts / GitHub Releases. Never commit them.</li>
+        <li>Keep the existing ignore rules covering APKs, <code>build/</code>, <code>.godot/</code>, <code>tmp/</code>, logs, and Android export output aligned with the actual export workflow.</li>
+        <li>Add a lightweight tracked-artifact check to the P0-1 runner or CI workflow so accidental APK/build output commits fail fast.</li>
+        <li>Triage <code>tmp/capture_*.gd</code> / <code>tmp/*_probe.gd</code> if any are intentionally promoted later; keep local scratch output untracked by default.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> <code>git log --all -- Orbwalker.apk</code> stays empty; <code>git status --ignored --short</code> shows no unexpected root APK/build output; no generated output is tracked.</div>
+      <div class="tags"><span class="t">Effort <b>S</b></span><span class="t">Risk <b>low</b></span></div>
+      <div class="tags"><span class="files">Orbwalker.apk · build/ · .godot/ · tmp/ · .gitignore</span></div>
+    </div>
+
+    <div class="card c-p0">
+      <h4><span class="id">P0-3</span> Replace the stale HUD contract probe source-grep</h4>
+      <p class="why">The "Improve combat scene binding contract" refactor moved combat HUD binding ownership into <code>CombatView</code>. The probe was brittle because it searched source bytes for a deleted helper in <code>scripts/scenes/combat.gd</code>; the check now loads the binding owners and asserts on the returned dictionaries instead.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Load <code>CombatView</code> and <code>ShopView</code> with <code>ResourceLoader.CACHE_MODE_IGNORE</code> so the probe sees current source even during editor sessions.</li>
+        <li>Call <code>_combat_player_hud_nodes()</code> and <code>_shop_player_hud_nodes()</code>, then assert that each dictionary contains the required shared HUD keys.</li>
+        <li>Wire the probe into the P0-1 runner so it can never silently rot again.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> <code>PlayerHudContractProbe.run_probe()</code> returns <code>status: "ok"</code> on a clean checkout, and it runs in CI.</div>
+      <div class="tags"><span class="t">Effort <b>S</b></span><span class="t">Confidence <b>confirmed</b></span></div>
+      <div class="tags"><span class="files">scripts/debug/player_hud_contract_probe.gd</span></div>
+    </div>
+
+    <div class="card c-p0">
+      <h4><span class="id">P0-4</span> One test-discovery convention</h4>
+      <p class="why">Suites expose <code>run_all()</code>; the HUD probe exposes <code>run_probe()</code>; <code>combat_controller.gd:795</code> invokes a runner inline. Three shapes mean things fall through the cracks (exactly how P0-3 happened). Pick one.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Standardize on a single entrypoint signature (e.g. every test/probe class exposes <code>run_all() -&gt; Dictionary {passed,total,failed,failures}</code>).</li>
+        <li>Adapt the HUD probe to that shape; remove the bespoke inline invocation path.</li>
+        <li>Document the convention in <code>CONTRIBUTING.html</code>.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> the P0-1 runner finds 100% of test/probe files by one rule; adding a new suite requires zero runner edits.</div>
+      <div class="tags"><span class="t">Effort <b>S</b></span></div>
+      <div class="tags"><span class="files">scripts/tests/* · scripts/debug/*_probe.gd · CONTRIBUTING.html</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== P1 ===================== -->
+  <section class="phase" id="p1">
+    <div class="phase-head"><span class="ptag pt-p1">P1</span><h3>Structural debt — the god-objects</h3></div>
+    <p class="phase-goal">Two files own far more than they should. They're the reason "obvious" changes carry risk. Break them along the seams that already exist. Target: <b>2&ndash;3 weeks, incremental</b>.</p>
+
+    <div class="card c-p1">
+      <h4><span class="id">P1-1</span> Decompose <code>combat_controller.gd</code></h4>
+      <p class="why">~795+ lines and ~120 top-level constants, owning timer logic, debug console wiring, tutorial scripting, VFX, board orchestration, outcome overlays, and HUD updates. The recent <code>_ready()</code> extraction improved readability but not <i>responsibility</i> — it's still one object that knows everything. This is now the biggest structural drag.</p>
+      <div class="lab">Actions (extract collaborators it already references)</div>
+      <ul class="act">
+        <li><code>CombatTimerService</code> — the <code>MOVE_TIMER_*</code> / <code>TIMER_*</code> constants and tick logic.</li>
+        <li><code>TutorialDirector</code> — all <code>TUTORIAL_*</code> constants and scripted-step state (see P2-2).</li>
+        <li>Fold the already-extracted <code>_bind_debug_console()</code> / <code>_debug_command_callbacks()</code> into the existing <code>combat_debug_*</code> classes so the controller just hands off.</li>
+        <li>Move outcome/summary geometry constants into <code>combat_outcome_overlay.gd</code>.</li>
+        <li>Leave the controller as an orchestrator: receive input, advance state machine, delegate.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> <code>combat_controller.gd</code> &lt; ~350 lines; no single new class &gt; ~300; each extracted service has its own <code>run_all()</code> test; combat behaves identically (verified by P3 flow tests).</div>
+      <div class="tags"><span class="t">Effort <b>XL</b></span><span class="t">Do behind the test net from P0-1</span></div>
+      <div class="tags"><span class="files">scripts/combat/combat_controller.gd → new services under scripts/combat/</span></div>
+    </div>
+
+    <div class="card c-p1">
+      <h4><span class="id">P1-2</span> Decompose <code>combat_view.gd</code></h4>
+      <p class="why">~1600+ lines. It owns background bootstrap, HUD node wiring, popover parenting, layout, and the player-HUD binding dictionary. Same problem, presentation side.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Split presentation concerns into focused presenters (HUD, intent, outcome, timer) — several already exist (<code>combat_hud_presenter.gd</code>, <code>combat_layout_presenter.gd</code>); push more responsibility into them.</li>
+        <li>The view becomes a thin facade that owns node refs and forwards to presenters.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> <code>combat_view.gd</code> &lt; ~500 lines; presenters are independently unit-testable; no visual regression vs. baseline screenshots (P3-2).</div>
+      <div class="tags"><span class="t">Effort <b>XL</b></span></div>
+      <div class="tags"><span class="files">scripts/combat/combat_view.gd · combat_*_presenter.gd</span></div>
+    </div>
+
+    <div class="card c-p1">
+      <h4><span class="id">P1-3</span> Audit for the same pattern in shop / collection / run_summary</h4>
+      <p class="why">The combat slice was the worst, but the same "view + controller grow unbounded" tendency likely exists elsewhere (<code>shop_controller.gd</code>, <code>shop_view.gd</code>, <code>collection_view.gd</code>). Fix the pattern, not just the instance — that's the "altitude" point.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Set a soft budget (e.g. controllers &lt; 400 lines, views &lt; 500) and add a CI warning (not failure) when exceeded.</li>
+        <li>Apply the P1-1/P1-2 extraction recipe wherever the budget is blown.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> no script &gt; the agreed budget without a documented exception; the budget check runs in CI.</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+      <div class="tags"><span class="files">scripts/shop/* · scripts/collection/* · scripts/run_summary/*</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== P2 ===================== -->
+  <section class="phase" id="p2">
+    <div class="phase-head"><span class="ptag pt-p2">P2</span><h3>Self-enforcing contracts &amp; type safety</h3></div>
+    <p class="phase-goal">Make invariants impossible to break silently. Today some contracts are enforced by grepping source text — which is exactly why a clean refactor broke one. Replace fragile string-contracts with runtime ones, and restore type safety at the boundaries the binding-dictionary erased. Target: <b>1&ndash;2 weeks</b>.</p>
+
+    <div class="card c-p2">
+      <h4><span class="id">P2-1</span> Typed accessor over the node binding dictionary</h4>
+      <p class="why"><code>ROOT_NODE_BINDINGS</code> + <code>_build_root_nodes()</code> is a clean win for de-duplication, but it traded away the old per-field <code>as Label</code> / <code>as ProgressBar</code> casts. Values now cross into the controller as untyped <code>Node</code>. <code>combat_scene_contract_test.gd</code> asserts non-null, but <b>not</b> the node's class — so a scene node of the wrong type resolves fine and fails later at use.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Add the expected type to each binding (e.g. <code>{"path": ^"%StatusLabel", "type": "Label"}</code> or a parallel type map).</li>
+        <li>Have <code>_build_root_nodes()</code> verify <code>is</code>-type on resolve and <code>push_error</code> on mismatch.</li>
+        <li>Extend the contract test to assert type, not just presence.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> changing a node's class in <code>combat.tscn</code> to the wrong type fails <code>combat_scene_contract_test</code> in CI with a precise message.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+      <div class="tags"><span class="files">scripts/scenes/combat.gd · scripts/tests/combat_scene_contract_test.gd</span></div>
+    </div>
+
+    <div class="card c-p2">
+      <h4><span class="id">P2-2</span> Extract the tutorial system out of combat</h4>
+      <p class="why">The tutorial is currently a set of <code>TUTORIAL_*</code> constants and scripted swap-paths living inside <code>combat_controller.gd</code>, while <code>scenes/tutorial.tscn</code> is an empty <code>extends Control</code> stub (reached via the main-menu Tutorial button → <code>start_tutorial_run()</code> → combat). The logic is real but buried, and the stub scene is dead weight. Also: <code>tutorial.tscn</code> carries a non-standard <code>unique_id=…</code> node attribute worth cleaning. <span class="dim">(verify the stub is truly unused before deleting.)</span></p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Introduce a <code>TutorialDirector</code> collaborator (part of P1-1) that drives scripted steps and prompts; the controller asks it "what now?" rather than embedding step data.</li>
+        <li>Either give <code>tutorial.tscn</code> a real purpose or delete it and its stub script + the odd <code>unique_id</code> attribute.</li>
+        <li>Add a tutorial flow test (P3-1) so the scripted path can't silently break.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> tutorial step data lives in one cohesive class with its own tests; no orphan <code>tutorial.tscn</code>/<code>tutorial.gd</code>; combat controller no longer references <code>TUTORIAL_*</code> constants directly.</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+      <div class="tags"><span class="files">scripts/combat/combat_controller.gd · scenes/tutorial.tscn · scripts/scenes/tutorial.gd</span></div>
+    </div>
+
+    <div class="card c-p2">
+      <h4><span class="id">P2-3</span> Replace source-grep contracts with runtime contracts</h4>
+      <p class="why"><code>player_hud_contract_probe.gd</code> enforces structure by reading other files as strings and searching for <code>func name()</code> and quoted keys. This is brittle (whitespace, params, renames all break it for the wrong reasons) and was the root cause of the P0-3 false failure. Contracts should assert on <i>behavior/values</i>, not source bytes.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Instantiate the relevant scene/object and assert the actual returned binding dictionary contains the required keys mapping to live, correctly-typed nodes.</li>
+        <li>Delete the <code>FileAccess.get_file_as_string()</code> + <code>source.find(...)</code> machinery.</li>
+        <li>Apply the same treatment to the shop-side checks in the probe.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> no test/probe in the repo enforces a contract by reading source text; renaming a private function with identical behavior does not fail any test.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+      <div class="tags"><span class="files">scripts/debug/player_hud_contract_probe.gd · scripts/shop/shop_view.gd</span></div>
+    </div>
+
+    <div class="card c-p2">
+      <h4><span class="id">P2-4</span> Tighten stringly-typed dictionaries crossing module boundaries</h4>
+      <p class="why">Several boundaries pass <code>Dictionary</code> blobs with string keys (debug command callbacks, HUD node maps, flow-trace payloads). They work, but a typo in a key is a silent runtime miss, not a compile error.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Where a dictionary has a fixed shape, promote it to a small typed class or named constants for the keys.</li>
+        <li>Prioritize the highest-traffic boundaries (controller↔view, controller↔services).</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> the key names on the hottest 3 boundaries are defined once as constants/typed members; a typo is caught at parse/analysis time (P4-1).</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+    </div>
+  </section>
+
+  <!-- ===================== P3 ===================== -->
+  <section class="phase" id="p3">
+    <div class="phase-head"><span class="ptag pt-p3">P3</span><h3>Test depth &amp; coverage</h3></div>
+    <p class="phase-goal">The suite is broad but mostly unit-level. A 10/10 net catches regressions in <i>flows</i>, not just functions, and you can prove what is and isn't covered. Target: <b>2 weeks</b>.</p>
+
+    <div class="card c-p3">
+      <h4><span class="id">P3-1</span> End-to-end flow tests for the core loops</h4>
+      <p class="why">Unit tests confirm pieces; they don't confirm "start run → combat → win → shop → next combat → defeat → summary" still works after a refactor. These are the tests that let you decompose the god-objects (P1) without fear.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Headless flow tests driving the state machines through: full combat win, full combat loss, shop buy/reroll/continue, tutorial scripted path.</li>
+        <li>Use deterministic RNG seeds (the board already supports seeding) so flows are reproducible.</li>
+        <li>Assert end-state (HP, gold, scene transition, run state), not pixels.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> at least 4 flow tests run headless in CI and would fail if any single step in the loop breaks.</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+      <div class="tags"><span class="files">+ scripts/tests/integrations/*_flow_test.gd</span></div>
+    </div>
+
+    <div class="card c-p3">
+      <h4><span class="id">P3-2</span> Layout / golden snapshot guards</h4>
+      <p class="why">You already have <code>*_layout_test.gd</code> and capture probes in <code>tmp/</code>. Formalize them: layout is a frequent source of silent breakage at 1080×1920, and you've clearly been iterating on it (see <code>docs/ui_1080p_options/</code>).</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Promote the <code>tmp/capture_*.gd</code> tooling into <code>tools/qa/</code> as a stable snapshot harness.</li>
+        <li>Store golden layout rects (not full images, to stay diffable) for key screens; assert within tolerance.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> a layout regression on combat/shop/menu fails a deterministic test; goldens are reviewable in PRs.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+    </div>
+
+    <div class="card c-p3">
+      <h4><span class="id">P3-3</span> Coverage measurement &amp; a floor</h4>
+      <p class="why">You can't claim a 10/10 net without knowing what it misses. Make coverage visible, then ratchet it.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Adopt a GDScript coverage tool (e.g. via GUT's coverage or a custom instrumented run) and publish the number per PR.</li>
+        <li>Set a floor (start at current, ratchet up); block PRs that drop it.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> coverage % is reported on every PR and cannot regress below the agreed floor.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+    </div>
+  </section>
+
+  <!-- ===================== P4 ===================== -->
+  <section class="phase" id="p4">
+    <div class="phase-head"><span class="ptag pt-p4">P4</span><h3>Tooling, static analysis &amp; documentation</h3></div>
+    <p class="phase-goal">Catch whole classes of defects before review, and make the system legible to someone who didn't write it. Target: <b>1 week</b>.</p>
+
+    <div class="card c-p4">
+      <h4><span class="id">P4-1</span> Static analysis + formatter in pre-commit and CI</h4>
+      <p class="why">Typos in dictionary keys, unused vars, shadowed names, and untyped returns are the cheapest bugs to catch automatically. The project has <code>.editorconfig</code> already — extend the rigor.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Add <code>gdlint</code> + <code>gdformat</code> (godot-gdscript-toolkit) with a committed config.</li>
+        <li>Wire a pre-commit hook and a CI lint job; fail on new violations.</li>
+        <li>Enable Godot's own script warnings-as-errors for the project in CI (untyped, unused, unsafe casts).</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> CI rejects unformatted code and new lint/warning violations; <code>gdformat --check</code> is clean.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+    </div>
+
+    <div class="card c-p4">
+      <h4><span class="id">P4-2</span> Architecture documentation + ADRs</h4>
+      <p class="why"><code>CONTRIBUTING.html</code> is a good start. A 10/10 codebase documents the <i>why</i>: the MVC contract, the scene-binding convention, the asset-fallback resolution order, and the decisions behind them.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>One architecture overview (module map: core / combat / shop / board / ui / run) with the MVC data-flow diagram.</li>
+        <li>Lightweight ADRs for the load-bearing choices: declarative node bindings, scene-as-connection-source-of-truth, runtime (not source) contracts, asset-map + fallback resolution.</li>
+        <li>Link them from <code>CONTRIBUTING.html</code>.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> a new contributor can answer "where does combat input go?" and "how are menu textures resolved?" from docs alone.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+    </div>
+
+    <div class="card c-p4">
+      <h4><span class="id">P4-3</span> Asset pipeline validation</h4>
+      <p class="why">There's a real asset-map + fallback system (<code>main_menu_model.gd</code>, <code>assets.json</code>, the <code>resources/art/assetgen/</code> tree). Migrations like the recent <code>first_pass → assetgen</code> repoint are exactly where a typo'd path ships a blank texture. Make broken references impossible to merge.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>A test that loads every fallback constant and asset-map entry and asserts the resource exists and imports.</li>
+        <li>Validate <code>assets.json</code> against a schema in CI.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> a PR introducing a non-existent texture path (constant or asset-map) fails CI.</div>
+      <div class="tags"><span class="t">Effort <b>S</b></span></div>
+      <div class="tags"><span class="files">scripts/main_menu/main_menu_model.gd · assets.json · resources/art/assetgen/</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== P5 ===================== -->
+  <section class="phase" id="p5">
+    <div class="phase-head"><span class="ptag pt-p5">P5</span><h3>Long-horizon resilience &amp; polish</h3></div>
+    <p class="phase-goal">The difference between "great codebase" and "ships and survives": data durability, performance under load, and reach. Target: <b>ongoing</b>.</p>
+
+    <div class="card c-p5">
+      <h4><span class="id">P5-1</span> Save-data versioning &amp; migration tests</h4>
+      <p class="why">Profile/run state is persisted (<code>profile_repository.gd</code>, <code>player_profile_state.gd</code>, <code>meta_profile_state.gd</code>). The moment a shipped player has old save data and you change the schema, you need a migration path — or you corrupt/lose progress.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Add a schema version field to saved profiles; write forward-migration functions.</li>
+        <li>Keep fixtures of each historical save shape and a test that migrates them to current.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> loading every historical save fixture yields a valid current-schema profile with no data loss, verified in CI.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+    </div>
+
+    <div class="card c-p5">
+      <h4><span class="id">P5-2</span> Performance budget on hot paths</h4>
+      <p class="why">Match resolution, board refill animations, and VFX run every turn on mobile (Android target). A 10/10 codebase knows its frame budget and guards it.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Profile a representative combat on a low-end Android target; record per-frame cost of resolve/refill/VFX.</li>
+        <li>Add a headless micro-benchmark for the match resolver with a regression threshold.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> board resolution stays within a documented time budget; a perf regression beyond threshold fails CI.</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+      <div class="tags"><span class="files">scripts/board/board_match_resolver_service.gd · scripts/combat/combat_vfx_presenter.gd</span></div>
+    </div>
+
+    <div class="card c-p5">
+      <h4><span class="id">P5-3</span> Localization &amp; accessibility readiness</h4>
+      <p class="why">User-facing strings are currently inline (e.g. tutorial status text, button labels). Externalizing them and adding basic a11y are the last marks of a production-grade codebase.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Route user-facing text through Godot's translation system; add a test that flags hard-coded display strings.</li>
+        <li>Audit color contrast, font-scaling, and input alternatives for the custom-drawn controls (e.g. the settings gear glyph).</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> no hard-coded user-facing string in gameplay code; a second locale renders without layout breakage.</div>
+      <div class="tags"><span class="t">Effort <b>L</b></span></div>
+    </div>
+
+    <div class="card c-p5">
+      <h4><span class="id">P5-4</span> Decouple editor-only tooling from shipped code</h4>
+      <p class="why">The <code>gdai-mcp</code> plugin + runtime proxy and the various <code>scripts/debug/</code> probes are dev tooling. The proxy already guards with <code>ClassDB</code> checks (good) — finish the separation so no debug path can affect a release build.</p>
+      <div class="lab">Actions</div>
+      <ul class="act">
+        <li>Ensure all <code>scripts/debug/</code> entrypoints are export-excluded or feature-flagged out of release builds.</li>
+        <li>Verify the export preset strips dev autoloads/tools; add a test asserting debug classes aren't reachable in a release feature profile.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> a release export contains no debug probe/console code path; verified by an export-config check.</div>
+      <div class="tags"><span class="t">Effort <b>M</b></span></div>
+      <div class="tags"><span class="files">scripts/debug/* · scripts/core/gdai_mcp_runtime_proxy.gd · export_presets.cfg</span></div>
+    </div>
+  </section>
+
+  <!-- DEFINITION -->
+  <h2 class="section" id="definition">What "10/10" means here</h2>
+  <div class="def">
+    <div class="d"><h5>Change without fear</h5><p>Any file can be refactored and the test gate tells you in minutes whether you broke a flow — not a user, three weeks later.</p></div>
+    <div class="d"><h5>Contracts enforce themselves</h5><p>Invariants are checked at runtime against real objects, never by grepping source text. Renames and reformats never cause false failures.</p></div>
+    <div class="d"><h5>No god-objects</h5><p>Every class has one reason to change. The biggest file is comprehensible in one sitting.</p></div>
+    <div class="d"><h5>Typed at the seams</h5><p>Cross-module data has a declared shape; a typo is a parse/analysis error, not a silent miss.</p></div>
+    <div class="d"><h5>Clean to clone</h5><p>No binaries or build output in history; a fresh clone is small and builds green immediately.</p></div>
+    <div class="d"><h5>Legible to a stranger</h5><p>Architecture, conventions, and the decisions behind them are documented and discoverable.</p></div>
+    <div class="d"><h5>Survives shipping</h5><p>Save data migrates, hot paths hold a budget, debug code can't reach release, and text can be localized.</p></div>
+    <div class="d"><h5>Green means safe</h5><p>CI is the source of truth: format, lint, warnings, unit, contract, flow, layout, coverage, and asset validity all gate merge.</p></div>
+  </div>
+
+  <div class="callout" style="margin-top:26px">
+    <b>Sequencing in one line:</b> P0 makes the net real and the repo clean → P1 removes the structural risk that the net now lets you touch safely → P2 makes contracts unbreakable → P3 deepens the net to flows → P4 automates the cheap catches and documents the why → P5 hardens for the long haul. Do P0 first and in full; it's what makes everything after it safe to attempt.
+  </div>
+
+  <footer>
+    <p>Generated 2026-05-30 for the Orbwalker codebase. Ratings and findings derive from direct reads of the source during code review; items tagged <i>verify</i> depend on one fact not confirmed under a degraded tooling session and should be checked before action. Effort estimates are relative, not commitments.</p>
+  </footer>
+
+</div>
+</body>
+</html>
