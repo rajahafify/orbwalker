@@ -826,47 +826,13 @@ func _on_board_drag_input_result(drag_result: Dictionary) -> void:
 
 
 func _on_board_hovered_orb_changed(orb_id: int) -> void:
-	_set_hovered_board_orb_id(orb_id)
-
-
-func _set_hovered_board_orb_id(orb_id: int) -> void:
-	var normalized_orb_id := orb_id if _is_hoverable_combat_orb(orb_id) else -1
-	if _model.hovered_board_orb_id() == normalized_orb_id:
-		return
-	_model.set_hovered_board_orb_id(normalized_orb_id)
-	if _model.hovered_board_orb_id() < 0:
-		if _view != null:
-			_view.clear_hovered_combat_mastery()
-		return
-	if _view != null:
-		_view.set_hovered_combat_mastery(_model.hovered_board_orb_id())
-
-
-func _is_hoverable_combat_orb(orb_id: int) -> bool:
-	if not OrbType.is_valid_id(orb_id):
-		return false
-	return orb_id in [
-		OrbType.Id.FIRE,
-		OrbType.Id.ICE,
-		OrbType.Id.EARTH,
-		OrbType.Id.HEART,
-		OrbType.Id.ARMOR,
-		OrbType.Id.GOLD,
-	]
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.set_hovered_board_orb_id(orb_id)
 
 
 func _clear_combat_mastery_hover_state() -> void:
-	_model.clear_hovered_board_orb_id()
-	if _view != null:
-		_view.clear_combat_mastery_hover_ui()
-
-
-func _build_combat_mastery_hover_payload(progression_snapshot: Dictionary) -> Dictionary:
-	return {
-		"orb_values_by_id": _orb_values_by_id(),
-		"mastery_levels": Dictionary(progression_snapshot.get("mastery_levels", {})),
-		"combat_modifiers": RunState.current_combat_modifiers(),
-	}
+	_bind_mastery_preview_coordinator()
+	_mastery_preview_coordinator.clear_hover_state()
 
 
 func _handle_drag_input_result(result: Dictionary) -> void:
@@ -1811,6 +1777,7 @@ func _bind_mastery_preview_coordinator() -> void:
 	_mastery_preview_coordinator.bind(_model, _player_state, _view, {
 		"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
 		"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
+		"combat_modifiers": RunState.current_combat_modifiers(),
 	})
 
 
@@ -2085,6 +2052,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 			visible_player_hp,
 			visible_player_armor
 		)
+	_bind_mastery_preview_coordinator()
 	var loadout_payload := {
 		"player_state": _player_state,
 		"progression": progression_snapshot,
@@ -2095,7 +2063,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 		"display_values": player_display_values,
 		"intent_damage_preview": intent_preview,
 		"combat_mastery_feedback_totals": _model.combat_mastery_preview_totals_snapshot(),
-		"combat_mastery_hover_payload": _build_combat_mastery_hover_payload(progression_snapshot),
+		"combat_mastery_hover_payload": _mastery_preview_coordinator.build_hover_payload(progression_snapshot),
 	}
 	if _view != null:
 		_view.render_player_loadout(loadout_payload, true)

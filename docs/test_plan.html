@@ -302,6 +302,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_input_command_handler_test.gd</code> covers configured key routing, ignored release/echo/unknown key events, zone-guide state, and marking input handled only when the PlayerHUD click handler consumes the click.</li>
 <li>Validation passed with Godot 4.6.3 headless: aggregate runner <code>73</code> suites, <code>288</code> cases, <code>0</code> failed; script-load validation <code>scanned=188</code>, <code>loaded=188</code>, <code>failed=0</code>; test-surface coverage <code>82</code>/<code>111</code> production scripts (<code>73.87%</code>, floor <code>71.00%</code>); throwaway pre-commit environment passed the changed-file hook set. The console still prints the existing VisualShader graph-offset warning, resolver max-step warnings in resolver tests, and exit-time GDAI/resource cleanup noise.</li>
 </ul>
+<p>Verification notes (2026-05-30, combat mastery hover boundary):</p>
+<ul>
+<li><code>CombatMasteryPreviewCoordinator</code> now owns board-orb hover state, invalid-hover cleanup, full mastery hover UI cleanup, and hover payload construction for the PlayerHUD. <code>CombatController</code> now delegates board hover events and build-icon hover payload generation to the coordinator.</li>
+<li><code>combat_mastery_preview_coordinator_test.gd</code> now covers hover routing to model/view, duplicate-hover no-ops, invalid-hover clearing, full hover cleanup, and hover payload contents for orb values, mastery levels, and combat modifiers.</li>
+<li>Validation passed with Godot 4.6.3 headless: aggregate runner <code>73</code> suites, <code>291</code> cases, <code>0</code> failed; script-load validation <code>scanned=188</code>, <code>loaded=188</code>, <code>failed=0</code>; test-surface coverage <code>82</code>/<code>111</code> production scripts (<code>73.87%</code>, floor <code>71.00%</code>); throwaway pre-commit environment passed the changed-file hook set. The console still prints the existing VisualShader graph-offset warning, resolver max-step warnings in resolver tests, and exit-time GDAI/resource cleanup noise.</li>
+</ul>
 <p>Verification notes (2026-05-30, profile save migration guard):</p>
 <ul>
 <li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>

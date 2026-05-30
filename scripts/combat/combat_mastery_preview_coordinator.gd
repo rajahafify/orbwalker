@@ -20,6 +20,8 @@ func bind(model: Variant, player_state: Variant, view: Variant, config: Dictiona
 	for raw_orb_id in Array(config.get("resolution_order", [])):
 		_resolution_order.append(int(raw_orb_id))
 	_feedback_stagger_seconds = float(config.get("feedback_stagger_seconds", DEFAULT_FEEDBACK_STAGGER_SECONDS))
+	if config.has("combat_modifiers"):
+		_modifiers = Dictionary(config.get("combat_modifiers", {})).duplicate(true)
 
 
 func reset(modifiers: Dictionary) -> void:
@@ -114,6 +116,35 @@ func modifier_sources_for_key(key: String) -> Array[Dictionary]:
 	return _unique_modifier_sources(sources)
 
 
+func set_hovered_board_orb_id(orb_id: int) -> bool:
+	if _model == null:
+		return false
+	var normalized_orb_id := orb_id if _is_hoverable_combat_orb(orb_id) else -1
+	if _model.hovered_board_orb_id() == normalized_orb_id:
+		return false
+	_model.set_hovered_board_orb_id(normalized_orb_id)
+	if normalized_orb_id < 0:
+		_clear_hovered_mastery()
+	else:
+		_set_hovered_mastery(normalized_orb_id)
+	return true
+
+
+func clear_hover_state() -> void:
+	if _model != null and _model.has_method("clear_hovered_board_orb_id"):
+		_model.clear_hovered_board_orb_id()
+	if _view != null and _view.has_method("clear_combat_mastery_hover_ui"):
+		_view.clear_combat_mastery_hover_ui()
+
+
+func build_hover_payload(progression_snapshot: Dictionary) -> Dictionary:
+	return {
+		"orb_values_by_id": _orb_values_by_id(),
+		"mastery_levels": Dictionary(progression_snapshot.get("mastery_levels", {})),
+		"combat_modifiers": _modifiers.duplicate(true),
+	}
+
+
 func _preview_match_base_feedback_value(group: Dictionary) -> int:
 	var orb_id := int(group.get("orb_id", OrbType.Id.FIRE))
 	if not OrbType.is_valid_id(orb_id) or _player_state == null:
@@ -125,6 +156,31 @@ func _preview_match_base_feedback_value(group: Dictionary) -> int:
 	var orb_bonus_by_id: Dictionary = _modifiers.get("orb_bonus_by_id", {})
 	var orb_value := int(_player_state.orb_value(orb_id)) + int(orb_bonus_by_id.get(orb_id, 0))
 	return matched_count * maxi(0, orb_value)
+
+
+func _is_hoverable_combat_orb(orb_id: int) -> bool:
+	if not OrbType.is_valid_id(orb_id):
+		return false
+	return (
+		orb_id
+		in [
+			OrbType.Id.FIRE,
+			OrbType.Id.ICE,
+			OrbType.Id.EARTH,
+			OrbType.Id.HEART,
+			OrbType.Id.ARMOR,
+			OrbType.Id.GOLD,
+		]
+	)
+
+
+func _orb_values_by_id() -> Dictionary:
+	var values := {}
+	if _player_state == null or not _player_state.has_method("orb_value"):
+		return values
+	for orb_id in OrbType.ALL_TYPES:
+		values[int(orb_id)] = _player_state.orb_value(int(orb_id))
+	return values
 
 
 func _sync_for_combo(combo_value: int) -> void:
@@ -166,8 +222,7 @@ func _modifier_sources_for_combo_scaling() -> Array[Dictionary]:
 	for raw_source in Array(_modifiers.get("sources", [])):
 		var source: Dictionary = raw_source
 		var modifiers: Dictionary = source.get("combat_modifiers", {})
-		if int(modifiers.get("combo_flat_bonus", 0)) != 0 \
-				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0):
+		if int(modifiers.get("combo_flat_bonus", 0)) != 0 or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0):
 			sources.append(source)
 	return sources
 
@@ -193,3 +248,13 @@ func _pulse_modifier_sources(sources: Array[Dictionary]) -> void:
 func _set_view_feedback(orb_id: int, amount: int) -> void:
 	if _view != null and _view.has_method("set_combat_mastery_feedback"):
 		_view.set_combat_mastery_feedback(orb_id, amount)
+
+
+func _set_hovered_mastery(orb_id: int) -> void:
+	if _view != null and _view.has_method("set_hovered_combat_mastery"):
+		_view.set_hovered_combat_mastery(orb_id)
+
+
+func _clear_hovered_mastery() -> void:
+	if _view != null and _view.has_method("clear_hovered_combat_mastery"):
+		_view.clear_hovered_combat_mastery()

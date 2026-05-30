@@ -19,11 +19,23 @@ class FakeView:
 	var feedback: Dictionary = {}
 	var set_calls: Array[Dictionary] = []
 	var pulses: Array = []
+	var hovered_orb_ids: Array[int] = []
+	var clear_hovered_count := 0
+	var clear_hover_ui_count := 0
 	var clear_count := 0
 
 	func set_combat_mastery_feedback(orb_id: int, amount: int) -> void:
 		feedback[orb_id] = amount
 		set_calls.append({"orb_id": orb_id, "amount": amount})
+
+	func set_hovered_combat_mastery(orb_id: int) -> void:
+		hovered_orb_ids.append(orb_id)
+
+	func clear_hovered_combat_mastery() -> void:
+		clear_hovered_count += 1
+
+	func clear_combat_mastery_hover_ui() -> void:
+		clear_hover_ui_count += 1
 
 	func clear_combat_mastery_feedback() -> void:
 		clear_count += 1
@@ -40,9 +52,12 @@ func run_all() -> Dictionary:
 	_run_case("release_and_reset_clear_model_and_view", _test_release_and_reset_clear_model_and_view, failures)
 	_run_case("modifier_sources_filter_and_dedupe", _test_modifier_sources_filter_and_dedupe, failures)
 	_run_case("end_modifier_feedback_accumulates_and_pulses", _test_end_modifier_feedback_accumulates_and_pulses, failures)
+	_run_case("hovered_board_orb_updates_model_and_view", _test_hovered_board_orb_updates_model_and_view, failures)
+	_run_case("clear_hover_state_resets_model_and_ui", _test_clear_hover_state_resets_model_and_ui, failures)
+	_run_case("hover_payload_uses_player_progression_and_modifiers", _test_hover_payload_uses_player_progression_and_modifiers, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 8,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -124,11 +139,7 @@ func _test_end_modifier_feedback_accumulates_and_pulses() -> String:
 	var view: FakeView = fixture["view"]
 	model.set_combat_mastery_preview_total(OrbType.Id.FIRE, 3)
 	var sources: Array[Dictionary] = [{"source_type": "relic", "source_id": "damage_charm"}]
-	coordinator.apply_end_modifier_feedback(
-		OrbType.Id.FIRE,
-		4,
-		sources
-	)
+	coordinator.apply_end_modifier_feedback(OrbType.Id.FIRE, 4, sources)
 	if model.combat_mastery_preview_total(OrbType.Id.FIRE) != 7:
 		return "Expected end modifier feedback to accumulate on the model total."
 	if int(view.feedback.get(OrbType.Id.FIRE, -1)) != 7:
@@ -138,15 +149,76 @@ func _test_end_modifier_feedback_accumulates_and_pulses() -> String:
 	return ""
 
 
+func _test_hovered_board_orb_updates_model_and_view() -> String:
+	var fixture := _fixture()
+	var coordinator: Variant = fixture["coordinator"]
+	var model: CombatModel = fixture["model"]
+	var view: FakeView = fixture["view"]
+	if not bool(coordinator.set_hovered_board_orb_id(OrbType.Id.FIRE)):
+		return "Expected a new hover orb to report a changed state."
+	if model.hovered_board_orb_id() != OrbType.Id.FIRE:
+		return "Expected hover state to be stored on the combat model."
+	if view.hovered_orb_ids != [OrbType.Id.FIRE]:
+		return "Expected hover state to be mirrored to the view."
+	if bool(coordinator.set_hovered_board_orb_id(OrbType.Id.FIRE)):
+		return "Expected repeated hover state to be ignored."
+	if not bool(coordinator.set_hovered_board_orb_id(-99)):
+		return "Expected invalid hover state to clear the current hover."
+	if model.hovered_board_orb_id() != -1:
+		return "Expected invalid hover state to reset the model hover id."
+	if view.clear_hovered_count != 1:
+		return "Expected invalid hover state to clear the hovered mastery frame."
+	return ""
+
+
+func _test_clear_hover_state_resets_model_and_ui() -> String:
+	var fixture := _fixture()
+	var coordinator: Variant = fixture["coordinator"]
+	var model: CombatModel = fixture["model"]
+	var view: FakeView = fixture["view"]
+	coordinator.set_hovered_board_orb_id(OrbType.Id.ICE)
+	coordinator.clear_hover_state()
+	if model.hovered_board_orb_id() != -1:
+		return "Expected clear_hover_state to reset the model hover id."
+	if view.clear_hover_ui_count != 1:
+		return "Expected clear_hover_state to clear the full mastery hover UI."
+	return ""
+
+
+func _test_hover_payload_uses_player_progression_and_modifiers() -> String:
+	var fixture := _fixture()
+	var coordinator: Variant = fixture["coordinator"]
+	var player: PlayerState = fixture["player"]
+	var payload: Dictionary = coordinator.build_hover_payload({"mastery_levels": {"fire": 2}})
+	var orb_values: Dictionary = payload.get("orb_values_by_id", {})
+	if int(orb_values.get(OrbType.Id.FIRE, -1)) != player.orb_value(OrbType.Id.FIRE):
+		return "Expected hover payload to include player orb values."
+	var mastery_levels: Dictionary = payload.get("mastery_levels", {})
+	if int(mastery_levels.get("fire", 0)) != 2:
+		return "Expected hover payload to include progression mastery levels."
+	var modifiers: Dictionary = payload.get("combat_modifiers", {})
+	if int(Dictionary(modifiers.get("orb_bonus_by_id", {})).get(OrbType.Id.FIRE, 0)) != 1:
+		return "Expected hover payload to expose current combat modifiers."
+	return ""
+
+
 func _fixture() -> Dictionary:
 	var model := CombatModel.new()
 	var player := PlayerState.new()
 	var view := FakeView.new()
 	var coordinator: Variant = COORDINATOR_SCRIPT.new()
-	coordinator.bind(model, player, view, {
-		"resolution_order": RESOLUTION_ORDER,
-		"feedback_stagger_seconds": 0.001,
-	})
+	(
+		coordinator
+		. bind(
+			model,
+			player,
+			view,
+			{
+				"resolution_order": RESOLUTION_ORDER,
+				"feedback_stagger_seconds": 0.001,
+			}
+		)
+	)
 	coordinator.reset(_modifiers())
 	view.clear_count = 0
 	return {
@@ -159,13 +231,15 @@ func _fixture() -> Dictionary:
 
 func _modifiers() -> Dictionary:
 	return {
-		"orb_bonus_by_id": {
+		"orb_bonus_by_id":
+		{
 			OrbType.Id.FIRE: 1,
 			OrbType.Id.HEART: 2,
 		},
 		"combo_flat_bonus": 1,
 		"combo_multiplier_mult": 2.0,
-		"sources": [
+		"sources":
+		[
 			{
 				"source_type": "relic",
 				"source_id": "fire_orb",
