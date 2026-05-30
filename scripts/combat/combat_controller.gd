@@ -20,6 +20,7 @@ const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_re
 const COMBAT_DEBUG_RUNTIME_SCRIPT := preload("res://scripts/combat/combat_debug_runtime.gd")
 const COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
 const COMBAT_TIMER_SERVICE_SCRIPT := preload("res://scripts/combat/combat_timer_service.gd")
+const COMBAT_BOSS_REWARD_HANDLER_SCRIPT := preload("res://scripts/combat/combat_boss_reward_handler.gd")
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
@@ -106,6 +107,7 @@ var _debug_runtime: Variant = null
 var _debug_console: CombatDebugConsole = null
 var _settings_command_handler: Variant = null
 var _combat_timer_service: Variant = null
+var _boss_reward_handler: Variant = null
 var _turn_log_presenter: Variant = null
 var _zone_guides_enabled := false
 var _resolve_presenter: Variant = null
@@ -228,6 +230,7 @@ func _ready() -> void:
 	RunState.flow_trace_mark("combat_after_music", {}, _flow_trace_route_id_value())
 	_ensure_runtime_helpers()
 	_bind_outcome_overlay()
+	_bind_boss_reward_handler()
 	if _resolve_presenter == null:
 		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
 	var spawn_vfx_texture_callback: Callable = Callable(self, "_spawn_vfx_texture")
@@ -322,6 +325,8 @@ func _ensure_runtime_helpers() -> void:
 		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
 	if _combat_timer_service == null:
 		_combat_timer_service = COMBAT_TIMER_SERVICE_SCRIPT.new()
+	if _boss_reward_handler == null:
+		_boss_reward_handler = COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
 	if _combat_vfx_presenter == null:
 		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if _board_controller == null:
@@ -1514,17 +1519,8 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 
 
 func _on_next_button_pressed() -> void:
-	if _outcome_overlay != null and _outcome_overlay.is_boss_reward_pending():
-		var options: Array = RunState.boss_relic_reward_options_snapshot()
-		if options.is_empty():
-			_skip_boss_reward_option()
-			return
-		var selected_index := _outcome_overlay.selected_boss_reward_index()
-		if selected_index < 0:
-			_audio_play_sfx("error")
-			_set_status_text("Choose one boss relic before continuing.")
-			return
-		_claim_boss_reward_option(selected_index)
+	_bind_boss_reward_handler()
+	if _boss_reward_handler != null and _boss_reward_handler.handle_next_pressed():
 		return
 	if _model.pending_next_scene_path() == "":
 		return
@@ -1585,6 +1581,28 @@ func _bind_outcome_overlay() -> void:
 	_view.bind_outcome_overlay(_outcome_overlay)
 
 
+func _bind_boss_reward_handler() -> void:
+	if _boss_reward_handler == null:
+		_boss_reward_handler = COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
+	_boss_reward_handler.bind(
+		_outcome_overlay,
+		_view,
+		_model,
+		_visuals,
+		{
+			"set_status_text": Callable(self, "_set_status_text"),
+			"update_hud": Callable(self, "_update_hud"),
+			"play_sfx": Callable(self, "_audio_play_sfx"),
+			"apply_layout": Callable(self, "_apply_combat_layout"),
+			"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
+		}
+	)
+
+
+func _boss_reward_trace_and_change_scene(scene_path: String, source: String, trace_mark: String, payload: Dictionary = {}) -> void:
+	_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), source, trace_mark, payload)
+
+
 func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:
 	if _outcome_overlay == null:
 		return
@@ -1599,102 +1617,17 @@ func _hide_outcome_summary() -> void:
 
 
 func _ensure_boss_reward_controls() -> void:
-	if _outcome_overlay == null:
+	_bind_boss_reward_handler()
+	if _boss_reward_handler == null:
 		return
-	_outcome_overlay.ensure_boss_reward_controls(_select_boss_reward_option, _skip_boss_reward_option)
+	_boss_reward_handler.ensure_controls()
 
 
 func _show_boss_reward_summary(body: String) -> void:
-	if _outcome_overlay == null:
+	_bind_boss_reward_handler()
+	if _boss_reward_handler == null:
 		return
-	_outcome_overlay.show_boss_reward(body)
-	_model.clear_pending_next_scene_path()
-	_apply_combat_layout()
-	var options: Array = RunState.boss_relic_reward_options_snapshot()
-	var boss_reward_buttons := _outcome_overlay.boss_reward_buttons()
-	for index in boss_reward_buttons.size():
-		var button := boss_reward_buttons[index]
-		if index >= options.size():
-			_outcome_overlay.set_boss_reward_card_content(button, null, "No Relic", "", "")
-			button.disabled = true
-			continue
-		var option: Dictionary = options[index]
-		var relic_id := String(option.get("relic_id", option.get("id", "")))
-		var content: Dictionary = RunState.ensure_content_registry().get_relic(relic_id)
-		var description := String(content.get("description", ""))
-		_outcome_overlay.set_boss_reward_card_content(
-			button,
-			_visuals.clean_icon_for_key(String(content.get("icon_key", ""))),
-			String(option.get("display_name", content.get("display_name", "Relic"))),
-			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
-			_outcome_overlay.wrap_text_to_lines(description, 48, 2)
-		)
-		button.tooltip_text = "%s\n%s\n%s" % [
-			String(option.get("display_name", content.get("display_name", "Relic"))),
-			String(option.get("rarity", content.get("rarity", "common"))).to_upper(),
-			description,
-		]
-		button.disabled = false
-	if options.is_empty():
-		if _view != null:
-			_view.set_outcome_body_text("%s\nNo boss relic options generated. Continue to shop." % body)
-		for button in boss_reward_buttons:
-			button.visible = false
-			button.disabled = true
-		if _view != null:
-			_view.set_outcome_next_button_disabled(false)
-
-
-func _select_boss_reward_option(index: int) -> void:
-	if _outcome_overlay == null or not _outcome_overlay.is_boss_reward_pending():
-		return
-	_outcome_overlay.set_selected_boss_reward_index(index)
-	if _view != null:
-		_view.set_outcome_next_button_disabled(false)
-	_set_status_text("Boss relic selected. Continue to shop when ready.")
-	_audio_play_sfx("ui_accept")
-
-
-func _claim_boss_reward_option(index: int) -> void:
-	if _outcome_overlay == null or not _outcome_overlay.is_boss_reward_pending():
-		return
-	var result: Dictionary = RunState.claim_boss_relic_reward(index)
-	if not bool(result.get("ok", false)):
-		_set_status_text("Boss relic claim failed: %s" % String(result.get("reason", "unknown")))
-		return
-	var transition: Dictionary = RunState.advance_after_boss_reward()
-	_outcome_overlay.set_boss_reward_pending(false)
-	_update_hud()
-	_audio_play_sfx("ui_accept")
-	_hide_outcome_summary()
-	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
-	_trace_and_change_scene_to_target(
-		next_scene,
-		_flow_trace_route_id_value(),
-		"boss_reward_claim",
-		"combat_before_change_scene_to_file_boss_reward_claim",
-		{"option_index": index}
-	)
-
-
-func _skip_boss_reward_option() -> void:
-	if _outcome_overlay == null or not _outcome_overlay.is_boss_reward_pending():
-		return
-	var skip_result: Dictionary = RunState.skip_boss_relic_reward()
-	if not bool(skip_result.get("ok", false)):
-		_set_status_text("Boss relic skip failed: %s" % String(skip_result.get("reason", "unknown")))
-		return
-	var transition: Dictionary = RunState.advance_after_boss_reward()
-	_outcome_overlay.set_boss_reward_pending(false)
-	_audio_play_sfx("ui_accept")
-	_hide_outcome_summary()
-	var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
-	_trace_and_change_scene_to_target(
-		next_scene,
-		_flow_trace_route_id_value(),
-		"boss_reward_skip",
-		"combat_before_change_scene_to_file_boss_reward_skip"
-	)
+	_boss_reward_handler.show_summary(body)
 
 
 func _trace_and_change_scene_to_target(
