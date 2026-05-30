@@ -47,6 +47,59 @@ const MIN_READABLE_BOARD = Vector2(470, 560)
 const MIN_READABLE_MASTERY = Vector2(1000, 96)
 const MIN_READABLE_HP = Vector2(760, 56)
 const MIN_READABLE_LOADOUT = Vector2(860, 120)
+const LAYOUT_NODE_BINDINGS := {
+	"layout_root": "_layout_root",
+	"top_bar": "_top_bar",
+	"back_button": "_back_button",
+	"debug_toggle_button": "_debug_toggle_button",
+	"settings_button": "_settings_button",
+	"title_label": "_title_label",
+	"hint_label": "_hint_label",
+	"enemy_panel": "_enemy_panel",
+	"enemy_panel_root": "_enemy_panel_root",
+	"intent_row": "_intent_row",
+	"enemy_stage": "_enemy_stage",
+	"enemy_hp_row": "_enemy_hp_row",
+	"intent_badge": "_intent_badge",
+	"primary_intent_column": "_primary_intent_text_column",
+	"primary_intent_title_label": "_primary_intent_title_label",
+	"primary_intent_amount_label": "_primary_intent_amount_label",
+	"primary_intent_detail_label": "_primary_intent_detail_label",
+	"enemy_portrait": "_enemy_portrait",
+	"enemy_hp_bar": "_enemy_hp_bar",
+	"enemy_label": "_enemy_label",
+	"enemy_name_label": "_enemy_name_label",
+	"enemy_hp_text_label": "_enemy_hp_text_label",
+	"enemy_step_label": "_enemy_step_label",
+	"combat_strip": "_combat_strip",
+	"timer_track": "_timer_track",
+	"timer_icon": "_timer_icon",
+	"timer_center_marker": "_timer_center_marker",
+	"board_panel": "_board_panel",
+	"board": "_board",
+	"board_view_control": "_board_view_control",
+	"board_shadow": "_board_shadow",
+	"divider_enemy_timer": "_divider_enemy_timer",
+	"divider_timer_board": "_divider_timer_board",
+	"divider_board_player": "_divider_board_player",
+	"corner_top_left": "_corner_top_left",
+	"corner_top_right": "_corner_top_right",
+	"corner_bottom_left": "_corner_bottom_left",
+	"corner_bottom_right": "_corner_bottom_right",
+	"equipment_icons": "_equipment_icons",
+	"consumable_icons": "_consumable_icons",
+	"stat_chip_row": "_stat_chip_row",
+	"combat_meta_row": "_combat_meta_row",
+	"turn_summary_label": "_turn_summary_label",
+	"mastery_root": "_mastery_root",
+	"hero_level_badge": "_hero_level_badge",
+	"player_armor_bar": "_player_armor_bar",
+	"player_armor_label": "_player_armor_label",
+	"mastery_strip": "_mastery_strip",
+	"player_portrait": "_player_portrait",
+	"relic_row": "_relic_row",
+	"debug_overlay": "_debug_overlay",
+}
 
 var _nodes = {}
 var _layout_top_bar_rect = TOP_BAR_RECT
@@ -54,6 +107,17 @@ var _layout_enemy_panel_rect = ENEMY_PANEL_RECT
 var _layout_combat_strip_rect = COMBAT_STRIP_RECT
 var _layout_board_panel_rect = BOARD_PANEL_RECT
 var _layout_player_hud_section_rect = PLAYER_HUD_SECTION_BASE_RECT
+
+
+static func nodes_from_root_nodes(root_nodes: Dictionary, extras: Dictionary = {}) -> Dictionary:
+	var nodes := {}
+	for layout_key in LAYOUT_NODE_BINDINGS.keys():
+		nodes[layout_key] = root_nodes.get(String(LAYOUT_NODE_BINDINGS[layout_key]), null)
+	var top_bar := nodes.get("top_bar") as Control
+	nodes["top_bar_row"] = top_bar.get_node_or_null("TopBarRow") if top_bar != null else null
+	for key in extras.keys():
+		nodes[key] = extras[key]
+	return nodes
 
 
 func bind(nodes) -> void:
