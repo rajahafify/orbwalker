@@ -82,11 +82,11 @@
     <p>Avoid wiring the same signal in both places. If a scene connection must move into code, remove the matching <code>[connection]</code> entry from the scene in the same change and add a focused contract test for the new owner.</p>
 
     <h2>Generated Artifacts</h2>
-    <p>Build outputs and local export artifacts stay out of git. Android exports such as <code>*.apk</code>, <code>*.aab</code>, <code>*.apks</code>, and <code>*.idsig</code> should be produced locally or in release automation, then cleaned from the working tree when no longer needed.</p>
+    <p>Build outputs and local export artifacts stay out of git. Android exports such as <code>*.apk</code>, <code>*.aab</code>, <code>*.apks</code>, and <code>*.idsig</code>, plus local Python caches such as <code>__pycache__/</code> and <code>*.pyc</code>, should be produced locally or in release automation, then cleaned from the working tree when no longer needed.</p>
 
     <h2>Automated Test Gate</h2>
     <p>Use <code>res://scripts/tests/run_all_tests.gd</code> as the single headless test entrypoint. It discovers <code>*_test.gd</code> suites under <code>scripts/tests/</code> and <code>*_probe.gd</code> contracts under <code>scripts/debug/</code>; each discovered file must expose <code>run_all() -&gt; Dictionary</code> with <code>passed</code>, <code>total</code>, <code>failed</code>, and <code>failures</code>.</p>
-    <p>Local command: <code>godot --headless --path . --script res://scripts/tests/run_all_tests.gd</code>. GitHub Actions runs the same gate and also rejects tracked generated artifacts such as APKs, build output, logs, temp files, and Android export output.</p>
+    <p>Local command: <code>godot --headless --path . --script res://scripts/tests/run_all_tests.gd</code>. GitHub Actions runs the same gate and also rejects tracked generated artifacts such as APKs, build output, logs, temp files, Python bytecode, and Android export output.</p>
 
     <h2>Asset Path Contracts</h2>
     <p>Runtime asset maps and fallback constants should be validated through <code>res://scripts/tests/asset_pipeline_test.gd</code>. When adding a new stable fallback texture path, expose it from the owning class's <code>asset_contract_paths()</code> helper so the shared runner can prove the import exists and loads.</p>

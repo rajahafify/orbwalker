@@ -174,24 +174,25 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>21</code> suites and <code>110</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>22</code> suites and <code>111</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
 
     <div class="card c-p0">
       <h4><span class="id">P0-2</span> Keep generated artifacts out of the tree and history</h4>
-      <p class="why"><code>Orbwalker.apk</code> existed locally as an ignored root-level export artifact and has been removed from the working tree. A repo audit shows <code>git log --all -- Orbwalker.apk</code> already returns nothing, so the priority is preserving that invariant and keeping <code>build/</code>, <code>.godot/</code>, <code>tmp/</code>, logs, and Android export output out of source control.</p>
+      <p class="why"><code>Orbwalker.apk</code> existed locally as an ignored root-level export artifact and has been removed from the working tree. A repo audit shows <code>git log --all -- Orbwalker.apk</code> already returns nothing, so the priority is preserving that invariant and keeping <code>build/</code>, <code>.godot/</code>, <code>tmp/</code>, logs, Python bytecode, and Android export output out of source control.</p>
       <div class="lab">Actions</div>
       <ul class="act">
         <li>Move release binaries to CI artifacts / GitHub Releases. Never commit them.</li>
         <li>Keep the existing ignore rules covering APKs, <code>build/</code>, <code>.godot/</code>, <code>tmp/</code>, logs, and Android export output aligned with the actual export workflow.</li>
-        <li>Add a lightweight tracked-artifact check to the P0-1 runner or CI workflow so accidental APK/build output commits fail fast.</li>
+        <li>Keep the lightweight tracked-artifact check in the P0-1 runner and CI workflow so accidental APK/build/cache output commits fail fast.</li>
         <li>Triage <code>tmp/capture_*.gd</code> / <code>tmp/*_probe.gd</code> if any are intentionally promoted later; keep local scratch output untracked by default.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> <code>git log --all -- Orbwalker.apk</code> stays empty; <code>git status --ignored --short</code> shows no unexpected root APK/build output; no generated output is tracked.</div>
+      <div class="ac"><b>Current evidence:</b> <code>repo_hygiene_test.gd</code> shells out to <code>git ls-files</code> through the shared headless runner and rejects tracked APK/AAB/APKS/IDSIG files, build/editor/log/tmp/android export folders, and Python bytecode/cache output. The previously tracked <code>tools/asset_tools/__pycache__/build_assetgen_runtime_assets.cpython-312.pyc</code> was removed, and <code>.gitignore</code> now covers Python cache artifacts.</div>
       <div class="tags"><span class="t">Effort <b>S</b></span><span class="t">Risk <b>low</b></span></div>
-      <div class="tags"><span class="files">Orbwalker.apk · build/ · .godot/ · tmp/ · .gitignore</span></div>
+      <div class="tags"><span class="files">scripts/tests/repo_hygiene_test.gd · .github/workflows/ci.yml · .gitignore · CONTRIBUTING.html</span></div>
     </div>
 
     <div class="card c-p0">

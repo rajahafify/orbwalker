@@ -12,3 +12,8 @@ tmp/
 *.aab
 *.apks
 *.idsig
+
+# Python local tooling caches
+__pycache__/
+*.py[cod]
+*$py.class

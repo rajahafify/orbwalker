@@ -19,7 +19,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tracked_artifacts="$(git ls-files | grep -E '(^Orbwalker\.apk$|\.apk$|\.aab$|\.apks$|\.idsig$|^build/|^\.godot/|^tmp/|^logs/|^android/)' || true)"
+          tracked_artifacts="$(git ls-files | grep -E '(^Orbwalker\.apk$|\.apk$|\.aab$|\.apks$|\.idsig$|\.pyc$|\.pyo$|^build/|^\.godot/|^tmp/|^logs/|^android/|(^|/)__pycache__/)' || true)"
           if [[ -n "${tracked_artifacts}" ]]; then
             echo "Generated artifacts must not be tracked:"
             echo "${tracked_artifacts}"
