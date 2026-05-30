@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Script Size Budget</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17211d;
+      --muted: #647067;
+      --paper: #fffdf8;
+      --line: #d8cdbd;
+      --gold: #b7802d;
+      --green: #167043;
+      --red: #b42318;
+      --blue: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #ebe5d8;
+      font: 16px/1.55 Georgia, Cambria, "Times New Roman", serif;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+    h1, h2 { line-height: 1.15; }
+    h1 { margin: 0 0 12px; font-size: 2.4rem; }
+    h2 { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
+    p { max-width: 78ch; }
+    code {
+      padding: .12em .35em;
+      border-radius: 3px;
+      background: #efe8da;
+      color: #27352f;
+    }
+    .summary {
+      border-left: 4px solid var(--gold);
+      padding-left: 14px;
+      color: var(--muted);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efe6d6; }
+    tr:last-child td { border-bottom: 0; }
+    .over { color: var(--red); font-weight: 700; }
+    .ok { color: var(--green); font-weight: 700; }
+    .note {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border: 1px solid #9fb8df;
+      border-left: 4px solid var(--blue);
+      background: #eef5ff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Orbwalker Script Size Budget</h1>
+    <p class="summary">This is the documented exception register for the P1-3 roadmap guardrail. The CI budget check is warning-only: it makes oversized scripts visible without blocking unrelated work.</p>
+
+    <h2>Budgets</h2>
+    <table>
+      <thead>
+        <tr><th>Script kind</th><th>Soft budget</th><th>Scope</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Controller</td><td><code>400</code> lines</td><td><code>*_controller.gd</code> under shop, collection, and run-summary modules.</td></tr>
+        <tr><td>View</td><td><code>500</code> lines</td><td><code>*_view.gd</code> under shop, collection, and run-summary modules.</td></tr>
+        <tr><td>Other module script</td><td><code>650</code> lines</td><td>Models, services, state files, and helpers in those same modules.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Current Exceptions</h2>
+    <table>
+      <thead>
+        <tr><th>Path</th><th>Budget</th><th>Current size</th><th>Why it is allowed for now</th><th>Removal path</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>scripts/shop/shop_view.gd</code></td>
+          <td><code>500</code></td>
+          <td class="over"><code>1560</code></td>
+          <td>Large shop presentation facade retained while combat quality work takes priority.</td>
+          <td>Extract merchant, header, action row, and player-HUD presentation helpers.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/shop/shop_controller.gd</code></td>
+          <td><code>400</code></td>
+          <td class="over"><code>521</code></td>
+          <td>Over the controller budget but still small enough to defer behind the shop view split.</td>
+          <td>Extract routing/input command handling helpers.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/shop/shop_service.gd</code></td>
+          <td><code>650</code></td>
+          <td class="over"><code>756</code></td>
+          <td>Over the default module budget because pricing and offer policy are still together.</td>
+          <td>Extract pricing policy and offer-generation helpers.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>How To Run</h2>
+    <p>Local command: <code>godot --headless --path . --script res://tools/quality/script_size_budget.gd</code>.</p>
+    <p class="note">A new over-budget script should either be reduced in the same change or added here with a concrete removal path. Exceptions are debt, not permission slips.</p>
+  </main>
+</body>
+</html>

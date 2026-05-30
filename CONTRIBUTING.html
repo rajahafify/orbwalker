@@ -61,6 +61,9 @@
     <h2>Automated Test Gate</h2>
     <p>Use <code>res://scripts/tests/run_all_tests.gd</code> as the single headless test entrypoint. It discovers <code>*_test.gd</code> suites under <code>scripts/tests/</code> and <code>*_probe.gd</code> contracts under <code>scripts/debug/</code>; each discovered file must expose <code>run_all() -&gt; Dictionary</code> with <code>passed</code>, <code>total</code>, <code>failed</code>, and <code>failures</code>.</p>
     <p>Local command: <code>godot --headless --path . --script res://scripts/tests/run_all_tests.gd</code>. GitHub Actions runs the same gate and also rejects tracked generated artifacts such as APKs, build output, logs, temp files, and Android export output.</p>
+
+    <h2>Script Size Budget</h2>
+    <p>Shop, collection, and run-summary scripts have a warning-only size budget checked by <code>res://tools/quality/script_size_budget.gd</code>. Oversized scripts need a documented exception in <code>docs/script_size_budget.html</code> with a concrete removal path.</p>
   </main>
 </body>
 </html>

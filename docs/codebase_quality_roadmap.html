@@ -263,10 +263,11 @@
       <p class="why">The combat slice was the worst, but the same "view + controller grow unbounded" tendency likely exists elsewhere (<code>shop_controller.gd</code>, <code>shop_view.gd</code>, <code>collection_view.gd</code>). Fix the pattern, not just the instance — that's the "altitude" point.</p>
       <div class="lab">Actions</div>
       <ul class="act">
-        <li>Set a soft budget (e.g. controllers &lt; 400 lines, views &lt; 500) and add a CI warning (not failure) when exceeded.</li>
-        <li>Apply the P1-1/P1-2 extraction recipe wherever the budget is blown.</li>
+        <li>Keep the warning-only budget check in CI for controllers &lt; 400 lines, views &lt; 500, and other module scripts &lt; 650.</li>
+        <li>Apply the P1-1/P1-2 extraction recipe wherever the budget is blown, then remove the documented exception.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> no script &gt; the agreed budget without a documented exception; the budget check runs in CI.</div>
+      <div class="ac"><b>Current evidence:</b> <code>tools/quality/script_size_budget.gd</code> scans shop, collection, and run-summary scripts; CI runs it as a warning step; <code>docs/script_size_budget.html</code> documents the three current shop exceptions.</div>
       <div class="tags"><span class="t">Effort <b>L</b></span></div>
       <div class="tags"><span class="files">scripts/shop/* · scripts/collection/* · scripts/run_summary/*</span></div>
     </div>
