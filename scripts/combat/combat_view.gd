@@ -14,140 +14,60 @@ signal settings_speed_selected(speed: String)
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
 const COMBAT_SURFACE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_surface_presenter.gd")
-const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
-const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
+const COMBAT_SETTINGS_OVERLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_coordinator.gd")
+const COMBAT_TUTORIAL_END_OVERLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_coordinator.gd")
 const COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_presenter.gd")
 const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
 const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
 const COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_presenter.gd")
 const COMBAT_CHARACTER_VISUALS_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_character_visuals_presenter.gd")
 
-const DESIGN_SIZE := Vector2(1080.0, 1920.0)
-const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 132), Vector2(1048, 432))
-const COMBAT_STRIP_RECT := Rect2(Vector2(16, 576), Vector2(1048, 64))
 const BOARD_PANEL_RECT := Rect2(Vector2(16, 660), Vector2(1048, 756))
 
 var _root_nodes: Dictionary = {}
 var _board: Control = null
 var _board_view: BoardView = null
 var _background: TextureRect = null
-var _background_scrim: TextureRect = null
-var _status_label: Label = null
-var _timer_label: Label = null
-var _run_progress_label: Label = null
-var _turn_summary_label: Label = null
-var _player_label: Label = null
 var _enemy_label: Label = null
 var _enemy_step_label: Label = null
-var _enemy_debug_label: Label = null
 var _intent_label: Label = null
-var _phase_label: Label = null
-var _combat_log_text: RichTextLabel = null
-var _console_input: LineEdit = null
 var _next_button: Button = null
-var _back_button: Button = null
 var _debug_toggle_button: Button = null
-var _settings_button: Button = null
-var _board_view_control: Control = null
 var _layout_root: Control = null
 var _top_bar: Panel = null
 var _enemy_panel: PanelContainer = null
-var _enemy_panel_root: Control = null
-var _intent_row: HBoxContainer = null
 var _enemy_stage: Control = null
 var _enemy_stage_backdrop: TextureRect = null
 var _enemy_ground_shadow: Panel = null
 var _enemy_text_scrim: ColorRect = null
-var _enemy_hp_row: Control = null
 var _enemy_name_label: Label = null
 var _enemy_hp_text_label: Label = null
 var _combat_strip: PanelContainer = null
-var _timer_track: Control = null
-var _timer_fill: ColorRect = null
-var _timer_icon: TextureRect = null
-var _timer_state_label: Label = null
-var _timer_center_marker: TextureRect = null
-var _board_frame: PanelContainer = null
 var _board_panel: Control = null
-var _board_shadow: Panel = null
-var _outcome_summary_panel: Panel = null
-var _outcome_summary_root: Control = null
-var _outcome_text_column: Control = null
-var _outcome_title_label: Label = null
-var _outcome_body_label: Label = null
-var _player_hud_section: Panel = null
 var _player_panel: Panel = null
-var _player_panel_root: Control = null
-var _hero_card: Panel = null
-var _hero_card_root: Control = null
-var _hero_level_badge: PanelContainer = null
-var _vitals_panel: Control = null
-var _vitals_frame: Panel = null
-var _player_hp_label: Label = null
-var _player_armor_label: Label = null
-var _armor_badge: PanelContainer = null
-var _armor_badge_label: Label = null
-var _stat_chip_row: HBoxContainer = null
-var _attack_stat_label: Label = null
-var _armor_stat_label: Label = null
-var _heart_stat_label: Label = null
-var _gold_stat_label: Label = null
-var _combat_meta_row: HBoxContainer = null
-var _loadout_frame: Panel = null
-var _mastery_strip: Panel = null
-var _combat_log_frame: PanelContainer = null
 var _debug_overlay: PanelContainer = null
-var _title_label: Label = null
-var _hint_label: Label = null
 var _enemy_portrait: TextureRect = null
 var _intent_badge: TextureRect = null
-var _primary_intent_text_column: VBoxContainer = null
-var _primary_intent_title_label: Label = null
-var _primary_intent_amount_label: Label = null
-var _primary_intent_detail_label: Label = null
 var _enemy_hp_bar: ProgressBar = null
 var _player_hp_bar: ProgressBar = null
-var _player_armor_bar: ProgressBar = null
 var _player_portrait: TextureRect = null
-var _relic_icons: HBoxContainer = null
-var _mastery_icons: Control = null
 var _elemental_mastery_cards: Control = null
 var _elemental_mastery_panel: Panel = null
-var _elemental_mastery_title: Label = null
 var _vfx_layer: Control = null
 var _equipment_icons: Control = null
-var _consumable_icons: Control = null
-var _relic_row: HBoxContainer = null
-var _mastery_root: Control = null
-var _loadout_root: Control = null
-var _equipment_row_label: Label = null
-var _consumable_row_label: Label = null
-var _relic_row_label: Label = null
-var _mastery_row_label: Label = null
-var _divider_enemy_timer: TextureRect = null
-var _divider_timer_board: TextureRect = null
-var _divider_board_player: TextureRect = null
-var _corner_top_left: TextureRect = null
-var _corner_top_right: TextureRect = null
-var _corner_bottom_left: TextureRect = null
-var _corner_bottom_right: TextureRect = null
 var _zone_guides_enabled := false
 var _combat_layout_presenter: Variant = null
 var _surface_presenter: Variant = null
-var _settings_overlay_presenter: Variant = null
-var _tutorial_end_overlay_presenter: Variant = null
+var _settings_overlay_coordinator: Variant = null
+var _tutorial_end_overlay_coordinator: Variant = null
 var _enemy_intent_presenter: Variant = null
 var _enemy_stage_presenter: Variant = null
 var _player_hud_presenter: Variant = null
 var _hud_snapshot_presenter: Variant = null
 var _character_visuals_presenter: Variant = null
-var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
-var _layout_combat_strip_rect := COMBAT_STRIP_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
-var _layout_player_hud_section_rect := Rect2(Vector2(0, 1428), Vector2(1080, 492))
-var _is_low_vertical_layout := false
 
 var _visuals: Variant = null
 var _player_loadout_hud: Variant = null
@@ -163,10 +83,6 @@ func bind(root_nodes: Dictionary) -> void:
 		if node_name in self:
 			set(node_name, root_nodes[node_name])
 	_sync_surface_presenter()
-
-
-func nodes_snapshot() -> Dictionary:
-	return _root_nodes
 
 
 func set_dependencies(dependencies: Dictionary) -> void:
@@ -223,29 +139,19 @@ func set_debug_overlay_visible(visible: bool) -> void:
 
 
 func show_settings_overlay(speed: String) -> void:
-	_ensure_settings_overlay()
-	if _settings_overlay_presenter != null:
-		_settings_overlay_presenter.show(speed)
+	_ensure_settings_overlay_coordinator()
+	if _settings_overlay_coordinator != null:
+		_settings_overlay_coordinator.show(speed)
 
 
 func hide_settings_overlay() -> void:
-	if _settings_overlay_presenter != null:
-		_settings_overlay_presenter.hide()
+	if _settings_overlay_coordinator != null:
+		_settings_overlay_coordinator.hide()
 
 
 func toggle_debug_overlay() -> bool:
 	_ensure_surface_presenter()
 	return _surface_presenter.toggle_debug_overlay()
-
-
-func is_debug_overlay_visible() -> bool:
-	_ensure_surface_presenter()
-	return _surface_presenter.is_debug_overlay_visible()
-
-
-func outcome_overlay_nodes() -> Dictionary:
-	_ensure_surface_presenter()
-	return _surface_presenter.outcome_overlay_nodes()
 
 
 func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary = {}) -> void:
@@ -360,7 +266,9 @@ func setup_rendering_helpers() -> void:
 	_ensure_enemy_intent_presenter()
 	if _enemy_intent_presenter != null:
 		_enemy_intent_presenter.ensure_block_preview_nodes()
-	_ensure_settings_overlay()
+	_ensure_settings_overlay_coordinator()
+	if _settings_overlay_coordinator != null:
+		_settings_overlay_coordinator.ensure_overlay()
 
 
 func bind_layout_presenter() -> void:
@@ -381,12 +289,8 @@ func apply_combat_layout(viewport_size: Vector2, timer_seconds: float, timer_sta
 	var layout_result = _combat_layout_presenter.apply_layout(viewport_size)
 	if not bool(layout_result.get("applied", false)):
 		return layout_result
-	_is_low_vertical_layout = bool(layout_result.get("is_low_vertical_layout", false))
-	_layout_top_bar_rect = layout_result.get("layout_top_bar_rect", _layout_top_bar_rect)
 	_layout_enemy_panel_rect = layout_result.get("layout_enemy_panel_rect", _layout_enemy_panel_rect)
-	_layout_combat_strip_rect = layout_result.get("layout_combat_strip_rect", _layout_combat_strip_rect)
 	_layout_board_panel_rect = layout_result.get("layout_board_panel_rect", _layout_board_panel_rect)
-	_layout_player_hud_section_rect = layout_result.get("layout_player_hud_section_rect", _layout_player_hud_section_rect)
 	sync_timer_display(timer_seconds, timer_state)
 	_apply_enemy_visual_profile(_current_enemy_visual_id)
 	_layout_enemy_block_intent_preview()
@@ -538,18 +442,19 @@ func clear_tutorial_enemy_intent_focus() -> void:
 
 
 func show_tutorial_end_modal(step := "end") -> void:
-	_ensure_tutorial_end_overlay_presenter()
-	if _tutorial_end_overlay_presenter != null:
-		_tutorial_end_overlay_presenter.show(step, _tutorial_end_layout_config())
+	_ensure_tutorial_end_overlay_coordinator()
+	if _tutorial_end_overlay_coordinator != null:
+		_tutorial_end_overlay_coordinator.set_board_panel_rect(_layout_board_panel_rect)
+		_tutorial_end_overlay_coordinator.show(step)
 
 
 func hide_tutorial_end_modal() -> void:
-	if _tutorial_end_overlay_presenter != null:
-		_tutorial_end_overlay_presenter.hide()
+	if _tutorial_end_overlay_coordinator != null:
+		_tutorial_end_overlay_coordinator.hide()
 
 
 func is_tutorial_end_modal_visible() -> bool:
-	return _tutorial_end_overlay_presenter != null and _tutorial_end_overlay_presenter.is_visible()
+	return _tutorial_end_overlay_coordinator != null and _tutorial_end_overlay_coordinator.is_visible()
 
 
 func stop_enemy_intent_hover_emphasis() -> void:
@@ -557,33 +462,29 @@ func stop_enemy_intent_hover_emphasis() -> void:
 		_enemy_intent_presenter.stop_hover_emphasis()
 
 
-func _ensure_tutorial_end_overlay_presenter() -> void:
+func _ensure_tutorial_end_overlay_coordinator() -> void:
 	if _layout_root == null:
 		return
-	if _tutorial_end_overlay_presenter == null:
-		_tutorial_end_overlay_presenter = COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT.new()
-	_tutorial_end_overlay_presenter.bind(
+	if _tutorial_end_overlay_coordinator == null:
+		_tutorial_end_overlay_coordinator = COMBAT_TUTORIAL_END_OVERLAY_COORDINATOR_SCRIPT.new()
+	_tutorial_end_overlay_coordinator.bind(
 		_layout_root,
 		{
 			"equipment_icons": _equipment_icons,
 			"elemental_mastery_panel": _elemental_mastery_panel,
 		},
 		{
-			COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT.CALLBACK_CONTINUE: Callable(self, "_emit_tutorial_end_continue_pressed"),
-			COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT.CALLBACK_MAIN_MENU: Callable(self, "_emit_tutorial_end_main_menu_pressed"),
+			"continue": Callable(self, "_emit_tutorial_end_continue_pressed"),
+			"main_menu": Callable(self, "_emit_tutorial_end_main_menu_pressed"),
 		}
 	)
-	_tutorial_end_overlay_presenter.ensure_overlay()
 
 
 func _layout_tutorial_end_overlay() -> void:
-	_ensure_tutorial_end_overlay_presenter()
-	if _tutorial_end_overlay_presenter != null:
-		_tutorial_end_overlay_presenter.layout(_tutorial_end_layout_config())
-
-
-func _tutorial_end_layout_config() -> Dictionary:
-	return {"board_panel_rect": _layout_board_panel_rect}
+	_ensure_tutorial_end_overlay_coordinator()
+	if _tutorial_end_overlay_coordinator != null:
+		_tutorial_end_overlay_coordinator.set_board_panel_rect(_layout_board_panel_rect)
+		_tutorial_end_overlay_coordinator.layout()
 
 
 func _emit_tutorial_end_continue_pressed() -> void:
@@ -632,22 +533,20 @@ func _on_intent_damage_preview_hover_ended() -> void:
 	intent_hover_ended.emit()
 
 
-func _ensure_settings_overlay() -> void:
+func _ensure_settings_overlay_coordinator() -> void:
 	if _layout_root == null:
 		return
-	if _settings_overlay_presenter == null:
-		_settings_overlay_presenter = COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT.new()
-	_settings_overlay_presenter.bind(
+	if _settings_overlay_coordinator == null:
+		_settings_overlay_coordinator = COMBAT_SETTINGS_OVERLAY_COORDINATOR_SCRIPT.new()
+	_settings_overlay_coordinator.bind(
 		_layout_root,
 		{
 			"continue": Callable(self, "_emit_settings_continue_pressed"),
 			"new_run": Callable(self, "_emit_settings_new_run_pressed"),
 			"main_menu": Callable(self, "_emit_settings_main_menu_pressed"),
 			"speed_selected": Callable(self, "_emit_settings_speed_selected"),
-		},
-		{"design_size": DESIGN_SIZE}
+		}
 	)
-	_settings_overlay_presenter.ensure_overlay()
 
 
 func _emit_settings_continue_pressed() -> void:
