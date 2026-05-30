@@ -1,0 +1,12 @@
+disable:
+  - class-definitions-order
+max-line-length: 160
+excluded_directories: !!set
+  .git: null
+  .godot: null
+  addons: null
+  assets: null
+  build: null
+  docs: null
+  logs: null
+  tmp: null

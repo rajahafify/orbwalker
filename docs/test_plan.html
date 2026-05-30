@@ -290,6 +290,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>GitHub Actions runs the gate after script-size budget reporting and before the aggregate test runner, so parse/load regressions in production scripts fail CI even when no test suite reaches that file. The workflow also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail in CI.</li>
 <li>Validation passed locally with Godot 4.6.3: <code>scanned=178</code>, <code>loaded=178</code>, <code>failed=0</code>. Tool/QA render scripts remain outside this first gate because some render helpers perform heavy preview setup when loaded broadly.</li>
 </ul>
+<p>Verification notes (2026-05-30, changed-file gdformat/gdlint gate):</p>
+<ul>
+<li>Added <code>.pre-commit-config.yaml</code> pinned to gdtoolkit <code>4.5.0</code>, with <code>gdformatrc</code> and <code>gdlintrc</code> tuned for this Godot 4 project style: <code>160</code>-column formatting/linting and no <code>class_name</code>-before-<code>extends</code> order rule.</li>
+<li>GitHub Actions now installs <code>pre-commit</code>, validates the config, discovers changed <code>*.gd</code> files for the push or pull-request range, and runs <code>gdformat --check</code> plus <code>gdlint</code> only on those changed GDScript files. This makes new/touched scripts fail on formatter/linter violations while the historical full-repo cleanup remains a separate ratchet.</li>
+<li>A throwaway local Python environment validated the pre-commit config and ran both hooks successfully against <code>scripts/tests/main_menu_accessibility_test.gd</code>. Before adding the repo config, default gdtoolkit failed this style because it expected <code>class_name</code> before <code>extends</code> and a <code>100</code>-column limit.</li>
+</ul>
 <p>Verification notes (2026-05-30, test surface coverage gate):</p>
 <ul>
 <li><code>tools/quality/test_surface_coverage.gd</code> scans production GDScript files under the runtime <code>scripts/*</code> areas, then scans tests, debug probes, and QA harnesses for explicit script paths, scene-instantiated scripts, and Godot <code>class_name</code> usage.</li>

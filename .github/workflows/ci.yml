@@ -45,6 +45,30 @@ jobs:
           fi
           git diff --check "${base_commit}" HEAD
 
+      - name: Check changed GDScript format and lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --user pre-commit
+          python3 -m pre_commit validate-config
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            base_commit="$(git merge-base FETCH_HEAD HEAD)"
+          else
+            before_commit="${{ github.event.before }}"
+            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
+              base_commit="$(git rev-list --max-parents=0 HEAD)"
+            else
+              base_commit="${before_commit}"
+            fi
+          fi
+          mapfile -t changed_gd_files < <(git diff --name-only --diff-filter=ACMRT "${base_commit}" HEAD -- '*.gd')
+          if [[ "${#changed_gd_files[@]}" -eq 0 ]]; then
+            echo "No changed GDScript files to lint."
+            exit 0
+          fi
+          python3 -m pre_commit run --show-diff-on-failure --files "${changed_gd_files[@]}"
+
       - name: Disable editor-only MCP runtime
         shell: bash
         run: |
