@@ -77,5 +77,8 @@ jobs:
       - name: Validate script loading
         run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_load_validation.gd
 
+      - name: Check test surface coverage
+        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/test_surface_coverage.gd
+
       - name: Run tests
         run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd

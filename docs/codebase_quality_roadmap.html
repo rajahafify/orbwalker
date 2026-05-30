@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>65</code> suites and <code>267</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>66</code> suites and <code>269</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -384,7 +384,9 @@
         <li>Set a floor (start at current, ratchet up); block PRs that drop it.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> coverage % is reported on every PR and cannot regress below the agreed floor.</div>
+      <div class="ac"><b>Current evidence:</b> <code>tools/quality/test_surface_coverage.gd</code> reports the direct test/probe surface over production GDScript files by scanning explicit <code>res://*.gd</code> references, scene-instantiated script references, and Godot <code>class_name</code> usages. CI now runs it before the aggregate test runner and fails if the measured surface drops below the current <code>71.00%</code> floor. The local Godot 4.6.3 run measured <code>75</code> covered scripts out of <code>105</code> production scripts (<code>71.43%</code>), with <code>test_surface_coverage_test.gd</code> covering the report/floor contract. This is an honest first coverage-visibility gate, not full line coverage; GDScript instrumentation/GUT-style line coverage remains the next ratchet.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
+      <div class="tags"><span class="files">tools/quality/test_surface_coverage.gd &middot; scripts/tests/test_surface_coverage_test.gd &middot; .github/workflows/ci.yml</span></div>
     </div>
   </section>
 
@@ -403,7 +405,7 @@
         <li>Enable Godot's own script warnings-as-errors for the project in CI (untyped, unused, unsafe casts).</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> CI rejects unformatted code and new lint/warning violations; <code>gdformat --check</code> is clean.</div>
-      <div class="ac"><b>Current evidence:</b> <code>script_load_validation.gd</code> now runs in CI and cache-ignored loads every <code>res://scripts</code> GDScript file as an early static gate; the local Godot 4.6.3 run loaded <code>174</code> scripts with <code>0</code> failures. CI also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail before import/tests. Full <code>gdformat</code>/<code>gdlint</code>, pre-commit hooks, and warnings-as-errors remain the next P4-1 tasks.</div>
+      <div class="ac"><b>Current evidence:</b> <code>script_load_validation.gd</code> now runs in CI and cache-ignored loads every <code>res://scripts</code> GDScript file as an early static gate; the local Godot 4.6.3 run loaded <code>175</code> scripts with <code>0</code> failures. CI also runs <code>git diff --check</code> against the changed commit range for pushes and pull requests, so whitespace/patch formatting defects fail before import/tests. Full <code>gdformat</code>/<code>gdlint</code>, pre-commit hooks, and warnings-as-errors remain the next P4-1 tasks.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
       <div class="tags"><span class="files">tools/quality/script_load_validation.gd &middot; .github/workflows/ci.yml</span></div>
     </div>
