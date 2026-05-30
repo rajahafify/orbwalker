@@ -30,6 +30,7 @@ const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/comba
 const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
 const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
 const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
+const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -117,6 +118,7 @@ var _hud_stage_coordinator: Variant = null
 var _mastery_preview_coordinator: Variant = null
 var _loadout_command_handler: Variant = null
 var _intent_hover_handler: Variant = null
+var _scene_transition_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
@@ -342,6 +344,8 @@ func _ensure_runtime_helpers() -> void:
 		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
 	if _intent_hover_handler == null:
 		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
+	if _scene_transition_handler == null:
+		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -1568,63 +1572,24 @@ func _trace_and_change_scene_to_target(
 	before_change_step: String,
 	begin_payload_extra: Dictionary = {}
 ) -> void:
-	var transition_route_id := current_route_id
-	if target_scene.find("shop.tscn") >= 0:
-		var begin_payload := {"source": source}
-		for key in begin_payload_extra.keys():
-			begin_payload[key] = begin_payload_extra[key]
-		transition_route_id = RunState.flow_trace_begin(
-			"combat_to_shop",
-			target_scene,
-			begin_payload
-		)
-	RunState.flow_trace_mark(
-		before_change_step,
-		{"source": source},
-		transition_route_id,
-		target_scene
-	)
-	var scene_change_result: Variant = RunState.flow_trace_change_scene(
-		_host.get_tree(),
+	_bind_scene_transition_handler()
+	_scene_transition_handler.trace_and_change_scene_to_target(
 		target_scene,
-		transition_route_id,
+		current_route_id,
 		source,
-		"",
-		_on_combat_scene_post_ready_rollback
+		before_change_step,
+		begin_payload_extra
 	)
-	if not FLOW_RESULT_UTILS.scene_change_succeeded(scene_change_result):
-		_handle_combat_scene_change_failure(target_scene, transition_route_id, source, scene_change_result)
 
 
 func _on_combat_scene_post_ready_rollback(result: Dictionary) -> void:
-	_handle_combat_scene_change_failure(
-		String(result.get("target_scene", RunState.SCENE_RUN_SUMMARY)),
-		String(result.get("route_id", _flow_trace_route_id_value())),
-		String(result.get("source", "combat_post_ready_rollback")),
-		result
-	)
+	_bind_scene_transition_handler()
+	_scene_transition_handler.on_scene_post_ready_rollback(result)
 
 
 func _handle_combat_scene_change_failure(target_scene: String, route_id: String, source: String, result: Variant) -> void:
-	var failure_reason := FLOW_RESULT_UTILS.scene_change_failure_reason(result)
-	_model.set_pending_next_scene_path(target_scene)
-	_model.clear_outcome_transition_queued()
-	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	var button_text := "Run Summary" if target_scene.find("run_summary") >= 0 else "Continue"
-	_show_outcome_summary("Transition Failed", "Could not open the next scene.\n%s" % failure_reason, true, button_text)
-	_set_status_text("Transition failed: %s" % failure_reason)
-	_set_status_color(STATUS_COLOR_NEGATIVE)
-	_append_combat_log("Scene transition failed from %s to %s: %s" % [source, target_scene, failure_reason])
-	RunState.flow_trace_mark(
-		"combat_scene_change_failed",
-		{
-			"source": source,
-			"reason": failure_reason,
-		},
-		route_id,
-		target_scene
-	)
-	push_error("Combat scene transition failed: %s -> %s (%s)" % [source, target_scene, failure_reason])
+	_bind_scene_transition_handler()
+	_scene_transition_handler.handle_scene_change_failure(target_scene, route_id, source, result)
 
 
 func _ensure_outcome_overlay_layer() -> void:
@@ -1663,6 +1628,10 @@ func _set_input_phase(phase: InputPhase) -> void:
 			if _ensure_model().external_lock_reason() != "":
 				_set_status_text("Input locked: %s" % _ensure_model().external_lock_reason())
 	_sync_model_state()
+
+
+func _lock_scene_transition_input() -> void:
+	_set_input_phase(InputPhase.LOCKED_EXTERNAL)
 
 
 func _ensure_model() -> CombatModel:
@@ -2120,6 +2089,30 @@ func _bind_intent_hover_handler() -> void:
 		{
 			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
 			"warning_color": STATUS_COLOR_WARNING,
+		}
+	)
+
+
+func _bind_scene_transition_handler() -> void:
+	if _scene_transition_handler == null:
+		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
+	_scene_transition_handler.bind(
+		{
+			"run_state": RunState,
+			"scene_tree": _host.get_tree() if _host != null else null,
+			"model": _model,
+		},
+		{
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_LOCK_EXTERNAL_INPUT: Callable(self, "_lock_scene_transition_input"),
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(self, "_show_outcome_summary"),
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
+			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
+		},
+		{
+			"negative_color": STATUS_COLOR_NEGATIVE,
+			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
 		}
 	)
 
