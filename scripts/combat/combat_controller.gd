@@ -26,6 +26,7 @@ const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_pr
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
 const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
+const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -114,6 +115,7 @@ var _resolve_presenter: Variant = null
 var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
+var _hud_stage_coordinator: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
@@ -333,6 +335,8 @@ func _ensure_runtime_helpers() -> void:
 		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
 	if _hud_presenter == null:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+	if _hud_stage_coordinator == null:
+		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -503,6 +507,7 @@ func _initialize_combat_state() -> void:
 		var preview: Dictionary = RunState.current_level_boss_preview()
 		_enemy_state = ENEMY_STATE_SCRIPT.new()
 		_enemy_state.configure_from_blueprint(preview)
+		_bind_hud_stage_coordinator()
 		_combat = null
 		_model.clear_outcome_transition_queued()
 		_model.clear_pending_next_scene_path()
@@ -546,6 +551,7 @@ func _initialize_combat_state() -> void:
 	var encounter: Dictionary = RunState.current_encounter_snapshot()
 	_enemy_state = ENEMY_STATE_SCRIPT.new()
 	_enemy_state.configure_from_blueprint(encounter)
+	_bind_hud_stage_coordinator()
 	_refresh_character_portraits()
 	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
 	_combat.start_fight(_player_state, _enemy_state)
@@ -1407,7 +1413,8 @@ func _end_drag(timed_out: bool) -> void:
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	if _combat == null:
 		return
-	_model.begin_hud_staging(_capture_hud_stage_values())
+	_bind_hud_stage_coordinator()
+	_model.begin_hud_staging(_hud_stage_coordinator.capture_values())
 	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
 	RunState.log_turn_result(
 		turn_log,
@@ -2015,6 +2022,7 @@ func _build_run_outcome_summary(fallback_cause: String = "") -> String:
 
 
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
+	_bind_hud_stage_coordinator()
 	var vfx_presenter: Variant = _combat_vfx_presenter
 	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
 	var enemy_blocked := int(turn_log.get("enemy_blocked", 0))
@@ -2065,7 +2073,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
-		_stage_hud_player_hp(staged_hp_before_heal + heart_heal)
+		_hud_stage_coordinator.stage_player_hp(staged_hp_before_heal + heart_heal)
 		_release_combat_mastery_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
@@ -2079,7 +2087,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
-		_stage_hud_player_armor(staged_armor_before_gain + armor_gain)
+		_hud_stage_coordinator.stage_player_armor(staged_armor_before_gain + armor_gain)
 		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
@@ -2096,7 +2104,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
-		_stage_hud_gold(staged_gold_before_gain + gold_gain)
+		_hud_stage_coordinator.stage_gold(staged_gold_before_gain + gold_gain)
 		_release_combat_mastery_feedback(OrbType.Id.GOLD)
 
 	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
@@ -2110,11 +2118,11 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			var fire_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not fire_replay_ok:
 				return
-		if ice_damage > 0 and not _staged_enemy_defeated():
+		if ice_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
 			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not ice_replay_ok:
 				return
-		if earth_damage > 0 and not _staged_enemy_defeated():
+		if earth_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
 			var earth_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not earth_replay_ok:
 				return
@@ -2124,7 +2132,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			var dominant_replay_ok: bool = await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 			if not dominant_replay_ok:
 				return
-			_stage_hud_enemy_result()
+			_hud_stage_coordinator.stage_enemy_result()
 		else:
 			if vfx_presenter != null:
 				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
@@ -2134,14 +2142,14 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
-			_stage_hud_enemy_result()
+			_hud_stage_coordinator.stage_enemy_result()
 			_release_combat_mastery_feedback(impact_orb)
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		_stage_hud_enemy_result()
+		_hud_stage_coordinator.stage_enemy_result()
 	if enemy_blocked > 0:
 		if vfx_presenter != null:
 			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
-		_stage_hud_enemy_result()
+		_hud_stage_coordinator.stage_enemy_result()
 	await _release_remaining_combat_mastery_feedback()
 	if not _can_continue_after_async_wait():
 		return
@@ -2160,6 +2168,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 
 func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_target: Vector2, enemy_impact_size: Vector2, damage_lifetime: float, label_lifetime: float) -> bool:
+	_bind_hud_stage_coordinator()
 	var vfx_presenter: Variant = _combat_vfx_presenter
 	if vfx_presenter != null:
 		vfx_presenter.spawn_mastery_cast_sequence(
@@ -2184,7 +2193,7 @@ func _replay_elemental_damage_result(orb_id: int, damage_amount: int, enemy_targ
 	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
 	if not _can_continue_after_async_wait():
 		return false
-	_stage_hud_enemy_damage_step(damage_amount)
+	_hud_stage_coordinator.stage_enemy_damage_step(damage_amount)
 	_release_combat_mastery_feedback(orb_id)
 	return true
 
@@ -2247,6 +2256,14 @@ func _ensure_hud_presenter() -> void:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
 
 
+func _bind_hud_stage_coordinator() -> void:
+	if _hud_stage_coordinator == null:
+		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
+	_hud_stage_coordinator.bind(_model, _player_state, _enemy_state, {
+		COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
+	})
+
+
 func _hud_snapshot_input_data() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var intent := _enemy_state.get_current_intent()
@@ -2298,73 +2315,6 @@ func _hud_snapshot_input_data() -> Dictionary:
 		"turn_summary_text": turn_summary_text,
 		"format_intent_compact": Callable(_turn_log_presenter, "format_intent_compact") if _turn_log_presenter != null else Callable(),
 	}
-
-
-func _capture_hud_stage_values() -> Dictionary:
-	if _player_state == null or _enemy_state == null:
-		return {}
-	return {
-		"player_gold": int(_player_state.gold),
-		"enemy_hp": int(_enemy_state.current_hp),
-		"enemy_turn_block": int(_enemy_state.current_turn_block),
-		"player_hp": int(_player_state.current_hp),
-		"player_armor": int(_player_state.armor),
-	}
-
-func _stage_hud_enemy_damage_step(raw_damage: int) -> void:
-	if _enemy_state == null or raw_damage <= 0 or not _model.is_hud_staging_active():
-		return
-	_model.stage_enemy_damage_step(raw_damage, int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
-	_update_hud()
-
-
-func _staged_enemy_defeated() -> bool:
-	if _enemy_state == null:
-		return false
-	return _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp)) <= 0
-
-
-func _stage_hud_enemy_result() -> void:
-	if _enemy_state == null or not _model.is_hud_staging_active():
-		return
-	_model.stage_enemy_result(int(_enemy_state.current_hp), int(_enemy_state.current_turn_block))
-	_update_hud()
-
-
-func _stage_hud_player_hp(value: int) -> void:
-	if _player_state == null or not _model.is_hud_staging_active():
-		return
-	_model.stage_player_hp(value, int(_player_state.max_hp))
-	_update_hud()
-
-
-func _stage_hud_player_armor(value: int) -> void:
-	if not _model.is_hud_staging_active():
-		return
-	_model.stage_player_armor(value)
-	_update_hud()
-
-
-func _stage_hud_player_block_step(blocked_by_armor: int) -> void:
-	if blocked_by_armor <= 0 or not _model.is_hud_staging_active():
-		return
-	var current_player_armor := int(_player_state.armor if _player_state != null else 0)
-	_model.stage_player_block_step(blocked_by_armor, current_player_armor)
-	_update_hud()
-
-
-func _stage_hud_gold(value: int) -> void:
-	if not _model.is_hud_staging_active():
-		return
-	_model.stage_gold(value)
-	_update_hud()
-
-
-func _stage_hud_player_final() -> void:
-	if _player_state == null or not _model.is_hud_staging_active():
-		return
-	_model.stage_player_final(int(_player_state.current_hp), int(_player_state.armor))
-	_update_hud()
 
 
 func _should_show_intent_damage_preview() -> bool:
@@ -2551,6 +2501,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
+	_bind_hud_stage_coordinator()
 	var vfx_presenter: Variant = _combat_vfx_presenter
 	if bool(turn_log.get("enemy_intent_skipped", false)):
 		return
@@ -2581,9 +2532,9 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
-		_stage_hud_player_block_step(blocked_by_armor)
+		_hud_stage_coordinator.stage_player_block_step(blocked_by_armor)
 		if hp_damage <= 0:
-			_stage_hud_player_final()
+			_hud_stage_coordinator.stage_player_final()
 			return
 	if hp_damage > 0:
 		if vfx_presenter != null:
@@ -2592,7 +2543,7 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
-	_stage_hud_player_final()
+	_hud_stage_coordinator.stage_player_final()
 
 
 func _spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
