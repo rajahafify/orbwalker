@@ -1340,6 +1340,10 @@ func layout_probe_snapshot() -> Dictionary:
 	return shop_layout_probe_snapshot()
 
 
+static func top_header_scene_path() -> String:
+	return TOP_HEADER_SCENE.resource_path
+
+
 func _apply_card_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
 	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 3, 4, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.18), 3, 4, Vector4(8, 6, 8, 6)))

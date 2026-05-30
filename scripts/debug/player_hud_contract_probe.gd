@@ -98,6 +98,19 @@ static func run_probe() -> Dictionary:
 	}
 
 
+static func run_all() -> Dictionary:
+	var report := run_probe()
+	var failures: Array[String] = []
+	for failure in Array(report.get("failures", [])):
+		failures.append(String(failure))
+	return {
+		"passed": failures.is_empty(),
+		"total": 5,
+		"failed": failures.size(),
+		"failures": failures,
+	}
+
+
 static func _check_shared_scene_tree(failures: Array[String]) -> void:
 	var packed := ResourceLoader.load(PLAYER_HUD_SCENE_PATH, "PackedScene", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
 	if packed == null:

@@ -166,14 +166,15 @@
 
     <div class="card c-p0">
       <h4><span class="id">P0-1</span> Enforce the existing tests in CI</h4>
-      <p class="why">You already have ~15 <code>run_all()</code> suites plus <code>combat_scene_contract_test.gd</code> — but I found no evidence they run on every push. Untriggered tests are documentation, not a safety net. This is the single highest-leverage change in the whole document.</p>
+      <p class="why">The repo now has a single headless runner that discovers existing test suites and contract probes, plus a GitHub Actions workflow that runs it on pushes and pull requests. This remains P0 until the remote CI gate has run successfully on the branch and merge protection points at it.</p>
       <div class="lab">Actions</div>
       <ul class="act">
-        <li>Add a headless test runner script (<code>scripts/tests/run_all_tests.gd</code>) that discovers every suite exposing <code>run_all()</code> and aggregates pass/fail counts, exiting non-zero on any failure.</li>
-        <li>Run it via <code>godot --headless --script res://scripts/tests/run_all_tests.gd</code> in GitHub Actions (or your CI) against a pinned Godot 4.6 image.</li>
-        <li>Gate merges on it. Add a status badge to <code>CONTRIBUTING.html</code>.</li>
+        <li>Keep <code>scripts/tests/run_all_tests.gd</code> as the canonical runner; it discovers every <code>*_test.gd</code> and <code>*_probe.gd</code> file that follows the shared <code>run_all()</code> contract.</li>
+        <li>Run it via <code>godot --headless --path . --script res://scripts/tests/run_all_tests.gd</code> in GitHub Actions against pinned Godot 4.6.3.</li>
+        <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>17</code> suites and <code>92</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -209,14 +210,15 @@
 
     <div class="card c-p0">
       <h4><span class="id">P0-4</span> One test-discovery convention</h4>
-      <p class="why">Suites expose <code>run_all()</code>; the HUD probe exposes <code>run_probe()</code>; <code>combat_controller.gd:795</code> invokes a runner inline. Three shapes mean things fall through the cracks (exactly how P0-3 happened). Pick one.</p>
+      <p class="why">Suites and probes now expose <code>run_all()</code>, and the combat debug test button delegates to the aggregate runner instead of a bespoke board-resolver-only path. Keep this convention strict so new checks enter the CI net automatically.</p>
       <div class="lab">Actions</div>
       <ul class="act">
-        <li>Standardize on a single entrypoint signature (e.g. every test/probe class exposes <code>run_all() -&gt; Dictionary {passed,total,failed,failures}</code>).</li>
-        <li>Adapt the HUD probe to that shape; remove the bespoke inline invocation path.</li>
+        <li>Standardize on a single entrypoint signature: every test/probe class exposes <code>run_all() -&gt; Dictionary {passed,total,failed,failures}</code>.</li>
+        <li>Keep debug/manual invocations pointed at <code>scripts/tests/run_all_tests.gd</code> instead of individual suite preloads.</li>
         <li>Document the convention in <code>CONTRIBUTING.html</code>.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> the P0-1 runner finds 100% of test/probe files by one rule; adding a new suite requires zero runner edits.</div>
+      <div class="ac"><b>Current evidence:</b> all current <code>*_test.gd</code> and <code>*_probe.gd</code> files are discovered by suffix and reported through the shared runner.</div>
       <div class="tags"><span class="t">Effort <b>S</b></span></div>
       <div class="tags"><span class="files">scripts/tests/* · scripts/debug/*_probe.gd · CONTRIBUTING.html</span></div>
     </div>

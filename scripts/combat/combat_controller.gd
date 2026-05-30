@@ -10,7 +10,7 @@ const CLEAR_ANIMATION_SECONDS := 0.12
 const GRAVITY_ANIMATION_SECONDS := 0.14
 const REFILL_ANIMATION_SECONDS := 0.14
 const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_service.gd")
-const BOARD_RESOLVER_TEST_RUNNER_SCRIPT := preload("res://scripts/tests/integrations/board_resolver_test.gd")
+const TEST_RUNNER_SCRIPT := preload("res://scripts/tests/run_all_tests.gd")
 const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
 const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
@@ -791,15 +791,17 @@ func _on_tutorial_end_main_menu_pressed() -> void:
 
 
 func _on_run_tests_button_pressed() -> void:
-	var runner: Variant = BOARD_RESOLVER_TEST_RUNNER_SCRIPT.new()
-	var report: Dictionary = runner.run_all()
-	if report.passed:
-		_set_status_text("Resolver tests passed (%d/%d)." % [report.total, report.total])
-		print("[Board Resolver Tests] Passed %d/%d." % [report.total, report.total])
+	var report: Dictionary = TEST_RUNNER_SCRIPT.run_all()
+	if bool(report.get("passed", false)):
+		_set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
+		print("[Combat Debug Tests] Passed %d cases across %d suites." % [
+			int(report.get("total", 0)),
+			int(report.get("suite_count", 0)),
+		])
 		return
 
-	_set_status_text("Resolver tests failed (%d/%d). See output." % [report.failed, report.total])
-	push_warning("Board resolver tests failed:\n%s" % "\n".join(report.failures))
+	_set_status_text("Tests failed (%d/%d). See output." % [int(report.get("failed", 0)), int(report.get("total", 0))])
+	push_warning("Combat debug tests failed:\n%s" % "\n".join(Array(report.get("failures", []))))
 
 
 func _on_add_test_equipment_button_pressed() -> void:

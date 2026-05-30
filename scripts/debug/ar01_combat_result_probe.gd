@@ -14,7 +14,7 @@ static func set_enabled(enabled: bool) -> void:
 	ProjectSettings.set_setting(FEATURE_FLAG_SETTING, enabled)
 
 
-static func run_baseline_probe() -> Dictionary:
+static func run_baseline_probe(print_summary: bool = true) -> Dictionary:
 	var envelope := {
 		"probe_id": "AR-01-combat-result-envelope",
 		"feature_flag": FEATURE_FLAG_SETTING,
@@ -136,5 +136,34 @@ static func run_baseline_probe() -> Dictionary:
 		"next_phase_id": int(turn_log.get("next_phase", -1)),
 		"next_phase_name": combat.phase_name(int(turn_log.get("next_phase", -1))),
 	}
-	print("[AR-01 Probe] %s" % JSON.stringify(envelope))
+	if print_summary:
+		print("[AR-01 Probe] %s" % JSON.stringify(envelope))
 	return envelope
+
+
+static func run_all() -> Dictionary:
+	var previous_enabled := is_enabled()
+	set_enabled(true)
+	var report := run_baseline_probe(false)
+	set_enabled(previous_enabled)
+
+	var failures: Array[String] = []
+	if String(report.get("status", "")) != "ok":
+		failures.append("Expected AR-01 baseline status ok, got %s" % String(report.get("status", "")))
+	if not bool(report.get("turn_log_has_expected_keys", false)):
+		failures.append("AR-01 turn log missing keys: %s" % ", ".join(Array(report.get("missing_turn_log_keys", []))))
+	if String(report.get("phase_before", "")) != "Player Input":
+		failures.append("Expected AR-01 phase_before Player Input, got %s" % String(report.get("phase_before", "")))
+	if String(report.get("phase_after", "")) != "Intent Preview":
+		failures.append("Expected AR-01 phase_after Intent Preview, got %s" % String(report.get("phase_after", "")))
+	var result: Dictionary = report.get("result", {})
+	if int(result.get("combo_count", -1)) != 3:
+		failures.append("Expected AR-01 combo_count 3")
+	if int(result.get("enemy_damage_taken", -1)) != 19:
+		failures.append("Expected AR-01 enemy_damage_taken 19")
+	return {
+		"passed": failures.is_empty(),
+		"total": 6,
+		"failed": failures.size(),
+		"failures": failures,
+	}

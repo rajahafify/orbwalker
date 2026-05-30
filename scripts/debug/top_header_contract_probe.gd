@@ -7,6 +7,7 @@ const COMBAT_SCENE_PATH := "res://scenes/combat.tscn"
 const SHOP_VIEW_SCRIPT_PATH := "res://scripts/shop/shop_view.gd"
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const TOP_HEADER_SCRIPT := preload(TOP_HEADER_SCRIPT_PATH)
+const SHOP_VIEW_SCRIPT := preload(SHOP_VIEW_SCRIPT_PATH)
 const SHARED_TOP_HEADER_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))
 
 const REQUIRED_SHARED_NODE_NAMES := [
@@ -32,6 +33,19 @@ static func run_probe() -> Dictionary:
 	_check_layout_probe_uses_shared_geometry(failures)
 	return {
 		"status": "ok" if failures.is_empty() else "failed",
+		"failures": failures,
+	}
+
+
+static func run_all() -> Dictionary:
+	var report := run_probe()
+	var failures: Array[String] = []
+	for failure in Array(report.get("failures", [])):
+		failures.append(String(failure))
+	return {
+		"passed": failures.is_empty(),
+		"total": 4,
+		"failed": failures.size(),
 		"failures": failures,
 	}
 
@@ -67,18 +81,22 @@ static func _check_combat_instances_shared_scene(failures: Array[String]) -> voi
 
 
 static func _check_shop_instances_shared_scene(failures: Array[String]) -> void:
-	var shop_source := FileAccess.get_file_as_string(SHOP_VIEW_SCRIPT_PATH)
-	if shop_source.is_empty():
-		failures.append("Shop view script failed to read: %s" % SHOP_VIEW_SCRIPT_PATH)
-		return
-	if not shop_source.contains('TOP_HEADER_SCENE := preload("%s")' % TOP_HEADER_SCENE_PATH):
-		failures.append("Shop view must preload the shared TopHeader scene instead of building a private header")
-	if not shop_source.contains("_top_bar = TOP_HEADER_SCENE.instantiate()"):
-		failures.append("Shop view must instance TOP_HEADER_SCENE for TopBar")
-	if not shop_source.contains("TOP_HEADER_SCRIPT.layout_snapshot_for(Rect2(Vector2.ZERO, TOP_BAR_RECT.size))"):
-		failures.append("Shop layout probe must use TopHeader.layout_snapshot_for geometry")
-	if not shop_source.contains("const TOP_BAR_RECT := Rect2(Vector2(16, 8), Vector2(1048, 116))"):
+	var scene_path := String(SHOP_VIEW_SCRIPT.top_header_scene_path())
+	if scene_path != TOP_HEADER_SCENE_PATH:
+		failures.append("Shop TopBar must instance %s, got %s" % [TOP_HEADER_SCENE_PATH, scene_path])
+	_check_shop_layout_probe_uses_shared_geometry(failures)
+
+
+static func _check_shop_layout_probe_uses_shared_geometry(failures: Array[String]) -> void:
+	var shop_probe: Dictionary = SHOP_VIEW_SCRIPT.shop_layout_probe_snapshot()
+	var top_bar_rect: Rect2 = shop_probe.get("top_bar", Rect2())
+	if top_bar_rect != SHARED_TOP_HEADER_RECT:
 		failures.append("Shop TopBar rect must match shared top header rect")
+	var top_controls: Dictionary = shop_probe.get("top_controls", {})
+	var expected_controls: Dictionary = TOP_HEADER_SCRIPT.layout_snapshot_for(Rect2(Vector2.ZERO, top_bar_rect.size))
+	for key in ["title", "gold_counter", "help_button", "settings_button"]:
+		if top_controls.get(key, Rect2()) != expected_controls.get(key, Rect2()):
+			failures.append("Shop layout probe must use shared TopHeader geometry for %s" % key)
 
 
 static func _check_layout_probe_uses_shared_geometry(failures: Array[String]) -> void:

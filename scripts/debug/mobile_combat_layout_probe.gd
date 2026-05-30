@@ -3,7 +3,7 @@ extends RefCounted
 const LAYOUT_PRESENTER_PATH := "res://scripts/combat/combat_layout_presenter.gd"
 
 
-static func run_probe() -> Dictionary:
+static func run_probe(print_summary: bool = true) -> Dictionary:
 	var layout_presenter_script: Variant = _load_layout_presenter_script()
 	if layout_presenter_script == null or not layout_presenter_script.has_method("build_layout_probe"):
 		return {
@@ -63,8 +63,33 @@ static func run_probe() -> Dictionary:
 		"result_count": results.size(),
 		"results": results,
 	}
-	print("[Mobile Layout Probe] %s" % JSON.stringify(summary))
+	if print_summary:
+		print("[Mobile Layout Probe] %s" % JSON.stringify(summary))
 	return summary
+
+
+static func run_all() -> Dictionary:
+	var report := run_probe(false)
+	var failures: Array[String] = []
+	if report.has("error"):
+		failures.append("Mobile combat layout probe error: %s" % String(report.get("error", "")))
+	var results := Array(report.get("results", []))
+	if results.size() != 3:
+		failures.append("Expected 3 mobile combat layout probe cases, got %d" % results.size())
+	for result in results:
+		var case_name := String(result.get("name", "unknown"))
+		if int(result.get("overlap_count", -1)) != 0:
+			failures.append("%s reported primary overlaps" % case_name)
+		if not Array(result.get("overlaps_readability_actionable", [])).is_empty():
+			failures.append("%s reported actionable readability overlaps" % case_name)
+		if not bool(result.get("readability_all_pass", false)):
+			failures.append("%s failed readability minimums" % case_name)
+	return {
+		"passed": failures.is_empty(),
+		"total": 3,
+		"failed": failures.size(),
+		"failures": failures,
+	}
 
 
 static func _load_layout_presenter_script() -> Variant:

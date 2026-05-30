@@ -1,0 +1,56 @@
+name: Godot CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    name: Headless tests
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.6.3
+      GODOT_BIN: ${{ runner.temp }}/godot/Godot_v4.6.3-stable_linux.x86_64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check tracked generated artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked_artifacts="$(git ls-files | grep -E '(^Orbwalker\.apk$|\.apk$|\.aab$|\.apks$|\.idsig$|^build/|^\.godot/|^tmp/|^logs/|^android/)' || true)"
+          if [[ -n "${tracked_artifacts}" ]]; then
+            echo "Generated artifacts must not be tracked:"
+            echo "${tracked_artifacts}"
+            exit 1
+          fi
+
+      - name: Disable editor-only MCP runtime
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("project.godot")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace('GDAIMCPRuntime="*res://scripts/core/gdai_mcp_runtime_proxy.gd"\n', "")
+          text = text.replace('enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")', "enabled=PackedStringArray()")
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/godot"
+          curl -L -o "${RUNNER_TEMP}/godot/godot.zip" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q "${RUNNER_TEMP}/godot/godot.zip" -d "${RUNNER_TEMP}/godot"
+          chmod +x "${GODOT_BIN}"
+          "${GODOT_BIN}" --version
+
+      - name: Import project
+        run: "${GODOT_BIN}" --headless --path . --import --quit
+
+      - name: Run tests
+        run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd
