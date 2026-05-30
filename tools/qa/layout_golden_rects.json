@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "tolerance_px": 0.01,
+  "snapshots": {
+    "combat_1080x1920": {
+      "viewport_size": [1080, 1920],
+      "layout_root_size": [1080, 1920],
+      "scale_factor": 1,
+      "rects": {
+        "top_bar": [16, 8, 1048, 116],
+        "enemy_panel": [16, 132, 1048, 432],
+        "combat_strip": [16, 576, 1048, 64],
+        "board_panel": [16, 660, 1048, 756],
+        "player_hud_section": [0, 1428, 1080, 492],
+        "board": [228.333, 664, 623.333, 748],
+        "timer": [50, 592, 980, 32],
+        "hero_vitals": [228, 1608, 836, 152]
+      }
+    },
+    "shop_1080x1920": {
+      "viewport_size": [1080, 1920],
+      "layout_mode": "adaptive_full_height_larger_shop",
+      "rects": {
+        "top_bar": [16, 8, 1048, 116],
+        "merchant_stage": [16, 132, 1048, 338],
+        "stock_panel": [16, 484, 1048, 556],
+        "offer_grid": [14, 62, 1020, 485],
+        "relic_panel": [16, 1054, 1048, 218],
+        "action_row": [16, 1282, 1048, 134],
+        "player_hud_section": [0, 1428, 1080, 492]
+      }
+    },
+    "main_menu_1080x1920": {
+      "viewport_size": [1080, 1920],
+      "rects": {
+        "safe_rect": [34, 34, 1012, 1852],
+        "logo": [94.72, 237.72, 890.56, 370.4],
+        "menu_button_column": [216.16, 663.68, 647.68, 814.88],
+        "element_row": [64.36, 1089.64, 951.28, 222.24],
+        "stats_panel": [54.24, 1348.92, 971.52, 259.28],
+        "stats_row": [53.434, 72.598, 864.653, 124.454],
+        "footer_actions": [54.24, 1626.72, 971.52, 142.604],
+        "status_label": [74.48, 1835.996, 931.04, 35.188]
+      },
+      "metrics": {
+        "menu_button_min_height": 115,
+        "element_icon_size": 118,
+        "stat_icon_size": 88,
+        "footer_icon_max_width": 72
+      }
+    }
+  }
+}

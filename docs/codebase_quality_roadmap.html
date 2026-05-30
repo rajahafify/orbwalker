@@ -174,7 +174,7 @@
         <li>Gate merges on the workflow, then add a real status badge to <code>CONTRIBUTING.html</code> once the remote owner/repo badge URL is known.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a PR that breaks any existing assertion is blocked by CI before merge; the runner's exit code is non-zero and the failing case name is printed.</div>
-      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>20</code> suites and <code>108</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
+      <div class="ac"><b>Current evidence:</b> local Godot 4.6.3 headless run passed <code>21</code> suites and <code>110</code> cases through <code>scripts/tests/run_all_tests.gd</code>.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span><span class="t">Risk <b>low</b></span><span class="t">Unblocks <b>everything</b></span></div>
       <div class="tags"><span class="files">+ .github/workflows/ci.yml · + scripts/tests/run_all_tests.gd</span></div>
     </div>
@@ -365,7 +365,9 @@
         <li>Store golden layout rects (not full images, to stay diffable) for key screens; assert within tolerance.</li>
       </ul>
       <div class="ac"><b>Acceptance:</b> a layout regression on combat/shop/menu fails a deterministic test; goldens are reviewable in PRs.</div>
+      <div class="ac"><b>Current evidence:</b> <code>layout_snapshot_harness.gd</code> captures deterministic 1080×1920 combat, shop, and main-menu rect probes; <code>layout_golden_rects.json</code> stores reviewable goldens; <code>layout_snapshot_harness_test.gd</code> fails when current probes drift outside the 0.01px tolerance.</div>
       <div class="tags"><span class="t">Effort <b>M</b></span></div>
+      <div class="tags"><span class="files">tools/qa/layout_snapshot_harness.gd · tools/qa/layout_golden_rects.json · scripts/tests/layout_snapshot_harness_test.gd · scripts/main_menu/main_menu_view.gd</span></div>
     </div>
 
     <div class="card c-p3">

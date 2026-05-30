@@ -283,6 +283,44 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_apply_font_sizes(viewport_size)
 
 
+static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
+	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return {"applied": false}
+	var safe_rect := _layout_inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (34.0 / DESIGN_SIZE.x))
+	var stats_panel := _layout_rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14)
+	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+	var element_row := _layout_rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12)
+	var element_icon_size := int(round(clampf(118.0 * scale_factor, 58.0, 136.0)))
+	var element_cell_width := element_row.size.x / 6.0
+	if element_icon_size > int(round(element_cell_width * 0.78)):
+		element_icon_size = int(round(element_cell_width * 0.78))
+	return {
+		"applied": true,
+		"design_size": DESIGN_SIZE,
+		"viewport_size": viewport_size,
+		"safe_rect": safe_rect,
+		"background": Rect2(Vector2.ZERO, viewport_size),
+		"outer_border": _layout_inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)),
+		"logo": _layout_rect_from_percent_in_rect(safe_rect, 0.06, 0.11, 0.88, 0.20),
+		"menu_button_column": _layout_rect_from_percent_in_rect(safe_rect, 0.18, 0.34, 0.64, 0.44),
+		"element_row": element_row,
+		"stats_panel": stats_panel,
+		"stats_row": Rect2(
+			Vector2(stats_panel.size.x * 0.055, stats_panel.size.y * 0.28),
+			Vector2(stats_panel.size.x * 0.89, stats_panel.size.y * 0.48)
+		),
+		"footer_actions": _layout_rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077),
+		"version_label": _layout_rect_from_percent_in_rect(safe_rect, 0.33, 0.946, 0.34, 0.022),
+		"status_label": _layout_rect_from_percent_in_rect(safe_rect, 0.04, 0.973, 0.92, 0.019),
+		"menu_button_separation": int(round(clampf(16.0 * (viewport_size.y / DESIGN_SIZE.y), 10.0, 24.0))),
+		"footer_action_separation": int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))),
+		"menu_button_min_height": int(round(viewport_size.y * 0.060)),
+		"element_icon_size": element_icon_size,
+		"stat_icon_size": int(round(clampf(88.0 * scale_factor, 48.0, 100.0))),
+		"footer_icon_max_width": int(round(clampf(72.0 * scale_factor, 36.0, 84.0))),
+	}
+
+
 func set_generate_log_toggle(enabled: bool) -> void:
 	_generate_log_toggle.set_pressed_no_signal(enabled)
 
@@ -586,6 +624,20 @@ func _rect_from_percent_in_rect(base_rect: Rect2, left: float, top: float, width
 
 
 func _inset_rect(rect: Rect2, inset: float) -> Rect2:
+	return Rect2(
+		rect.position + Vector2(inset, inset),
+		Vector2(maxf(0.0, rect.size.x - inset * 2.0), maxf(0.0, rect.size.y - inset * 2.0))
+	)
+
+
+static func _layout_rect_from_percent_in_rect(base_rect: Rect2, left: float, top: float, width: float, height: float) -> Rect2:
+	return Rect2(
+		base_rect.position + Vector2(base_rect.size.x * left, base_rect.size.y * top),
+		Vector2(base_rect.size.x * width, base_rect.size.y * height)
+	)
+
+
+static func _layout_inset_rect(rect: Rect2, inset: float) -> Rect2:
 	return Rect2(
 		rect.position + Vector2(inset, inset),
 		Vector2(maxf(0.0, rect.size.x - inset * 2.0), maxf(0.0, rect.size.y - inset * 2.0))
