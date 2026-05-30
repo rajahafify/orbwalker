@@ -19,6 +19,7 @@ const COMBAT_SETTINGS_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/
 const COMBAT_ENEMY_BLOCK_PREVIEW_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_block_preview_presenter.gd")
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
 const COMBAT_ENEMY_INTENT_BUBBLE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_intent_bubble_presenter.gd")
+const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_stage_presenter.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const INTENT_BUBBLE_SIZE := Vector2(136.0, 58.0)
@@ -139,6 +140,7 @@ var _settings_overlay_presenter: Variant = null
 var _enemy_block_preview_presenter: Variant = null
 var _tutorial_end_overlay_presenter: Variant = null
 var _enemy_intent_bubble_presenter: Variant = null
+var _enemy_stage_presenter: Variant = null
 var _layout_top_bar_rect := TOP_BAR_RECT
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_combat_strip_rect := COMBAT_STRIP_RECT
@@ -973,113 +975,47 @@ func _ensure_placeholder_visuals() -> void:
 
 
 func _ensure_enemy_stage_backdrop_node() -> void:
-	if _enemy_stage == null:
-		return
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		if _enemy_stage_backdrop.get_parent() != _enemy_stage:
-			var existing_parent := _enemy_stage_backdrop.get_parent()
-			if existing_parent != null:
-				existing_parent.remove_child(_enemy_stage_backdrop)
-			_enemy_stage.add_child(_enemy_stage_backdrop)
-		_enemy_stage.move_child(_enemy_stage_backdrop, 0)
-		return
-	var existing := _enemy_stage.get_node_or_null("EnemyStageBackdrop")
-	if existing is TextureRect:
-		_enemy_stage_backdrop = existing as TextureRect
-	else:
-		_enemy_stage_backdrop = TextureRect.new()
-		_enemy_stage_backdrop.name = "EnemyStageBackdrop"
-		_enemy_stage.add_child(_enemy_stage_backdrop)
-	_enemy_stage_backdrop.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_enemy_stage_backdrop.expand_mode = TextureRect.ExpandMode.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	_enemy_stage_backdrop.stretch_mode = TextureRect.StretchMode.STRETCH_KEEP_ASPECT_COVERED as TextureRect.StretchMode
-	_enemy_stage_backdrop.modulate = Color(1.0, 1.0, 1.0, 0.94)
-	_enemy_stage_backdrop.visible = true
-	_enemy_stage.move_child(_enemy_stage_backdrop, 0)
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null:
+		_enemy_stage_presenter.ensure_backdrop()
+		_sync_enemy_stage_presenter_nodes()
 
 
 func _ensure_enemy_ground_shadow_node() -> void:
-	if _enemy_stage == null:
-		return
-	if _enemy_ground_shadow != null and is_instance_valid(_enemy_ground_shadow):
-		if _enemy_ground_shadow.get_parent() != _enemy_stage:
-			var existing_parent := _enemy_ground_shadow.get_parent()
-			if existing_parent != null:
-				existing_parent.remove_child(_enemy_ground_shadow)
-			_enemy_stage.add_child(_enemy_ground_shadow)
-		return
-	var existing := _enemy_stage.get_node_or_null("EnemyGroundShadow")
-	if existing is Panel:
-		_enemy_ground_shadow = existing as Panel
-	else:
-		_enemy_ground_shadow = Panel.new()
-		_enemy_ground_shadow.name = "EnemyGroundShadow"
-		_enemy_stage.add_child(_enemy_ground_shadow)
-	_enemy_ground_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_enemy_ground_shadow.z_index = 1
-	_enemy_ground_shadow.visible = true
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null:
+		_enemy_stage_presenter.ensure_ground_shadow()
+		_sync_enemy_stage_presenter_nodes()
 
 
 func _apply_enemy_visual_profile(enemy_id: String) -> void:
-	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
-		return
-	var stage_size := _enemy_stage.size if _enemy_stage != null else Vector2.ZERO
-	if stage_size.x <= 0.0 or stage_size.y <= 0.0:
-		stage_size = _layout_enemy_panel_rect.size
-	var profile := {}
-	if _visuals != null and _visuals.has_method("enemy_visual_profile"):
-		profile = Dictionary(_visuals.enemy_visual_profile(enemy_id))
-	var scale := float(profile.get("scale", 1.0))
-	var offset: Vector2 = profile.get("offset", Vector2.ZERO)
-	var shadow_scale := float(profile.get("shadow_scale", 1.0))
-	var shadow_alpha := float(profile.get("shadow_alpha", 0.34))
-
-	_enemy_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-	_enemy_portrait.position = offset
-	_enemy_portrait.size = stage_size
-	_enemy_portrait.pivot_offset = stage_size * 0.5
-	_enemy_portrait.scale = Vector2(scale, scale)
-	_enemy_portrait.z_index = 2
-	if _enemy_stage_backdrop != null and is_instance_valid(_enemy_stage_backdrop):
-		_enemy_stage_backdrop.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-	if _enemy_text_scrim != null and is_instance_valid(_enemy_text_scrim):
-		_enemy_text_scrim.z_index = 3
-
-	_ensure_enemy_ground_shadow_node()
-	if _enemy_ground_shadow == null or not is_instance_valid(_enemy_ground_shadow):
-		return
-	var shadow_size := Vector2(stage_size.x * 0.36 * shadow_scale, maxf(30.0, stage_size.y * 0.11 * shadow_scale))
-	_enemy_ground_shadow.position = Vector2((stage_size.x - shadow_size.x) * 0.5, stage_size.y * 0.73)
-	_enemy_ground_shadow.size = shadow_size
-	_enemy_ground_shadow.z_index = 1
-	_enemy_ground_shadow.visible = _enemy_portrait.visible
-	var shadow_style := StyleBoxFlat.new()
-	shadow_style.bg_color = Color(0.0, 0.0, 0.0, clampf(shadow_alpha, 0.0, 0.65))
-	shadow_style.border_color = Color(0.0, 0.0, 0.0, 0.0)
-	shadow_style.set_corner_radius_all(999)
-	_enemy_ground_shadow.add_theme_stylebox_override("panel", shadow_style)
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null:
+		_enemy_stage_presenter.apply_visual_profile(enemy_id, _layout_enemy_panel_rect)
+		_sync_enemy_stage_presenter_nodes()
 
 
 func _ensure_enemy_text_scrim_node() -> void:
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null:
+		_enemy_stage_presenter.ensure_text_scrim()
+		_sync_enemy_stage_presenter_nodes()
+
+
+func _ensure_enemy_stage_presenter() -> void:
 	if _enemy_stage == null:
 		return
-	if _enemy_text_scrim != null and is_instance_valid(_enemy_text_scrim):
-		if _enemy_text_scrim.get_parent() != _enemy_stage:
-			var existing_parent := _enemy_text_scrim.get_parent()
-			if existing_parent != null:
-				existing_parent.remove_child(_enemy_text_scrim)
-			_enemy_stage.add_child(_enemy_text_scrim)
+	if _enemy_stage_presenter == null:
+		_enemy_stage_presenter = COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT.new()
+	_enemy_stage_presenter.bind(_enemy_stage, _enemy_portrait, _visuals)
+
+
+func _sync_enemy_stage_presenter_nodes() -> void:
+	if _enemy_stage_presenter == null:
 		return
-	var existing := _enemy_stage.get_node_or_null("EnemyTextScrim")
-	if existing is ColorRect:
-		_enemy_text_scrim = existing as ColorRect
-	else:
-		_enemy_text_scrim = ColorRect.new()
-		_enemy_text_scrim.name = "EnemyTextScrim"
-		_enemy_stage.add_child(_enemy_text_scrim)
-	_enemy_text_scrim.mouse_filter = Control.MouseFilter.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	_enemy_text_scrim.color = Color(0.02, 0.04, 0.06, 0.72)
-	_enemy_text_scrim.visible = true
+	_enemy_stage_backdrop = _enemy_stage_presenter.backdrop()
+	_enemy_ground_shadow = _enemy_stage_presenter.ground_shadow()
+	_enemy_text_scrim = _enemy_stage_presenter.text_scrim()
 
 
 func _apply_zone_guides() -> void:
