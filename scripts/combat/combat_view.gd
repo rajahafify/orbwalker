@@ -297,7 +297,7 @@ func outcome_overlay_nodes() -> Dictionary:
 	}
 
 
-func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary) -> void:
+func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary = {}) -> void:
 	if outcome_overlay == null:
 		return
 	outcome_overlay.bind(outcome_overlay_nodes(), config)

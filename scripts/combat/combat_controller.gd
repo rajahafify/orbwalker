@@ -65,17 +65,6 @@ const SLOT_SIZE := Vector2(88, 88)
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
 const DESIGN_SIZE := Vector2(1080, 1920)
-const OUTCOME_SUMMARY_RECT := Rect2(Vector2(144, 168), Vector2(760, 452))
-const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(56, 390), Vector2(968, 860))
-const BOSS_REWARD_CARD_GAP := 16.0
-const BOSS_REWARD_ROW_TOP := 136.0
-const BOSS_REWARD_CARD_HEIGHT := 142.0
-const BOSS_REWARD_ICON_SIZE := Vector2(104, 104)
-const BOSS_REWARD_SKIP_BUTTON_SIZE := Vector2(190, 58)
-const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(420, 72)
-const OUTCOME_MODAL_Z_INDEX := 180
-const OUTCOME_SCRIM_Z_INDEX := 170
-const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
 const TIMER_TRACK_SIZE := Vector2(720, 36)
 const TIMER_TRACK_PADDING := 5.0
 const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
@@ -1616,22 +1605,7 @@ func _audio_manager_node() -> Node:
 func _bind_outcome_overlay() -> void:
 	if _outcome_overlay == null or _view == null:
 		return
-	_view.bind_outcome_overlay(
-		_outcome_overlay,
-		{
-			"outcome_summary_rect": OUTCOME_SUMMARY_RECT,
-			"boss_reward_summary_rect": BOSS_REWARD_SUMMARY_RECT,
-			"boss_reward_card_gap": BOSS_REWARD_CARD_GAP,
-			"boss_reward_row_top": BOSS_REWARD_ROW_TOP,
-			"boss_reward_card_height": BOSS_REWARD_CARD_HEIGHT,
-			"boss_reward_icon_size": BOSS_REWARD_ICON_SIZE,
-			"boss_reward_skip_button_size": BOSS_REWARD_SKIP_BUTTON_SIZE,
-			"boss_reward_next_button_size": BOSS_REWARD_NEXT_BUTTON_SIZE,
-			"outcome_modal_z_index": OUTCOME_MODAL_Z_INDEX,
-			"outcome_scrim_z_index": OUTCOME_SCRIM_Z_INDEX,
-			"outcome_boss_scrim_color": OUTCOME_BOSS_SCRIM_COLOR,
-		}
-	)
+	_view.bind_outcome_overlay(_outcome_overlay)
 
 
 func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:

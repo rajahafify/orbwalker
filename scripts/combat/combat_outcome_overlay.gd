@@ -1,6 +1,18 @@
 extends RefCounted
 class_name CombatOutcomeOverlay
 
+const OUTCOME_SUMMARY_RECT := Rect2(Vector2(144, 168), Vector2(760, 452))
+const BOSS_REWARD_SUMMARY_RECT := Rect2(Vector2(56, 390), Vector2(968, 860))
+const BOSS_REWARD_CARD_GAP := 16.0
+const BOSS_REWARD_ROW_TOP := 136.0
+const BOSS_REWARD_CARD_HEIGHT := 142.0
+const BOSS_REWARD_ICON_SIZE := Vector2(104, 104)
+const BOSS_REWARD_SKIP_BUTTON_SIZE := Vector2(190, 58)
+const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(420, 72)
+const OUTCOME_MODAL_Z_INDEX := 180
+const OUTCOME_SCRIM_Z_INDEX := 170
+const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
+
 var _layout_root: Control
 var _outcome_summary_panel: Panel
 var _outcome_summary_root: Control
@@ -19,7 +31,23 @@ var _outcome_scrim: ColorRect
 var _config: Dictionary = {}
 
 
-func bind(nodes: Dictionary, config: Dictionary) -> void:
+static func default_config() -> Dictionary:
+	return {
+		"outcome_summary_rect": OUTCOME_SUMMARY_RECT,
+		"boss_reward_summary_rect": BOSS_REWARD_SUMMARY_RECT,
+		"boss_reward_card_gap": BOSS_REWARD_CARD_GAP,
+		"boss_reward_row_top": BOSS_REWARD_ROW_TOP,
+		"boss_reward_card_height": BOSS_REWARD_CARD_HEIGHT,
+		"boss_reward_icon_size": BOSS_REWARD_ICON_SIZE,
+		"boss_reward_skip_button_size": BOSS_REWARD_SKIP_BUTTON_SIZE,
+		"boss_reward_next_button_size": BOSS_REWARD_NEXT_BUTTON_SIZE,
+		"outcome_modal_z_index": OUTCOME_MODAL_Z_INDEX,
+		"outcome_scrim_z_index": OUTCOME_SCRIM_Z_INDEX,
+		"outcome_boss_scrim_color": OUTCOME_BOSS_SCRIM_COLOR,
+	}
+
+
+func bind(nodes: Dictionary, config: Dictionary = {}) -> void:
 	_layout_root = nodes.get("layout_root") as Control
 	_outcome_summary_panel = nodes.get("summary_panel") as Panel
 	_outcome_summary_root = nodes.get("summary_root") as Control
@@ -27,7 +55,9 @@ func bind(nodes: Dictionary, config: Dictionary) -> void:
 	_outcome_title_label = nodes.get("title_label") as Label
 	_outcome_body_label = nodes.get("body_label") as Label
 	_next_button = nodes.get("next_button") as Button
-	_config = config.duplicate(true)
+	_config = default_config()
+	for key in config.keys():
+		_config[key] = config[key]
 
 
 func is_boss_reward_pending() -> bool:
@@ -153,10 +183,10 @@ func ensure_overlay_layer() -> void:
 		var scrim := ColorRect.new()
 		scrim.name = "OutcomeScrim"
 		scrim.visible = false
-		scrim.color = _config.get("outcome_boss_scrim_color", Color(0.0, 0.0, 0.0, 0.62))
+		scrim.color = _config.get("outcome_boss_scrim_color", OUTCOME_BOSS_SCRIM_COLOR)
 		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 		scrim.z_as_relative = false
-		scrim.z_index = int(_config.get("outcome_scrim_z_index", 170))
+		scrim.z_index = int(_config.get("outcome_scrim_z_index", OUTCOME_SCRIM_Z_INDEX))
 		_layout_root.add_child(scrim)
 		_outcome_scrim = scrim
 	if _outcome_summary_panel.get_parent() != _layout_root:
@@ -165,7 +195,7 @@ func ensure_overlay_layer() -> void:
 			current_parent.remove_child(_outcome_summary_panel)
 		_layout_root.add_child(_outcome_summary_panel)
 	_outcome_summary_panel.z_as_relative = false
-	_outcome_summary_panel.z_index = int(_config.get("outcome_modal_z_index", 180))
+	_outcome_summary_panel.z_index = int(_config.get("outcome_modal_z_index", OUTCOME_MODAL_Z_INDEX))
 	_outcome_summary_panel.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
 	if _next_button != null:
 		_next_button.z_index = 1
@@ -188,10 +218,10 @@ func sync_layout(board_panel_rect: Rect2) -> void:
 		_outcome_scrim.position = Vector2.ZERO
 		_outcome_scrim.size = _layout_root.size
 	if _boss_reward_overlay_active:
-		_apply_design_rect(_outcome_summary_panel, _config.get("boss_reward_summary_rect", Rect2(Vector2(80, 520), Vector2(920, 540))))
+		_apply_design_rect(_outcome_summary_panel, _config.get("boss_reward_summary_rect", BOSS_REWARD_SUMMARY_RECT))
 		layout_boss_reward()
 	else:
-		var outcome_summary_rect: Rect2 = _config.get("outcome_summary_rect", Rect2(Vector2(144, 168), Vector2(760, 452)))
+		var outcome_summary_rect: Rect2 = _config.get("outcome_summary_rect", OUTCOME_SUMMARY_RECT)
 		var standard_rect := Rect2(board_panel_rect.position + outcome_summary_rect.position, outcome_summary_rect.size)
 		_apply_design_rect(_outcome_summary_panel, standard_rect)
 		layout_standard()
@@ -218,10 +248,10 @@ func layout_standard() -> void:
 func layout_boss_reward() -> void:
 	if _outcome_summary_root == null or _outcome_text_column == null or _outcome_title_label == null or _outcome_body_label == null or _next_button == null or _outcome_summary_panel == null:
 		return
-	var boss_reward_card_gap := float(_config.get("boss_reward_card_gap", 12.0))
-	var boss_reward_row_top := float(_config.get("boss_reward_row_top", 176.0))
-	var boss_reward_card_height := float(_config.get("boss_reward_card_height", 172.0))
-	var boss_reward_next_button_size: Vector2 = _config.get("boss_reward_next_button_size", Vector2(280, 58))
+	var boss_reward_card_gap := float(_config.get("boss_reward_card_gap", BOSS_REWARD_CARD_GAP))
+	var boss_reward_row_top := float(_config.get("boss_reward_row_top", BOSS_REWARD_ROW_TOP))
+	var boss_reward_card_height := float(_config.get("boss_reward_card_height", BOSS_REWARD_CARD_HEIGHT))
+	var boss_reward_next_button_size: Vector2 = _config.get("boss_reward_next_button_size", BOSS_REWARD_NEXT_BUTTON_SIZE)
 
 	_outcome_summary_root.position = Vector2(44.0, 38.0)
 	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(88.0, 76.0)
@@ -251,7 +281,7 @@ func layout_boss_reward() -> void:
 
 
 func layout_boss_reward_card_children(button: Button) -> void:
-	var boss_reward_icon_size: Vector2 = _config.get("boss_reward_icon_size", Vector2(54, 54))
+	var boss_reward_icon_size: Vector2 = _config.get("boss_reward_icon_size", BOSS_REWARD_ICON_SIZE)
 	var content_left := boss_reward_icon_size.x + 34.0
 	var content_width := maxf(0.0, button.size.x - content_left - 18.0)
 	var name_label := button.get_node_or_null("RelicName") as Label
