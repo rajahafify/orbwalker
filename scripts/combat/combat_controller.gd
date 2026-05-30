@@ -29,6 +29,7 @@ const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_pr
 const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
 const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
 const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
+const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
@@ -115,6 +116,7 @@ var _hud_presenter: Variant = null
 var _hud_stage_coordinator: Variant = null
 var _mastery_preview_coordinator: Variant = null
 var _loadout_command_handler: Variant = null
+var _intent_hover_handler: Variant = null
 var _combat_consumable_service: Variant = null
 var _tutorial_director: Variant = null
 var _tutorial_prompt_panel: Panel = null
@@ -338,6 +340,8 @@ func _ensure_runtime_helpers() -> void:
 		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
 	if _loadout_command_handler == null:
 		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
+	if _intent_hover_handler == null:
+		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
 	if _combat_consumable_service == null:
 		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _tutorial_director == null:
@@ -2095,6 +2099,31 @@ func _bind_loadout_command_handler() -> void:
 	)
 
 
+func _bind_intent_hover_handler() -> void:
+	if _intent_hover_handler == null:
+		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
+	_intent_hover_handler.bind(
+		{
+			"run_state": RunState,
+			"combat": _combat,
+			"enemy_state": _enemy_state,
+			"model": _model,
+			"view": _view,
+		},
+		{
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(self, "_set_turn_summary_text"),
+			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(self, "_debug_format_intent"),
+		},
+		{
+			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
+			"warning_color": STATUS_COLOR_WARNING,
+		}
+	)
+
+
 func _hud_snapshot_input_data() -> Dictionary:
 	var progression_snapshot: Dictionary = RunState.progression_snapshot()
 	var intent := _enemy_state.get_current_intent()
@@ -2149,100 +2178,33 @@ func _hud_snapshot_input_data() -> Dictionary:
 
 
 func _should_show_intent_damage_preview() -> bool:
-	if _combat == null or _enemy_state == null:
-		return false
-	if _input_phase_value() != InputPhase.PLAYER_INPUT:
-		return false
-	if _model.is_outcome_transition_queued():
-		return false
-	if _combat.is_fight_over():
-		return false
-	return true
+	_bind_intent_hover_handler()
+	return bool(_intent_hover_handler.should_show_preview())
 
 
 func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
-	if not _should_show_intent_damage_preview():
-		return
-	var attack := maxi(0, int(preview.get("attack", 0)))
-	var blocked := maxi(0, int(preview.get("blocked", 0)))
-	var hp_loss := maxi(0, int(preview.get("hp_loss", 0)))
-	if attack <= 0:
-		return
-	_set_status_text("%s | Incoming %d (Block %d, HP Loss %d)." % [
-		RunState.level_sequence_label(),
-		attack,
-		blocked,
-		hp_loss,
-	])
-	_set_status_color(STATUS_COLOR_WARNING)
-	if _enemy_state != null:
-		var intent := _enemy_state.get_current_intent()
-		if not intent.is_empty():
-			_set_turn_summary_text(_debug_format_intent(intent))
-	if _view != null:
-		_view.start_enemy_intent_hover_emphasis("attack")
+	_bind_intent_hover_handler()
+	_intent_hover_handler.intent_damage_preview_hovered(preview)
 
 
 func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
-	if not _should_show_intent_damage_preview():
-		return
-	var blocked := maxi(0, int(preview.get("blocked", 0)))
-	if blocked <= 0:
-		return
-	_set_status_text("%s | Incoming attack blocked by %d armor." % [
-		RunState.level_sequence_label(),
-		blocked,
-	])
-	_set_status_color(STATUS_COLOR_WARNING)
-	if _enemy_state != null:
-		var intent := _enemy_state.get_current_intent()
-		if not intent.is_empty():
-			_set_turn_summary_text(_debug_format_intent(intent))
-	if _view != null:
-		_view.start_enemy_intent_hover_emphasis("block")
+	_bind_intent_hover_handler()
+	_intent_hover_handler.intent_block_preview_hovered(preview)
 
 
 func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
-	if not _should_show_intent_damage_preview():
-		return
-	if preview.is_empty():
-		return
-	var block := maxi(0, int(preview.get("block", 0)))
-	if block <= 0:
-		return
-	_set_status_text("%s | Enemy will gain %d block." % [
-		RunState.level_sequence_label(),
-		block,
-	])
-	_set_status_color(STATUS_COLOR_WARNING)
-	if _enemy_state != null:
-		var intent := _enemy_state.get_current_intent()
-		if not intent.is_empty():
-			_set_turn_summary_text(_debug_format_intent(intent))
-	if _view != null:
-		_view.start_enemy_intent_hover_emphasis("block")
+	_bind_intent_hover_handler()
+	_intent_hover_handler.enemy_block_preview_hovered(preview)
 
 
 func _on_intent_damage_preview_hover_ended() -> void:
-	if _view != null:
-		_view.stop_enemy_intent_hover_emphasis()
+	_bind_intent_hover_handler()
+	_intent_hover_handler.intent_damage_preview_hover_ended()
 
 
 func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
-	if not _should_show_intent_damage_preview():
-		return
-	var amount := maxi(0, int(entry.get("amount", 0)))
-	if amount <= 0:
-		return
-	if kind == "attack":
-		_set_status_text("%s | Enemy intent: Attack %d." % [RunState.level_sequence_label(), amount])
-	elif kind == "block":
-		_set_status_text("%s | Enemy intent: Block %d." % [RunState.level_sequence_label(), amount])
-	else:
-		_set_status_text("%s | Enemy intent: %s." % [RunState.level_sequence_label(), String(entry.get("label", ""))])
-	_set_status_color(STATUS_COLOR_WARNING)
-	if _view != null:
-		_view.start_enemy_intent_hover_emphasis(kind)
+	_bind_intent_hover_handler()
+	_intent_hover_handler.enemy_intent_bubble_hovered(kind, entry)
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
