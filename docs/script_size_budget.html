@@ -72,7 +72,7 @@
 <body>
   <main>
     <h1>Orbwalker Script Size Budget</h1>
-    <p class="summary">This is the documented exception register for the P1-3 roadmap guardrail. The CI budget check is warning-only: it makes oversized scripts visible without blocking unrelated work.</p>
+    <p class="summary">This is the documented exception register for the P1-3 roadmap guardrail. The CI budget check fails undocumented oversized scripts while allowing named, temporary exceptions with concrete removal paths.</p>
 
     <h2>Budgets</h2>
     <table>
@@ -80,11 +80,12 @@
         <tr><th>Script kind</th><th>Soft budget</th><th>Scope</th></tr>
       </thead>
       <tbody>
-        <tr><td>Controller</td><td><code>400</code> lines</td><td><code>*_controller.gd</code> under shop, collection, and run-summary modules.</td></tr>
-        <tr><td>View</td><td><code>500</code> lines</td><td><code>*_view.gd</code> under shop, collection, and run-summary modules.</td></tr>
-        <tr><td>Other module script</td><td><code>650</code> lines</td><td>Models, services, state files, and helpers in those same modules.</td></tr>
+        <tr><td>Controller</td><td><code>400</code> measured lines</td><td><code>*_controller.gd</code> under combat, shop, collection, and run-summary modules.</td></tr>
+        <tr><td>View</td><td><code>500</code> measured lines</td><td><code>*_view.gd</code> under combat, shop, collection, and run-summary modules.</td></tr>
+        <tr><td>Other module script</td><td><code>650</code> measured lines</td><td>Models, services, state files, presenters, and helpers in those same modules.</td></tr>
       </tbody>
     </table>
+    <p class="note">Measured lines exclude blank lines and full-line comments. This matches the roadmap's controller/view size evidence and keeps formatting whitespace from changing the budget.</p>
 
     <h2>Current Exceptions</h2>
     <table>
@@ -93,14 +94,46 @@
       </thead>
       <tbody>
         <tr>
-          <td colspan="5" class="ok">No current exceptions. <code>scripts/shop/shop_view.gd</code> is now below the <code>500</code>-line view budget after extracting action-row and PlayerHUD presentation helpers.</td>
+          <td><code>scripts/combat/combat_controller.gd</code></td>
+          <td><code>400</code></td>
+          <td><code>1895</code></td>
+          <td>P1-1 decomposition is still in progress; combat state-machine, input-phase authority, replay ordering, and route control remain centralized while collaborators continue to land with tests.</td>
+          <td>Keep extracting one owned surface at a time until controller orchestration falls under the target, then remove this exception.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/combat/combat_chrome_styler.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>701</code></td>
+          <td>Combat chrome styling remains centralized during the view split.</td>
+          <td>Split HUD, board, debug, and outcome chrome into focused stylers once screenshot/layout guards cover each surface.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/combat/combat_layout_presenter.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>732</code></td>
+          <td>Combat layout rules remain centralized during view decomposition.</td>
+          <td>Split board, HUD, overlay, and debug layout surfaces after deterministic layout snapshots cover them.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>2323</code></td>
+          <td>The max-combat VFX overlay owns several effect families plus static asset path catalogs.</td>
+          <td>Split effect-family emitters and move static VFX path catalogs into resources or data files.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/combat/combat_vfx_presenter.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>2030</code></td>
+          <td>Combat VFX still owns replay labels, attack cues, mastery casts, runtime particles, and max-overlay fallback.</td>
+          <td>Split by replay surface and effect family, then leave this presenter as a small orchestration facade.</td>
         </tr>
       </tbody>
     </table>
 
     <h2>How To Run</h2>
     <p>Local command: <code>godot --headless --path . --script res://tools/quality/script_size_budget.gd</code>.</p>
-    <p class="note">A new over-budget script should either be reduced in the same change or added here with a concrete removal path. Exceptions are debt, not permission slips.</p>
+    <p class="note">A new over-budget script must either be reduced in the same change or added here with a concrete removal path. Exceptions are debt, not permission slips.</p>
   </main>
 </body>
 </html>

@@ -95,7 +95,7 @@ jobs:
       - name: Import project
         run: "${GODOT_BIN}" --headless --path . --import --quit
 
-      - name: Warn on script size budget
+      - name: Check script size budget
         run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_size_budget.gd
 
       - name: Validate script loading

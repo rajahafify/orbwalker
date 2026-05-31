@@ -1,6 +1,7 @@
 extends SceneTree
 
 const SCAN_ROOTS := [
+	"res://scripts/combat",
 	"res://scripts/shop",
 	"res://scripts/collection",
 	"res://scripts/run_summary",
@@ -10,12 +11,43 @@ const VIEW_BUDGET := 500
 const DEFAULT_BUDGET := 650
 const DOC_PATH := "res://docs/script_size_budget.html"
 
-const DOCUMENTED_EXCEPTIONS := {}
+const DOCUMENTED_EXCEPTIONS := {
+	"res://scripts/combat/combat_controller.gd":
+	{
+		"owner": "P1-1",
+		"reason":
+		"Combat orchestration is still being decomposed; keep state-machine, input-phase, replay, and route authority here until smaller collaborators are covered.",
+	},
+	"res://scripts/combat/combat_chrome_styler.gd":
+	{
+		"owner": "P1-2",
+		"reason":
+		"Combat chrome styling is centralized while the view split is still settling; split HUD, board, debug, and outcome chrome into focused stylers.",
+	},
+	"res://scripts/combat/combat_layout_presenter.gd":
+	{
+		"owner": "P1-2",
+		"reason":
+		"Combat layout rules are centralized during view decomposition; split board, HUD, overlay, and debug layout surfaces after screenshot guards cover them.",
+	},
+	"res://scripts/combat/combat_max_vfx_overlay.gd":
+	{
+		"owner": "P1-2/P5-2",
+		"reason":
+		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",
+	},
+	"res://scripts/combat/combat_vfx_presenter.gd":
+	{
+		"owner": "P1-1/P5-2",
+		"reason":
+		"Combat VFX still owns replay labels, attack cues, mastery casts, runtime particles, and max-overlay fallback; split by replay surface/effect family.",
+	},
+}
 
 
 func _initialize() -> void:
-	run_report()
-	quit(0)
+	var report := run_report()
+	quit(0 if bool(report.get("passed", false)) else 1)
 
 
 static func run_report() -> Dictionary:
@@ -24,6 +56,8 @@ static func run_report() -> Dictionary:
 	var over_budget_count := 0
 	var undocumented_count := 0
 	var documented_count := 0
+	var stale_exception_count := 0
+	var failures: Array[String] = []
 	var scanned_paths := {}
 
 	for path in paths:
@@ -39,36 +73,49 @@ static func run_report() -> Dictionary:
 				_print_documented_exception(path, line_count, budget)
 			else:
 				undocumented_count += 1
+				failures.append("Undocumented oversized script: %s" % path)
 				_print_warning(path, line_count, budget, "Script exceeds size budget without a documented exception.")
 		elif documented_exception:
+			stale_exception_count += 1
+			failures.append("Documented exception is now under budget and can be removed: %s" % path)
 			_print_warning(path, line_count, budget, "Documented exception is now under budget and can be removed.")
 
-		entries.append({
+		var entry := {
 			"path": path,
 			"line_count": line_count,
 			"budget": budget,
 			"over_budget": over_budget,
 			"documented_exception": documented_exception,
-		})
+		}
+		entries.append(entry)
 
 	for exception_path in DOCUMENTED_EXCEPTIONS.keys():
 		if not scanned_paths.has(exception_path):
+			failures.append("Documented exception path was not scanned: %s" % exception_path)
 			_print_warning(exception_path, 0, _budget_for_path(exception_path), "Documented exception path was not scanned.")
-	_check_exception_doc()
+	failures.append_array(_check_exception_doc())
 
-	print("[ScriptBudget] scanned=%d over_budget=%d documented_exceptions=%d undocumented=%d" % [
-		entries.size(),
-		over_budget_count,
-		documented_count,
-		undocumented_count,
-	])
+	print(
+		(
+			"[ScriptBudget] scanned=%d over_budget=%d documented_exceptions=%d undocumented=%d stale_exceptions=%d"
+			% [
+				entries.size(),
+				over_budget_count,
+				documented_count,
+				undocumented_count,
+				stale_exception_count,
+			]
+		)
+	)
 	return {
-		"passed": true,
+		"passed": failures.is_empty(),
 		"scanned": entries.size(),
 		"over_budget": over_budget_count,
 		"documented_exceptions": documented_count,
 		"undocumented": undocumented_count,
+		"stale_exceptions": stale_exception_count,
 		"entries": entries,
+		"failures": failures,
 	}
 
 
@@ -103,7 +150,13 @@ static func _line_count(path: String) -> int:
 	var source := FileAccess.get_file_as_string(path)
 	if source.is_empty():
 		return 0
-	return source.split("\n").size()
+	var count := 0
+	for line in source.split("\n"):
+		var trimmed_line := String(line).strip_edges()
+		if trimmed_line == "" or trimmed_line.begins_with("#"):
+			continue
+		count += 1
+	return count
 
 
 static func _budget_for_path(path: String) -> int:
@@ -115,32 +168,44 @@ static func _budget_for_path(path: String) -> int:
 	return DEFAULT_BUDGET
 
 
-static func _check_exception_doc() -> void:
+static func _check_exception_doc() -> Array[String]:
+	var failures: Array[String] = []
 	var doc_source := FileAccess.get_file_as_string(DOC_PATH)
 	if doc_source.is_empty():
 		_print_warning(DOC_PATH, 0, 0, "Script size exception document is missing or empty.")
-		return
+		failures.append("Script size exception document is missing or empty: %s" % DOC_PATH)
+		return failures
 	for exception_path in DOCUMENTED_EXCEPTIONS.keys():
 		var repo_path := String(exception_path).trim_prefix("res://")
 		if not doc_source.contains(repo_path):
 			_print_warning(exception_path, 0, _budget_for_path(exception_path), "Documented exception is missing from %s." % DOC_PATH)
+			failures.append("Documented exception is missing from %s: %s" % [DOC_PATH, repo_path])
+	return failures
 
 
 static func _print_documented_exception(path: String, line_count: int, budget: int) -> void:
 	var exception: Dictionary = DOCUMENTED_EXCEPTIONS.get(path, {})
-	var message := "Documented exception: lines=%d budget=%d. %s" % [
-		line_count,
-		budget,
-		String(exception.get("reason", "")),
-	]
+	var message := (
+		"Documented exception: lines=%d budget=%d. %s"
+		% [
+			line_count,
+			budget,
+			String(exception.get("reason", "")),
+		]
+	)
 	print("::warning file=%s,line=1,title=Script size budget::%s" % [path.trim_prefix("res://"), message])
-	print("[ScriptBudget][exception] %s lines=%d budget=%d owner=%s reason=%s" % [
-		path,
-		line_count,
-		budget,
-		String(exception.get("owner", "")),
-		String(exception.get("reason", "")),
-	])
+	print(
+		(
+			"[ScriptBudget][exception] %s lines=%d budget=%d owner=%s reason=%s"
+			% [
+				path,
+				line_count,
+				budget,
+				String(exception.get("owner", "")),
+				String(exception.get("reason", "")),
+			]
+		)
+	)
 
 
 static func _print_warning(path: String, line_count: int, budget: int, message: String) -> void:
