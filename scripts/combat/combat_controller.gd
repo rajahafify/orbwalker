@@ -1224,6 +1224,14 @@ func _play_mastery_effect_sfx(effect_kind: String) -> void:
 	_combat_audio_cue_player.play_mastery_effect(effect_kind)
 
 
+func _play_impact_sfx(impact_kind: String, target: String = "enemy") -> void:
+	_bind_audio_cue_player()
+	if _combat_audio_cue_player.has_method("play_impact"):
+		_combat_audio_cue_player.play_impact(impact_kind, target)
+	else:
+		_combat_audio_cue_player.play_mastery_effect(impact_kind)
+
+
 func _play_enemy_attack_result_sfx(result: Dictionary) -> void:
 	_bind_audio_cue_player()
 	if _combat_audio_cue_player.has_method("play_enemy_attack_result"):
@@ -1624,7 +1632,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			vfx_presenter.spawn_replay_impact(player_hp_target, "heart", player_hp_impact_size, player_lifetime, heart_heal)
 			vfx_presenter.spawn_mastery_beam(OrbType.Id.HEART, player_hp_target, player_lifetime)
 			vfx_presenter.spawn_result_label("+%d HP" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -54), heart_heal)
-		_play_mastery_effect_sfx("heal")
+		_play_impact_sfx("heal", "player")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1638,7 +1646,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			vfx_presenter.spawn_armor_bar_linger(player_hp_target, player_hp_impact_size, player_lifetime, armor_gain)
 			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, player_hp_target, player_lifetime)
 			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, player_hp_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
-		_play_mastery_effect_sfx("armor")
+		_play_impact_sfx("armor", "player")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1655,7 +1663,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			vfx_presenter.spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
 			vfx_presenter.spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 			vfx_presenter.spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
-		_play_mastery_effect_sfx("gold")
+		_play_impact_sfx("gold", "player")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -1714,7 +1722,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
 				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
 				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
-			_play_mastery_effect_sfx("damage")
+			_play_impact_sfx(_mastery_impact_kind(impact_orb), "enemy")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
 				return
@@ -1773,7 +1781,7 @@ func _replay_elemental_damage_result(
 		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
 		vfx_presenter.screen_nudge(damage_amount, enemy_target)
 		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
-	_play_mastery_effect_sfx("damage")
+	_play_impact_sfx(_mastery_impact_kind(orb_id), "enemy")
 	if vfx_presenter != null:
 		await vfx_presenter.hit_stop(0.04)
 	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
@@ -2209,8 +2217,16 @@ func _mastery_impact_kind(orb_id: int) -> String:
 	if _combat_vfx_presenter != null:
 		return String(_combat_vfx_presenter.mastery_impact_kind(orb_id))
 	match orb_id:
+		OrbType.Id.FIRE:
+			return "fire"
+		OrbType.Id.ICE:
+			return "ice"
+		OrbType.Id.EARTH:
+			return "earth"
 		OrbType.Id.HEART:
 			return "heart"
+		OrbType.Id.ARMOR:
+			return "armor"
 		OrbType.Id.GOLD:
 			return "gold"
 		_:

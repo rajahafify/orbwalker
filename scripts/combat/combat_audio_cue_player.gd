@@ -27,21 +27,32 @@ func play_sfx(key: String) -> void:
 func play_turn_result(turn_log: Dictionary) -> void:
 	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
 	if int(enemy_attack.get("hp_damage", 0)) > 0:
-		play_sfx("hit")
+		play_sfx("impact_player_hit")
 	elif int(enemy_attack.get("blocked_by_armor", 0)) > 0:
-		play_sfx("armor")
+		play_sfx("impact_player_block")
 
 
 func play_mastery_effect(effect_kind: String) -> void:
-	match effect_kind:
-		"damage":
-			play_sfx("hit")
+	play_impact(effect_kind)
+
+
+func play_impact(impact_kind: String, target: String = "enemy") -> void:
+	var clean_kind := impact_kind.strip_edges().to_lower()
+	match clean_kind:
+		"fire":
+			play_sfx("impact_fire")
+		"ice":
+			play_sfx("impact_ice")
+		"earth", "nature":
+			play_sfx("impact_earth")
+		"damage", "hit":
+			play_sfx("impact_player_hit" if target == "player" else "impact_enemy_hit")
 		"heal":
-			play_sfx("heal")
-		"armor":
-			play_sfx("armor")
+			play_sfx("impact_heal")
+		"armor", "block":
+			play_sfx("impact_player_block" if target == "player" else "impact_armor")
 		"gold":
-			play_sfx("gold")
+			play_sfx("impact_gold")
 
 
 func play_match_clear(combo_value: int = 1) -> void:
@@ -53,9 +64,9 @@ func play_match_clear(combo_value: int = 1) -> void:
 
 func play_enemy_attack_result(result: Dictionary) -> void:
 	if int(result.get("hp_damage", 0)) > 0:
-		play_sfx("hit")
+		play_impact("damage", "player")
 	elif int(result.get("blocked_by_armor", 0)) > 0:
-		play_sfx("armor")
+		play_impact("block", "player")
 
 
 func _audio_manager_node() -> Variant:

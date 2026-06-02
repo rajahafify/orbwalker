@@ -288,6 +288,24 @@ func _stream_for_sfx(key: String) -> AudioStreamWAV:
 			stream = _make_chirp([300.0, 420.0], 0.16, 0.30)
 		"gold":
 			stream = _make_chirp([880.0, 1320.0], 0.12, 0.22)
+		"impact_fire":
+			stream = _make_chirp([260.0, 520.0, 1040.0, 620.0], 0.24, 0.54)
+		"impact_ice":
+			stream = _make_chirp([820.0, 510.0, 300.0], 0.22, 0.34)
+		"impact_earth":
+			stream = _make_chirp([180.0, 360.0, 720.0, 260.0], 0.26, 0.54)
+		"impact_enemy_hit":
+			stream = _make_chirp([180.0, 105.0], 0.18, 0.44)
+		"impact_player_hit":
+			stream = _make_chirp([95.0, 70.0], 0.22, 0.52)
+		"impact_heal":
+			stream = _make_chirp([520.0, 760.0, 1040.0], 0.24, 0.30)
+		"impact_armor":
+			stream = _make_chirp([260.0, 360.0, 240.0], 0.20, 0.38)
+		"impact_player_block":
+			stream = _make_chirp([240.0, 180.0, 260.0], 0.20, 0.42)
+		"impact_gold":
+			stream = _make_chirp([980.0, 1480.0, 1220.0], 0.18, 0.30)
 		"victory":
 			stream = _make_chirp([523.25, 659.25, 783.99, 1046.5], 0.38, 0.28)
 		"defeat":
