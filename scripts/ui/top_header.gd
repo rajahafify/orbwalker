@@ -9,9 +9,11 @@ const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 
 const DESIGN_SIZE := Vector2(1048, 116)
 const TITLE_RECT := Rect2(Vector2(34, 24), Vector2(560, 68))
-const GOLD_RECT := Rect2(Vector2(620, 20), Vector2(238, 76))
-const HELP_RECT := Rect2(Vector2(884, 22), Vector2(64, 64))
-const SETTINGS_RECT := Rect2(Vector2(972, 22), Vector2(64, 64))
+const GOLD_RECT := Rect2(Vector2(620, 20), Vector2(220, 76))
+const HELP_RECT := Rect2(Vector2(0, 18), Vector2(76, 76))
+const SETTINGS_RECT := Rect2(Vector2(0, 16), Vector2(82, 82))
+const HEADER_BUTTON_GAP := 18.0
+const HEADER_BUTTON_RIGHT_MARGIN := 14.0
 const HIDDEN_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
@@ -164,11 +166,17 @@ static func _local_gold_rect(header_size: Vector2) -> Rect2:
 
 static func _local_help_rect(header_size: Vector2) -> Rect2:
 	var settings_rect := _local_settings_rect(header_size)
-	return Rect2(Vector2(settings_rect.position.x - 88.0, _center_y(header_size.y, HELP_RECT.size.y)), HELP_RECT.size)
+	return Rect2(
+		Vector2(settings_rect.position.x - HEADER_BUTTON_GAP - HELP_RECT.size.x, _center_y(header_size.y, HELP_RECT.size.y)),
+		HELP_RECT.size
+	)
 
 
 static func _local_settings_rect(header_size: Vector2) -> Rect2:
-	return Rect2(Vector2(header_size.x - 76.0, _center_y(header_size.y, SETTINGS_RECT.size.y)), SETTINGS_RECT.size)
+	return Rect2(
+		Vector2(header_size.x - HEADER_BUTTON_RIGHT_MARGIN - SETTINGS_RECT.size.x, _center_y(header_size.y, SETTINGS_RECT.size.y)),
+		SETTINGS_RECT.size
+	)
 
 
 static func _center_y(header_height: float, control_height: float) -> float:
@@ -208,7 +216,7 @@ func _apply_chrome() -> void:
 	gold_label.add_theme_font_size_override("font_size", 36)
 	_apply_round_button_chrome(help_button)
 	_apply_round_button_chrome(settings_button)
-	help_button.add_theme_font_size_override("font_size", 34)
+	help_button.add_theme_font_size_override("font_size", 38)
 	settings_button.add_theme_font_size_override("font_size", 1)
 
 

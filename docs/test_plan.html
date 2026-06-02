@@ -1559,6 +1559,14 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>Reduced Motion</code> remains separate and suppresses motion-heavy child effects including refill overshoot, mastery travel streams, screen nudge, hit-stop, large combo pulse, enemy motion reaction, and shop purchase motion.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code>.</li>
 </ul>
+<p>Verification notes (2026-06-02, mobile settings and armor mastery VFX polish):</p>
+<ul>
+<li>Main menu Settings now behaves like a full-screen mobile settings surface instead of a fixed centered desktop modal. The full game-juice flag list remains scrollable, with the reset and close actions kept as reachable touch-sized controls.</li>
+<li>Combat Settings now uses a larger in-combat sheet with bigger action buttons, and the shared combat/shop header Settings glyph has a larger touch target so it is easier to hit on Android portrait screens.</li>
+<li>Armor mastery gain VFX now targets the board center instead of the HP bar. Its base size is capped against the visible VFX layer so tier scaling can still feel large without spilling beyond the screen.</li>
+<li>Regression coverage now checks the mobile settings surface, combat settings sheet size, large shared header controls, and board-centered fullscreen armor VFX sizing.</li>
+<li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code> reported <code>75</code> suites, <code>313</code> cases, and <code>0</code> failures.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

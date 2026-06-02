@@ -222,6 +222,24 @@ func player_hp_bar_vfx_size() -> Vector2:
 	return _player_hud_presenter.vfx_size("_player_hp_bar")
 
 
+func board_vfx_target_global() -> Vector2:
+	return _control_center_global(_board if _board != null else _board_panel)
+
+
+func board_fullscreen_vfx_size() -> Vector2:
+	var layer_size := Vector2.ZERO
+	if _vfx_layer != null:
+		layer_size = _vfx_layer.get_global_rect().size
+	var board_size := Vector2.ZERO
+	var board_control := _board if _board != null else _board_panel
+	if board_control != null:
+		board_size = board_control.get_global_rect().size
+	return Vector2(
+		maxf(layer_size.x, board_size.x * 1.55),
+		maxf(layer_size.y, board_size.y * 1.55)
+	)
+
+
 func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Variant, timer_owner: Node) -> Dictionary:
 	var resolved_visual_registry: Variant = visual_registry if visual_registry != null else _visuals
 	var resolved_player_loadout_hud: Variant = player_loadout_hud if player_loadout_hud != null else _player_loadout_hud
@@ -612,6 +630,15 @@ func _emit_settings_game_juice_flag_toggled(flag_key: String) -> void:
 
 func _emit_settings_defaults_reset() -> void:
 	settings_defaults_reset.emit()
+
+
+func _control_center_global(control: Control) -> Vector2:
+	if control == null:
+		return Vector2.ZERO
+	var rect := control.get_global_rect()
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return Vector2.ZERO
+	return rect.position + rect.size * 0.5
 
 
 func _layout_enemy_block_intent_preview() -> void:

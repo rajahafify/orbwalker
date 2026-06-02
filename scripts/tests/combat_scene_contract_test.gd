@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatSceneContractTest
 
 const COMBAT_SCENE := preload("res://scenes/combat.tscn")
+const COMBAT_VIEW_SCRIPT := preload("res://scripts/combat/combat_view.gd")
 
 
 func run_all() -> Dictionary:
@@ -10,11 +11,12 @@ func run_all() -> Dictionary:
 	_run_case("combat_root_node_bindings_resolve", _test_combat_root_node_bindings_resolve, failures)
 	_run_case("combat_root_node_bindings_have_expected_types", _test_combat_root_node_bindings_have_expected_types, failures)
 	_run_case("board_view_resolves_from_combat_scene", _test_board_view_resolves_from_combat_scene, failures)
+	_run_case("combat_view_exposes_board_centered_fullscreen_vfx_target", _test_combat_view_exposes_board_centered_fullscreen_vfx_target, failures)
 	_run_case("header_buttons_are_scene_connected", _test_header_buttons_are_scene_connected, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -100,6 +102,46 @@ func _test_board_view_resolves_from_combat_scene() -> String:
 	root.free()
 	if not resolved:
 		return "Expected _board_view to resolve to BoardView."
+	return ""
+
+
+func _test_combat_view_exposes_board_centered_fullscreen_vfx_target() -> String:
+	var root := _instantiate_combat_scene()
+	if root == null:
+		return "Expected combat scene to instantiate."
+	root.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
+	root.size = Vector2(1080.0, 1920.0)
+	var nodes: Dictionary = root.call("_build_root_nodes")
+	var board := nodes.get("_board") as Control
+	var board_panel := nodes.get("_board_panel") as Control
+	var vfx_layer := nodes.get("_vfx_layer") as Control
+	if board == null or board_panel == null or vfx_layer == null:
+		root.free()
+		return "Expected combat scene to expose board, board panel, and VFX layer nodes."
+	for control in [board, board_panel, vfx_layer]:
+		control.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
+	board.position = Vector2(128.0, 700.0)
+	board.size = Vector2(760.0, 760.0)
+	board_panel.position = Vector2(16.0, 660.0)
+	board_panel.size = Vector2(1048.0, 756.0)
+	vfx_layer.position = Vector2.ZERO
+	vfx_layer.size = root.size
+	var view: CombatView = COMBAT_VIEW_SCRIPT.new()
+	view.bind(nodes)
+	var target := view.board_vfx_target_global()
+	var expected_target := board.get_global_rect().position + board.get_global_rect().size * 0.5
+	if not target.is_equal_approx(expected_target):
+		root.free()
+		return "Expected board VFX target to resolve to the board center."
+	var fullscreen_size := view.board_fullscreen_vfx_size()
+	if fullscreen_size.x < root.size.x or fullscreen_size.y < root.size.y:
+		root.free()
+		return "Expected board fullscreen VFX size to cover the combat viewport."
+	var screen_safe_armor_base_extent := minf(fullscreen_size.x, fullscreen_size.y) * 0.34
+	if screen_safe_armor_base_extent * 3.0 > minf(fullscreen_size.x, fullscreen_size.y) * 1.04:
+		root.free()
+		return "Expected armor mastery base sizing to remain screen-bounded after tier scaling."
+	root.free()
 	return ""
 
 

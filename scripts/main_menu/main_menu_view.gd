@@ -130,6 +130,12 @@ var _reset_profile_button: Button
 var _close_profile_button: Button
 var _settings_overlay: Control = null
 var _settings_panel: Panel = null
+var _settings_box: VBoxContainer = null
+var _settings_scroll: ScrollContainer = null
+var _settings_content: VBoxContainer = null
+var _settings_title_label: Label = null
+var _settings_actions_label: Label = null
+var _settings_actions: HBoxContainer = null
 var _settings_speed_buttons: Array[Button] = []
 var _settings_reduced_motion_button: Button = null
 var _settings_game_juice_button: Button = null
@@ -398,6 +404,7 @@ func layout_ui(viewport_size: Vector2) -> void:
 	)
 	_reset_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 	_close_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
+	_layout_settings_overlay(viewport_size)
 	_apply_font_sizes(viewport_size)
 
 
@@ -599,6 +606,53 @@ func _main_menu_buttons() -> Array:
 	return [_start_run_button, _continue_button, _tutorial_button, _settings_button, _profile_button, _quit_button]
 
 
+func _layout_settings_overlay(viewport_size: Vector2) -> void:
+	if _settings_overlay == null or _settings_panel == null or viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
+		return
+	_set_control_rect(_settings_overlay, Rect2(Vector2.ZERO, viewport_size))
+	var outer_margin := clampf(minf(viewport_size.x, viewport_size.y) * 0.035, 14.0, 42.0)
+	var panel_rect := Rect2(
+		Vector2(outer_margin, outer_margin),
+		Vector2(maxf(0.0, viewport_size.x - outer_margin * 2.0), maxf(0.0, viewport_size.y - outer_margin * 2.0))
+	)
+	_set_control_rect(_settings_panel, panel_rect)
+	if _settings_box != null:
+		var inner_x := clampf(viewport_size.x * 0.045, 18.0, 48.0)
+		var inner_y := clampf(viewport_size.y * 0.026, 18.0, 42.0)
+		_set_control_rect(
+			_settings_box,
+			Rect2(
+				Vector2(inner_x, inner_y),
+				Vector2(maxf(0.0, panel_rect.size.x - inner_x * 2.0), maxf(0.0, panel_rect.size.y - inner_y * 2.0))
+			)
+		)
+	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+	var button_height := clampf(viewport_size.y * 0.060, 58.0, 82.0)
+	var action_button_height := clampf(viewport_size.y * 0.066, 64.0, 88.0)
+	var button_font := maxi(18, int(round(34.0 * scale_factor)))
+	var flag_font := maxi(16, int(round(30.0 * scale_factor)))
+	if _settings_title_label != null:
+		_settings_title_label.add_theme_font_size_override("font_size", maxi(30, int(round(54.0 * scale_factor))))
+	if _settings_actions != null:
+		_settings_actions.add_theme_constant_override("separation", int(round(clampf(14.0 * scale_factor, 10.0, 18.0))))
+	for button in _settings_speed_buttons:
+		button.custom_minimum_size = Vector2(0.0, button_height)
+		button.add_theme_font_size_override("font_size", button_font)
+	for button in [_settings_reduced_motion_button, _settings_game_juice_button]:
+		if button != null:
+			button.custom_minimum_size = Vector2(0.0, button_height)
+			button.add_theme_font_size_override("font_size", button_font)
+	for raw_button in _settings_game_juice_flag_buttons.values():
+		var flag_button := raw_button as Button
+		if flag_button != null:
+			flag_button.custom_minimum_size = Vector2(0.0, button_height)
+			flag_button.add_theme_font_size_override("font_size", flag_font)
+	for button in [_settings_reset_button, _settings_close_button]:
+		if button != null:
+			button.custom_minimum_size = Vector2(0.0, action_button_height)
+			button.add_theme_font_size_override("font_size", button_font)
+
+
 func _ensure_settings_overlay(host: Control) -> void:
 	if _settings_overlay != null or host == null:
 		return
@@ -619,47 +673,37 @@ func _ensure_settings_overlay(host: Control) -> void:
 	scrim.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
 	_settings_overlay.add_child(scrim)
 
-	var center := CenterContainer.new()
-	center.name = "SettingsCenter"
-	center.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
-	_settings_overlay.add_child(center)
-
 	_settings_panel = Panel.new()
 	_settings_panel.name = "SettingsPanel"
-	_settings_panel.custom_minimum_size = Vector2(820.0, 1180.0)
-	center.add_child(_settings_panel)
+	_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
+	_settings_overlay.add_child(_settings_panel)
 
-	var box := VBoxContainer.new()
-	box.name = "SettingsBox"
-	box.set_anchors_preset(Control.PRESET_FULL_RECT as Control.LayoutPreset)
-	box.offset_left = 42.0
-	box.offset_top = 36.0
-	box.offset_right = -42.0
-	box.offset_bottom = -36.0
-	box.add_theme_constant_override("separation", 12)
-	_settings_panel.add_child(box)
+	_settings_box = VBoxContainer.new()
+	_settings_box.name = "SettingsBox"
+	_settings_box.add_theme_constant_override("separation", 12)
+	_settings_panel.add_child(_settings_box)
 
-	var title := Label.new()
-	title.name = "SettingsTitle"
-	title.text = _text("settings_title")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 42)
-	box.add_child(title)
+	_settings_title_label = Label.new()
+	_settings_title_label.name = "SettingsTitle"
+	_settings_title_label.text = _text("settings_title")
+	_settings_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_settings_title_label.add_theme_font_size_override("font_size", 42)
+	_settings_box.add_child(_settings_title_label)
 
-	var scroll := ScrollContainer.new()
-	scroll.name = "SettingsScroll"
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED as ScrollContainer.ScrollMode
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.custom_minimum_size = Vector2(0.0, 820.0)
-	box.add_child(scroll)
+	_settings_scroll = ScrollContainer.new()
+	_settings_scroll.name = "SettingsScroll"
+	_settings_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED as ScrollContainer.ScrollMode
+	_settings_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_settings_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_settings_box.add_child(_settings_scroll)
 
-	var content := VBoxContainer.new()
-	content.name = "SettingsContent"
-	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation", 12)
-	scroll.add_child(content)
+	_settings_content = VBoxContainer.new()
+	_settings_content.name = "SettingsContent"
+	_settings_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_settings_content.add_theme_constant_override("separation", 12)
+	_settings_scroll.add_child(_settings_content)
 
-	content.add_child(_settings_section_label(_text("settings_vfx_speed"), "SettingsSpeedLabel"))
+	_settings_content.add_child(_settings_section_label(_text("settings_vfx_speed"), "SettingsSpeedLabel"))
 
 	for speed in SPEED_ORDER:
 		var button := Button.new()
@@ -669,23 +713,23 @@ func _ensure_settings_overlay(host: Control) -> void:
 		button.custom_minimum_size = Vector2(0.0, 58.0)
 		button.pressed.connect(func() -> void: settings_speed_selected.emit(speed))
 		_settings_speed_buttons.append(button)
-		content.add_child(button)
+		_settings_content.add_child(button)
 
-	content.add_child(_settings_section_label(_text("settings_comfort"), "SettingsComfortLabel"))
+	_settings_content.add_child(_settings_section_label(_text("settings_comfort"), "SettingsComfortLabel"))
 	_settings_reduced_motion_button = Button.new()
 	_settings_reduced_motion_button.name = "SettingsReducedMotionButton"
 	_settings_reduced_motion_button.custom_minimum_size = Vector2(0.0, 58.0)
 	_settings_reduced_motion_button.pressed.connect(func() -> void: settings_reduced_motion_toggled.emit())
-	content.add_child(_settings_row_container(_settings_reduced_motion_button, ""))
+	_settings_content.add_child(_settings_row_container(_settings_reduced_motion_button, ""))
 
 	var juice_label := _settings_section_label(_text("settings_game_juice"), "SettingsGameJuiceLabel")
-	content.add_child(juice_label)
+	_settings_content.add_child(juice_label)
 
 	_settings_game_juice_button = Button.new()
 	_settings_game_juice_button.name = "SettingsGameJuiceButton"
 	_settings_game_juice_button.custom_minimum_size = Vector2(0.0, 58.0)
 	_settings_game_juice_button.pressed.connect(func() -> void: settings_game_juice_toggled.emit())
-	content.add_child(_settings_row_container(_settings_game_juice_button, tr("SETTINGS_JUICE_MASTER_DESC")))
+	_settings_content.add_child(_settings_row_container(_settings_game_juice_button, tr("SETTINGS_JUICE_MASTER_DESC")))
 
 	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
 		var flag_button := Button.new()
@@ -694,13 +738,14 @@ func _ensure_settings_overlay(host: Control) -> void:
 		var captured_flag_key := flag_key
 		flag_button.pressed.connect(func() -> void: settings_game_juice_flag_toggled.emit(captured_flag_key))
 		_settings_game_juice_flag_buttons[flag_key] = flag_button
-		content.add_child(_settings_row_container(flag_button, _juice_flag_description(flag_key)))
+		_settings_content.add_child(_settings_row_container(flag_button, _juice_flag_description(flag_key)))
 
-	content.add_child(_settings_section_label(_text("settings_actions"), "SettingsActionsLabel"))
-	var actions := HBoxContainer.new()
-	actions.name = "SettingsActions"
-	actions.add_theme_constant_override("separation", 14)
-	box.add_child(actions)
+	_settings_actions_label = _settings_section_label(_text("settings_actions"), "SettingsActionsLabel")
+	_settings_box.add_child(_settings_actions_label)
+	_settings_actions = HBoxContainer.new()
+	_settings_actions.name = "SettingsActions"
+	_settings_actions.add_theme_constant_override("separation", 14)
+	_settings_box.add_child(_settings_actions)
 
 	_settings_reset_button = Button.new()
 	_settings_reset_button.name = "SettingsResetDefaultsButton"
@@ -708,7 +753,7 @@ func _ensure_settings_overlay(host: Control) -> void:
 	_settings_reset_button.custom_minimum_size = Vector2(0.0, 62.0)
 	_settings_reset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_settings_reset_button.pressed.connect(func() -> void: settings_defaults_reset.emit())
-	actions.add_child(_settings_reset_button)
+	_settings_actions.add_child(_settings_reset_button)
 
 	_settings_close_button = Button.new()
 	_settings_close_button.name = "SettingsCloseButton"
@@ -716,7 +761,7 @@ func _ensure_settings_overlay(host: Control) -> void:
 	_settings_close_button.custom_minimum_size = Vector2(0.0, 62.0)
 	_settings_close_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_settings_close_button.pressed.connect(func() -> void: settings_closed.emit())
-	actions.add_child(_settings_close_button)
+	_settings_actions.add_child(_settings_close_button)
 	_apply_settings_overlay_style()
 
 

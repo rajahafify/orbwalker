@@ -96,7 +96,7 @@
         <tr>
           <td><code>scripts/combat/combat_controller.gd</code></td>
           <td><code>400</code></td>
-          <td><code>1895</code></td>
+          <td><code>2040</code></td>
           <td>P1-1 decomposition is still in progress; combat state-machine, input-phase authority, replay ordering, and route control remain centralized while collaborators continue to land with tests.</td>
           <td>Keep extracting one owned surface at a time until controller orchestration falls under the target, then remove this exception.</td>
         </tr>
@@ -117,9 +117,9 @@
         <tr>
           <td><code>scripts/combat/combat_view.gd</code></td>
           <td><code>500</code></td>
-          <td><code>535</code></td>
-          <td>Combat view routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.</td>
-          <td>Move enemy-stage reaction routing and overlay callback plumbing into focused coordinators, then remove this exception.</td>
+          <td><code>556</code></td>
+          <td>Combat view routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, board-centered VFX targets, and VFX bindings while view decomposition is in progress.</td>
+          <td>Move enemy-stage reaction routing, VFX target helpers, and overlay callback plumbing into focused coordinators, then remove this exception.</td>
         </tr>
         <tr>
           <td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td>
@@ -131,7 +131,7 @@
         <tr>
           <td><code>scripts/combat/combat_vfx_presenter.gd</code></td>
           <td><code>650</code></td>
-          <td><code>2030</code></td>
+          <td><code>2318</code></td>
           <td>Combat VFX still owns replay labels, attack cues, mastery casts, runtime particles, and max-overlay fallback.</td>
           <td>Split by replay surface and effect family, then leave this presenter as a small orchestration facade.</td>
         </tr>

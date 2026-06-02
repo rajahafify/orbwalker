@@ -1659,10 +1659,17 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var player_target: Vector2 = Vector2.ZERO
 	var player_hp_target: Vector2 = Vector2.ZERO
 	var player_hp_impact_size := Vector2(180, 76)
+	var armor_mastery_target: Vector2 = Vector2.ZERO
+	var armor_mastery_impact_size := Vector2(360, 360)
 	if _view != null:
 		enemy_target = _view.enemy_vfx_target_global(0.48)
 		player_target = _view.player_vfx_target_global(0.64)
 		player_hp_target = _view.player_hp_bar_vfx_target_global(0.50)
+		armor_mastery_target = _view.board_vfx_target_global()
+		var fullscreen_vfx_size: Vector2 = _view.board_fullscreen_vfx_size()
+		if fullscreen_vfx_size.x > 0.0 and fullscreen_vfx_size.y > 0.0:
+			var armor_extent := minf(fullscreen_vfx_size.x, fullscreen_vfx_size.y) * 0.34
+			armor_mastery_impact_size = Vector2(armor_extent, armor_extent)
 		var hp_bar_size: Vector2 = _view.player_hp_bar_vfx_size()
 		if hp_bar_size.x > 0.0 and hp_bar_size.y > 0.0:
 			player_hp_impact_size = Vector2(
@@ -1671,6 +1678,8 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			)
 	if player_hp_target == Vector2.ZERO:
 		player_hp_target = player_target
+	if armor_mastery_target == Vector2.ZERO:
+		armor_mastery_target = player_hp_target
 	var enemy_impact_size := Vector2(84, 84)
 	var gold_impact_size := Vector2(70, 70)
 	var damage_lifetime := _combat_speed_duration(0.42)
@@ -1698,10 +1707,10 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	if armor_gain > 0:
 		var staged_armor_before_gain: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
 		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(player_hp_target, "armor", player_hp_impact_size, player_lifetime, armor_gain)
-			vfx_presenter.spawn_armor_bar_linger(player_hp_target, player_hp_impact_size, player_lifetime, armor_gain)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, player_hp_target, player_lifetime)
-			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, player_hp_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
+			vfx_presenter.spawn_replay_impact(armor_mastery_target, "armor", armor_mastery_impact_size, player_lifetime, armor_gain)
+			vfx_presenter.spawn_armor_bar_linger(armor_mastery_target, armor_mastery_impact_size, player_lifetime, armor_gain)
+			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, armor_mastery_target, player_lifetime)
+			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, armor_mastery_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
 		_play_impact_sfx("armor", "player")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():

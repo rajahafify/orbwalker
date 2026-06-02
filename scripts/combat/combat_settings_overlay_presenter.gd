@@ -4,6 +4,8 @@ class_name CombatSettingsOverlayPresenter
 const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 const DEFAULT_DESIGN_SIZE := Vector2(1080.0, 1920.0)
+const PANEL_MARGIN := Vector2(36.0, 64.0)
+const PANEL_INSET := Vector2(42.0, 36.0)
 const SPEED_OPTIONS: Array[String] = ["slow", "normal", "fast", "instant"]
 const QUALITY_OPTIONS: Array[String] = ["low", "high"]
 
@@ -81,24 +83,24 @@ func ensure_overlay() -> void:
 
 	_panel = Panel.new()
 	_panel.name = "SettingsPanel"
-	_panel.position = Vector2(110.0, 180.0)
-	_panel.size = Vector2(860.0, 1340.0)
+	_panel.position = PANEL_MARGIN
+	_panel.size = _design_size - PANEL_MARGIN * 2.0
 	_panel.add_theme_stylebox_override("panel", _settings_panel_style())
 	_overlay.add_child(_panel)
 
 	var box := VBoxContainer.new()
 	box.name = "SettingsBox"
-	box.position = Vector2(46.0, 38.0)
-	box.size = Vector2(768.0, 1264.0)
-	box.add_theme_constant_override("separation", 10)
+	box.position = PANEL_INSET
+	box.size = _panel.size - PANEL_INSET * 2.0
+	box.add_theme_constant_override("separation", 12)
 	_panel.add_child(box)
 
 	box.add_child(_settings_label("Settings", 44))
 	var scroll := ScrollContainer.new()
 	scroll.name = "SettingsScroll"
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED as ScrollContainer.ScrollMode
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.custom_minimum_size = Vector2(0.0, 990.0)
 	box.add_child(scroll)
 
 	var content := VBoxContainer.new()
@@ -141,6 +143,7 @@ func ensure_overlay() -> void:
 	action_grid.columns = 2
 	action_grid.add_theme_constant_override("h_separation", 12)
 	action_grid.add_theme_constant_override("v_separation", 10)
+	action_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_child(action_grid)
 
 	_continue_button = _make_settings_menu_button("CONTINUE")
@@ -276,14 +279,14 @@ func _settings_row_container(button: Button, description: String) -> VBoxContain
 func _make_settings_menu_button(text: String) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0.0, 56.0)
+	button.custom_minimum_size = Vector2(0.0, 66.0)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.add_theme_stylebox_override("normal", _settings_button_style(Color(0.055, 0.085, 0.12, 0.98), Color(0.38, 0.50, 0.62, 1.0)))
 	button.add_theme_stylebox_override("hover", _settings_button_style(Color(0.075, 0.115, 0.16, 1.0), Color(0.55, 0.70, 0.84, 1.0)))
 	button.add_theme_stylebox_override("pressed", _settings_button_style(Color(0.035, 0.055, 0.08, 1.0), Color(0.32, 0.43, 0.54, 1.0)))
 	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
 	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
-	button.add_theme_font_size_override("font_size", 24)
+	button.add_theme_font_size_override("font_size", 26)
 	return button
 
 

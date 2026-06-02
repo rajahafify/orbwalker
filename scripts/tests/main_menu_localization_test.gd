@@ -14,10 +14,11 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("main_menu_translation_keys_resolve", _test_main_menu_translation_keys_resolve, failures)
 	_run_case("main_menu_view_applies_second_locale", _test_main_menu_view_applies_second_locale, failures)
+	_run_case("main_menu_settings_uses_full_mobile_surface", _test_main_menu_settings_uses_full_mobile_surface, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 2,
+		"total": 3,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -108,6 +109,40 @@ func _test_main_menu_view_applies_second_locale() -> String:
 		host.free()
 		return error
 
+	host.free()
+	return ""
+
+
+func _test_main_menu_settings_uses_full_mobile_surface() -> String:
+	TranslationServer.set_locale("en")
+	var fixture := _fixture()
+	var host: Control = fixture["host"]
+	var view: MainMenuView = fixture["view"]
+	var viewport_size := Vector2(540.0, 960.0)
+	view.configure_ui_nodes(host)
+	view.apply_static_text()
+	view.apply_chrome_styles()
+	view.layout_ui(viewport_size)
+	view.show_settings({"vfx_speed": "normal", "reduced_motion": false, "game_juice": false, "game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags()})
+	var overlay := host.find_child("SettingsOverlay", true, false) as Control
+	var panel := host.find_child("SettingsPanel", true, false) as Panel
+	var scroll := host.find_child("SettingsScroll", true, false) as ScrollContainer
+	var close_button := host.find_child("SettingsCloseButton", true, false) as Button
+	if overlay == null or panel == null or scroll == null or close_button == null:
+		host.free()
+		return "Expected settings overlay, panel, scroll, and close nodes to exist."
+	if not overlay.visible:
+		host.free()
+		return "Expected settings overlay to be visible after show_settings()."
+	if panel.size.x < viewport_size.x * 0.90 or panel.size.y < viewport_size.y * 0.90:
+		host.free()
+		return "Expected main-menu settings panel to use most of the mobile viewport."
+	if panel.position.x > 24.0 or panel.position.y > 24.0:
+		host.free()
+		return "Expected main-menu settings panel to avoid desktop-style centered margins on mobile."
+	if close_button.custom_minimum_size.y < 64.0:
+		host.free()
+		return "Expected main-menu settings close button to remain touch-sized on mobile."
 	host.free()
 	return ""
 

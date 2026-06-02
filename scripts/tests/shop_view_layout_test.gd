@@ -70,8 +70,8 @@ func _test_shop_header_controls_remain_readable() -> String:
 		return "Expected shop header right controls not to overlap each other."
 	if gold_counter.size.y < 48.0:
 		return "Expected shop header gold counter to remain at least 48px tall."
-	if help_button.size.x < 48.0 or help_button.size.y < 48.0 or settings_button.size.x < 48.0 or settings_button.size.y < 48.0:
-		return "Expected shop header icon controls to remain touch-sized."
+	if help_button.size.x < 72.0 or help_button.size.y < 72.0 or settings_button.size.x < 80.0 or settings_button.size.y < 80.0:
+		return "Expected shop header icon controls to remain large touch targets."
 	if bool(controls.get("menu_visible", true)):
 		return "Expected menu button to be hidden from the shop header."
 	if not bool(controls.get("settings_visible", false)):

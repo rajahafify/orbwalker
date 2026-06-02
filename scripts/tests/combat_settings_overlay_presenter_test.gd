@@ -51,11 +51,12 @@ func run_all() -> Dictionary:
 	_run_case("show_creates_overlay_and_updates_speed_selection", _test_show_creates_overlay_and_updates_speed_selection, failures)
 	_run_case("show_updates_quality_and_reduced_motion_selection", _test_show_updates_quality_and_reduced_motion_selection, failures)
 	_run_case("show_renders_individual_game_juice_flags", _test_show_renders_individual_game_juice_flags, failures)
+	_run_case("show_uses_large_mobile_settings_sheet", _test_show_uses_large_mobile_settings_sheet, failures)
 	_run_case("hide_clears_overlay_visibility", _test_hide_clears_overlay_visibility, failures)
 	_run_case("buttons_emit_bound_callbacks", _test_buttons_emit_bound_callbacks, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -133,6 +134,28 @@ func _test_show_renders_individual_game_juice_flags() -> String:
 	if not screen_button.text.ends_with(": OFF"):
 		root.free()
 		return "Expected screen nudge flag state to render OFF."
+	root.free()
+	return ""
+
+
+func _test_show_uses_large_mobile_settings_sheet() -> String:
+	var fixture := _fixture()
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	presenter.show("normal")
+	var panel := root.get_node_or_null("CombatSettingsOverlay/SettingsPanel") as Panel
+	if panel == null:
+		root.free()
+		return "Expected combat settings panel to exist."
+	if panel.position.x > 48.0 or panel.position.y > 80.0:
+		root.free()
+		return "Expected combat settings panel to use small mobile margins."
+	if panel.size.x < 1000.0 or panel.size.y < 1700.0:
+		root.free()
+		return "Expected combat settings panel to fill most of the design viewport."
+	if presenter.continue_button().custom_minimum_size.y < 66.0:
+		root.free()
+		return "Expected combat settings action buttons to be larger touch targets."
 	root.free()
 	return ""
 
