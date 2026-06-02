@@ -2,6 +2,7 @@ extends RefCounted
 class_name MainMenuLocalizationTest
 
 const MAIN_MENU_VIEW := preload("res://scripts/main_menu/main_menu_view.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 const LOCALIZATION_BOOTSTRAP := preload("res://scripts/ui/localization_bootstrap.gd")
 const TRANSLATION_PATHS := [
 	"res://resources/localization/ui_en.tres",
@@ -48,13 +49,18 @@ func _test_main_menu_view_applies_second_locale() -> String:
 	var view: MainMenuView = fixture["view"]
 	view.configure_ui_nodes(host)
 	view.apply_static_text()
-	view.show_settings("fast")
+	view.show_settings({"vfx_speed": "fast", "reduced_motion": true, "game_juice": true, "game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags()})
 
 	var start_button: Button = fixture["start_run_button"]
 	var settings_button: Button = fixture["settings_button"]
 	var profile_button: Button = fixture["profile_button"]
 	var settings_title := host.find_child("SettingsTitle", true, false) as Label
 	var fast_button := host.find_child("SpeedFastButton", true, false) as Button
+	var game_juice_label := host.find_child("SettingsGameJuiceLabel", true, false) as Label
+	var game_juice_button := host.find_child("SettingsGameJuiceButton", true, false) as Button
+	var reduced_motion_button := host.find_child("SettingsReducedMotionButton", true, false) as Button
+	var screen_nudge_button := host.find_child("JuiceFlagScreenNudgeButton", true, false) as Button
+	var reset_button := host.find_child("SettingsResetDefaultsButton", true, false) as Button
 	var close_button := host.find_child("SettingsCloseButton", true, false) as Button
 
 	var error := _expect_text(start_button, "INICIAR PARTIDA", "start button")
@@ -74,6 +80,26 @@ func _test_main_menu_view_applies_second_locale() -> String:
 		host.free()
 		return error
 	error = _expect_text(fast_button, "RAPIDO  *", "selected speed button")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(game_juice_label, "Juego jugoso", "game juice label")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(reduced_motion_button, "MOVIMIENTO REDUCIDO: ON", "reduced motion button")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(game_juice_button, "JUEGO JUGOSO MAESTRO: ON", "selected game juice button")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(screen_nudge_button, "EMPUJE DE PANTALLA: ON", "screen nudge flag button")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(reset_button, "RESTAURAR VALORES", "reset defaults button")
 	if error != "":
 		host.free()
 		return error

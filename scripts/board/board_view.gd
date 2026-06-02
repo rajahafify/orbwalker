@@ -64,6 +64,7 @@ var _overlay_orbs: Array[Dictionary] = []
 var _suppressed_cells: Dictionary = {}
 var _glow_pulse_time: float = 0.0
 var _input_enabled := true
+var _refill_overshoot_enabled := true
 
 
 func _ready() -> void:
@@ -210,6 +211,10 @@ func set_board_presentation_model(model: BoardModel) -> void:
 
 func bind_board_model(model: BoardModel) -> void:
 	set_board_presentation_model(model)
+
+
+func set_refill_overshoot_enabled(enabled: bool) -> void:
+	_refill_overshoot_enabled = enabled
 
 
 func reset_drag_visual_state() -> void:
@@ -372,7 +377,7 @@ func animate_refill_spawns(refill_spawns: Array, duration: float = 0.14) -> void
 			1.0,
 			1.0,
 			PackedInt32Array([_cell_index(to_cell.x, to_cell.y)]),
-			OVERLAY_MOTION_DROP_OVERSHOOT
+			OVERLAY_MOTION_DROP_OVERSHOOT if _refill_overshoot_enabled else OVERLAY_MOTION_LINEAR
 		)
 
 

@@ -64,6 +64,13 @@ func bind_view_model() -> void:
 	_board_view.set_board_presentation_model(_board_model)
 
 
+func set_refill_overshoot_enabled(enabled: bool) -> void:
+	if not _has_valid_board_view():
+		return
+	if _board_view.has_method("set_refill_overshoot_enabled"):
+		_board_view.set_refill_overshoot_enabled(enabled)
+
+
 func board_seed() -> int:
 	if _board_model == null:
 		return -1

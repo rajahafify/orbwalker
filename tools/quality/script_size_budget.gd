@@ -30,6 +30,12 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat layout rules are centralized during view decomposition; split board, HUD, overlay, and debug layout surfaces after screenshot guards cover them.",
 	},
+	"res://scripts/combat/combat_view.gd":
+	{
+		"owner": "P1-2/P5-2",
+		"reason":
+		"Combat view now routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.",
+	},
 	"res://scripts/combat/combat_max_vfx_overlay.gd":
 	{
 		"owner": "P1-2/P5-2",

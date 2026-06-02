@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatSettingsCommandHandlerTest
 
 const HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 
 class FakeView:
@@ -92,19 +93,25 @@ func run_all() -> Dictionary:
 	var previous_speed := RunState.vfx_speed()
 	var previous_quality := RunState.combat_vfx_quality()
 	var previous_reduced_motion := RunState.reduced_motion_enabled()
+	var previous_game_juice := RunState.game_juice_enabled()
+	var previous_game_juice_flags := RunState.game_juice_flags()
 	_run_case("open_shows_overlay_and_locks_input", _test_open_shows_overlay_and_locks_input, failures)
 	_run_case("continue_restores_player_input_status", _test_continue_restores_player_input_status, failures)
 	_run_case("speed_selection_updates_runtime_dependencies", _test_speed_selection_updates_runtime_dependencies, failures)
 	_run_case("quality_and_motion_selection_update_runtime_dependencies", _test_quality_and_motion_selection_update_runtime_dependencies, failures)
+	_run_case("flag_toggle_and_reset_defaults_update_runtime_dependencies", _test_flag_toggle_and_reset_defaults_update_runtime_dependencies, failures)
 	_run_case("route_commands_hide_overlay_and_emit_scene_targets", _test_route_commands_hide_overlay_and_emit_scene_targets, failures)
 	RunState.set_vfx_speed(previous_speed)
 	RunState.set_combat_vfx_quality(previous_quality)
 	RunState.set_reduced_motion_enabled(previous_reduced_motion)
+	RunState.set_game_juice_enabled(previous_game_juice)
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		RunState.set_game_juice_flag_enabled(flag_key, bool(previous_game_juice_flags.get(flag_key, true)))
 	RunState.reset_run("combat_settings_command_handler_test_restore", false)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -176,6 +183,7 @@ func _test_speed_selection_updates_runtime_dependencies() -> String:
 func _test_quality_and_motion_selection_update_runtime_dependencies() -> String:
 	RunState.set_combat_vfx_quality("low")
 	RunState.set_reduced_motion_enabled(false)
+	RunState.set_game_juice_enabled(false)
 	var fixture := _fixture()
 	var handler: Variant = fixture["handler"]
 	var view: FakeView = fixture["view"]
@@ -194,6 +202,45 @@ func _test_quality_and_motion_selection_update_runtime_dependencies() -> String:
 		return "Expected reduced motion toggle to apply feedback settings."
 	if not bool(view.shown_settings.back().get("reduced_motion", false)):
 		return "Expected reduced motion toggle to refresh the overlay state."
+	handler.toggle_game_juice()
+	if not RunState.game_juice_enabled():
+		return "Expected game juice toggle to update RunState."
+	if recorder.feedback_apply_count != 3:
+		return "Expected game juice toggle to apply feedback settings."
+	if not bool(view.shown_settings.back().get("game_juice", false)):
+		return "Expected game juice toggle to refresh the overlay state."
+	return ""
+
+
+func _test_flag_toggle_and_reset_defaults_update_runtime_dependencies() -> String:
+	RunState.set_vfx_speed("fast")
+	RunState.set_combat_vfx_quality("high")
+	RunState.set_reduced_motion_enabled(true)
+	RunState.set_game_juice_enabled(true)
+	RunState.set_game_juice_flag_enabled(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, true)
+	var fixture := _fixture()
+	var handler: Variant = fixture["handler"]
+	var view: FakeView = fixture["view"]
+	var recorder: CallbackRecorder = fixture["recorder"]
+	handler.toggle_game_juice_flag(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE)
+	if bool(RunState.game_juice_flags().get(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, true)):
+		return "Expected individual game juice flag toggle to update RunState child flag."
+	if recorder.feedback_apply_count != 1:
+		return "Expected flag toggle to apply feedback settings."
+	var shown_flags := Dictionary(view.shown_settings.back().get("game_juice_flags", {}))
+	if bool(shown_flags.get(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, true)):
+		return "Expected flag toggle to refresh overlay child state."
+	handler.reset_feedback_settings()
+	if RunState.vfx_speed() != "normal" or RunState.combat_vfx_quality() != "low":
+		return "Expected reset defaults to restore speed normal and quality low."
+	if RunState.reduced_motion_enabled() or RunState.game_juice_enabled():
+		return "Expected reset defaults to disable reduced motion and master game juice."
+	if not bool(RunState.game_juice_flags().get(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, false)):
+		return "Expected reset defaults to restore child flags to true."
+	if recorder.feedback_apply_count != 2 or recorder.vfx_apply_count != 1:
+		return "Expected reset defaults to reapply VFX speed and feedback settings."
+	if String(view.shown_settings.back().get("vfx_speed", "")) != "normal":
+		return "Expected reset defaults to refresh overlay defaults."
 	return ""
 
 

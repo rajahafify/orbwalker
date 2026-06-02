@@ -290,6 +290,29 @@ func lock_transitions(enabled: bool) -> void:
 		_settings_button.disabled = enabled
 
 
+func play_purchase_feedback(kind: String, index: int = -1) -> void:
+	var target: Control = null
+	match kind:
+		"offer":
+			if index >= 0 and index < _offer_cards.size():
+				target = _offer_cards[index]
+		"relic":
+			target = _relic_card
+	if target == null or not is_instance_valid(target):
+		return
+	target.pivot_offset = target.size * 0.5
+	target.scale = Vector2.ONE
+	var tween := target.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(target, "scale", Vector2(0.94, 0.94), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_IN as Tween.EaseType)
+	tween.tween_property(target, "modulate", Color(1.0, 0.92, 0.58, 1.0), 0.07)
+	tween.chain().tween_property(target, "scale", Vector2(1.05, 1.05), 0.12).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.parallel().tween_property(target, "modulate", Color.WHITE, 0.12)
+	tween.chain().tween_property(target, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_flash_purchase_stat_targets()
+	_spawn_purchase_confirmation_label(target.get_global_rect())
+
+
 func handle_global_input(event: InputEvent) -> bool:
 	if _shop_help_modal_presenter != null and _shop_help_modal_presenter.handle_global_input(event):
 		return true
@@ -350,6 +373,46 @@ func _emit_consumable_slot_selected(index: int) -> void:
 
 func _emit_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
 	emit_signal("hud_sell_slot_requested", slot_type, slot_index)
+
+
+func _flash_purchase_stat_targets() -> void:
+	for target in [_gold_pill, _gold_label, _summary_label]:
+		var control := target as Control
+		if control == null or not is_instance_valid(control):
+			continue
+		control.modulate = Color.WHITE
+		var tween := control.create_tween()
+		tween.tween_property(control, "modulate", Color(1.0, 0.88, 0.46, 1.0), 0.08)
+		tween.tween_property(control, "modulate", Color.WHITE, 0.20)
+
+
+func _spawn_purchase_confirmation_label(target_global_rect: Rect2) -> void:
+	if _hud_overlay == null or not is_instance_valid(_hud_overlay):
+		return
+	var label := Label.new()
+	label.text = "BOUGHT"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.38, 1.0))
+	label.add_theme_color_override("font_outline_color", Color(0.04, 0.02, 0.01, 1.0))
+	label.add_theme_constant_override("outline_size", 4)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	label.size = Vector2(180, 44)
+	label.pivot_offset = label.size * 0.5
+	label.z_index = 80
+	_hud_overlay.add_child(label)
+	var target_center := target_global_rect.get_center()
+	var local_center := _hud_overlay.get_global_transform_with_canvas().affine_inverse() * target_center
+	label.position = local_center + Vector2(-label.size.x * 0.5, -target_global_rect.size.y * 0.58)
+	var tween := label.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 34.0, 0.52).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.tween_property(label, "modulate:a", 0.0, 0.36).set_delay(0.18)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(label):
+			label.queue_free()
+	)
 
 
 func _lookup_content_definition(content_id: String) -> Dictionary:

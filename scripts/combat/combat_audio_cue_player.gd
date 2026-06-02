@@ -2,14 +2,25 @@ extends RefCounted
 class_name CombatAudioCuePlayer
 
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 var _host: Node = null
 var _audio_manager_override: Variant = null
+var _game_juice_enabled := false
+var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 
 
 func bind(host: Node = null, audio_manager_override: Variant = null) -> void:
 	_host = host
 	_audio_manager_override = audio_manager_override
+
+
+func set_game_juice_enabled(enabled: bool) -> void:
+	_game_juice_enabled = enabled
+
+
+func set_game_juice_flags(flags: Dictionary) -> void:
+	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
 
 
 func play_music(key: String) -> void:
@@ -38,6 +49,17 @@ func play_mastery_effect(effect_kind: String) -> void:
 
 func play_impact(impact_kind: String, target: String = "enemy") -> void:
 	var clean_kind := impact_kind.strip_edges().to_lower()
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.ELEMENT_IMPACT_AUDIO):
+		match clean_kind:
+			"heal":
+				play_sfx("heal")
+			"armor", "block":
+				play_sfx("armor")
+			"gold":
+				play_sfx("gold")
+			_:
+				play_sfx("hit")
+		return
 	match clean_kind:
 		"fire":
 			play_sfx("impact_fire")
@@ -57,7 +79,15 @@ func play_impact(impact_kind: String, target: String = "enemy") -> void:
 
 func play_match_clear(combo_value: int = 1) -> void:
 	if combo_value >= 2:
-		play_sfx("combo")
+		if _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.COMBO_RHYTHM_PULSE):
+			if combo_value >= 4:
+				play_sfx("combo_rhythm_high")
+			elif combo_value >= 3:
+				play_sfx("combo_rhythm_mid")
+			else:
+				play_sfx("combo")
+		else:
+			play_sfx("combo")
 	else:
 		play_sfx("match")
 
@@ -78,3 +108,7 @@ func _audio_manager_node() -> Variant:
 	if tree == null:
 		return null
 	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(tree)
+
+
+func _juice_enabled(flag_key: String) -> bool:
+	return _game_juice_enabled and bool(_game_juice_flags.get(flag_key, true))

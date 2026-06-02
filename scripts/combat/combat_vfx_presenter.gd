@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatVfxPresenter
 
 const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 var _vfx_layer: Control
 var _visual_registry: Variant
@@ -16,6 +17,8 @@ var _post_match_runtime_textures: Dictionary = {}
 var _post_match_vfx_speed_scale := DEFAULT_POST_MATCH_VFX_SPEED_SCALE
 var _post_match_vfx_quality := DEFAULT_POST_MATCH_VFX_QUALITY
 var _reduced_motion := false
+var _game_juice_enabled := false
+var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 var _screen_nudge_tween: Tween = null
 
 const RESULT_VFX_TIER_THRESHOLDS := {
@@ -84,6 +87,9 @@ func bind(dependencies: Dictionary) -> void:
 	else:
 		set_post_match_vfx_quality(_project_post_match_vfx_quality())
 	set_reduced_motion_enabled(bool(dependencies.get("reduced_motion", _reduced_motion)))
+	set_game_juice_enabled(bool(dependencies.get("game_juice", _game_juice_enabled)))
+	if dependencies.has("game_juice_flags"):
+		set_game_juice_flags(Dictionary(dependencies.get("game_juice_flags", _game_juice_flags)))
 
 
 func set_post_match_vfx_speed_scale(speed_scale: float) -> void:
@@ -100,6 +106,18 @@ func set_reduced_motion_enabled(enabled: bool) -> void:
 
 func reduced_motion_enabled() -> bool:
 	return _reduced_motion
+
+
+func set_game_juice_enabled(enabled: bool) -> void:
+	_game_juice_enabled = enabled
+
+
+func set_game_juice_flags(flags: Dictionary) -> void:
+	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
+
+
+func game_juice_enabled() -> bool:
+	return _game_juice_enabled
 
 
 func post_match_vfx_quality() -> String:
@@ -126,7 +144,7 @@ func spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, 
 func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
 	if texture == null or _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color):
+	if _use_max_combat_vfx() and _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS) and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color):
 		return
 	var sprite := TextureRect.new()
 	sprite.texture = texture
@@ -147,23 +165,32 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
 	if global_center == Vector2.ZERO or _visual_registry == null:
 		return
-	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime)
+	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
+	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime) if impact_juice_enabled else {
+		"draw_size": draw_size,
+		"lifetime": _post_match_vfx_lifetime(lifetime),
+		"modulate_color": Color(1.0, 1.0, 1.0, 0.86),
+		"tier_index": 0,
+	}
 	var profile_size: Vector2 = profile.get("draw_size", draw_size)
 	var profile_lifetime := float(profile.get("lifetime", lifetime))
 	var profile_color: Color = profile.get("modulate_color", Color(1.0, 1.0, 1.0, 0.92))
 	var tier_index := int(profile.get("tier_index", 0))
 	var clean_kind := _result_vfx_kind_key(impact_kind)
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
+	if _use_max_combat_vfx() and impact_juice_enabled and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
 		return
 	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
 	if impact_texture == null:
 		impact_texture = _visual_registry.vfx_texture("orb_clear")
 	spawn_vfx_texture(impact_texture, global_center, profile_size, profile_lifetime, profile_color)
-	_spawn_stylized_replay_effect(global_center, clean_kind, profile_size, profile_lifetime, result_amount, tier_index)
+	if impact_juice_enabled:
+		_spawn_stylized_replay_effect(global_center, clean_kind, profile_size, profile_lifetime, result_amount, tier_index)
 
 
 func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS):
+		return
 	if global_center == Vector2.ZERO:
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
@@ -231,7 +258,7 @@ func post_match_runtime_texture(key: String) -> Texture2D:
 
 
 func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> void:
-	if _reduced_motion or _timer_owner == null or not is_instance_valid(_timer_owner):
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE) or _reduced_motion or _timer_owner == null or not is_instance_valid(_timer_owner):
 		return
 	var target := _shake_target if _shake_target != null and is_instance_valid(_shake_target) else _vfx_layer
 	if target == null or not is_instance_valid(target):
@@ -258,7 +285,7 @@ func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> 
 
 
 func hit_stop(seconds: float = 0.04) -> void:
-	if _reduced_motion:
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.HIT_STOP) or _reduced_motion:
 		return
 	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
 		return
@@ -269,7 +296,7 @@ func hit_stop(seconds: float = 0.04) -> void:
 
 
 func _spawn_visible_spark_burst(global_center: Vector2, draw_size: Vector2, color: Color, lifetime: float) -> void:
-	if _reduced_motion:
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS) or _reduced_motion:
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
@@ -308,7 +335,7 @@ func _spawn_visible_spark_burst(global_center: Vector2, draw_size: Vector2, colo
 
 
 func max_combat_vfx_forced() -> bool:
-	return FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay()
+	return _game_juice_enabled and FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _any_max_overlay_flag_enabled()
 
 
 func max_combat_vfx_available() -> bool:
@@ -316,7 +343,19 @@ func max_combat_vfx_available() -> bool:
 
 
 func _use_max_combat_vfx() -> bool:
-	return FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+	return _game_juice_enabled and FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _any_max_overlay_flag_enabled() and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+
+
+func _any_max_overlay_flag_enabled() -> bool:
+	return (
+		_juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
+		or _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS)
+		or _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_CARD_INTAKE_FLARE)
+	)
+
+
+func _juice_enabled(flag_key: String) -> bool:
+	return _game_juice_enabled and bool(_game_juice_flags.get(flag_key, true))
 
 
 func _project_post_match_vfx_quality() -> String:
@@ -343,7 +382,8 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 		return null
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return null
-	var label_scale := result_vfx_size_scale(kind, result_amount)
+	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
+	var label_scale := result_vfx_size_scale(kind, result_amount) if impact_juice_enabled else 1.0
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
@@ -351,7 +391,7 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
 	label.add_theme_font_size_override("font_size", int(round(42.0 * label_scale)))
-	label.add_theme_color_override("font_color", _result_label_color(kind, true))
+	label.add_theme_color_override("font_color", _result_label_color(kind, impact_juice_enabled))
 	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0))
 	label.add_theme_constant_override("outline_size", int(round(11.0 * label_scale)))
 	label.custom_minimum_size = Vector2(240, 70) * label_scale
@@ -1290,6 +1330,7 @@ func _spawn_runtime_sprite_local(name: String, texture_key: String, center_local
 		return null
 	var sprite := TextureRect.new()
 	sprite.name = name
+	sprite.set_meta("effect_name", name)
 	sprite.texture = texture
 	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
@@ -1480,12 +1521,13 @@ func _tween_effect_cleanup(control: Control, lifetime: float, target_scale: Vect
 	if control == null:
 		return
 	var duration := maxf(0.12, lifetime)
-	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+	var tween_owner: Node = control if control.is_inside_tree() else _timer_owner
+	if tween_owner == null or not is_instance_valid(tween_owner) or not tween_owner.is_inside_tree():
 		control.queue_free()
 		return
 	var start_position := control.position
 	var start_rotation := control.rotation
-	var tween := _timer_owner.create_tween()
+	var tween := tween_owner.create_tween()
 	tween.set_parallel(true)
 	if delay > 0.0:
 		tween.tween_property(control, "modulate:a", target_alpha, 0.05).set_delay(delay)
@@ -1514,6 +1556,8 @@ func control_global_center(control: Control, vertical_bias: float = 0.5) -> Vect
 
 
 func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_lifetime: float, travel_lifetime: float, result_amount: int = 0) -> void:
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS):
+		return
 	if target_global == Vector2.ZERO:
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
@@ -1539,6 +1583,10 @@ func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_life
 
 
 func spawn_mastery_fill_stream(orb_id: int, source_global: Vector2, amount: int, lifetime: float = MASTERY_FILL_STREAM_SECONDS) -> void:
+	var streams_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS) and not _reduced_motion
+	var flare_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_CARD_INTAKE_FLARE)
+	if not streams_enabled and not flare_enabled:
+		return
 	if not OrbType.is_valid_id(orb_id) or amount <= 0 or source_global == Vector2.ZERO:
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
@@ -1557,16 +1605,20 @@ func spawn_mastery_fill_stream(orb_id: int, source_global: Vector2, amount: int,
 		return
 	var clean_lifetime := maxf(0.18, lifetime)
 	var intensity := clampi(2 + int(floor(float(amount) / 4.0)), 2, 8)
-	if _reduced_motion:
+	if not streams_enabled:
 		_spawn_mastery_fill_reduced_motion(source_local, target_local, orb_id, clean_lifetime, intensity)
 		return
-	_spawn_mastery_fill_source_flash(source_local, orb_id, clean_lifetime, intensity)
+	if flare_enabled:
+		_spawn_mastery_fill_source_flash(source_local, orb_id, clean_lifetime, intensity)
 	_spawn_mastery_fill_stream_rays(source_local, target_local, orb_id, clean_lifetime, intensity)
 	_spawn_mastery_fill_stream_sparks(source_local, target_local, orb_id, clean_lifetime, intensity)
-	_spawn_mastery_fill_impact(target_local, orb_id, clean_lifetime, intensity)
+	if flare_enabled:
+		_spawn_mastery_fill_impact(target_local, orb_id, clean_lifetime, intensity)
 
 
 func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
+	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS):
+		return
 	var source: Control = null
 	var target_global := Vector2.ZERO
 	var orb_id := OrbType.Id.FIRE

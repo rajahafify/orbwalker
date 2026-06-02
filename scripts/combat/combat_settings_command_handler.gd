@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CombatSettingsCommandHandler
 
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+
 const CALLBACK_SET_INPUT_PHASE := "set_input_phase"
 const CALLBACK_SET_STATUS_TEXT := "set_status_text"
 const CALLBACK_SET_STATUS_COLOR := "set_status_color"
@@ -120,6 +122,35 @@ func toggle_reduced_motion() -> void:
 	_set_status_text("Reduced motion: %s." % ("On" if RunState.reduced_motion_enabled() else "Off"))
 
 
+func toggle_game_juice() -> void:
+	RunState.set_game_juice_enabled(not RunState.game_juice_enabled())
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
+	_set_status_text("Game juice: %s." % ("On" if RunState.game_juice_enabled() else "Off"))
+
+
+func toggle_game_juice_flag(flag_key: String) -> void:
+	if not GAME_JUICE_FLAGS_SCRIPT.is_valid_key(flag_key):
+		return
+	var flags := RunState.game_juice_flags()
+	var next_enabled := not bool(flags.get(flag_key, true))
+	RunState.set_game_juice_flag_enabled(flag_key, next_enabled)
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
+	_set_status_text("%s: %s." % [tr(GAME_JUICE_FLAGS_SCRIPT.label_key(flag_key)), "On" if next_enabled else "Off"])
+
+
+func reset_feedback_settings() -> void:
+	RunState.reset_combat_feedback_settings()
+	_call_method(_model, "set_combat_speed", [RunState.vfx_speed()])
+	if _resolve_presenter != null and _resolve_presenter.has_method("set_combat_speed"):
+		_resolve_presenter.set_combat_speed(_combat_speed_value())
+	_call_callback(CALLBACK_APPLY_VFX_SPEED)
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
+	_set_status_text("Combat feedback settings reset.")
+
+
 func _show_overlay(settings: Variant) -> void:
 	_call_method(_view, "show_settings_overlay", [settings])
 
@@ -167,6 +198,8 @@ func _current_settings() -> Dictionary:
 		"vfx_speed": RunState.vfx_speed(),
 		"combat_vfx_quality": "low",
 		"reduced_motion": false,
+		"game_juice": false,
+		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
 	}
 
 

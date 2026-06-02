@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatSettingsOverlayPresenterTest
 
 const PRESENTER_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 
 class CallbackRecorder:
@@ -13,6 +14,9 @@ class CallbackRecorder:
 	var speeds: Array[String] = []
 	var qualities: Array[String] = []
 	var reduced_motion_count := 0
+	var game_juice_count := 0
+	var flag_keys: Array[String] = []
+	var reset_count := 0
 
 	func continue_pressed() -> void:
 		continue_count += 1
@@ -32,16 +36,26 @@ class CallbackRecorder:
 	func reduced_motion_toggled() -> void:
 		reduced_motion_count += 1
 
+	func game_juice_toggled() -> void:
+		game_juice_count += 1
+
+	func game_juice_flag_toggled(flag_key: String) -> void:
+		flag_keys.append(flag_key)
+
+	func reset_defaults() -> void:
+		reset_count += 1
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("show_creates_overlay_and_updates_speed_selection", _test_show_creates_overlay_and_updates_speed_selection, failures)
 	_run_case("show_updates_quality_and_reduced_motion_selection", _test_show_updates_quality_and_reduced_motion_selection, failures)
+	_run_case("show_renders_individual_game_juice_flags", _test_show_renders_individual_game_juice_flags, failures)
 	_run_case("hide_clears_overlay_visibility", _test_hide_clears_overlay_visibility, failures)
 	_run_case("buttons_emit_bound_callbacks", _test_buttons_emit_bound_callbacks, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -83,7 +97,7 @@ func _test_show_updates_quality_and_reduced_motion_selection() -> String:
 	var fixture := _fixture()
 	var root: Control = fixture["root"]
 	var presenter: Variant = fixture["presenter"]
-	presenter.show({"vfx_speed": "normal", "combat_vfx_quality": "high", "reduced_motion": true})
+	presenter.show({"vfx_speed": "normal", "combat_vfx_quality": "high", "reduced_motion": true, "game_juice": true})
 	var quality_buttons: Array[Button] = presenter.quality_buttons()
 	if quality_buttons.size() != 2:
 		root.free()
@@ -91,9 +105,34 @@ func _test_show_updates_quality_and_reduced_motion_selection() -> String:
 	if quality_buttons[0].text != "LOW" or quality_buttons[1].text != "HIGH *":
 		root.free()
 		return "Expected selected quality text to match the star suffix convention."
-	if presenter.reduced_motion_button().text != "REDUCED MOTION *":
+	if presenter.reduced_motion_button().text != "REDUCED MOTION: ON":
 		root.free()
-		return "Expected reduced motion button to show selected state."
+		return "Expected reduced motion button to show enabled state."
+	if presenter.game_juice_button().text != "GAME JUICE: ON":
+		root.free()
+		return "Expected game juice button to show enabled state."
+	root.free()
+	return ""
+
+
+func _test_show_renders_individual_game_juice_flags() -> String:
+	var fixture := _fixture()
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	var flags := GAME_JUICE_FLAGS_SCRIPT.default_flags()
+	flags[GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE] = false
+	presenter.show({"vfx_speed": "normal", "combat_vfx_quality": "low", "reduced_motion": false, "game_juice": true, "game_juice_flags": flags})
+	var buttons: Dictionary = presenter.game_juice_flag_buttons()
+	if buttons.size() != GAME_JUICE_FLAGS_SCRIPT.all_keys().size():
+		root.free()
+		return "Expected one button for every game juice flag."
+	var screen_button := buttons.get(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, null) as Button
+	if screen_button == null:
+		root.free()
+		return "Expected screen nudge flag button to exist."
+	if not screen_button.text.ends_with(": OFF"):
+		root.free()
+		return "Expected screen nudge flag state to render OFF."
 	root.free()
 	return ""
 
@@ -121,6 +160,11 @@ func _test_buttons_emit_bound_callbacks() -> String:
 	buttons[0].emit_signal("pressed")
 	presenter.quality_buttons()[1].emit_signal("pressed")
 	presenter.reduced_motion_button().emit_signal("pressed")
+	presenter.game_juice_button().emit_signal("pressed")
+	var flag_buttons: Dictionary = presenter.game_juice_flag_buttons()
+	var first_flag := GAME_JUICE_FLAGS_SCRIPT.all_keys()[0]
+	(flag_buttons[first_flag] as Button).emit_signal("pressed")
+	presenter.reset_defaults_button().emit_signal("pressed")
 	presenter.continue_button().emit_signal("pressed")
 	presenter.new_run_button().emit_signal("pressed")
 	presenter.main_menu_button().emit_signal("pressed")
@@ -133,6 +177,15 @@ func _test_buttons_emit_bound_callbacks() -> String:
 	if recorder.reduced_motion_count != 1:
 		root.free()
 		return "Expected reduced motion button to emit toggle callback."
+	if recorder.game_juice_count != 1:
+		root.free()
+		return "Expected game juice button to emit toggle callback."
+	if recorder.flag_keys != [first_flag]:
+		root.free()
+		return "Expected game juice flag button to emit its flag key."
+	if recorder.reset_count != 1:
+		root.free()
+		return "Expected reset defaults button to emit reset callback."
 	if recorder.continue_count != 1 or recorder.new_run_count != 1 or recorder.main_menu_count != 1:
 		root.free()
 		return "Expected menu buttons to emit their bound callbacks."
@@ -154,6 +207,9 @@ func _fixture() -> Dictionary:
 			PRESENTER_SCRIPT.CALLBACK_SPEED_SELECTED: Callable(recorder, "speed_selected"),
 			PRESENTER_SCRIPT.CALLBACK_QUALITY_SELECTED: Callable(recorder, "quality_selected"),
 			PRESENTER_SCRIPT.CALLBACK_REDUCED_MOTION_TOGGLED: Callable(recorder, "reduced_motion_toggled"),
+			PRESENTER_SCRIPT.CALLBACK_GAME_JUICE_TOGGLED: Callable(recorder, "game_juice_toggled"),
+			PRESENTER_SCRIPT.CALLBACK_GAME_JUICE_FLAG_TOGGLED: Callable(recorder, "game_juice_flag_toggled"),
+			PRESENTER_SCRIPT.CALLBACK_RESET_DEFAULTS: Callable(recorder, "reset_defaults"),
 		}
 	)
 	return {

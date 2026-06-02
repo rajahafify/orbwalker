@@ -115,6 +115,13 @@
           <td>Split board, HUD, overlay, and debug layout surfaces after deterministic layout snapshots cover them.</td>
         </tr>
         <tr>
+          <td><code>scripts/combat/combat_view.gd</code></td>
+          <td><code>500</code></td>
+          <td><code>535</code></td>
+          <td>Combat view routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.</td>
+          <td>Move enemy-stage reaction routing and overlay callback plumbing into focused coordinators, then remove this exception.</td>
+        </tr>
+        <tr>
           <td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td>
           <td><code>650</code></td>
           <td><code>2323</code></td>

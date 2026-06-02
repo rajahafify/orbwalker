@@ -42,6 +42,7 @@ const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat
 const COMBAT_INPUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_input_command_handler.gd")
 const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 const COMBAT_PHASE_INTENT_PREVIEW := 0
 const COMBAT_PHASE_VICTORY := 6
@@ -384,6 +385,10 @@ func _bind_audio_cue_player() -> void:
 	if _combat_audio_cue_player == null:
 		_combat_audio_cue_player = COMBAT_AUDIO_CUE_PLAYER_SCRIPT.new()
 	_combat_audio_cue_player.bind(_host)
+	if _combat_audio_cue_player.has_method("set_game_juice_enabled"):
+		_combat_audio_cue_player.set_game_juice_enabled(RunState.game_juice_enabled())
+	if _combat_audio_cue_player.has_method("set_game_juice_flags"):
+		_combat_audio_cue_player.set_game_juice_flags(RunState.game_juice_flags())
 
 
 func _bind_debug_state_provider() -> void:
@@ -491,6 +496,9 @@ func _connect_view_signals() -> void:
 	_view.settings_speed_selected.connect(_on_settings_speed_selected)
 	_view.settings_quality_selected.connect(_on_settings_quality_selected)
 	_view.settings_reduced_motion_toggled.connect(_on_settings_reduced_motion_toggled)
+	_view.settings_game_juice_toggled.connect(_on_settings_game_juice_toggled)
+	_view.settings_game_juice_flag_toggled.connect(_on_settings_game_juice_flag_toggled)
+	_view.settings_defaults_reset.connect(_on_settings_defaults_reset)
 
 
 func _exit_tree() -> void:
@@ -543,6 +551,7 @@ func _bind_board_controller() -> void:
 			"hovered_orb_changed_callback": _on_board_hovered_orb_changed,
 		}
 	)
+	_apply_feedback_settings()
 
 
 func _on_drag_swap_success() -> void:
@@ -767,6 +776,21 @@ func _on_settings_quality_selected(quality: String) -> void:
 func _on_settings_reduced_motion_toggled() -> void:
 	_bind_settings_command_handler()
 	_settings_command_handler.toggle_reduced_motion()
+
+
+func _on_settings_game_juice_toggled() -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.toggle_game_juice()
+
+
+func _on_settings_game_juice_flag_toggled(flag_key: String) -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.toggle_game_juice_flag(flag_key)
+
+
+func _on_settings_defaults_reset() -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.reset_feedback_settings()
 
 
 func _on_tutorial_end_continue_pressed() -> void:
@@ -1420,13 +1444,45 @@ func _apply_vfx_speed_setting() -> void:
 
 func _apply_feedback_settings() -> void:
 	_apply_vfx_speed_setting()
+	var raw_game_juice_flags := RunState.game_juice_flags()
+	var effective_game_juice_flags := _effective_game_juice_flags_for_motion(raw_game_juice_flags)
+	var refill_overshoot_enabled := RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(GAME_JUICE_FLAGS_SCRIPT.GRAVITY_REFILL_OVERSHOOT, true))
+	if _board_controller != null and _board_controller.has_method("set_refill_overshoot_enabled"):
+		_board_controller.set_refill_overshoot_enabled(refill_overshoot_enabled)
 	if _combat_vfx_presenter != null:
 		if _combat_vfx_presenter.has_method("set_post_match_vfx_quality"):
 			_combat_vfx_presenter.set_post_match_vfx_quality(RunState.combat_vfx_quality())
 		if _combat_vfx_presenter.has_method("set_reduced_motion_enabled"):
 			_combat_vfx_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
+		if _combat_vfx_presenter.has_method("set_game_juice_enabled"):
+			_combat_vfx_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
+		if _combat_vfx_presenter.has_method("set_game_juice_flags"):
+			_combat_vfx_presenter.set_game_juice_flags(effective_game_juice_flags)
 	if _resolve_presenter != null and _resolve_presenter.has_method("set_reduced_motion_enabled"):
 		_resolve_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
+	if _resolve_presenter != null and _resolve_presenter.has_method("set_game_juice_enabled"):
+		_resolve_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
+	if _resolve_presenter != null and _resolve_presenter.has_method("set_game_juice_flags"):
+		_resolve_presenter.set_game_juice_flags(effective_game_juice_flags)
+	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("set_game_juice_enabled"):
+		_combat_audio_cue_player.set_game_juice_enabled(RunState.game_juice_enabled())
+	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("set_game_juice_flags"):
+		_combat_audio_cue_player.set_game_juice_flags(raw_game_juice_flags)
+	if _view != null and _view.has_method("set_enemy_reaction_settings"):
+		_view.set_enemy_reaction_settings(
+			RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(GAME_JUICE_FLAGS_SCRIPT.ENEMY_REACTION_CHARACTER, true)),
+			RunState.reduced_motion_enabled()
+		)
+
+
+func _effective_game_juice_flags_for_motion(flags: Dictionary) -> Dictionary:
+	var effective := GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
+	if not RunState.reduced_motion_enabled():
+		return effective
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		if GAME_JUICE_FLAGS_SCRIPT.is_motion_heavy(flag_key):
+			effective[flag_key] = false
+	return effective
 
 
 func _timer_ready_seconds() -> float:
@@ -1478,9 +1534,9 @@ func _on_resolve_presenter_pass_index(pass_index: int) -> void:
 	_model.set_resolve_trace_pass_index(pass_index)
 
 
-func _on_presenter_combo_sound() -> void:
+func _on_presenter_combo_sound(combo_value: int = 1) -> void:
 	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("play_match_clear"):
-		_combat_audio_cue_player.play_match_clear(2)
+		_combat_audio_cue_player.play_match_clear(combo_value)
 	else:
 		_audio_play_sfx("combo")
 
@@ -1722,6 +1778,8 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
 				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
 				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
+			if _view != null and _view.has_method("play_enemy_hit_reaction"):
+				_view.play_enemy_hit_reaction(enemy_damage)
 			_play_impact_sfx(_mastery_impact_kind(impact_orb), "enemy")
 			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 			if not _can_continue_after_async_wait():
@@ -1781,6 +1839,8 @@ func _replay_elemental_damage_result(
 		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
 		vfx_presenter.screen_nudge(damage_amount, enemy_target)
 		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
+	if _view != null and _view.has_method("play_enemy_hit_reaction"):
+		_view.play_enemy_hit_reaction(damage_amount)
 	_play_impact_sfx(_mastery_impact_kind(orb_id), "enemy")
 	if vfx_presenter != null:
 		await vfx_presenter.hit_stop(0.04)

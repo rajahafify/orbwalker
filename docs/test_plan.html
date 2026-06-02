@@ -1551,6 +1551,14 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>CombatController</code> now passes the resolved orb impact kind into audio during replay and elemental damage steps, keeping fire, ice, and earth feedback distinct from generic damage. The fallback mastery impact mapping now also preserves fire, ice, earth, armor, heart, and gold identities.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code>; Android debug export wrote <code>D:\godot\matchatro\Orbwalker.apk</code> at 2026-06-02 11:04:43; USB install to device <code>b21e3ea8</code> returned <code>Success</code>.</li>
 </ul>
+<p>Verification notes (2026-06-02, individual game juice feature flags):</p>
+<ul>
+<li>Added a persisted master <code>Game Juice</code> switch plus individual child flags under <code>user://matchatro_settings.cfg</code>. Both main menu Settings and combat Settings now expose VFX speed, comfort, the master switch, all child flags, and reset defaults.</li>
+<li>Child flags default to enabled while the master switch defaults to disabled, so turning on the master activates the full package without overwriting saved child choices.</li>
+<li>Behavior gates now cover match pop/clear burst scaling, refill overshoot, combo pulse/audio rhythm, impact rings/result labels, mastery fill streams, mastery card intake flare, screen nudge, hit-stop, elemental impact audio, enemy reaction character, and shop choice feedback.</li>
+<li><code>Reduced Motion</code> remains separate and suppresses motion-heavy child effects including refill overshoot, mastery travel streams, screen nudge, hit-stop, large combo pulse, enemy motion reaction, and shop purchase motion.</li>
+<li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code>.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

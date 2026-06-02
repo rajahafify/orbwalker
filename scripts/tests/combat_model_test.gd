@@ -282,8 +282,11 @@ func _test_combat_vfx_presenter_quality_switches_max_and_low_modes() -> String:
 	presenter.set_post_match_vfx_quality("high")
 	if presenter.post_match_vfx_quality() != "high":
 		return "Expected High combat VFX quality to be accepted."
+	if presenter.max_combat_vfx_forced():
+		return "Expected High combat VFX quality to wait for master Game Juice before forcing Max overlay."
+	presenter.set_game_juice_enabled(true)
 	if not presenter.max_combat_vfx_forced():
-		return "Expected High combat VFX quality to use the Max overlay."
+		return "Expected High combat VFX quality with master Game Juice to use the Max overlay."
 	presenter.set_post_match_vfx_quality("low")
 	if presenter.post_match_vfx_quality() != "low":
 		return "Expected Low combat VFX quality to be accepted."
@@ -456,6 +459,7 @@ func _vfx_fixture(reduced_motion: bool) -> Dictionary:
 		"timer_owner": root,
 		"post_match_vfx_quality": "low",
 		"reduced_motion": reduced_motion,
+		"game_juice": true,
 	})
 	return {
 		"root": root,
@@ -475,6 +479,6 @@ func _count_children_named(parent: Node, node_name: String) -> int:
 		return 0
 	var count := 0
 	for child in parent.get_children():
-		if child.name == node_name:
+		if String(child.get_meta("effect_name", child.name)).begins_with(node_name):
 			count += 1
 	return count

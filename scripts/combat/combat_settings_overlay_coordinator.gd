@@ -55,6 +55,24 @@ func reduced_motion_button() -> Button:
 	return _presenter.reduced_motion_button()
 
 
+func game_juice_button() -> Button:
+	if _presenter == null:
+		return null
+	return _presenter.game_juice_button()
+
+
+func game_juice_flag_buttons() -> Dictionary:
+	if _presenter == null:
+		return {}
+	return _presenter.game_juice_flag_buttons()
+
+
+func reset_defaults_button() -> Button:
+	if _presenter == null:
+		return null
+	return _presenter.reset_defaults_button()
+
+
 func continue_button() -> Button:
 	if _presenter == null:
 		return null

@@ -1,0 +1,1534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orbwalker Game Juice Ideas</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07090d;
+      --panel: #101722;
+      --panel-2: #151f2d;
+      --ink: #f6f8fb;
+      --muted: #aab6c7;
+      --line: rgba(194, 214, 255, 0.18);
+      --fire: #ff6b2d;
+      --ice: #75e8ff;
+      --earth: #8bf06a;
+      --heart: #ff7fa8;
+      --armor: #a9c9ff;
+      --gold: #ffd15c;
+      --danger: #ff4545;
+      --ok: #84f2b4;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(255, 107, 45, 0.13), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(117, 232, 255, 0.12), transparent 26%),
+        linear-gradient(180deg, #09101a 0%, var(--bg) 58%, #040609 100%);
+      font: 15px/1.5 "Segoe UI", Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(180deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 68px);
+      mask-image: radial-gradient(circle at center, black, transparent 76%);
+      opacity: 0.7;
+    }
+
+    main {
+      position: relative;
+      width: min(1240px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 24px 0 46px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    h3 {
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    a {
+      color: var(--ice);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy,
+    .lab,
+    .panel,
+    .idea-card {
+      background: linear-gradient(180deg, rgba(21, 31, 45, 0.94), rgba(12, 18, 27, 0.96));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 28px;
+      min-height: 384px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -90px 35%;
+      height: 210px;
+      background: radial-gradient(circle, rgba(255, 209, 92, 0.14), transparent 62%);
+      pointer-events: none;
+    }
+
+    .kicker {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .lede {
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 17px;
+      margin-top: 14px;
+    }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .principle {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.035);
+    }
+
+    .principle strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+    }
+
+    .principle span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .lab {
+      position: relative;
+      min-height: 384px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .lab-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .lab-title {
+      display: grid;
+      gap: 2px;
+    }
+
+    .lab-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .demo-stage {
+      position: relative;
+      min-height: 278px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.08), transparent 34%),
+        linear-gradient(180deg, #0b1420, #080b11);
+      overflow: hidden;
+      transform: translate(var(--shake-x, 0), var(--shake-y, 0));
+    }
+
+    .enemy {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      width: 96px;
+      height: 96px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 30%, rgba(255,255,255,0.34), transparent 17%),
+        radial-gradient(circle at 50% 55%, #324056, #151d29 70%);
+      border: 2px solid rgba(255,255,255,0.18);
+      box-shadow: 0 0 24px rgba(117,232,255,0.18);
+    }
+
+    .enemy::before,
+    .enemy::after {
+      content: "";
+      position: absolute;
+      top: 37px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ice);
+      box-shadow: 0 0 12px var(--ice);
+      transform: translate(var(--eye-x, 0), var(--eye-y, 0));
+    }
+
+    .enemy::before {
+      left: 28px;
+    }
+
+    .enemy::after {
+      right: 28px;
+    }
+
+    .enemy.hit {
+      animation: enemyHit 430ms cubic-bezier(.18, .89, .31, 1.28);
+    }
+
+    @keyframes enemyHit {
+      0% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+      12% { transform: translateX(-50%) scale(1.16, 0.82); filter: brightness(2.2); }
+      42% { transform: translateX(-50%) scale(0.88, 1.18); }
+      100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+    }
+
+    .board {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(5, 38px);
+      grid-auto-rows: 38px;
+      gap: 7px;
+      transform: translateX(-50%);
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .orb {
+      --orb: var(--fire);
+      position: relative;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255,255,255,0.82), transparent 16%),
+        radial-gradient(circle at 50% 62%, var(--orb), color-mix(in srgb, var(--orb), black 55%) 75%);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--orb), transparent 58%);
+      transform-origin: center;
+    }
+
+    .orb.fire { --orb: var(--fire); }
+    .orb.ice { --orb: var(--ice); }
+    .orb.earth { --orb: var(--earth); }
+    .orb.heart { --orb: var(--heart); }
+    .orb.armor { --orb: var(--armor); }
+    .orb.gold { --orb: var(--gold); }
+
+    .orb.matching {
+      animation: orbPop 560ms cubic-bezier(.18, .89, .32, 1.28);
+    }
+
+    .orb.refill {
+      animation: gravityRefill 720ms cubic-bezier(.21, 1.45, .31, 1);
+    }
+
+    @keyframes orbPop {
+      0% { transform: scale(1); }
+      18% { transform: scale(1.34, 0.72); filter: brightness(1.9); }
+      44% { transform: scale(0.72, 1.34); opacity: 0.72; }
+      72% { transform: scale(1.12); opacity: 0.2; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    @keyframes gravityRefill {
+      0% { transform: translateY(-180px) scale(0.84, 1.18); opacity: 0; }
+      48% { transform: translateY(18px) scale(1.08, 0.82); opacity: 1; }
+      68% { transform: translateY(-9px) scale(0.94, 1.08); }
+      84% { transform: translateY(4px) scale(1.03, 0.96); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .burst,
+    .stream,
+    .label-pop,
+    .ring {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .burst {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--spark);
+      box-shadow: 0 0 12px var(--spark);
+      animation: particle 760ms ease-out forwards;
+    }
+
+    @keyframes particle {
+      from { opacity: 1; transform: translate(0, 0) scale(1.1); }
+      to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.25); }
+    }
+
+    .ring {
+      border: 2px solid var(--ring);
+      border-radius: 50%;
+      animation: ring 520ms ease-out forwards;
+      box-shadow: 0 0 24px color-mix(in srgb, var(--ring), transparent 35%);
+    }
+
+    @keyframes ring {
+      from { opacity: 0.94; transform: translate(-50%, -50%) scale(0.35); }
+      to { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+    }
+
+    .stream {
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, var(--stream), white, var(--stream), transparent);
+      box-shadow: 0 0 20px var(--stream);
+      transform-origin: left center;
+      animation: streamFlow 760ms cubic-bezier(.2, .9, .28, 1) forwards;
+    }
+
+    @keyframes streamFlow {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0); filter: brightness(1); }
+      18% { opacity: 1; }
+      65% { clip-path: inset(0 0 0 0); filter: brightness(1.8); }
+      100% { opacity: 0; clip-path: inset(0 0 0 100%); filter: brightness(1); }
+    }
+
+    .label-pop {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.56);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: white;
+      font-weight: 900;
+      text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+      animation: labelPop 760ms cubic-bezier(.18, .89, .32, 1.28) forwards;
+    }
+
+    @keyframes labelPop {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.4); }
+      18% { opacity: 1; transform: translate(-50%, -16px) scale(1.26); }
+      60% { transform: translate(-50%, -42px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -72px) scale(0.8); }
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .juice-toggles {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.045);
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--gold);
+    }
+
+    .toggle:has(input:checked) {
+      color: var(--ink);
+      border-color: rgba(255, 209, 92, 0.46);
+      background: rgba(255, 209, 92, 0.10);
+    }
+
+    .run-showcase {
+      width: 100%;
+      margin-top: 10px;
+      color: #111;
+      border-color: rgba(255, 209, 92, 0.78);
+      background: linear-gradient(180deg, #ffe188, var(--gold));
+    }
+
+    button,
+    .chip {
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      color: var(--ink);
+      background: rgba(255,255,255,0.06);
+      font: inherit;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 9px 11px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.02);
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.32);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.96);
+    }
+
+    .btn-fire { color: #ffd4c0; }
+    .btn-ice { color: #c4f6ff; }
+    .btn-earth { color: #d6ffc8; }
+    .btn-gold { color: #fff0be; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel + .panel,
+    .idea-card + .idea-card {
+      margin-top: 14px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .chip.active {
+      color: var(--ink);
+      background: rgba(117,232,255,0.14);
+      border-color: rgba(117,232,255,0.42);
+    }
+
+    .idea-card {
+      padding: 16px;
+    }
+
+    .idea-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .idea-title {
+      display: flex;
+      align-items: start;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .idea-toggle {
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      accent-color: var(--gold);
+      flex: 0 0 auto;
+      cursor: pointer;
+    }
+
+    .idea-card.enabled {
+      border-color: rgba(255, 209, 92, 0.62);
+      box-shadow: 0 0 0 1px rgba(255, 209, 92, 0.16), var(--shadow);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.07);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag.priority {
+      color: #111;
+      background: var(--gold);
+      font-weight: 800;
+    }
+
+    .idea-card p {
+      color: var(--muted);
+      margin-top: 9px;
+    }
+
+    .idea-preview {
+      position: relative;
+      min-height: 132px;
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.08), transparent 34%),
+        linear-gradient(180deg, rgba(8, 14, 22, 0.95), rgba(5, 8, 13, 0.96));
+      overflow: hidden;
+    }
+
+    .mini-board {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, 22px);
+      grid-auto-rows: 22px;
+      gap: 5px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.24);
+    }
+
+    .mini-orb {
+      --orb: var(--fire);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255,255,255,0.85), transparent 18%),
+        radial-gradient(circle at 50% 62%, var(--orb), color-mix(in srgb, var(--orb), black 55%) 76%);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--orb), transparent 56%);
+    }
+
+    .mini-orb.hot { --orb: var(--fire); }
+    .mini-orb.cold { --orb: var(--ice); }
+    .mini-orb.green { --orb: var(--earth); }
+    .mini-orb.pink { --orb: var(--heart); }
+    .mini-orb.blue { --orb: var(--armor); }
+    .mini-orb.yellow { --orb: var(--gold); }
+
+    .mini-orb.pop {
+      animation: miniPop 1150ms cubic-bezier(.18, .89, .32, 1.28) infinite;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .mini-orb.drop {
+      animation: miniDrop 1500ms cubic-bezier(.21, 1.45, .31, 1) infinite;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    @keyframes miniPop {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      18% { transform: scale(1.35, 0.72); filter: brightness(1.9); }
+      42% { transform: scale(0.75, 1.28); }
+      68% { transform: scale(1); opacity: 0.4; }
+    }
+
+    @keyframes miniDrop {
+      0% { transform: translateY(-84px) scale(0.84, 1.16); opacity: 0; }
+      42% { transform: translateY(8px) scale(1.08, 0.84); opacity: 1; }
+      64% { transform: translateY(-5px) scale(0.95, 1.06); }
+      82%, 100% { transform: translateY(0) scale(1); }
+    }
+
+    .mini-enemy {
+      position: absolute;
+      right: 24px;
+      top: 22px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.16);
+      background:
+        radial-gradient(circle at 36% 30%, rgba(255,255,255,0.32), transparent 17%),
+        radial-gradient(circle at 50% 58%, #344358, #151d29 72%);
+      box-shadow: 0 0 18px rgba(117,232,255,0.18);
+    }
+
+    .mini-enemy.hit {
+      animation: miniHit 1250ms cubic-bezier(.18, .89, .31, 1.28) infinite;
+    }
+
+    .mini-enemy.weak {
+      filter: saturate(0.56) brightness(0.86);
+      animation: miniWeak 1400ms ease-in-out infinite;
+    }
+
+    @keyframes miniHit {
+      0%, 100% { transform: scale(1); }
+      13% { transform: scale(1.14, 0.82); filter: brightness(2); }
+      32% { transform: scale(0.88, 1.15); }
+      56% { transform: scale(1); }
+    }
+
+    @keyframes miniWeak {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      45% { transform: translateY(3px) rotate(-2deg); }
+    }
+
+    .mini-ray {
+      position: absolute;
+      left: 118px;
+      top: 76px;
+      width: 138px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, var(--ice), white, var(--ice), transparent);
+      box-shadow: 0 0 18px var(--ice);
+      transform: rotate(-23deg);
+      animation: miniRay 1300ms ease-out infinite;
+    }
+
+    @keyframes miniRay {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+      20% { opacity: 1; }
+      70% { clip-path: inset(0 0 0 0); }
+      100% { opacity: 0; clip-path: inset(0 0 0 100%); }
+    }
+
+    .mini-ring {
+      position: absolute;
+      right: 32px;
+      top: 28px;
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--earth);
+      border-radius: 50%;
+      box-shadow: 0 0 18px var(--earth);
+      animation: miniRing 1200ms ease-out infinite;
+    }
+
+    @keyframes miniRing {
+      from { opacity: 0.9; transform: scale(0.45); }
+      to { opacity: 0; transform: scale(1.95); }
+    }
+
+    .mini-label {
+      position: absolute;
+      right: 38px;
+      top: 76px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      animation: miniLabel 1300ms cubic-bezier(.18, .89, .32, 1.28) infinite;
+    }
+
+    @keyframes miniLabel {
+      0% { opacity: 0; transform: translateY(8px) scale(0.5); }
+      24% { opacity: 1; transform: translateY(-5px) scale(1.18); }
+      72% { opacity: 1; transform: translateY(-18px) scale(1); }
+      100% { opacity: 0; transform: translateY(-28px) scale(0.88); }
+    }
+
+    .mini-ui-card {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .mini-ui-row {
+      height: 24px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-ui-row::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--fill, 42%);
+      background: linear-gradient(90deg, rgba(255,209,92,0.68), rgba(117,232,255,0.5));
+      animation: miniFill 1600ms ease-in-out infinite;
+    }
+
+    @keyframes miniFill {
+      0%, 100% { transform: translateX(-12%); filter: brightness(0.95); }
+      48% { transform: translateX(8%); filter: brightness(1.55); }
+    }
+
+    .mini-shop-card {
+      position: absolute;
+      left: 20px;
+      top: 22px;
+      width: 88px;
+      height: 84px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,209,92,0.32);
+      background: linear-gradient(180deg, rgba(255,209,92,0.18), rgba(255,255,255,0.05));
+      animation: miniBuy 1600ms cubic-bezier(.18, .89, .32, 1.28) infinite;
+    }
+
+    .mini-shop-stat {
+      position: absolute;
+      right: 20px;
+      bottom: 22px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(132,242,180,0.14);
+      border: 1px solid rgba(132,242,180,0.42);
+      color: var(--ok);
+      font-size: 12px;
+      font-weight: 900;
+      animation: miniStat 1600ms ease-in-out infinite;
+    }
+
+    @keyframes miniBuy {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      38% { transform: translate(74px, 34px) scale(0.82); filter: brightness(1.6); }
+      70% { transform: translate(74px, 34px) scale(0.82); opacity: 0.35; }
+    }
+
+    @keyframes miniStat {
+      0%, 100% { transform: scale(1); }
+      42% { transform: scale(1.16); filter: brightness(1.5); }
+    }
+
+    .idea-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .idea-card li + li {
+      margin-top: 5px;
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .score div {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .score strong {
+      display: block;
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .score span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .source-list {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .source-list li + li {
+      margin-top: 8px;
+    }
+
+    .selection-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .summary-pill {
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .summary-pill strong {
+      display: block;
+      font-size: 20px;
+      color: var(--ink);
+    }
+
+    .summary-pill span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .selected-list {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .selected-list li + li {
+      margin-top: 5px;
+    }
+
+    .meter {
+      position: relative;
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      margin-top: 14px;
+    }
+
+    .meter span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--w);
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--fire), var(--gold), var(--ice));
+      box-shadow: 0 0 18px rgba(255,209,92,0.35);
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        width: min(100vw - 18px, 1240px);
+        padding-top: 14px;
+      }
+
+      .hero-copy,
+      .lab,
+      .panel,
+      .idea-card {
+        padding: 14px;
+      }
+
+      .principles,
+      .score,
+      .selection-summary,
+      .controls,
+      .juice-toggles {
+        grid-template-columns: 1fr;
+      }
+
+      .board {
+        grid-template-columns: repeat(5, 32px);
+        grid-auto-rows: 32px;
+        gap: 6px;
+      }
+
+      .orb {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div>
+          <div class="kicker">Orbwalker Game Juice Lab</div>
+          <h1>Ideas that make every match feel paid back.</h1>
+          <p class="lede">A researched, Orbwalker-specific backlog of feedback ideas. The goal is not more noise; it is stronger confirmation, clearer causality, and a little theatrical swagger when the player earns it.</p>
+        </div>
+        <div class="principles">
+          <div class="principle">
+            <strong>Clarity first</strong>
+            <span>The effect should explain what happened before it decorates it.</span>
+          </div>
+          <div class="principle">
+            <strong>Layer by tier</strong>
+            <span>Low VFX must be readable; high VFX can become luxurious.</span>
+          </div>
+          <div class="principle">
+            <strong>One beat, many senses</strong>
+            <span>Motion, particles, labels, and sound should land on the same frame.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lab" aria-label="Interactive game juice demo">
+        <div class="lab-header">
+          <div class="lab-title">
+            <h2>Interactive Showcase</h2>
+            <span>Enable layers, then run the board sequence.</span>
+          </div>
+          <span class="tag priority">Static HTML</span>
+        </div>
+        <div class="demo-stage" id="stage">
+          <div class="enemy" id="enemy"></div>
+          <div class="board" id="board" aria-hidden="true"></div>
+        </div>
+        <div class="juice-toggles" id="juiceToggles">
+          <label class="toggle"><input type="checkbox" data-layer="squash" checked>Squash / pop</label>
+          <label class="toggle"><input type="checkbox" data-layer="particles" checked>Particles</label>
+          <label class="toggle"><input type="checkbox" data-layer="stream" checked>Mastery stream</label>
+          <label class="toggle"><input type="checkbox" data-layer="impactRing" checked>Impact ring</label>
+          <label class="toggle"><input type="checkbox" data-layer="label" checked>Damage label</label>
+          <label class="toggle"><input type="checkbox" data-layer="shake" checked>Screen shake</label>
+          <label class="toggle"><input type="checkbox" data-layer="refill" checked>Refill overshoot</label>
+          <label class="toggle"><input type="checkbox" data-layer="eyes" checked>Tracking eyes</label>
+        </div>
+        <button class="run-showcase" data-demo="enabled">Run Enabled Juice</button>
+        <div class="controls">
+          <button class="btn-fire" data-demo="match">Match Clear Pop</button>
+          <button class="btn-ice" data-demo="stream">Mastery Stream</button>
+          <button class="btn-earth" data-demo="impact">Enemy Impact</button>
+          <button class="btn-gold" data-demo="refill">Gravity Refill</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div>
+        <div class="panel">
+          <h2>Research Notes</h2>
+          <p>The most useful direction from the references is that juice works when it makes input feel immediate and events feel legible. The counterpoint is just as useful for Orbwalker: puzzle combat can become unreadable if every tile, label, and portrait screams at once.</p>
+          <ul class="source-list">
+            <li><a href="https://www.gdcvault.com/play/1016487/juice-it-or-lose">GDC Vault: Juice It or Lose It</a> frames juice as small tricks that make interaction more satisfying, including particles and staged excess.</li>
+            <li><a href="https://www.gamedeveloper.com/design/video-indies-resist-the-urge-to-juice-it-or-lose-it-">Game Developer: Don't Juice It or Lose It</a> is the caution flag: context and immersion matter, not just more eye candy.</li>
+            <li><a href="https://arxiv.org/abs/2011.09201">Designing Game Feel: A Survey</a> describes juicing as amplified polish that can improve empowerment and clarity of feedback.</li>
+            <li><a href="https://slicker.me/python/game_feel_pygame.htm">Game Feel in Pygame</a> summarizes practical screenshake, particle, and squash/stretch patterns that map well to lightweight Godot implementation.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2>Recommended First Slice</h2>
+          <p>Highest impact for the next pass: make combat results read like a linked cause-and-effect chain from board to mastery to target.</p>
+          <div class="score">
+            <div><strong>1</strong><span>Board match anticipation</span></div>
+            <div><strong>2</strong><span>Mastery stream arrival</span></div>
+            <div><strong>3</strong><span>Target impact + sound</span></div>
+          </div>
+          <div class="meter" aria-label="Recommended investment meter"><span style="--w: 82%"></span></div>
+        </div>
+      </div>
+
+      <div id="ideas">
+        <div class="panel">
+          <h2>Idea Backlog</h2>
+          <p>Filter by implementation surface. The priority tag means it likely improves feel quickly without needing new art.</p>
+          <div class="filters" id="filters">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="board">Board</button>
+            <button class="chip" data-filter="combat">Combat</button>
+            <button class="chip" data-filter="ui">UI</button>
+            <button class="chip" data-filter="audio">Audio</button>
+          </div>
+          <div class="selection-summary" id="selectionSummary" aria-live="polite">
+            <div class="summary-pill"><strong data-summary="total">0</strong><span>enabled ideas</span></div>
+            <div class="summary-pill"><strong data-summary="p1">0</strong><span>P1 quick wins</span></div>
+            <div class="summary-pill"><strong data-summary="surfaces">0</strong><span>surfaces covered</span></div>
+            <div class="summary-pill"><strong data-summary="audio">0</strong><span>audio-linked</span></div>
+          </div>
+          <ul class="selected-list" id="selectedBacklog">
+            <li>No backlog ideas enabled yet.</li>
+          </ul>
+        </div>
+
+        <article class="idea-card" data-tags="board combat" data-priority="P1" data-preview="match">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Match Commit Anticipation</h3></label>
+            <div class="tags"><span class="tag priority">P1</span><span class="tag">Board</span><span class="tag">Low Art</span></div>
+          </div>
+          <p>When a valid path releases, selected orbs hold for a split beat, brighten, then pop in sequence toward the match center.</p>
+          <div class="idea-preview" aria-label="Match commit anticipation preview"></div>
+          <ul>
+            <li>Juice gain: makes the player feel the match was recognized before the board mutates.</li>
+            <li>Godot shape: resolve-presenter pre-clear tween with 40-70 ms stagger and reduced-motion instant fallback.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="board" data-priority="P1" data-preview="refill">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Gravity Refill Personalities</h3></label>
+            <div class="tags"><span class="tag priority">P1</span><span class="tag">Board</span><span class="tag">Motion</span></div>
+          </div>
+          <p>Each orb type lands with a tiny personality: fire snaps hot, ice glides, earth thuds, gold bounces lightly.</p>
+          <div class="idea-preview" aria-label="Gravity refill personalities preview"></div>
+          <ul>
+            <li>Juice gain: refill stops feeling like a mechanical grid update.</li>
+            <li>Keep it readable by applying personality to easing and squash only, not changing final cell timing.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="combat audio" data-priority="P1" data-preview="impact-audio">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Impact Type Sound Stack</h3></label>
+            <div class="tags"><span class="tag priority">P1</span><span class="tag">Combat</span><span class="tag">Audio</span></div>
+          </div>
+          <p>Layer short synthetic transients so fire crackles, ice pings, earth knocks, armor clanks, and player damage has a duller body hit.</p>
+          <div class="idea-preview" aria-label="Impact type sound stack preview"></div>
+          <ul>
+            <li>Juice gain: players can identify impact type even when watching the board rather than the enemy portrait.</li>
+            <li>Implementation note: keep duration under 260 ms and use pitch variation by damage amount or combo tier.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="combat" data-priority="P1" data-preview="impact-ring">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Enemy Damage Readability Ring</h3></label>
+            <div class="tags"><span class="tag priority">P1</span><span class="tag">Combat</span><span class="tag">No New Asset</span></div>
+          </div>
+          <p>On damage, draw a colored ring at the hit point, then let the damage label burst from that same center.</p>
+          <div class="idea-preview" aria-label="Enemy damage readability ring preview"></div>
+          <ul>
+            <li>Juice gain: ties number, element, and enemy HP loss into one visual sentence.</li>
+            <li>Balance guard: one ring per resolved element, not per individual particle.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="combat board" data-priority="P2" data-preview="combo">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Combo Chain Rhythm</h3></label>
+            <div class="tags"><span class="tag">P2</span><span class="tag">Board</span><span class="tag">Combat</span></div>
+          </div>
+          <p>Let each cascade step advance a rhythmic pitch, label scale, and mastery meter pulse. The player hears and sees the combo count climbing.</p>
+          <div class="idea-preview" aria-label="Combo chain rhythm preview"></div>
+          <ul>
+            <li>Juice gain: cascades become a rising payoff instead of repeated clears.</li>
+            <li>Risk: cap pitch and label scale after combo 4 so late cascades do not become shrill.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="combat" data-priority="P2" data-preview="mastery">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Mastery Card Intake Flare</h3></label>
+            <div class="tags"><span class="tag">P2</span><span class="tag">Combat</span><span class="tag">VFX</span></div>
+          </div>
+          <p>When a stream reaches mastery, the card mouth glows, briefly overfills, then settles back to the true progress value.</p>
+          <div class="idea-preview" aria-label="Mastery card intake flare preview"></div>
+          <ul>
+            <li>Juice gain: makes meter gain feel physical and earned.</li>
+            <li>Godot shape: tween visual fill to value plus 3-5 percent overshoot, then settle to actual value.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="ui" data-priority="P2" data-preview="intent">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Intent Card Eye Contact</h3></label>
+            <div class="tags"><span class="tag">P2</span><span class="tag">UI</span><span class="tag">Character</span></div>
+          </div>
+          <p>Enemy intent icons subtly track the board cursor or selected path when they are relevant to the upcoming damage/block decision.</p>
+          <div class="idea-preview" aria-label="Intent card eye contact preview"></div>
+          <ul>
+            <li>Juice gain: the enemy feels reactive without changing mechanics.</li>
+            <li>Risk: only enable during player input; disable during resolve to avoid distraction.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="ui audio" data-priority="P2" data-preview="shop">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Shop Choice Confirmation</h3></label>
+            <div class="tags"><span class="tag">P2</span><span class="tag">UI</span><span class="tag">Audio</span></div>
+          </div>
+          <p>Buying an item should make the card dip into the loadout/HUD, flash the affected stat, and play a short register-specific sound.</p>
+          <div class="idea-preview" aria-label="Shop choice confirmation preview"></div>
+          <ul>
+            <li>Juice gain: purchases feel like power entering the run, not a row disappearing.</li>
+            <li>Use restrained effects here; shop clarity matters more than spectacle.</li>
+          </ul>
+        </article>
+
+        <article class="idea-card" data-tags="combat" data-priority="P3" data-preview="weak">
+          <div class="idea-head">
+            <label class="idea-title"><input class="idea-toggle" type="checkbox" data-backlog-toggle><h3>Near-Lethal Enemy Reaction</h3></label>
+            <div class="tags"><span class="tag">P3</span><span class="tag">Combat</span><span class="tag">Character</span></div>
+          </div>
+          <p>If a hit drops the enemy below a threshold but does not kill, add a stagger pose, brief portrait desaturation, and a lower idle intensity.</p>
+          <div class="idea-preview" aria-label="Near lethal enemy reaction preview"></div>
+          <ul>
+            <li>Juice gain: health changes become embodied, which improves combat readability.</li>
+            <li>Risk: needs careful enemy-art handling so it does not imply a mechanical stun.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const stage = document.getElementById("stage");
+    const board = document.getElementById("board");
+    const enemy = document.getElementById("enemy");
+    const juiceToggles = document.getElementById("juiceToggles");
+    const orbTypes = ["fire", "ice", "earth", "heart", "armor", "gold"];
+
+    function enabledLayers() {
+      const layers = {};
+      juiceToggles.querySelectorAll("[data-layer]").forEach((input) => {
+        layers[input.dataset.layer] = input.checked;
+      });
+      return layers;
+    }
+
+    function buildBoard() {
+      board.innerHTML = "";
+      for (let i = 0; i < 25; i += 1) {
+        const orb = document.createElement("div");
+        orb.className = "orb " + orbTypes[(i + Math.floor(i / 5)) % orbTypes.length];
+        orb.dataset.index = String(i);
+        board.appendChild(orb);
+      }
+    }
+
+    function buildMiniBoard(parent, mode) {
+      const miniBoard = document.createElement("div");
+      miniBoard.className = "mini-board";
+      const classes = ["hot", "cold", "green", "pink", "blue", "yellow"];
+      for (let i = 0; i < 16; i += 1) {
+        const orb = document.createElement("div");
+        const extra = mode === "match" && [5, 6, 7].includes(i) ? " pop" : mode === "refill" && i < 4 ? " drop" : "";
+        orb.className = "mini-orb " + classes[(i + Math.floor(i / 4)) % classes.length] + extra;
+        orb.style.setProperty("--delay", (i * 55) + "ms");
+        miniBoard.appendChild(orb);
+      }
+      parent.appendChild(miniBoard);
+    }
+
+    function addMiniEnemy(parent, state = "") {
+      const enemyNode = document.createElement("div");
+      enemyNode.className = "mini-enemy" + (state ? " " + state : "");
+      parent.appendChild(enemyNode);
+    }
+
+    function renderIdeaPreviews() {
+      document.querySelectorAll(".idea-card[data-preview]").forEach((card) => {
+        const preview = card.querySelector(".idea-preview");
+        if (!preview) return;
+        preview.innerHTML = "";
+        const mode = card.dataset.preview;
+        if (["match", "refill", "combo", "mastery"].includes(mode)) {
+          buildMiniBoard(preview, mode === "refill" ? "refill" : "match");
+        }
+        if (mode === "match") {
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-ring"}));
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "match"}));
+        } else if (mode === "refill") {
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "settle"}));
+        } else if (mode === "impact-audio") {
+          addMiniEnemy(preview, "hit");
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-ring"}));
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "fire / ice / earth"}));
+        } else if (mode === "impact-ring") {
+          addMiniEnemy(preview, "hit");
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-ring"}));
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "18"}));
+        } else if (mode === "combo") {
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-ray"}));
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "combo x3"}));
+        } else if (mode === "mastery") {
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-ray"}));
+          const uiCard = document.createElement("div");
+          uiCard.className = "mini-ui-card";
+          uiCard.innerHTML = '<div class="mini-ui-row" style="--fill: 62%"></div><div class="mini-ui-row" style="--fill: 76%"></div>';
+          preview.appendChild(uiCard);
+        } else if (mode === "intent") {
+          addMiniEnemy(preview);
+          const uiCard = document.createElement("div");
+          uiCard.className = "mini-ui-card";
+          uiCard.innerHTML = '<div class="mini-ui-row" style="--fill: 36%"></div><div class="mini-ui-row" style="--fill: 58%"></div><div class="mini-ui-row" style="--fill: 24%"></div>';
+          preview.appendChild(uiCard);
+        } else if (mode === "shop") {
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-shop-card"}));
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-shop-stat", textContent: "+2 ATK"}));
+        } else if (mode === "weak") {
+          addMiniEnemy(preview, "weak");
+          preview.appendChild(Object.assign(document.createElement("div"), {className: "mini-label", textContent: "low HP"}));
+        }
+      });
+    }
+
+    function clearEffects() {
+      stage.querySelectorAll(".burst, .stream, .label-pop, .ring").forEach((node) => node.remove());
+      stage.style.setProperty("--shake-x", "0px");
+      stage.style.setProperty("--shake-y", "0px");
+      enemy.classList.remove("hit");
+      board.querySelectorAll(".matching, .refill").forEach((orb) => {
+        orb.classList.remove("matching", "refill");
+      });
+    }
+
+    function orbCenter(index) {
+      const orb = board.children[index];
+      const rect = orb.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      return {
+        x: rect.left - stageRect.left + rect.width / 2,
+        y: rect.top - stageRect.top + rect.height / 2
+      };
+    }
+
+    function enemyCenter() {
+      const rect = enemy.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      return {
+        x: rect.left - stageRect.left + rect.width / 2,
+        y: rect.top - stageRect.top + rect.height / 2
+      };
+    }
+
+    function spawnParticles(x, y, color, count = 18, power = 72) {
+      for (let i = 0; i < count; i += 1) {
+        const p = document.createElement("div");
+        const angle = (Math.PI * 2 * i / count) + (Math.random() * 0.35);
+        const distance = power * (0.45 + Math.random() * 0.75);
+        p.className = "burst";
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+        p.style.setProperty("--spark", color);
+        p.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+        p.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+        stage.appendChild(p);
+      }
+    }
+
+    function spawnRing(x, y, color, size = 72) {
+      const ring = document.createElement("div");
+      ring.className = "ring";
+      ring.style.left = x + "px";
+      ring.style.top = y + "px";
+      ring.style.width = size + "px";
+      ring.style.height = size + "px";
+      ring.style.setProperty("--ring", color);
+      stage.appendChild(ring);
+    }
+
+    function spawnLabel(text, x, y, color) {
+      const label = document.createElement("div");
+      label.className = "label-pop";
+      label.textContent = text;
+      label.style.left = x + "px";
+      label.style.top = y + "px";
+      label.style.color = color;
+      stage.appendChild(label);
+    }
+
+    function shake(frames = 7, amount = 7) {
+      let frame = 0;
+      const tick = () => {
+        frame += 1;
+        const fade = 1 - frame / frames;
+        stage.style.setProperty("--shake-x", ((Math.random() - 0.5) * amount * fade) + "px");
+        stage.style.setProperty("--shake-y", ((Math.random() - 0.5) * amount * fade) + "px");
+        if (frame < frames) {
+          requestAnimationFrame(tick);
+        } else {
+          stage.style.setProperty("--shake-x", "0px");
+          stage.style.setProperty("--shake-y", "0px");
+        }
+      };
+      requestAnimationFrame(tick);
+    }
+
+    function demoMatch(options = {}) {
+      const layers = Object.assign({
+        squash: true,
+        particles: true,
+        impactRing: true
+      }, options);
+      clearEffects();
+      [6, 7, 8, 13].forEach((index, offset) => {
+        const orb = board.children[index];
+        setTimeout(() => {
+          const c = orbCenter(index);
+          if (layers.squash) {
+            orb.classList.add("matching");
+          }
+          if (layers.particles) {
+            spawnParticles(c.x, c.y, "var(--fire)", 10, 38);
+          }
+          if (layers.impactRing) {
+            spawnRing(c.x, c.y, "var(--fire)", 44);
+          }
+        }, offset * 70);
+      });
+    }
+
+    function demoStream(options = {}) {
+      const layers = Object.assign({
+        stream: true,
+        particles: true,
+        impactRing: true,
+        label: true
+      }, options);
+      if (options.clear !== false) {
+        clearEffects();
+      }
+      const start = orbCenter(12);
+      const end = enemyCenter();
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (layers.stream) {
+        const stream = document.createElement("div");
+        stream.className = "stream";
+        stream.style.left = start.x + "px";
+        stream.style.top = start.y + "px";
+        stream.style.width = length + "px";
+        stream.style.transform = "rotate(" + angle + "deg)";
+        stream.style.setProperty("--stream", "var(--ice)");
+        stage.appendChild(stream);
+      }
+      if (layers.particles) {
+        spawnParticles(start.x, start.y, "var(--ice)", 14, 46);
+      }
+      setTimeout(() => {
+        if (layers.impactRing) {
+          spawnRing(end.x, end.y, "var(--ice)", 78);
+        }
+        if (layers.particles) {
+          spawnParticles(end.x, end.y, "var(--ice)", 18, 64);
+        }
+        if (layers.label) {
+          spawnLabel("+ Mastery", end.x, end.y + 28, "var(--ice)");
+        }
+      }, 430);
+    }
+
+    function demoImpact(options = {}) {
+      const layers = Object.assign({
+        squash: true,
+        particles: true,
+        impactRing: true,
+        label: true,
+        shake: true
+      }, options);
+      if (options.clear !== false) {
+        clearEffects();
+      }
+      const c = enemyCenter();
+      if (layers.squash) {
+        enemy.classList.add("hit");
+      }
+      if (layers.shake) {
+        shake(9, 10);
+      }
+      if (layers.impactRing) {
+        spawnRing(c.x, c.y, "var(--earth)", 82);
+      }
+      if (layers.particles) {
+        spawnParticles(c.x, c.y, "var(--earth)", 24, 92);
+      }
+      if (layers.label) {
+        spawnLabel("18", c.x, c.y + 20, "var(--earth)");
+      }
+    }
+
+    function demoRefill(options = {}) {
+      const layers = Object.assign({
+        refill: true
+      }, options);
+      if (options.clear !== false) {
+        clearEffects();
+      }
+      if (!layers.refill) {
+        return;
+      }
+      [0, 1, 2, 3, 4, 5, 10, 15].forEach((index, offset) => {
+        setTimeout(() => {
+          board.children[index].classList.add("refill");
+        }, offset * 50);
+      });
+    }
+
+    function demoEnabledJuice() {
+      const layers = enabledLayers();
+      clearEffects();
+      demoMatch(Object.assign({}, layers, {clear: false}));
+      setTimeout(() => demoStream(Object.assign({}, layers, {clear: false})), 420);
+      setTimeout(() => demoImpact(Object.assign({}, layers, {clear: false})), 880);
+      setTimeout(() => demoRefill(Object.assign({}, layers, {clear: false})), 1180);
+    }
+
+    document.querySelectorAll("[data-demo]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const demo = button.dataset.demo;
+        if (demo === "match") demoMatch();
+        if (demo === "stream") demoStream();
+        if (demo === "impact") demoImpact();
+        if (demo === "refill") demoRefill();
+        if (demo === "enabled") demoEnabledJuice();
+      });
+    });
+
+    document.getElementById("filters").addEventListener("click", (event) => {
+      const target = event.target.closest("[data-filter]");
+      if (!target) return;
+      const filter = target.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach((chip) => chip.classList.toggle("active", chip === target));
+      document.querySelectorAll(".idea-card").forEach((card) => {
+        const tags = card.dataset.tags.split(" ");
+        card.style.display = filter === "all" || tags.includes(filter) ? "" : "none";
+      });
+    });
+
+    function updateBacklogSelection() {
+      const cards = Array.from(document.querySelectorAll(".idea-card"));
+      const selected = cards.filter((card) => card.querySelector("[data-backlog-toggle]").checked);
+      const surfaces = new Set();
+      let p1Count = 0;
+      let audioCount = 0;
+      selected.forEach((card) => {
+        card.classList.add("enabled");
+        if (card.dataset.priority === "P1") {
+          p1Count += 1;
+        }
+        const tags = card.dataset.tags.split(" ");
+        tags.forEach((tag) => surfaces.add(tag));
+        if (tags.includes("audio")) {
+          audioCount += 1;
+        }
+      });
+      cards.filter((card) => !selected.includes(card)).forEach((card) => card.classList.remove("enabled"));
+      document.querySelector('[data-summary="total"]').textContent = String(selected.length);
+      document.querySelector('[data-summary="p1"]').textContent = String(p1Count);
+      document.querySelector('[data-summary="surfaces"]').textContent = String(surfaces.size);
+      document.querySelector('[data-summary="audio"]').textContent = String(audioCount);
+      const selectedList = document.getElementById("selectedBacklog");
+      selectedList.innerHTML = "";
+      if (selected.length === 0) {
+        const empty = document.createElement("li");
+        empty.textContent = "No backlog ideas enabled yet.";
+        selectedList.appendChild(empty);
+        return;
+      }
+      selected.forEach((card) => {
+        const item = document.createElement("li");
+        const title = card.querySelector("h3").textContent;
+        item.textContent = card.dataset.priority + " - " + title + " (" + card.dataset.tags.replaceAll(" ", ", ") + ")";
+        selectedList.appendChild(item);
+      });
+    }
+
+    document.querySelectorAll("[data-backlog-toggle]").forEach((input) => {
+      input.addEventListener("change", updateBacklogSelection);
+    });
+
+    stage.addEventListener("mousemove", (event) => {
+      if (!enabledLayers().eyes) {
+        enemy.style.setProperty("--eye-x", "0px");
+        enemy.style.setProperty("--eye-y", "0px");
+        return;
+      }
+      const rect = stage.getBoundingClientRect();
+      const center = enemyCenter();
+      const x = Math.max(-4, Math.min(4, (event.clientX - rect.left - center.x) / 34));
+      const y = Math.max(-4, Math.min(4, (event.clientY - rect.top - center.y) / 34));
+      enemy.style.setProperty("--eye-x", x + "px");
+      enemy.style.setProperty("--eye-y", y + "px");
+    });
+
+    buildBoard();
+    renderIdeaPreviews();
+    updateBacklogSelection();
+    setTimeout(demoEnabledJuice, 450);
+  </script>
+</body>
+</html>

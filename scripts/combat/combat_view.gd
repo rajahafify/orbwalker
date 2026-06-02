@@ -12,6 +12,9 @@ signal settings_main_menu_pressed
 signal settings_speed_selected(speed: String)
 signal settings_quality_selected(quality: String)
 signal settings_reduced_motion_toggled
+signal settings_game_juice_toggled
+signal settings_game_juice_flag_toggled(flag_key: String)
+signal settings_defaults_reset
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
@@ -70,6 +73,8 @@ var _hud_snapshot_presenter: Variant = null
 var _character_visuals_presenter: Variant = null
 var _layout_enemy_panel_rect := ENEMY_PANEL_RECT
 var _layout_board_panel_rect := BOARD_PANEL_RECT
+var _enemy_reaction_enabled := false
+var _enemy_reaction_reduced_motion := false
 
 var _visuals: Variant = null
 var _player_loadout_hud: Variant = null
@@ -465,6 +470,22 @@ func stop_enemy_intent_hover_emphasis() -> void:
 		_enemy_intent_presenter.stop_hover_emphasis()
 
 
+func set_enemy_reaction_settings(enabled: bool, reduced_motion: bool) -> void:
+	_enemy_reaction_enabled = enabled
+	_enemy_reaction_reduced_motion = reduced_motion
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null and _enemy_stage_presenter.has_method("set_reaction_settings"):
+		_enemy_stage_presenter.set_reaction_settings(enabled, reduced_motion)
+
+
+func play_enemy_hit_reaction(intensity: int = 1) -> void:
+	if not _enemy_reaction_enabled or _enemy_reaction_reduced_motion:
+		return
+	_ensure_enemy_stage_presenter()
+	if _enemy_stage_presenter != null and _enemy_stage_presenter.has_method("play_hit_reaction"):
+		_enemy_stage_presenter.play_hit_reaction(intensity)
+
+
 func _ensure_tutorial_end_overlay_coordinator() -> void:
 	if _layout_root == null:
 		return
@@ -550,6 +571,9 @@ func _ensure_settings_overlay_coordinator() -> void:
 			"speed_selected": Callable(self, "_emit_settings_speed_selected"),
 			"quality_selected": Callable(self, "_emit_settings_quality_selected"),
 			"reduced_motion_toggled": Callable(self, "_emit_settings_reduced_motion_toggled"),
+			"game_juice_toggled": Callable(self, "_emit_settings_game_juice_toggled"),
+			"game_juice_flag_toggled": Callable(self, "_emit_settings_game_juice_flag_toggled"),
+			"reset_defaults": Callable(self, "_emit_settings_defaults_reset"),
 		}
 	)
 
@@ -576,6 +600,18 @@ func _emit_settings_quality_selected(quality: String) -> void:
 
 func _emit_settings_reduced_motion_toggled() -> void:
 	settings_reduced_motion_toggled.emit()
+
+
+func _emit_settings_game_juice_toggled() -> void:
+	settings_game_juice_toggled.emit()
+
+
+func _emit_settings_game_juice_flag_toggled(flag_key: String) -> void:
+	settings_game_juice_flag_toggled.emit(flag_key)
+
+
+func _emit_settings_defaults_reset() -> void:
+	settings_defaults_reset.emit()
 
 
 func _layout_enemy_block_intent_preview() -> void:
@@ -628,6 +664,8 @@ func _ensure_enemy_stage_presenter() -> void:
 		"enemy_label": _enemy_label,
 		"enemy_hp_text_label": _enemy_hp_text_label,
 	})
+	if _enemy_stage_presenter.has_method("set_reaction_settings"):
+		_enemy_stage_presenter.set_reaction_settings(_enemy_reaction_enabled, _enemy_reaction_reduced_motion)
 
 
 func _sync_enemy_stage_presenter_nodes() -> void:

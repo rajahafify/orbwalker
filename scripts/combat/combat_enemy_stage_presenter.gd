@@ -12,6 +12,12 @@ var _snapshot_nodes: Dictionary = {}
 var _backdrop: TextureRect = null
 var _ground_shadow: Panel = null
 var _text_scrim: ColorRect = null
+var _reaction_enabled := false
+var _reaction_reduced_motion := false
+var _attention_tween: Tween = null
+var _hit_tween: Tween = null
+var _base_portrait_position := Vector2.ZERO
+var _base_portrait_scale := Vector2.ONE
 
 
 func bind(enemy_stage: Control, enemy_portrait: TextureRect, visuals: Variant = null) -> void:
@@ -22,6 +28,38 @@ func bind(enemy_stage: Control, enemy_portrait: TextureRect, visuals: Variant = 
 
 func bind_snapshot_nodes(nodes: Dictionary) -> void:
 	_snapshot_nodes = nodes
+
+
+func set_reaction_settings(enabled: bool, reduced_motion: bool) -> void:
+	_reaction_enabled = enabled
+	_reaction_reduced_motion = reduced_motion
+	if not _reaction_enabled or _reaction_reduced_motion:
+		_stop_attention_motion()
+		_reset_reaction_visuals()
+		return
+	_start_attention_motion()
+
+
+func play_hit_reaction(intensity: int = 1) -> void:
+	if not _reaction_enabled or _reaction_reduced_motion:
+		return
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	if _hit_tween != null and is_instance_valid(_hit_tween):
+		_hit_tween.kill()
+	_stop_attention_motion()
+	_enemy_portrait.position = _base_portrait_position
+	_enemy_portrait.scale = _base_portrait_scale
+	var kick := clampf(6.0 + float(maxi(0, intensity)) * 1.8, 6.0, 22.0)
+	var punch := clampf(1.04 + float(maxi(0, intensity)) * 0.006, 1.04, 1.14)
+	_hit_tween = _enemy_portrait.create_tween()
+	_hit_tween.tween_property(_enemy_portrait, "position", _base_portrait_position + Vector2(kick, -kick * 0.28), 0.055).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_hit_tween.parallel().tween_property(_enemy_portrait, "scale", _base_portrait_scale * punch, 0.055).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_hit_tween.tween_property(_enemy_portrait, "position", _base_portrait_position, 0.12).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_hit_tween.parallel().tween_property(_enemy_portrait, "scale", _base_portrait_scale, 0.12).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_hit_tween.finished.connect(func() -> void:
+		_start_attention_motion()
+	)
 
 
 func ensure_nodes() -> void:
@@ -107,6 +145,8 @@ func apply_visual_profile(enemy_id: String, enemy_panel_rect: Rect2 = FALLBACK_P
 	_enemy_portrait.size = stage_size
 	_enemy_portrait.pivot_offset = stage_size * 0.5
 	_enemy_portrait.scale = Vector2(scale, scale)
+	_base_portrait_position = offset
+	_base_portrait_scale = Vector2(scale, scale)
 	_enemy_portrait.z_index = 2
 	if _backdrop != null and is_instance_valid(_backdrop):
 		_backdrop.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
@@ -135,6 +175,7 @@ func apply_snapshot(snapshot: Dictionary, current_enemy_visual_id: String = DEFA
 	_apply_enemy_portrait_texture(snapshot.get("enemy_portrait_texture", null), resolved_enemy_id)
 	apply_visual_profile(resolved_enemy_id, enemy_panel_rect)
 	_apply_enemy_stats(snapshot)
+	_apply_reaction_state(snapshot)
 	return {
 		"enemy_id": resolved_enemy_id,
 		"enemy_intent_preview": Dictionary(snapshot.get("enemy_intent_preview", {})),
@@ -246,6 +287,54 @@ func _apply_enemy_stats(snapshot: Dictionary) -> void:
 	var enemy_hp_text_label := _snapshot_nodes.get("enemy_hp_text_label") as Label
 	if enemy_hp_text_label != null:
 		enemy_hp_text_label.text = String(snapshot.get("enemy_hp_text", "HP 0 / 0"))
+
+
+func _apply_reaction_state(snapshot: Dictionary) -> void:
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	if not _reaction_enabled:
+		_reset_reaction_visuals()
+		return
+	var hp_max := maxf(1.0, float(snapshot.get("enemy_hp_max", 1)))
+	var hp_value := maxf(0.0, float(snapshot.get("enemy_hp_value", hp_max)))
+	var low_hp := hp_value > 0.0 and hp_value / hp_max <= 0.25
+	if low_hp:
+		_enemy_portrait.modulate = Color(0.78, 0.66, 0.66, 1.0)
+	elif _enemy_portrait.modulate != Color.WHITE:
+		_enemy_portrait.modulate = Color.WHITE
+	if _reaction_reduced_motion:
+		_stop_attention_motion()
+	else:
+		_start_attention_motion()
+
+
+func _start_attention_motion() -> void:
+	if not _reaction_enabled or _reaction_reduced_motion:
+		return
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	if _attention_tween != null and is_instance_valid(_attention_tween):
+		return
+	_attention_tween = _enemy_portrait.create_tween()
+	_attention_tween.set_loops(0)
+	_attention_tween.tween_property(_enemy_portrait, "position", _base_portrait_position + Vector2(0.0, -4.0), 0.74).set_trans(Tween.TRANS_SINE as Tween.TransitionType).set_ease(Tween.EASE_IN_OUT as Tween.EaseType)
+	_attention_tween.tween_property(_enemy_portrait, "position", _base_portrait_position, 0.74).set_trans(Tween.TRANS_SINE as Tween.TransitionType).set_ease(Tween.EASE_IN_OUT as Tween.EaseType)
+
+
+func _stop_attention_motion() -> void:
+	if _attention_tween != null and is_instance_valid(_attention_tween):
+		_attention_tween.kill()
+	_attention_tween = null
+	if _enemy_portrait != null and is_instance_valid(_enemy_portrait):
+		_enemy_portrait.position = _base_portrait_position
+
+
+func _reset_reaction_visuals() -> void:
+	if _enemy_portrait == null or not is_instance_valid(_enemy_portrait):
+		return
+	_enemy_portrait.modulate = Color.WHITE
+	_enemy_portrait.position = _base_portrait_position
+	_enemy_portrait.scale = _base_portrait_scale
 
 
 func _reparent_to_stage(node: Control) -> void:

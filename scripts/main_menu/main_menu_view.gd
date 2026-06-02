@@ -2,10 +2,15 @@ extends RefCounted
 class_name MainMenuView
 
 signal settings_speed_selected(speed: String)
+signal settings_reduced_motion_toggled
+signal settings_game_juice_toggled
+signal settings_game_juice_flag_toggled(flag_key: String)
+signal settings_defaults_reset
 signal settings_closed
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 const LOCALIZATION_BOOTSTRAP := preload("res://scripts/ui/localization_bootstrap.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const TEXT_KEYS := {
@@ -27,6 +32,11 @@ const TEXT_KEYS := {
 	"close": "MAIN_MENU_CLOSE",
 	"settings_title": "MAIN_MENU_SETTINGS_TITLE",
 	"settings_vfx_speed": "MAIN_MENU_SETTINGS_VFX_SPEED",
+	"settings_comfort": "MAIN_MENU_SETTINGS_COMFORT",
+	"settings_game_juice": "MAIN_MENU_SETTINGS_GAME_JUICE",
+	"settings_actions": "MAIN_MENU_SETTINGS_ACTIONS",
+	"settings_reduced_motion": "MAIN_MENU_SETTINGS_REDUCED_MOTION",
+	"settings_reset_defaults": "MAIN_MENU_SETTINGS_RESET_DEFAULTS",
 }
 const ELEMENT_LABEL_KEYS := [
 	"MAIN_MENU_ELEMENT_FIRE",
@@ -121,6 +131,10 @@ var _close_profile_button: Button
 var _settings_overlay: Control = null
 var _settings_panel: Panel = null
 var _settings_speed_buttons: Array[Button] = []
+var _settings_reduced_motion_button: Button = null
+var _settings_game_juice_button: Button = null
+var _settings_game_juice_flag_buttons: Dictionary = {}
+var _settings_reset_button: Button = null
 var _settings_close_button: Button = null
 var _element_icons: Array = []
 var _element_labels: Array = []
@@ -455,18 +469,22 @@ static func accessibility_audit_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -
 			_touch_target("footer_action_button", Vector2(footer_rect.size.x / 3.0, footer_rect.size.y)),
 			_touch_target("profile_action_button", Vector2(0.0, menu_button_height)),
 		],
-		"keyboard_focus_controls": [
-			"start_run_button",
-			"continue_button",
-			"tutorial_button",
-			"settings_button",
-			"profile_button",
-			"quit_button",
-			"settings_speed_buttons",
-			"settings_close_button",
-			"reset_profile_button",
-			"close_profile_button",
-		],
+	"keyboard_focus_controls": [
+		"start_run_button",
+		"continue_button",
+		"tutorial_button",
+		"settings_button",
+		"profile_button",
+		"quit_button",
+		"settings_speed_buttons",
+		"settings_reduced_motion_button",
+		"settings_game_juice_button",
+		"settings_game_juice_flag_buttons",
+		"settings_reset_button",
+		"settings_close_button",
+		"reset_profile_button",
+		"close_profile_button",
+	],
 	}
 
 
@@ -496,11 +514,15 @@ func set_continue_enabled(enabled: bool) -> void:
 	_apply_menu_button_style(_continue_button, false, not enabled)
 
 
-func show_settings(speed: String) -> void:
+func show_settings(settings: Variant) -> void:
 	if _settings_overlay == null:
 		return
 	_settings_overlay.visible = true
-	_update_settings_speed_buttons(speed)
+	var settings_dict := _settings_dictionary(settings)
+	_update_settings_speed_buttons(String(settings_dict.get("vfx_speed", "normal")))
+	_update_settings_reduced_motion_button(bool(settings_dict.get("reduced_motion", false)))
+	_update_settings_game_juice_button(bool(settings_dict.get("game_juice", false)))
+	_update_settings_game_juice_flag_buttons(Dictionary(settings_dict.get("game_juice_flags", GAME_JUICE_FLAGS_SCRIPT.default_flags())))
 
 
 func hide_settings() -> void:
@@ -581,6 +603,8 @@ func _ensure_settings_overlay(host: Control) -> void:
 	if _settings_overlay != null or host == null:
 		return
 	LOCALIZATION_BOOTSTRAP.ensure_loaded()
+	_settings_speed_buttons.clear()
+	_settings_game_juice_flag_buttons.clear()
 	_settings_overlay = Control.new()
 	_settings_overlay.name = "SettingsOverlay"
 	_settings_overlay.visible = false
@@ -602,7 +626,7 @@ func _ensure_settings_overlay(host: Control) -> void:
 
 	_settings_panel = Panel.new()
 	_settings_panel.name = "SettingsPanel"
-	_settings_panel.custom_minimum_size = Vector2(680.0, 650.0)
+	_settings_panel.custom_minimum_size = Vector2(820.0, 1180.0)
 	center.add_child(_settings_panel)
 
 	var box := VBoxContainer.new()
@@ -612,7 +636,7 @@ func _ensure_settings_overlay(host: Control) -> void:
 	box.offset_top = 36.0
 	box.offset_right = -42.0
 	box.offset_bottom = -36.0
-	box.add_theme_constant_override("separation", 14)
+	box.add_theme_constant_override("separation", 12)
 	_settings_panel.add_child(box)
 
 	var title := Label.new()
@@ -622,33 +646,77 @@ func _ensure_settings_overlay(host: Control) -> void:
 	title.add_theme_font_size_override("font_size", 42)
 	box.add_child(title)
 
-	var speed_label := Label.new()
-	speed_label.name = "SettingsSpeedLabel"
-	speed_label.text = _text("settings_vfx_speed")
-	speed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	speed_label.add_theme_font_size_override("font_size", 26)
-	box.add_child(speed_label)
+	var scroll := ScrollContainer.new()
+	scroll.name = "SettingsScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED as ScrollContainer.ScrollMode
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0.0, 820.0)
+	box.add_child(scroll)
+
+	var content := VBoxContainer.new()
+	content.name = "SettingsContent"
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 12)
+	scroll.add_child(content)
+
+	content.add_child(_settings_section_label(_text("settings_vfx_speed"), "SettingsSpeedLabel"))
 
 	for speed in SPEED_ORDER:
 		var button := Button.new()
 		button.name = "Speed%sButton" % speed.capitalize()
 		button.text = _speed_label(speed)
 		button.set_meta("speed", speed)
-		button.custom_minimum_size = Vector2(0.0, 62.0)
+		button.custom_minimum_size = Vector2(0.0, 58.0)
 		button.pressed.connect(func() -> void: settings_speed_selected.emit(speed))
 		_settings_speed_buttons.append(button)
-		box.add_child(button)
+		content.add_child(button)
 
-	var gap := Control.new()
-	gap.custom_minimum_size = Vector2(0.0, 18.0)
-	box.add_child(gap)
+	content.add_child(_settings_section_label(_text("settings_comfort"), "SettingsComfortLabel"))
+	_settings_reduced_motion_button = Button.new()
+	_settings_reduced_motion_button.name = "SettingsReducedMotionButton"
+	_settings_reduced_motion_button.custom_minimum_size = Vector2(0.0, 58.0)
+	_settings_reduced_motion_button.pressed.connect(func() -> void: settings_reduced_motion_toggled.emit())
+	content.add_child(_settings_row_container(_settings_reduced_motion_button, ""))
+
+	var juice_label := _settings_section_label(_text("settings_game_juice"), "SettingsGameJuiceLabel")
+	content.add_child(juice_label)
+
+	_settings_game_juice_button = Button.new()
+	_settings_game_juice_button.name = "SettingsGameJuiceButton"
+	_settings_game_juice_button.custom_minimum_size = Vector2(0.0, 58.0)
+	_settings_game_juice_button.pressed.connect(func() -> void: settings_game_juice_toggled.emit())
+	content.add_child(_settings_row_container(_settings_game_juice_button, tr("SETTINGS_JUICE_MASTER_DESC")))
+
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		var flag_button := Button.new()
+		flag_button.name = _settings_flag_button_name(flag_key)
+		flag_button.custom_minimum_size = Vector2(0.0, 58.0)
+		var captured_flag_key := flag_key
+		flag_button.pressed.connect(func() -> void: settings_game_juice_flag_toggled.emit(captured_flag_key))
+		_settings_game_juice_flag_buttons[flag_key] = flag_button
+		content.add_child(_settings_row_container(flag_button, _juice_flag_description(flag_key)))
+
+	content.add_child(_settings_section_label(_text("settings_actions"), "SettingsActionsLabel"))
+	var actions := HBoxContainer.new()
+	actions.name = "SettingsActions"
+	actions.add_theme_constant_override("separation", 14)
+	box.add_child(actions)
+
+	_settings_reset_button = Button.new()
+	_settings_reset_button.name = "SettingsResetDefaultsButton"
+	_settings_reset_button.text = _text("settings_reset_defaults").to_upper()
+	_settings_reset_button.custom_minimum_size = Vector2(0.0, 62.0)
+	_settings_reset_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_settings_reset_button.pressed.connect(func() -> void: settings_defaults_reset.emit())
+	actions.add_child(_settings_reset_button)
 
 	_settings_close_button = Button.new()
 	_settings_close_button.name = "SettingsCloseButton"
 	_settings_close_button.text = _text("close")
 	_settings_close_button.custom_minimum_size = Vector2(0.0, 62.0)
+	_settings_close_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_settings_close_button.pressed.connect(func() -> void: settings_closed.emit())
-	box.add_child(_settings_close_button)
+	actions.add_child(_settings_close_button)
 	_apply_settings_overlay_style()
 
 
@@ -657,10 +725,56 @@ func _apply_settings_overlay_style() -> void:
 		_settings_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(SETTINGS_PANEL_FILL_COLOR, SETTINGS_PANEL_BORDER_COLOR, 2, 8, Vector4(32, 28, 32, 28)))
 	for button in _settings_speed_buttons:
 		_apply_menu_button_style(button, false, false)
-		button.add_theme_font_size_override("font_size", 24)
+		button.add_theme_font_size_override("font_size", 22)
+	if _settings_reduced_motion_button != null:
+		_apply_menu_button_style(_settings_reduced_motion_button, false, false)
+		_settings_reduced_motion_button.add_theme_font_size_override("font_size", 22)
+	if _settings_game_juice_button != null:
+		_apply_menu_button_style(_settings_game_juice_button, false, false)
+		_settings_game_juice_button.add_theme_font_size_override("font_size", 22)
+	for button in _settings_game_juice_flag_buttons.values():
+		var flag_button := button as Button
+		if flag_button == null:
+			continue
+		_apply_menu_button_style(flag_button, false, false)
+		flag_button.add_theme_font_size_override("font_size", 20)
+	if _settings_reset_button != null:
+		_apply_menu_button_style(_settings_reset_button, false, false)
+		_settings_reset_button.add_theme_font_size_override("font_size", 22)
 	if _settings_close_button != null:
 		_apply_menu_button_style(_settings_close_button, false, false)
-		_settings_close_button.add_theme_font_size_override("font_size", 24)
+		_settings_close_button.add_theme_font_size_override("font_size", 22)
+
+
+func _settings_section_label(text: String, node_name: String = "") -> Label:
+	var label := Label.new()
+	if node_name != "":
+		label.name = node_name
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 25)
+	label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.32, 1.0))
+	label.add_theme_color_override("font_outline_color", Color(0.04, 0.04, 0.06, 0.96))
+	label.add_theme_constant_override("outline_size", 2)
+	return label
+
+
+func _settings_row_container(button: Button, description: String) -> VBoxContainer:
+	var row := VBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_theme_constant_override("separation", 4)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(button)
+	if description.strip_edges() != "":
+		var description_label := Label.new()
+		description_label.text = description
+		description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+		description_label.add_theme_font_size_override("font_size", 16)
+		description_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.88, 0.94))
+		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 0.92))
+		description_label.add_theme_constant_override("outline_size", 1)
+		row.add_child(description_label)
+	return row
 
 
 func _update_settings_speed_buttons(speed: String) -> void:
@@ -672,12 +786,64 @@ func _update_settings_speed_buttons(speed: String) -> void:
 		button.text = ("%s  *" % label) if selected else label
 
 
+func _update_settings_reduced_motion_button(enabled: bool) -> void:
+	if _settings_reduced_motion_button == null:
+		return
+	_settings_reduced_motion_button.text = "%s: %s" % [_text("settings_reduced_motion").to_upper(), _on_off_label(enabled)]
+
+
+func _update_settings_game_juice_button(enabled: bool) -> void:
+	if _settings_game_juice_button == null:
+		return
+	var label := tr("SETTINGS_JUICE_MASTER").to_upper()
+	_settings_game_juice_button.text = "%s: %s" % [label, _on_off_label(enabled)]
+
+
+func _update_settings_game_juice_flag_buttons(flags: Dictionary) -> void:
+	var normalized_flags := GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		var button := _settings_game_juice_flag_buttons.get(flag_key, null) as Button
+		if button == null:
+			continue
+		button.text = "%s: %s" % [_juice_flag_label(flag_key).to_upper(), _on_off_label(bool(normalized_flags.get(flag_key, true)))]
+
+
+func _settings_dictionary(settings: Variant) -> Dictionary:
+	if settings is Dictionary:
+		return (settings as Dictionary).duplicate()
+	return {
+		"vfx_speed": String(settings),
+		"reduced_motion": false,
+		"game_juice": false,
+		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
+	}
+
+
 func _text(key_name: String) -> String:
 	return tr(String(TEXT_KEYS.get(key_name, key_name)))
 
 
 func _speed_label(speed: String) -> String:
 	return tr(String(SPEED_LABEL_KEYS.get(speed, speed))).to_upper()
+
+
+func _on_off_label(enabled: bool) -> String:
+	return "ON" if enabled else "OFF"
+
+
+func _juice_flag_label(flag_key: String) -> String:
+	return tr(GAME_JUICE_FLAGS_SCRIPT.label_key(flag_key))
+
+
+func _juice_flag_description(flag_key: String) -> String:
+	return tr(GAME_JUICE_FLAGS_SCRIPT.description_key(flag_key))
+
+
+func _settings_flag_button_name(flag_key: String) -> String:
+	var output := "JuiceFlag"
+	for part in flag_key.split("_", false):
+		output += String(part).capitalize()
+	return "%sButton" % output
 
 
 static func localization_keys() -> Array[String]:
@@ -692,6 +858,11 @@ static func localization_keys() -> Array[String]:
 		keys.append(String(value))
 	for value in SPEED_LABEL_KEYS.values():
 		keys.append(String(value))
+	keys.append("SETTINGS_JUICE_MASTER")
+	keys.append("SETTINGS_JUICE_MASTER_DESC")
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		keys.append(GAME_JUICE_FLAGS_SCRIPT.label_key(flag_key))
+		keys.append(GAME_JUICE_FLAGS_SCRIPT.description_key(flag_key))
 	keys.sort()
 	return keys
 

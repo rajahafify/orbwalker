@@ -4,6 +4,7 @@ class_name MainMenuController
 const AudioStreamLoader = preload("res://scripts/core/audio_stream_loader.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 const MAIN_MENU_MUSIC_PATH := "res://resources/audio/music/main-menu.wav"
 const MAIN_MENU_MUSIC_VOLUME_DB := -12.0
@@ -33,6 +34,14 @@ func ready() -> void:
 	_view.configure_ui_nodes(_host)
 	if not _view.settings_speed_selected.is_connected(_on_settings_speed_selected):
 		_view.settings_speed_selected.connect(_on_settings_speed_selected)
+	if not _view.settings_reduced_motion_toggled.is_connected(_on_settings_reduced_motion_toggled):
+		_view.settings_reduced_motion_toggled.connect(_on_settings_reduced_motion_toggled)
+	if not _view.settings_game_juice_toggled.is_connected(_on_settings_game_juice_toggled):
+		_view.settings_game_juice_toggled.connect(_on_settings_game_juice_toggled)
+	if not _view.settings_game_juice_flag_toggled.is_connected(_on_settings_game_juice_flag_toggled):
+		_view.settings_game_juice_flag_toggled.connect(_on_settings_game_juice_flag_toggled)
+	if not _view.settings_defaults_reset.is_connected(_on_settings_defaults_reset):
+		_view.settings_defaults_reset.connect(_on_settings_defaults_reset)
 	if not _view.settings_closed.is_connected(_on_settings_closed):
 		_view.settings_closed.connect(_on_settings_closed)
 	_model.load_menu_assets()
@@ -226,13 +235,41 @@ func _on_continue_post_ready_rollback(result: Dictionary) -> void:
 func _on_settings_button_pressed() -> void:
 	_audio_play_sfx("ui_accept")
 	RunState.load_user_settings()
-	_view.show_settings(RunState.vfx_speed())
+	_view.show_settings(RunState.combat_feedback_settings())
 
 
 func _on_settings_speed_selected(speed: String) -> void:
 	RunState.set_vfx_speed(speed)
-	_view.show_settings(RunState.vfx_speed())
+	_view.show_settings(RunState.combat_feedback_settings())
 	_view.show_status("VFX speed: %s." % RunState.vfx_speed().capitalize())
+
+
+func _on_settings_reduced_motion_toggled() -> void:
+	RunState.set_reduced_motion_enabled(not RunState.reduced_motion_enabled())
+	_view.show_settings(RunState.combat_feedback_settings())
+	_view.show_status("Reduced motion: %s." % ("On" if RunState.reduced_motion_enabled() else "Off"))
+
+
+func _on_settings_game_juice_toggled() -> void:
+	RunState.set_game_juice_enabled(not RunState.game_juice_enabled())
+	_view.show_settings(RunState.combat_feedback_settings())
+	_view.show_status("Game juice: %s." % ("On" if RunState.game_juice_enabled() else "Off"))
+
+
+func _on_settings_game_juice_flag_toggled(flag_key: String) -> void:
+	if not GAME_JUICE_FLAGS_SCRIPT.is_valid_key(flag_key):
+		return
+	var flags := RunState.game_juice_flags()
+	var next_enabled := not bool(flags.get(flag_key, true))
+	RunState.set_game_juice_flag_enabled(flag_key, next_enabled)
+	_view.show_settings(RunState.combat_feedback_settings())
+	_view.show_status("%s: %s." % [tr(GAME_JUICE_FLAGS_SCRIPT.label_key(flag_key)), "On" if next_enabled else "Off"])
+
+
+func _on_settings_defaults_reset() -> void:
+	RunState.reset_combat_feedback_settings()
+	_view.show_settings(RunState.combat_feedback_settings())
+	_view.show_status("Combat feedback settings reset.")
 
 
 func _on_settings_closed() -> void:

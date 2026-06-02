@@ -18,6 +18,7 @@ const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
 const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
 const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repository.gd")
 const BALANCE_MANAGER_SCRIPT := preload("res://scripts/core/balance_manager.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 const RUN_LOG_EXPORT_DIR := "res://logs"
 const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
 const USER_SETTINGS_SECTION := "run_log"
@@ -26,6 +27,7 @@ const USER_SETTINGS_GAMEPLAY_SECTION := "gameplay"
 const USER_SETTINGS_VFX_SPEED_KEY := "vfx_speed"
 const USER_SETTINGS_COMBAT_VFX_QUALITY_KEY := "combat_vfx_quality"
 const USER_SETTINGS_REDUCED_MOTION_KEY := "reduced_motion"
+const USER_SETTINGS_GAME_JUICE_KEY := "game_juice"
 const VFX_SPEED_SLOW := "slow"
 const VFX_SPEED_NORMAL := "normal"
 const VFX_SPEED_FAST := "fast"
@@ -86,6 +88,8 @@ var _balance_manager
 var _vfx_speed := VFX_SPEED_NORMAL
 var _combat_vfx_quality := COMBAT_VFX_QUALITY_LOW
 var _reduced_motion := false
+var _game_juice_enabled := false
+var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 
 var _normal_encounters_by_level := {
 	1: [
@@ -1191,6 +1195,11 @@ func load_user_settings() -> void:
 		_vfx_speed = _normalized_vfx_speed(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)))
 		_combat_vfx_quality = _normalized_combat_vfx_quality(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality)))
 		_reduced_motion = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion))
+		_game_juice_enabled = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_GAME_JUICE_KEY, _game_juice_enabled))
+		var loaded_flags := {}
+		for key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+			loaded_flags[key] = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, key, true))
+		_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.normalized_flags(loaded_flags)
 
 
 func vfx_speed() -> String:
@@ -1220,11 +1229,46 @@ func set_reduced_motion_enabled(enabled: bool) -> void:
 	_save_user_settings()
 
 
+func game_juice_enabled() -> bool:
+	return _game_juice_enabled
+
+
+func set_game_juice_enabled(enabled: bool) -> void:
+	_game_juice_enabled = enabled
+	_save_user_settings()
+
+
+func game_juice_flags() -> Dictionary:
+	return _game_juice_flags.duplicate()
+
+
+func game_juice_flag_enabled(flag_key: String) -> bool:
+	return _game_juice_enabled and bool(_game_juice_flags.get(flag_key, false))
+
+
+func set_game_juice_flag_enabled(flag_key: String, enabled: bool) -> void:
+	if not GAME_JUICE_FLAGS_SCRIPT.is_valid_key(flag_key):
+		return
+	_game_juice_flags[flag_key] = enabled
+	_save_user_settings()
+
+
+func reset_combat_feedback_settings() -> void:
+	_vfx_speed = VFX_SPEED_NORMAL
+	_combat_vfx_quality = COMBAT_VFX_QUALITY_LOW
+	_reduced_motion = false
+	_game_juice_enabled = false
+	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.default_flags()
+	_save_user_settings()
+
+
 func combat_feedback_settings() -> Dictionary:
 	return {
 		"vfx_speed": _vfx_speed,
 		"combat_vfx_quality": _combat_vfx_quality,
 		"reduced_motion": _reduced_motion,
+		"game_juice": _game_juice_enabled,
+		"game_juice_flags": _game_juice_flags.duplicate(),
 	}
 
 
@@ -1235,6 +1279,9 @@ func _save_user_settings() -> void:
 	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)
 	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality)
 	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion)
+	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_GAME_JUICE_KEY, _game_juice_enabled)
+	for key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, key, bool(_game_juice_flags.get(key, true)))
 	var error := config.save(USER_SETTINGS_PATH)
 	if error != OK:
 		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])

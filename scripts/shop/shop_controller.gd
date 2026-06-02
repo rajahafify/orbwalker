@@ -5,6 +5,7 @@ const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const SHOP_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/shop/shop_transition_handler.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 var _host: Control
 var _model
@@ -155,6 +156,8 @@ func _buy_offer_at(index: int) -> void:
 	else:
 		_set_status(_result_message("Buy %s" % String(offer.get("display_name", "offer")), result), bool(result.get("ok", false)))
 	_refresh_ui()
+	if bool(result.get("ok", false)) and _shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
+		_view.play_purchase_feedback("offer", index)
 
 
 func _buy_relic_offer() -> void:
@@ -172,6 +175,8 @@ func _buy_relic_offer() -> void:
 	_play_shop_result_sfx(result, "purchase")
 	_set_status(_result_message("Buy %s" % String(relic_offer.get("display_name", "relic")), result), bool(result.get("ok", false)))
 	_refresh_ui()
+	if bool(result.get("ok", false)) and _shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
+		_view.play_purchase_feedback("relic", -1)
 
 
 func _on_reroll_pressed() -> void:
@@ -368,7 +373,21 @@ func _result_message(action: String, result: Dictionary) -> String:
 
 
 func _play_shop_result_sfx(result: Dictionary, success_key: String) -> void:
-	_audio_play_sfx(success_key if bool(result.get("ok", false)) else "error")
+	if not bool(result.get("ok", false)):
+		_audio_play_sfx("error")
+		return
+	if success_key == "purchase" and _shop_feedback_enabled():
+		_audio_play_sfx("purchase_juice")
+		return
+	_audio_play_sfx(success_key)
+
+
+func _shop_feedback_enabled() -> bool:
+	return RunState.game_juice_flag_enabled(GAME_JUICE_FLAGS_SCRIPT.SHOP_CHOICE_FEEDBACK)
+
+
+func _shop_feedback_motion_enabled() -> bool:
+	return _shop_feedback_enabled() and not RunState.reduced_motion_enabled()
 
 
 func _audio_play_music(key: String) -> void:
