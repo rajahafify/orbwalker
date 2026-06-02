@@ -489,6 +489,8 @@ func _connect_view_signals() -> void:
 	_view.settings_new_run_pressed.connect(_on_settings_new_run_pressed)
 	_view.settings_main_menu_pressed.connect(_on_settings_main_menu_pressed)
 	_view.settings_speed_selected.connect(_on_settings_speed_selected)
+	_view.settings_quality_selected.connect(_on_settings_quality_selected)
+	_view.settings_reduced_motion_toggled.connect(_on_settings_reduced_motion_toggled)
 
 
 func _exit_tree() -> void:
@@ -521,7 +523,7 @@ func _bind_combat_vfx_presenter() -> void:
 	var view_bindings: Variant = _view.vfx_presenter_bindings(_visuals, _player_loadout_hud, _host)
 	if view_bindings is Dictionary:
 		_combat_vfx_presenter.bind(view_bindings)
-		_apply_vfx_speed_setting()
+		_apply_feedback_settings()
 
 
 func _bind_board_controller() -> void:
@@ -755,6 +757,16 @@ func _on_settings_main_menu_pressed() -> void:
 func _on_settings_speed_selected(speed: String) -> void:
 	_bind_settings_command_handler()
 	_settings_command_handler.select_speed(speed)
+
+
+func _on_settings_quality_selected(quality: String) -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.select_quality(quality)
+
+
+func _on_settings_reduced_motion_toggled() -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.toggle_reduced_motion()
 
 
 func _on_tutorial_end_continue_pressed() -> void:
@@ -1212,6 +1224,14 @@ func _play_mastery_effect_sfx(effect_kind: String) -> void:
 	_combat_audio_cue_player.play_mastery_effect(effect_kind)
 
 
+func _play_enemy_attack_result_sfx(result: Dictionary) -> void:
+	_bind_audio_cue_player()
+	if _combat_audio_cue_player.has_method("play_enemy_attack_result"):
+		_combat_audio_cue_player.play_enemy_attack_result(result)
+	else:
+		_combat_audio_cue_player.play_turn_result({"enemy_attack_resolution": result})
+
+
 func _audio_play_music(key: String) -> void:
 	_bind_audio_cue_player()
 	_combat_audio_cue_player.play_music(key)
@@ -1390,6 +1410,17 @@ func _apply_vfx_speed_setting() -> void:
 			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.55)
 
 
+func _apply_feedback_settings() -> void:
+	_apply_vfx_speed_setting()
+	if _combat_vfx_presenter != null:
+		if _combat_vfx_presenter.has_method("set_post_match_vfx_quality"):
+			_combat_vfx_presenter.set_post_match_vfx_quality(RunState.combat_vfx_quality())
+		if _combat_vfx_presenter.has_method("set_reduced_motion_enabled"):
+			_combat_vfx_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
+	if _resolve_presenter != null and _resolve_presenter.has_method("set_reduced_motion_enabled"):
+		_resolve_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
+
+
 func _timer_ready_seconds() -> float:
 	if _combat_timer_service == null:
 		return COMBAT_TIMER_SERVICE_SCRIPT.MOVE_TIMER_MAX_SECONDS
@@ -1440,7 +1471,10 @@ func _on_resolve_presenter_pass_index(pass_index: int) -> void:
 
 
 func _on_presenter_combo_sound() -> void:
-	_audio_play_sfx("combo")
+	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("play_match_clear"):
+		_combat_audio_cue_player.play_match_clear(2)
+	else:
+		_audio_play_sfx("combo")
 
 
 func _combat_speed_duration(base_seconds: float) -> float:
@@ -1464,7 +1498,9 @@ func _wait_combat_speed(base_seconds: float) -> void:
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	_bind_mastery_preview_coordinator()
+	var preview_amount := _preview_match_feedback_value(group, combo_value)
 	_mastery_preview_coordinator.show_match_feedback(group, combo_value)
+	_spawn_match_mastery_fill_stream(group, preview_amount)
 
 
 func _reset_combat_mastery_preview() -> void:
@@ -1493,6 +1529,41 @@ func _release_remaining_combat_mastery_feedback() -> void:
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
 	_bind_mastery_preview_coordinator()
 	return int(_mastery_preview_coordinator.preview_match_feedback_value(group, combo_value))
+
+
+func _spawn_match_mastery_fill_stream(group: Dictionary, preview_amount: int) -> void:
+	if preview_amount <= 0 or _combat_vfx_presenter == null:
+		return
+	if _board_view == null or not is_instance_valid(_board_view):
+		return
+	var orb_id := int(group.get("orb_id", -1))
+	if not OrbType.is_valid_id(orb_id):
+		return
+	var source_global := _match_group_global_center(group)
+	if source_global == Vector2.ZERO:
+		return
+	var fill_lifetime := _combat_speed_duration(0.46)
+	_combat_vfx_presenter.spawn_mastery_fill_stream(orb_id, source_global, preview_amount, fill_lifetime)
+
+
+func _match_group_global_center(group: Dictionary) -> Vector2:
+	if _board_view == null or not is_instance_valid(_board_view):
+		return Vector2.ZERO
+	var cells: Array = group.get("cells", [])
+	if cells.is_empty():
+		return Vector2.ZERO
+	var local_sum := Vector2.ZERO
+	var valid_count := 0
+	for raw_cell in cells:
+		var cell: Vector2i = raw_cell
+		if not _board_view.is_cell_valid(cell):
+			continue
+		local_sum += _board_view.get_cell_center(cell)
+		valid_count += 1
+	if valid_count <= 0:
+		return Vector2.ZERO
+	var local_center := local_sum / float(valid_count)
+	return _board_view.get_global_transform_with_canvas() * local_center
 
 
 func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
@@ -1700,8 +1771,11 @@ func _replay_elemental_damage_result(
 		var impact_kind := _mastery_impact_kind(orb_id)
 		var resolved_impact_size := _enemy_result_impact_size(orb_id, enemy_impact_size, damage_amount, vfx_presenter)
 		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
+		vfx_presenter.screen_nudge(damage_amount, enemy_target)
 		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
 	_play_mastery_effect_sfx("damage")
+	if vfx_presenter != null:
+		await vfx_presenter.hit_stop(0.04)
 	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
 	if not _can_continue_after_async_wait():
 		return false
@@ -2091,9 +2165,13 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	if blocked_by_armor > 0:
 		if vfx_presenter != null:
 			vfx_presenter.spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
+			vfx_presenter.screen_nudge(blocked_by_armor, player_impact_target)
 		var block_text := "-%d Damage Blocked" % blocked_by_armor
 		if vfx_presenter != null:
 			vfx_presenter.spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
+		_play_enemy_attack_result_sfx({"blocked_by_armor": blocked_by_armor, "hp_damage": 0})
+		if vfx_presenter != null:
+			await vfx_presenter.hit_stop(0.035)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return
@@ -2104,7 +2182,11 @@ func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vec
 	if hp_damage > 0:
 		if vfx_presenter != null:
 			vfx_presenter.spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
+			vfx_presenter.screen_nudge(hp_damage + 2, player_impact_target)
 			vfx_presenter.spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
+		_play_enemy_attack_result_sfx({"blocked_by_armor": 0, "hp_damage": hp_damage})
+		if vfx_presenter != null:
+			await vfx_presenter.hit_stop(0.045)
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():
 			return

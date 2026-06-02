@@ -10,6 +10,8 @@ signal settings_continue_pressed
 signal settings_new_run_pressed
 signal settings_main_menu_pressed
 signal settings_speed_selected(speed: String)
+signal settings_quality_selected(quality: String)
+signal settings_reduced_motion_toggled
 
 const COMBAT_LAYOUT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
 const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
@@ -138,10 +140,10 @@ func set_debug_overlay_visible(visible: bool) -> void:
 	_surface_presenter.set_debug_overlay_visible(visible)
 
 
-func show_settings_overlay(speed: String) -> void:
+func show_settings_overlay(settings: Variant) -> void:
 	_ensure_settings_overlay_coordinator()
 	if _settings_overlay_coordinator != null:
-		_settings_overlay_coordinator.show(speed)
+		_settings_overlay_coordinator.show(settings)
 
 
 func hide_settings_overlay() -> void:
@@ -224,6 +226,7 @@ func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Varian
 		"player_loadout_hud": resolved_player_loadout_hud,
 		"elemental_mastery_cards": _elemental_mastery_cards,
 		"timer_owner": timer_owner,
+		"shake_target": _layout_root,
 	}
 
 
@@ -545,6 +548,8 @@ func _ensure_settings_overlay_coordinator() -> void:
 			"new_run": Callable(self, "_emit_settings_new_run_pressed"),
 			"main_menu": Callable(self, "_emit_settings_main_menu_pressed"),
 			"speed_selected": Callable(self, "_emit_settings_speed_selected"),
+			"quality_selected": Callable(self, "_emit_settings_quality_selected"),
+			"reduced_motion_toggled": Callable(self, "_emit_settings_reduced_motion_toggled"),
 		}
 	)
 
@@ -563,6 +568,14 @@ func _emit_settings_main_menu_pressed() -> void:
 
 func _emit_settings_speed_selected(speed: String) -> void:
 	settings_speed_selected.emit(speed)
+
+
+func _emit_settings_quality_selected(quality: String) -> void:
+	settings_quality_selected.emit(quality)
+
+
+func _emit_settings_reduced_motion_toggled() -> void:
+	settings_reduced_motion_toggled.emit()
 
 
 func _layout_enemy_block_intent_preview() -> void:

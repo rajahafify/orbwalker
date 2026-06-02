@@ -6,6 +6,13 @@ const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
 
+class FakeMasteryHud:
+	extends RefCounted
+
+	func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
+		return row.get_node_or_null("CombatMasteryCard%d" % orb_id) as Control
+
+
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("combat_speed_accepts_modes_and_defaults_invalid", _test_combat_speed_accepts_modes_and_defaults_invalid, failures)
@@ -21,12 +28,15 @@ func run_all() -> Dictionary:
 	_run_case("combat_vfx_presenter_quality_switches_max_and_low_modes", _test_combat_vfx_presenter_quality_switches_max_and_low_modes, failures)
 	_run_case("post_match_vfx_runtime_primitives_are_capped", _test_post_match_vfx_runtime_primitives_are_capped, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
+	_run_case("post_match_vfx_second_tier_is_lowest", _test_post_match_vfx_second_tier_is_lowest, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
+	_run_case("mastery_fill_stream_spawns_runtime_stream_and_impact", _test_mastery_fill_stream_spawns_runtime_stream_and_impact, failures)
+	_run_case("mastery_fill_stream_reduced_motion_uses_static_pulse", _test_mastery_fill_stream_reduced_motion_uses_static_pulse, failures)
 	_run_case("board_lock_visual_state_captures_pointer_input", _test_board_lock_visual_state_captures_pointer_input, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 15,
+		"total": 18,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -317,6 +327,20 @@ func _test_post_match_vfx_speed_scale_slows_lifetime() -> String:
 	return ""
 
 
+func _test_post_match_vfx_second_tier_is_lowest() -> String:
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	var small := presenter.replay_result_impact_profile("fire", 1, Vector2(100, 100), 1.0)
+	var medium := presenter.replay_result_impact_profile("fire", 6, Vector2(100, 100), 1.0)
+	var high := presenter.replay_result_impact_profile("fire", 10, Vector2(100, 100), 1.0)
+	if not is_equal_approx(float(small.get("draw_size", Vector2.ZERO).x), 185.0):
+		return "Expected small positive results to use the pumped first-tier size scale."
+	if not is_equal_approx(float(medium.get("draw_size", Vector2.ZERO).x), 185.0):
+		return "Expected medium-threshold results to remain at the new first tier."
+	if not is_equal_approx(float(high.get("draw_size", Vector2.ZERO).x), 225.0):
+		return "Expected old third tier to become the pumped second tier."
+	return ""
+
+
 func _test_post_match_vfx_top_tier_becomes_screen_wide() -> String:
 	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if presenter.replay_result_is_screen_wide("fire", 15):
@@ -327,6 +351,40 @@ func _test_post_match_vfx_top_tier_becomes_screen_wide() -> String:
 		return "Expected Gold 10 to become screen-wide."
 	if presenter.replay_result_is_screen_wide("heart", 3):
 		return "Expected small Heart healing to stay local."
+	return ""
+
+
+func _test_mastery_fill_stream_spawns_runtime_stream_and_impact() -> String:
+	var fixture := _vfx_fixture(false)
+	var presenter: Variant = fixture["presenter"]
+	var layer: Control = fixture["layer"]
+	presenter.spawn_mastery_fill_stream(OrbType.Id.FIRE, Vector2(120, 420), 18, 0.34)
+	var ray_count := _count_children_named(layer, "MasteryFillStreamRay")
+	var spark_count := _count_children_named(layer, "MasteryFillSpark")
+	var impact_count := _count_children_named(layer, "MasteryFillImpactRing")
+	_cleanup_vfx_fixture(fixture)
+	if ray_count < 2:
+		return "Expected mastery fill stream to spawn multiple traveling rays."
+	if spark_count <= 0:
+		return "Expected mastery fill stream to spawn traveling sparks."
+	if impact_count != 1:
+		return "Expected mastery fill stream to spawn a mastery card impact ring."
+	return ""
+
+
+func _test_mastery_fill_stream_reduced_motion_uses_static_pulse() -> String:
+	var fixture := _vfx_fixture(true)
+	var presenter: Variant = fixture["presenter"]
+	var layer: Control = fixture["layer"]
+	presenter.spawn_mastery_fill_stream(OrbType.Id.ICE, Vector2(120, 420), 18, 0.34)
+	var ray_count := _count_children_named(layer, "MasteryFillStreamRay")
+	var spark_count := _count_children_named(layer, "MasteryFillSpark")
+	var reduced_impact_count := _count_children_named(layer, "MasteryFillReducedImpactRing")
+	_cleanup_vfx_fixture(fixture)
+	if ray_count != 0 or spark_count != 0:
+		return "Expected reduced motion mastery fill to skip traveling stream rays and sparks."
+	if reduced_impact_count != 1:
+		return "Expected reduced motion mastery fill to use a compact card pulse."
 	return ""
 
 
@@ -354,3 +412,69 @@ func _test_board_lock_visual_state_captures_pointer_input() -> String:
 	if not board_view.is_input_enabled():
 		return "Expected board view input state to unlock."
 	return ""
+
+
+func _vfx_fixture(reduced_motion: bool) -> Dictionary:
+	var tree := Engine.get_main_loop() as SceneTree
+	var root := Control.new()
+	root.name = "CombatVfxPresenterTestRoot"
+	root.size = Vector2(1080, 1920)
+	tree.root.add_child(root)
+
+	var layer := Control.new()
+	layer.name = "VfxLayer"
+	layer.size = root.size
+	root.add_child(layer)
+
+	var mastery_cards := Control.new()
+	mastery_cards.name = "MasteryCards"
+	mastery_cards.size = Vector2(420, 96)
+	mastery_cards.position = Vector2(330, 120)
+	root.add_child(mastery_cards)
+
+	for orb_id in OrbType.ALL_TYPES:
+		var card := Control.new()
+		card.name = "CombatMasteryCard%d" % int(orb_id)
+		card.size = Vector2(56, 56)
+		card.position = Vector2(float(int(orb_id)) * 62.0, 0.0)
+		var panel := Control.new()
+		panel.name = "CardPanel"
+		panel.size = card.size
+		var icon := Control.new()
+		icon.name = "MasteryIcon"
+		icon.size = Vector2(34, 34)
+		icon.position = Vector2(11, 11)
+		panel.add_child(icon)
+		card.add_child(panel)
+		mastery_cards.add_child(card)
+
+	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
+	presenter.bind({
+		"vfx_layer": layer,
+		"player_loadout_hud": FakeMasteryHud.new(),
+		"elemental_mastery_cards": mastery_cards,
+		"timer_owner": root,
+		"post_match_vfx_quality": "low",
+		"reduced_motion": reduced_motion,
+	})
+	return {
+		"root": root,
+		"layer": layer,
+		"presenter": presenter,
+	}
+
+
+func _cleanup_vfx_fixture(fixture: Dictionary) -> void:
+	var root := fixture.get("root") as Node
+	if root != null and is_instance_valid(root):
+		root.queue_free()
+
+
+func _count_children_named(parent: Node, node_name: String) -> int:
+	if parent == null:
+		return 0
+	var count := 0
+	for child in parent.get_children():
+		if child.name == node_name:
+			count += 1
+	return count

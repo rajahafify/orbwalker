@@ -8,10 +8,11 @@ func run_all() -> Dictionary:
 	_run_case("cell_bounds_set_clear_and_swap", _test_cell_bounds_set_clear_and_swap, failures)
 	_run_case("clone_is_independent", _test_clone_is_independent, failures)
 	_run_case("debug_string_marks_empty_cells", _test_debug_string_marks_empty_cells, failures)
+	_run_case("board_view_drop_motion_overshoots_and_settles", _test_board_view_drop_motion_overshoots_and_settles, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -75,4 +76,25 @@ func _test_debug_string_marks_empty_cells() -> String:
 	var debug_text := model.to_debug_string()
 	if not debug_text.begins_with("."):
 		return "Expected empty origin to render as '.' in debug string."
+	return ""
+
+
+func _test_board_view_drop_motion_overshoots_and_settles() -> String:
+	var board_view_script := ResourceLoader.load("res://scripts/board/board_view.gd", "", ResourceLoader.CACHE_MODE_IGNORE)
+	var board_view = board_view_script.new()
+	var from_pos := Vector2(0.0, 0.0)
+	var to_pos := Vector2(0.0, 100.0)
+	var linear_mid: Vector2 = board_view._overlay_orb_position(from_pos, to_pos, 0.5, "linear")
+	var overshoot_peak: Vector2 = board_view._overlay_orb_position(from_pos, to_pos, 0.76, "drop_overshoot")
+	var settled: Vector2 = board_view._overlay_orb_position(from_pos, to_pos, 1.0, "drop_overshoot")
+	if not is_equal_approx(linear_mid.y, 50.0):
+		board_view.free()
+		return "Expected non-drop overlay motion to remain linear."
+	if overshoot_peak.y <= to_pos.y:
+		board_view.free()
+		return "Expected drop overlay motion to overshoot past the target cell."
+	if settled.distance_to(to_pos) > 0.01:
+		board_view.free()
+		return "Expected drop overlay motion to settle back on the target cell."
+	board_view.free()
 	return ""

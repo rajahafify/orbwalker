@@ -34,6 +34,7 @@ var _combo_popup_panel: Control
 var _combo_popup_word_label: Label
 var _combo_popup_label: Label
 var _combo_popup_fade_tween: Tween
+var _reduced_motion := false
 
 
 func bind(nodes: Dictionary) -> void:
@@ -52,6 +53,10 @@ func set_combat_speed(speed: String) -> void:
 			_combat_speed = speed
 		_:
 			_combat_speed = COMBAT_SPEED_NORMAL
+
+
+func set_reduced_motion_enabled(enabled: bool) -> void:
+	_reduced_motion = enabled
 
 
 func combat_speed_duration(base_seconds: float) -> float:
@@ -358,6 +363,10 @@ func _spawn_match_clear_bursts(groups: Array) -> void:
 			burst_size = Vector2(78.0, 78.0)
 		elif matched_count >= 4:
 			burst_size = Vector2(68.0, 68.0)
+		if not _reduced_motion:
+			var combo_scale := 1.0 + float(maxi(0, _resolve_combo_running)) * 0.08
+			var group_scale := 1.0 + float(maxi(0, matched_count - 3)) * 0.05
+			burst_size *= minf(1.55, combo_scale * group_scale)
 		for raw_cell in cells:
 			var cell: Vector2i = raw_cell
 			if not _board_view.is_cell_valid(cell):
@@ -428,11 +437,11 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 
 	combo_panel.pivot_offset = combo_panel.size * 0.5
 	combo_panel.scale = Vector2(1.0, 1.0)
-	var pulse_scale := 1.0 + minf(0.22, float(combo_value) * 0.018)
+	var pulse_scale := 1.0 if _reduced_motion else 1.0 + minf(0.22, float(combo_value) * 0.018)
 	if _timer_owner != null and is_instance_valid(_timer_owner):
 		var pop_tween := _timer_owner.create_tween()
-		pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07)
-		pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10)
+		pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+		pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
 
 
 func _ensure_combo_popup_panel() -> Control:

@@ -8,6 +8,7 @@ const CALLBACK_CURRENT_TURN_INDEX := "current_turn_index"
 const CALLBACK_TRACE_AND_CHANGE_SCENE := "trace_and_change_scene"
 const CALLBACK_COMBAT_SPEED_VALUE := "combat_speed_value"
 const CALLBACK_APPLY_VFX_SPEED := "apply_vfx_speed"
+const CALLBACK_APPLY_FEEDBACK_SETTINGS := "apply_feedback_settings"
 
 const SCENE_COMBAT := "res://scenes/combat.tscn"
 const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
@@ -59,6 +60,7 @@ func bind_for_combat_controller(
 			CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(controller, "_settings_trace_and_change_scene"),
 			CALLBACK_COMBAT_SPEED_VALUE: Callable(controller, "_combat_speed_value"),
 			CALLBACK_APPLY_VFX_SPEED: Callable(controller, "_apply_vfx_speed_setting"),
+			CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(controller, "_apply_feedback_settings"),
 		},
 		{
 			"player_input_phase_value": player_input_phase_value,
@@ -70,7 +72,7 @@ func bind_for_combat_controller(
 
 func open() -> void:
 	RunState.load_user_settings()
-	_show_overlay(RunState.vfx_speed())
+	_show_overlay(_current_settings())
 	_set_input_phase(_locked_input_phase_value)
 	_set_status_text("Settings opened.")
 
@@ -99,12 +101,27 @@ func select_speed(speed: String) -> void:
 	if _resolve_presenter != null and _resolve_presenter.has_method("set_combat_speed"):
 		_resolve_presenter.set_combat_speed(_combat_speed_value())
 	_call_callback(CALLBACK_APPLY_VFX_SPEED)
-	_show_overlay(RunState.vfx_speed())
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
 	_set_status_text("VFX speed: %s." % RunState.vfx_speed().capitalize())
 
 
-func _show_overlay(speed: String) -> void:
-	_call_method(_view, "show_settings_overlay", [speed])
+func select_quality(quality: String) -> void:
+	RunState.set_combat_vfx_quality(quality)
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
+	_set_status_text("VFX quality: %s." % RunState.combat_vfx_quality().capitalize())
+
+
+func toggle_reduced_motion() -> void:
+	RunState.set_reduced_motion_enabled(not RunState.reduced_motion_enabled())
+	_apply_feedback_settings()
+	_show_overlay(_current_settings())
+	_set_status_text("Reduced motion: %s." % ("On" if RunState.reduced_motion_enabled() else "Off"))
+
+
+func _show_overlay(settings: Variant) -> void:
+	_call_method(_view, "show_settings_overlay", [settings])
 
 
 func _hide_overlay() -> void:
@@ -141,6 +158,20 @@ func _combat_speed_value() -> String:
 	if value is String and String(value) != "":
 		return String(value)
 	return RunState.vfx_speed()
+
+
+func _current_settings() -> Dictionary:
+	if RunState.has_method("combat_feedback_settings"):
+		return RunState.combat_feedback_settings()
+	return {
+		"vfx_speed": RunState.vfx_speed(),
+		"combat_vfx_quality": "low",
+		"reduced_motion": false,
+	}
+
+
+func _apply_feedback_settings() -> void:
+	_call_callback(CALLBACK_APPLY_FEEDBACK_SETTINGS)
 
 
 func _call_callback(name: String, args: Array = []) -> Variant:

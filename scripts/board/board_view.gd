@@ -19,6 +19,11 @@ class_name BoardView
 @export var matched_orb_glow_brightness: float = 1.25
 @export var locked_overlay_color: Color = Color(0.0, 0.0, 0.0, 0.72)
 @export var locked_overlay_border_color: Color = Color(0.72, 0.86, 1.0, 0.58)
+@export var falling_orb_overshoot_pixels: float = 18.0
+@export var falling_orb_stretch: float = 0.12
+
+const OVERLAY_MOTION_LINEAR := "linear"
+const OVERLAY_MOTION_DROP_OVERSHOOT := "drop_overshoot"
 
 var selected_cell: Vector2i = Vector2i(-1, -1):
 	set(value):
@@ -150,17 +155,19 @@ func _draw() -> void:
 		var t: float = clampf(elapsed / duration, 0.0, 1.0)
 		var from_pos: Vector2 = overlay.from_pos
 		var to_pos: Vector2 = overlay.to_pos
-		var orb_pos: Vector2 = from_pos.lerp(to_pos, t)
+		var motion: String = String(overlay.get("motion", OVERLAY_MOTION_LINEAR))
+		var orb_pos: Vector2 = _overlay_orb_position(from_pos, to_pos, t, motion)
 		var start_alpha: float = float(overlay.start_alpha)
 		var end_alpha: float = float(overlay.end_alpha)
 		var alpha: float = lerpf(start_alpha, end_alpha, t)
 		var start_scale: float = float(overlay.start_scale)
 		var end_scale: float = float(overlay.end_scale)
 		var orb_scale: float = lerpf(start_scale, end_scale, t)
+		var stretch := _overlay_orb_stretch(t, motion)
 		var orb_id: int = int(overlay.orb_id)
 		if not OrbType.is_valid_id(orb_id):
 			continue
-		_draw_orb_sprite(orb_pos, cell_radius * orb_scale, orb_id, alpha, false)
+		_draw_orb_sprite(orb_pos, cell_radius * orb_scale, orb_id, alpha, false, stretch)
 
 	if drag_orb_id >= 0:
 		_draw_orb_sprite(drag_pointer_position, cell_radius, drag_orb_id, 1.0, false)
@@ -275,7 +282,8 @@ func animate_swap(from_cell: Vector2i, to_cell: Vector2i, from_orb_id: int, to_o
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(from_cell.x, from_cell.y), _cell_index(to_cell.x, to_cell.y)])
+			PackedInt32Array([_cell_index(from_cell.x, from_cell.y), _cell_index(to_cell.x, to_cell.y)]),
+			OVERLAY_MOTION_DROP_OVERSHOOT
 		)
 	if OrbType.is_valid_id(to_orb_id):
 		_add_overlay_orb(
@@ -363,7 +371,8 @@ func animate_refill_spawns(refill_spawns: Array, duration: float = 0.14) -> void
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(to_cell.x, to_cell.y)])
+			PackedInt32Array([_cell_index(to_cell.x, to_cell.y)]),
+			OVERLAY_MOTION_DROP_OVERSHOOT
 		)
 
 
@@ -459,15 +468,17 @@ func set_orb_texture_map(texture_map: Dictionary) -> void:
 	queue_redraw()
 
 
-func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float = 1.0, glowing: bool = false) -> void:
+func _draw_orb_sprite(center: Vector2, radius: float, orb_id: int, alpha: float = 1.0, glowing: bool = false, stretch: Vector2 = Vector2.ONE) -> void:
 	var texture: Texture2D = orb_texture_map.get(orb_id, null)
+	var draw_radius_x := radius * maxf(0.1, stretch.x)
+	var draw_radius_y := radius * maxf(0.1, stretch.y)
 	if texture == null:
 		var orb_color := OrbType.color(orb_id)
 		orb_color.a = alpha
-		draw_circle(center, radius, orb_color)
+		draw_circle(center, minf(draw_radius_x, draw_radius_y), orb_color)
 		return
 
-	var sprite_size := Vector2(radius * 2.0, radius * 2.0)
+	var sprite_size := Vector2(draw_radius_x * 2.0, draw_radius_y * 2.0)
 	var rect := Rect2(center - sprite_size * 0.5, sprite_size)
 	if glowing:
 		var pulse_period: float = maxf(0.2, matched_orb_pulse_period)
@@ -637,7 +648,8 @@ func _add_overlay_orb(
 	end_alpha: float,
 	start_scale: float,
 	end_scale: float,
-	suppress_indices: PackedInt32Array
+	suppress_indices: PackedInt32Array,
+	motion: String = OVERLAY_MOTION_LINEAR
 ) -> void:
 	for cell_index in suppress_indices:
 		var previous_count: int = int(_suppressed_cells.get(cell_index, 0))
@@ -654,8 +666,48 @@ func _add_overlay_orb(
 		"start_scale": start_scale,
 		"end_scale": end_scale,
 		"suppress_indices": suppress_indices,
+		"motion": motion,
 	})
 	queue_redraw()
+
+
+func _overlay_orb_position(from_pos: Vector2, to_pos: Vector2, t: float, motion: String) -> Vector2:
+	if motion != OVERLAY_MOTION_DROP_OVERSHOOT:
+		return from_pos.lerp(to_pos, clampf(t, 0.0, 1.0))
+	var delta := to_pos - from_pos
+	if delta.length_squared() <= 0.01:
+		return to_pos
+	var direction := delta.normalized()
+	var overshoot_distance := minf(maxf(0.0, falling_orb_overshoot_pixels), delta.length() * 0.28 + 10.0)
+	var overshoot_pos := to_pos + direction * overshoot_distance
+	if t < 0.76:
+		var drop_t := _ease_out_cubic(t / 0.76)
+		return from_pos.lerp(overshoot_pos, drop_t)
+	var settle_t := _ease_out_back((t - 0.76) / 0.24)
+	return overshoot_pos.lerp(to_pos, settle_t)
+
+
+func _overlay_orb_stretch(t: float, motion: String) -> Vector2:
+	if motion != OVERLAY_MOTION_DROP_OVERSHOOT:
+		return Vector2.ONE
+	var stretch_amount := clampf(falling_orb_stretch, 0.0, 0.30)
+	if t < 0.76:
+		var pulse := sin(clampf(t / 0.76, 0.0, 1.0) * PI)
+		return Vector2(1.0 - stretch_amount * 0.42 * pulse, 1.0 + stretch_amount * pulse)
+	var settle := sin(clampf((t - 0.76) / 0.24, 0.0, 1.0) * PI)
+	return Vector2(1.0 + stretch_amount * 0.72 * settle, 1.0 - stretch_amount * 0.52 * settle)
+
+
+func _ease_out_cubic(t: float) -> float:
+	var clamped := clampf(t, 0.0, 1.0)
+	return 1.0 - pow(1.0 - clamped, 3.0)
+
+
+func _ease_out_back(t: float) -> float:
+	var clamped := clampf(t, 0.0, 1.0)
+	var c1 := 1.70158
+	var c3 := c1 + 1.0
+	return 1.0 + c3 * pow(clamped - 1.0, 3.0) + c1 * pow(clamped - 1.0, 2.0)
 
 
 func _release_suppressed_cells(suppress_indices: PackedInt32Array) -> void:

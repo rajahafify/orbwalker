@@ -8,12 +8,15 @@ var _visual_registry: Variant
 var _player_loadout_hud: Variant
 var _elemental_mastery_cards: Control
 var _timer_owner: Node
+var _shake_target: Control
 var _max_vfx_overlay: Variant
 var _post_match_additive_material: CanvasItemMaterial
 var _post_match_runtime_material: ShaderMaterial
 var _post_match_runtime_textures: Dictionary = {}
 var _post_match_vfx_speed_scale := DEFAULT_POST_MATCH_VFX_SPEED_SCALE
 var _post_match_vfx_quality := DEFAULT_POST_MATCH_VFX_QUALITY
+var _reduced_motion := false
+var _screen_nudge_tween: Tween = null
 
 const RESULT_VFX_TIER_THRESHOLDS := {
 	"fire": [6, 10, 16],
@@ -25,10 +28,10 @@ const RESULT_VFX_TIER_THRESHOLDS := {
 	"gold": [3, 6, 10],
 }
 const RESULT_VFX_DEFAULT_THRESHOLDS := [6, 10, 16]
-const RESULT_VFX_TIER_SIZE_SCALES := [1.0, 1.5, 2.0, 3.0]
-const RESULT_VFX_TIER_LIFETIME_SCALES := [1.0, 1.07, 1.14, 1.22]
-const RESULT_VFX_TIER_ALPHA := [0.84, 0.91, 0.97, 1.0]
-const RESULT_VFX_TIER_BRIGHTNESS := [1.0, 1.07, 1.14, 1.22]
+const RESULT_VFX_TIER_SIZE_SCALES := [1.85, 2.25, 3.0]
+const RESULT_VFX_TIER_LIFETIME_SCALES := [1.18, 1.24, 1.30]
+const RESULT_VFX_TIER_ALPHA := [0.98, 1.0, 1.0]
+const RESULT_VFX_TIER_BRIGHTNESS := [1.20, 1.28, 1.36]
 const DEFAULT_POST_MATCH_VFX_SPEED_SCALE := 0.55
 const POST_MATCH_SCREEN_EVENT_Z_INDEX := 120
 const POST_MATCH_EFFECT_Z_INDEX := 124
@@ -61,6 +64,10 @@ const POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS := [0, 12, 16, 20, 24, 29, 34, 39,
 const ENEMY_ATTACK_CUE_SIZE := Vector2(88, 88)
 const ENEMY_ATTACK_BOLT_SIZE := Vector2(44, 44)
 const ENEMY_ATTACK_BEAM_THICKNESS := 10.0
+const MASTERY_FILL_STREAM_SECONDS := 0.46
+const SCREEN_NUDGE_MAX_PIXELS := 24.0
+const SCREEN_NUDGE_SECONDS := 0.18
+const HIT_STOP_MAX_SECONDS := 0.06
 
 
 func bind(dependencies: Dictionary) -> void:
@@ -69,9 +76,14 @@ func bind(dependencies: Dictionary) -> void:
 	_player_loadout_hud = dependencies.get("player_loadout_hud")
 	_elemental_mastery_cards = dependencies.get("elemental_mastery_cards") as Control
 	_timer_owner = dependencies.get("timer_owner") as Node
+	_shake_target = dependencies.get("shake_target") as Control
 	_max_vfx_overlay = COMBAT_MAX_VFX_OVERLAY_SCRIPT.new()
 	_max_vfx_overlay.bind(dependencies)
-	set_post_match_vfx_quality(_project_post_match_vfx_quality())
+	if dependencies.has("post_match_vfx_quality"):
+		set_post_match_vfx_quality(String(dependencies.get("post_match_vfx_quality", DEFAULT_POST_MATCH_VFX_QUALITY)))
+	else:
+		set_post_match_vfx_quality(_project_post_match_vfx_quality())
+	set_reduced_motion_enabled(bool(dependencies.get("reduced_motion", _reduced_motion)))
 
 
 func set_post_match_vfx_speed_scale(speed_scale: float) -> void:
@@ -80,6 +92,14 @@ func set_post_match_vfx_speed_scale(speed_scale: float) -> void:
 
 func set_post_match_vfx_quality(quality: String) -> void:
 	_post_match_vfx_quality = _normalized_post_match_vfx_quality(quality)
+
+
+func set_reduced_motion_enabled(enabled: bool) -> void:
+	_reduced_motion = enabled
+
+
+func reduced_motion_enabled() -> bool:
+	return _reduced_motion
 
 
 func post_match_vfx_quality() -> String:
@@ -121,6 +141,7 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 	var local_center := _global_to_vfx_local(global_center)
 	sprite.position = local_center - draw_size * 0.5
 	_tween_fade_cleanup(sprite, lifetime)
+	_spawn_visible_spark_burst(global_center, draw_size, modulate_color, lifetime)
 
 
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
@@ -178,11 +199,11 @@ func replay_result_vfx_tier(impact_kind: String, result_amount: int) -> int:
 	var high_threshold := int(thresholds[1]) if thresholds.size() > 1 else int(RESULT_VFX_DEFAULT_THRESHOLDS[1])
 	var signature_threshold := int(thresholds[2]) if thresholds.size() > 2 else int(RESULT_VFX_DEFAULT_THRESHOLDS[2])
 	if result_amount >= signature_threshold:
-		return 4
-	if result_amount >= high_threshold:
 		return 3
-	if result_amount >= medium_threshold:
+	if result_amount >= high_threshold:
 		return 2
+	if result_amount >= medium_threshold:
+		return 1
 	return 1
 
 
@@ -207,6 +228,83 @@ func post_match_runtime_vfx_caps() -> Dictionary:
 
 func post_match_runtime_texture(key: String) -> Texture2D:
 	return _runtime_vfx_texture(key)
+
+
+func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> void:
+	if _reduced_motion or _timer_owner == null or not is_instance_valid(_timer_owner):
+		return
+	var target := _shake_target if _shake_target != null and is_instance_valid(_shake_target) else _vfx_layer
+	if target == null or not is_instance_valid(target):
+		target = _timer_owner
+	if not target is Control:
+		return
+	var control := target as Control
+	var distance := clampf(10.0 + float(maxi(0, intensity)) * 2.4, 0.0, SCREEN_NUDGE_MAX_PIXELS)
+	var direction := Vector2.RIGHT
+	if source_global != Vector2.ZERO and _vfx_layer != null and is_instance_valid(_vfx_layer):
+		var focus := _global_to_vfx_local(source_global)
+		var layer_size := _vfx_layer_size()
+		var delta := focus - layer_size * 0.5
+		if delta.length() > 0.01:
+			direction = delta.normalized()
+	var start_position := control.position
+	if _screen_nudge_tween != null and is_instance_valid(_screen_nudge_tween):
+		_screen_nudge_tween.kill()
+		control.position = start_position
+	_screen_nudge_tween = _timer_owner.create_tween()
+	_screen_nudge_tween.tween_property(control, "position", start_position + direction * distance, SCREEN_NUDGE_SECONDS * 0.25).set_trans(Tween.TRANS_SINE as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	_screen_nudge_tween.tween_property(control, "position", start_position - direction * distance * 0.45, SCREEN_NUDGE_SECONDS * 0.28).set_trans(Tween.TRANS_SINE as Tween.TransitionType).set_ease(Tween.EASE_IN_OUT as Tween.EaseType)
+	_screen_nudge_tween.tween_property(control, "position", start_position, SCREEN_NUDGE_SECONDS * 0.47).set_trans(Tween.TRANS_SINE as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+
+
+func hit_stop(seconds: float = 0.04) -> void:
+	if _reduced_motion:
+		return
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		return
+	var duration := clampf(seconds, 0.0, HIT_STOP_MAX_SECONDS)
+	if duration <= 0.0:
+		return
+	await _timer_owner.get_tree().create_timer(duration).timeout
+
+
+func _spawn_visible_spark_burst(global_center: Vector2, draw_size: Vector2, color: Color, lifetime: float) -> void:
+	if _reduced_motion:
+		return
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+		return
+	var particle_count := clampi(int(round((draw_size.x + draw_size.y) / 21.0)), 12, 28)
+	var base_size := clampf(maxf(draw_size.x, draw_size.y) * 0.14, 12.0, 30.0)
+	var travel_radius := clampf(maxf(draw_size.x, draw_size.y) * 0.68, 48.0, 150.0)
+	var center_local := _global_to_vfx_local(global_center)
+	var duration := maxf(0.18, lifetime * 1.15)
+	var tint := color.lerp(Color.WHITE, 0.35)
+	tint.a = maxf(tint.a, 0.94)
+	for i in range(particle_count):
+		var angle := TAU * float(i) / float(particle_count)
+		var direction := Vector2(cos(angle), sin(angle))
+		var particle := ColorRect.new()
+		particle.name = "JuiceSpark"
+		particle.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+		particle.color = tint
+		particle.size = Vector2(base_size, base_size)
+		particle.pivot_offset = particle.size * 0.5
+		particle.position = center_local - particle.size * 0.5
+		particle.rotation = angle
+		particle.z_index = POST_MATCH_EFFECT_FRONT_Z_INDEX + 12
+		_vfx_layer.add_child(particle)
+		var target_position := particle.position + direction * travel_radius
+		var tween := _timer_owner.create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "position", target_position, duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+		tween.tween_property(particle, "scale", Vector2(0.22, 0.22), duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_IN as Tween.EaseType)
+		tween.tween_property(particle, "modulate:a", 0.0, duration * 0.72).set_delay(duration * 0.20)
+		tween.finished.connect(func() -> void:
+			if is_instance_valid(particle):
+				particle.queue_free()
+		)
 
 
 func max_combat_vfx_forced() -> bool:
@@ -410,6 +508,7 @@ func _spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, d
 	var intensity := _replay_effect_intensity(result_amount, tier_index)
 	if replay_result_is_screen_wide(clean_kind, result_amount):
 		_spawn_screen_wide_replay_event(global_center, clean_kind, lifetime, intensity)
+	_spawn_baseline_replay_impact(global_center, clean_kind, draw_size, lifetime, intensity)
 	_spawn_runtime_impact_stack(global_center, clean_kind, draw_size, lifetime, intensity)
 	_spawn_replay_signature_sprite(global_center, clean_kind, draw_size, lifetime, intensity)
 	match clean_kind:
@@ -431,7 +530,18 @@ func _spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, d
 
 func _replay_effect_intensity(result_amount: int, tier_index: int) -> int:
 	var amount_bonus := int(floor(float(maxi(0, result_amount)) / 12.0))
-	return clampi(tier_index + 1 + amount_bonus, 1, 8)
+	return clampi(tier_index + 2 + amount_bonus, 2, 8)
+
+
+func _spawn_baseline_replay_impact(global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, intensity: int) -> void:
+	var colors := _result_effect_colors(clean_kind)
+	var accent: Color = colors.get("accent", Color.WHITE)
+	var core: Color = colors.get("core", Color.WHITE)
+	var center_local := _global_to_vfx_local(global_center)
+	var punch := 1.0 + float(intensity) * 0.06
+	_spawn_runtime_sprite_local("PostMatchBaselineFlash", "soft_glow", center_local, draw_size * (2.0 * punch), Color(core.r, core.g, core.b, 0.52), lifetime * 0.34, Vector2(0.38, 0.38), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 4)
+	_spawn_runtime_sprite_local("PostMatchBaselineAfterglow", "soft_glow", center_local, draw_size * (1.48 * punch), Color(accent.r, accent.g, accent.b, 0.38), lifetime * 0.66, Vector2(1.22, 1.22), lifetime * 0.02, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX + 2)
+	_spawn_replay_ring(global_center, draw_size * (0.76 + float(intensity) * 0.025), Color(accent.r, accent.g, accent.b, 0.18), Color(core.r, core.g, core.b, 0.98), 5 + mini(intensity, 5), lifetime * 0.48, Vector2(1.34, 1.34), 0.0)
 
 
 func _spawn_replay_signature_sprite(global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, intensity: int) -> void:
@@ -1428,6 +1538,34 @@ func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_life
 	_spawn_mastery_cast_travel(source_local, target_local, orb_id, travel_lifetime, spool_lifetime, intensity)
 
 
+func spawn_mastery_fill_stream(orb_id: int, source_global: Vector2, amount: int, lifetime: float = MASTERY_FILL_STREAM_SECONDS) -> void:
+	if not OrbType.is_valid_id(orb_id) or amount <= 0 or source_global == Vector2.ZERO:
+		return
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	var target := _mastery_card_source(orb_id)
+	if target == null:
+		return
+	var target_global := control_global_center(target, 0.5)
+	if target_global == Vector2.ZERO:
+		return
+	var source_local := _global_to_vfx_local(source_global)
+	var target_local := _global_to_vfx_local(target_global)
+	var delta := target_local - source_local
+	var distance := delta.length()
+	if distance <= 1.0:
+		return
+	var clean_lifetime := maxf(0.18, lifetime)
+	var intensity := clampi(2 + int(floor(float(amount) / 4.0)), 2, 8)
+	if _reduced_motion:
+		_spawn_mastery_fill_reduced_motion(source_local, target_local, orb_id, clean_lifetime, intensity)
+		return
+	_spawn_mastery_fill_source_flash(source_local, orb_id, clean_lifetime, intensity)
+	_spawn_mastery_fill_stream_rays(source_local, target_local, orb_id, clean_lifetime, intensity)
+	_spawn_mastery_fill_stream_sparks(source_local, target_local, orb_id, clean_lifetime, intensity)
+	_spawn_mastery_fill_impact(target_local, orb_id, clean_lifetime, intensity)
+
+
 func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
 	var source: Control = null
 	var target_global := Vector2.ZERO
@@ -1490,6 +1628,138 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 	beam.z_index = 92
 	_vfx_layer.add_child(beam)
 	_tween_fade_cleanup(beam, beam_lifetime)
+
+
+func _spawn_mastery_fill_reduced_motion(source_local: Vector2, target_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:
+	var colors := _mastery_cast_colors(orb_id)
+	var accent: Color = colors.get("accent", OrbType.color(orb_id))
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	_spawn_runtime_sprite_local("MasteryFillReducedSourceFlash", "soft_glow", source_local, Vector2(76, 76) + Vector2(8, 8) * float(intensity), Color(accent.r, accent.g, accent.b, 0.40), lifetime * 0.54, Vector2(0.64, 0.64), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
+	_spawn_runtime_sprite_local("MasteryFillReducedImpactGlow", "soft_glow", target_local, Vector2(116, 116) + Vector2(10, 10) * float(intensity), Color(core.r, core.g, core.b, 0.58), lifetime * 0.72, Vector2(1.34, 1.34), lifetime * 0.05, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 1)
+	_spawn_runtime_sprite_local("MasteryFillReducedImpactRing", "ripple", target_local, Vector2(88, 88) + Vector2(7, 7) * float(intensity), Color(core.r, core.g, core.b, 0.96), lifetime * 0.62, Vector2(1.52, 1.52), lifetime * 0.05, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 2)
+
+
+func _spawn_mastery_fill_source_flash(source_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:
+	var colors := _mastery_cast_colors(orb_id)
+	var accent: Color = colors.get("accent", OrbType.color(orb_id))
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	_spawn_runtime_sprite_local("MasteryFillSourceBloom", "soft_glow", source_local, Vector2(104, 104) + Vector2(10, 10) * float(intensity), Color(accent.r, accent.g, accent.b, 0.48), lifetime * 0.66, Vector2(0.72, 0.72), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_Z_INDEX)
+	_spawn_runtime_sprite_local("MasteryFillSourceCore", "spark", source_local, Vector2(34, 34) + Vector2(4, 4) * float(intensity), Color(core.r, core.g, core.b, 1.0), lifetime * 0.50, Vector2(0.62, 0.62), 0.0, Vector2.ZERO, 0.34, POST_MATCH_EFFECT_FRONT_Z_INDEX)
+
+
+func _spawn_mastery_fill_stream_rays(source_local: Vector2, target_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:
+	var colors := _mastery_cast_colors(orb_id)
+	var accent: Color = colors.get("accent", OrbType.color(orb_id))
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	var delta := target_local - source_local
+	var distance := delta.length()
+	if distance <= 1.0:
+		return
+	var direction := delta / distance
+	var normal := Vector2(-direction.y, direction.x)
+	var angle := delta.angle()
+	_spawn_runtime_sprite_local(
+		"MasteryFillStreamCoreBeam",
+		"ray",
+		source_local - direction * distance * 0.03,
+		Vector2(distance * 0.72, 24.0 + float(intensity) * 2.8),
+		Color(core.r, core.g, core.b, 0.88),
+		lifetime * 0.96,
+		Vector2(0.48, 0.54),
+		0.0,
+		delta * 1.02,
+		0.0,
+		POST_MATCH_EFFECT_FRONT_Z_INDEX + 1,
+		angle,
+		Tween.EASE_IN_OUT as Tween.EaseType
+	)
+	_spawn_runtime_sprite_local(
+		"MasteryFillStreamWideGlow",
+		"soft_glow",
+		source_local + delta * 0.45,
+		Vector2(distance * 0.72, 76.0 + float(intensity) * 6.0),
+		Color(accent.r, accent.g, accent.b, 0.30),
+		lifetime * 0.90,
+		Vector2(1.04, 0.72),
+		0.0,
+		delta * 0.16,
+		0.0,
+		POST_MATCH_CAST_Z_INDEX - 1,
+		angle,
+		Tween.EASE_IN_OUT as Tween.EaseType
+	)
+	var ray_count := clampi(2 + int(ceil(float(intensity) * 0.70)), 3, 8)
+	for i in range(ray_count):
+		var lane := float(i) - float(ray_count - 1) * 0.5
+		var side_offset := normal * lane * (11.0 + float(intensity) * 2.0)
+		var lead := direction * distance * 0.04
+		var arc := normal * sin(float(i) * 1.7 + float(orb_id)) * (16.0 + float(intensity) * 4.0)
+		var start := source_local + side_offset - lead
+		var travel := delta + arc - side_offset * 0.6
+		var delay := float(i) * lifetime * 0.035
+		var tint := core if i == 0 else accent
+		_spawn_runtime_sprite_local(
+			"MasteryFillStreamRay",
+			"ray",
+			start,
+			Vector2(distance * (0.54 + float(intensity) * 0.04), 18.0 + float(intensity) * 2.8),
+			Color(tint.r, tint.g, tint.b, 0.92 if i == 0 else 0.74),
+			lifetime * 0.94,
+			Vector2(0.50, 0.54),
+			delay,
+			travel,
+			0.0,
+			POST_MATCH_CAST_Z_INDEX,
+			angle + sin(float(i) * 2.3) * 0.08,
+			Tween.EASE_IN_OUT as Tween.EaseType
+		)
+
+
+func _spawn_mastery_fill_stream_sparks(source_local: Vector2, target_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:
+	var colors := _mastery_cast_colors(orb_id)
+	var accent: Color = colors.get("accent", OrbType.color(orb_id))
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	var delta := target_local - source_local
+	var distance := delta.length()
+	if distance <= 1.0:
+		return
+	var direction := delta / distance
+	var normal := Vector2(-direction.y, direction.x)
+	var spark_count := _runtime_particle_count(intensity, 1.15)
+	for i in range(spark_count):
+		var progress := float(i % 9) / 9.0
+		var wave := sin(float(i) * 1.61 + float(orb_id)) * (22.0 + float(intensity) * 3.4)
+		var start := source_local + delta * (progress * 0.22) + normal * wave
+		var travel := delta * (0.72 + progress * 0.22) - normal * wave * 0.55 + direction * float(i % 4) * 12.0
+		var size := Vector2(11.0 + float(intensity) * 1.4, 11.0 + float(intensity) * 1.4)
+		var color := core if i % 3 == 0 else accent
+		_spawn_runtime_sprite_local(
+			"MasteryFillSpark",
+			"spark",
+			start,
+			size,
+			Color(color.r, color.g, color.b, 0.94),
+			lifetime * (0.72 + float(i % 3) * 0.07),
+			Vector2(0.48, 0.48),
+			float(i) * lifetime * 0.012,
+			travel,
+			0.34,
+			POST_MATCH_EFFECT_FRONT_Z_INDEX + 1,
+			0.0,
+			Tween.EASE_IN_OUT as Tween.EaseType
+		)
+
+
+func _spawn_mastery_fill_impact(target_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:
+	var colors := _mastery_cast_colors(orb_id)
+	var accent: Color = colors.get("accent", OrbType.color(orb_id))
+	var core: Color = colors.get("core", accent.lightened(0.35))
+	var impact_delay := lifetime * 0.34
+	var base_size := Vector2(104, 104) + Vector2(11, 11) * float(intensity)
+	_spawn_runtime_sprite_local("MasteryFillImpactGlow", "soft_glow", target_local, base_size * 2.05, Color(accent.r, accent.g, accent.b, 0.72), lifetime * 0.76, Vector2(1.50, 1.50), impact_delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 1)
+	_spawn_runtime_sprite_local("MasteryFillImpactCore", "spark", target_local, base_size * 0.64, Color(core.r, core.g, core.b, 1.0), lifetime * 0.52, Vector2(0.82, 0.82), impact_delay, Vector2.ZERO, 0.36, POST_MATCH_EFFECT_FRONT_Z_INDEX + 3)
+	_spawn_runtime_sprite_local("MasteryFillImpactRing", "ripple", target_local, base_size * 1.08, Color(core.r, core.g, core.b, 1.0), lifetime * 0.70, Vector2(1.92, 1.92), impact_delay, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 2)
+	_spawn_runtime_sprite_local("MasteryFillImpactHalo", "ripple", target_local, base_size * 1.36, Color(accent.r, accent.g, accent.b, 0.72), lifetime * 0.82, Vector2(1.68, 1.68), impact_delay + lifetime * 0.08, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
 
 
 func _spawn_mastery_cast_spool(source_local: Vector2, orb_id: int, lifetime: float, intensity: int) -> void:

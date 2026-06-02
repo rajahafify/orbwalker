@@ -11,6 +11,8 @@ class CallbackRecorder:
 	var new_run_count := 0
 	var main_menu_count := 0
 	var speeds: Array[String] = []
+	var qualities: Array[String] = []
+	var reduced_motion_count := 0
 
 	func continue_pressed() -> void:
 		continue_count += 1
@@ -24,15 +26,22 @@ class CallbackRecorder:
 	func speed_selected(speed: String) -> void:
 		speeds.append(speed)
 
+	func quality_selected(quality: String) -> void:
+		qualities.append(quality)
+
+	func reduced_motion_toggled() -> void:
+		reduced_motion_count += 1
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("show_creates_overlay_and_updates_speed_selection", _test_show_creates_overlay_and_updates_speed_selection, failures)
+	_run_case("show_updates_quality_and_reduced_motion_selection", _test_show_updates_quality_and_reduced_motion_selection, failures)
 	_run_case("hide_clears_overlay_visibility", _test_hide_clears_overlay_visibility, failures)
 	_run_case("buttons_emit_bound_callbacks", _test_buttons_emit_bound_callbacks, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -70,6 +79,25 @@ func _test_show_creates_overlay_and_updates_speed_selection() -> String:
 	return ""
 
 
+func _test_show_updates_quality_and_reduced_motion_selection() -> String:
+	var fixture := _fixture()
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	presenter.show({"vfx_speed": "normal", "combat_vfx_quality": "high", "reduced_motion": true})
+	var quality_buttons: Array[Button] = presenter.quality_buttons()
+	if quality_buttons.size() != 2:
+		root.free()
+		return "Expected two quality buttons."
+	if quality_buttons[0].text != "LOW" or quality_buttons[1].text != "HIGH *":
+		root.free()
+		return "Expected selected quality text to match the star suffix convention."
+	if presenter.reduced_motion_button().text != "REDUCED MOTION *":
+		root.free()
+		return "Expected reduced motion button to show selected state."
+	root.free()
+	return ""
+
+
 func _test_hide_clears_overlay_visibility() -> String:
 	var fixture := _fixture()
 	var root: Control = fixture["root"]
@@ -91,12 +119,20 @@ func _test_buttons_emit_bound_callbacks() -> String:
 	presenter.show("normal")
 	var buttons: Array[Button] = presenter.speed_buttons()
 	buttons[0].emit_signal("pressed")
+	presenter.quality_buttons()[1].emit_signal("pressed")
+	presenter.reduced_motion_button().emit_signal("pressed")
 	presenter.continue_button().emit_signal("pressed")
 	presenter.new_run_button().emit_signal("pressed")
 	presenter.main_menu_button().emit_signal("pressed")
 	if recorder.speeds != ["slow"]:
 		root.free()
 		return "Expected speed button to emit selected speed."
+	if recorder.qualities != ["high"]:
+		root.free()
+		return "Expected quality button to emit selected quality."
+	if recorder.reduced_motion_count != 1:
+		root.free()
+		return "Expected reduced motion button to emit toggle callback."
 	if recorder.continue_count != 1 or recorder.new_run_count != 1 or recorder.main_menu_count != 1:
 		root.free()
 		return "Expected menu buttons to emit their bound callbacks."
@@ -116,6 +152,8 @@ func _fixture() -> Dictionary:
 			PRESENTER_SCRIPT.CALLBACK_NEW_RUN: Callable(recorder, "new_run_pressed"),
 			PRESENTER_SCRIPT.CALLBACK_MAIN_MENU: Callable(recorder, "main_menu_pressed"),
 			PRESENTER_SCRIPT.CALLBACK_SPEED_SELECTED: Callable(recorder, "speed_selected"),
+			PRESENTER_SCRIPT.CALLBACK_QUALITY_SELECTED: Callable(recorder, "quality_selected"),
+			PRESENTER_SCRIPT.CALLBACK_REDUCED_MOTION_TOGGLED: Callable(recorder, "reduced_motion_toggled"),
 		}
 	)
 	return {

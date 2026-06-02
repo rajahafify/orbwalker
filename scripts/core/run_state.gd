@@ -24,10 +24,14 @@ const USER_SETTINGS_SECTION := "run_log"
 const USER_SETTINGS_GENERATE_LOG_KEY := "generate_log"
 const USER_SETTINGS_GAMEPLAY_SECTION := "gameplay"
 const USER_SETTINGS_VFX_SPEED_KEY := "vfx_speed"
+const USER_SETTINGS_COMBAT_VFX_QUALITY_KEY := "combat_vfx_quality"
+const USER_SETTINGS_REDUCED_MOTION_KEY := "reduced_motion"
 const VFX_SPEED_SLOW := "slow"
 const VFX_SPEED_NORMAL := "normal"
 const VFX_SPEED_FAST := "fast"
 const VFX_SPEED_INSTANT := "instant"
+const COMBAT_VFX_QUALITY_LOW := "low"
+const COMBAT_VFX_QUALITY_HIGH := "high"
 const SCENE_MAIN := "res://scenes/main_menu.tscn"
 const SCENE_COMBAT := "res://scenes/combat.tscn"
 const SCENE_SHOP := "res://scenes/shop.tscn"
@@ -80,6 +84,8 @@ var _scene_router
 var _profile_repository
 var _balance_manager
 var _vfx_speed := VFX_SPEED_NORMAL
+var _combat_vfx_quality := COMBAT_VFX_QUALITY_LOW
+var _reduced_motion := false
 
 var _normal_encounters_by_level := {
 	1: [
@@ -1183,6 +1189,8 @@ func load_user_settings() -> void:
 	var error := config.load(USER_SETTINGS_PATH)
 	if error == OK:
 		_vfx_speed = _normalized_vfx_speed(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)))
+		_combat_vfx_quality = _normalized_combat_vfx_quality(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality)))
+		_reduced_motion = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion))
 
 
 func vfx_speed() -> String:
@@ -1194,11 +1202,39 @@ func set_vfx_speed(speed: String) -> void:
 	_save_user_settings()
 
 
+func combat_vfx_quality() -> String:
+	return _combat_vfx_quality
+
+
+func set_combat_vfx_quality(quality: String) -> void:
+	_combat_vfx_quality = _normalized_combat_vfx_quality(quality)
+	_save_user_settings()
+
+
+func reduced_motion_enabled() -> bool:
+	return _reduced_motion
+
+
+func set_reduced_motion_enabled(enabled: bool) -> void:
+	_reduced_motion = enabled
+	_save_user_settings()
+
+
+func combat_feedback_settings() -> Dictionary:
+	return {
+		"vfx_speed": _vfx_speed,
+		"combat_vfx_quality": _combat_vfx_quality,
+		"reduced_motion": _reduced_motion,
+	}
+
+
 func _save_user_settings() -> void:
 	var config := ConfigFile.new()
 	config.load(USER_SETTINGS_PATH)
 	config.set_value(USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY, generate_run_log_files_enabled())
 	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)
+	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality)
+	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion)
 	var error := config.save(USER_SETTINGS_PATH)
 	if error != OK:
 		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])
@@ -1211,6 +1247,15 @@ func _normalized_vfx_speed(speed: String) -> String:
 			return normalized
 		_:
 			return VFX_SPEED_NORMAL
+
+
+func _normalized_combat_vfx_quality(quality: String) -> String:
+	var normalized := quality.strip_edges().to_lower()
+	match normalized:
+		COMBAT_VFX_QUALITY_LOW, COMBAT_VFX_QUALITY_HIGH:
+			return normalized
+		_:
+			return COMBAT_VFX_QUALITY_LOW
 
 
 func _load_meta_profile() -> void:

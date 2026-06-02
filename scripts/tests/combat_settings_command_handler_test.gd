@@ -8,12 +8,15 @@ class FakeView:
 	extends RefCounted
 
 	var overlay_visible := false
-	var shown_speeds: Array[String] = []
+	var shown_settings: Array[Dictionary] = []
 	var hide_count := 0
 
-	func show_settings_overlay(speed: String) -> void:
+	func show_settings_overlay(settings: Variant) -> void:
 		overlay_visible = true
-		shown_speeds.append(speed)
+		if settings is Dictionary:
+			shown_settings.append((settings as Dictionary).duplicate())
+		else:
+			shown_settings.append({"vfx_speed": String(settings)})
 
 	func hide_settings_overlay() -> void:
 		overlay_visible = false
@@ -49,6 +52,7 @@ class CallbackRecorder:
 	var status_colors: Array[Color] = []
 	var routes: Array[Dictionary] = []
 	var vfx_apply_count := 0
+	var feedback_apply_count := 0
 	var turn_index := 7
 	var model: FakeModel
 
@@ -79,20 +83,28 @@ class CallbackRecorder:
 	func apply_vfx_speed() -> void:
 		vfx_apply_count += 1
 
+	func apply_feedback_settings() -> void:
+		feedback_apply_count += 1
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	var previous_speed := RunState.vfx_speed()
+	var previous_quality := RunState.combat_vfx_quality()
+	var previous_reduced_motion := RunState.reduced_motion_enabled()
 	_run_case("open_shows_overlay_and_locks_input", _test_open_shows_overlay_and_locks_input, failures)
 	_run_case("continue_restores_player_input_status", _test_continue_restores_player_input_status, failures)
 	_run_case("speed_selection_updates_runtime_dependencies", _test_speed_selection_updates_runtime_dependencies, failures)
+	_run_case("quality_and_motion_selection_update_runtime_dependencies", _test_quality_and_motion_selection_update_runtime_dependencies, failures)
 	_run_case("route_commands_hide_overlay_and_emit_scene_targets", _test_route_commands_hide_overlay_and_emit_scene_targets, failures)
 	RunState.set_vfx_speed(previous_speed)
+	RunState.set_combat_vfx_quality(previous_quality)
+	RunState.set_reduced_motion_enabled(previous_reduced_motion)
 	RunState.reset_run("combat_settings_command_handler_test_restore", false)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -113,7 +125,7 @@ func _test_open_shows_overlay_and_locks_input() -> String:
 	handler.open()
 	if not view.overlay_visible:
 		return "Expected opening settings to show the overlay."
-	if view.shown_speeds.back() != "fast":
+	if String(view.shown_settings.back().get("vfx_speed", "")) != "fast":
 		return "Expected opening settings to pass the current RunState VFX speed."
 	if recorder.phases != [2]:
 		return "Expected opening settings to lock external input."
@@ -154,10 +166,34 @@ func _test_speed_selection_updates_runtime_dependencies() -> String:
 		return "Expected speed selection to update the resolve presenter."
 	if recorder.vfx_apply_count != 1:
 		return "Expected speed selection to reapply VFX speed scaling."
-	if not view.overlay_visible or view.shown_speeds.back() != "instant":
+	if not view.overlay_visible or String(view.shown_settings.back().get("vfx_speed", "")) != "instant":
 		return "Expected speed selection to refresh the overlay selection."
 	if recorder.status_texts.back() != "VFX speed: Instant.":
 		return "Expected speed selection to report the normalized speed."
+	return ""
+
+
+func _test_quality_and_motion_selection_update_runtime_dependencies() -> String:
+	RunState.set_combat_vfx_quality("low")
+	RunState.set_reduced_motion_enabled(false)
+	var fixture := _fixture()
+	var handler: Variant = fixture["handler"]
+	var view: FakeView = fixture["view"]
+	var recorder: CallbackRecorder = fixture["recorder"]
+	handler.select_quality("high")
+	if RunState.combat_vfx_quality() != "high":
+		return "Expected quality selection to update RunState."
+	if recorder.feedback_apply_count != 1:
+		return "Expected quality selection to apply feedback settings."
+	if String(view.shown_settings.back().get("combat_vfx_quality", "")) != "high":
+		return "Expected quality selection to refresh the overlay state."
+	handler.toggle_reduced_motion()
+	if not RunState.reduced_motion_enabled():
+		return "Expected reduced motion toggle to update RunState."
+	if recorder.feedback_apply_count != 2:
+		return "Expected reduced motion toggle to apply feedback settings."
+	if not bool(view.shown_settings.back().get("reduced_motion", false)):
+		return "Expected reduced motion toggle to refresh the overlay state."
 	return ""
 
 
@@ -213,6 +249,7 @@ func _fixture() -> Dictionary:
 			HANDLER_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(recorder, "trace_and_change_scene"),
 			HANDLER_SCRIPT.CALLBACK_COMBAT_SPEED_VALUE: Callable(recorder, "combat_speed_value"),
 			HANDLER_SCRIPT.CALLBACK_APPLY_VFX_SPEED: Callable(recorder, "apply_vfx_speed"),
+			HANDLER_SCRIPT.CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(recorder, "apply_feedback_settings"),
 		},
 		{
 			"player_input_phase_value": 0,

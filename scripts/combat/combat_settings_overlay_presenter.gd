@@ -3,16 +3,21 @@ class_name CombatSettingsOverlayPresenter
 
 const DEFAULT_DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const SPEED_OPTIONS: Array[String] = ["slow", "normal", "fast", "instant"]
+const QUALITY_OPTIONS: Array[String] = ["low", "high"]
 
 const CALLBACK_CONTINUE := "continue"
 const CALLBACK_NEW_RUN := "new_run"
 const CALLBACK_MAIN_MENU := "main_menu"
 const CALLBACK_SPEED_SELECTED := "speed_selected"
+const CALLBACK_QUALITY_SELECTED := "quality_selected"
+const CALLBACK_REDUCED_MOTION_TOGGLED := "reduced_motion_toggled"
 
 var _parent: Control = null
 var _overlay: Control = null
 var _panel: Panel = null
 var _speed_buttons: Array[Button] = []
+var _quality_buttons: Array[Button] = []
+var _reduced_motion_button: Button = null
 var _continue_button: Button = null
 var _new_run_button: Button = null
 var _main_menu_button: Button = null
@@ -26,12 +31,12 @@ func bind(parent: Control, callbacks: Dictionary = {}, config: Dictionary = {}) 
 	_design_size = config.get("design_size", DEFAULT_DESIGN_SIZE)
 
 
-func show(speed: String) -> void:
+func show(settings: Variant) -> void:
 	ensure_overlay()
 	if _overlay == null:
 		return
 	_overlay.visible = true
-	update_speed_buttons(speed)
+	update_settings_state(_settings_dictionary(settings))
 
 
 func hide() -> void:
@@ -74,7 +79,7 @@ func ensure_overlay() -> void:
 	box.name = "SettingsBox"
 	box.position = Vector2(46.0, 38.0)
 	box.size = Vector2(608.0, 804.0)
-	box.add_theme_constant_override("separation", 14)
+	box.add_theme_constant_override("separation", 8)
 	_panel.add_child(box)
 
 	box.add_child(_settings_label("Settings", 44))
@@ -84,6 +89,15 @@ func ensure_overlay() -> void:
 		button.pressed.connect(func() -> void: _emit_speed_selected(speed))
 		_speed_buttons.append(button)
 		box.add_child(button)
+	box.add_child(_settings_label("VFX Quality", 28))
+	for quality in QUALITY_OPTIONS:
+		var button := _make_settings_menu_button(quality.to_upper())
+		button.pressed.connect(func() -> void: _emit_quality_selected(quality))
+		_quality_buttons.append(button)
+		box.add_child(button)
+	_reduced_motion_button = _make_settings_menu_button("REDUCED MOTION")
+	_reduced_motion_button.pressed.connect(func() -> void: _emit_reduced_motion_toggled())
+	box.add_child(_reduced_motion_button)
 	box.add_child(_settings_group_gap())
 	_continue_button = _make_settings_menu_button("CONTINUE")
 	_new_run_button = _make_settings_menu_button("NEW RUN")
@@ -104,8 +118,36 @@ func update_speed_buttons(speed: String) -> void:
 		button.text = ("%s *" % button_speed.to_upper()) if selected else button_speed.to_upper()
 
 
+func update_settings_state(settings: Dictionary) -> void:
+	update_speed_buttons(String(settings.get("vfx_speed", "normal")))
+	update_quality_buttons(String(settings.get("combat_vfx_quality", "low")))
+	update_reduced_motion_button(bool(settings.get("reduced_motion", false)))
+
+
+func update_quality_buttons(quality: String) -> void:
+	var normalized := quality.to_lower()
+	for button in _quality_buttons:
+		var button_quality := button.text.replace(" *", "").to_lower()
+		var selected := button_quality == normalized
+		button.text = ("%s *" % button_quality.to_upper()) if selected else button_quality.to_upper()
+
+
+func update_reduced_motion_button(enabled: bool) -> void:
+	if _reduced_motion_button == null:
+		return
+	_reduced_motion_button.text = "REDUCED MOTION *" if enabled else "REDUCED MOTION"
+
+
 func speed_buttons() -> Array[Button]:
 	return _speed_buttons.duplicate()
+
+
+func quality_buttons() -> Array[Button]:
+	return _quality_buttons.duplicate()
+
+
+func reduced_motion_button() -> Button:
+	return _reduced_motion_button
 
 
 func continue_button() -> Button:
@@ -133,20 +175,20 @@ func _settings_label(text: String, font_size: int) -> Label:
 
 func _settings_group_gap() -> Control:
 	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0.0, 20.0)
+	spacer.custom_minimum_size = Vector2(0.0, 10.0)
 	return spacer
 
 
 func _make_settings_menu_button(text: String) -> Button:
 	var button := Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0.0, 70.0)
+	button.custom_minimum_size = Vector2(0.0, 56.0)
 	button.add_theme_stylebox_override("normal", _settings_button_style(Color(0.055, 0.085, 0.12, 0.98), Color(0.38, 0.50, 0.62, 1.0)))
 	button.add_theme_stylebox_override("hover", _settings_button_style(Color(0.075, 0.115, 0.16, 1.0), Color(0.55, 0.70, 0.84, 1.0)))
 	button.add_theme_stylebox_override("pressed", _settings_button_style(Color(0.035, 0.055, 0.08, 1.0), Color(0.32, 0.43, 0.54, 1.0)))
 	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
 	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
-	button.add_theme_font_size_override("font_size", 30)
+	button.add_theme_font_size_override("font_size", 24)
 	return button
 
 
@@ -173,6 +215,18 @@ func _emit_speed_selected(speed: String) -> void:
 		callback.call(speed)
 
 
+func _emit_quality_selected(quality: String) -> void:
+	var callback := _callback(CALLBACK_QUALITY_SELECTED)
+	if callback.is_valid():
+		callback.call(quality)
+
+
+func _emit_reduced_motion_toggled() -> void:
+	var callback := _callback(CALLBACK_REDUCED_MOTION_TOGGLED)
+	if callback.is_valid():
+		callback.call()
+
+
 func _emit(name: String) -> void:
 	var callback := _callback(name)
 	if callback.is_valid():
@@ -184,3 +238,13 @@ func _callback(name: String) -> Callable:
 	if raw_callback is Callable:
 		return raw_callback
 	return Callable()
+
+
+func _settings_dictionary(settings: Variant) -> Dictionary:
+	if settings is Dictionary:
+		return (settings as Dictionary).duplicate()
+	return {
+		"vfx_speed": String(settings),
+		"combat_vfx_quality": "low",
+		"reduced_motion": false,
+	}

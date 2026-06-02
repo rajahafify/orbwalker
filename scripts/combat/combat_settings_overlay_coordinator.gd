@@ -22,10 +22,10 @@ func ensure_overlay() -> void:
 		_presenter.ensure_overlay()
 
 
-func show(speed: String) -> void:
+func show(settings: Variant) -> void:
 	_ensure_presenter()
 	if _presenter != null:
-		_presenter.show(speed)
+		_presenter.show(settings)
 
 
 func hide() -> void:
@@ -41,6 +41,18 @@ func speed_buttons() -> Array[Button]:
 	if _presenter == null:
 		return []
 	return _presenter.speed_buttons()
+
+
+func quality_buttons() -> Array[Button]:
+	if _presenter == null:
+		return []
+	return _presenter.quality_buttons()
+
+
+func reduced_motion_button() -> Button:
+	if _presenter == null:
+		return null
+	return _presenter.reduced_motion_button()
 
 
 func continue_button() -> Button:
