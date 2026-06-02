@@ -14,6 +14,7 @@ const HELP_RECT := Rect2(Vector2(0, 18), Vector2(76, 76))
 const SETTINGS_RECT := Rect2(Vector2(0, 16), Vector2(82, 82))
 const HEADER_BUTTON_GAP := 18.0
 const HEADER_BUTTON_RIGHT_MARGIN := 14.0
+const HEADER_TOUCH_EXPAND := 18.0
 const HIDDEN_RECT := Rect2(Vector2(-9999, -9999), Vector2(1, 1))
 
 const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
@@ -80,6 +81,23 @@ func _notification(what: int) -> void:
 		apply_header_layout()
 
 
+func _gui_input(event: InputEvent) -> void:
+	var touch_positions := _pressed_event_positions(event)
+	if touch_positions.is_empty():
+		return
+	var settings_rect := _expanded_settings_rect(size)
+	var help_rect := _expanded_help_rect(size)
+	for touch_position in touch_positions:
+		if settings_rect.has_point(touch_position):
+			accept_event()
+			settings_pressed.emit()
+			return
+		if help_rect.has_point(touch_position):
+			accept_event()
+			help_pressed.emit()
+			return
+
+
 func set_title(text: String) -> void:
 	if title_label != null:
 		title_label.text = text
@@ -143,6 +161,8 @@ static func layout_snapshot_for(root_rect: Rect2) -> Dictionary:
 		"gold_counter": _offset_rect(_local_gold_rect(root_rect.size), root_rect.position),
 		"help_button": _offset_rect(_local_help_rect(root_rect.size), root_rect.position),
 		"settings_button": _offset_rect(_local_settings_rect(root_rect.size), root_rect.position),
+		"help_hit_target": _offset_rect(_expanded_help_rect(root_rect.size), root_rect.position),
+		"settings_hit_target": _offset_rect(_expanded_settings_rect(root_rect.size), root_rect.position),
 		"menu_button": HIDDEN_RECT,
 		"menu_visible": false,
 		"help_label": "?",
@@ -179,6 +199,14 @@ static func _local_settings_rect(header_size: Vector2) -> Rect2:
 	)
 
 
+static func _expanded_help_rect(header_size: Vector2) -> Rect2:
+	return _local_help_rect(header_size).grow(HEADER_TOUCH_EXPAND)
+
+
+static func _expanded_settings_rect(header_size: Vector2) -> Rect2:
+	return _local_settings_rect(header_size).grow(HEADER_TOUCH_EXPAND)
+
+
 static func _center_y(header_height: float, control_height: float) -> float:
 	return maxf(0.0, (header_height - control_height) * 0.5)
 
@@ -194,6 +222,25 @@ func _format_gold_text(text: String) -> String:
 	if clean_text.to_upper().begins_with("GOLD"):
 		return "$%s" % clean_text.substr(4).strip_edges()
 	return clean_text
+
+
+func _pressed_event_positions(event: InputEvent) -> Array[Vector2]:
+	var raw_position := Vector2.INF
+	if event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
+		if touch.pressed:
+			raw_position = touch.position
+	elif event is InputEventMouseButton:
+		var button_event := event as InputEventMouseButton
+		if button_event.pressed and button_event.button_index == MOUSE_BUTTON_LEFT:
+			raw_position = button_event.position
+	if raw_position == Vector2.INF:
+		return []
+	var positions: Array[Vector2] = [raw_position]
+	var local_position := get_global_transform_with_canvas().affine_inverse() * raw_position
+	if not local_position.is_equal_approx(raw_position):
+		positions.append(local_position)
+	return positions
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:

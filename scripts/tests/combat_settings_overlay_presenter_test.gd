@@ -106,10 +106,10 @@ func _test_show_updates_quality_and_reduced_motion_selection() -> String:
 	if quality_buttons[0].text != "LOW" or quality_buttons[1].text != "HIGH *":
 		root.free()
 		return "Expected selected quality text to match the star suffix convention."
-	if presenter.reduced_motion_button().text != "REDUCED MOTION: ON":
+	if presenter.reduced_motion_button().text != "ON" or not presenter.reduced_motion_button().button_pressed:
 		root.free()
 		return "Expected reduced motion button to show enabled state."
-	if presenter.game_juice_button().text != "GAME JUICE: ON":
+	if presenter.game_juice_button().text != "ON" or not presenter.game_juice_button().button_pressed:
 		root.free()
 		return "Expected game juice button to show enabled state."
 	root.free()
@@ -131,7 +131,7 @@ func _test_show_renders_individual_game_juice_flags() -> String:
 	if screen_button == null:
 		root.free()
 		return "Expected screen nudge flag button to exist."
-	if not screen_button.text.ends_with(": OFF"):
+	if screen_button.text != "OFF" or screen_button.button_pressed:
 		root.free()
 		return "Expected screen nudge flag state to render OFF."
 	root.free()

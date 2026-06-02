@@ -640,12 +640,12 @@ func _layout_settings_overlay(viewport_size: Vector2) -> void:
 		button.add_theme_font_size_override("font_size", button_font)
 	for button in [_settings_reduced_motion_button, _settings_game_juice_button]:
 		if button != null:
-			button.custom_minimum_size = Vector2(0.0, button_height)
+			button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.22, 104.0, 132.0), button_height)
 			button.add_theme_font_size_override("font_size", button_font)
 	for raw_button in _settings_game_juice_flag_buttons.values():
 		var flag_button := raw_button as Button
 		if flag_button != null:
-			flag_button.custom_minimum_size = Vector2(0.0, button_height)
+			flag_button.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.22, 104.0, 132.0), button_height)
 			flag_button.add_theme_font_size_override("font_size", flag_font)
 	for button in [_settings_reset_button, _settings_close_button]:
 		if button != null:
@@ -716,29 +716,29 @@ func _ensure_settings_overlay(host: Control) -> void:
 		_settings_content.add_child(button)
 
 	_settings_content.add_child(_settings_section_label(_text("settings_comfort"), "SettingsComfortLabel"))
-	_settings_reduced_motion_button = Button.new()
+	_settings_reduced_motion_button = CheckButton.new()
 	_settings_reduced_motion_button.name = "SettingsReducedMotionButton"
 	_settings_reduced_motion_button.custom_minimum_size = Vector2(0.0, 58.0)
 	_settings_reduced_motion_button.pressed.connect(func() -> void: settings_reduced_motion_toggled.emit())
-	_settings_content.add_child(_settings_row_container(_settings_reduced_motion_button, ""))
+	_settings_content.add_child(_settings_toggle_row(_settings_reduced_motion_button, _text("settings_reduced_motion"), ""))
 
 	var juice_label := _settings_section_label(_text("settings_game_juice"), "SettingsGameJuiceLabel")
 	_settings_content.add_child(juice_label)
 
-	_settings_game_juice_button = Button.new()
+	_settings_game_juice_button = CheckButton.new()
 	_settings_game_juice_button.name = "SettingsGameJuiceButton"
 	_settings_game_juice_button.custom_minimum_size = Vector2(0.0, 58.0)
 	_settings_game_juice_button.pressed.connect(func() -> void: settings_game_juice_toggled.emit())
-	_settings_content.add_child(_settings_row_container(_settings_game_juice_button, tr("SETTINGS_JUICE_MASTER_DESC")))
+	_settings_content.add_child(_settings_toggle_row(_settings_game_juice_button, tr("SETTINGS_JUICE_MASTER"), tr("SETTINGS_JUICE_MASTER_DESC")))
 
 	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
-		var flag_button := Button.new()
+		var flag_button := CheckButton.new()
 		flag_button.name = _settings_flag_button_name(flag_key)
 		flag_button.custom_minimum_size = Vector2(0.0, 58.0)
 		var captured_flag_key := flag_key
 		flag_button.pressed.connect(func() -> void: settings_game_juice_flag_toggled.emit(captured_flag_key))
 		_settings_game_juice_flag_buttons[flag_key] = flag_button
-		_settings_content.add_child(_settings_row_container(flag_button, _juice_flag_description(flag_key)))
+		_settings_content.add_child(_settings_toggle_row(flag_button, _juice_flag_label(flag_key), _juice_flag_description(flag_key)))
 
 	_settings_actions_label = _settings_section_label(_text("settings_actions"), "SettingsActionsLabel")
 	_settings_box.add_child(_settings_actions_label)
@@ -804,12 +804,23 @@ func _settings_section_label(text: String, node_name: String = "") -> Label:
 	return label
 
 
-func _settings_row_container(button: Button, description: String) -> VBoxContainer:
-	var row := VBoxContainer.new()
+func _settings_toggle_row(button: Button, title: String, description: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = "%sRow" % button.name.trim_suffix("Button")
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 4)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(button)
+	row.add_theme_constant_override("separation", 14)
+	var text_column := VBoxContainer.new()
+	text_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_column.add_theme_constant_override("separation", 3)
+	var title_label := Label.new()
+	title_label.name = "%sTitleLabel" % button.name.trim_suffix("Button")
+	title_label.text = title
+	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	title_label.add_theme_font_size_override("font_size", 21)
+	title_label.add_theme_color_override("font_color", MENU_FONT_COLOR)
+	title_label.add_theme_color_override("font_outline_color", MENU_FONT_OUTLINE_COLOR)
+	title_label.add_theme_constant_override("outline_size", 1)
+	text_column.add_child(title_label)
 	if description.strip_edges() != "":
 		var description_label := Label.new()
 		description_label.text = description
@@ -818,7 +829,11 @@ func _settings_row_container(button: Button, description: String) -> VBoxContain
 		description_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.88, 0.94))
 		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 0.92))
 		description_label.add_theme_constant_override("outline_size", 1)
-		row.add_child(description_label)
+		text_column.add_child(description_label)
+	row.add_child(text_column)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.custom_minimum_size = Vector2(112.0, 58.0)
+	row.add_child(button)
 	return row
 
 
@@ -834,14 +849,15 @@ func _update_settings_speed_buttons(speed: String) -> void:
 func _update_settings_reduced_motion_button(enabled: bool) -> void:
 	if _settings_reduced_motion_button == null:
 		return
-	_settings_reduced_motion_button.text = "%s: %s" % [_text("settings_reduced_motion").to_upper(), _on_off_label(enabled)]
+	_settings_reduced_motion_button.text = _on_off_label(enabled)
+	_settings_reduced_motion_button.set_pressed_no_signal(enabled)
 
 
 func _update_settings_game_juice_button(enabled: bool) -> void:
 	if _settings_game_juice_button == null:
 		return
-	var label := tr("SETTINGS_JUICE_MASTER").to_upper()
-	_settings_game_juice_button.text = "%s: %s" % [label, _on_off_label(enabled)]
+	_settings_game_juice_button.text = _on_off_label(enabled)
+	_settings_game_juice_button.set_pressed_no_signal(enabled)
 
 
 func _update_settings_game_juice_flag_buttons(flags: Dictionary) -> void:
@@ -850,7 +866,9 @@ func _update_settings_game_juice_flag_buttons(flags: Dictionary) -> void:
 		var button := _settings_game_juice_flag_buttons.get(flag_key, null) as Button
 		if button == null:
 			continue
-		button.text = "%s: %s" % [_juice_flag_label(flag_key).to_upper(), _on_off_label(bool(normalized_flags.get(flag_key, true)))]
+		var enabled := bool(normalized_flags.get(flag_key, true))
+		button.text = _on_off_label(enabled)
+		button.set_pressed_no_signal(enabled)
 
 
 func _settings_dictionary(settings: Variant) -> Dictionary:

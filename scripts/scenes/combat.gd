@@ -213,6 +213,7 @@ var _model
 var _view
 var _controller
 var _root_nodes: Dictionary = {}
+var _last_settings_press_msec := -1000000
 
 
 func _enter_tree() -> void:
@@ -223,6 +224,7 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	_ensure_mvc()
 	_root_nodes = _build_root_nodes()
+	_connect_header_action_signals()
 	_controller.bind(self, _root_nodes, _model, _view)
 	_controller.ready()
 
@@ -258,6 +260,10 @@ func _on_debug_toggle_button_pressed() -> void:
 
 
 func _on_settings_button_pressed() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_settings_press_msec < 180:
+		return
+	_last_settings_press_msec = now
 	if _controller != null:
 		_controller.on_settings_button_pressed()
 
@@ -279,6 +285,18 @@ func _ensure_mvc() -> void:
 		_view = COMBAT_VIEW_SCRIPT.new()
 	if _controller == null:
 		_controller = COMBAT_CONTROLLER_SCRIPT.new()
+
+
+func _connect_header_action_signals() -> void:
+	var top_bar := _root_nodes.get("_top_bar") as TopHeader
+	if top_bar == null:
+		return
+	var settings_callback := Callable(self, "_on_settings_button_pressed")
+	if not top_bar.settings_pressed.is_connected(settings_callback):
+		top_bar.settings_pressed.connect(settings_callback)
+	var help_callback := Callable(self, "_on_back_button_pressed")
+	if not top_bar.help_pressed.is_connected(help_callback):
+		top_bar.help_pressed.connect(help_callback)
 
 
 func _build_root_nodes() -> Dictionary:

@@ -1567,6 +1567,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Regression coverage now checks the mobile settings surface, combat settings sheet size, large shared header controls, and board-centered fullscreen armor VFX sizing.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code> reported <code>75</code> suites, <code>313</code> cases, and <code>0</code> failures.</li>
 </ul>
+<p>Verification notes (2026-06-02, settings toggle-row Android touch polish):</p>
+<ul>
+<li>Main menu and combat Settings now render comfort and game-juice options as static label/description rows with compact right-side switches instead of full-width button toggles, making the long flag list easier to scroll on Android.</li>
+<li>The combat top header now accepts expanded fallback touch/mouse hit rectangles for Help and Settings, plus a short settings-open debounce, so Android touch input can still open combat Settings when the drawn glyph is small.</li>
+<li>Localization and presenter tests now assert the new row-title labels and switch states for the main menu and combat Settings surfaces.</li>
+<li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code> reported <code>75</code> suites, <code>313</code> cases, and <code>0</code> failures.</li>
+</ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>
 <li><code>scripts/scenes/combat.gd</code> now centralizes duplicated combat outcome trace/change-scene glue in <code>_trace_and_change_scene_to_target(...)</code>, used by the standard outcome Next button, boss reward claim, and boss reward skip paths. <code>RunState</code> still owns route semantics, boss reward state, final summary routing, and run summaries; <code>CombatOutcomeOverlay</code> still owns only presentation state/layout/content.</li>

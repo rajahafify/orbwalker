@@ -122,20 +122,20 @@ func ensure_overlay() -> void:
 		_quality_buttons.append(button)
 		content.add_child(button)
 	content.add_child(_settings_label("Comfort", 28))
-	_reduced_motion_button = _make_settings_menu_button("REDUCED MOTION")
+	_reduced_motion_button = _make_settings_toggle_button()
 	_reduced_motion_button.pressed.connect(func() -> void: _emit_reduced_motion_toggled())
-	content.add_child(_settings_row_container(_reduced_motion_button, "Suppresses motion-heavy juice even when the flags below are enabled."))
+	content.add_child(_settings_toggle_row(_reduced_motion_button, "Reduced Motion", "Suppresses motion-heavy juice even when the flags below are enabled."))
 	content.add_child(_settings_label("Game Juice", 28))
-	_game_juice_button = _make_settings_menu_button("GAME JUICE")
+	_game_juice_button = _make_settings_toggle_button()
 	_game_juice_button.pressed.connect(func() -> void: _emit_game_juice_toggled())
-	content.add_child(_settings_row_container(_game_juice_button, "Master switch for optional feedback layers."))
+	content.add_child(_settings_toggle_row(_game_juice_button, "Game Juice", "Master switch for optional feedback layers."))
 	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
-		var flag_button := _make_settings_menu_button("")
+		var flag_button := _make_settings_toggle_button()
 		flag_button.name = _settings_flag_button_name(flag_key)
 		var captured_flag_key := flag_key
 		flag_button.pressed.connect(func() -> void: _emit_game_juice_flag_toggled(captured_flag_key))
 		_game_juice_flag_buttons[flag_key] = flag_button
-		content.add_child(_settings_row_container(flag_button, _juice_flag_description(flag_key)))
+		content.add_child(_settings_toggle_row(flag_button, _juice_flag_label(flag_key), _juice_flag_description(flag_key)))
 
 	box.add_child(_settings_label("Actions", 28))
 	var action_grid := GridContainer.new()
@@ -187,13 +187,15 @@ func update_quality_buttons(quality: String) -> void:
 func update_reduced_motion_button(enabled: bool) -> void:
 	if _reduced_motion_button == null:
 		return
-	_reduced_motion_button.text = "REDUCED MOTION: %s" % _on_off_label(enabled)
+	_reduced_motion_button.text = _on_off_label(enabled)
+	_reduced_motion_button.set_pressed_no_signal(enabled)
 
 
 func update_game_juice_button(enabled: bool) -> void:
 	if _game_juice_button == null:
 		return
-	_game_juice_button.text = "GAME JUICE: %s" % _on_off_label(enabled)
+	_game_juice_button.text = _on_off_label(enabled)
+	_game_juice_button.set_pressed_no_signal(enabled)
 
 
 func update_game_juice_flag_buttons(flags: Dictionary) -> void:
@@ -202,7 +204,9 @@ func update_game_juice_flag_buttons(flags: Dictionary) -> void:
 		var button := _game_juice_flag_buttons.get(flag_key, null) as Button
 		if button == null:
 			continue
-		button.text = "%s: %s" % [_juice_flag_label(flag_key).to_upper(), _on_off_label(bool(normalized_flags.get(flag_key, true)))]
+		var enabled := bool(normalized_flags.get(flag_key, true))
+		button.text = _on_off_label(enabled)
+		button.set_pressed_no_signal(enabled)
 
 
 func speed_buttons() -> Array[Button]:
@@ -258,12 +262,21 @@ func _settings_group_gap() -> Control:
 	return spacer
 
 
-func _settings_row_container(button: Button, description: String) -> VBoxContainer:
-	var row := VBoxContainer.new()
+func _settings_toggle_row(button: Button, title: String, description: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_theme_constant_override("separation", 3)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(button)
+	row.add_theme_constant_override("separation", 18)
+	var text_column := VBoxContainer.new()
+	text_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_column.add_theme_constant_override("separation", 3)
+	var title_label := Label.new()
+	title_label.text = title
+	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	title_label.add_theme_font_size_override("font_size", 24)
+	title_label.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
+	title_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 1.0))
+	title_label.add_theme_constant_override("outline_size", 1)
+	text_column.add_child(title_label)
 	if description.strip_edges() != "":
 		var description_label := Label.new()
 		description_label.text = description
@@ -272,7 +285,11 @@ func _settings_row_container(button: Button, description: String) -> VBoxContain
 		description_label.add_theme_color_override("font_color", Color(0.74, 0.80, 0.86, 0.94))
 		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 1.0))
 		description_label.add_theme_constant_override("outline_size", 1)
-		row.add_child(description_label)
+		text_column.add_child(description_label)
+	row.add_child(text_column)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.custom_minimum_size = Vector2(132.0, 66.0)
+	row.add_child(button)
 	return row
 
 
@@ -287,6 +304,17 @@ func _make_settings_menu_button(text: String) -> Button:
 	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
 	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
 	button.add_theme_font_size_override("font_size", 26)
+	return button
+
+
+func _make_settings_toggle_button() -> CheckButton:
+	var button := CheckButton.new()
+	button.text = "OFF"
+	button.custom_minimum_size = Vector2(132.0, 66.0)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
+	button.add_theme_font_size_override("font_size", 24)
 	return button
 
 

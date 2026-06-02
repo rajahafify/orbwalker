@@ -58,8 +58,11 @@ func _test_main_menu_view_applies_second_locale() -> String:
 	var settings_title := host.find_child("SettingsTitle", true, false) as Label
 	var fast_button := host.find_child("SpeedFastButton", true, false) as Button
 	var game_juice_label := host.find_child("SettingsGameJuiceLabel", true, false) as Label
+	var game_juice_toggle_label := host.find_child("SettingsGameJuiceTitleLabel", true, false) as Label
 	var game_juice_button := host.find_child("SettingsGameJuiceButton", true, false) as Button
+	var reduced_motion_label := host.find_child("SettingsReducedMotionTitleLabel", true, false) as Label
 	var reduced_motion_button := host.find_child("SettingsReducedMotionButton", true, false) as Button
+	var screen_nudge_label := host.find_child("JuiceFlagScreenNudgeTitleLabel", true, false) as Label
 	var screen_nudge_button := host.find_child("JuiceFlagScreenNudgeButton", true, false) as Button
 	var reset_button := host.find_child("SettingsResetDefaultsButton", true, false) as Button
 	var close_button := host.find_child("SettingsCloseButton", true, false) as Button
@@ -88,15 +91,27 @@ func _test_main_menu_view_applies_second_locale() -> String:
 	if error != "":
 		host.free()
 		return error
-	error = _expect_text(reduced_motion_button, "MOVIMIENTO REDUCIDO: ON", "reduced motion button")
+	error = _expect_text(reduced_motion_label, "Movimiento reducido", "reduced motion row label")
 	if error != "":
 		host.free()
 		return error
-	error = _expect_text(game_juice_button, "JUEGO JUGOSO MAESTRO: ON", "selected game juice button")
+	error = _expect_text(reduced_motion_button, "ON", "reduced motion switch")
 	if error != "":
 		host.free()
 		return error
-	error = _expect_text(screen_nudge_button, "EMPUJE DE PANTALLA: ON", "screen nudge flag button")
+	error = _expect_text(game_juice_toggle_label, "Juego jugoso maestro", "selected game juice row label")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(game_juice_button, "ON", "selected game juice switch")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(screen_nudge_label, "Empuje de pantalla", "screen nudge row label")
+	if error != "":
+		host.free()
+		return error
+	error = _expect_text(screen_nudge_button, "ON", "screen nudge flag switch")
 	if error != "":
 		host.free()
 		return error
