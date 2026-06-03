@@ -1207,7 +1207,6 @@ func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 		return
 
 	_set_status_text(_turn_log_presenter.build_turn_summary_status(turn_log))
-	_play_turn_result_sfx(turn_log)
 	_set_status_color(STATUS_COLOR_POSITIVE)
 	_set_turn_summary_text("Turn Summary: %s" % _turn_log_presenter.build_turn_summary_status(turn_log))
 	_pulse_turn_summary(STATUS_COLOR_POSITIVE)

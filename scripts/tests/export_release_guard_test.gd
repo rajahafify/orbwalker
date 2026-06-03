@@ -35,6 +35,9 @@ const DEBUG_EXPORT_PATHS := [
 	"scenes/debug/vfx_gallery_index.tscn",
 	"scenes/debug/vfx_gallery_show.tscn",
 ]
+const RAW_MUSIC_INCLUDE_PATTERN := "resources/audio/raw_music/*.wav.bin"
+const IMPORTED_MUSIC_EXCLUDE_PATTERN := "resources/audio/music/*.wav"
+const RAW_MUSIC_EXPORT_PRESETS := ["Android", "Web"]
 
 
 func run_all() -> Dictionary:
@@ -42,9 +45,10 @@ func run_all() -> Dictionary:
 	_run_case("release_presets_exclude_dev_tooling_paths", _test_release_presets_exclude_dev_tooling_paths, failures)
 	_run_case("debug_entrypoints_match_release_exclude_filters", _test_debug_entrypoints_match_release_exclude_filters, failures)
 	_run_case("gdai_autoload_uses_guarded_runtime_proxy", _test_gdai_autoload_uses_guarded_runtime_proxy, failures)
+	_run_case("raw_music_exports_exclude_imported_music_duplicates", _test_raw_music_exports_exclude_imported_music_duplicates, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -97,6 +101,24 @@ func _test_gdai_autoload_uses_guarded_runtime_proxy() -> String:
 	return ""
 
 
+func _test_raw_music_exports_exclude_imported_music_duplicates() -> String:
+	var config_result := _load_config(EXPORT_PRESETS_PATH)
+	if config_result.has("__error"):
+		return String(config_result["__error"])
+	var config: ConfigFile = config_result["config"]
+	for preset_section in _preset_sections(config):
+		var preset_name := String(config.get_value(preset_section, "name", preset_section))
+		if not RAW_MUSIC_EXPORT_PRESETS.has(preset_name):
+			continue
+		var includes := _include_patterns_for(config, preset_section)
+		var excludes := _exclude_patterns_for(config, preset_section)
+		if not includes.has(RAW_MUSIC_INCLUDE_PATTERN):
+			return "Expected export preset '%s' to include '%s'." % [preset_name, RAW_MUSIC_INCLUDE_PATTERN]
+		if not excludes.has(IMPORTED_MUSIC_EXCLUDE_PATTERN):
+			return "Expected export preset '%s' to exclude imported music WAV duplicates via '%s'." % [preset_name, IMPORTED_MUSIC_EXCLUDE_PATTERN]
+	return ""
+
+
 func _load_config(path: String) -> Dictionary:
 	var config := ConfigFile.new()
 	var error := config.load(path)
@@ -117,6 +139,16 @@ func _preset_sections(config: ConfigFile) -> Array[String]:
 
 func _exclude_patterns_for(config: ConfigFile, preset_section: String) -> Array[String]:
 	var raw := String(config.get_value(preset_section, "exclude_filter", ""))
+	var patterns: Array[String] = []
+	for pattern in raw.split(",", false):
+		var trimmed := String(pattern).strip_edges()
+		if trimmed != "":
+			patterns.append(trimmed)
+	return patterns
+
+
+func _include_patterns_for(config: ConfigFile, preset_section: String) -> Array[String]:
+	var raw := String(config.get_value(preset_section, "include_filter", ""))
 	var patterns: Array[String] = []
 	for pattern in raw.split(",", false):
 		var trimmed := String(pattern).strip_edges()

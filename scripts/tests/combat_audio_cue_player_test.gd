@@ -22,6 +22,8 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("delegates_music_and_sfx_keys", _test_delegates_music_and_sfx_keys, failures)
 	_run_case("turn_result_hit_only_when_enemy_damages_player", _test_turn_result_hit_only_when_enemy_damages_player, failures)
+	_run_case("turn_result_uses_baseline_when_master_disabled", _test_turn_result_uses_baseline_when_master_disabled, failures)
+	_run_case("turn_result_respects_elemental_impact_flag", _test_turn_result_respects_elemental_impact_flag, failures)
 	_run_case("mastery_effect_maps_known_effects", _test_mastery_effect_maps_known_effects, failures)
 	_run_case("baseline_impacts_use_generic_keys_when_juice_disabled", _test_baseline_impacts_use_generic_keys_when_juice_disabled, failures)
 	_run_case("elemental_impacts_map_to_distinct_keys", _test_elemental_impacts_map_to_distinct_keys, failures)
@@ -30,7 +32,7 @@ func run_all() -> Dictionary:
 	_run_case("result_aware_cues_map_to_existing_keys", _test_result_aware_cues_map_to_existing_keys, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 8,
+		"total": 10,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -65,6 +67,33 @@ func _test_turn_result_hit_only_when_enemy_damages_player() -> String:
 	cue_player.play_turn_result({"enemy_attack_resolution": {"hp_damage": 2}})
 	if audio.sfx_keys != ["impact_player_hit"]:
 		return "Expected exactly one player-hit impact cue for positive enemy HP damage."
+	return ""
+
+
+func _test_turn_result_uses_baseline_when_master_disabled() -> String:
+	var audio := FakeAudioManager.new()
+	var cue_player: Variant = AUDIO_CUE_PLAYER_SCRIPT.new()
+	cue_player.bind(null, audio)
+	cue_player.set_game_juice_enabled(false)
+	cue_player.play_turn_result({"enemy_attack_resolution": {"hp_damage": 5, "blocked_by_armor": 0}})
+	cue_player.play_turn_result({"enemy_attack_resolution": {"hp_damage": 0, "blocked_by_armor": 3}})
+	if audio.sfx_keys != ["hit", "armor"]:
+		return "Expected baseline turn result cues with master juice disabled, got %s." % [audio.sfx_keys]
+	return ""
+
+
+func _test_turn_result_respects_elemental_impact_flag() -> String:
+	var audio := FakeAudioManager.new()
+	var cue_player: Variant = AUDIO_CUE_PLAYER_SCRIPT.new()
+	var flags := GAME_JUICE_FLAGS_SCRIPT.default_flags()
+	flags[GAME_JUICE_FLAGS_SCRIPT.ELEMENT_IMPACT_AUDIO] = false
+	cue_player.bind(null, audio)
+	cue_player.set_game_juice_enabled(true)
+	cue_player.set_game_juice_flags(flags)
+	cue_player.play_turn_result({"enemy_attack_resolution": {"hp_damage": 5, "blocked_by_armor": 0}})
+	cue_player.play_turn_result({"enemy_attack_resolution": {"hp_damage": 0, "blocked_by_armor": 3}})
+	if audio.sfx_keys != ["hit", "armor"]:
+		return "Expected baseline turn result cues with elemental impact audio disabled, got %s." % [audio.sfx_keys]
 	return ""
 
 

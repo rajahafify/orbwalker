@@ -3,6 +3,7 @@ extends Control
 const COMBAT_MODEL_SCRIPT := preload("res://scripts/combat/combat_model.gd")
 const COMBAT_VIEW_SCRIPT := preload("res://scripts/combat/combat_view.gd")
 const COMBAT_CONTROLLER_SCRIPT := preload("res://scripts/combat/combat_controller.gd")
+const HEADER_ACTION_DEBOUNCE_MSEC := 180
 
 const ROOT_NODE_BINDINGS := {
 	"_board": ^"%Board",
@@ -214,6 +215,7 @@ var _view
 var _controller
 var _root_nodes: Dictionary = {}
 var _last_settings_press_msec := -1000000
+var _last_help_press_msec := -1000000
 
 
 func _enter_tree() -> void:
@@ -250,6 +252,10 @@ func _on_viewport_size_changed() -> void:
 
 
 func _on_back_button_pressed() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_help_press_msec < HEADER_ACTION_DEBOUNCE_MSEC:
+		return
+	_last_help_press_msec = now
 	if _controller != null:
 		_controller.on_back_button_pressed()
 
@@ -261,7 +267,7 @@ func _on_debug_toggle_button_pressed() -> void:
 
 func _on_settings_button_pressed() -> void:
 	var now := Time.get_ticks_msec()
-	if now - _last_settings_press_msec < 180:
+	if now - _last_settings_press_msec < HEADER_ACTION_DEBOUNCE_MSEC:
 		return
 	_last_settings_press_msec = now
 	if _controller != null:

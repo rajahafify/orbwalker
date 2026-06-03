@@ -5,6 +5,15 @@ const COMBAT_SCENE := preload("res://scenes/combat.tscn")
 const COMBAT_VIEW_SCRIPT := preload("res://scripts/combat/combat_view.gd")
 
 
+class FakeCombatController:
+	extends RefCounted
+
+	var back_count := 0
+
+	func on_back_button_pressed() -> void:
+		back_count += 1
+
+
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("combat_scene_script_is_attached", _test_combat_scene_script_is_attached, failures)
@@ -13,10 +22,12 @@ func run_all() -> Dictionary:
 	_run_case("board_view_resolves_from_combat_scene", _test_board_view_resolves_from_combat_scene, failures)
 	_run_case("combat_view_exposes_board_centered_fullscreen_vfx_target", _test_combat_view_exposes_board_centered_fullscreen_vfx_target, failures)
 	_run_case("header_buttons_are_scene_connected", _test_header_buttons_are_scene_connected, failures)
+	_run_case("header_help_press_is_debounced", _test_header_help_press_is_debounced, failures)
+	_run_case("turn_result_audio_not_replayed_after_visual_replay", _test_turn_result_audio_not_replayed_after_visual_replay, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 6,
+		"total": 8,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -159,6 +170,30 @@ func _test_header_buttons_are_scene_connected() -> String:
 	return ""
 
 
+func _test_header_help_press_is_debounced() -> String:
+	var root := _instantiate_combat_scene()
+	if root == null:
+		return "Expected combat scene to instantiate."
+	var controller := FakeCombatController.new()
+	root.set("_controller", controller)
+	root.call("_on_back_button_pressed")
+	root.call("_on_back_button_pressed")
+	var back_count := controller.back_count
+	root.free()
+	if back_count != 1:
+		return "Expected duplicate header help dispatch to debounce to 1 press, got %d." % [back_count]
+	return ""
+
+
+func _test_turn_result_audio_not_replayed_after_visual_replay() -> String:
+	var source := _script_source("res://scripts/combat/combat_controller.gd")
+	if source == "":
+		return "Expected combat controller source to be readable."
+	if source.find("\n\t_play_turn_result_sfx(turn_log)") >= 0:
+		return "Combat controller still replays turn result audio after visual replay."
+	return ""
+
+
 func _instantiate_combat_scene() -> Control:
 	var root: Node = COMBAT_SCENE.instantiate()
 	if root is Control:
@@ -176,6 +211,15 @@ func _assert_scene_button_connection(root: Control, button_path: String, method_
 	var callback := Callable(root, method_name)
 	if not button.pressed.is_connected(callback):
 		missing.append("%s -> %s" % [button_path, method_name])
+
+
+func _script_source(path: String) -> String:
+	if not FileAccess.file_exists(path):
+		return ""
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text()
 
 
 func _node_matches_expected_type(node: Node, expected_type: String) -> bool:

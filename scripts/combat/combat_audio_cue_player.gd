@@ -37,10 +37,7 @@ func play_sfx(key: String) -> void:
 
 func play_turn_result(turn_log: Dictionary) -> void:
 	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
-	if int(enemy_attack.get("hp_damage", 0)) > 0:
-		play_sfx("impact_player_hit")
-	elif int(enemy_attack.get("blocked_by_armor", 0)) > 0:
-		play_sfx("impact_player_block")
+	play_enemy_attack_result(enemy_attack)
 
 
 func play_mastery_effect(effect_kind: String) -> void:
