@@ -24,8 +24,9 @@ const COMBAT_BOSS_REWARD_HANDLER_SCRIPT := preload("res://scripts/combat/combat_
 const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
 const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
-const COMBAT_PLACEHOLDER_TEXTURES_SCRIPT := preload("res://scripts/combat/combat_placeholder_textures.gd")
 const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
+const COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_provider.gd")
+const COMBAT_VFX_TARGET_RESOLVER_SCRIPT := preload("res://scripts/combat/combat_vfx_target_resolver.gd")
 const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
 const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
 const COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_player_hud_refresh_coordinator.gd")
@@ -121,6 +122,8 @@ var _resolve_presenter: Variant = null
 var _combat_vfx_presenter: Variant = null
 var _board_controller: Variant = null
 var _hud_presenter: Variant = null
+var _hud_snapshot_provider: Variant = null
+var _vfx_target_resolver: Variant = null
 var _hud_stage_coordinator: Variant = null
 var _mastery_preview_coordinator: Variant = null
 var _player_hud_refresh_coordinator: Variant = null
@@ -347,6 +350,10 @@ func _ensure_runtime_helpers() -> void:
 		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
 	if _hud_presenter == null:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+	if _hud_snapshot_provider == null:
+		_hud_snapshot_provider = COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
+	if _vfx_target_resolver == null:
+		_vfx_target_resolver = COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
 	if _hud_stage_coordinator == null:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	if _mastery_preview_coordinator == null:
@@ -1654,33 +1661,16 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var prep_armor_added := int(turn_log.get("prep_armor_added", 0))
 	var applied_flat_heal_bonus := maxi(0, heart_heal - int(turn_log.get("heart_base", 0)))
 	var applied_flat_gold_bonus := maxi(0, gold_gain - int(turn_log.get("gold_base", 0)))
-	var enemy_target: Vector2 = Vector2.ZERO
-	var player_target: Vector2 = Vector2.ZERO
-	var player_hp_target: Vector2 = Vector2.ZERO
-	var player_hp_impact_size := Vector2(180, 76)
-	var armor_mastery_target: Vector2 = Vector2.ZERO
-	var armor_mastery_impact_size := Vector2(360, 360)
-	if _view != null:
-		enemy_target = _view.enemy_vfx_target_global(0.48)
-		player_target = _view.player_vfx_target_global(0.64)
-		player_hp_target = _view.player_hp_bar_vfx_target_global(0.50)
-		armor_mastery_target = _view.board_vfx_target_global()
-		var fullscreen_vfx_size: Vector2 = _view.board_fullscreen_vfx_size()
-		if fullscreen_vfx_size.x > 0.0 and fullscreen_vfx_size.y > 0.0:
-			var armor_extent := minf(fullscreen_vfx_size.x, fullscreen_vfx_size.y) * 0.34
-			armor_mastery_impact_size = Vector2(armor_extent, armor_extent)
-		var hp_bar_size: Vector2 = _view.player_hp_bar_vfx_size()
-		if hp_bar_size.x > 0.0 and hp_bar_size.y > 0.0:
-			player_hp_impact_size = Vector2(
-				clampf(hp_bar_size.x * 0.58, 180.0, 420.0),
-				clampf(hp_bar_size.y * 1.90, 76.0, 130.0)
-			)
-	if player_hp_target == Vector2.ZERO:
-		player_hp_target = player_target
-	if armor_mastery_target == Vector2.ZERO:
-		armor_mastery_target = player_hp_target
-	var enemy_impact_size := Vector2(84, 84)
-	var gold_impact_size := Vector2(70, 70)
+	_bind_vfx_target_resolver()
+	var replay_targets: Dictionary = _vfx_target_resolver.replay_targets()
+	var enemy_target: Vector2 = replay_targets.get("enemy_target", Vector2.ZERO)
+	var player_target: Vector2 = replay_targets.get("player_target", Vector2.ZERO)
+	var player_hp_target: Vector2 = replay_targets.get("player_hp_target", Vector2.ZERO)
+	var armor_mastery_target: Vector2 = replay_targets.get("armor_target", Vector2.ZERO)
+	var enemy_impact_size: Vector2 = replay_targets.get("enemy_impact_size", Vector2(84, 84))
+	var player_hp_impact_size: Vector2 = replay_targets.get("player_hp_impact_size", Vector2(180, 76))
+	var armor_mastery_impact_size: Vector2 = replay_targets.get("armor_impact_size", Vector2(360, 360))
+	var gold_impact_size: Vector2 = replay_targets.get("gold_impact_size", Vector2(70, 70))
 	var damage_lifetime := _combat_speed_duration(0.42)
 	var player_lifetime := _combat_speed_duration(0.45)
 	var gold_lifetime := _combat_speed_duration(0.55)
@@ -1861,22 +1851,12 @@ func _replay_elemental_damage_result(
 
 
 func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int, vfx_presenter: Variant) -> Vector2:
-	if orb_id != OrbType.Id.FIRE or _view == null or not _view.has_method("enemy_vfx_size"):
-		return fallback_size
-	if vfx_presenter == null or not vfx_presenter.has_method("replay_result_is_screen_wide"):
-		return fallback_size
-	if not bool(vfx_presenter.replay_result_is_screen_wide("fire", amount)):
-		return fallback_size
-	var enemy_size: Vector2 = _view.enemy_vfx_size()
-	if enemy_size.x <= 1.0 or enemy_size.y <= 1.0:
-		return fallback_size
-	var scale := 1.0
-	if vfx_presenter != null and vfx_presenter.has_method("result_vfx_size_scale"):
-		scale = maxf(1.0, float(vfx_presenter.result_vfx_size_scale("fire", amount)))
-	return Vector2(
-		maxf(fallback_size.x, enemy_size.x / scale),
-		maxf(fallback_size.y, enemy_size.y / scale)
-	)
+	_bind_vfx_target_resolver()
+	_vfx_target_resolver.bind({
+		"view": _view,
+		"vfx_presenter": vfx_presenter,
+	})
+	return _vfx_target_resolver.enemy_result_impact_size(orb_id, fallback_size, amount)
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
@@ -1904,7 +1884,8 @@ func _update_hud() -> void:
 		return
 
 	_ensure_hud_presenter()
-	var hud_snapshot: Dictionary = _hud_presenter.build_hud_snapshot(_hud_snapshot_input_data())
+	_bind_hud_snapshot_provider()
+	var hud_snapshot: Dictionary = _hud_presenter.build_hud_snapshot(_hud_snapshot_provider.build_snapshot())
 	if _view != null:
 		_view.apply_hud_snapshot(
 			hud_snapshot,
@@ -1915,6 +1896,42 @@ func _update_hud() -> void:
 func _ensure_hud_presenter() -> void:
 	if _hud_presenter == null:
 		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+
+
+func _bind_hud_snapshot_provider() -> void:
+	if _hud_snapshot_provider == null:
+		_hud_snapshot_provider = COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
+	_hud_snapshot_provider.bind(
+		{
+			"run_state": RunState,
+			"model": _model,
+			"player_state": _player_state,
+			"enemy_state": _enemy_state,
+			"combat": _combat,
+			"view": _view,
+			"visuals": _visuals,
+			"turn_log_presenter": _turn_log_presenter,
+		},
+		{
+			"input_phase_value": Callable(self, "_input_phase_value"),
+			"drag_active": Callable(self, "_drag_active"),
+			"drag_move_time_left": Callable(self, "_drag_move_time_left"),
+			"timer_ready_seconds": Callable(self, "_timer_ready_seconds"),
+			"show_intent_preview": Callable(self, "_should_show_intent_damage_preview"),
+		},
+		{
+			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
+		}
+	)
+
+
+func _bind_vfx_target_resolver() -> void:
+	if _vfx_target_resolver == null:
+		_vfx_target_resolver = COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
+	_vfx_target_resolver.bind({
+		"view": _view,
+		"vfx_presenter": _combat_vfx_presenter,
+	})
 
 
 func _bind_hud_stage_coordinator() -> void:
@@ -2072,59 +2089,6 @@ func _bind_tutorial_end_command_handler() -> void:
 		self,
 		STATUS_COLOR_NEUTRAL
 	)
-
-
-func _hud_snapshot_input_data() -> Dictionary:
-	var progression_snapshot: Dictionary = RunState.progression_snapshot()
-	var intent := _enemy_state.get_current_intent()
-	var timer_seconds := _drag_move_time_left() if _drag_active() else _timer_ready_seconds()
-	var turn_summary_text: String = ""
-	if _view != null:
-		turn_summary_text = _view.turn_summary_text()
-	var enemy_stage_texture: Texture2D = null
-	var enemy_portrait_texture: Texture2D = null
-	if _visuals != null:
-		enemy_stage_texture = _visuals.combat_enemy_stage_texture(_enemy_state.enemy_id)
-		enemy_portrait_texture = _visuals.enemy_sprite(_enemy_state.enemy_id)
-	if enemy_portrait_texture == null and _visuals != null:
-		enemy_portrait_texture = _visuals.enemy_sprite("cavern_striker")
-	if enemy_portrait_texture == null:
-		enemy_portrait_texture = COMBAT_PLACEHOLDER_TEXTURES_SCRIPT.make_enemy_placeholder_texture()
-	var player_gold: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
-	var enemy_hp: int = _model.staged_hud_value("enemy_hp", int(_enemy_state.current_hp))
-	var enemy_turn_block: int = _model.staged_hud_value("enemy_turn_block", int(_enemy_state.current_turn_block))
-	var player_hp: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
-	var player_armor: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
-	return {
-		"progression_snapshot": progression_snapshot,
-		"intent": intent,
-		"show_intent_preview": _should_show_intent_damage_preview(),
-		"dungeon_level": int(RunState.dungeon_level),
-		"max_dungeon_levels": int(RunState.MAX_DUNGEON_LEVELS),
-		"current_step_key": String(RunState.current_step_key),
-		"player_gold": player_gold,
-		"enemy_id": String(_enemy_state.enemy_id),
-		"enemy_name_text": _enemy_state.display_name,
-		"enemy_hp": enemy_hp,
-		"enemy_max_hp": int(_enemy_state.max_hp),
-		"enemy_turn_block": enemy_turn_block,
-		"enemy_stage_texture": enemy_stage_texture,
-		"enemy_portrait_texture": enemy_portrait_texture,
-		"combat_turn_index": int(_combat.turn_index),
-		"combat_phase_name": _combat.phase_name(),
-		"is_player_input_phase": _input_phase_value() == InputPhase.PLAYER_INPUT,
-		"drag_active": _drag_active(),
-		"timer_seconds": timer_seconds,
-		"player_hp": player_hp,
-		"player_max_hp": int(_player_state.max_hp),
-		"player_armor": player_armor,
-		"fire_orb_value": int(_player_state.orb_value(OrbType.Id.FIRE)),
-		"armor_orb_value": int(_player_state.orb_value(OrbType.Id.ARMOR)),
-		"heart_orb_id": int(OrbType.Id.HEART),
-		"gold_orb_id": int(OrbType.Id.GOLD),
-		"turn_summary_text": turn_summary_text,
-		"format_intent_compact": Callable(_turn_log_presenter, "format_intent_compact") if _turn_log_presenter != null else Callable(),
-	}
 
 
 func _should_show_intent_damage_preview() -> bool:

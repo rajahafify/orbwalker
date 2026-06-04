@@ -42,12 +42,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",
 	},
-	"res://scripts/combat/combat_vfx_presenter.gd":
-	{
-		"owner": "P1-1/P5-2",
-		"reason":
-		"Combat VFX still owns replay labels, attack cues, mastery casts, runtime particles, and max-overlay fallback; split by replay surface/effect family.",
-	},
 }
 
 

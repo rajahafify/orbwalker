@@ -128,13 +128,6 @@
           <td>The max-combat VFX overlay owns several effect families plus static asset path catalogs.</td>
           <td>Split effect-family emitters and move static VFX path catalogs into resources or data files.</td>
         </tr>
-        <tr>
-          <td><code>scripts/combat/combat_vfx_presenter.gd</code></td>
-          <td><code>650</code></td>
-          <td><code>2318</code></td>
-          <td>Combat VFX still owns replay labels, attack cues, mastery casts, runtime particles, and max-overlay fallback.</td>
-          <td>Split by replay surface and effect family, then leave this presenter as a small orchestration facade.</td>
-        </tr>
       </tbody>
     </table>
 
