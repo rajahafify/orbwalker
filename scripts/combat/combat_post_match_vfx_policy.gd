@@ -36,6 +36,7 @@ const POST_MATCH_RUNTIME_TEXTURE_KEYS: Array[String] = [
 	"ripple",
 	"shard",
 	"shield",
+	"hex_cell",
 ]
 const POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS := [0, 12, 16, 20, 24, 29, 34, 39, 44]
 

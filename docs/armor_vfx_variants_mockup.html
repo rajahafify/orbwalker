@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armor VFX Variants Mockup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101219;
+      --panel: #171a22;
+      --panel-2: #20242e;
+      --ink: #f4f7fb;
+      --muted: #aab2c3;
+      --line: rgba(255, 255, 255, 0.13);
+      --gold: #f4c863;
+      --steel: #9ed1ff;
+      --mint: #7ef2bb;
+      --rose: #ff8cab;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(126, 242, 187, 0.08), transparent 26rem),
+        radial-gradient(circle at 84% 8%, rgba(244, 200, 99, 0.08), transparent 24rem),
+        var(--bg);
+      color: var(--ink);
+      font: 15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px 32px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 6px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel-2);
+      color: var(--ink);
+      padding: 0 14px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover { border-color: rgba(255, 255, 255, 0.3); }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(220px, 1fr));
+      gap: 16px;
+      padding: 20px 24px 30px;
+    }
+
+    .variant {
+      min-height: 640px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .copy {
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .notes {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 390px;
+      isolation: isolate;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+        #11141b;
+      background-size: 32px 32px;
+    }
+
+    .match-board {
+      position: relative;
+      width: min(70%, 250px);
+      aspect-ratio: 1 / 1;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,0.16);
+      background: linear-gradient(145deg, #242a36, #121722);
+      box-shadow:
+        0 18px 42px rgba(0,0,0,0.38),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    .cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 7px;
+      background:
+        radial-gradient(circle at 34% 28%, rgba(255,255,255,0.5), transparent 18%),
+        var(--orb);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: inset 0 -8px 12px rgba(0,0,0,0.2);
+    }
+
+    .cell:nth-child(5n+1) { --orb: linear-gradient(145deg, #ff8cab, #a82d55); }
+    .cell:nth-child(5n+2) { --orb: linear-gradient(145deg, #9ed1ff, #3265b6); }
+    .cell:nth-child(5n+3) { --orb: linear-gradient(145deg, #7ef2bb, #24875a); }
+    .cell:nth-child(5n+4) { --orb: linear-gradient(145deg, #f4c863, #a46e1c); }
+    .cell:nth-child(5n) { --orb: linear-gradient(145deg, #caa6ff, #6741a7); }
+
+    .board-label {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 8;
+      color: rgba(244,247,251,0.78);
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .shield-text {
+      position: absolute;
+      z-index: 8;
+      right: 18px;
+      top: 18px;
+      min-width: 62px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.33);
+      color: #d9eeff;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .footer {
+      display: grid;
+      gap: 7px;
+      padding: 14px 18px 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer b { color: var(--ink); }
+
+    .v1 .aegis {
+      position: absolute;
+      width: min(82%, 310px);
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      border: 3px solid rgba(154, 216, 255, 0.85);
+      box-shadow:
+        0 0 24px rgba(154, 216, 255, 0.45),
+        inset 0 0 32px rgba(154, 216, 255, 0.16);
+      animation: aegisPulse 1400ms ease-in-out infinite;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .v1 .aegis::before,
+    .v1 .aegis::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: inherit;
+      border: 1px dashed rgba(196, 234, 255, 0.65);
+      animation: spin 2400ms linear infinite;
+    }
+
+    .v1 .aegis::after {
+      inset: -16px;
+      border-style: solid;
+      border-color: rgba(154, 216, 255, 0.16);
+      animation-direction: reverse;
+    }
+
+    .v1 .flare {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 18px white;
+      animation: orbit 1800ms linear infinite;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .v2 .hex-field {
+      position: absolute;
+      width: min(90%, 340px);
+      aspect-ratio: 1 / 1;
+      pointer-events: none;
+      z-index: 7;
+      animation: hexSettle 1300ms ease-in-out infinite;
+      filter: drop-shadow(0 0 18px rgba(158, 209, 255, 0.52));
+    }
+
+    .hex {
+      position: absolute;
+      width: 66px;
+      height: 74px;
+      clip-path: polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
+      background:
+        linear-gradient(145deg, rgba(245,253,255,0.92), rgba(126,210,255,0.70) 36%, rgba(31,92,183,0.56)),
+        rgba(126,242,187,0.68);
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,0.78),
+        inset 0 0 0 12px rgba(42,126,220,0.34),
+        0 0 24px rgba(126,210,255,0.62);
+      animation: hexBlink 1300ms ease-in-out infinite;
+    }
+
+    .hex::before {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      clip-path: inherit;
+      background: rgba(255,255,255,0.30);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.86);
+    }
+
+    .hex::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 50%;
+      height: 4px;
+      background: rgba(255,255,255,0.82);
+      transform: rotate(-28deg);
+      box-shadow: 0 0 10px rgba(255,255,255,0.60);
+    }
+
+    .hex:nth-child(1) { left: 42px; top: 34px; animation-delay: 0ms; }
+    .hex:nth-child(2) { left: 112px; top: 34px; animation-delay: 70ms; }
+    .hex:nth-child(3) { left: 182px; top: 34px; animation-delay: 140ms; }
+    .hex:nth-child(4) { left: 76px; top: 92px; animation-delay: 210ms; }
+    .hex:nth-child(5) { left: 146px; top: 92px; animation-delay: 280ms; }
+    .hex:nth-child(6) { left: 216px; top: 92px; animation-delay: 350ms; }
+    .hex:nth-child(7) { left: 42px; top: 150px; animation-delay: 420ms; }
+    .hex:nth-child(8) { left: 112px; top: 150px; animation-delay: 490ms; }
+    .hex:nth-child(9) { left: 182px; top: 150px; animation-delay: 560ms; }
+
+    .v2 .snap-bar {
+      position: absolute;
+      width: 238px;
+      height: 11px;
+      left: calc(50% - 119px);
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(246,253,255,0.98) 16%, rgba(126,210,255,0.96) 50%, rgba(246,253,255,0.98) 84%, transparent);
+      box-shadow: 0 0 18px rgba(126,210,255,0.70), 0 0 6px rgba(255,255,255,0.86);
+      animation: snapBar 1300ms ease-in-out infinite;
+    }
+
+    .v2 .snap-bar.top { top: 28px; --move-x: 0; --move-y: 30px; }
+    .v2 .snap-bar.bottom { bottom: 28px; --move-x: 0; --move-y: -30px; animation-delay: 70ms; }
+    .v2 .snap-bar.left {
+      left: 26px;
+      top: calc(50% - 6px);
+      transform: rotate(90deg);
+      --move-x: 30px;
+      --move-y: 0;
+      animation-delay: 140ms;
+    }
+    .v2 .snap-bar.right {
+      left: auto;
+      right: 26px;
+      top: calc(50% - 6px);
+      transform: rotate(90deg);
+      --move-x: -30px;
+      --move-y: 0;
+      animation-delay: 210ms;
+    }
+
+    .v3 .plates {
+      position: absolute;
+      width: min(82%, 310px);
+      aspect-ratio: 1 / 1;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .plate {
+      position: absolute;
+      width: 58px;
+      height: 42px;
+      border-radius: 7px;
+      background: linear-gradient(145deg, #f4c863, #a87824);
+      border: 1px solid rgba(255,255,255,0.42);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.24), 0 0 18px rgba(244,200,99,0.18);
+      animation: plateLock 1500ms cubic-bezier(.2,.8,.2,1) infinite;
+    }
+
+    .plate:nth-child(1) { left: 36px; top: 22px; transform: rotate(-9deg); animation-delay: 0ms; }
+    .plate:nth-child(2) { right: 36px; top: 22px; transform: rotate(9deg); animation-delay: 110ms; }
+    .plate:nth-child(3) { left: 12px; top: calc(50% - 21px); transform: rotate(-90deg); animation-delay: 220ms; }
+    .plate:nth-child(4) { right: 12px; top: calc(50% - 21px); transform: rotate(90deg); animation-delay: 330ms; }
+    .plate:nth-child(5) { left: calc(50% - 29px); bottom: 20px; transform: rotate(0deg); animation-delay: 440ms; }
+
+    .v4 .runes {
+      position: absolute;
+      width: min(88%, 330px);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 6;
+      animation: runeCircle 1800ms ease-in-out infinite;
+    }
+
+    .rune {
+      position: absolute;
+      left: calc(50% - 14px);
+      top: calc(50% - 14px);
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: #d6fff1;
+      text-shadow: 0 0 12px #7ef2bb;
+      font-weight: 900;
+      transform: rotate(var(--r)) translateY(-106px) rotate(calc(-1 * var(--r)));
+      animation: runeFlash 1800ms ease-in-out infinite;
+    }
+
+    .rune:nth-child(1) { --r: 0deg; animation-delay: 0ms; }
+    .rune:nth-child(2) { --r: 60deg; animation-delay: 100ms; }
+    .rune:nth-child(3) { --r: 120deg; animation-delay: 200ms; }
+    .rune:nth-child(4) { --r: 180deg; animation-delay: 300ms; }
+    .rune:nth-child(5) { --r: 240deg; animation-delay: 400ms; }
+    .rune:nth-child(6) { --r: 300deg; animation-delay: 500ms; }
+
+    .v4 .ward {
+      position: absolute;
+      width: min(76%, 286px);
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 2px solid rgba(126,242,187,0.62);
+      box-shadow: inset 0 0 42px rgba(126,242,187,0.1), 0 0 30px rgba(126,242,187,0.18);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .v5 .impact {
+      position: absolute;
+      width: min(88%, 330px);
+      aspect-ratio: 1 / 1;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .v5 .impact::before,
+    .v5 .impact::after {
+      content: "";
+      position: absolute;
+      inset: 30px;
+      border-radius: 20px;
+      border: 2px solid rgba(255,140,171,0.76);
+      animation: shockwave 1100ms ease-out infinite;
+    }
+
+    .v5 .impact::after {
+      animation-delay: 240ms;
+      border-color: rgba(158,209,255,0.55);
+    }
+
+    .shard {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 12px;
+      height: 36px;
+      border-radius: 99px;
+      background: linear-gradient(#ffedf3, #ff8cab);
+      transform: rotate(var(--r)) translateY(-82px);
+      transform-origin: 50% 0;
+      animation: shardPop 1100ms ease-out infinite;
+      box-shadow: 0 0 18px rgba(255,140,171,0.42);
+    }
+
+    .shard:nth-child(1) { --r: 20deg; }
+    .shard:nth-child(2) { --r: 82deg; animation-delay: 80ms; }
+    .shard:nth-child(3) { --r: 142deg; animation-delay: 160ms; }
+    .shard:nth-child(4) { --r: 216deg; animation-delay: 240ms; }
+    .shard:nth-child(5) { --r: 292deg; animation-delay: 320ms; }
+
+    @keyframes aegisPulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.64; }
+      28% { transform: scale(1.02); opacity: 1; }
+      55% { transform: scale(0.98); opacity: 0.8; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes orbit {
+      from { transform: rotate(0deg) translateX(138px); }
+      to { transform: rotate(360deg) translateX(138px); }
+    }
+
+    @keyframes hexSettle {
+      0% { transform: scale(0.78); opacity: 0; }
+      24% { transform: scale(1.02); opacity: 1; }
+      60% { transform: scale(0.98); opacity: 0.86; }
+      100% { transform: scale(0.78); opacity: 0; }
+    }
+
+    @keyframes hexBlink {
+      0%, 100% { filter: brightness(0.75); opacity: 0.22; scale: 0.84; }
+      28% { filter: brightness(1.62); opacity: 1; scale: 1.08; }
+      58% { filter: brightness(1.12); opacity: 0.88; scale: 1; }
+    }
+
+    @keyframes snapBar {
+      0%, 100% { opacity: 0; translate: calc(var(--move-x) * -1) calc(var(--move-y) * -1); scale: 0.62 0.72; }
+      24% { opacity: 1; translate: var(--move-x) var(--move-y); scale: 1.08 1; }
+      48% { opacity: 0.84; translate: 0 0; scale: 0.92 0.78; }
+      72% { opacity: 0.46; }
+    }
+
+    @keyframes plateLock {
+      0% { opacity: 0; translate: 0 -80px; scale: 0.65; }
+      24% { opacity: 1; translate: 0 0; scale: 1.04; }
+      36% { scale: 0.96; }
+      72% { opacity: 1; }
+      100% { opacity: 0; translate: 0 18px; scale: 0.9; }
+    }
+
+    @keyframes runeCircle {
+      0% { transform: rotate(-16deg) scale(0.82); opacity: 0; }
+      25% { transform: rotate(0deg) scale(1); opacity: 1; }
+      70% { transform: rotate(22deg) scale(1.02); opacity: 0.82; }
+      100% { transform: rotate(36deg) scale(0.9); opacity: 0; }
+    }
+
+    @keyframes runeFlash {
+      0%, 100% { opacity: 0.2; scale: 0.8; }
+      32% { opacity: 1; scale: 1.3; }
+      62% { opacity: 0.68; scale: 1; }
+    }
+
+    @keyframes shockwave {
+      0% { transform: scale(0.28); opacity: 0; }
+      16% { opacity: 1; }
+      100% { transform: scale(1.18); opacity: 0; }
+    }
+
+    @keyframes shardPop {
+      0% { opacity: 0; scale: 0.2; }
+      20% { opacity: 1; scale: 1; }
+      70% { opacity: 0.86; }
+      100% { opacity: 0; scale: 0.55; }
+    }
+
+    .paused * {
+      animation-play-state: paused !important;
+    }
+
+    @media (max-width: 1280px) {
+      main { grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+      .variant { min-height: 560px; }
+    }
+
+    @media (max-width: 720px) {
+      header { display: grid; padding: 22px 18px 14px; }
+      main { grid-template-columns: 1fr; padding: 14px; }
+      .variant { min-height: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Armor VFX Mockups</h1>
+      <p class="sub">Five intentionally different reads for armor gain/mitigation centered on the match board. Each loops as a quick timing sketch: the goal is to pick a direction that feels crisp instead of chunky.</p>
+    </div>
+    <div class="controls">
+      <button id="pauseButton" type="button">Pause</button>
+      <button id="replayButton" type="button">Replay</button>
+    </div>
+  </header>
+
+  <main id="board">
+    <section class="variant v1">
+      <div class="copy">
+        <h2>1. Aegis Bloom</h2>
+        <span class="tag">soft shield / magical</span>
+        <p class="notes">A clean square barrier breathes around the board, with a tiny orbit flare for polish.</p>
+      </div>
+      <div class="stage">
+        <div class="shield-text">+12</div>
+        <div class="aegis"></div>
+        <div class="flare"></div>
+        <div class="match-board" aria-label="match board"></div>
+        <div class="board-label">BOARD CENTER</div>
+      </div>
+      <div class="footer"><span><b>Best for:</b> readable armor gain.</span><span><b>Risk:</b> may feel too generic if overused.</span></div>
+    </section>
+
+    <section class="variant v2">
+      <div class="copy">
+        <h2>2. Hex Grid Snap</h2>
+        <span class="tag">tech shield / tactical</span>
+        <p class="notes">Hex cells pop over the board in a staggered cluster, implying armor is locking the grid.</p>
+      </div>
+      <div class="stage">
+        <div class="shield-text">+12</div>
+        <div class="hex-field">
+          <span class="snap-bar top"></span>
+          <span class="snap-bar bottom"></span>
+          <span class="snap-bar left"></span>
+          <span class="snap-bar right"></span>
+          <i class="hex"></i><i class="hex"></i><i class="hex"></i>
+          <i class="hex"></i><i class="hex"></i><i class="hex"></i>
+          <i class="hex"></i><i class="hex"></i><i class="hex"></i>
+        </div>
+        <div class="match-board" aria-label="match board"></div>
+        <div class="board-label">BOARD CENTER</div>
+      </div>
+      <div class="footer"><span><b>Best for:</b> precise, modern feedback.</span><span><b>Risk:</b> less fantasy, more sci-fi.</span></div>
+    </section>
+
+    <section class="variant v3">
+      <div class="copy">
+        <h2>3. Plate Lock</h2>
+        <span class="tag">physical armor / punchy</span>
+        <p class="notes">Golden plates snap onto the board edges. More tactile, less glow-heavy.</p>
+      </div>
+      <div class="stage">
+        <div class="shield-text">+12</div>
+        <div class="plates"><i class="plate"></i><i class="plate"></i><i class="plate"></i><i class="plate"></i><i class="plate"></i></div>
+        <div class="match-board" aria-label="match board"></div>
+        <div class="board-label">BOARD CENTER</div>
+      </div>
+      <div class="footer"><span><b>Best for:</b> satisfying gain moments.</span><span><b>Risk:</b> can become chunky if plates linger too long.</span></div>
+    </section>
+
+    <section class="variant v4">
+      <div class="copy">
+        <h2>4. Rune Ward</h2>
+        <span class="tag">arcane / elegant</span>
+        <p class="notes">Runes flare around the board perimeter, then dissolve. Stronger identity, lighter coverage.</p>
+      </div>
+      <div class="stage">
+        <div class="shield-text">+12</div>
+        <div class="ward"></div>
+        <div class="runes"><i class="rune">I</i><i class="rune">V</i><i class="rune">X</i><i class="rune">I</i><i class="rune">V</i><i class="rune">X</i></div>
+        <div class="match-board" aria-label="match board"></div>
+        <div class="board-label">BOARD CENTER</div>
+      </div>
+      <div class="footer"><span><b>Best for:</b> relic/magic armor fantasy.</span><span><b>Risk:</b> needs good icon language in-game.</span></div>
+    </section>
+
+    <section class="variant v5">
+      <div class="copy">
+        <h2>5. Parry Burst</h2>
+        <span class="tag">impact block / defensive hit</span>
+        <p class="notes">Sharp shards and shockwaves burst outward from the board. Better for blocked damage.</p>
+      </div>
+      <div class="stage">
+        <div class="shield-text">BLOCK</div>
+        <div class="impact"><i class="shard"></i><i class="shard"></i><i class="shard"></i><i class="shard"></i><i class="shard"></i></div>
+        <div class="match-board" aria-label="match board"></div>
+        <div class="board-label">BOARD CENTER</div>
+      </div>
+      <div class="footer"><span><b>Best for:</b> enemy hit absorbed by armor.</span><span><b>Risk:</b> too aggressive for simple +armor gains.</span></div>
+    </section>
+  </main>
+
+  <script>
+    const board = document.getElementById("board");
+    const pauseButton = document.getElementById("pauseButton");
+    const replayButton = document.getElementById("replayButton");
+
+    document.querySelectorAll(".match-board").forEach((matchBoard) => {
+      for (let index = 0; index < 36; index += 1) {
+        const cell = document.createElement("i");
+        cell.className = "cell";
+        matchBoard.appendChild(cell);
+      }
+    });
+
+    pauseButton.addEventListener("click", () => {
+      board.classList.toggle("paused");
+      pauseButton.textContent = board.classList.contains("paused") ? "Resume" : "Pause";
+    });
+
+    replayButton.addEventListener("click", () => {
+      board.style.display = "none";
+      void board.offsetHeight;
+      board.style.display = "";
+    });
+  </script>
+</body>
+</html>

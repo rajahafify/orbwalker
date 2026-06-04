@@ -1554,7 +1554,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <p>Verification notes (2026-06-02, individual game juice feature flags):</p>
 <ul>
 <li>Added a persisted master <code>Game Juice</code> switch plus individual child flags under <code>user://matchatro_settings.cfg</code>. Both main menu Settings and combat Settings now expose VFX speed, comfort, the master switch, all child flags, and reset defaults.</li>
-<li>Child flags default to enabled while the master switch defaults to disabled, so turning on the master activates the full package without overwriting saved child choices.</li>
+<li>Child flags default to enabled. As of the June 5 armor/juice polish pass, the master switch also defaults to enabled, so fresh profiles enter combat with the full feedback package active without overwriting saved child choices.</li>
 <li>Behavior gates now cover match pop/clear burst scaling, refill overshoot, combo pulse/audio rhythm, impact rings/result labels, mastery fill streams, mastery card intake flare, screen nudge, hit-stop, elemental impact audio, enemy reaction character, and shop choice feedback.</li>
 <li><code>Reduced Motion</code> remains separate and suppresses motion-heavy child effects including refill overshoot, mastery travel streams, screen nudge, hit-stop, large combo pulse, enemy motion reaction, and shop purchase motion.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code>.</li>
@@ -1573,6 +1573,14 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>The combat top header now accepts expanded fallback touch/mouse hit rectangles for Help and Settings, plus a short settings-open debounce, so Android touch input can still open combat Settings when the drawn glyph is small.</li>
 <li>Localization and presenter tests now assert the new row-title labels and switch states for the main menu and combat Settings surfaces.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot headless test suite through <code>res://scripts/tests/run_all_tests.gd</code> reported <code>75</code> suites, <code>313</code> cases, and <code>0</code> failures.</li>
+</ul>
+<p>Verification notes (2026-06-05, armor hex-grid VFX and default-on juice):</p>
+<ul>
+<li>Armor gain and armor-block feedback now follows the selected <code>Hex Grid Snap</code> direction from <code>docs/armor_vfx_variants_mockup.html</code>: a generated runtime <code>hex_cell</code> texture, a bright 3x3 board-centered tile cluster, and four edge snap bars.</li>
+<li>Armor replay bypasses the legacy armor signature sprite, base impact texture, shared circular replay layers, max-overlay armor fallback, and armor mastery beam, keeping the hex-grid snap as the only armor-gain read.</li>
+<li>Enemy attacks blocked by armor now use matching hex-grid/snap feedback instead of the older shield-shell fallback, so gain and mitigation share the same visual language.</li>
+<li>The master <code>Game Juice</code> setting now defaults to enabled in <code>RunState</code>, Reset Defaults restores it to enabled, and main-menu/combat settings fallbacks render it as on when no explicit saved value exists.</li>
+<li>Validation passed: <code>res://tools/quality/script_load_validation.gd</code> reported <code>240</code> scripts loaded and <code>0</code> failures; <code>res://scripts/tests/run_all_tests.gd</code> reported <code>79</code> suites, <code>368</code> cases, and <code>0</code> failures; <code>git diff --check</code> reported no whitespace errors, only existing CRLF normalization warnings.</li>
 </ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>

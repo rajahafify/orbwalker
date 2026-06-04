@@ -172,7 +172,7 @@ func update_settings_state(settings: Dictionary) -> void:
 	update_speed_buttons(String(settings.get("vfx_speed", "normal")))
 	update_quality_buttons(String(settings.get("combat_vfx_quality", "low")))
 	update_reduced_motion_button(bool(settings.get("reduced_motion", false)))
-	update_game_juice_button(bool(settings.get("game_juice", false)))
+	update_game_juice_button(bool(settings.get("game_juice", true)))
 	update_game_juice_flag_buttons(Dictionary(settings.get("game_juice_flags", GAME_JUICE_FLAGS_SCRIPT.default_flags())))
 
 
@@ -385,7 +385,7 @@ func _settings_dictionary(settings: Variant) -> Dictionary:
 		"vfx_speed": String(settings),
 		"combat_vfx_quality": "low",
 		"reduced_motion": false,
-		"game_juice": false,
+		"game_juice": true,
 		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
 	}
 

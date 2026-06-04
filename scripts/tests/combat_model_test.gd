@@ -104,19 +104,20 @@ func run_all() -> Dictionary:
 	_run_case("spark_burst_presenter_honors_flags_and_particle_caps", _test_spark_burst_presenter_honors_flags_and_particle_caps, failures)
 	_run_case("mastery_fill_vfx_presenter_spawns_stream_and_reduced_motion", _test_mastery_fill_vfx_presenter_spawns_stream_and_reduced_motion, failures)
 	_run_case("mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse", _test_mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse, failures)
-	_run_case("armor_linger_vfx_presenter_spawns_shell_and_block_sparks", _test_armor_linger_vfx_presenter_spawns_shell_and_block_sparks, failures)
+	_run_case("armor_linger_vfx_presenter_spawns_hex_grid_snap", _test_armor_linger_vfx_presenter_spawns_hex_grid_snap, failures)
 	_run_case("stylized_replay_vfx_presenter_spawns_signature_and_kind_layers", _test_stylized_replay_vfx_presenter_spawns_signature_and_kind_layers, failures)
 	_run_case("post_match_vfx_runtime_primitives_are_capped", _test_post_match_vfx_runtime_primitives_are_capped, failures)
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 	_run_case("post_match_vfx_second_tier_is_lowest", _test_post_match_vfx_second_tier_is_lowest, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
+	_run_case("armor_replay_impact_uses_hex_grid_without_legacy_texture", _test_armor_replay_impact_uses_hex_grid_without_legacy_texture, failures)
 	_run_case("mastery_fill_stream_spawns_runtime_stream_and_impact", _test_mastery_fill_stream_spawns_runtime_stream_and_impact, failures)
 	_run_case("mastery_fill_stream_reduced_motion_uses_static_pulse", _test_mastery_fill_stream_reduced_motion_uses_static_pulse, failures)
 	_run_case("board_lock_visual_state_captures_pointer_input", _test_board_lock_visual_state_captures_pointer_input, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 57,
+		"total": 58,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -1464,16 +1465,21 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 			camera_calls.append({"direction": direction, "delay": delay}),
 	})
 	presenter.spawn_armor_linger(Vector2(100, 160), Vector2(200, 120), 1.0, 4)
-	if shield_calls.size() != 1 or status_calls.size() != 2 or light_calls.size() != 1:
-		return "Expected status armor linger to spawn shield scene, two status layers, and one light."
-	var shield: Dictionary = shield_calls[0]
-	var shield_size: Vector2 = shield.get("size", Vector2.ZERO)
-	if not is_equal_approx(shield_size.x, 196.08) or not is_equal_approx(shield_size.y, 65.664):
-		return "Expected status armor linger shield size to scale with intensity."
-	var armor_layer: Dictionary = status_calls[1]
-	var armor_center: Vector2 = armor_layer.get("center", Vector2.ZERO)
-	if String(armor_layer.get("key", "")) != "armor" or not is_equal_approx(armor_center.y, 152.8):
-		return "Expected status armor linger to offset armor layer from draw size."
+	if shield_calls.size() != 0 or status_calls.size() != 14 or light_calls.size() != 1:
+		return "Expected status armor linger to spawn grid snap status layers and one light without shield scenes."
+	var linger_hex_count := 0
+	var linger_bar_count := 0
+	for call in status_calls:
+		var entry: Dictionary = call
+		var size: Vector2 = entry.get("size", Vector2.ZERO)
+		if String(entry.get("key", "")) != "armor":
+			return "Expected status armor grid snap to use armor status layers."
+		if size.x > size.y * 2.0:
+			linger_bar_count += 1
+		elif is_equal_approx(size.y, size.x * 1.10):
+			linger_hex_count += 1
+	if linger_hex_count != 9 or linger_bar_count != 4:
+		return "Expected status armor linger to spawn nine hex cells and four snap bars."
 	status_calls.clear()
 	shield_calls.clear()
 	light_calls.clear()
@@ -1481,15 +1487,19 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 	burst_calls.clear()
 	atmospheric_replay_calls.clear()
 	presenter.spawn_replay_recipe("block", Vector2(100, 160), Vector2(200, 120), 140.0, 180.0, 1.0, 4, false)
-	if status_calls.size() != 2 or shield_calls.size() != 1 or pack_calls.size() != 1 or burst_calls.size() != 1 or light_calls.size() != 1 or atmospheric_replay_calls.size() != 1:
-		return "Expected armor status replay to spawn status, shield, pack, burst, light, and atmosphere routes."
-	var replay_shield: Dictionary = shield_calls[0]
-	var replay_shield_size: Vector2 = replay_shield.get("size", Vector2.ZERO)
-	if not is_equal_approx(replay_shield_size.x, 142.416) or not is_equal_approx(replay_shield_size.y, 95.976):
-		return "Expected armor status replay shield size to scale from base replay size."
-	var replay_pack: Dictionary = pack_calls[0]
-	if String(replay_pack.get("key", "")) != "impact_02" or String(replay_pack.get("kind", "")) != "armor":
-		return "Expected armor status replay to use armor impact pack route."
+	if status_calls.size() != 14 or shield_calls.size() != 0 or pack_calls.size() != 0 or burst_calls.size() != 1 or light_calls.size() != 1 or atmospheric_replay_calls.size() != 1:
+		return "Expected armor status replay to spawn grid snap, burst, light, and atmosphere routes without shield or pack armor routes."
+	var replay_hex_count := 0
+	var replay_bar_count := 0
+	for call in status_calls:
+		var entry: Dictionary = call
+		var size: Vector2 = entry.get("size", Vector2.ZERO)
+		if size.x > size.y * 2.0:
+			replay_bar_count += 1
+		elif is_equal_approx(size.y, size.x * 1.10):
+			replay_hex_count += 1
+	if replay_hex_count != 9 or replay_bar_count != 4:
+		return "Expected armor status replay to spawn nine hex cells and four snap bars."
 	status_calls.clear()
 	shield_calls.clear()
 	light_calls.clear()
@@ -1540,6 +1550,26 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 	if not bool(coin.get("screen_wide", false)) or not is_equal_approx(float(coin.get("base_size", 0.0)), 340.0):
 		return "Expected gold status screen-wide coin rain to use wide mode and layer-scaled base size."
 	status_calls.clear()
+	light_calls.clear()
+	coin_calls.clear()
+	presenter.spawn_screen_wide("block", Vector2(300, 700), 1.0, 5)
+	if light_calls.size() != 1:
+		return "Expected armor status screen-wide route to spawn one light."
+	var armor_wide_hex_count := 0
+	var armor_wide_bar_count := 0
+	for call in status_calls:
+		var entry: Dictionary = call
+		var size: Vector2 = entry.get("size", Vector2.ZERO)
+		if String(entry.get("key", "")) != "armor":
+			return "Expected armor status screen-wide route to use armor status layers instead of shield."
+		if size.x > size.y * 2.0:
+			armor_wide_bar_count += 1
+		elif is_equal_approx(size.y, size.x * 1.10):
+			armor_wide_hex_count += 1
+	if armor_wide_hex_count != 9 or armor_wide_bar_count != 4:
+		return "Expected armor status screen-wide route to use grid snap cells and bars."
+	status_calls.clear()
+	light_calls.clear()
 	atmospheric_travel_calls.clear()
 	beam_calls.clear()
 	presenter.spawn_beam_recipe("block", Vector2(20, 40), Vector2(200, 80), 0.5, 4, 0.25)
@@ -1551,7 +1581,7 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 	var endpoint_status: Dictionary = status_calls[8]
 	var endpoint_size: Vector2 = endpoint_status.get("size", Vector2.ZERO)
 	if String(endpoint_status.get("key", "")) != "sheet_armor" or not is_equal_approx(endpoint_size.x, 148.0) or not is_equal_approx(endpoint_size.y, 112.0):
-		return "Expected status beam endpoint layer to use scaled status sheet size."
+		return "Expected status beam endpoint layer to use the armor status sheet and scaled size."
 	status_calls.clear()
 	atmospheric_travel_calls.clear()
 	beam_calls.clear()
@@ -1570,15 +1600,22 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 	beam_calls.clear()
 	camera_calls.clear()
 	presenter.spawn_cast_recipe("block", Vector2(20, 40), Vector2(220, 120), Vector2(200, 80), Vector2(100, 80), 0.5, 0.4, 4, Color(0.2, 0.4, 0.8, 1.0), Color(0.7, 0.9, 1.0, 1.0))
-	if status_calls.size() != 3 or shield_calls.size() != 1 or light_calls.size() != 1 or atmospheric_travel_calls.size() != 1 or beam_calls.size() != 1 or camera_calls.size() != 1:
-		return "Expected armor status cast to compose status layers, shield, light, atmosphere, beam, and camera kick."
+	if status_calls.size() != 16 or shield_calls.size() != 0 or light_calls.size() != 1 or atmospheric_travel_calls.size() != 1 or beam_calls.size() != 1 or camera_calls.size() != 1:
+		return "Expected armor status cast to compose source/travel status, target grid snap, light, atmosphere, beam, and camera kick without shield scenes."
 	var cast_beam: Dictionary = beam_calls[0]
 	if String(cast_beam.get("kind", "")) != "armor" or not is_equal_approx(float(cast_beam.get("duration", 0.0)), 0.46096) or not is_equal_approx(float(cast_beam.get("delay", 0.0)), 0.584):
 		return "Expected armor status cast to scale beam duration and launch delay."
-	var cast_shield: Dictionary = shield_calls[0]
-	var cast_shield_size: Vector2 = cast_shield.get("size", Vector2.ZERO)
-	if not is_equal_approx(cast_shield_size.x, 98.0) or not is_equal_approx(cast_shield_size.y, 78.4):
-		return "Expected armor status cast shield scene to scale from spool size and intensity."
+	var cast_hex_count := 0
+	var cast_bar_count := 0
+	for call in status_calls:
+		var entry: Dictionary = call
+		var size: Vector2 = entry.get("size", Vector2.ZERO)
+		if size.x > size.y * 2.0:
+			cast_bar_count += 1
+		elif is_equal_approx(size.y, size.x * 1.10):
+			cast_hex_count += 1
+	if cast_hex_count != 9 or cast_bar_count != 4:
+		return "Expected armor status cast target to spawn nine hex cells and four snap bars."
 	var camera: Dictionary = camera_calls[0]
 	if not is_equal_approx(float(camera.get("delay", 0.0)), 1.0664):
 		return "Expected armor status cast camera kick to land near travel impact."
@@ -2048,7 +2085,7 @@ func _test_post_match_vfx_policy_normalizes_tiers_and_caps() -> String:
 func _test_runtime_vfx_texture_factory_generates_and_caches_keys() -> String:
 	var factory = COMBAT_RUNTIME_VFX_TEXTURE_FACTORY_SCRIPT.new()
 	var keys: Array = factory.texture_keys()
-	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield"]:
+	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield", "hex_cell"]:
 		if not keys.has(key):
 			return "Expected runtime texture factory key %s." % key
 		var texture: Texture2D = factory.texture(key)
@@ -2084,10 +2121,12 @@ func _test_combat_vfx_profile_maps_orbs_and_result_colors() -> String:
 
 
 func _test_enemy_attack_vfx_presenter_spawns_fallback_cues() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
 	var root := Control.new()
 	var layer := Control.new()
 	layer.name = "VfxLayer"
 	layer.size = Vector2(320, 240)
+	tree.root.add_child(root)
 	root.add_child(layer)
 	var presenter = COMBAT_ENEMY_ATTACK_VFX_PRESENTER_SCRIPT.new()
 	presenter.bind({"vfx_layer": layer, "timer_owner": root})
@@ -2104,10 +2143,16 @@ func _test_enemy_attack_vfx_presenter_spawns_fallback_cues() -> String:
 		root.free()
 		return "Expected enemy travel to spawn beam and bolt fallback nodes."
 	presenter.spawn_block_impact(Vector2(120, 90), 0.2)
-	presenter.spawn_hit_impact(Vector2(160, 100), 0.2)
-	if layer.get_child_count() < 5:
+	var block_hex_count := _count_children_named(layer, "EnemyAttackArmorHexCell")
+	var block_bar_count := _count_children_named(layer, "EnemyAttackArmorSnapBar")
+	if block_hex_count != 9 or block_bar_count != 4:
+		var block_child_count := layer.get_child_count()
 		root.free()
-		return "Expected enemy impact fallbacks to spawn pulse nodes."
+		return "Expected blocked enemy attack fallback to use armor hex snap cells and bars; got hex=%d bars=%d children=%d." % [block_hex_count, block_bar_count, block_child_count]
+	presenter.spawn_hit_impact(Vector2(160, 100), 0.2)
+	if layer.get_child_count() < 17:
+		root.free()
+		return "Expected enemy impact fallbacks to spawn snap armor and hit pulse nodes."
 	root.free()
 	return ""
 
@@ -2194,6 +2239,9 @@ func _test_runtime_vfx_primitive_presenter_maps_effects_and_spawns_primitives() 
 	if presenter.runtime_texture_key_for_effect("TallSlash", Vector2(6, 48), 999) != "ray":
 		root.free()
 		return "Expected tall primitive effects to use ray texture."
+	if presenter.runtime_texture_key_for_effect("ArmorPulse", Vector2(64, 48), 999) != "hex_cell":
+		root.free()
+		return "Expected armor-named primitives to avoid the old shield texture."
 	presenter.spawn_replay_ring(Vector2(80, 90), Vector2(40, 40), Color.BLUE, Color.WHITE, 2, 0.2, Vector2.ONE, 0.0)
 	if layer.get_child_count() != 2:
 		root.free()
@@ -2206,7 +2254,7 @@ func _test_runtime_vfx_primitive_presenter_maps_effects_and_spawns_primitives() 
 	presenter.spawn_local_effect_panel("ArmorPulse", Vector2(90, 90), Vector2(64, 48), Color(0.1, 0.2, 1.0, 0.20), Color.WHITE, 2, 999, 140, 0.2, Vector2.ONE)
 	if layer.get_child_count() != 5:
 		root.free()
-		return "Expected shield-like local panel to spawn glow and main sprites."
+		return "Expected armor local panel to spawn glow and hex-cell sprites."
 	root.free()
 	return ""
 
@@ -2245,6 +2293,13 @@ func _test_screen_wide_replay_presenter_spawns_offensive_and_support_events() ->
 	if _count_children_named(layer, "PostMatchScreenHealStream") <= 0:
 		root.free()
 		return "Expected heal screen-wide replay event to spawn heal streams."
+	presenter.spawn_screen_wide_replay_event(Vector2(520, 620), "armor", 0.8, 4)
+	if _count_children_named(layer, "PostMatchScreenArmorShell") != 0:
+		root.free()
+		return "Expected armor screen-wide replay to avoid the old shell layer."
+	if _count_children_named(layer, "PostMatchScreenArmorHexCell") != 9 or _count_children_named(layer, "PostMatchScreenArmorSnapBar") != 4:
+		root.free()
+		return "Expected armor screen-wide replay to spawn a focused hex grid snap."
 	root.free()
 	return ""
 
@@ -2420,7 +2475,7 @@ func _test_mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse() -> 
 	return ""
 
 
-func _test_armor_linger_vfx_presenter_spawns_shell_and_block_sparks() -> String:
+func _test_armor_linger_vfx_presenter_spawns_hex_grid_snap() -> String:
 	var root := Control.new()
 	var layer := Control.new()
 	layer.name = "VfxLayer"
@@ -2445,18 +2500,18 @@ func _test_armor_linger_vfx_presenter_spawns_shell_and_block_sparks() -> String:
 		"runtime_primitive_presenter": primitive_presenter,
 	})
 	presenter.spawn_armor_linger(Vector2(220, 160), Vector2(180, 60), 0.44, 4)
-	var shell_count := _count_children_named(layer, "ArmorBarShieldRuntimeShell")
-	var pulse_count := _count_children_named(layer, "ArmorBarShieldPulse")
-	var spark_count := _count_children_named(layer, "ArmorBarShieldBlockSpark")
-	if shell_count != 1:
+	var hex_count := _count_children_named(layer, "ArmorGridHexCell")
+	var snap_bar_count := _count_children_named(layer, "ArmorGridSnapBar")
+	var bloom_count := _count_children_named(layer, "ArmorGridSnapBloom")
+	if hex_count != 9:
 		root.free()
-		return "Expected armor linger presenter to spawn one runtime shield shell."
-	if pulse_count < 2:
+		return "Expected armor linger presenter to spawn a 3x3 hex grid."
+	if snap_bar_count != 4:
 		root.free()
-		return "Expected armor linger presenter to spawn shield pulse panels."
-	if spark_count < 5:
+		return "Expected armor linger presenter to spawn four board-edge snap bars."
+	if bloom_count != 0:
 		root.free()
-		return "Expected armor linger presenter to spawn block spark panels."
+		return "Expected armor linger presenter to avoid circular bloom layers."
 	root.free()
 	return ""
 
@@ -2469,7 +2524,7 @@ func _test_post_match_vfx_runtime_primitives_are_capped() -> String:
 	if int(caps.get("max_screen_rays", 0)) > 18:
 		return "Expected screen ray count to stay capped."
 	var keys: Array = caps.get("texture_keys", [])
-	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield"]:
+	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield", "hex_cell"]:
 		if not keys.has(key):
 			return "Expected runtime VFX texture key %s." % key
 		if presenter.post_match_runtime_texture(key) == null:
@@ -2525,6 +2580,21 @@ func _test_stylized_replay_vfx_presenter_spawns_signature_and_kind_layers() -> S
 	if particle_count <= 0:
 		root.free()
 		return "Expected stylized replay presenter to spawn fire particles."
+	for child in layer.get_children():
+		child.free()
+	presenter.spawn_stylized_replay_effect(Vector2(210, 150), "armor", Vector2(160, 160), 0.48, 12, 2, false)
+	if _count_children_named(layer, "PostMatchSignature") != 0:
+		root.free()
+		return "Expected stylized armor replay to skip the old signature sprite."
+	if _count_children_named(layer, "PostMatchRing") != 0 or _count_children_named(layer, "PostMatchBaseline") != 0 or _count_children_named(layer, "PostMatchRuntimeShockwave") != 0:
+		root.free()
+		return "Expected stylized armor replay to avoid circular replay ring layers."
+	var armor_hex_count := _count_children_with_effect_name(layer, "PostMatchArmorHexCell")
+	var armor_bar_count := _count_children_named(layer, "PostMatchArmorGridSnapBar")
+	if armor_hex_count != 9 or armor_bar_count != 4:
+		var armor_child_count := layer.get_child_count()
+		root.free()
+		return "Expected stylized armor replay to spawn the hex grid snap cells and bars; got hex=%d bars=%d children=%d." % [armor_hex_count, armor_bar_count, armor_child_count]
 	root.free()
 	return ""
 
@@ -2594,6 +2664,33 @@ func _test_mastery_fill_stream_spawns_runtime_stream_and_impact() -> String:
 		return "Expected mastery fill stream to spawn traveling sparks."
 	if impact_count != 1:
 		return "Expected mastery fill stream to spawn a mastery card impact ring."
+	return ""
+
+
+func _test_armor_replay_impact_uses_hex_grid_without_legacy_texture() -> String:
+	var fixture := _vfx_fixture(false)
+	var presenter: Variant = fixture["presenter"]
+	var layer: Control = fixture["layer"]
+	presenter.spawn_replay_impact(Vector2(540, 960), "armor", Vector2(220, 220), 0.45, 12)
+	var hex_count := _count_children_with_effect_name(layer, "PostMatchArmorHexCell")
+	var snap_bar_count := _count_children_named(layer, "PostMatchArmorGridSnapBar")
+	var signature_count := _count_children_named(layer, "PostMatchSignature")
+	var unnamed_texture_count := _count_texture_rects_without_effect_meta(layer)
+	var circle_count := _count_children_named(layer, "PostMatchRing") + _count_children_named(layer, "PostMatchBaseline") + _count_children_named(layer, "PostMatchRuntimeShockwave") + _count_children_named(layer, "PostMatchScreen")
+	var count_before_armor_beam := layer.get_child_count()
+	presenter.spawn_mastery_beam(OrbType.Id.ARMOR, Vector2(540, 960), 0.45)
+	var count_after_armor_beam := layer.get_child_count()
+	_cleanup_vfx_fixture(fixture)
+	if hex_count != 9 or snap_bar_count != 4:
+		return "Expected armor replay impact to use the hex grid snap effect; got hex=%d bars=%d." % [hex_count, snap_bar_count]
+	if signature_count != 0:
+		return "Expected armor replay impact to skip the old armor signature sprite."
+	if unnamed_texture_count != 0:
+		return "Expected armor replay impact to skip the legacy base impact texture."
+	if circle_count != 0:
+		return "Expected armor replay impact to avoid circular replay layers."
+	if count_after_armor_beam != count_before_armor_beam:
+		return "Expected armor mastery beam to no-op so the mockup grid snap remains the only armor gain VFX."
 	return ""
 
 
@@ -2721,5 +2818,25 @@ func _count_children_named(parent: Node, node_name: String) -> int:
 	var count := 0
 	for child in parent.get_children():
 		if String(child.get_meta("effect_name", child.name)).begins_with(node_name):
+			count += 1
+	return count
+
+
+func _count_children_with_effect_name(parent: Node, effect_name: String) -> int:
+	if parent == null:
+		return 0
+	var count := 0
+	for child in parent.get_children():
+		if String(child.get_meta("effect_name", child.name)) == effect_name:
+			count += 1
+	return count
+
+
+func _count_texture_rects_without_effect_meta(parent: Node) -> int:
+	if parent == null:
+		return 0
+	var count := 0
+	for child in parent.get_children():
+		if child is TextureRect and not child.has_meta("effect_name"):
 			count += 1
 	return count

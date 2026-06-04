@@ -82,6 +82,7 @@ const POST_MATCH_RUNTIME_TEXTURE_KEYS: Array[String] = [
 	"ripple",
 	"shard",
 	"shield",
+	"hex_cell",
 ]
 const MASTERY_FILL_STREAM_SECONDS := 0.46
 
@@ -98,7 +99,9 @@ func bind(dependencies: Dictionary) -> void:
 	var runtime_dependencies := dependencies.duplicate()
 	runtime_dependencies["runtime_texture_factory"] = _runtime_texture_factory
 	_runtime_sprite_presenter.bind(runtime_dependencies)
-	_enemy_attack_vfx_presenter.bind(dependencies)
+	var enemy_attack_dependencies := dependencies.duplicate()
+	enemy_attack_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
+	_enemy_attack_vfx_presenter.bind(enemy_attack_dependencies)
 	_result_label_presenter.bind(dependencies)
 	_screen_feedback_presenter.bind(dependencies)
 	_spark_burst_presenter.bind(dependencies)
@@ -218,7 +221,10 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 
 
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
-	if global_center == Vector2.ZERO or _visual_registry == null:
+	if global_center == Vector2.ZERO:
+		return
+	var clean_kind := _result_vfx_kind_key(impact_kind)
+	if _visual_registry == null and clean_kind != "armor":
 		return
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
 	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime) if impact_juice_enabled else {
@@ -231,8 +237,13 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 	var profile_lifetime := float(profile.get("lifetime", lifetime))
 	var profile_color: Color = profile.get("modulate_color", Color(1.0, 1.0, 1.0, 0.92))
 	var tier_index := int(profile.get("tier_index", 0))
-	var clean_kind := _result_vfx_kind_key(impact_kind)
 	var intensity: int = _stylized_replay_vfx_presenter.replay_effect_intensity(result_amount, tier_index)
+	if clean_kind == "armor":
+		if impact_juice_enabled:
+			_spawn_stylized_replay_effect(global_center, clean_kind, profile_size, profile_lifetime, result_amount, tier_index)
+		else:
+			_spawn_armor_bar_linger_effect(global_center, profile_size, profile_lifetime, intensity)
+		return
 	if _use_max_combat_vfx() and impact_juice_enabled and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
 		return
 	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
@@ -253,8 +264,6 @@ func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime
 	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
 	var intensity: int = _stylized_replay_vfx_presenter.replay_effect_intensity(result_amount, tier_index)
 	var duration := _post_match_vfx_lifetime(maxf(0.60, lifetime) * (1.70 + float(tier_index) * 0.16))
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_armor_linger(global_center, draw_size, duration, intensity):
-		return
 	_spawn_armor_bar_linger_effect(global_center, draw_size, duration, intensity)
 
 
@@ -393,8 +402,6 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
 
 
 func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_impact(target_global, true, blocked_amount, lifetime):
-		return
 	spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
 	_enemy_attack_vfx_presenter.spawn_block_impact(target_global, lifetime)
 
@@ -565,6 +572,8 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 		return
 	var source_point := control_global_center(source, 0.5)
 	if source_point == Vector2.ZERO:
+		return
+	if orb_id == OrbType.Id.ARMOR:
 		return
 	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_beam(orb_id, source_point, target_global, beam_lifetime):
 		return

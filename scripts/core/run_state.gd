@@ -88,7 +88,7 @@ var _balance_manager
 var _vfx_speed := VFX_SPEED_NORMAL
 var _combat_vfx_quality := COMBAT_VFX_QUALITY_LOW
 var _reduced_motion := false
-var _game_juice_enabled := false
+var _game_juice_enabled := true
 var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 
 var _normal_encounters_by_level := {
@@ -1257,7 +1257,7 @@ func reset_combat_feedback_settings() -> void:
 	_vfx_speed = VFX_SPEED_NORMAL
 	_combat_vfx_quality = COMBAT_VFX_QUALITY_LOW
 	_reduced_motion = false
-	_game_juice_enabled = false
+	_game_juice_enabled = true
 	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 	_save_user_settings()
 

@@ -13,25 +13,63 @@ func bind(dependencies: Dictionary) -> void:
 
 
 func spawn_armor_linger(center_local: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
-	var base_size := Vector2(maxf(180.0, draw_size.x), maxf(58.0, draw_size.y))
-	var shell_size := Vector2(
-		base_size.x * (1.08 + float(intensity) * 0.028),
-		base_size.y * (1.04 + float(intensity) * 0.025)
-	)
-	_spawn_runtime_sprite_local("ArmorBarShieldBloom", "soft_glow", center_local, shell_size * Vector2(1.22, 1.72), Color(0.34, 0.68, 1.0, 0.22), lifetime, Vector2(1.08, 1.12), 0.0, Vector2.ZERO, 0.0, POST_MATCH_BAR_LINGER_Z_INDEX - 1)
-	_spawn_runtime_sprite_local("ArmorBarShieldRuntimeShell", "shield", center_local, shell_size * Vector2(1.08, 1.36), Color(0.78, 0.92, 1.0, 0.50), lifetime * 0.96, Vector2(1.04, 1.08), 0.0, Vector2.ZERO, 0.0, POST_MATCH_BAR_LINGER_Z_INDEX + 1)
-	_spawn_runtime_sprite_local("ArmorBarShieldRefraction", "ray", center_local + Vector2(0.0, -shell_size.y * 0.18), Vector2(shell_size.x * 0.96, 16.0 + float(intensity) * 2.0), Color(0.92, 0.98, 1.0, 0.62), lifetime * 0.58, Vector2(0.82, 0.42), lifetime * 0.12, Vector2(18.0, 0.0), 0.0, POST_MATCH_BAR_LINGER_Z_INDEX + 2)
-	_spawn_local_effect_panel("ArmorBarShieldLinger", center_local, shell_size, Color(0.15, 0.36, 0.76, 0.16), Color(0.86, 0.96, 1.0, 0.94), 5 + mini(intensity, 6), 14, POST_MATCH_BAR_LINGER_Z_INDEX, lifetime, Vector2(1.03, 1.06))
-	_spawn_local_effect_panel("ArmorBarShieldGlass", center_local + Vector2(0.0, -shell_size.y * 0.08), Vector2(shell_size.x * 0.92, shell_size.y * 0.42), Color(0.76, 0.92, 1.0, 0.12), Color(0.92, 0.98, 1.0, 0.50), 2, 999, POST_MATCH_BAR_LINGER_Z_INDEX + 1, lifetime * 0.82, Vector2(1.04, 0.82), lifetime * 0.05)
-	var pulse_count := 2 + mini(intensity, 5)
-	for i in range(pulse_count):
-		_spawn_local_effect_panel("ArmorBarShieldPulse", center_local, shell_size * (0.88 + float(i) * 0.055), Color(0.22, 0.60, 1.0, 0.08), Color(0.88, 0.98, 1.0, 0.62), 2 + mini(intensity, 4), 16, POST_MATCH_BAR_LINGER_Z_INDEX, lifetime * 0.58, Vector2(1.10 + float(i) * 0.05, 1.18 + float(i) * 0.03), lifetime * (0.12 + float(i) * 0.09))
-	var block_count := 5 + intensity * 2
-	for i in range(block_count):
-		var side := -1.0 if i % 2 == 0 else 1.0
-		var y := (float(i) / float(maxi(1, block_count - 1)) - 0.5) * shell_size.y * 0.54
-		var start := center_local + Vector2(side * shell_size.x * 0.50, y)
-		_spawn_local_effect_panel("ArmorBarShieldBlockSpark", start, Vector2(34 + intensity * 4, 6 + intensity), Color(0.84, 0.96, 1.0, 0.72), Color(0.96, 1.0, 1.0, 0.86), 1, 999, POST_MATCH_BAR_LINGER_Z_INDEX + 1, lifetime * 0.42, Vector2(0.58, 0.62), lifetime * 0.10 + float(i % 5) * lifetime * 0.036, Vector2(-side * (28.0 + float(intensity) * 4.0), sin(float(i)) * 6.0), 0.0, 0.0 if side < 0.0 else PI)
+	var board_extent := maxf(180.0, maxf(draw_size.x, draw_size.y))
+	var shell_size := Vector2(board_extent, board_extent) * (1.08 + float(intensity) * 0.020)
+	_spawn_hex_grid(center_local, shell_size, lifetime, intensity)
+	_spawn_edge_snap_bars(center_local, shell_size, lifetime, intensity)
+
+
+func _spawn_hex_grid(center_local: Vector2, shell_size: Vector2, lifetime: float, intensity: int) -> void:
+	var cell_size := maxf(50.0, shell_size.x * (0.24 + float(intensity) * 0.006))
+	var gap := cell_size * 0.82
+	var start := Vector2(-gap, -gap)
+	for row in range(3):
+		for column in range(3):
+			var index := row * 3 + column
+			var offset := start + Vector2(float(column) * gap + (cell_size * 0.28 if row % 2 == 1 else 0.0), float(row) * gap)
+			var delay := lifetime * (0.04 + float(abs(row - 1) + abs(column - 1)) * 0.036 + float(index % 2) * 0.015)
+			_spawn_runtime_sprite_local(
+				"ArmorGridHexCell",
+				"hex_cell",
+				center_local + offset,
+				Vector2(cell_size, cell_size * 1.12),
+				Color(0.86, 0.98, 1.0, 0.84),
+				lifetime * 0.90,
+				Vector2(1.12, 1.12),
+				delay,
+				Vector2.ZERO,
+				0.0,
+				POST_MATCH_BAR_LINGER_Z_INDEX + 8,
+				PI / 6.0
+			)
+
+
+func _spawn_edge_snap_bars(center_local: Vector2, shell_size: Vector2, lifetime: float, intensity: int) -> void:
+	var half := shell_size * 0.50
+	var bar_length := shell_size.x * (0.78 + float(intensity) * 0.012)
+	var bar_thickness := maxf(9.0, 7.0 + float(intensity) * 1.0)
+	var specs := [
+		{"offset": Vector2(0.0, -half.y), "rotation": 0.0, "move": Vector2(0.0, 24.0)},
+		{"offset": Vector2(0.0, half.y), "rotation": 0.0, "move": Vector2(0.0, -24.0)},
+		{"offset": Vector2(-half.x, 0.0), "rotation": PI * 0.5, "move": Vector2(24.0, 0.0)},
+		{"offset": Vector2(half.x, 0.0), "rotation": PI * 0.5, "move": Vector2(-24.0, 0.0)},
+	]
+	for i in range(specs.size()):
+		var spec: Dictionary = specs[i]
+		_spawn_runtime_sprite_local(
+			"ArmorGridSnapBar",
+			"ray",
+			center_local + Vector2(spec.get("offset", Vector2.ZERO)),
+			Vector2(bar_length, bar_thickness),
+			Color(0.92, 0.99, 1.0, 0.92),
+			lifetime * 0.52,
+			Vector2(0.82, 0.58),
+			lifetime * (0.05 + float(i) * 0.025),
+			Vector2(spec.get("move", Vector2.ZERO)),
+			0.0,
+			POST_MATCH_BAR_LINGER_Z_INDEX + 9,
+			float(spec.get("rotation", 0.0))
+		)
 
 
 func _spawn_runtime_sprite_local(name: String, texture_key: String, center_local: Vector2, draw_size: Vector2, color: Color, lifetime: float, target_scale: Vector2, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, spin: float = 0.0, z_index: int = POST_MATCH_BAR_LINGER_Z_INDEX, rotation: float = 0.0, move_ease: Tween.EaseType = Tween.EASE_OUT as Tween.EaseType) -> TextureRect:

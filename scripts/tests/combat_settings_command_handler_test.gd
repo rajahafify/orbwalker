@@ -233,8 +233,8 @@ func _test_flag_toggle_and_reset_defaults_update_runtime_dependencies() -> Strin
 	handler.reset_feedback_settings()
 	if RunState.vfx_speed() != "normal" or RunState.combat_vfx_quality() != "low":
 		return "Expected reset defaults to restore speed normal and quality low."
-	if RunState.reduced_motion_enabled() or RunState.game_juice_enabled():
-		return "Expected reset defaults to disable reduced motion and master game juice."
+	if RunState.reduced_motion_enabled() or not RunState.game_juice_enabled():
+		return "Expected reset defaults to disable reduced motion and enable master game juice."
 	if not bool(RunState.game_juice_flags().get(GAME_JUICE_FLAGS_SCRIPT.SCREEN_NUDGE, false)):
 		return "Expected reset defaults to restore child flags to true."
 	if recorder.feedback_apply_count != 2 or recorder.vfx_apply_count != 1:

@@ -63,7 +63,7 @@ func spawn_local_effect_panel(name: String, center_local: Vector2, size: Vector2
 	var tint := border if border.a >= fill.a else fill
 	if texture_key == "smoke" or texture_key == "soft_glow":
 		tint = fill if fill.a >= border.a else border
-	if texture_key in ["ripple", "shield"]:
+	if texture_key in ["ripple", "shield", "hex_cell"]:
 		_spawn_runtime_sprite_local("%sGlow" % name, "soft_glow", center_local, size * 1.12, Color(fill.r, fill.g, fill.b, minf(fill.a, 0.22)), lifetime * 0.92, target_scale, delay, move_offset * 0.72, spin * 0.5, z_index - 1, draw_rotation, move_ease)
 	_spawn_runtime_sprite_local(name, texture_key, center_local, draw_size, tint, lifetime, target_scale, delay, move_offset, spin, z_index, draw_rotation, move_ease)
 
@@ -73,7 +73,9 @@ func runtime_texture_key_for_effect(effect_name: String, size: Vector2, corner_r
 	var aspect := size.x / maxf(1.0, size.y)
 	if lower_name.contains("coin"):
 		return "coin"
-	if lower_name.contains("shield") or lower_name.contains("armor"):
+	if lower_name.contains("hex") or lower_name.contains("grid") or lower_name.contains("armor"):
+		return "hex_cell"
+	if lower_name.contains("shield"):
 		return "shield"
 	if lower_name.contains("shockwave") or lower_name.contains("spool") or lower_name.contains("pulse") or lower_name.contains("ring"):
 		return "ripple"

@@ -147,6 +147,10 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 	var basis_size := _replay_impact_basis_size(kind, draw_size, max_size)
 	var base_size := basis_size * (2.25 + float(intensity) * 0.22)
 	var duration := maxf(0.32, lifetime * 1.10)
+	if kind == "armor" and not _status_vfx_available():
+		_spawn_max_armor_grid_snap(center, base_size * 0.74, duration, intensity)
+		_spawn_light(center, core, 2.5 + float(intensity) * 0.30, base_size * 1.10, duration * 0.72)
+		return true
 	if _status_vfx_available():
 		_spawn_status_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
 		_spawn_light(center, core, 2.9 + float(intensity) * 0.38, base_size * 1.24, duration * 0.76)
@@ -187,27 +191,48 @@ func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: fl
 	if _status_vfx_available():
 		_spawn_status_armor_linger(center, Vector2(width, height), lifetime, intensity)
 		return true
-	if _elemental_magic_available():
-		var shell_size := Vector2(width, height) * (1.0 + float(intensity) * 0.045)
-		_spawn_elemental_effect("area", center, "armor", shell_size, lifetime * 1.35, intensity, 0.0, Vector2.ZERO, 0.0, 0.75, 0.82)
-		_spawn_elemental_effect("cast", center + Vector2(0.0, -height * 0.10), "armor", shell_size * 0.48, lifetime * 0.80, intensity, 0.08, Vector2.ZERO, 0.0, 1.5, 0.68)
-		if _pack_vfx_available():
-			_spawn_pack_effect("hit_02", center + Vector2(0.0, -height * 0.08), "armor", shell_size * 0.42, lifetime * 0.62, intensity, 0.10, Vector2.ZERO, 0.0, 1.9, 0.52)
-		_spawn_light(center, Color(0.78, 0.92, 1.0, 1.0), 2.2 + float(intensity) * 0.24, width * 0.84, lifetime)
-		return true
-	if _pack_vfx_available():
-		var shell_size := Vector2(width, height) * (1.0 + float(intensity) * 0.035)
-		_spawn_pack_effect("impact_02", center, "armor", shell_size, lifetime, intensity, 0.0, Vector2.ZERO, 0.0, 0.9, 0.86)
-		_spawn_pack_effect("hit_02", center + Vector2(0.0, -height * 0.10), "armor", shell_size * 0.66, lifetime * 0.72, intensity, 0.08, Vector2.ZERO, 0.0, 1.4, 0.64)
-		_spawn_light(center, Color(0.78, 0.92, 1.0, 1.0), 1.9 + float(intensity) * 0.22, width * 0.80, lifetime)
-		return true
-	_spawn_light(center, Color(0.78, 0.92, 1.0, 1.0), 1.9 + float(intensity) * 0.22, width * 0.80, lifetime)
-	_spawn_flipbook("armor_shell", center, Vector2(width, height), lifetime * 1.24, Color(0.82, 0.94, 1.0, 0.74), 0.0, Vector2.ZERO, 1.05, 1.0, 0.0)
-	_spawn_flipbook("shockwave_ring", center, Vector2(width * 0.82, height * 1.12), lifetime * 0.86, Color(0.88, 0.98, 1.0, 0.72), 0.08, Vector2.ZERO, 1.24, 0.6, 0.0)
-	for i in range(5 + mini(intensity, 8)):
-		var x := (float(i) / float(maxi(1, 4 + mini(intensity, 8))) - 0.5) * width
-		_spawn_flipbook("light_rays", center + Vector2(x, -height * 0.18 + sin(float(i)) * 10.0), Vector2(width * 0.26, 28.0), lifetime * 0.42, Color(0.92, 0.98, 1.0, 0.72), lifetime * (0.08 + float(i % 4) * 0.035), Vector2(20.0, 0.0), 0.64, 1.4, sin(float(i)) * 0.28)
+	_spawn_max_armor_grid_snap(center, maxf(width, height) * 0.82, lifetime, intensity)
+	_spawn_light(center, Color(0.78, 0.92, 1.0, 1.0), 2.1 + float(intensity) * 0.24, maxf(width, height) * 0.78, lifetime)
 	return true
+
+
+func _spawn_max_armor_grid_snap(center: Vector2, max_size: float, lifetime: float, intensity: int) -> void:
+	var shell_size := maxf(96.0, max_size)
+	_spawn_flipbook("armor_impact", center, Vector2(shell_size * 0.96, shell_size * 0.96), lifetime * 0.78, Color(0.36, 0.76, 1.0, 0.20), 0.0, Vector2.ZERO, 1.10, 0.8, 0.0)
+	var cell_size := maxf(28.0, shell_size * (0.17 + float(intensity) * 0.004))
+	var gap := cell_size * 0.92
+	var start := Vector2(-gap, -gap)
+	for row in range(3):
+		for column in range(3):
+			var index := row * 3 + column
+			var offset := start + Vector2(float(column) * gap + (cell_size * 0.24 if row % 2 == 1 else 0.0), float(row) * gap)
+			var distance: int = absi(row - 1) + absi(column - 1)
+			var delay := lifetime * (0.03 + float(distance) * 0.035 + float(index % 2) * 0.012)
+			var alpha := 0.52 if distance == 0 else 0.38
+			_spawn_flipbook("armor_impact", center + offset, Vector2(cell_size, cell_size * 1.10), lifetime * 0.62, Color(0.70, 0.92, 1.0, alpha), delay, Vector2.ZERO, 1.08, 2.2, PI / 6.0)
+	var bar_length := shell_size * (0.60 + float(intensity) * 0.01)
+	var bar_thickness := maxf(8.0, shell_size * 0.035)
+	var half := shell_size * 0.50
+	var specs := [
+		{"offset": Vector2(0.0, -half), "rotation": 0.0, "move": Vector2(0.0, shell_size * 0.08)},
+		{"offset": Vector2(0.0, half), "rotation": 0.0, "move": Vector2(0.0, -shell_size * 0.08)},
+		{"offset": Vector2(-half, 0.0), "rotation": PI * 0.5, "move": Vector2(shell_size * 0.08, 0.0)},
+		{"offset": Vector2(half, 0.0), "rotation": PI * 0.5, "move": Vector2(-shell_size * 0.08, 0.0)},
+	]
+	for i in range(specs.size()):
+		var spec: Dictionary = specs[i]
+		_spawn_flipbook(
+			"light_rays",
+			center + Vector2(spec.get("offset", Vector2.ZERO)),
+			Vector2(bar_length, bar_thickness),
+			lifetime * 0.44,
+			Color(0.88, 0.98, 1.0, 0.78),
+			lifetime * (0.04 + float(i) * 0.022),
+			Vector2(spec.get("move", Vector2.ZERO)),
+			0.72,
+			2.8,
+			float(spec.get("rotation", 0.0))
+		)
 
 
 func spawn_mastery_cast_sequence(orb_id: int, source_global: Vector2, target_global: Vector2, spool_lifetime: float, travel_lifetime: float, result_amount: int) -> bool:
@@ -931,7 +956,7 @@ func _status_sheet_key(kind: String) -> String:
 		"heart":
 			return "heal"
 		"armor":
-			return "shield"
+			return "armor"
 		"gold":
 			return "blessed"
 		"damage":
@@ -1205,7 +1230,7 @@ func _trail_key(kind: String) -> String:
 		"heart":
 			return "heal_motes"
 		"armor":
-			return "armor_shell"
+			return "armor_impact"
 		"gold":
 			return "spark_particles"
 	return "smoke_puff"
@@ -1222,7 +1247,7 @@ func _mist_key(kind: String) -> String:
 		"heart":
 			return "heal_motes"
 		"armor":
-			return "armor_shell"
+			return "armor_impact"
 	return "smoke_puff"
 
 
@@ -1237,7 +1262,7 @@ func _particle_key(kind: String) -> String:
 		"heart":
 			return "heal_motes"
 		"armor":
-			return "armor_shell"
+			return "armor_impact"
 		"gold":
 			return "coin_spin"
 		"damage":

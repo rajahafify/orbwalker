@@ -127,7 +127,7 @@ func spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String, 
 		"heart":
 			_spawn_screen_heal_event(layer_size, duration, intensity, accent, core)
 		"armor":
-			_spawn_screen_armor_event(layer_size, duration, intensity, accent, core)
+			_spawn_screen_armor_event(layer_size, event_focus, duration, intensity, accent, core)
 		"gold":
 			_spawn_screen_gold_event(layer_size, duration, intensity, accent, core)
 		"damage":
@@ -305,39 +305,67 @@ func _spawn_screen_heal_event(layer_size: Vector2, duration: float, intensity: i
 		)
 
 
-func _spawn_screen_armor_event(layer_size: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
-	var screen_center := layer_size * 0.5
-	spawn_local_effect_panel(
-		"PostMatchScreenArmorShell",
-		screen_center,
-		layer_size * Vector2(0.92, 0.86),
-		Color(accent.r, accent.g, accent.b, 0.07),
-		Color(core.r, core.g, core.b, 0.44),
-		5 + mini(intensity, 6),
-		22,
-		POST_MATCH_SCREEN_EVENT_Z_INDEX + 2,
-		duration * 0.76,
-		Vector2(1.03, 1.05),
-		duration * 0.02
+func _spawn_screen_armor_event(layer_size: Vector2, focus_local: Vector2, duration: float, intensity: int, accent: Color, core: Color) -> void:
+	var grid_extent := minf(layer_size.x, layer_size.y) * (0.30 + float(intensity) * 0.010)
+	var cell_size := maxf(42.0, grid_extent * 0.21)
+	var gap := cell_size * 0.94
+	var start := Vector2(-gap, -gap)
+	spawn_runtime_sprite_local(
+		"PostMatchScreenArmorGridBloom",
+		"soft_glow",
+		focus_local,
+		Vector2(grid_extent, grid_extent) * 1.28,
+		Color(accent.r, accent.g, accent.b, 0.18),
+		duration * 0.80,
+		Vector2(1.10, 1.10),
+		duration * 0.02,
+		Vector2.ZERO,
+		0.0,
+		POST_MATCH_SCREEN_EVENT_Z_INDEX + 2
 	)
-	for i in range(4):
-		var side_x := -1.0 if i < 2 else 1.0
-		var side_y := -1.0 if i % 2 == 0 else 1.0
-		spawn_local_effect_panel(
-			"PostMatchScreenArmorBrace",
-			screen_center + Vector2(side_x * layer_size.x * 0.36, side_y * layer_size.y * 0.28),
-			Vector2(layer_size.x * 0.24, 8 + intensity),
-			Color(core.r, core.g, core.b, 0.36),
-			Color(0.96, 1.0, 1.0, 0.72),
-			1,
-			999,
-			POST_MATCH_SCREEN_EVENT_Z_INDEX + 3,
-			duration * 0.52,
-			Vector2(0.64, 0.52),
-			duration * (0.08 + float(i) * 0.036),
-			Vector2(-side_x * 32.0, -side_y * 12.0),
+	for row in range(3):
+		for column in range(3):
+			var index := row * 3 + column
+			var offset := start + Vector2(float(column) * gap + (cell_size * 0.24 if row % 2 == 1 else 0.0), float(row) * gap)
+			var distance_from_center: int = absi(column - 1) + absi(row - 1)
+			spawn_runtime_sprite_local(
+				"PostMatchScreenArmorHexCell",
+				"hex_cell",
+				focus_local + offset,
+				Vector2(cell_size, cell_size * 1.10),
+				Color(core.r, core.g, core.b, 0.56 if distance_from_center == 0 else 0.42),
+				duration * 0.66,
+				Vector2(1.08, 1.08),
+				duration * (0.04 + float(distance_from_center) * 0.032 + float(index % 2) * 0.012),
+				Vector2.ZERO,
+				0.0,
+				POST_MATCH_SCREEN_EVENT_Z_INDEX + 4,
+				PI / 6.0
+			)
+	var half := grid_extent * 0.50
+	var bar_length := grid_extent * 0.64
+	var bar_thickness := maxf(8.0, grid_extent * 0.028)
+	var specs := [
+		{"offset": Vector2(0.0, -half), "rotation": 0.0, "move": Vector2(0.0, grid_extent * 0.08)},
+		{"offset": Vector2(0.0, half), "rotation": 0.0, "move": Vector2(0.0, -grid_extent * 0.08)},
+		{"offset": Vector2(-half, 0.0), "rotation": PI * 0.5, "move": Vector2(grid_extent * 0.08, 0.0)},
+		{"offset": Vector2(half, 0.0), "rotation": PI * 0.5, "move": Vector2(-grid_extent * 0.08, 0.0)},
+	]
+	for i in range(specs.size()):
+		var spec: Dictionary = specs[i]
+		spawn_runtime_sprite_local(
+			"PostMatchScreenArmorSnapBar",
+			"ray",
+			focus_local + Vector2(spec.get("offset", Vector2.ZERO)),
+			Vector2(bar_length, bar_thickness),
+			Color(0.90, 0.98, 1.0, 0.76),
+			duration * 0.44,
+			Vector2(0.72, 0.48),
+			duration * (0.06 + float(i) * 0.022),
+			Vector2(spec.get("move", Vector2.ZERO)),
 			0.0,
-			side_y * 0.42
+			POST_MATCH_SCREEN_EVENT_Z_INDEX + 5,
+			float(spec.get("rotation", 0.0))
 		)
 
 

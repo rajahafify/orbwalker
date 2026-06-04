@@ -59,11 +59,9 @@ func bind(dependencies: Dictionary) -> void:
 
 
 func spawn_armor_linger(center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
-	var size := draw_size * (1.0 + float(intensity) * 0.035)
-	_spawn_shield_scene(center, size * Vector2(0.86, 0.48), lifetime * 1.04, intensity, 0.0, Vector2.ZERO, 1.8)
-	_spawn_status_flipbook("shield", center, size * Vector2(0.92, 0.58), lifetime * 1.12, Color(0.86, 0.96, 1.0, 0.76), 0.0, Vector2.ZERO, 1.06, 2.1, 0.0, 2)
-	_spawn_status_flipbook("armor", center + Vector2(0.0, -draw_size.y * 0.06), size * Vector2(0.48, 0.40), lifetime * 0.78, Color(0.58, 0.84, 1.0, 0.52), lifetime * 0.08, Vector2.ZERO, 0.95, 2.5, 0.0, 1)
-	_spawn_light(center, Color(0.80, 0.94, 1.0, 1.0), 2.4 + float(intensity) * 0.22, draw_size.x * 0.82, lifetime)
+	var max_size := maxf(draw_size.x, draw_size.y)
+	_spawn_armor_grid_snap(center, max_size * (1.0 + float(intensity) * 0.035), lifetime, intensity, 2.1)
+	_spawn_light(center, Color(0.80, 0.94, 1.0, 1.0), 2.4 + float(intensity) * 0.22, max_size * 0.82, lifetime)
 
 
 func spawn_replay_recipe(kind: String, center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
@@ -87,10 +85,7 @@ func spawn_replay_recipe(kind: String, center: Vector2, draw_size: Vector2, max_
 			_spawn_status_flipbook("regen", center + Vector2(0.0, max_size * 0.12), status_size * 0.30, duration * 0.82, Color(0.48, 1.0, 0.60, 0.52), 0.08, Vector2(0.0, -max_size * 0.30), 0.92, 2.2, 0.08, 1)
 			_spawn_pack_layer("hit_02", center + Vector2(0.0, -max_size * 0.05), "heart", status_size * 0.28, duration * 0.54, intensity, 0.16, 0.0, 2.6, 0.34)
 		"armor":
-			_spawn_status_flipbook("shield", center, status_size * Vector2(0.50, 0.42), duration * 0.98, Color(0.86, 0.96, 1.0, 0.66), 0.0, Vector2.ZERO, 1.08, 1.9, 0.0, 1)
-			_spawn_shield_scene(center, status_size * Vector2(0.92, 0.62), duration * 1.10, intensity, 0.02, Vector2.ZERO, 2.1)
-			_spawn_status_flipbook("armor", center + Vector2(0.0, -max_size * 0.06), status_size * 0.28, duration * 0.64, Color(0.62, 0.86, 1.0, 0.44), 0.12, Vector2.ZERO, 0.94, 2.6, 0.0, 1)
-			_spawn_pack_layer("impact_02", center, "armor", status_size * 0.38, duration * 0.58, intensity, 0.12, 0.0, 2.7, 0.42)
+			_spawn_armor_grid_snap(center, status_size.x * 0.82, duration, intensity, 2.1)
 		"gold":
 			_spawn_status_flipbook("blessed", center, status_size * 0.42, duration * 0.86, Color(1.0, 0.86, 0.38, 0.62), 0.0, Vector2.ZERO, 1.10, 1.9, 0.0, 1)
 			_spawn_status_flipbook("haste", center + Vector2(0.0, -max_size * 0.08), status_size * 0.28, duration * 0.58, Color(1.0, 0.96, 0.44, 0.42), 0.08, Vector2.ZERO, 1.05, 2.2, 0.12, 1)
@@ -151,6 +146,10 @@ func spawn_screen_wide(kind: String, center: Vector2, lifetime: float, intensity
 	var focus := Vector2(layer_size.x * 0.5, focus_y)
 	var colors := _kind_colors(clean_kind)
 	var core: Color = colors.get("core", Color.WHITE)
+	if clean_kind == "armor":
+		_spawn_armor_grid_snap(focus, minf(layer_size.x, layer_size.y) * (0.32 + float(intensity) * 0.010), lifetime, intensity, 2.1)
+		_spawn_light(focus, core, 3.0 + float(intensity) * 0.24, layer_size.x * 0.52, lifetime * 0.68)
+		return
 	var sheet_key := _status_sheet_key(clean_kind)
 	var wide_size := Vector2(layer_size.x * 0.78, layer_size.y * (0.32 if offensive else 0.42))
 	_spawn_status_flipbook(sheet_key, focus, wide_size, lifetime * 1.04, Color(1, 1, 1, 0.46), 0.0, Vector2.ZERO, 1.06, -1.2, 0.0, 1)
@@ -215,11 +214,10 @@ func spawn_cast_recipe(kind: String, source: Vector2, target: Vector2, delta: Ve
 				_spawn_status_flipbook("regen", source + lane, travel_size * Vector2(0.34, 0.42), travel_duration * 1.02, Color(0.56, 1.0, 0.62, 0.38), launch_delay + float(lane_index + 1) * 0.035, delta - lane * 0.30, 0.78, 2.2, angle, 1)
 			_spawn_status_flipbook("heal", target, spool_size * (0.50 + float(intensity) * 0.018), travel_duration * 1.10, Color(0.82, 1.0, 0.76, 0.62), launch_delay + travel_duration * 0.84, Vector2(0.0, -20.0), 1.08, 3.0, angle, 1)
 		"armor":
-			_spawn_status_flipbook("shield", source, spool_size * 0.48, spool_duration * 0.86, Color(0.84, 0.96, 1.0, 0.58), 0.0, Vector2.ZERO, 1.06, 1.0, angle, 1)
+			_spawn_status_flipbook("armor", source, spool_size * 0.40, spool_duration * 0.76, Color(0.72, 0.90, 1.0, 0.46), 0.0, Vector2.ZERO, 1.02, 1.0, angle, 1)
 			_spawn_beam_effect(source, delta, "armor", travel_duration * 0.86, intensity, launch_delay, 0.74)
-			_spawn_status_flipbook("shield", source, travel_size * Vector2(0.34, 0.38), travel_duration * 0.94, Color(0.66, 0.88, 1.0, 0.36), launch_delay, delta, 0.80, 2.2, angle, 1)
-			_spawn_shield_scene(target, spool_size * (0.84 + float(intensity) * 0.035), travel_duration * 1.28, intensity, launch_delay + travel_duration * 0.82, Vector2.ZERO, 3.0)
-			_spawn_status_flipbook("armor", target, spool_size * (0.40 + float(intensity) * 0.014), travel_duration * 0.94, Color(0.72, 0.90, 1.0, 0.42), launch_delay + travel_duration * 0.88, Vector2.ZERO, 1.04, 3.2, angle, 1)
+			_spawn_status_flipbook("armor", source, travel_size * Vector2(0.30, 0.34), travel_duration * 0.86, Color(0.66, 0.88, 1.0, 0.34), launch_delay, delta, 0.80, 2.2, angle, 1)
+			_spawn_armor_grid_snap(target, spool_size.x * (0.84 + float(intensity) * 0.035), travel_duration * 1.10, intensity, 3.0, launch_delay + travel_duration * 0.82)
 		"gold":
 			_spawn_status_flipbook("blessed", source, spool_size * 0.46, spool_duration * 0.86, Color(1.0, 0.90, 0.38, 0.60), 0.0, Vector2.ZERO, 1.06, 1.0, angle, 1)
 			_spawn_beam_effect(source, delta, "gold", travel_duration * 0.78, intensity, launch_delay, 0.70)
@@ -243,6 +241,46 @@ func _vfx_layer_size() -> Vector2:
 	if _layer_size_provider.is_valid():
 		return _layer_size_provider.call()
 	return Vector2.ZERO
+
+
+func _spawn_armor_grid_snap(center: Vector2, max_size: float, lifetime: float, intensity: int, z: float, delay: float = 0.0) -> void:
+	var shell_size := maxf(92.0, max_size)
+	_spawn_status_flipbook("armor", center, Vector2(shell_size * 0.92, shell_size * 0.92), lifetime * 0.82, Color(0.38, 0.78, 1.0, 0.18), delay, Vector2.ZERO, 1.10, z - 0.2, 0.0, 1)
+	var cell_size := maxf(26.0, shell_size * (0.17 + float(intensity) * 0.004))
+	var gap := cell_size * 0.92
+	var start := Vector2(-gap, -gap)
+	for row in range(3):
+		for column in range(3):
+			var index := row * 3 + column
+			var offset := start + Vector2(float(column) * gap + (cell_size * 0.24 if row % 2 == 1 else 0.0), float(row) * gap)
+			var distance: int = absi(row - 1) + absi(column - 1)
+			var cell_delay := delay + lifetime * (0.03 + float(distance) * 0.035 + float(index % 2) * 0.012)
+			var alpha := 0.52 if distance == 0 else 0.38
+			_spawn_status_flipbook("armor", center + offset, Vector2(cell_size, cell_size * 1.10), lifetime * 0.62, Color(0.70, 0.92, 1.0, alpha), cell_delay, Vector2.ZERO, 1.08, z + 0.5, PI / 6.0, 1)
+	var bar_length := shell_size * (0.60 + float(intensity) * 0.01)
+	var bar_thickness := maxf(8.0, shell_size * 0.035)
+	var half := shell_size * 0.50
+	var specs := [
+		{"offset": Vector2(0.0, -half), "rotation": 0.0, "move": Vector2(0.0, shell_size * 0.08)},
+		{"offset": Vector2(0.0, half), "rotation": 0.0, "move": Vector2(0.0, -shell_size * 0.08)},
+		{"offset": Vector2(-half, 0.0), "rotation": PI * 0.5, "move": Vector2(shell_size * 0.08, 0.0)},
+		{"offset": Vector2(half, 0.0), "rotation": PI * 0.5, "move": Vector2(-shell_size * 0.08, 0.0)},
+	]
+	for i in range(specs.size()):
+		var spec: Dictionary = specs[i]
+		_spawn_status_flipbook(
+			"armor",
+			center + Vector2(spec.get("offset", Vector2.ZERO)),
+			Vector2(bar_length, bar_thickness),
+			lifetime * 0.44,
+			Color(0.88, 0.98, 1.0, 0.78),
+			delay + lifetime * (0.04 + float(i) * 0.022),
+			Vector2(spec.get("move", Vector2.ZERO)),
+			0.72,
+			z + 0.7,
+			float(spec.get("rotation", 0.0)),
+			1
+		)
 
 
 func _kind_colors(kind: String) -> Dictionary:

@@ -10,6 +10,7 @@ const TEXTURE_KEYS: Array[String] = [
 	"ripple",
 	"shard",
 	"shield",
+	"hex_cell",
 ]
 const DEFAULT_TEXTURE_KEY := "soft_glow"
 
@@ -54,6 +55,8 @@ func _create_texture(key: String) -> Texture2D:
 			return _make_shard_texture()
 		"shield":
 			return _make_shield_texture(128)
+		"hex_cell":
+			return _make_hex_cell_texture(128)
 	return _make_soft_glow_texture(128)
 
 
@@ -185,5 +188,27 @@ func _make_shield_texture(size: int) -> Texture2D:
 				var edge := minf(edge_x, edge_y)
 				var glass := pow(clampf(1.0 - (Vector2(nx + 0.18, ny + 0.26)).length() / 0.72, 0.0, 1.0), 1.8) * 0.24
 				alpha = maxf(0.22 + glass, 1.0 - edge)
+			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, clampf(alpha, 0.0, 1.0)))
+	return ImageTexture.create_from_image(image)
+
+
+func _make_hex_cell_texture(size: int) -> Texture2D:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
+	var center := Vector2(float(size - 1), float(size - 1)) * 0.5
+	var radius := float(size) * 0.43
+	for y in range(size):
+		for x in range(size):
+			var nx := (float(x) - center.x) / radius
+			var ny := (float(y) - center.y) / radius
+			var qx := absf(nx)
+			var qy := absf(ny)
+			var hex_distance := maxf(qx * 0.866 + qy * 0.50, qy)
+			var signed_distance := hex_distance - 0.92
+			var edge := clampf((-signed_distance) / 0.11, 0.0, 1.0)
+			var border := clampf(1.0 - absf(signed_distance) / 0.12, 0.0, 1.0)
+			var inner_outline := clampf(1.0 - absf(hex_distance - 0.56) / 0.045, 0.0, 1.0) * edge
+			var fill := clampf((-signed_distance - 0.02) / 0.72, 0.0, 1.0)
+			var diagonal_scan := clampf(1.0 - absf((nx * 0.52 + ny) + 0.18) / 0.075, 0.0, 1.0) * 0.28
+			var alpha := maxf(border, maxf(inner_outline * 0.72, fill * 0.58 + diagonal_scan)) * edge
 			image.set_pixel(x, y, Color(1.0, 1.0, 1.0, clampf(alpha, 0.0, 1.0)))
 	return ImageTexture.create_from_image(image)

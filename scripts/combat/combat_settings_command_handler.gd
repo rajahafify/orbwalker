@@ -198,7 +198,7 @@ func _current_settings() -> Dictionary:
 		"vfx_speed": RunState.vfx_speed(),
 		"combat_vfx_quality": "low",
 		"reduced_motion": false,
-		"game_juice": false,
+		"game_juice": true,
 		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
 	}
 

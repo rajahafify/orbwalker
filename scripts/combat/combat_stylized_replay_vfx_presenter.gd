@@ -39,6 +39,9 @@ func spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, dr
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
 	var intensity := replay_effect_intensity(result_amount, tier_index)
+	if clean_kind == "armor":
+		_spawn_armor_replay_effect(global_center, draw_size, lifetime, intensity)
+		return
 	if screen_wide and _screen_wide_replay_presenter != null:
 		_screen_wide_replay_presenter.spawn_screen_wide_replay_event(global_center, clean_kind, lifetime, intensity)
 	_spawn_baseline_replay_impact(global_center, clean_kind, draw_size, lifetime, intensity)
@@ -53,8 +56,6 @@ func spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, dr
 			_spawn_earth_replay_effect(global_center, draw_size, lifetime, intensity)
 		"heart":
 			_spawn_heal_replay_effect(global_center, draw_size, lifetime, intensity)
-		"armor":
-			_spawn_armor_replay_effect(global_center, draw_size, lifetime, intensity)
 		"gold":
 			_spawn_gold_replay_effect(global_center, draw_size, lifetime, intensity)
 		"damage":
@@ -183,17 +184,81 @@ func _spawn_heal_replay_effect(global_center: Vector2, draw_size: Vector2, lifet
 
 func _spawn_armor_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
 	var center_local := _global_to_vfx_local(global_center)
-	_spawn_runtime_sprite_local("PostMatchArmorShellGlow", "shield", center_local, draw_size * Vector2(1.32 + float(intensity) * 0.06, 1.54 + float(intensity) * 0.08), Color(0.52, 0.80, 1.0, 0.48), lifetime * 0.96, Vector2(1.06, 1.10), 0.0, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX)
-	_spawn_runtime_sprite_local("PostMatchArmorRefraction", "ripple", center_local, draw_size * (1.28 + float(intensity) * 0.08), Color(0.90, 0.98, 1.0, 0.76), lifetime * 0.68, Vector2(1.22, 1.28), lifetime * 0.03, Vector2.ZERO, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX + 1)
-	_spawn_replay_shield(global_center, draw_size * Vector2(0.92, 1.16), Color(0.18, 0.46, 0.84, 0.18), Color(0.82, 0.94, 1.0, 0.98), 7 + intensity, lifetime * 0.88)
-	_spawn_replay_ring(global_center, draw_size * 0.86, Color(0.22, 0.58, 1.0, 0.10), Color(0.76, 0.90, 1.0, 0.86), 4 + intensity, lifetime * 0.58, Vector2(1.12, 1.12), 0.0)
-	var hit_count := runtime_particle_count(intensity, 0.46)
-	for i in range(hit_count):
-		var y_offset := (float(i) / float(maxi(1, hit_count - 1)) - 0.5) * draw_size.y * 0.55
-		var side := -1.0 if i % 2 == 0 else 1.0
-		var start := Vector2(side * draw_size.x * 0.48, y_offset)
-		var angle := 0.0 if side < 0.0 else PI
-		_spawn_replay_streak(global_center, angle, draw_size.x * 0.30, 8.0 + float(intensity), Color(0.86, 0.96, 1.0, 0.82), lifetime * 0.50, float(i % 4) * 0.018, start)
+	var board_extent := maxf(draw_size.x, draw_size.y)
+	var shell_size := Vector2(board_extent, board_extent) * (1.08 + float(intensity) * 0.020)
+	_spawn_armor_hex_grid(center_local, shell_size, lifetime, intensity)
+	_spawn_armor_snap_bars(center_local, shell_size, lifetime, intensity)
+
+
+func _spawn_armor_hex_grid(center_local: Vector2, shell_size: Vector2, lifetime: float, intensity: int) -> void:
+	var columns := 3
+	var rows := 3
+	var cell_size := maxf(52.0, minf(shell_size.x, shell_size.y) * (0.25 + float(intensity) * 0.008))
+	var gap := cell_size * 0.82
+	var start := Vector2(-gap, -gap)
+	for row in range(rows):
+		for column in range(columns):
+			var index := row * columns + column
+			var offset := start + Vector2(float(column) * gap + (cell_size * 0.28 if row % 2 == 1 else 0.0), float(row) * gap)
+			var distance_from_center: int = absi(column - 1) + absi(row - 1)
+			var delay := lifetime * (0.025 + float(distance_from_center) * 0.035 + float(index % 2) * 0.012)
+			var alpha := 0.98 if distance_from_center == 0 else 0.86
+			_spawn_runtime_sprite_local(
+				"PostMatchArmorHexCell",
+				"hex_cell",
+				center_local + offset,
+				Vector2(cell_size, cell_size * 1.12),
+				Color(0.86, 0.98, 1.0, alpha),
+				lifetime * 0.90,
+				Vector2(1.12, 1.12),
+				delay,
+				Vector2.ZERO,
+				0.0,
+				POST_MATCH_EFFECT_FRONT_Z_INDEX + 8,
+				PI / 6.0
+			)
+			_spawn_runtime_sprite_local(
+				"PostMatchArmorHexCellCore",
+				"soft_glow",
+				center_local + offset,
+				Vector2(cell_size * 0.54, cell_size * 0.54),
+				Color(0.50, 0.88, 1.0, 0.38),
+				lifetime * 0.58,
+				Vector2(1.10, 1.10),
+				delay,
+				Vector2.ZERO,
+				0.0,
+				POST_MATCH_EFFECT_FRONT_Z_INDEX + 7
+			)
+
+
+func _spawn_armor_snap_bars(center_local: Vector2, shell_size: Vector2, lifetime: float, intensity: int) -> void:
+	var bar_color := Color(0.92, 0.99, 1.0, 0.96)
+	var bar_length := shell_size.x * (0.78 + float(intensity) * 0.012)
+	var bar_thickness := maxf(9.0, 8.0 + float(intensity) * 1.1)
+	var half := shell_size * 0.50
+	var specs := [
+		{"offset": Vector2(0.0, -half.y), "rotation": 0.0, "move": Vector2(0.0, 24.0)},
+		{"offset": Vector2(0.0, half.y), "rotation": 0.0, "move": Vector2(0.0, -24.0)},
+		{"offset": Vector2(-half.x, 0.0), "rotation": PI * 0.5, "move": Vector2(24.0, 0.0)},
+		{"offset": Vector2(half.x, 0.0), "rotation": PI * 0.5, "move": Vector2(-24.0, 0.0)},
+	]
+	for i in range(specs.size()):
+		var spec: Dictionary = specs[i]
+		_spawn_runtime_sprite_local(
+			"PostMatchArmorGridSnapBar",
+			"ray",
+			center_local + Vector2(spec.get("offset", Vector2.ZERO)),
+			Vector2(bar_length, bar_thickness),
+			bar_color,
+			lifetime * 0.50,
+			Vector2(0.82, 0.58),
+			lifetime * (0.04 + float(i) * 0.022),
+			Vector2(spec.get("move", Vector2.ZERO)),
+			0.0,
+			POST_MATCH_EFFECT_FRONT_Z_INDEX + 9,
+			float(spec.get("rotation", 0.0))
+		)
 
 
 func _spawn_gold_replay_effect(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:

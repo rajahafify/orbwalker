@@ -528,7 +528,7 @@ func show_settings(settings: Variant) -> void:
 	var settings_dict := _settings_dictionary(settings)
 	_update_settings_speed_buttons(String(settings_dict.get("vfx_speed", "normal")))
 	_update_settings_reduced_motion_button(bool(settings_dict.get("reduced_motion", false)))
-	_update_settings_game_juice_button(bool(settings_dict.get("game_juice", false)))
+	_update_settings_game_juice_button(bool(settings_dict.get("game_juice", true)))
 	_update_settings_game_juice_flag_buttons(Dictionary(settings_dict.get("game_juice_flags", GAME_JUICE_FLAGS_SCRIPT.default_flags())))
 
 
@@ -877,7 +877,7 @@ func _settings_dictionary(settings: Variant) -> Dictionary:
 	return {
 		"vfx_speed": String(settings),
 		"reduced_motion": false,
-		"game_juice": false,
+		"game_juice": true,
 		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
 	}
 
