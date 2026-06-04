@@ -33,6 +33,8 @@ const COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT := preload("res://scripts/com
 const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
 const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
+const COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_outcome_route_coordinator.gd")
+const COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_resolution_coordinator.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
@@ -130,6 +132,8 @@ var _player_hud_refresh_coordinator: Variant = null
 var _loadout_command_handler: Variant = null
 var _intent_hover_handler: Variant = null
 var _scene_transition_handler: Variant = null
+var _outcome_route_coordinator: Variant = null
+var _turn_resolution_coordinator: Variant = null
 var _tutorial_prompt_presenter: Variant = null
 var _tutorial_coachmark_coordinator: Variant = null
 var _tutorial_end_command_handler: Variant = null
@@ -366,6 +370,10 @@ func _ensure_runtime_helpers() -> void:
 		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
 	if _scene_transition_handler == null:
 		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
+	if _outcome_route_coordinator == null:
+		_outcome_route_coordinator = COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
+	if _turn_resolution_coordinator == null:
+		_turn_resolution_coordinator = COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
 	if _tutorial_prompt_presenter == null:
 		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
 	if _tutorial_coachmark_coordinator == null:
@@ -1110,115 +1118,8 @@ func _end_drag(timed_out: bool) -> void:
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
 	if _combat == null:
 		return
-	_bind_hud_stage_coordinator()
-	_model.begin_hud_staging(_hud_stage_coordinator.capture_values())
-	var turn_log: Dictionary = _combat.resolve_player_turn(resolve_result)
-	RunState.log_turn_result(
-		turn_log,
-		{
-			"total_combos": int(resolve_result.get("total_combos", 0)),
-			"resolve_pass_count": Array(resolve_result.get("passes", [])).size(),
-		}
-	)
-	_sync_combat_mastery_preview_totals()
-	RunState.flow_trace_mark(
-		"combat_before_replay_turn_resolution_from_log",
-		{
-			"total_combos": int(resolve_result.get("total_combos", 0)),
-			"enemy_damage_taken": int(turn_log.get("enemy_damage_taken", 0)),
-		},
-		_flow_trace_route_id_value()
-	)
-	await _replay_turn_resolution_from_log(turn_log)
-	if not _can_continue_after_async_wait():
-		_model.clear_hud_staging()
-		return
-	_model.clear_hud_staging()
-	_update_hud()
-	RunState.flow_trace_mark(
-		"combat_after_replay_turn_resolution_from_log",
-		{
-			"healed": int(turn_log.get("healed", 0)),
-			"armor_gained": int(turn_log.get("armor_gained", 0)),
-			"gold_gained": int(turn_log.get("gold_gained", 0)),
-		},
-		_flow_trace_route_id_value()
-	)
-
-	if _combat.phase == COMBAT_PHASE_VICTORY:
-		_audio_play_sfx("victory")
-		RunState.flow_trace_mark("combat_before_mark_fight_victory", {}, _flow_trace_route_id_value())
-		var transition: Dictionary = RunState.mark_fight_victory()
-		RunState.flow_trace_mark(
-			"combat_after_mark_fight_victory",
-			{
-				"next_scene": String(transition.get("next_scene", "")),
-				"step": String(transition.get("step", "")),
-			},
-			_flow_trace_route_id_value(),
-			String(transition.get("next_scene", ""))
-		)
-		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_append_turn_log(turn_log)
-		if RunState.is_current_step_boss_reward():
-			_model.clear_pending_next_scene_path()
-			_set_status_text("Boss defeated. Choose one boss relic before continuing.")
-			_append_combat_log("Outcome: Boss victory. Waiting for boss relic selection in victory overlay.")
-			_show_boss_reward_summary(_turn_log_presenter.build_victory_gold_summary(turn_log, transition))
-			_set_turn_summary_text("Turn Summary: Boss victory. Choose a relic.")
-			RunState.flow_trace_mark("combat_boss_reward_available", {}, _flow_trace_route_id_value())
-		else:
-			var next_scene := String(transition.get("next_scene", "res://scenes/main_menu.tscn"))
-			if next_scene.find("run_summary") >= 0:
-				_append_combat_log("Outcome: Final boss victory. Opening run summary.")
-				_hide_outcome_summary()
-				_trace_and_change_scene_to_target(
-					next_scene,
-					_flow_trace_route_id_value(),
-					"combat_final_summary_auto",
-					"combat_before_final_summary_change_scene"
-				)
-				return
-			_set_status_text(_turn_log_presenter.build_victory_status(turn_log, transition) + " Press Continue.")
-			_append_combat_log("Outcome: Victory. Waiting for Next button to continue run flow.")
-			_model.set_pending_next_scene_path(next_scene)
-			_show_outcome_summary("Victory", _turn_log_presenter.build_victory_gold_summary(turn_log, transition), true)
-			_set_turn_summary_text("Turn Summary: Victory. Press Continue.")
-			RunState.flow_trace_mark(
-				"combat_continue_available",
-				{"button_text": "Continue"},
-				_flow_trace_route_id_value(),
-				next_scene
-			)
-		_pulse_turn_summary(STATUS_COLOR_POSITIVE)
-		return
-
-	if _combat.phase == COMBAT_PHASE_DEFEAT:
-		_audio_play_sfx("defeat")
-		var defeat_cause: String = _turn_log_presenter.build_defeat_cause(String(_enemy_state.display_name if _enemy_state != null else "Enemy"), turn_log)
-		var defeat_transition: Dictionary = RunState.mark_player_defeated(defeat_cause)
-		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-		_set_status_text(_turn_log_presenter.build_defeat_status(turn_log) + " Run Summary available.")
-		_append_turn_log(turn_log)
-		_append_combat_log("Outcome: Defeat. Waiting for Run Summary button.")
-		_model.set_pending_next_scene_path(String(defeat_transition.get("next_scene", RunState.SCENE_RUN_SUMMARY)))
-		_show_outcome_summary("Defeat", _build_run_outcome_summary(defeat_cause), true, "Run Summary")
-		_set_turn_summary_text("Turn Summary: Defeat. Run Summary available.")
-		RunState.flow_trace_mark(
-			"combat_continue_available",
-			{"button_text": "Run Summary"},
-			_flow_trace_route_id_value(),
-			_model.pending_next_scene_path()
-		)
-		_pulse_turn_summary(STATUS_COLOR_NEGATIVE)
-		return
-
-	_set_status_text(_turn_log_presenter.build_turn_summary_status(turn_log))
-	_set_status_color(STATUS_COLOR_POSITIVE)
-	_set_turn_summary_text("Turn Summary: %s" % _turn_log_presenter.build_turn_summary_status(turn_log))
-	_pulse_turn_summary(STATUS_COLOR_POSITIVE)
-	_append_turn_log(turn_log)
-	_begin_turn_preview()
+	_bind_turn_resolution_coordinator()
+	await _turn_resolution_coordinator.resolve_player_turn(resolve_result)
 
 
 func _on_next_button_pressed() -> void:
@@ -2043,6 +1944,68 @@ func _bind_scene_transition_handler() -> void:
 		{
 			"negative_color": STATUS_COLOR_NEGATIVE,
 			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
+		}
+	)
+
+
+func _bind_outcome_route_coordinator() -> void:
+	if _outcome_route_coordinator == null:
+		_outcome_route_coordinator = COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
+	_outcome_route_coordinator.bind(
+		{
+			"run_state": RunState,
+			"model": _model,
+			"enemy_state": _enemy_state,
+			"turn_log_presenter": _turn_log_presenter,
+		},
+		{
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(self, "_audio_play_sfx"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(self, "_set_input_phase"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: Callable(self, "_append_turn_log"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(self, "_show_boss_reward_summary"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(self, "_set_turn_summary_text"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(self, "_hide_outcome_summary"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(self, "_trace_and_change_scene_to_target"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(self, "_show_outcome_summary"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(self, "_pulse_turn_summary"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BEGIN_TURN_PREVIEW: Callable(self, "_begin_turn_preview"),
+			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BUILD_RUN_OUTCOME_SUMMARY: Callable(self, "_build_run_outcome_summary"),
+		},
+		{
+			"victory_phase_value": int(COMBAT_PHASE_VICTORY),
+			"defeat_phase_value": int(COMBAT_PHASE_DEFEAT),
+			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
+			"positive_color": STATUS_COLOR_POSITIVE,
+			"negative_color": STATUS_COLOR_NEGATIVE,
+			"default_victory_scene": "res://scenes/main_menu.tscn",
+			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
+		}
+	)
+
+
+func _bind_turn_resolution_coordinator() -> void:
+	if _turn_resolution_coordinator == null:
+		_turn_resolution_coordinator = COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
+	_bind_hud_stage_coordinator()
+	_bind_outcome_route_coordinator()
+	_turn_resolution_coordinator.bind(
+		{
+			"combat": _combat,
+			"model": _model,
+			"run_state": RunState,
+			"hud_stage_coordinator": _hud_stage_coordinator,
+			"outcome_route_coordinator": _outcome_route_coordinator,
+		},
+		{
+			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_REPLAY_TURN_RESOLUTION: Callable(self, "_replay_turn_resolution_from_log"),
+			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(self, "_can_continue_after_async_wait"),
+			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(self, "_sync_combat_mastery_preview_totals"),
+			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
+			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
 		}
 	)
 
