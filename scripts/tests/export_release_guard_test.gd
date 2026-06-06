@@ -37,7 +37,9 @@ const DEBUG_EXPORT_PATHS := [
 ]
 const RAW_MUSIC_INCLUDE_PATTERN := "resources/audio/raw_music/*.wav.bin"
 const IMPORTED_MUSIC_EXCLUDE_PATTERN := "resources/audio/music/*.wav"
-const RAW_MUSIC_EXPORT_PRESETS := ["Android", "Web"]
+const ANDROID_MUSIC_INCLUDE_PATTERN := "resources/audio/music/*.wav"
+const ANDROID_RAW_MUSIC_EXCLUDE_PATTERN := "resources/audio/raw_music/*.wav.bin"
+const RAW_MUSIC_EXPORT_PRESETS := ["Web"]
 
 
 func run_all() -> Dictionary:
@@ -46,9 +48,10 @@ func run_all() -> Dictionary:
 	_run_case("debug_entrypoints_match_release_exclude_filters", _test_debug_entrypoints_match_release_exclude_filters, failures)
 	_run_case("gdai_autoload_uses_guarded_runtime_proxy", _test_gdai_autoload_uses_guarded_runtime_proxy, failures)
 	_run_case("raw_music_exports_exclude_imported_music_duplicates", _test_raw_music_exports_exclude_imported_music_duplicates, failures)
+	_run_case("android_exports_canonical_music_wavs", _test_android_exports_canonical_music_wavs, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -119,6 +122,25 @@ func _test_raw_music_exports_exclude_imported_music_duplicates() -> String:
 	return ""
 
 
+func _test_android_exports_canonical_music_wavs() -> String:
+	var config_result := _load_config(EXPORT_PRESETS_PATH)
+	if config_result.has("__error"):
+		return String(config_result["__error"])
+	var config: ConfigFile = config_result["config"]
+	var android_section := _preset_section_named(config, "Android")
+	if android_section == "":
+		return "Expected Android export preset to exist."
+	var includes := _include_patterns_for(config, android_section)
+	var excludes := _exclude_patterns_for(config, android_section)
+	if not includes.has(ANDROID_MUSIC_INCLUDE_PATTERN):
+		return "Expected Android export preset to include '%s'." % ANDROID_MUSIC_INCLUDE_PATTERN
+	if excludes.has(IMPORTED_MUSIC_EXCLUDE_PATTERN):
+		return "Expected Android export preset not to exclude canonical music WAVs via '%s'." % IMPORTED_MUSIC_EXCLUDE_PATTERN
+	if not excludes.has(ANDROID_RAW_MUSIC_EXCLUDE_PATTERN):
+		return "Expected Android export preset to exclude raw music fallback via '%s'." % ANDROID_RAW_MUSIC_EXCLUDE_PATTERN
+	return ""
+
+
 func _load_config(path: String) -> Dictionary:
 	var config := ConfigFile.new()
 	var error := config.load(path)
@@ -135,6 +157,13 @@ func _preset_sections(config: ConfigFile) -> Array[String]:
 			sections.append(section_name)
 	sections.sort()
 	return sections
+
+
+func _preset_section_named(config: ConfigFile, preset_name: String) -> String:
+	for preset_section in _preset_sections(config):
+		if String(config.get_value(preset_section, "name", preset_section)) == preset_name:
+			return preset_section
+	return ""
 
 
 func _exclude_patterns_for(config: ConfigFile, preset_section: String) -> Array[String]:

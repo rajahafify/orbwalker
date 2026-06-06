@@ -15,8 +15,17 @@ const COMBAT_SPARK_BURST_PRESENTER_SCRIPT := preload("res://scripts/combat/comba
 const COMBAT_MASTERY_FILL_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_mastery_fill_vfx_presenter.gd")
 const COMBAT_MASTERY_CAST_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_mastery_cast_vfx_presenter.gd")
 const COMBAT_ARMOR_LINGER_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_armor_linger_vfx_presenter.gd")
+const COMBAT_HEALING_BAR_INFUSION_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_healing_bar_infusion_vfx_presenter.gd")
 const COMBAT_STYLIZED_REPLAY_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_stylized_replay_vfx_presenter.gd")
 const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+
+const MASTERY_BEAM_AURA_THICKNESS := 472.0
+const MASTERY_BEAM_GLOW_THICKNESS := 344.0
+const MASTERY_BEAM_SOLID_THICKNESS := 216.0
+const MASTERY_BEAM_CORE_THICKNESS := 216.0
+const MASTERY_BEAM_HOT_CORE_THICKNESS := 80.0
+const MASTERY_BEAM_GLOW_ALPHA := 0.82
+const MASTERY_BEAM_SOLID_ALPHA := 0.38
 
 var _vfx_layer: Control
 var _visual_registry: Variant
@@ -38,6 +47,7 @@ var _spark_burst_presenter: Variant = COMBAT_SPARK_BURST_PRESENTER_SCRIPT.new()
 var _mastery_fill_vfx_presenter: Variant = COMBAT_MASTERY_FILL_VFX_PRESENTER_SCRIPT.new()
 var _mastery_cast_vfx_presenter: Variant = COMBAT_MASTERY_CAST_VFX_PRESENTER_SCRIPT.new()
 var _armor_linger_vfx_presenter: Variant = COMBAT_ARMOR_LINGER_VFX_PRESENTER_SCRIPT.new()
+var _healing_bar_infusion_vfx_presenter: Variant = COMBAT_HEALING_BAR_INFUSION_VFX_PRESENTER_SCRIPT.new()
 var _stylized_replay_vfx_presenter: Variant = COMBAT_STYLIZED_REPLAY_VFX_PRESENTER_SCRIPT.new()
 var _post_match_vfx_speed_scale := DEFAULT_POST_MATCH_VFX_SPEED_SCALE
 var _post_match_vfx_quality := DEFAULT_POST_MATCH_VFX_QUALITY
@@ -116,6 +126,7 @@ func bind(dependencies: Dictionary) -> void:
 	armor_linger_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
 	armor_linger_dependencies["runtime_primitive_presenter"] = _runtime_primitive_presenter
 	_armor_linger_vfx_presenter.bind(armor_linger_dependencies)
+	_healing_bar_infusion_vfx_presenter.bind(dependencies)
 	var mastery_cast_dependencies := dependencies.duplicate()
 	mastery_cast_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
 	mastery_cast_dependencies["runtime_primitive_presenter"] = _runtime_primitive_presenter
@@ -224,7 +235,7 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 	if global_center == Vector2.ZERO:
 		return
 	var clean_kind := _result_vfx_kind_key(impact_kind)
-	if _visual_registry == null and clean_kind != "armor":
+	if _visual_registry == null and not ["armor", "heart"].has(clean_kind):
 		return
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
 	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime) if impact_juice_enabled else {
@@ -243,6 +254,9 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 			_spawn_stylized_replay_effect(global_center, clean_kind, profile_size, profile_lifetime, result_amount, tier_index)
 		else:
 			_spawn_armor_bar_linger_effect(global_center, profile_size, profile_lifetime, intensity)
+		return
+	if clean_kind == "heart":
+		_healing_bar_infusion_vfx_presenter.spawn_bar_infusion(global_center, draw_size, profile_lifetime, result_amount, intensity, _reduced_motion or not impact_juice_enabled)
 		return
 	if _use_max_combat_vfx() and impact_juice_enabled and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
 		return
@@ -381,8 +395,11 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return null
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
+	var clean_kind := kind.strip_edges().to_lower()
 	var label_scale := result_vfx_size_scale(kind, result_amount) if impact_juice_enabled else 1.0
-	return _result_label_presenter.spawn_result_label(text, global_center, lifetime, offset, label_scale, _vfx_profile.result_label_color(kind, impact_juice_enabled))
+	if clean_kind == "heal":
+		label_scale = 1.16
+	return _result_label_presenter.spawn_result_label(text, global_center, lifetime, Vector2(offset.x, -26.0) if clean_kind == "heal" else offset, label_scale, _vfx_profile.result_label_color(kind, impact_juice_enabled), 22.0 if clean_kind == "heal" else 54.0)
 
 
 func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> void:
@@ -573,7 +590,7 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 	var source_point := control_global_center(source, 0.5)
 	if source_point == Vector2.ZERO:
 		return
-	if orb_id == OrbType.Id.ARMOR:
+	if orb_id == OrbType.Id.ARMOR or orb_id == OrbType.Id.HEART:
 		return
 	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_beam(orb_id, source_point, target_global, beam_lifetime):
 		return
@@ -590,20 +607,109 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 		return
 	_mastery_cast_vfx_presenter.spawn_source_pulse(source_local, orb_id, beam_lifetime)
 
+	var beam_angle := delta.angle()
+	var accent := OrbType.color(orb_id)
+	var core_color := accent.lightened(0.42)
+	_spawn_low_quality_beam_rect(
+		"MasteryBeamLowQualitySolidBand",
+		source_local,
+		distance,
+		MASTERY_BEAM_SOLID_THICKNESS,
+		beam_angle,
+		Color(accent.r, accent.g, accent.b, MASTERY_BEAM_SOLID_ALPHA),
+		92,
+		beam_lifetime * 1.14
+	)
+	_spawn_low_quality_beam_rect(
+		"MasteryBeamLowQualityWhiteBand",
+		source_local,
+		distance,
+		MASTERY_BEAM_HOT_CORE_THICKNESS,
+		beam_angle,
+		Color(1.0, 1.0, 1.0, 0.58),
+		97,
+		beam_lifetime * 0.84
+	)
+	_runtime_sprite_presenter.spawn_sprite_local(
+		"MasteryBeamLowQualityAura",
+		"soft_glow",
+		source_local + delta * 0.5,
+		Vector2(distance * 1.04, MASTERY_BEAM_AURA_THICKNESS),
+		Color(accent.r, accent.g, accent.b, 0.48),
+		beam_lifetime * 1.20,
+		Vector2(1.08, 1.14),
+		0.0,
+		Vector2.ZERO,
+		0.0,
+		90,
+		beam_angle
+	)
+	_runtime_sprite_presenter.spawn_sprite_local(
+		"MasteryBeamLowQualityTargetBloom",
+		"soft_glow",
+		target_local,
+		Vector2(528, 528),
+		Color(core_color.r, core_color.g, core_color.b, 0.86),
+		beam_lifetime * 0.78,
+		Vector2(1.28, 1.28),
+		0.0,
+		Vector2.ZERO,
+		0.0,
+		94
+	)
+	_runtime_sprite_presenter.spawn_sprite_local(
+		"MasteryBeamLowQualityBolt",
+		"ray",
+		source_local + delta * 0.08,
+		Vector2(672, 224),
+		Color(1.0, 1.0, 1.0, 0.94),
+		beam_lifetime * 0.82,
+		Vector2(0.86, 1.06),
+		0.0,
+		delta * 0.84,
+		0.0,
+		95,
+		beam_angle,
+		Tween.EASE_IN_OUT as Tween.EaseType
+	)
+	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityGlow", source_local, distance, MASTERY_BEAM_GLOW_THICKNESS, beam_angle, Color(1.0, 1.0, 1.0, MASTERY_BEAM_GLOW_ALPHA), 91, beam_lifetime * 1.12)
+	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityCore", source_local, distance, MASTERY_BEAM_CORE_THICKNESS, beam_angle, Color.WHITE, 93, beam_lifetime * 1.08)
+	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityHotCore", source_local, distance, MASTERY_BEAM_HOT_CORE_THICKNESS, beam_angle, Color.WHITE, 96, beam_lifetime * 0.92)
+
+
+func _spawn_low_quality_beam_rect(effect_name: String, source_local: Vector2, distance: float, thickness: float, angle: float, color: Color, z_index: int, lifetime: float) -> void:
+	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
+		return
+	var band := ColorRect.new()
+	band.name = effect_name
+	band.set_meta("effect_name", effect_name)
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	band.color = color
+	band.size = Vector2(distance, thickness)
+	band.pivot_offset = Vector2(0.0, thickness * 0.5)
+	band.position = source_local - Vector2(0.0, thickness * 0.5)
+	band.rotation = angle
+	band.z_index = z_index
+	_vfx_layer.add_child(band)
+	_tween_fade_cleanup(band, lifetime)
+
+
+func _spawn_low_quality_beam_texture(texture: Texture2D, effect_name: String, source_local: Vector2, distance: float, thickness: float, angle: float, color: Color, z_index: int, lifetime: float) -> void:
 	var beam := TextureRect.new()
-	beam.texture = beam_texture
+	beam.name = effect_name
+	beam.set_meta("effect_name", effect_name)
+	beam.texture = texture
 	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 	beam.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	var beam_thickness := 28.0
-	beam.size = Vector2(distance, beam_thickness)
-	beam.pivot_offset = Vector2(0.0, beam_thickness * 0.5)
-	beam.position = source_local - Vector2(0.0, beam_thickness * 0.5)
-	beam.rotation = delta.angle()
-	beam.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	beam.z_index = 92
+	beam.size = Vector2(distance, thickness)
+	beam.pivot_offset = Vector2(0.0, thickness * 0.5)
+	beam.position = source_local - Vector2(0.0, thickness * 0.5)
+	beam.rotation = angle
+	beam.modulate = color
+	beam.z_index = z_index
 	_vfx_layer.add_child(beam)
-	_tween_fade_cleanup(beam, beam_lifetime)
+	_tween_fade_cleanup(beam, lifetime)
 
 
 func _vfx_layer_size() -> Vector2:
@@ -648,7 +754,7 @@ func _tween_fade_cleanup(control: Control, lifetime: float) -> void:
 	if control == null:
 		return
 	var duration := maxf(0.08, lifetime)
-	if _timer_owner == null or not is_instance_valid(_timer_owner) or _timer_owner.get_tree() == null:
+	if _timer_owner == null or not is_instance_valid(_timer_owner) or not _timer_owner.is_inside_tree():
 		control.queue_free()
 		return
 	var tween := _timer_owner.create_tween()

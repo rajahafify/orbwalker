@@ -172,18 +172,18 @@ func spawn_beam_recipe(kind: String, source: Vector2, delta: Vector2, lifetime: 
 		return
 	if clean_kind == "ice":
 		var ice_normal := Vector2(-delta.y, delta.x).normalized()
-		var ice_travel_size := Vector2(150.0 + float(intensity) * 16.0, 116.0 + float(intensity) * 10.0)
+		var ice_travel_size := Vector2(184.0 + float(intensity) * 20.0, 136.0 + float(intensity) * 12.0)
 		_spawn_windy_ice_block_travel_layers(source, source + delta, delta, ice_normal, ice_travel_size, duration, 0.0, intensity, angle)
 		return
 	if clean_kind == "earth":
 		var earth_normal := Vector2(-delta.y, delta.x).normalized()
-		var earth_travel_size := Vector2(152.0 + float(intensity) * 18.0, 110.0 + float(intensity) * 9.0)
+		var earth_travel_size := Vector2(188.0 + float(intensity) * 22.0, 132.0 + float(intensity) * 12.0)
 		_spawn_earth_fracture_travel_layers(source, source + delta, delta, earth_normal, earth_travel_size, duration, 0.0, intensity, angle, _earth_vfx_tier(intensity))
 		return
 	_spawn_atmospheric_travel(clean_kind, source, delta, 0.0, duration, intensity, angle)
-	_spawn_beam_effect(source, delta, clean_kind, duration, intensity, 0.0, 0.72)
+	_spawn_beam_effect(source, delta, clean_kind, duration * 1.04, intensity, 0.0, 1.05)
 	spawn_path_afterimage(clean_kind, source, delta, 0.0, duration, intensity, angle)
-	_spawn_status_flipbook(_status_sheet_key(clean_kind), source, Vector2(112 + intensity * 9, 88 + intensity * 6), duration, Color(1, 1, 1, 0.58), 0.0, delta, 0.74, 2.2, angle, 1)
+	_spawn_status_flipbook(_status_sheet_key(clean_kind), source, Vector2(146 + intensity * 13, 104 + intensity * 8), duration * 1.02, Color(1, 1, 1, 0.66), 0.0, delta, 0.84, 2.2, angle, 1)
 
 
 func spawn_cast_recipe(kind: String, source: Vector2, target: Vector2, delta: Vector2, spool_size: Vector2, spool_lifetime: float, travel_lifetime: float, intensity: int, core: Color, accent: Color) -> void:

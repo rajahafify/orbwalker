@@ -5,6 +5,10 @@ const POST_MATCH_CAST_Z_INDEX := 128
 const POST_MATCH_EFFECT_FRONT_Z_INDEX := 132
 const POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST := 72
 const POST_MATCH_RUNTIME_PARTICLE_BASE_COUNTS := [0, 12, 16, 20, 24, 29, 34, 39, 44]
+const MASTERY_LOW_QUALITY_FIRE_BEAM_THICKNESS := 188.0
+const MASTERY_LOW_QUALITY_ICE_BEAM_THICKNESS := 184.0
+const MASTERY_LOW_QUALITY_EARTH_BEAM_THICKNESS := 176.0
+const MASTERY_LOW_QUALITY_BEAM_HOT_THICKNESS := 72.0
 
 var _runtime_sprite_presenter: Variant
 var _runtime_primitive_presenter: Variant
@@ -136,37 +140,48 @@ func _mastery_launch_scale(intensity: int) -> float:
 
 func _spawn_mastery_fire_launch(source_local: Vector2, delta: Vector2, normal: Vector2, angle: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
-	_spawn_runtime_sprite_local("MasteryFireLaunchBloom", "soft_glow", source_local, Vector2(72 + intensity * 10, 54 + intensity * 6) * launch_scale, Color(1.0, 0.20, 0.04, 0.42), duration, Vector2(0.72, 0.72), delay, delta, 0.46, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
-	_spawn_runtime_sprite_local("MasteryFireLaunchCore", "ray", source_local, Vector2(82 + intensity * 10, 18 + intensity * 2) * launch_scale, Color(core.r, core.g, core.b, 0.96), duration * 0.92, Vector2(0.62, 0.50), delay, delta, 0.22, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
-	_spawn_local_effect_panel("MasteryFireProjectile", source_local, Vector2(44 + intensity * 5, 28 + intensity * 3) * launch_scale, Color(1.0, 0.24, 0.04, 0.86), Color(core.r, core.g, core.b, 0.98), 2, 999, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration, Vector2(0.72, 0.72), delay, delta, 1.2, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	var beam_center := source_local + delta * 0.5
+	var beam_length := delta.length()
+	_spawn_local_effect_panel("MasteryFireLaunchWideBeam", beam_center, Vector2(beam_length, MASTERY_LOW_QUALITY_FIRE_BEAM_THICKNESS * launch_scale), Color(1.0, 0.12, 0.02, 0.38), Color(1.0, 0.42, 0.08, 0.72), 2, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.88, Vector2(1.03, 0.66), delay, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_local_effect_panel("MasteryFireLaunchHotBand", beam_center, Vector2(beam_length * 0.96, MASTERY_LOW_QUALITY_BEAM_HOT_THICKNESS * launch_scale), Color(1.0, 0.34, 0.04, 0.62), Color(1.0, 0.92, 0.34, 0.98), 2, 999, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration * 0.82, Vector2(1.05, 0.48), delay + duration * 0.03, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryFireLaunchBloom", "soft_glow", source_local, Vector2(220 + intensity * 24, 164 + intensity * 14) * launch_scale, Color(1.0, 0.20, 0.04, 0.54), duration, Vector2(0.82, 0.74), delay, delta, 0.46, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryFireLaunchCore", "ray", source_local, Vector2(190 + intensity * 20, 64 + intensity * 8) * launch_scale, Color(core.r, core.g, core.b, 0.98), duration * 0.92, Vector2(0.72, 0.54), delay, delta, 0.22, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_local_effect_panel("MasteryFireProjectile", source_local, Vector2(132 + intensity * 12, 86 + intensity * 10) * launch_scale, Color(1.0, 0.24, 0.04, 0.90), Color(core.r, core.g, core.b, 0.98), 2, 999, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration, Vector2(0.78, 0.70), delay, delta, 1.2, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var trail_count := _runtime_particle_count(intensity, 1.25)
 	for i in range(trail_count):
-		var side := (float(i % 5) - 2.0) * 5.0 * launch_scale
+		var side := (float(i % 5) - 2.0) * 12.0 * launch_scale
 		var back := -float(i % 4) * 12.0 * launch_scale
 		var start := normal * side + delta.normalized() * back
 		var color := accent if i % 2 == 0 else core
-		_spawn_local_effect_panel("MasteryFireTrail", source_local + start, Vector2(22 + intensity * 4, 8 + intensity) * launch_scale, Color(color.r, color.g, color.b, 0.62), Color(core.r, core.g, core.b, 0.80), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.72, Vector2(0.46, 0.62), delay + float(i) * duration * 0.018, delta + normal * sin(float(i)) * 18.0 * launch_scale + delta.normalized() * 24.0 * launch_scale, 0.35, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+		_spawn_local_effect_panel("MasteryFireTrail", source_local + start, Vector2(72 + intensity * 10, 28 + intensity * 4) * launch_scale, Color(color.r, color.g, color.b, 0.68), Color(core.r, core.g, core.b, 0.86), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.72, Vector2(0.52, 0.64), delay + float(i) * duration * 0.018, delta + normal * sin(float(i)) * 30.0 * launch_scale + delta.normalized() * 30.0 * launch_scale, 0.35, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 
 
 func _spawn_mastery_ice_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, distance: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
-	_spawn_runtime_sprite_local("MasteryIceLaunchMist", "smoke", source_local, Vector2(distance * 0.28, 54 + intensity * 7) * launch_scale, Color(accent.r, accent.g, accent.b, 0.24), duration, Vector2(1.08, 0.72), delay, delta, 0.0, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
-	_spawn_runtime_sprite_local("MasteryIceLaunchColdRay", "ray", source_local, Vector2(distance * (0.22 + float(intensity) * 0.012), 10 + intensity) * launch_scale, Color(core.r, core.g, core.b, 0.74), duration * 0.92, Vector2(1.18, 0.40), delay, delta, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	var beam_center := source_local + delta * 0.5
+	_spawn_local_effect_panel("MasteryIceLaunchWideBeam", beam_center, Vector2(distance, MASTERY_LOW_QUALITY_ICE_BEAM_THICKNESS * launch_scale), Color(accent.r, accent.g, accent.b, 0.34), Color(core.r, core.g, core.b, 0.78), 2, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.88, Vector2(1.03, 0.66), delay, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_local_effect_panel("MasteryIceLaunchColdBand", beam_center, Vector2(distance * 0.96, MASTERY_LOW_QUALITY_BEAM_HOT_THICKNESS * launch_scale), Color(core.r, core.g, core.b, 0.54), Color(0.94, 1.0, 1.0, 0.98), 2, 999, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration * 0.82, Vector2(1.05, 0.46), delay + duration * 0.02, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryIceLaunchMist", "smoke", source_local, Vector2(distance * 0.62, 146 + intensity * 16) * launch_scale, Color(accent.r, accent.g, accent.b, 0.34), duration, Vector2(1.08, 0.72), delay, delta, 0.0, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryIceLaunchColdRay", "ray", source_local, Vector2(distance * (0.54 + float(intensity) * 0.018), 48 + intensity * 5) * launch_scale, Color(core.r, core.g, core.b, 0.86), duration * 0.92, Vector2(1.12, 0.42), delay, delta, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var breeze_count := 6 + intensity * 4 + maxi(0, intensity - 4) * 3
 	for i in range(breeze_count):
-		var lane := (float(i) / float(maxi(1, breeze_count - 1)) - 0.5) * (52.0 + float(intensity) * 8.0) * launch_scale
+		var lane := (float(i) / float(maxi(1, breeze_count - 1)) - 0.5) * (96.0 + float(intensity) * 12.0) * launch_scale
 		var start := normal * lane - direction * float(i % 3) * 10.0 * launch_scale
-		_spawn_local_effect_panel("MasteryIceBreeze", source_local + start, Vector2(distance * (0.20 + float(i % 3) * 0.025 + float(intensity) * 0.010), (4 + intensity) * launch_scale), Color(accent.r, accent.g, accent.b, 0.26), Color(core.r, core.g, core.b, 0.72), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.82, Vector2(1.24, 0.46), delay + float(i) * duration * 0.035, delta + normal * sin(float(i) * 1.7) * 22.0 * launch_scale, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+		_spawn_local_effect_panel("MasteryIceBreeze", source_local + start, Vector2(distance * (0.36 + float(i % 3) * 0.035 + float(intensity) * 0.012), (20 + intensity * 3) * launch_scale), Color(accent.r, accent.g, accent.b, 0.34), Color(core.r, core.g, core.b, 0.82), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.82, Vector2(1.18, 0.48), delay + float(i) * duration * 0.035, delta + normal * sin(float(i) * 1.7) * 34.0 * launch_scale, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var shard_count := 8 + intensity * 5 + maxi(0, intensity - 4) * 3
 	for i in range(shard_count):
-		var start := normal * ((float(i % 7) - 3.0) * 7.0 * launch_scale) - direction * float(i % 4) * 7.0 * launch_scale
-		_spawn_local_effect_panel("MasteryIceShardLaunch", source_local + start, Vector2(8 + intensity, 22 + intensity * 3) * launch_scale, Color(core.r, core.g, core.b, 0.82), Color(0.92, 1.0, 1.0, 0.94), 1, 4, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration * 0.72, Vector2(0.50, 0.72), delay + float(i) * duration * 0.026, delta + normal * sin(float(i) * 2.1) * 32.0 * launch_scale, 0.45, angle + PI * 0.5, Tween.EASE_IN_OUT as Tween.EaseType)
+		var start := normal * ((float(i % 7) - 3.0) * 11.0 * launch_scale) - direction * float(i % 4) * 8.0 * launch_scale
+		_spawn_local_effect_panel("MasteryIceShardLaunch", source_local + start, Vector2(24 + intensity * 3, 62 + intensity * 6) * launch_scale, Color(core.r, core.g, core.b, 0.86), Color(0.92, 1.0, 1.0, 0.96), 1, 4, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration * 0.72, Vector2(0.54, 0.72), delay + float(i) * duration * 0.026, delta + normal * sin(float(i) * 2.1) * 42.0 * launch_scale, 0.45, angle + PI * 0.5, Tween.EASE_IN_OUT as Tween.EaseType)
 
 
 func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, direction: Vector2, normal: Vector2, angle: float, duration: float, delay: float, intensity: int, accent: Color, core: Color, dark: Color) -> void:
 	var launch_scale := _mastery_launch_scale(intensity)
-	_spawn_runtime_sprite_local("MasteryEarthLaunchDustWake", "smoke", source_local + direction * 28.0, Vector2(96 + intensity * 16, 42 + intensity * 5) * launch_scale, Color(dark.r, dark.g, dark.b, 0.32), duration * 0.92, Vector2(1.24, 0.68), delay, delta * 0.82, 0.08, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
-	_spawn_runtime_sprite_local("MasteryEarthLaunchRunicCrack", "ray", source_local + direction * 18.0, Vector2(74 + intensity * 13, 9 + intensity) * launch_scale, Color(core.r, core.g, core.b, 0.70), duration * 0.82, Vector2(1.18, 0.38), delay, delta * 0.96, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	var beam_center := source_local + delta * 0.5
+	var beam_length := delta.length()
+	_spawn_local_effect_panel("MasteryEarthLaunchWideBeam", beam_center, Vector2(beam_length, MASTERY_LOW_QUALITY_EARTH_BEAM_THICKNESS * launch_scale), Color(dark.r, dark.g, dark.b, 0.42), Color(core.r, core.g, core.b, 0.80), 2, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.88, Vector2(1.03, 0.70), delay, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_local_effect_panel("MasteryEarthLaunchRunicBand", beam_center, Vector2(beam_length * 0.96, MASTERY_LOW_QUALITY_BEAM_HOT_THICKNESS * launch_scale), Color(accent.r, accent.g, accent.b, 0.54), Color(core.r, core.g, core.b, 0.96), 1, 999, POST_MATCH_EFFECT_FRONT_Z_INDEX, duration * 0.82, Vector2(1.05, 0.48), delay + duration * 0.02, Vector2.ZERO, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryEarthLaunchDustWake", "smoke", source_local + direction * 28.0, Vector2(220 + intensity * 32, 122 + intensity * 12) * launch_scale, Color(dark.r, dark.g, dark.b, 0.42), duration * 0.92, Vector2(1.18, 0.72), delay, delta * 0.82, 0.08, POST_MATCH_CAST_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+	_spawn_runtime_sprite_local("MasteryEarthLaunchRunicCrack", "ray", source_local + direction * 18.0, Vector2(188 + intensity * 26, 44 + intensity * 5) * launch_scale, Color(core.r, core.g, core.b, 0.82), duration * 0.82, Vector2(1.12, 0.42), delay, delta * 0.96, 0.0, POST_MATCH_EFFECT_FRONT_Z_INDEX, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 	var segment_count := 10 + intensity * 5 + maxi(0, intensity - 4) * 4
 	for i in range(segment_count):
 		var progress := float(i) / float(maxi(1, segment_count - 1))
@@ -174,9 +189,9 @@ func _spawn_mastery_earth_launch(source_local: Vector2, delta: Vector2, directio
 		var center := source_local + delta * progress + normal * wave
 		var segment_delay := delay + duration * progress * 0.72
 		var forward := direction * (24.0 + float(intensity) * 6.0) * launch_scale
-		_spawn_local_effect_panel("MasteryEarthSlither", center, Vector2(30 + intensity * 5, 10 + intensity * 2) * launch_scale, Color(dark.r, dark.g, dark.b, 0.68), Color(core.r, core.g, core.b, 0.76), 1, 5, POST_MATCH_CAST_Z_INDEX, duration * 0.34, Vector2(1.10, 0.58), segment_delay, forward + normal * sin(float(i)) * 8.0 * launch_scale, 0.15, angle + sin(float(i)) * 0.28, Tween.EASE_IN_OUT as Tween.EaseType)
+		_spawn_local_effect_panel("MasteryEarthSlither", center, Vector2(84 + intensity * 10, 34 + intensity * 5) * launch_scale, Color(dark.r, dark.g, dark.b, 0.70), Color(core.r, core.g, core.b, 0.82), 1, 5, POST_MATCH_CAST_Z_INDEX, duration * 0.34, Vector2(1.12, 0.58), segment_delay, forward + normal * sin(float(i)) * 14.0 * launch_scale, 0.15, angle + sin(float(i)) * 0.28, Tween.EASE_IN_OUT as Tween.EaseType)
 		if i % 2 == 0:
-			_spawn_local_effect_panel("MasteryEarthCrack", center + normal * wave * 0.22, Vector2(42 + intensity * 6, 5 + intensity * 2) * launch_scale, Color(accent.r, accent.g, accent.b, 0.28), Color(core.r, core.g, core.b, 0.62), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.28, Vector2(1.26, 0.42), segment_delay, forward * 0.55, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
+			_spawn_local_effect_panel("MasteryEarthCrack", center + normal * wave * 0.22, Vector2(110 + intensity * 14, 26 + intensity * 4) * launch_scale, Color(accent.r, accent.g, accent.b, 0.36), Color(core.r, core.g, core.b, 0.72), 1, 999, POST_MATCH_CAST_Z_INDEX, duration * 0.28, Vector2(1.20, 0.46), segment_delay, forward * 0.55, 0.0, angle, Tween.EASE_IN_OUT as Tween.EaseType)
 
 
 func _spawn_mastery_generic_launch(source_local: Vector2, delta: Vector2, angle: float, duration: float, delay: float, intensity: int, accent: Color, core: Color) -> void:

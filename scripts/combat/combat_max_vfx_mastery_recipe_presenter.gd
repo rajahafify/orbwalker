@@ -1,6 +1,11 @@
 extends RefCounted
 class_name CombatMaxVfxMasteryRecipePresenter
 
+const MASTERY_BEAM_INTENSITY_BOOST := 2
+const MASTERY_BEAM_MIN_INTENSITY := 4
+const MASTERY_BEAM_MIN_LIFETIME := 0.48
+const MASTERY_BEAM_LIFETIME_SCALE := 1.16
+
 var _status_available_provider: Callable
 var _elemental_available_provider: Callable
 var _pack_available_provider: Callable
@@ -76,18 +81,19 @@ func spawn_beam(orb_id: int, source: Vector2, target: Vector2, lifetime: float) 
 	var core: Color = colors.get("core", Color.WHITE)
 	var angle := delta.angle()
 	var length := delta.length()
-	var beam_intensity := clampi(int(round(length / 110.0)), 2, 8)
+	var beam_lifetime := maxf(MASTERY_BEAM_MIN_LIFETIME, lifetime * MASTERY_BEAM_LIFETIME_SCALE)
+	var beam_intensity := clampi(int(round(length / 110.0)) + MASTERY_BEAM_INTENSITY_BOOST, MASTERY_BEAM_MIN_INTENSITY, 8)
 	if _status_available():
-		_spawn_status_beam(kind, source, delta, lifetime, beam_intensity, angle)
+		_spawn_status_beam(kind, source, delta, beam_lifetime, beam_intensity, angle)
 		return true
 	if _elemental_available() and _should_use_elemental(kind):
-		_spawn_elemental_beam(kind, source, delta, lifetime, beam_intensity, angle)
+		_spawn_elemental_beam(kind, source, delta, beam_lifetime, beam_intensity, angle)
 		return true
 	if _pack_available():
-		_spawn_pack_effect("hit_01", source, kind, Vector2(116 + beam_intensity * 8, 76 + beam_intensity * 5), lifetime, beam_intensity, 0.0, delta, angle, 1.3, 0.62)
+		_spawn_pack_effect("hit_01", source, kind, Vector2(132 + beam_intensity * 10, 88 + beam_intensity * 7), beam_lifetime, beam_intensity, 0.0, delta, angle, 1.3, 0.74)
 		return true
-	_spawn_flipbook("light_rays", source + delta * 0.5, Vector2(length, 44.0), lifetime * 0.82, Color(core.r, core.g, core.b, 0.72), 0.0, Vector2.ZERO, 0.62, 0.5, angle)
-	_spawn_flipbook(_projectile_key(kind), source, Vector2(126, 72), lifetime, Color(1, 1, 1, 0.86), 0.0, delta, 0.72, 1.4, angle)
+	_spawn_flipbook("light_rays", source + delta * 0.5, Vector2(length, 58.0), beam_lifetime * 0.88, Color(core.r, core.g, core.b, 0.84), 0.0, Vector2.ZERO, 0.74, 0.5, angle)
+	_spawn_flipbook(_projectile_key(kind), source, Vector2(156, 92), beam_lifetime, Color(1, 1, 1, 0.94), 0.0, delta, 0.86, 1.4, angle)
 	return true
 
 

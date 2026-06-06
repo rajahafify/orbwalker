@@ -15,7 +15,7 @@ func bind(dependencies: Dictionary) -> void:
 	_timer_owner = dependencies.get("timer_owner") as Node
 
 
-func spawn_result_label(text: String, global_center: Vector2, lifetime: float, offset: Vector2, label_scale: float, font_color: Color) -> Label:
+func spawn_result_label(text: String, global_center: Vector2, lifetime: float, offset: Vector2, label_scale: float, font_color: Color, rise_distance: float = 54.0) -> Label:
 	if text.strip_edges() == "" or global_center == Vector2.ZERO:
 		return null
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
@@ -39,7 +39,7 @@ func spawn_result_label(text: String, global_center: Vector2, lifetime: float, o
 	label.move_to_front()
 	var local_center := _global_to_vfx_local(global_center) + offset
 	label.position = local_center - label.size * 0.5
-	_tween_cleanup(label, lifetime)
+	_tween_cleanup(label, lifetime, rise_distance)
 	return label
 
 
@@ -50,7 +50,7 @@ func _global_to_vfx_local(global_position: Vector2) -> Vector2:
 	return inverse_canvas * global_position
 
 
-func _tween_cleanup(label: Label, lifetime: float) -> void:
+func _tween_cleanup(label: Label, lifetime: float, rise_distance: float) -> void:
 	if label == null:
 		return
 	var duration := maxf(0.12, lifetime)
@@ -58,7 +58,7 @@ func _tween_cleanup(label: Label, lifetime: float) -> void:
 		return
 	var tween := _timer_owner.create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", label.position.y - 54.0, duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.tween_property(label, "position:y", label.position.y - rise_distance, duration).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
 	tween.tween_property(label, "modulate:a", 0.0, duration).set_delay(duration * 0.36)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(label):

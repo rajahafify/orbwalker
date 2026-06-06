@@ -48,6 +48,8 @@ func mastery_cast_colors(orb_id: int) -> Dictionary:
 
 
 func result_label_color(kind: String, high_contrast: bool = false) -> Color:
+	if kind.strip_edges().to_lower() == "heal":
+		return Color(1.0, 0.88, 0.54, 1.0)
 	var clean_kind := _result_kind_key(kind)
 	if high_contrast and clean_kind in ["fire", "ice", "earth", "damage"]:
 		return Color.WHITE

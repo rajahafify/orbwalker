@@ -1585,8 +1585,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(player_hp_target, "heart", player_hp_impact_size, player_lifetime, heart_heal)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.HEART, player_hp_target, player_lifetime)
-			vfx_presenter.spawn_result_label("+%d HP" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -54), heart_heal)
+			vfx_presenter.spawn_result_label("+%d" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -22), heart_heal)
 		_play_impact_sfx("heal", "player")
 		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
 		if not _can_continue_after_async_wait():

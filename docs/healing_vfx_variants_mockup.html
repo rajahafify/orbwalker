@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Healing VFX Variants Mockup</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101217;
+      --panel: #171b24;
+      --panel-2: #202633;
+      --ink: #f6f8fb;
+      --muted: #aab4c7;
+      --line: rgba(255, 255, 255, 0.14);
+      --gold: #f0c15a;
+      --red: #e9484c;
+      --hp: #f24a4b;
+      --green: #62f39a;
+      --mint: #b9ffd3;
+      --ice: #aeeaff;
+      --pink: #ff8fb6;
+      --shadow: rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 6%, rgba(98, 243, 154, 0.10), transparent 30rem),
+        radial-gradient(circle at 92% 12%, rgba(174, 234, 255, 0.08), transparent 28rem),
+        linear-gradient(180deg, #15181f, var(--bg));
+      color: var(--ink);
+      font: 15px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 26px 28px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 38px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 8px 0 0;
+      max-width: 860px;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: end;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      background: var(--panel-2);
+      color: var(--ink);
+      padding: 0 14px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover { border-color: rgba(255, 255, 255, 0.34); }
+
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+      gap: 18px;
+      padding: 20px 24px 30px;
+    }
+
+    .variant {
+      display: grid;
+      grid-template-rows: auto auto;
+      min-height: 520px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)), var(--panel);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+    }
+
+    .copy {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      display: inline-flex;
+      margin-top: 9px;
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .notes {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 378px;
+      padding: 18px;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+        #090d13;
+      background-size: 32px 32px;
+    }
+
+    .combat {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(100%, 560px);
+      height: 332px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(240, 193, 90, 0.78);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(255, 143, 182, 0.08), transparent 15rem),
+        radial-gradient(circle at 82% 25%, rgba(98, 243, 154, 0.07), transparent 16rem),
+        linear-gradient(180deg, #121923, #0b0f15);
+      box-shadow:
+        0 0 0 2px rgba(240, 193, 90, 0.12),
+        0 18px 42px var(--shadow);
+      overflow: hidden;
+    }
+
+    .board {
+      position: absolute;
+      left: 50%;
+      top: -66px;
+      width: 262px;
+      height: 132px;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      padding: 10px;
+      border: 2px solid rgba(240, 193, 90, 0.82);
+      border-radius: 7px;
+      background: #05080c;
+      opacity: 0.72;
+    }
+
+    .orb {
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background:
+        radial-gradient(circle at 35% 26%, rgba(255,255,255,0.46), transparent 20%),
+        var(--orb);
+      box-shadow: inset 0 -8px 14px rgba(0,0,0,0.36);
+    }
+
+    .orb:nth-child(5n+1) { --orb: linear-gradient(145deg, #fb5c69, #6f172b); }
+    .orb:nth-child(5n+2) { --orb: linear-gradient(145deg, #8bd2ff, #214c95); }
+    .orb:nth-child(5n+3) { --orb: linear-gradient(145deg, #7ded93, #226f34); }
+    .orb:nth-child(5n+4) { --orb: linear-gradient(145deg, #e9b847, #795515); }
+    .orb:nth-child(5n) { --orb: linear-gradient(145deg, #ff7c36, #79220c); }
+
+    .mastery-title {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 34px;
+      height: 20px;
+      text-align: center;
+      color: rgba(255,255,255,0.78);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .mastery-row {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 58px;
+      height: 50px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2px;
+      z-index: 6;
+    }
+
+    .mastery-card {
+      position: relative;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 3px;
+      background: rgba(7, 15, 26, 0.84);
+    }
+
+    .mastery-card.active {
+      border-color: rgba(255, 143, 182, 0.72);
+      background: linear-gradient(90deg, rgba(255, 143, 182, 0.20), rgba(7, 15, 26, 0.9));
+    }
+
+    .icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.16);
+      background:
+        radial-gradient(circle at 48% 40%, rgba(255,255,255,0.94) 0 9%, transparent 10%),
+        radial-gradient(circle at 36% 40%, var(--icon) 0 16%, transparent 17%),
+        radial-gradient(circle at 64% 40%, var(--icon) 0 16%, transparent 17%),
+        linear-gradient(135deg, var(--icon), rgba(255,255,255,0.15));
+      box-shadow: 0 0 14px color-mix(in srgb, var(--icon), transparent 45%);
+    }
+
+    .heart-icon { --icon: #ff5578; }
+    .sun-icon { --icon: #f0c15a; }
+    .ice-icon { --icon: #aeeaff; }
+    .leaf-icon { --icon: #62f39a; }
+
+    .mastery-num {
+      color: #ffdd63;
+      font-size: 23px;
+      font-weight: 900;
+      text-shadow: 0 0 10px rgba(255, 221, 99, 0.4);
+    }
+
+    .player {
+      position: absolute;
+      left: 22px;
+      top: 138px;
+      width: 74px;
+      height: 88px;
+      z-index: 7;
+    }
+
+    .portrait {
+      position: absolute;
+      left: 8px;
+      top: 7px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 2px solid rgba(240, 193, 90, 0.9);
+      background:
+        radial-gradient(circle at 48% 30%, #ffe3a6 0 10%, transparent 11%),
+        linear-gradient(140deg, #25152c 0 35%, #0b1526 36% 100%);
+      box-shadow: 0 0 16px rgba(240, 193, 90, 0.38);
+    }
+
+    .portrait::after {
+      content: "";
+      position: absolute;
+      left: 15px;
+      top: 28px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px 8px 14px 14px;
+      background: linear-gradient(145deg, #5333b8, #14264a);
+    }
+
+    .relics {
+      position: absolute;
+      left: 22px;
+      bottom: 24px;
+      width: 44px;
+      height: 44px;
+      border: 2px solid rgba(240, 193, 90, 0.9);
+      border-radius: 5px;
+      background:
+        linear-gradient(135deg, transparent 45%, #e5d6a6 46% 54%, transparent 55%),
+        linear-gradient(145deg, #6f4018, #191d28);
+    }
+
+    .hp-wrap {
+      position: absolute;
+      left: 118px;
+      right: 72px;
+      top: 148px;
+      height: 46px;
+      z-index: 8;
+    }
+
+    .hp-label {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 4;
+      color: #fff6d8;
+      font-weight: 900;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    .hp-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 8px;
+      height: 30px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 4px;
+      background: #111a20;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.55);
+    }
+
+    .hp-fill {
+      position: absolute;
+      inset: 0 54px 0 0;
+      background: linear-gradient(90deg, #ec3c3c, #ff7a64, #ec3c3c);
+    }
+
+    .hp-gain {
+      position: absolute;
+      top: -36px;
+      left: 45%;
+      z-index: 15;
+      color: #a6ffc3;
+      font-size: 34px;
+      font-weight: 950;
+      -webkit-text-stroke: 2px #0a2a16;
+      text-shadow:
+        0 0 14px rgba(98, 243, 154, 0.75),
+        0 2px 2px rgba(0,0,0,0.75);
+    }
+
+    .slots {
+      position: absolute;
+      left: 78px;
+      right: 14px;
+      bottom: 22px;
+      height: 48px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      opacity: 0.78;
+    }
+
+    .slot {
+      border: 2px solid rgba(150, 167, 196, 0.52);
+      border-radius: 5px;
+      background: #101725;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.035);
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .fx {
+      position: absolute;
+      pointer-events: none;
+      transform-origin: center;
+      mix-blend-mode: screen;
+    }
+
+    .particle {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 12px var(--mint);
+    }
+
+    .replay .fx { animation-play-state: running; }
+
+    .v1 .thread {
+      left: 58px;
+      top: 92px;
+      width: 370px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(185,255,211,0.92), transparent);
+      filter: drop-shadow(0 0 10px rgba(98,243,154,0.7));
+      opacity: 0;
+      transform: rotate(12deg) scaleX(0.18);
+      animation: threadFly 1400ms ease-in-out infinite;
+    }
+
+    .v1 .thread.t2 {
+      top: 106px;
+      height: 7px;
+      animation-delay: 120ms;
+      transform: rotate(4deg) scaleX(0.18);
+    }
+
+    .v1 .thread.t3 {
+      top: 122px;
+      height: 6px;
+      animation-delay: 220ms;
+      transform: rotate(-6deg) scaleX(0.18);
+    }
+
+    .v1 .stitch {
+      left: 286px;
+      top: 139px;
+      width: 156px;
+      height: 34px;
+      border-radius: 4px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.0) 0 14px, rgba(185,255,211,0.75) 15px 18px),
+        linear-gradient(90deg, transparent, rgba(98,243,154,0.58), transparent);
+      opacity: 0;
+      animation: stitchGlow 1400ms ease-in-out infinite;
+    }
+
+    .v1 .hp-gain { animation: gainPop 1400ms ease-in-out infinite; }
+
+    .v2 .bar-glow {
+      left: 110px;
+      right: 56px;
+      top: 149px;
+      height: 34px;
+      border-radius: 6px;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255, 82, 77, 0.28) 24%, rgba(255, 126, 82, 0.36) 48%, rgba(255, 82, 77, 0.24) 70%, transparent 100%);
+      filter: drop-shadow(0 0 10px rgba(255, 105, 82, 0.52));
+      opacity: 0;
+      animation: barGlowPulse 1450ms cubic-bezier(.22,.78,.24,1) infinite;
+    }
+
+    .v2 .bar-wave {
+      left: 104px;
+      right: 56px;
+      top: 158px;
+      height: 9px;
+      border-radius: 4px;
+      background:
+        linear-gradient(90deg, transparent 0 18%, rgba(255,245,214,0.82) 42%, rgba(255,185,104,0.78) 50%, rgba(255,245,214,0.72) 58%, transparent 84%);
+      box-shadow:
+        0 0 12px rgba(255, 105, 82, 0.46),
+        0 0 5px rgba(255, 230, 174, 0.64);
+      opacity: 0;
+      transform: translateX(-45%);
+      animation: barSweep 1450ms cubic-bezier(.22,.78,.24,1) infinite;
+    }
+
+    .v2 .fill-snap {
+      left: 170px;
+      top: 157px;
+      width: 320px;
+      height: 6px;
+      border-radius: 4px;
+      border: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 174, 96, 0.44), transparent);
+      box-shadow:
+        0 0 8px rgba(255, 105, 82, 0.40);
+      opacity: 0;
+      animation: snapIn 1450ms cubic-bezier(.22,.78,.24,1) infinite;
+    }
+
+    .v2 .tick {
+      display: none;
+    }
+
+    .v2 .tick.a { left: 298px; animation-delay: 70ms; }
+    .v2 .tick.b { left: 330px; animation-delay: 145ms; }
+    .v2 .tick.c { left: 362px; animation-delay: 220ms; }
+    .v2 .hp-gain {
+      left: 45%;
+      color: #ffdf89;
+      font-size: 34px;
+      -webkit-text-stroke-color: #6e1b1c;
+      text-shadow:
+        0 0 12px rgba(255, 154, 86, 0.68),
+        0 2px 2px rgba(0,0,0,0.75);
+      animation: gainSlide 1450ms cubic-bezier(.22,.78,.24,1) infinite;
+    }
+
+    .v3 .seal {
+      left: 275px;
+      top: 119px;
+      width: 126px;
+      height: 126px;
+      border-radius: 50%;
+      background:
+        conic-gradient(from 0deg, rgba(185,255,211,0.0) 0 8deg, rgba(185,255,211,0.92) 9deg 15deg, transparent 16deg 38deg),
+        radial-gradient(circle, rgba(98,243,154,0.18) 0 45%, transparent 46%);
+      border: 2px solid rgba(185,255,211,0.74);
+      box-shadow: 0 0 18px rgba(98,243,154,0.45);
+      opacity: 0;
+      animation: sealTurn 1500ms ease-in-out infinite;
+    }
+
+    .v3 .seal-core {
+      left: 307px;
+      top: 151px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.9);
+      background: radial-gradient(circle, rgba(185,255,211,0.88), rgba(98,243,154,0.1) 70%);
+      opacity: 0;
+      animation: sealCore 1500ms ease-in-out infinite;
+    }
+
+    .v3 .hp-gain { animation: gainPop 1500ms ease-in-out infinite; }
+
+    .v4 .leaf {
+      width: 18px;
+      height: 10px;
+      border-radius: 999px 999px 999px 0;
+      background: linear-gradient(90deg, #d8ffc7, #62f39a);
+      box-shadow: 0 0 12px rgba(98,243,154,0.6);
+      opacity: 0;
+      animation: leafArc 1600ms ease-in-out infinite;
+    }
+
+    .v4 .leaf.a { left: 478px; top: 90px; --x: -210px; --y: 74px; animation-delay: 0ms; }
+    .v4 .leaf.b { left: 476px; top: 92px; --x: -250px; --y: 94px; animation-delay: 130ms; }
+    .v4 .leaf.c { left: 480px; top: 94px; --x: -170px; --y: 106px; animation-delay: 230ms; }
+
+    .v4 .portrait-glow {
+      left: 20px;
+      top: 135px;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(98,243,154,0.56), transparent 68%);
+      opacity: 0;
+      animation: portraitGlow 1600ms ease-in-out infinite;
+    }
+
+    .v4 .bar-bloom {
+      left: 248px;
+      top: 135px;
+      width: 220px;
+      height: 70px;
+      border-radius: 999px;
+      background: radial-gradient(ellipse, rgba(98,243,154,0.48), transparent 70%);
+      opacity: 0;
+      animation: compactBloom 1600ms ease-in-out infinite;
+    }
+
+    .v4 .hp-gain { animation: gainFloat 1600ms ease-in-out infinite; }
+
+    .v5 .crystal {
+      width: 12px;
+      height: 28px;
+      clip-path: polygon(50% 0, 100% 24%, 72% 100%, 28% 100%, 0 24%);
+      background: linear-gradient(180deg, #f7fdff, #aeeaff 55%, #56b8e5);
+      box-shadow: 0 0 12px rgba(174,234,255,0.72);
+      opacity: 0;
+      animation: crystalDrop 1450ms ease-in-out infinite;
+    }
+
+    .v5 .crystal.a { left: 394px; top: 88px; --x: -40px; animation-delay: 0ms; }
+    .v5 .crystal.b { left: 410px; top: 88px; --x: 0px; animation-delay: 130ms; }
+    .v5 .crystal.c { left: 426px; top: 88px; --x: 34px; animation-delay: 240ms; }
+
+    .v5 .ice-snap {
+      left: 276px;
+      top: 146px;
+      width: 198px;
+      height: 42px;
+      border-radius: 6px;
+      border: 1px solid rgba(174,234,255,0.8);
+      background:
+        repeating-linear-gradient(135deg, rgba(174,234,255,0.0) 0 17px, rgba(174,234,255,0.5) 18px 21px),
+        linear-gradient(90deg, rgba(174,234,255,0.12), rgba(98,243,154,0.28), rgba(174,234,255,0.12));
+      opacity: 0;
+      animation: iceSnap 1450ms ease-in-out infinite;
+    }
+
+    .v5 .hp-gain {
+      color: #d7f7ff;
+      -webkit-text-stroke-color: #06293a;
+      text-shadow: 0 0 14px rgba(174,234,255,0.88);
+      animation: gainPop 1450ms ease-in-out infinite;
+    }
+
+    @keyframes threadFly {
+      0% { opacity: 0; transform: rotate(var(--r, 8deg)) translateX(-40px) scaleX(0.12); }
+      18% { opacity: 0.9; }
+      52% { opacity: 0.95; transform: rotate(var(--r, 8deg)) translateX(36px) scaleX(1); }
+      80%, 100% { opacity: 0; transform: rotate(var(--r, 8deg)) translateX(72px) scaleX(0.18); }
+    }
+
+    @keyframes stitchGlow {
+      0%, 16% { opacity: 0; transform: scaleX(0.5); }
+      46% { opacity: 1; transform: scaleX(1); }
+      78%, 100% { opacity: 0; transform: scaleX(1.04); }
+    }
+
+    @keyframes gainPop {
+      0%, 18% { opacity: 0; transform: translateY(10px) scale(0.8); }
+      42% { opacity: 1; transform: translateY(0) scale(1.08); }
+      76%, 100% { opacity: 0; transform: translateY(-18px) scale(0.94); }
+    }
+
+    @keyframes barSweep {
+      0% { opacity: 0; transform: translateX(-46%) scaleX(0.68); }
+      8% { opacity: 0.16; transform: translateX(-40%) scaleX(0.78); }
+      24% { opacity: 0.72; }
+      52% { opacity: 0.92; transform: translateX(24%) scaleX(0.96); }
+      76% { opacity: 0.34; transform: translateX(48%) scaleX(0.74); }
+      100% { opacity: 0; transform: translateX(56%) scaleX(0.58); }
+    }
+
+    @keyframes barGlowPulse {
+      0% { opacity: 0; transform: scaleX(0.74); }
+      10% { opacity: 0.18; transform: scaleX(0.86); }
+      30% { opacity: 0.58; transform: scaleX(1); }
+      66% { opacity: 0.46; transform: scaleX(1.03); }
+      88% { opacity: 0.12; transform: scaleX(1.07); }
+      100% { opacity: 0; transform: scaleX(1.08); }
+    }
+
+    @keyframes snapIn {
+      0% { opacity: 0; transform: scaleX(0.24); }
+      14% { opacity: 0.16; transform: scaleX(0.46); }
+      36% { opacity: 0.84; transform: scaleX(0.98); }
+      66% { opacity: 0.66; transform: scaleX(1.02); }
+      88% { opacity: 0.12; transform: scaleX(1.06); }
+      100% { opacity: 0; transform: scaleX(1.08); }
+    }
+
+    @keyframes tickFall {
+      0% { opacity: 0; transform: translateY(-12px) scaleY(0.32); }
+      12% { opacity: 0.18; transform: translateY(-4px) scaleY(0.48); }
+      40% { opacity: 0.74; transform: translateY(20px) scaleY(0.92); }
+      72% { opacity: 0.26; transform: translateY(36px) scaleY(0.62); }
+      100% { opacity: 0; transform: translateY(44px) scaleY(0.46); }
+    }
+
+    @keyframes gainSlide {
+      0% { opacity: 0; transform: translateX(-20px) translateY(6px) scale(0.88); }
+      16% { opacity: 0.20; }
+      42% { opacity: 0.94; transform: translateX(0) translateY(0) scale(1.02); }
+      76% { opacity: 0.32; transform: translateX(18px) translateY(-8px) scale(0.96); }
+      100% { opacity: 0; transform: translateX(28px) translateY(-14px) scale(0.9); }
+    }
+
+    @keyframes sealTurn {
+      0%, 12% { opacity: 0; transform: scale(0.74) rotate(-34deg); }
+      38% { opacity: 1; transform: scale(1) rotate(18deg); }
+      74%, 100% { opacity: 0; transform: scale(0.82) rotate(72deg); }
+    }
+
+    @keyframes sealCore {
+      0%, 20% { opacity: 0; transform: scale(0.2); }
+      44% { opacity: 0.92; transform: scale(1); }
+      72%, 100% { opacity: 0; transform: scale(1.22); }
+    }
+
+    @keyframes leafArc {
+      0%, 10% { opacity: 0; transform: translate(0, 0) rotate(-12deg) scale(0.7); }
+      34% { opacity: 1; }
+      66% { opacity: 0.95; transform: translate(var(--x), var(--y)) rotate(28deg) scale(1.15); }
+      88%, 100% { opacity: 0; transform: translate(calc(var(--x) - 14px), calc(var(--y) + 12px)) rotate(64deg) scale(0.8); }
+    }
+
+    @keyframes portraitGlow {
+      0%, 28% { opacity: 0; transform: scale(0.7); }
+      50% { opacity: 0.95; transform: scale(1); }
+      82%, 100% { opacity: 0; transform: scale(1.24); }
+    }
+
+    @keyframes compactBloom {
+      0%, 18% { opacity: 0; transform: scaleX(0.4); }
+      48% { opacity: 0.9; transform: scaleX(1); }
+      80%, 100% { opacity: 0; transform: scaleX(1.08); }
+    }
+
+    @keyframes gainFloat {
+      0%, 22% { opacity: 0; transform: translateY(12px) scale(0.82); }
+      50% { opacity: 1; transform: translateY(-2px) scale(1.05); }
+      84%, 100% { opacity: 0; transform: translateY(-28px) scale(0.9); }
+    }
+
+    @keyframes crystalDrop {
+      0%, 10% { opacity: 0; transform: translate(0, -22px) rotate(-8deg) scale(0.7); }
+      32% { opacity: 1; }
+      62% { opacity: 1; transform: translate(var(--x), 82px) rotate(18deg) scale(1.1); }
+      90%, 100% { opacity: 0; transform: translate(var(--x), 104px) rotate(36deg) scale(0.5); }
+    }
+
+    @keyframes iceSnap {
+      0%, 26% { opacity: 0; transform: scaleX(0.4); }
+      48% { opacity: 0.95; transform: scaleX(1); }
+      76%, 100% { opacity: 0; transform: scaleX(1.1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fx, .hp-gain { animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+    }
+
+    @media (max-width: 520px) {
+      header {
+        display: block;
+        padding: 20px 16px 14px;
+      }
+
+      .toolbar { justify-content: start; margin-top: 14px; }
+
+      main {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .variant { min-height: 500px; }
+      .stage { min-height: 350px; padding: 10px; }
+      .combat { transform: translate(-50%, -50%) scale(0.78); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Healing VFX Variants</h1>
+      <p class="sub">Five rebuild directions for healing that stay anchored to the player HUD and HP bar. Each variant avoids the oversized board-spanning oval that made the current effect feel noisy.</p>
+    </div>
+    <div class="toolbar">
+      <button type="button" id="replayAll">Replay</button>
+      <button type="button" id="pauseAll">Pause</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="variant v1 replay">
+      <div class="copy">
+        <h2>1. Threaded Suture</h2>
+        <span class="tag">Source-to-HP motion</span>
+        <p class="notes">Three narrow healing threads travel from the heart mastery card and stitch the gained HP into the bar.</p>
+      </div>
+      <div class="stage">
+        <div class="combat">
+          <div class="board" aria-hidden="true"></div>
+          <div class="mastery-title">MASTERY</div>
+          <div class="mastery-row">
+            <div class="mastery-card active"><div class="icon heart-icon"></div></div>
+            <div class="mastery-card"><div class="mastery-num">3</div></div>
+            <div class="mastery-card"><div class="icon sun-icon"></div></div>
+            <div class="mastery-card"><div class="icon ice-icon"></div></div>
+            <div class="mastery-card"><div class="icon leaf-icon"></div></div>
+          </div>
+          <div class="player"><div class="portrait"></div></div>
+          <div class="hp-wrap"><div class="hp-bar"><div class="hp-fill"></div></div><div class="hp-label">HP 97 / 100</div></div>
+          <div class="relics"></div>
+          <div class="slots"><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div>
+          <div class="fx-layer">
+            <div class="fx thread t1"></div>
+            <div class="fx thread t2"></div>
+            <div class="fx thread t3"></div>
+            <div class="fx stitch"></div>
+            <div class="fx hp-gain">+3</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="variant v2 replay">
+      <div class="copy">
+        <h2>2. Bar Infusion</h2>
+        <span class="tag">HP bar owns the effect</span>
+        <p class="notes">No big beam. The HP bar quietly pulses with a thin warm glint while the healed amount stays compact.</p>
+      </div>
+      <div class="stage">
+        <div class="combat">
+          <div class="board" aria-hidden="true"></div>
+          <div class="mastery-title">MASTERY</div>
+          <div class="mastery-row">
+            <div class="mastery-card active"><div class="icon heart-icon"></div></div>
+            <div class="mastery-card"><div class="mastery-num">3</div></div>
+            <div class="mastery-card"><div class="icon sun-icon"></div></div>
+            <div class="mastery-card"><div class="icon ice-icon"></div></div>
+            <div class="mastery-card"><div class="icon leaf-icon"></div></div>
+          </div>
+          <div class="player"><div class="portrait"></div></div>
+          <div class="hp-wrap"><div class="hp-bar"><div class="hp-fill"></div></div><div class="hp-label">HP 97 / 100</div></div>
+          <div class="relics"></div>
+          <div class="slots"><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div>
+          <div class="fx-layer">
+            <div class="fx bar-glow"></div>
+            <div class="fx bar-wave"></div>
+            <div class="fx fill-snap"></div>
+            <div class="fx tick a"></div>
+            <div class="fx tick b"></div>
+            <div class="fx tick c"></div>
+            <div class="fx hp-gain">+3 HP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="variant v3 replay">
+      <div class="copy">
+        <h2>3. Pocket Sigil</h2>
+        <span class="tag">Compact center burst</span>
+        <p class="notes">A small medical seal appears over the HP bar, spins once, then collapses into the healed amount.</p>
+      </div>
+      <div class="stage">
+        <div class="combat">
+          <div class="board" aria-hidden="true"></div>
+          <div class="mastery-title">MASTERY</div>
+          <div class="mastery-row">
+            <div class="mastery-card active"><div class="icon heart-icon"></div></div>
+            <div class="mastery-card"><div class="mastery-num">3</div></div>
+            <div class="mastery-card"><div class="icon sun-icon"></div></div>
+            <div class="mastery-card"><div class="icon ice-icon"></div></div>
+            <div class="mastery-card"><div class="icon leaf-icon"></div></div>
+          </div>
+          <div class="player"><div class="portrait"></div></div>
+          <div class="hp-wrap"><div class="hp-bar"><div class="hp-fill"></div></div><div class="hp-label">HP 97 / 100</div></div>
+          <div class="relics"></div>
+          <div class="slots"><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div>
+          <div class="fx-layer">
+            <div class="fx seal"></div>
+            <div class="fx seal-core"></div>
+            <div class="fx hp-gain">+3 HP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="variant v4 replay">
+      <div class="copy">
+        <h2>4. Leaf Return</h2>
+        <span class="tag">Character-first heal</span>
+        <p class="notes">Healing motes curve from mastery into the player portrait, then bloom along the HP bar.</p>
+      </div>
+      <div class="stage">
+        <div class="combat">
+          <div class="board" aria-hidden="true"></div>
+          <div class="mastery-title">MASTERY</div>
+          <div class="mastery-row">
+            <div class="mastery-card active"><div class="icon heart-icon"></div></div>
+            <div class="mastery-card"><div class="mastery-num">3</div></div>
+            <div class="mastery-card"><div class="icon sun-icon"></div></div>
+            <div class="mastery-card"><div class="icon ice-icon"></div></div>
+            <div class="mastery-card"><div class="icon leaf-icon"></div></div>
+          </div>
+          <div class="player"><div class="portrait"></div></div>
+          <div class="hp-wrap"><div class="hp-bar"><div class="hp-fill"></div></div><div class="hp-label">HP 97 / 100</div></div>
+          <div class="relics"></div>
+          <div class="slots"><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div>
+          <div class="fx-layer">
+            <div class="fx leaf a"></div>
+            <div class="fx leaf b"></div>
+            <div class="fx leaf c"></div>
+            <div class="fx portrait-glow"></div>
+            <div class="fx bar-bloom"></div>
+            <div class="fx hp-gain">+3 HP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="variant v5 replay">
+      <div class="copy">
+        <h2>5. Crystal Cleanse</h2>
+        <span class="tag">Sharp readable accents</span>
+        <p class="notes">Ice-like shards fall into the HP bar and snap into a clean green-blue recovery strip.</p>
+      </div>
+      <div class="stage">
+        <div class="combat">
+          <div class="board" aria-hidden="true"></div>
+          <div class="mastery-title">MASTERY</div>
+          <div class="mastery-row">
+            <div class="mastery-card active"><div class="icon heart-icon"></div></div>
+            <div class="mastery-card"><div class="mastery-num">3</div></div>
+            <div class="mastery-card"><div class="icon sun-icon"></div></div>
+            <div class="mastery-card"><div class="icon ice-icon"></div></div>
+            <div class="mastery-card"><div class="icon leaf-icon"></div></div>
+          </div>
+          <div class="player"><div class="portrait"></div></div>
+          <div class="hp-wrap"><div class="hp-bar"><div class="hp-fill"></div></div><div class="hp-label">HP 97 / 100</div></div>
+          <div class="relics"></div>
+          <div class="slots"><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span><span class="slot"></span></div>
+          <div class="fx-layer">
+            <div class="fx crystal a"></div>
+            <div class="fx crystal b"></div>
+            <div class="fx crystal c"></div>
+            <div class="fx ice-snap"></div>
+            <div class="fx hp-gain">+3 HP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const orbContainers = document.querySelectorAll(".board");
+    for (const board of orbContainers) {
+      for (let i = 0; i < 15; i += 1) {
+        board.appendChild(document.createElement("span")).className = "orb";
+      }
+    }
+
+    const variants = document.querySelectorAll(".variant");
+    document.getElementById("replayAll").addEventListener("click", () => {
+      for (const variant of variants) {
+        variant.classList.remove("replay");
+      }
+      void document.body.offsetWidth;
+      for (const variant of variants) {
+        variant.classList.add("replay");
+      }
+    });
+
+    document.getElementById("pauseAll").addEventListener("click", (event) => {
+      const paused = document.body.classList.toggle("paused");
+      event.currentTarget.textContent = paused ? "Resume" : "Pause";
+      for (const effect of document.querySelectorAll(".fx, .hp-gain")) {
+        effect.style.animationPlayState = paused ? "paused" : "running";
+      }
+    });
+  </script>
+</body>
+</html>

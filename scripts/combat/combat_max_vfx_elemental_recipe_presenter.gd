@@ -175,20 +175,21 @@ func spawn_beam_layers(kind: String, source: Vector2, delta: Vector2, lifetime: 
 	match clean_kind:
 		"ice":
 			var normal := Vector2(-delta.y, delta.x).normalized()
-			_spawn_elemental_effect("projectile", source + normal * 9.0, "ice", Vector2(142 + intensity * 10, 56 + intensity * 5), lifetime * 1.22, intensity, 0.0, delta - normal * 6.0, angle - PI + 0.06, 1.4, 0.62)
-			_spawn_elemental_effect("projectile", source - normal * 9.0, "ice", Vector2(112 + intensity * 8, 46 + intensity * 4), lifetime * 1.14, intensity, 0.05, delta + normal * 6.0, angle - PI - 0.06, 1.3, 0.44)
+			_spawn_elemental_effect("projectile", source, "ice", Vector2(178 + intensity * 14, 68 + intensity * 6), lifetime * 1.26, intensity, 0.0, delta, angle - PI, 1.5, 0.68)
+			_spawn_elemental_effect("projectile", source + normal * 11.0, "ice", Vector2(160 + intensity * 12, 64 + intensity * 6), lifetime * 1.22, intensity, 0.03, delta - normal * 8.0, angle - PI + 0.06, 1.4, 0.54)
+			_spawn_elemental_effect("projectile", source - normal * 11.0, "ice", Vector2(134 + intensity * 10, 54 + intensity * 5), lifetime * 1.16, intensity, 0.07, delta + normal * 8.0, angle - PI - 0.06, 1.3, 0.42)
 		"earth":
 			spawn_path_afterimage("earth", source, delta, 0.0, lifetime * 1.22, intensity, angle)
-			var crawl := _spawn_elemental_effect("projectile", source, "earth", Vector2(118 + intensity * 10, 48 + intensity * 4), lifetime * 1.24, intensity, 0.0, delta, angle - PI, 1.2, 0.48)
-			_stretch_effect(crawl, Vector3(1.20, 0.52, 1.0))
+			var crawl := _spawn_elemental_effect("projectile", source, "earth", Vector2(146 + intensity * 13, 62 + intensity * 6), lifetime * 1.30, intensity, 0.0, delta, angle - PI, 1.25, 0.56)
+			_stretch_effect(crawl, Vector3(1.35, 0.68, 1.0))
 		"heart":
-			_spawn_elemental_effect("projectile", source, "heart", Vector2(112 + intensity * 8, 70 + intensity * 5), lifetime * 1.20, intensity, 0.0, delta, angle - PI, 1.4, 0.54)
+			_spawn_elemental_effect("projectile", source, "heart", Vector2(136 + intensity * 10, 82 + intensity * 7), lifetime * 1.22, intensity, 0.0, delta, angle - PI, 1.4, 0.60)
 		"armor":
-			_spawn_elemental_effect("projectile", source, "armor", Vector2(118 + intensity * 8, 76 + intensity * 6), lifetime * 1.18, intensity, 0.0, delta, angle - PI, 1.4, 0.58)
+			_spawn_elemental_effect("projectile", source, "armor", Vector2(142 + intensity * 10, 88 + intensity * 7), lifetime * 1.20, intensity, 0.0, delta, angle - PI, 1.4, 0.62)
 		"gold":
-			_spawn_elemental_effect("projectile", source, "gold", Vector2(118 + intensity * 8, 64 + intensity * 5), lifetime * 1.10, intensity, 0.0, delta, angle - PI, 1.4, 0.58)
+			_spawn_elemental_effect("projectile", source, "gold", Vector2(142 + intensity * 10, 76 + intensity * 6), lifetime * 1.14, intensity, 0.0, delta, angle - PI, 1.4, 0.64)
 		_:
-			_spawn_elemental_effect("projectile", source, clean_kind, Vector2(156 + intensity * 14, 84 + intensity * 7), lifetime * 1.18, intensity, 0.0, delta, angle - PI, 1.4, 0.82)
+			_spawn_elemental_effect("projectile", source, clean_kind, Vector2(184 + intensity * 16, 98 + intensity * 8), lifetime * 1.22, intensity, 0.0, delta, angle - PI, 1.4, 0.88)
 
 
 func _clean_kind(kind: String) -> String:

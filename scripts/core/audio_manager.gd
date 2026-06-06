@@ -131,6 +131,10 @@ func _stream_for_music(key: String) -> AudioStream:
 		_music_stream_source_paths[cache_key] = String(music_stream.get_meta("audio_source_path", _music_source_path(key)))
 		return music_stream
 
+	if not _should_allow_generated_music_fallback():
+		push_warning("AudioManager failed to load exported music '%s' from %s." % [key, _music_source_path(key)])
+		return null
+
 	var stream := _make_generated_music_stream(key)
 	_streams[cache_key] = stream
 	_music_stream_sources[cache_key] = "generated_fallback"
@@ -152,6 +156,14 @@ func _configure_music_playback_for_runtime(key: String, stream: AudioStream) -> 
 
 func _is_android_or_template_runtime() -> bool:
 	return OS.has_feature("android") or OS.has_feature("template")
+
+
+func _should_use_raw_music_export_path() -> bool:
+	return OS.has_feature("template") and not OS.has_feature("android")
+
+
+func _should_allow_generated_music_fallback() -> bool:
+	return not _is_android_or_template_runtime()
 
 
 func _music_source_path(key: String) -> String:
@@ -199,7 +211,13 @@ func _load_music_stream(key: String) -> AudioStream:
 	var path := String(MUSIC_STREAM_PATHS.get(key, ""))
 	if path == "":
 		return null
-	if _is_android_or_template_runtime():
+	if OS.has_feature("android"):
+		var android_imported_stream := AudioStreamLoader.load_imported_audio_stream(path, true)
+		if android_imported_stream != null:
+			android_imported_stream.set_meta("audio_source", "android_imported_wav")
+			android_imported_stream.set_meta("audio_source_path", path)
+			return android_imported_stream
+	if _should_use_raw_music_export_path():
 		var raw_path := String(ANDROID_TEMPLATE_RAW_MUSIC_PATHS.get(key, ""))
 		if raw_path != "":
 			var raw_stream := AudioStreamLoader.load_pcm16_wav_stream(raw_path, _is_android_or_template_runtime())

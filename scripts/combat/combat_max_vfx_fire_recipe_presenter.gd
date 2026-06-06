@@ -163,15 +163,16 @@ func spawn_beam_layers(source: Vector2, delta: Vector2, duration: float, intensi
 	var layer_intensity := maxi(3, intensity)
 	var normal := Vector2(-delta.y, delta.x).normalized()
 	_spawn_fire_ember_lane(source, delta, 0.0, duration, layer_intensity, angle, maxi(2, tier))
-	_spawn_beam_effect(source, delta, "fire", duration * 1.06, layer_intensity, 0.0, 1.16 + float(tier) * 0.12)
+	_spawn_beam_effect(source, delta, "fire", duration * 1.14, layer_intensity, 0.0, 1.42 + float(tier) * 0.16)
 	_spawn_status_path_afterimage("fire", source, delta, 0.0, duration, layer_intensity, angle)
-	_spawn_status_flipbook("burn", source, Vector2(150 + layer_intensity * 18, 96 + layer_intensity * 9), duration, Color(1.0, 0.58, 0.18, 0.50), 0.0, delta, 0.78, 2.2, angle, 1)
+	_spawn_status_flipbook("burn", source, Vector2(182 + layer_intensity * 22, 118 + layer_intensity * 12), duration * 1.04, Color(1.0, 0.60, 0.18, 0.62), 0.0, delta, 0.88, 2.2, angle, 1)
+	_spawn_light(source + delta * 0.50, Color(1.0, 0.50, 0.10, 1.0), 2.8 + float(layer_intensity) * 0.28, maxf(160.0, delta.length() * 0.32), duration * 0.86)
 	if tier >= 2:
 		_spawn_fire_screen_ember_field(source + delta * 0.50, duration * 1.12, layer_intensity, 0.0, 0.82)
-		_spawn_beam_effect(source + normal * 8.0, delta - normal * 5.0, "fire", duration * 0.92, layer_intensity + 1, 0.04, 0.92)
+		_spawn_beam_effect(source + normal * 10.0, delta - normal * 6.0, "fire", duration * 0.98, layer_intensity + 1, 0.04, 1.12)
 	if tier >= 3:
 		_spawn_fire_aurora_layer(source + delta, duration * 1.10, intensity, 0.0, 0.75)
-		_spawn_beam_effect(source, delta, "fire", duration * 1.10, layer_intensity + 2, 0.0, 1.74)
+		_spawn_beam_effect(source, delta, "fire", duration * 1.16, layer_intensity + 2, 0.0, 2.05)
 
 
 func _fire_vfx_tier(intensity: int, screen_wide: bool = false) -> int:

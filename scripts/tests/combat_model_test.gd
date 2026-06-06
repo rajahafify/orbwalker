@@ -110,6 +110,8 @@ func run_all() -> Dictionary:
 	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
 	_run_case("post_match_vfx_second_tier_is_lowest", _test_post_match_vfx_second_tier_is_lowest, failures)
 	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
+	_run_case("low_quality_mastery_beam_spawns_pronounced_layers", _test_low_quality_mastery_beam_spawns_pronounced_layers, failures)
+	_run_case("healing_replay_impact_uses_bar_infusion", _test_healing_replay_impact_uses_bar_infusion, failures)
 	_run_case("armor_replay_impact_uses_hex_grid_without_legacy_texture", _test_armor_replay_impact_uses_hex_grid_without_legacy_texture, failures)
 	_run_case("mastery_fill_stream_spawns_runtime_stream_and_impact", _test_mastery_fill_stream_spawns_runtime_stream_and_impact, failures)
 	_run_case("mastery_fill_stream_reduced_motion_uses_static_pulse", _test_mastery_fill_stream_reduced_motion_uses_static_pulse, failures)
@@ -117,7 +119,7 @@ func run_all() -> Dictionary:
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 58,
+		"total": 60,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -1291,13 +1293,13 @@ func _test_combat_max_vfx_elemental_recipe_presenter_spawns_afterimage_and_scree
 	elemental_calls.clear()
 	stretch_calls.clear()
 	presenter.spawn_beam_layers("ice", Vector2(40, 50), Vector2(200, 0), 0.9, 4, 0.0)
-	if elemental_calls.size() != 2:
-		return "Expected ice elemental beam to spawn paired projectile lanes."
+	if elemental_calls.size() != 3:
+		return "Expected ice elemental beam to spawn central and side projectile lanes."
 	var first_beam: Dictionary = elemental_calls[0]
 	var first_beam_size: Vector2 = first_beam.get("size", Vector2.ZERO)
 	if String(first_beam.get("key", "")) != "projectile" or String(first_beam.get("kind", "")) != "ice":
 		return "Expected ice elemental beam to use projectile effects."
-	if not is_equal_approx(first_beam_size.x, 182.0) or not is_equal_approx(first_beam_size.y, 76.0):
+	if not is_equal_approx(first_beam_size.x, 234.0) or not is_equal_approx(first_beam_size.y, 92.0):
 		return "Expected ice elemental beam size to scale with intensity."
 	if not stretch_calls.is_empty():
 		return "Expected ice elemental beam to avoid stretching effects."
@@ -1306,7 +1308,7 @@ func _test_combat_max_vfx_elemental_recipe_presenter_spawns_afterimage_and_scree
 	presenter.spawn_beam_layers("earth", Vector2(40, 50), Vector2(200, 0), 0.9, 4, 0.0)
 	if elemental_calls.size() != 6:
 		return "Expected earth elemental beam to spawn afterimage layers plus crawl projectile."
-	if stretch_calls.size() != 1 or stretch_calls[0] != Vector3(1.20, 0.52, 1.0):
+	if stretch_calls.size() != 1 or stretch_calls[0] != Vector3(1.35, 0.68, 1.0):
 		return "Expected earth elemental beam to stretch the crawl projectile."
 	return ""
 
@@ -1576,11 +1578,11 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 	if atmospheric_travel_calls.size() != 1 or beam_calls.size() != 1 or status_calls.size() != 9:
 		return "Expected support status beam to spawn atmosphere, beam, afterimage, and endpoint status."
 	var beam: Dictionary = beam_calls[0]
-	if String(beam.get("kind", "")) != "armor" or not is_equal_approx(float(beam.get("duration", 0.0)), 0.6) or not is_equal_approx(float(beam.get("radius_scale", 0.0)), 0.72):
+	if String(beam.get("kind", "")) != "armor" or not is_equal_approx(float(beam.get("duration", 0.0)), 0.624) or not is_equal_approx(float(beam.get("radius_scale", 0.0)), 1.05):
 		return "Expected status beam recipe to normalize kind and scale beam duration."
 	var endpoint_status: Dictionary = status_calls[8]
 	var endpoint_size: Vector2 = endpoint_status.get("size", Vector2.ZERO)
-	if String(endpoint_status.get("key", "")) != "sheet_armor" or not is_equal_approx(endpoint_size.x, 148.0) or not is_equal_approx(endpoint_size.y, 112.0):
+	if String(endpoint_status.get("key", "")) != "sheet_armor" or not is_equal_approx(endpoint_size.x, 198.0) or not is_equal_approx(endpoint_size.y, 136.0):
 		return "Expected status beam endpoint layer to use the armor status sheet and scaled size."
 	status_calls.clear()
 	atmospheric_travel_calls.clear()
@@ -1591,7 +1593,7 @@ func _test_combat_max_vfx_status_recipe_presenter_spawns_afterimage_and_screen_w
 		return "Expected earth status beam to delegate to earth fracture travel without generic beam layers."
 	var fracture: Dictionary = earth_fracture_calls[0]
 	var fracture_size: Vector2 = fracture.get("travel_size", Vector2.ZERO)
-	if int(fracture.get("tier", 0)) != 6 or not is_equal_approx(fracture_size.x, 224.0) or not is_equal_approx(fracture_size.y, 146.0):
+	if int(fracture.get("tier", 0)) != 6 or not is_equal_approx(fracture_size.x, 276.0) or not is_equal_approx(fracture_size.y, 180.0):
 		return "Expected earth status beam to pass tiered fracture travel sizing."
 	status_calls.clear()
 	shield_calls.clear()
@@ -1750,7 +1752,7 @@ func _test_combat_max_vfx_mastery_recipe_presenter_routes_cast_and_beam() -> Str
 	if status_beam_calls.size() != 1 or elemental_beam_calls.size() != 0 or pack_calls.size() != 0 or flipbook_calls.size() != 0:
 		return "Expected mastery beam to prefer status recipe delegation."
 	var status_beam: Dictionary = status_beam_calls[0]
-	if String(status_beam.get("kind", "")) != "fire" or int(status_beam.get("intensity", 0)) != 2:
+	if String(status_beam.get("kind", "")) != "fire" or int(status_beam.get("intensity", 0)) != 4:
 		return "Expected status mastery beam route to compute beam intensity from length."
 	availability["status"] = false
 	availability["elemental"] = true
@@ -2115,6 +2117,9 @@ func _test_combat_vfx_profile_maps_orbs_and_result_colors() -> String:
 		return "Expected heal result colors to alias heart colors."
 	if not _color_equal(profile.result_label_color("block"), profile.result_label_color("armor")):
 		return "Expected block label color to alias armor label color."
+	var heal_label := profile.result_label_color("heal")
+	if heal_label.g >= 0.9 or heal_label.r < heal_label.g:
+		return "Expected heal result label color to use the warm HP palette instead of bright green."
 	if not _color_equal(profile.result_label_color("damage", true), Color.WHITE):
 		return "Expected high-contrast offensive labels to use white."
 	return ""
@@ -2458,10 +2463,18 @@ func _test_mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse() -> 
 	})
 	presenter.spawn_cast_spool(Vector2(80, 220), OrbType.Id.FIRE, 0.28, 4)
 	presenter.spawn_cast_travel(Vector2(80, 220), Vector2(330, 70), OrbType.Id.FIRE, 0.32, 0.08, 4)
+	presenter.spawn_cast_travel(Vector2(80, 180), Vector2(340, 120), OrbType.Id.ICE, 0.32, 0.09, 4)
+	presenter.spawn_cast_travel(Vector2(70, 260), Vector2(350, 240), OrbType.Id.EARTH, 0.32, 0.10, 4)
 	presenter.spawn_source_pulse(Vector2(80, 220), OrbType.Id.FIRE, 0.22)
 	var spool_count := _count_children_named(layer, "MasteryCastSpool")
 	var fire_projectile_count := _count_children_named(layer, "MasteryFireProjectile")
 	var source_pulse_count := _count_children_named(layer, "MasterySourcePulseRing")
+	var fire_wide_beam := _first_child_named(layer, "MasteryFireLaunchWideBeam") as Control
+	var fire_hot_band := _first_child_named(layer, "MasteryFireLaunchHotBand") as Control
+	var ice_wide_beam := _first_child_named(layer, "MasteryIceLaunchWideBeam") as Control
+	var ice_cold_band := _first_child_named(layer, "MasteryIceLaunchColdBand") as Control
+	var earth_wide_beam := _first_child_named(layer, "MasteryEarthLaunchWideBeam") as Control
+	var earth_runic_band := _first_child_named(layer, "MasteryEarthLaunchRunicBand") as Control
 	if spool_count < 3:
 		root.free()
 		return "Expected mastery cast presenter to spawn charge spool rings."
@@ -2471,6 +2484,24 @@ func _test_mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse() -> 
 	if source_pulse_count != 1:
 		root.free()
 		return "Expected mastery cast presenter to spawn one source pulse ring."
+	if fire_wide_beam == null or fire_wide_beam.size.y < 240.0:
+		root.free()
+		return "Expected low-quality fire mastery travel to include a pronounced wide beam."
+	if fire_hot_band == null or fire_hot_band.size.y < 90.0:
+		root.free()
+		return "Expected low-quality fire mastery travel to include a readable hot beam band."
+	if ice_wide_beam == null or ice_wide_beam.size.y < 240.0:
+		root.free()
+		return "Expected low-quality ice mastery travel to include a pronounced wide beam."
+	if ice_cold_band == null or ice_cold_band.size.y < 90.0:
+		root.free()
+		return "Expected low-quality ice mastery travel to include a readable cold beam band."
+	if earth_wide_beam == null or earth_wide_beam.size.y < 220.0:
+		root.free()
+		return "Expected low-quality earth mastery travel to include a pronounced wide beam."
+	if earth_runic_band == null or earth_runic_band.size.y < 90.0:
+		root.free()
+		return "Expected low-quality earth mastery travel to include a readable runic beam band."
 	root.free()
 	return ""
 
@@ -2667,6 +2698,88 @@ func _test_mastery_fill_stream_spawns_runtime_stream_and_impact() -> String:
 	return ""
 
 
+func _test_low_quality_mastery_beam_spawns_pronounced_layers() -> String:
+	for orb_id in [OrbType.Id.FIRE, OrbType.Id.EARTH]:
+		var result := _assert_low_quality_mastery_beam_layers(int(orb_id))
+		if result != "":
+			return result
+	return ""
+
+
+func _assert_low_quality_mastery_beam_layers(orb_id: int) -> String:
+	var fixture := _vfx_fixture(false)
+	var presenter: Variant = fixture["presenter"]
+	var layer: Control = fixture["layer"]
+	presenter.spawn_mastery_beam(orb_id, Vector2(760, 720), 0.45)
+	var aura_count := _count_children_named(layer, "MasteryBeamLowQualityAura")
+	var target_bloom_count := _count_children_named(layer, "MasteryBeamLowQualityTargetBloom")
+	var bolt_count := _count_children_named(layer, "MasteryBeamLowQualityBolt")
+	var solid_band := _first_child_named(layer, "MasteryBeamLowQualitySolidBand") as ColorRect
+	var white_band := _first_child_named(layer, "MasteryBeamLowQualityWhiteBand") as ColorRect
+	var glow := _first_child_named(layer, "MasteryBeamLowQualityGlow") as TextureRect
+	var core := _first_child_named(layer, "MasteryBeamLowQualityCore") as TextureRect
+	var hot_core := _first_child_named(layer, "MasteryBeamLowQualityHotCore") as TextureRect
+	_cleanup_vfx_fixture(fixture)
+	if aura_count != 1 or target_bloom_count != 1 or bolt_count != 1:
+		return "Expected low-quality mastery beam for orb %d to spawn aura, target bloom, and moving bolt layers." % orb_id
+	if solid_band == null or white_band == null:
+		return "Expected low-quality mastery beam for orb %d to spawn solid colored and white-hot bands." % orb_id
+	if solid_band.size.y < 216.0 or white_band.size.y < 80.0:
+		return "Expected low-quality mastery beam solid bands for orb %d to be doubled in thickness." % orb_id
+	if glow == null or core == null or hot_core == null:
+		return "Expected low-quality mastery beam for orb %d to spawn named glow, core, and hot-core strips." % orb_id
+	if glow.size.y < 344.0 or core.size.y < 216.0 or hot_core.size.y < 80.0:
+		return "Expected low-quality mastery beam strips for orb %d to be doubled in thickness." % orb_id
+	return ""
+
+
+func _test_healing_replay_impact_uses_bar_infusion() -> String:
+	var fixture := _vfx_fixture(false)
+	var presenter: Variant = fixture["presenter"]
+	var layer: Control = fixture["layer"]
+	presenter.spawn_replay_impact(Vector2(540, 960), "heart", Vector2(348, 130), 0.45, 3)
+	var visible_band := _first_child_named(layer, "HealingBarInfusionVisibleBand") as ColorRect
+	var inner_line := _first_child_named(layer, "HealingBarInfusionInnerLine") as ColorRect
+	var glint := _first_child_named(layer, "HealingBarInfusionGlint") as ColorRect
+	var chunky_count := _count_children_named(layer, "HealingBarInfusionSnapBlock") + _count_children_named(layer, "HealingBarInfusionSnapFill") + _count_children_named(layer, "HealingBarInfusionTick") + _count_children_named(layer, "HealingBarInfusionTickBlock")
+	var texture_strip_count := _count_children_named(layer, "HealingBarInfusionSweep") + _count_children_named(layer, "HealingBarInfusionRoseSweep") + _count_children_named(layer, "HealingBarInfusionRailGlow")
+	var legacy_count := _count_children_named(layer, "PostMatchHeal") + _count_children_named(layer, "PostMatchRing") + _count_children_named(layer, "PostMatchSignature")
+	var child_count_before_heart_beam := layer.get_child_count()
+	presenter.spawn_mastery_beam(OrbType.Id.HEART, Vector2(540, 960), 0.45)
+	var child_count_after_heart_beam := layer.get_child_count()
+	var visible_band_size := visible_band.size if visible_band != null else Vector2.ZERO
+	var inner_line_size := inner_line.size if inner_line != null else Vector2.ZERO
+	var glint_size := glint.size if glint != null else Vector2.ZERO
+	var visible_band_alpha := visible_band.modulate.a if visible_band != null else -1.0
+	var visible_band_color := visible_band.color if visible_band != null else Color.TRANSPARENT
+	var inner_line_color := inner_line.color if inner_line != null else Color.TRANSPARENT
+	var glint_color := glint.color if glint != null else Color.TRANSPARENT
+	var inner_line_alpha := inner_line.modulate.a if inner_line != null else -1.0
+	var glint_alpha := glint.modulate.a if glint != null else -1.0
+	_cleanup_vfx_fixture(fixture)
+	if visible_band == null or visible_band_size.x < 170.0:
+		return "Expected healing replay impact to spawn a guaranteed-visible HP bar band."
+	if visible_band_alpha > 0.01:
+		return "Expected healing HP bar band to tween in from transparent alpha."
+	if visible_band_size.y > 38.0:
+		return "Expected healing HP bar band to stay flat and native to the HP bar."
+	if visible_band_color.g > visible_band_color.r:
+		return "Expected healing bar infusion to use a warm HP palette instead of detached mint-green."
+	if visible_band_color.a < 0.30:
+		return "Expected healing HP bar band to be noticeable, not whisper-subtle."
+	if inner_line == null or inner_line_size.y > 10.0 or inner_line_color.a < 0.30 or inner_line_alpha > 0.01:
+		return "Expected healing replay impact to use a readable inner HP-bar line."
+	if glint == null or glint_size.y > 10.0 or glint_color.a < 0.50 or glint_alpha > 0.01:
+		return "Expected healing replay impact to use a readable native HP-bar glint."
+	if chunky_count != 0 or texture_strip_count != 0:
+		return "Expected healing replay impact to avoid chunky detached bars, ticks, and texture strips."
+	if legacy_count != 0:
+		return "Expected healing replay impact to avoid old heal rings/signatures."
+	if child_count_after_heart_beam != child_count_before_heart_beam:
+		return "Expected Heart mastery beam to no-op so healing stays HP-bar-owned."
+	return ""
+
+
 func _test_armor_replay_impact_uses_hex_grid_without_legacy_texture() -> String:
 	var fixture := _vfx_fixture(false)
 	var presenter: Variant = fixture["presenter"]
@@ -2773,6 +2886,7 @@ func _vfx_fixture(reduced_motion: bool) -> Dictionary:
 	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
 	presenter.bind({
 		"vfx_layer": layer,
+		"visual_registry": VISUAL_REGISTRY_SCRIPT.new(),
 		"player_loadout_hud": FakeMasteryHud.new(),
 		"elemental_mastery_cards": mastery_cards,
 		"timer_owner": root,
@@ -2820,6 +2934,15 @@ func _count_children_named(parent: Node, node_name: String) -> int:
 		if String(child.get_meta("effect_name", child.name)).begins_with(node_name):
 			count += 1
 	return count
+
+
+func _first_child_named(parent: Node, node_name: String) -> Node:
+	if parent == null:
+		return null
+	for child in parent.get_children():
+		if String(child.get_meta("effect_name", child.name)).begins_with(node_name):
+			return child
+	return null
 
 
 func _count_children_with_effect_name(parent: Node, effect_name: String) -> int:
