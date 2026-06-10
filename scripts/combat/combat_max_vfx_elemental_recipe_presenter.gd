@@ -1,4 +1,4 @@
-extends RefCounted
+extends CombatMaxVfxPresenterContract
 class_name CombatMaxVfxElementalRecipePresenter
 
 var _kind_cleaner: Callable
@@ -7,6 +7,7 @@ var _elemental_effect_spawner: Callable
 var _effect_stretcher: Callable
 var _pack_impact_scene_key_provider: Callable
 var _pack_layer_spawner: Callable
+var _kind_colors_provider: Callable
 var _coin_rain_spawner: Callable
 var _light_spawner: Callable
 var _camera_kick_spawner: Callable
@@ -19,9 +20,26 @@ func bind(dependencies: Dictionary) -> void:
 	_effect_stretcher = dependencies.get("effect_stretcher", Callable())
 	_pack_impact_scene_key_provider = dependencies.get("pack_impact_scene_key_provider", Callable())
 	_pack_layer_spawner = dependencies.get("pack_layer_spawner", Callable())
+	_kind_colors_provider = dependencies.get("kind_colors_provider", Callable())
 	_coin_rain_spawner = dependencies.get("coin_rain_spawner", Callable())
 	_light_spawner = dependencies.get("light_spawner", Callable())
 	_camera_kick_spawner = dependencies.get("camera_kick_spawner", Callable())
+
+
+func supports_replay_impact(kind: String, _screen_wide: bool = false) -> bool:
+	match _clean_kind(kind):
+		"fire", "ice", "earth", "heart", "armor", "gold", "damage":
+			return true
+	return false
+
+
+func spawn_replay_impact(center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> bool:
+	var clean_kind := _clean_kind(kind)
+	spawn_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
+	var colors := _kind_colors(clean_kind)
+	var core: Color = colors.get("core", Color.WHITE)
+	_spawn_light(center, core, 2.7 + float(intensity) * 0.34, base_size * 1.14, duration * 0.70)
+	return true
 
 
 func spawn_replay_recipe(kind: String, center: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
@@ -234,6 +252,12 @@ func _spawn_coin_rain(center: Vector2, base_size: float, lifetime: float, intens
 func _spawn_light(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
 	if _light_spawner.is_valid():
 		_light_spawner.call(center, color, energy, radius, lifetime)
+
+
+func _kind_colors(kind: String) -> Dictionary:
+	if _kind_colors_provider.is_valid():
+		return _kind_colors_provider.call(kind)
+	return {}
 
 
 func _spawn_camera_kick(direction: Vector2, delay: float) -> void:
