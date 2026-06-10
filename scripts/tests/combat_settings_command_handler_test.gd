@@ -88,6 +88,63 @@ class CallbackRecorder:
 		feedback_apply_count += 1
 
 
+class FakeCombatState:
+	extends RefCounted
+
+	var turn_index := 7
+
+
+class FakeSettingsController:
+	extends RefCounted
+
+	var _combat: Variant = null
+	var trace_calls: Array[Dictionary] = []
+	var flow_route_id := "combat-settings-route"
+	var recorder: CallbackRecorder
+
+	func _flow_trace_route_id_value() -> String:
+		return flow_route_id
+
+	func _trace_and_change_scene_to_target(
+		scene_path: String,
+		current_route_id: String,
+		trace_source: String,
+		trace_mark: String,
+		_begin_payload_extra: Dictionary = {}
+	) -> void:
+		trace_calls.append({
+			"scene_path": scene_path,
+			"current_route_id": current_route_id,
+			"trace_source": trace_source,
+			"trace_mark": trace_mark,
+		})
+
+	func _debug_set_input_phase(value: int) -> void:
+		if recorder != null:
+			recorder.set_input_phase(value)
+
+	func _set_status_text(message: String) -> void:
+		if recorder != null:
+			recorder.set_status_text(message)
+
+	func _set_status_color(color: Color) -> void:
+		if recorder != null:
+			recorder.set_status_color(color)
+
+	func _combat_speed_value() -> String:
+		if recorder != null and recorder.model != null:
+			return recorder.model.combat_speed()
+		return ""
+
+	func _apply_vfx_speed_setting() -> void:
+		if recorder != null:
+			recorder.apply_vfx_speed()
+
+	func _apply_feedback_settings() -> void:
+		if recorder != null:
+			recorder.apply_feedback_settings()
+
+
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	var previous_speed := RunState.vfx_speed()
@@ -101,6 +158,7 @@ func run_all() -> Dictionary:
 	_run_case("quality_and_motion_selection_update_runtime_dependencies", _test_quality_and_motion_selection_update_runtime_dependencies, failures)
 	_run_case("flag_toggle_and_reset_defaults_update_runtime_dependencies", _test_flag_toggle_and_reset_defaults_update_runtime_dependencies, failures)
 	_run_case("route_commands_hide_overlay_and_emit_scene_targets", _test_route_commands_hide_overlay_and_emit_scene_targets, failures)
+	_run_case("bind_for_combat_controller_reads_state_from_controller_field", _test_bind_for_combat_controller_reads_state_from_controller_field, failures)
 	RunState.set_vfx_speed(previous_speed)
 	RunState.set_combat_vfx_quality(previous_quality)
 	RunState.set_reduced_motion_enabled(previous_reduced_motion)
@@ -111,7 +169,7 @@ func run_all() -> Dictionary:
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 6,
+		"total": 7,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -281,6 +339,32 @@ func _test_route_commands_hide_overlay_and_emit_scene_targets() -> String:
 	return ""
 
 
+func _test_bind_for_combat_controller_reads_state_from_controller_field() -> String:
+	var fixture := _controller_state_fixture()
+	var handler: Variant = fixture["handler"]
+	var recorder: CallbackRecorder = fixture["recorder"]
+	var fake_controller: FakeSettingsController = fixture["controller"]
+
+	handler.continue_combat()
+	if recorder.status_texts.is_empty() or recorder.status_texts.back().find("Turn 9") < 0:
+		return "Expected continue action to report turn index from controller combat state."
+	if fake_controller.trace_calls.size() != 0:
+		return "Expected continue action to avoid scene transitions."
+
+	fake_controller._combat.turn_index = 11
+	handler.start_new_run()
+	if fake_controller.trace_calls.size() != 1:
+		return "Expected new-run command to route through controller scene change callback."
+	var trace_entry: Dictionary = fake_controller.trace_calls.back()
+	if String(trace_entry.get("scene_path", "")) != HANDLER_SCRIPT.SCENE_COMBAT:
+		return "Expected new-run command to target combat scene."
+	if String(trace_entry.get("trace_source", "")) != HANDLER_SCRIPT.TRACE_SOURCE_NEW_RUN:
+		return "Expected new-run command to use new-run trace source."
+	if String(trace_entry.get("current_route_id", "")) != "combat-settings-route":
+		return "Expected scene-change route to read flow route from controller."
+	return ""
+
+
 func _fixture() -> Dictionary:
 	var view := FakeView.new()
 	var model := FakeModel.new()
@@ -314,4 +398,34 @@ func _fixture() -> Dictionary:
 		"model": model,
 		"presenter": presenter,
 		"recorder": recorder,
+	}
+
+
+func _controller_state_fixture() -> Dictionary:
+	var view := FakeView.new()
+	var model := FakeModel.new()
+	var presenter := FakeResolvePresenter.new()
+	var recorder := CallbackRecorder.new()
+	var controller := FakeSettingsController.new()
+	controller._combat = FakeCombatState.new()
+	controller._combat.turn_index = 9
+	controller.recorder = recorder
+	recorder.model = model
+	var handler: Variant = HANDLER_SCRIPT.new()
+	handler.bind_for_combat_controller(
+		view,
+		model,
+		presenter,
+		controller,
+		0,
+		2,
+		Color(1.0, 1.0, 1.0, 1.0)
+	)
+	return {
+		"handler": handler,
+		"view": view,
+		"model": model,
+		"presenter": presenter,
+		"recorder": recorder,
+		"controller": controller,
 	}

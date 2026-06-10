@@ -489,14 +489,6 @@ func _bind_settings_command_handler() -> void:
 	)
 
 
-func _settings_current_turn_index() -> int:
-	return int(_combat.turn_index if _combat != null else 1)
-
-
-func _settings_trace_and_change_scene(scene_path: String, trace_source: String, trace_mark: String) -> void:
-	_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), trace_source, trace_mark)
-
-
 func _connect_view_signals() -> void:
 	if _view == null:
 		return
