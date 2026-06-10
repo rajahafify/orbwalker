@@ -18,11 +18,13 @@ func bind(dependencies: Dictionary) -> void:
 	_coin_rain_spawner = dependencies.get("coin_rain_spawner", Callable())
 
 
-func supports_replay_impact(kind: String, _screen_wide: bool = false) -> bool:
+func supports_replay_impact(_kind: String, _screen_wide: bool = false) -> bool:
 	return true
 
 
-func spawn_replay_impact(center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> bool:
+func spawn_replay_impact(
+	center: Vector2, kind: String, _draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+) -> bool:
 	var clean_kind := _clean_kind(kind)
 	var impact_scene := impact_scene_key(clean_kind, intensity, screen_wide)
 	var pack_size := Vector2(base_size, base_size) * (1.15 if screen_wide else 0.72)
@@ -63,8 +65,32 @@ func spawn_screen_wide(kind: String, center: Vector2, lifetime: float, intensity
 	var focus := Vector2(layer_size.x * 0.5, focus_y)
 	var size := Vector2(layer_size.x * 0.92, layer_size.y * (0.34 if offensive else 0.44))
 	_spawn_pack_effect(impact_scene_key(clean_kind, intensity, true), focus, clean_kind, size, lifetime * 1.05, intensity, 0.0, Vector2.ZERO, 0.0, -1.4, 0.62)
-	_spawn_pack_effect("hit_01", focus + Vector2(layer_size.x * 0.18, -layer_size.y * 0.03), clean_kind, size * 0.46, lifetime * 0.66, intensity, lifetime * 0.10, Vector2.ZERO, 0.22, 1.6, 0.54)
-	_spawn_pack_effect("hit_02", focus - Vector2(layer_size.x * 0.20, -layer_size.y * 0.02), clean_kind, size * 0.40, lifetime * 0.62, intensity, lifetime * 0.16, Vector2.ZERO, -0.20, 1.7, 0.50)
+	_spawn_pack_effect(
+		"hit_01",
+		focus + Vector2(layer_size.x * 0.18, -layer_size.y * 0.03),
+		clean_kind,
+		size * 0.46,
+		lifetime * 0.66,
+		intensity,
+		lifetime * 0.10,
+		Vector2.ZERO,
+		0.22,
+		1.6,
+		0.54
+	)
+	_spawn_pack_effect(
+		"hit_02",
+		focus - Vector2(layer_size.x * 0.20, -layer_size.y * 0.02),
+		clean_kind,
+		size * 0.40,
+		lifetime * 0.62,
+		intensity,
+		lifetime * 0.16,
+		Vector2.ZERO,
+		-0.20,
+		1.7,
+		0.50
+	)
 
 
 func _clean_kind(kind: String) -> String:
@@ -79,7 +105,19 @@ func _vfx_layer_size() -> Vector2:
 	return Vector2.ZERO
 
 
-func _spawn_pack_effect(scene_key: String, center_local: Vector2, kind: String, draw_size: Vector2, lifetime: float, intensity: int, delay: float, move_offset: Vector2, rotation: float, z: float, alpha: float) -> void:
+func _spawn_pack_effect(
+	scene_key: String,
+	center_local: Vector2,
+	kind: String,
+	draw_size: Vector2,
+	lifetime: float,
+	intensity: int,
+	delay: float,
+	move_offset: Vector2,
+	rotation: float,
+	z: float,
+	alpha: float
+) -> void:
 	if _pack_effect_spawner.is_valid():
 		_pack_effect_spawner.call(scene_key, center_local, kind, draw_size, lifetime, intensity, delay, move_offset, rotation, z, alpha)
 
