@@ -195,7 +195,7 @@ func _resolve_current_turn_index(controller: Object) -> int:
 		if turn_index is float:
 			return int(turn_index)
 	if raw_combat is Object:
-		var object_turn_index: Variant = raw_combat.get("turn_index", null) if raw_combat.has_method("get") else null
+		var object_turn_index: Variant = raw_combat.get("turn_index") if raw_combat.has_method("get") else null
 		if object_turn_index is int:
 			return int(object_turn_index)
 		if object_turn_index is float:
