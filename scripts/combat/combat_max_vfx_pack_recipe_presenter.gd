@@ -29,7 +29,7 @@ func spawn_replay_impact(
 	var impact_scene := impact_scene_key(clean_kind, intensity, screen_wide)
 	var pack_size := Vector2(base_size, base_size) * (1.15 if screen_wide else 0.72)
 	_spawn_pack_effect(impact_scene, center, clean_kind, pack_size, duration, intensity, 0.0, Vector2.ZERO, 0.0, 0.0, 1.0)
-	_spawn_pack_effect(_pack_hit_scene_key(clean_kind), center, clean_kind, pack_size * 0.58, duration * 0.74, intensity, 0.035, Vector2.ZERO, 0.0, 1.2, 0.82)
+	_spawn_pack_effect(hit_scene_key(clean_kind), center, clean_kind, pack_size * 0.58, duration * 0.74, intensity, 0.035, Vector2.ZERO, 0.0, 1.2, 0.82)
 	if screen_wide:
 		spawn_screen_wide(clean_kind, center, duration, intensity)
 	if clean_kind == "gold":
