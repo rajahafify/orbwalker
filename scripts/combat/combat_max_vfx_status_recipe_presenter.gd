@@ -72,6 +72,9 @@ func spawn_replay_impact(
 	center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
 ) -> bool:
 	spawn_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
+	var colors := _kind_colors(_clean_kind(kind))
+	var core: Color = colors.get("core", Color.WHITE)
+	_spawn_light(center, core, 2.9 + float(intensity) * 0.38, base_size * 1.24, duration * 0.76)
 	return true
 
 

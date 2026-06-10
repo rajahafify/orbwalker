@@ -40,7 +40,7 @@ func spawn_replay_impact(
 	spawn_replay_recipe(kind, center, max_size, base_size, duration, intensity, screen_wide)
 	var colors := _kind_colors(clean_kind)
 	var core: Color = colors.get("core", Color.WHITE)
-	_spawn_light(center, core, 2.7 + float(intensity) * 0.34, base_size * 1.14, duration * 0.70)
+	_spawn_light(center, core, 2.7 + float(intensity) * 0.34, base_size * 1.20, duration * 0.78)
 	return true
 
 
