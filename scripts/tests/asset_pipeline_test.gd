@@ -6,6 +6,7 @@ const COLLECTION_VIEW_SCRIPT := preload("res://scripts/collection/collection_vie
 const MAIN_MENU_MODEL_SCRIPT := preload("res://scripts/main_menu/main_menu_model.gd")
 const RUN_SUMMARY_VIEW_SCRIPT := preload("res://scripts/run_summary/run_summary_view.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 
 
 func run_all() -> Dictionary:
@@ -13,11 +14,12 @@ func run_all() -> Dictionary:
 	_run_case("fallback_contract_textures_import", _test_fallback_contract_textures_import, failures)
 	_run_case("first_pass_asset_map_paths_import", _test_first_pass_asset_map_paths_import, failures)
 	_run_case("runtime_manifest_paths_import", _test_runtime_manifest_paths_import, failures)
+	_run_case("visual_registry_data_contract_matches_script", _test_visual_registry_data_contract_matches_script, failures)
 	_run_case("production_asset_inventory_schema_and_paths", _test_production_asset_inventory_schema_and_paths, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -101,6 +103,33 @@ func _test_runtime_manifest_paths_import() -> String:
 			if size.size() != 2 or int(size[0]) <= 0 or int(size[1]) <= 0:
 				return "Expected runtime manifest %s/%s to define positive size metadata." % [String(category_name), String(entry_name)]
 	return _assert_imported_textures(_unique_paths(texture_paths), "runtime manifest texture")
+
+
+func _test_visual_registry_data_contract_matches_script() -> String:
+	var script_contract := VISUAL_REGISTRY_SCRIPT.asset_contract_paths()
+	var data_contract := VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths()
+	var script_textures := _unique_paths(Array(script_contract.get("imported_textures", [])))
+	var data_textures := _unique_paths(Array(data_contract.get("imported_textures", [])))
+	if script_textures != data_textures:
+		return "asset_contract_paths imported_textures mismatch between VisualRegistry and VisualRegistryData."
+	var script_dirs := _unique_paths(Array(script_contract.get("directories", [])))
+	var data_dirs := _unique_paths(Array(data_contract.get("directories", [])))
+	if script_dirs != data_dirs:
+		return "asset_contract_paths directories mismatch between VisualRegistry and VisualRegistryData."
+	var script_json_files := _unique_paths(Array(script_contract.get("json_files", [])))
+	var data_json_files := _unique_paths(Array(data_contract.get("json_files", [])))
+	if script_json_files != data_json_files:
+		return "asset_contract_paths json_files mismatch between VisualRegistry and VisualRegistryData."
+	var script_groups := Dictionary(script_contract.get("imported_texture_groups", {}))
+	var data_groups := Dictionary(data_contract.get("imported_texture_groups", {}))
+	if script_groups.keys().size() != data_groups.keys().size():
+		return "asset_contract_paths imported_texture_groups size mismatch."
+	for group_name in script_groups.keys():
+		var script_group := _unique_paths(Array(script_groups.get(group_name, [])))
+		var data_group := _unique_paths(Array(data_groups.get(group_name, [])))
+		if script_group != data_group:
+			return "asset_contract_paths imported_texture_groups mismatch for group '%s'." % String(group_name)
+	return ""
 
 
 func _test_production_asset_inventory_schema_and_paths() -> String:

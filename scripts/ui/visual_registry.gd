@@ -1,39 +1,33 @@
 extends RefCounted
 class_name VisualRegistry
 
-const PATH_COMBAT_BACKGROUND := "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
-const PATH_COMBAT_ENEMY_STAGE_SHEET := "res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
-const PATH_SHOP_BACKGROUND := "res://resources/art/assetgen/backgrounds/shop_background_candidate_01.png"
-const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := [
-	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header_v1.png",
-	"res://resources/art/first_pass/derived/shop_ui/shop_merchant_header.png",
-	"res://resources/art/first_pass/derived/shop_ui/merchant_header.png",
-	"res://resources/art/first_pass/backgrounds/shop_merchant_header.png",
-	"res://resources/art/first_pass/backgrounds/merchant_header.png",
-]
-const PATH_ORB_SHEET := "res://resources/art/assetgen/sheets/orb_icons_candidate_04_adaptive_alpha.png"
-const PATH_INTENT_SHEET := "res://resources/art/assetgen/sheets/intent_icons_candidate_04_adaptive_alpha.png"
-const PATH_RARITY_SHEET := "res://resources/art/assetgen/sheets/rarity_badges_candidate_04_adaptive_alpha.png"
-const PATH_MASTERY_SHEET := "res://resources/art/assetgen/sheets/mastery_icons_candidate_04_adaptive_alpha.png"
-const PATH_ITEM_SHEET := "res://resources/art/assetgen/sheets/equipment_icons_candidate_04_adaptive_alpha.png"
-const PATH_RELIC_SHEET := "res://resources/art/assetgen/sheets/relic_icons_candidate_04_adaptive_alpha.png"
-const PATH_DERIVED_ICON_DIR := "res://resources/art/first_pass/derived/icons"
-const PATH_DERIVED_ORB_DIR := "res://resources/art/first_pass/derived/orbs"
-const PATH_DERIVED_HUD_DIR := "res://resources/art/first_pass/derived/hud"
-const PATH_DERIVED_CHROME_DIR := "res://resources/art/first_pass/derived/ui_chrome"
-const PATH_DERIVED_COMBAT_UI_DIR := "res://resources/art/first_pass/derived/combat_ui"
-const PATH_DERIVED_COMBAT_LAYERS_DIR := "res://resources/art/first_pass/derived/combat_layers"
-const PATH_DERIVED_VFX_DIR := "res://resources/art/first_pass/derived/vfx"
-const PATH_UI_FRAME_SHEET := "res://resources/art/first_pass/ui/ui_frame_kit_v1.png"
-const PATH_UI_BAR_SHEET := "res://resources/art/first_pass/ui/bar_kit_v1.png"
-const PATH_UI_SHOP_CARD_SHEET := "res://resources/art/first_pass/ui/shop_card_kit_v1.png"
-const PATH_VFX_SHEET := "res://resources/art/assetgen/vfx/board_orb_clear_vfx_candidate_04_adaptive_alpha.png"
-const PATH_HERO_PORTRAIT := "res://resources/art/assetgen/heroes/hero_orbwalker_portrait_candidate_01.png"
-const PATH_FALLBACK_HERO_PORTRAIT := "res://resources/art/first_pass/heroes/hero_orbwalker.png"
-const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.json"
-const PATH_RUNTIME_COLLECTION_UI_DIR := "res://resources/art/assetgen/runtime/collection_ui"
-const PATH_RUNTIME_SHOP_UI_DIR := "res://resources/art/assetgen/runtime/shop_ui"
-
+const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
+const PATH_COMBAT_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_BACKGROUND
+const PATH_COMBAT_ENEMY_STAGE_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_ENEMY_STAGE_SHEET
+const PATH_SHOP_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_SHOP_BACKGROUND
+const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.SHOP_MERCHANT_HEADER_CANDIDATE_PATHS
+const PATH_ORB_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_ORB_SHEET
+const PATH_INTENT_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_INTENT_SHEET
+const PATH_RARITY_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RARITY_SHEET
+const PATH_MASTERY_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_MASTERY_SHEET
+const PATH_ITEM_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_ITEM_SHEET
+const PATH_RELIC_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RELIC_SHEET
+const PATH_DERIVED_ICON_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_ICON_DIR
+const PATH_DERIVED_ORB_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_ORB_DIR
+const PATH_DERIVED_HUD_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_HUD_DIR
+const PATH_DERIVED_CHROME_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_CHROME_DIR
+const PATH_DERIVED_COMBAT_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_COMBAT_UI_DIR
+const PATH_DERIVED_COMBAT_LAYERS_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_COMBAT_LAYERS_DIR
+const PATH_DERIVED_VFX_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_VFX_DIR
+const PATH_UI_FRAME_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_FRAME_SHEET
+const PATH_UI_BAR_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_BAR_SHEET
+const PATH_UI_SHOP_CARD_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_SHOP_CARD_SHEET
+const PATH_VFX_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_VFX_SHEET
+const PATH_HERO_PORTRAIT := VISUAL_REGISTRY_DATA_SCRIPT.PATH_HERO_PORTRAIT
+const PATH_FALLBACK_HERO_PORTRAIT := VISUAL_REGISTRY_DATA_SCRIPT.PATH_FALLBACK_HERO_PORTRAIT
+const PATH_RUNTIME_MANIFEST := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_MANIFEST
+const PATH_RUNTIME_COLLECTION_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_COLLECTION_UI_DIR
+const PATH_RUNTIME_SHOP_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_SHOP_UI_DIR
 const _INTENT_INDEX_BY_TYPE := {
 	0: 0, # ATTACK
 	1: 1, # BLOCK
@@ -272,114 +266,7 @@ func _init() -> void:
 
 
 static func asset_contract_paths() -> Dictionary:
-	var imported_textures: Array[String] = [
-		PATH_COMBAT_BACKGROUND,
-		PATH_COMBAT_ENEMY_STAGE_SHEET,
-		PATH_SHOP_BACKGROUND,
-		PATH_ORB_SHEET,
-		PATH_INTENT_SHEET,
-		PATH_RARITY_SHEET,
-		PATH_MASTERY_SHEET,
-		PATH_ITEM_SHEET,
-		PATH_RELIC_SHEET,
-		PATH_UI_FRAME_SHEET,
-		PATH_UI_BAR_SHEET,
-		PATH_UI_SHOP_CARD_SHEET,
-		PATH_VFX_SHEET,
-		PATH_HERO_PORTRAIT,
-		PATH_FALLBACK_HERO_PORTRAIT,
-	]
-	imported_textures.append_array(_dictionary_string_values(_ENEMY_PORTRAIT_PATHS))
-	imported_textures.append_array(_dictionary_string_values(_ENEMY_STAGE_BACKGROUND_PATHS))
-	imported_textures.append_array(_dictionary_string_values(_ENEMY_SPRITE_PATHS))
-	imported_textures.append_array(_derived_orb_contract_paths())
-	imported_textures.append_array(_path_keys(PATH_RUNTIME_SHOP_UI_DIR, ["shop_action_button_continue", "shop_action_button_reroll"]))
-	imported_textures.append_array(_path_keys(PATH_DERIVED_HUD_DIR, [
-		"combo_badge_frame",
-		"enemy_hp_bar_fill",
-		"enemy_hp_bar_frame",
-		"hp_bar_fill",
-		"hp_bar_frame",
-		"intent_attack",
-		"intent_attack_block",
-		"intent_block",
-		"rarity_common",
-		"rarity_rare",
-		"rarity_uncommon",
-	]))
-	imported_textures.append_array(_path_keys(PATH_DERIVED_CHROME_DIR, [
-		"mastery_panel_frame",
-		"mastery_preview_panel_frame",
-		"panel_frame",
-		"slot_frame_consumable",
-		"slot_frame_equipment",
-		"top_bar_frame",
-	]))
-	imported_textures.append_array(_path_keys(PATH_DERIVED_COMBAT_UI_DIR, [
-		"combat_backdrop_scrim",
-		"combat_block_badge",
-		"combat_board_frame",
-		"combat_consumables_rail_frame",
-		"combat_corner_ornament",
-		"combat_divider_h",
-		"combat_enemy_panel",
-		"combat_enemy_panel_frame",
-		"combat_equipment_rail_frame",
-		"combat_intent_badge_attack",
-		"combat_intent_badge_block",
-		"combat_intent_badge_idle",
-		"combat_intent_badge_mixed",
-		"combat_loadout_rail",
-		"combat_mastery_rail",
-		"combat_mastery_rail_frame",
-		"combat_player_hud_rail",
-		"combat_player_vitals_frame",
-		"combat_slot_frame_empty",
-		"combat_slot_frame_filled",
-		"combat_stage_ash_hunter",
-		"combat_stage_burning_knight",
-		"combat_stage_cavern_defender",
-		"combat_stage_cavern_striker",
-		"combat_stage_fallback",
-		"combat_stage_goldbound_keeper",
-		"combat_stage_iron_gate",
-		"combat_stage_prism_warden",
-		"combat_stage_ruin_lancer",
-		"combat_stage_vault_executioner",
-		"combat_timer_center_marker",
-		"combat_timer_track",
-		"combat_top_bar_frame",
-	]))
-	imported_textures.append_array(_path_keys(PATH_DERIVED_VFX_DIR, [
-		"mastery_beam_armor",
-		"mastery_beam_earth",
-		"mastery_beam_fire",
-		"mastery_beam_gold",
-		"mastery_beam_heart",
-		"mastery_beam_ice",
-		"mastery_gold_impact",
-		"mastery_heal_impact",
-		"mastery_hit_impact",
-		"mastery_shell_armor",
-	]))
-	return {
-		"json_files": [PATH_RUNTIME_MANIFEST],
-		"directories": [
-			PATH_DERIVED_ICON_DIR,
-			PATH_DERIVED_ORB_DIR,
-			PATH_DERIVED_HUD_DIR,
-			PATH_DERIVED_CHROME_DIR,
-			PATH_DERIVED_COMBAT_UI_DIR,
-			PATH_DERIVED_COMBAT_LAYERS_DIR,
-			PATH_DERIVED_VFX_DIR,
-			PATH_RUNTIME_COLLECTION_UI_DIR,
-			PATH_RUNTIME_SHOP_UI_DIR,
-		],
-		"imported_textures": _unique_contract_paths(imported_textures),
-		"imported_texture_groups": {
-			"shop_merchant_header": SHOP_MERCHANT_HEADER_CANDIDATE_PATHS.duplicate(),
-		},
-	}
+	return VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths()
 
 
 func combat_background() -> Texture2D:
@@ -1974,39 +1861,16 @@ func _warn_missing(key: String) -> void:
 
 
 static func _dictionary_string_values(source: Dictionary) -> Array[String]:
-	var values: Array[String] = []
-	for key in source.keys():
-		var value := String(source[key])
-		if value != "":
-			values.append(value)
-	return values
+	return VISUAL_REGISTRY_DATA_SCRIPT.dictionary_string_values(source)
 
 
 static func _derived_orb_contract_paths() -> Array[String]:
-	var paths: Array[String] = []
-	for orb_id in _DERIVED_ORB_FILENAME_BY_ID.keys():
-		var file_name := String(_DERIVED_ORB_FILENAME_BY_ID[orb_id])
-		if file_name != "":
-			paths.append("%s/%s" % [PATH_DERIVED_ORB_DIR, file_name])
-	return paths
+	return VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
 
 
 static func _path_keys(base_path: String, keys: Array) -> Array[String]:
-	var paths: Array[String] = []
-	for key in keys:
-		var key_text := String(key)
-		if key_text != "":
-			paths.append("%s/%s.png" % [base_path, key_text])
-	return paths
+	return VISUAL_REGISTRY_DATA_SCRIPT.path_keys(base_path, keys)
 
 
 static func _unique_contract_paths(paths: Array[String]) -> Array[String]:
-	var seen := {}
-	var unique_paths: Array[String] = []
-	for path in paths:
-		if path == "" or seen.has(path):
-			continue
-		seen[path] = true
-		unique_paths.append(path)
-	unique_paths.sort()
-	return unique_paths
+	return VISUAL_REGISTRY_DATA_SCRIPT.unique_contract_paths(paths)
