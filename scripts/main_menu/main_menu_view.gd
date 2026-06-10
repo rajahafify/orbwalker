@@ -680,7 +680,7 @@ func _apply_focus_chain(controls: Array[Button]) -> void:
 
 
 func _can_link_focus_neighbor(control: Control, target: Control) -> bool:
-	return control != null and target != null and control.is_inside_tree() and target.is_inside_tree() and control.get_tree() == target.get_tree()
+	return control != null and target != null and ((control.is_inside_tree() and target.is_inside_tree() and control.get_tree() == target.get_tree()) or (not control.is_inside_tree() and not target.is_inside_tree() and control.get_parent() != null and control.get_parent() == target.get_parent()))
 
 
 func _can_grab_main_menu_focus() -> bool:
