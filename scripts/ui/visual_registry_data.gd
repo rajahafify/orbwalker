@@ -92,77 +92,110 @@ static func asset_contract_paths() -> Dictionary:
 	imported_textures.append_array(dictionary_string_values(_ENEMY_SPRITE_PATHS))
 	imported_textures.append_array(derived_orb_contract_paths())
 	imported_textures.append_array(path_keys(PATH_RUNTIME_SHOP_UI_DIR, ["shop_action_button_continue", "shop_action_button_reroll"]))
-	imported_textures.append_array(path_keys(PATH_DERIVED_HUD_DIR, [
-		"combo_badge_frame",
-		"enemy_hp_bar_fill",
-		"enemy_hp_bar_frame",
-		"hp_bar_fill",
-		"hp_bar_frame",
-		"intent_attack",
-		"intent_attack_block",
-		"intent_block",
-		"rarity_common",
-		"rarity_rare",
-		"rarity_uncommon",
-	]))
-	imported_textures.append_array(path_keys(PATH_DERIVED_CHROME_DIR, [
-		"mastery_panel_frame",
-		"mastery_preview_panel_frame",
-		"panel_frame",
-		"slot_frame_consumable",
-		"slot_frame_equipment",
-		"top_bar_frame",
-	]))
-	imported_textures.append_array(path_keys(PATH_DERIVED_COMBAT_UI_DIR, [
-		"combat_backdrop_scrim",
-		"combat_block_badge",
-		"combat_board_frame",
-		"combat_consumables_rail_frame",
-		"combat_corner_ornament",
-		"combat_divider_h",
-		"combat_enemy_panel",
-		"combat_enemy_panel_frame",
-		"combat_equipment_rail_frame",
-		"combat_intent_badge_attack",
-		"combat_intent_badge_block",
-		"combat_intent_badge_idle",
-		"combat_intent_badge_mixed",
-		"combat_loadout_rail",
-		"combat_mastery_rail",
-		"combat_mastery_rail_frame",
-		"combat_player_hud_rail",
-		"combat_player_vitals_frame",
-		"combat_slot_frame_empty",
-		"combat_slot_frame_filled",
-		"combat_stage_ash_hunter",
-		"combat_stage_burning_knight",
-		"combat_stage_cavern_defender",
-		"combat_stage_cavern_striker",
-		"combat_stage_fallback",
-		"combat_stage_goldbound_keeper",
-		"combat_stage_iron_gate",
-		"combat_stage_prism_warden",
-		"combat_stage_ruin_lancer",
-		"combat_stage_vault_executioner",
-		"combat_timer_center_marker",
-		"combat_timer_track",
-		"combat_top_bar_frame",
-	]))
-	imported_textures.append_array(path_keys(PATH_DERIVED_VFX_DIR, [
-		"mastery_beam_armor",
-		"mastery_beam_earth",
-		"mastery_beam_fire",
-		"mastery_beam_gold",
-		"mastery_beam_heart",
-		"mastery_beam_ice",
-		"mastery_gold_impact",
-		"mastery_heal_impact",
-		"mastery_hit_impact",
-		"mastery_shell_armor",
-	]))
+	(
+		imported_textures
+		. append_array(
+			path_keys(
+				PATH_DERIVED_HUD_DIR,
+				[
+					"combo_badge_frame",
+					"enemy_hp_bar_fill",
+					"enemy_hp_bar_frame",
+					"hp_bar_fill",
+					"hp_bar_frame",
+					"intent_attack",
+					"intent_attack_block",
+					"intent_block",
+					"rarity_common",
+					"rarity_rare",
+					"rarity_uncommon",
+				]
+			)
+		)
+	)
+	(
+		imported_textures
+		. append_array(
+			path_keys(
+				PATH_DERIVED_CHROME_DIR,
+				[
+					"mastery_panel_frame",
+					"mastery_preview_panel_frame",
+					"panel_frame",
+					"slot_frame_consumable",
+					"slot_frame_equipment",
+					"top_bar_frame",
+				]
+			)
+		)
+	)
+	(
+		imported_textures
+		. append_array(
+			path_keys(
+				PATH_DERIVED_COMBAT_UI_DIR,
+				[
+					"combat_backdrop_scrim",
+					"combat_block_badge",
+					"combat_board_frame",
+					"combat_consumables_rail_frame",
+					"combat_corner_ornament",
+					"combat_divider_h",
+					"combat_enemy_panel",
+					"combat_enemy_panel_frame",
+					"combat_equipment_rail_frame",
+					"combat_intent_badge_attack",
+					"combat_intent_badge_block",
+					"combat_intent_badge_idle",
+					"combat_intent_badge_mixed",
+					"combat_loadout_rail",
+					"combat_mastery_rail",
+					"combat_mastery_rail_frame",
+					"combat_player_hud_rail",
+					"combat_player_vitals_frame",
+					"combat_slot_frame_empty",
+					"combat_slot_frame_filled",
+					"combat_stage_ash_hunter",
+					"combat_stage_burning_knight",
+					"combat_stage_cavern_defender",
+					"combat_stage_cavern_striker",
+					"combat_stage_fallback",
+					"combat_stage_goldbound_keeper",
+					"combat_stage_iron_gate",
+					"combat_stage_prism_warden",
+					"combat_stage_ruin_lancer",
+					"combat_stage_vault_executioner",
+					"combat_timer_center_marker",
+					"combat_timer_track",
+					"combat_top_bar_frame",
+				]
+			)
+		)
+	)
+	(
+		imported_textures
+		. append_array(
+			path_keys(
+				PATH_DERIVED_VFX_DIR,
+				[
+					"mastery_beam_armor",
+					"mastery_beam_earth",
+					"mastery_beam_fire",
+					"mastery_beam_gold",
+					"mastery_beam_heart",
+					"mastery_beam_ice",
+					"mastery_gold_impact",
+					"mastery_heal_impact",
+					"mastery_hit_impact",
+					"mastery_shell_armor",
+				]
+			)
+		)
+	)
 	return {
 		"json_files": [PATH_RUNTIME_MANIFEST],
-		"directories": [
+		"directories":
+		[
 			PATH_DERIVED_ICON_DIR,
 			PATH_DERIVED_ORB_DIR,
 			PATH_DERIVED_HUD_DIR,
@@ -174,7 +207,8 @@ static func asset_contract_paths() -> Dictionary:
 			PATH_RUNTIME_SHOP_UI_DIR,
 		],
 		"imported_textures": unique_contract_paths(imported_textures),
-		"imported_texture_groups": {
+		"imported_texture_groups":
+		{
 			"shop_merchant_header": SHOP_MERCHANT_HEADER_CANDIDATE_PATHS.duplicate(),
 		},
 	}

@@ -36,16 +36,19 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 
 
 func _test_fallback_contract_textures_import() -> String:
-	var contract_paths := _merge_contract_paths([
-		MAIN_MENU_MODEL_SCRIPT.asset_contract_paths(),
-		VISUAL_REGISTRY_SCRIPT.asset_contract_paths(),
-		{
-			"imported_textures": [
-				COLLECTION_VIEW_SCRIPT.BACKGROUND_PATH,
-				RUN_SUMMARY_VIEW_SCRIPT.BACKGROUND_PATH,
-			],
-		},
-	])
+	var contract_paths := _merge_contract_paths(
+		[
+			MAIN_MENU_MODEL_SCRIPT.asset_contract_paths(),
+			VISUAL_REGISTRY_SCRIPT.asset_contract_paths(),
+			{
+				"imported_textures":
+				[
+					COLLECTION_VIEW_SCRIPT.BACKGROUND_PATH,
+					RUN_SUMMARY_VIEW_SCRIPT.BACKGROUND_PATH,
+				],
+			},
+		]
+	)
 	var json_error := _assert_files_exist(Array(contract_paths.get("json_files", [])), "JSON contract file")
 	if json_error != "":
 		return json_error
@@ -251,11 +254,14 @@ func _assert_any_imported_texture(paths: Array, label: String) -> String:
 		if loaded is Texture2D:
 			return ""
 		unloadable.append("%s (%s)" % [path, loaded.get_class() if loaded != null else "<null>"])
-	return "Expected at least one imported texture for %s; missing %s, unloadable %s." % [
-		label,
-		_format_path_list(missing),
-		_format_path_list(unloadable),
-	]
+	return (
+		"Expected at least one imported texture for %s; missing %s, unloadable %s."
+		% [
+			label,
+			_format_path_list(missing),
+			_format_path_list(unloadable),
+		]
+	)
 
 
 func _assert_files_exist(paths: Array, label: String) -> String:
