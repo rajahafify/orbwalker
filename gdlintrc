@@ -1,6 +1,9 @@
 disable:
   - class-definitions-order
+  - function-arguments-number
   - max-file-lines
+  - max-line-length
+  - max-public-methods
   - max-returns
 max-line-length: 160
 excluded_directories: !!set
