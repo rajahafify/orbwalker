@@ -76,7 +76,6 @@ jobs:
 
           path = Path("project.godot")
           text = path.read_text(encoding="utf-8")
-          text = text.replace('GDAIMCPRuntime="*res://scripts/core/gdai_mcp_runtime_proxy.gd"\n', "")
           text = text.replace('enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")', "enabled=PackedStringArray()")
           path.write_text(text, encoding="utf-8")
           PY
