@@ -107,14 +107,14 @@ func shop_item_pool(dungeon_level: int, run_state: Variant = null) -> Array[Dict
 
 
 func _is_equipment_available_for_run(item: Dictionary, run_state: Variant) -> bool:
-	var item_id := String(item.get("id", ""))
-	if item_id == "":
+	var equipment_id := String(item.get("id", ""))
+	if equipment_id == "":
 		return false
 	if run_state == null:
 		return true
 	if not run_state.has_method("is_equipment_unlocked"):
 		return true
-	return bool(run_state.is_equipment_unlocked(item_id))
+	return bool(run_state.is_equipment_unlocked(equipment_id))
 
 
 func shop_relic_pool(dungeon_level: int) -> Array[Dictionary]:
@@ -240,38 +240,38 @@ func validate_player_state_content() -> Array[Dictionary]:
 				errors.append(_validation_error("<invalid_entry>", "%s entry is not a Dictionary" % collection_name))
 				continue
 			var entry = raw_entry
-			var item_id := String(entry.get("id", ""))
-			if item_id == "":
+			var entry_id := String(entry.get("id", ""))
+			if entry_id == "":
 				errors.append(_validation_error("<missing_id>", "%s entry missing id" % collection_name))
 				continue
-			if seen_ids.has(item_id):
-				errors.append(_validation_error(item_id, "duplicate_id"))
+			if seen_ids.has(entry_id):
+				errors.append(_validation_error(entry_id, "duplicate_id"))
 			else:
-				seen_ids[item_id] = true
+				seen_ids[entry_id] = true
 
 			if String(entry.get("display_name", "")).strip_edges() == "":
-				errors.append(_validation_error(item_id, "missing_display_name"))
+				errors.append(_validation_error(entry_id, "missing_display_name"))
 			if String(entry.get("description", "")).strip_edges() == "":
-				errors.append(_validation_error(item_id, "missing_description"))
+				errors.append(_validation_error(entry_id, "missing_description"))
 			if String(entry.get("icon_key", "")).strip_edges() == "":
-				errors.append(_validation_error(item_id, "missing_icon_key"))
+				errors.append(_validation_error(entry_id, "missing_icon_key"))
 			if collection_name == EQUIPMENT:
 				var next_tier_item_id := String(entry.get("next_tier_item_id", ""))
 				if next_tier_item_id != "" and not known_equipment_ids.has(next_tier_item_id):
-					errors.append(_validation_error(item_id, "missing_next_tier_item_id:%s" % next_tier_item_id))
+					errors.append(_validation_error(entry_id, "missing_next_tier_item_id:%s" % next_tier_item_id))
 
 			var effects: Array = entry.get("effects", [])
 			for raw_effect in effects:
 				if not (raw_effect is Dictionary):
-					errors.append(_validation_error(item_id, "effect_entry_not_dictionary"))
+					errors.append(_validation_error(entry_id, "effect_entry_not_dictionary"))
 					continue
 				var effect = raw_effect
 				var hook_name := String(effect.get("hook", ""))
 				if hook_name == "":
-					errors.append(_validation_error(item_id, "missing_effect_hook"))
+					errors.append(_validation_error(entry_id, "missing_effect_hook"))
 					continue
 				if not EffectHooks.is_valid_hook(hook_name):
-					errors.append(_validation_error(item_id, "invalid_effect_hook:%s" % hook_name))
+					errors.append(_validation_error(entry_id, "invalid_effect_hook:%s" % hook_name))
 
 	return errors
 
@@ -285,17 +285,17 @@ func _rebuild_index() -> void:
 			if not (raw_entry is Dictionary):
 				continue
 			var entry = raw_entry
-			var item_id := String(entry.get("id", ""))
-			if item_id == "":
+			var indexed_entry_id := String(entry.get("id", ""))
+			if indexed_entry_id == "":
 				continue
-			_index[collection_name][item_id] = entry.duplicate(true)
+			_index[collection_name][indexed_entry_id] = entry.duplicate(true)
 
 
-func _get_indexed(collection_name: String, item_id: String) -> Dictionary:
+func _get_indexed(collection_name: String, lookup_entry_id: String) -> Dictionary:
 	var collection_index: Dictionary = _index.get(collection_name, {})
-	if not collection_index.has(item_id):
+	if not collection_index.has(lookup_entry_id):
 		return {}
-	return Dictionary(collection_index[item_id]).duplicate(true)
+	return Dictionary(collection_index[lookup_entry_id]).duplicate(true)
 
 
 func _collection_index_values(collection_name: String) -> Array[Dictionary]:

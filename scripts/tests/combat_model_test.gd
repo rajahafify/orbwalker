@@ -126,7 +126,11 @@ func run_all() -> Dictionary:
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
-	var error_text: String = callable.call()
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
 	if error_text != "":
 		failures.append("%s: %s" % [case_name, error_text])
 
@@ -431,24 +435,24 @@ func _test_combat_max_vfx_flipbook_presenter_spawns_sprite3d() -> String:
 	})
 	var sprite := presenter.spawn_flipbook("spark", Vector2(32, 48), Vector2(128, 64), 0.2, Color(0.2, 0.4, 1.0, 0.8), 0.0, Vector2(6, -4), 1.2, 3.0, 0.25, 0.1)
 	if sprite == null or not is_instance_valid(sprite):
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to spawn a Sprite3D."
 	if sprite.name != "MaxVfx_spark" or sprite.texture != texture:
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to assign the requested texture."
 	if sprite.hframes != 4 or sprite.vframes != 4:
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to configure 4x4 flipbook frames."
 	if not is_equal_approx(sprite.scale.x, 8.0) or not is_equal_approx(sprite.scale.y, 4.0):
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to scale by frame cell size."
 	if not is_equal_approx(sprite.position.x, 32.0) or not is_equal_approx(sprite.position.z, 3.0):
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to project screen position."
 	if not is_equal_approx(sprite.rotation.z, -0.25):
-		root.queue_free()
+		root.free()
 		return "Expected max flipbook presenter to project rotation."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -491,27 +495,27 @@ func _test_combat_max_vfx_imported_scene_presenter_spawns_and_filters_scenes() -
 	})
 	var flame := presenter.spawn_flame_scene(Vector2(12, 24), Vector2(120, 80), 0.2, 4, 0.0, Vector2.ZERO, 2.0, 0.7)
 	if flame == null or flame.name != "FlamePackVfx" or not is_equal_approx(flame.position.z, 2.0):
-		root.queue_free()
+		root.free()
 		return "Expected imported scene presenter to spawn positioned flame scene."
 	var shield := presenter.spawn_shield_scene(Vector2(60, 90), Vector2(160, 100), 0.2, 5, 0.0, Vector2.ZERO, 3.0)
 	var queued_camera := shield.get_node_or_null("CameraNoise") if shield != null else null
 	if shield == null or shield.name != "ShieldPackVfx" or queued_camera == null or not queued_camera.is_queued_for_deletion():
-		root.queue_free()
+		root.free()
 		return "Expected imported scene presenter to queue imported camera noise for removal."
 	var spawned_particles := shield.get_node_or_null("ShieldParticles") as GPUParticles3D
 	if spawned_particles == null or spawned_particles.amount != 28 or not spawned_particles.emitting:
-		root.queue_free()
+		root.free()
 		return "Expected imported scene presenter to scale shield particles."
 	var tornado := presenter.spawn_tornado_scene(Vector2(80, 100), Vector2(180, 120), 0.2, 6, 0.0, Vector2.ZERO, 4.0, "tornado poison")
 	if tornado == null or tornado.name != "TornadoPackVfx_tornado poison":
-		root.queue_free()
+		root.free()
 		return "Expected imported scene presenter to spawn named tornado scene."
 	var kept := tornado.get_node_or_null("tornado poison") as Node3D
 	var hidden := tornado.get_node_or_null("tornado dust") as Node3D
 	if kept == null or hidden == null or not kept.visible or hidden.visible:
-		root.queue_free()
+		root.free()
 		return "Expected imported scene presenter to keep only the requested tornado child visible."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -541,28 +545,28 @@ func _test_combat_max_vfx_sheet_flipbook_presenter_spawns_status_and_atmospheric
 	})
 	var status_sprite := presenter.spawn_status_flipbook("burn", Vector2(20, 30), Vector2(80, 40), 0.2, Color(1, 0.4, 0.2, 0.7), 0.0, Vector2(4, 0), 1.1, 2.0, 0.3, 2, 0.12)
 	if status_sprite == null or status_sprite.name != "StatusVfx_burn":
-		root.queue_free()
+		root.free()
 		return "Expected sheet flipbook presenter to spawn status sprite."
 	if status_sprite.hframes != 4 or status_sprite.vframes != 4:
-		root.queue_free()
+		root.free()
 		return "Expected status sheet sprite to use 4x4 frames."
 	if not is_equal_approx(status_sprite.scale.x, 5.0) or not is_equal_approx(status_sprite.scale.y, 2.5):
-		root.queue_free()
+		root.free()
 		return "Expected status sheet sprite to scale from 16x16 cells."
 	if not is_equal_approx(status_sprite.rotation.z, -0.3):
-		root.queue_free()
+		root.free()
 		return "Expected status sheet sprite rotation to be projected."
 	var atmospheric_sprite := presenter.spawn_atmospheric_flipbook("embers", Vector2(50, 60), Vector2(96, 30), 0.2, Color(0.8, 0.9, 1.0, 0.5), 0.0, Vector2.ZERO, 0.9, 1.0, 0.15, 1)
 	if atmospheric_sprite == null or atmospheric_sprite.name != "AtmosphericVfx_embers":
-		root.queue_free()
+		root.free()
 		return "Expected sheet flipbook presenter to spawn atmospheric sprite."
 	if atmospheric_sprite.hframes != 48 or atmospheric_sprite.vframes != 1:
-		root.queue_free()
+		root.free()
 		return "Expected atmospheric sheet sprite to use 48x1 frames."
 	if not is_equal_approx(atmospheric_sprite.scale.x, 9.6) or not is_equal_approx(atmospheric_sprite.scale.y, 1.5):
-		root.queue_free()
+		root.free()
 		return "Expected atmospheric sheet sprite to scale from 10x20 cells."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -595,22 +599,22 @@ func _test_combat_max_vfx_pack_scene_presenter_spawns_projected_effects() -> Str
 	})
 	var effect: Node3D = presenter.spawn_pack_effect("impact_01", Vector2(40, 50), "fire", Vector2(120, 80), 0.2, 4, 0.0, Vector2(8, -6), 0.25, 2.0, 0.7)
 	if effect == null or effect.name != "PackVfx_fire_impact_01":
-		root.queue_free()
+		root.free()
 		return "Expected pack scene presenter to spawn named pack effect."
 	if not is_equal_approx(effect.position.x, 40.0) or not is_equal_approx(effect.position.y, 50.0) or not is_equal_approx(effect.position.z, 2.0):
-		root.queue_free()
+		root.free()
 		return "Expected pack scene presenter to project screen position."
 	if not is_equal_approx(effect.rotation.z, -0.25):
-		root.queue_free()
+		root.free()
 		return "Expected pack scene presenter to project rotation."
 	if not is_equal_approx(effect.scale.x, 22.0) or not is_equal_approx(effect.scale.y, 22.0):
-		root.queue_free()
+		root.free()
 		return "Expected pack scene presenter to scale from draw size and intensity."
 	presenter.stretch_effect(effect, Vector3(2.0, 0.5, 1.0))
 	if not is_equal_approx(effect.scale.x, 44.0) or not is_equal_approx(effect.scale.y, 11.0):
-		root.queue_free()
+		root.free()
 		return "Expected pack scene presenter to stretch spawned effect."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -644,18 +648,18 @@ func _test_combat_max_vfx_elemental_scene_presenter_spawns_projected_effects() -
 	})
 	var effect: Node3D = presenter.spawn_elemental_effect("projectile", Vector2(32, 44), "ice", Vector2(104, 52), 0.3, 5, 0.0, Vector2(6, 0), 0.35, 1.5, 0.8)
 	if effect == null or effect.name != "ElementalVfx_ice_projectile":
-		root.queue_free()
+		root.free()
 		return "Expected elemental scene presenter to spawn named elemental effect."
 	if not is_equal_approx(effect.position.x, 32.0) or not is_equal_approx(effect.position.y, 44.0) or not is_equal_approx(effect.position.z, 1.5):
-		root.queue_free()
+		root.free()
 		return "Expected elemental scene presenter to project screen position."
 	if not is_equal_approx(effect.rotation.z, -0.35):
-		root.queue_free()
+		root.free()
 		return "Expected elemental scene presenter to project rotation."
 	if not is_equal_approx(effect.scale.x, 23.0) or not is_equal_approx(effect.scale.y, 23.0):
-		root.queue_free()
+		root.free()
 		return "Expected elemental scene presenter to scale projectile from draw size and intensity."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -2332,7 +2336,7 @@ func _test_screen_feedback_presenter_honors_flags_and_spawns_nudge() -> String:
 	})
 	presenter.screen_nudge(3, Vector2(300, 120))
 	if presenter.get("_screen_nudge_tween") != null:
-		root.queue_free()
+		root.free()
 		return "Expected screen nudge to no-op while game juice is disabled."
 	presenter.set_game_juice_enabled(true)
 	presenter.set_game_juice_flags({
@@ -2342,16 +2346,16 @@ func _test_screen_feedback_presenter_honors_flags_and_spawns_nudge() -> String:
 	presenter.screen_nudge(3, Vector2(300, 120))
 	var active_tween: Tween = presenter.get("_screen_nudge_tween") as Tween
 	if active_tween == null or not is_instance_valid(active_tween):
-		root.queue_free()
+		root.free()
 		return "Expected screen nudge to create a tween for the shake target."
 	presenter.set_reduced_motion_enabled(true)
 	active_tween.kill()
 	presenter.set("_screen_nudge_tween", null)
 	presenter.screen_nudge(3, Vector2(300, 120))
 	if presenter.get("_screen_nudge_tween") != null:
-		root.queue_free()
+		root.free()
 		return "Expected reduced motion to block additional screen nudge."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -2372,25 +2376,25 @@ func _test_spark_burst_presenter_honors_flags_and_particle_caps() -> String:
 	})
 	presenter.spawn_visible_spark_burst(Vector2(120, 90), Vector2(120, 80), Color.RED, 0.3)
 	if layer.get_child_count() != 0:
-		root.queue_free()
+		root.free()
 		return "Expected spark burst to no-op while game juice is disabled."
 	presenter.set_game_juice_enabled(true)
 	presenter.set_game_juice_flags({GameJuiceFlags.IMPACT_RINGS_RESULT_LABELS: true})
 	presenter.spawn_visible_spark_burst(Vector2(120, 90), Vector2(420, 260), Color.RED, 0.3)
 	var spawned_count := layer.get_child_count()
 	if spawned_count != 28:
-		root.queue_free()
+		root.free()
 		return "Expected spark burst particles to clamp at 28, got %d." % spawned_count
 	var first_particle := layer.get_child(0) as ColorRect
 	if first_particle == null or first_particle.name != "JuiceSpark" or first_particle.z_index != 144:
-		root.queue_free()
+		root.free()
 		return "Expected spark burst to create named particles with the expected draw order."
 	presenter.set_reduced_motion_enabled(true)
 	presenter.spawn_visible_spark_burst(Vector2(120, 90), Vector2(120, 80), Color.RED, 0.3)
 	if layer.get_child_count() != spawned_count:
-		root.queue_free()
+		root.free()
 		return "Expected reduced motion to block additional spark burst particles."
-	root.queue_free()
+	root.free()
 	return ""
 
 
@@ -2719,16 +2723,26 @@ func _assert_low_quality_mastery_beam_layers(orb_id: int) -> String:
 	var glow := _first_child_named(layer, "MasteryBeamLowQualityGlow") as TextureRect
 	var core := _first_child_named(layer, "MasteryBeamLowQualityCore") as TextureRect
 	var hot_core := _first_child_named(layer, "MasteryBeamLowQualityHotCore") as TextureRect
+	var has_solid_band := solid_band != null
+	var has_white_band := white_band != null
+	var has_glow := glow != null
+	var has_core := core != null
+	var has_hot_core := hot_core != null
+	var solid_band_size := solid_band.size if has_solid_band else Vector2.ZERO
+	var white_band_size := white_band.size if has_white_band else Vector2.ZERO
+	var glow_size := glow.size if has_glow else Vector2.ZERO
+	var core_size := core.size if has_core else Vector2.ZERO
+	var hot_core_size := hot_core.size if has_hot_core else Vector2.ZERO
 	_cleanup_vfx_fixture(fixture)
 	if aura_count != 1 or target_bloom_count != 1 or bolt_count != 1:
 		return "Expected low-quality mastery beam for orb %d to spawn aura, target bloom, and moving bolt layers." % orb_id
-	if solid_band == null or white_band == null:
+	if not has_solid_band or not has_white_band:
 		return "Expected low-quality mastery beam for orb %d to spawn solid colored and white-hot bands." % orb_id
-	if solid_band.size.y < 216.0 or white_band.size.y < 80.0:
+	if solid_band_size.y < 216.0 or white_band_size.y < 80.0:
 		return "Expected low-quality mastery beam solid bands for orb %d to be doubled in thickness." % orb_id
-	if glow == null or core == null or hot_core == null:
+	if not has_glow or not has_core or not has_hot_core:
 		return "Expected low-quality mastery beam for orb %d to spawn named glow, core, and hot-core strips." % orb_id
-	if glow.size.y < 344.0 or core.size.y < 216.0 or hot_core.size.y < 80.0:
+	if glow_size.y < 344.0 or core_size.y < 216.0 or hot_core_size.y < 80.0:
 		return "Expected low-quality mastery beam strips for orb %d to be doubled in thickness." % orb_id
 	return ""
 
@@ -2747,6 +2761,9 @@ func _test_healing_replay_impact_uses_bar_infusion() -> String:
 	var child_count_before_heart_beam := layer.get_child_count()
 	presenter.spawn_mastery_beam(OrbType.Id.HEART, Vector2(540, 960), 0.45)
 	var child_count_after_heart_beam := layer.get_child_count()
+	var has_visible_band := visible_band != null
+	var has_inner_line := inner_line != null
+	var has_glint := glint != null
 	var visible_band_size := visible_band.size if visible_band != null else Vector2.ZERO
 	var inner_line_size := inner_line.size if inner_line != null else Vector2.ZERO
 	var glint_size := glint.size if glint != null else Vector2.ZERO
@@ -2757,7 +2774,7 @@ func _test_healing_replay_impact_uses_bar_infusion() -> String:
 	var inner_line_alpha := inner_line.modulate.a if inner_line != null else -1.0
 	var glint_alpha := glint.modulate.a if glint != null else -1.0
 	_cleanup_vfx_fixture(fixture)
-	if visible_band == null or visible_band_size.x < 170.0:
+	if not has_visible_band or visible_band_size.x < 170.0:
 		return "Expected healing replay impact to spawn a guaranteed-visible HP bar band."
 	if visible_band_alpha > 0.01:
 		return "Expected healing HP bar band to tween in from transparent alpha."
@@ -2767,9 +2784,9 @@ func _test_healing_replay_impact_uses_bar_infusion() -> String:
 		return "Expected healing bar infusion to use a warm HP palette instead of detached mint-green."
 	if visible_band_color.a < 0.30:
 		return "Expected healing HP bar band to be noticeable, not whisper-subtle."
-	if inner_line == null or inner_line_size.y > 10.0 or inner_line_color.a < 0.30 or inner_line_alpha > 0.01:
+	if not has_inner_line or inner_line_size.y > 10.0 or inner_line_color.a < 0.30 or inner_line_alpha > 0.01:
 		return "Expected healing replay impact to use a readable inner HP-bar line."
-	if glint == null or glint_size.y > 10.0 or glint_color.a < 0.50 or glint_alpha > 0.01:
+	if not has_glint or glint_size.y > 10.0 or glint_color.a < 0.50 or glint_alpha > 0.01:
 		return "Expected healing replay impact to use a readable native HP-bar glint."
 	if chunky_count != 0 or texture_strip_count != 0:
 		return "Expected healing replay impact to avoid chunky detached bars, ticks, and texture strips."
@@ -2904,7 +2921,7 @@ func _vfx_fixture(reduced_motion: bool) -> Dictionary:
 func _cleanup_vfx_fixture(fixture: Dictionary) -> void:
 	var root := fixture.get("root") as Node
 	if root != null and is_instance_valid(root):
-		root.queue_free()
+		root.free()
 
 
 func _packed_scene_from_node(node: Node) -> PackedScene:

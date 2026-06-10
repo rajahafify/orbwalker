@@ -21,8 +21,8 @@ func bind(enemy_hp_row: Control, enemy_hp_bar: ProgressBar, callbacks: Dictionar
 	_callbacks = callbacks.duplicate()
 
 
-func sync(preview: Dictionary) -> void:
-	_preview = preview.duplicate(true)
+func sync(preview_data: Dictionary) -> void:
+	_preview = preview_data.duplicate(true)
 	layout()
 
 

@@ -39,7 +39,11 @@ func run_all() -> Dictionary:
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
-	var error_text: String = callable.call()
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
 	if error_text != "":
 		failures.append("%s: %s" % [case_name, error_text])
 

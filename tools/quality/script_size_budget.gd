@@ -1,10 +1,7 @@
 extends SceneTree
 
 const SCAN_ROOTS := [
-	"res://scripts/combat",
-	"res://scripts/shop",
-	"res://scripts/collection",
-	"res://scripts/run_summary",
+	"res://scripts",
 ]
 const CONTROLLER_BUDGET := 400
 const VIEW_BUDGET := 500
@@ -41,6 +38,48 @@ const DOCUMENTED_EXCEPTIONS := {
 		"owner": "P1-2/P5-2",
 		"reason":
 		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",
+	},
+	"res://scripts/ui/player_loadout_hud.gd":
+	{
+		"owner": "R-P1-3",
+		"reason":
+		"Player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces; split visible rails into presenters before enforcing the default budget.",
+	},
+	"res://scripts/ui/visual_registry.gd":
+	{
+		"owner": "R-P1-3",
+		"reason":
+		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",
+	},
+	"res://scripts/core/run_state.gd":
+	{
+		"owner": "R-P1-2",
+		"reason":
+		"RunState still owns run progression, settings persistence, routing constants, tracing, and logging; extract settings/routing stores and type collaborators.",
+	},
+	"res://scripts/main_menu/main_menu_view.gd":
+	{
+		"owner": "R-P1-3",
+		"reason":
+		"Main menu view combines layout, profile/log controls, debug affordances, and button wiring; split focused presenters and accessibility focus setup.",
+	},
+	"res://scripts/content/content_registry.gd":
+	{
+		"owner": "R-P1-3",
+		"reason":
+		"Content registry remains a large code-backed catalog; move static records into resources or generated data while preserving typed lookup methods.",
+	},
+	"res://scripts/debug/vfx_gallery_show.gd":
+	{
+		"owner": "R-P4-2",
+		"reason":
+		"Developer VFX gallery script owns catalog loading, preview construction, controls, and presentation; split gallery UI presenters as the tool stabilizes.",
+	},
+	"res://scripts/board/board_view.gd":
+	{
+		"owner": "R-P1-3",
+		"reason":
+		"Board view still owns grid layout, cell rendering, touch projection, selection state, and animation surfaces; split render and input helpers.",
 	},
 }
 
@@ -140,10 +179,24 @@ static func _collect_script_paths(root_path: String, paths: Array[String]) -> vo
 			continue
 		var entry_path := root_path.path_join(entry_name)
 		if dir.current_is_dir():
+			if _should_skip_directory(entry_name):
+				continue
 			_collect_script_paths(entry_path, paths)
-		elif entry_name.ends_with(".gd"):
+		elif _should_scan_script(entry_name):
 			paths.append(entry_path)
 	dir.list_dir_end()
+
+
+static func _should_skip_directory(directory_name: String) -> bool:
+	return directory_name == "tests"
+
+
+static func _should_scan_script(file_name: String) -> bool:
+	if not file_name.ends_with(".gd"):
+		return false
+	if file_name.ends_with("_test.gd") or file_name.ends_with("_probe.gd"):
+		return false
+	return true
 
 
 static func _line_count(path: String) -> int:

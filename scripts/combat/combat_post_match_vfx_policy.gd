@@ -48,8 +48,8 @@ func set_speed_scale(speed_scale: float) -> void:
 	_speed_scale = clampf(speed_scale, 0.25, 2.0)
 
 
-func set_quality(quality: String) -> void:
-	_quality = normalized_quality(quality)
+func set_quality(quality_value: String) -> void:
+	_quality = normalized_quality(quality_value)
 
 
 func quality() -> String:

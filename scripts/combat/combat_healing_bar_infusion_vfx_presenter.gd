@@ -16,7 +16,7 @@ func bind(dependencies: Dictionary) -> void:
 	_timer_owner = dependencies.get("timer_owner") as Node
 
 
-func spawn_bar_infusion(global_center: Vector2, draw_size: Vector2, lifetime: float, result_amount: int, intensity: int, reduced_motion: bool = false) -> void:
+func spawn_bar_infusion(global_center: Vector2, draw_size: Vector2, lifetime: float, _result_amount: int, _intensity: int, reduced_motion: bool = false) -> void:
 	if global_center == Vector2.ZERO:
 		return
 	var center_local := _global_to_vfx_local(global_center)

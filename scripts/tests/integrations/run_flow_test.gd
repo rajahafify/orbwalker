@@ -8,16 +8,16 @@ const PLAYER_PROFILE_STATE_SCRIPT := preload("res://scripts/run/player_profile_s
 
 
 class FakeProfileRepository:
-	extends RefCounted
+	extends ProfileRepository
 
 	var save_count := 0
 
-	func load_profile(profile) -> Dictionary:
+	func load_profile(profile: PlayerProfileState) -> Dictionary:
 		if profile != null:
 			profile.reset_to_default(1000)
 		return {"ok": true, "source": "test_profile"}
 
-	func save_profile(profile) -> Dictionary:
+	func save_profile(profile: PlayerProfileState) -> Dictionary:
 		save_count += 1
 		return {"ok": profile != null, "path": "memory://test_profile"}
 
@@ -40,7 +40,11 @@ func run_all() -> Dictionary:
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
-	var error_text: String = callable.call()
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
 	if error_text != "":
 		failures.append("%s: %s" % [case_name, error_text])
 

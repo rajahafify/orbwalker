@@ -72,7 +72,7 @@
 <body>
   <main>
     <h1>Orbwalker Script Size Budget</h1>
-    <p class="summary">This is the documented exception register for the P1-3 roadmap guardrail. The CI budget check fails undocumented oversized scripts while allowing named, temporary exceptions with concrete removal paths.</p>
+    <p class="summary">This is the documented exception register for the P1-3 roadmap guardrail. The CI budget check scans production scripts under <code>scripts/</code>, excluding tests and probes, and fails undocumented oversized scripts while allowing named, temporary exceptions with concrete removal paths.</p>
 
     <h2>Budgets</h2>
     <table>
@@ -80,9 +80,9 @@
         <tr><th>Script kind</th><th>Soft budget</th><th>Scope</th></tr>
       </thead>
       <tbody>
-        <tr><td>Controller</td><td><code>400</code> measured lines</td><td><code>*_controller.gd</code> under combat, shop, collection, and run-summary modules.</td></tr>
-        <tr><td>View</td><td><code>500</code> measured lines</td><td><code>*_view.gd</code> under combat, shop, collection, and run-summary modules.</td></tr>
-        <tr><td>Other module script</td><td><code>650</code> measured lines</td><td>Models, services, state files, presenters, and helpers in those same modules.</td></tr>
+        <tr><td>Controller</td><td><code>400</code> measured lines</td><td><code>*_controller.gd</code> production scripts under <code>scripts/</code>.</td></tr>
+        <tr><td>View</td><td><code>500</code> measured lines</td><td><code>*_view.gd</code> production scripts under <code>scripts/</code>.</td></tr>
+        <tr><td>Other production script</td><td><code>650</code> measured lines</td><td>Models, services, state files, presenters, registries, developer tools, and helpers under <code>scripts/</code>, excluding <code>scripts/tests/</code> and <code>*_probe.gd</code>.</td></tr>
       </tbody>
     </table>
     <p class="note">Measured lines exclude blank lines and full-line comments. This matches the roadmap's controller/view size evidence and keeps formatting whitespace from changing the budget.</p>
@@ -96,7 +96,7 @@
         <tr>
           <td><code>scripts/combat/combat_controller.gd</code></td>
           <td><code>400</code></td>
-          <td><code>2040</code></td>
+          <td><code>1962</code></td>
           <td>P1-1 decomposition is still in progress; combat state-machine, input-phase authority, replay ordering, and route control remain centralized while collaborators continue to land with tests.</td>
           <td>Keep extracting one owned surface at a time until controller orchestration falls under the target, then remove this exception.</td>
         </tr>
@@ -117,16 +117,65 @@
         <tr>
           <td><code>scripts/combat/combat_view.gd</code></td>
           <td><code>500</code></td>
-          <td><code>556</code></td>
+          <td><code>549</code></td>
           <td>Combat view routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, board-centered VFX targets, and VFX bindings while view decomposition is in progress.</td>
           <td>Move enemy-stage reaction routing, VFX target helpers, and overlay callback plumbing into focused coordinators, then remove this exception.</td>
         </tr>
         <tr>
           <td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td>
           <td><code>650</code></td>
-          <td><code>2323</code></td>
+          <td><code>1088</code></td>
           <td>The max-combat VFX overlay owns several effect families plus static asset path catalogs.</td>
           <td>Split effect-family emitters and move static VFX path catalogs into resources or data files.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/ui/player_loadout_hud.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>1924</code></td>
+          <td>The player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces in one script.</td>
+          <td>Split the visible rails into focused presenters with tests, then ratchet this exception down.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/ui/visual_registry.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>1722</code></td>
+          <td>The visual registry remains a large code-backed art catalog.</td>
+          <td>Move static paths and texture maps into resources or generated data while keeping a thin typed lookup API.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/core/run_state.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>1538</code></td>
+          <td>RunState owns run progression, settings persistence, routing constants, tracing, and logging.</td>
+          <td>Extract settings and routing stores, type collaborators, and keep reducing the autoload to run-state authority.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/main_menu/main_menu_view.gd</code></td>
+          <td><code>500</code></td>
+          <td><code>1007</code></td>
+          <td>The main menu view combines layout, profile/log controls, debug affordances, and button wiring.</td>
+          <td>Split focused presenters and accessibility focus setup out of the view.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/content/content_registry.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>807</code></td>
+          <td>The content registry remains a large code-backed catalog.</td>
+          <td>Move static content records into resources or generated data while preserving typed lookup methods.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/debug/vfx_gallery_show.gd</code></td>
+          <td><code>650</code></td>
+          <td><code>761</code></td>
+          <td>The developer VFX gallery script owns catalog loading, preview construction, controls, and presentation.</td>
+          <td>Split gallery UI presenters as the tool stabilizes.</td>
+        </tr>
+        <tr>
+          <td><code>scripts/board/board_view.gd</code></td>
+          <td><code>500</code></td>
+          <td><code>598</code></td>
+          <td>The board view owns grid layout, cell rendering, touch projection, selection state, and animation surfaces.</td>
+          <td>Split render and input helpers, then remove the view exception once the script falls under budget.</td>
         </tr>
       </tbody>
     </table>

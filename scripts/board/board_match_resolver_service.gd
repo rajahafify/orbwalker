@@ -13,11 +13,12 @@ func get_match_groups(board_model: BoardModel) -> Array[Dictionary]:
 	return _find_match_groups(board_model)
 
 
-func resolve_all(board_model: BoardModel, max_steps: int = 64) -> Dictionary:
+func resolve_all(board_model: BoardModel, max_steps: int = 64, warn_on_truncation: bool = true) -> Dictionary:
 	var result := {
 		"total_combos": 0,
 		"matched_counts": {},
 		"passes": [],
+		"truncated": false,
 	}
 
 	for orb_id in OrbType.ALL_TYPES:
@@ -52,7 +53,8 @@ func resolve_all(board_model: BoardModel, max_steps: int = 64) -> Dictionary:
 
 		cascade_step_complete.emit(step_index, result.total_combos)
 
-	if result.passes.size() >= max_steps:
+	result.truncated = result.passes.size() >= max_steps
+	if result.truncated and warn_on_truncation:
 		push_warning("BoardMatchResolverService hit max_steps=%d before stabilizing." % max_steps)
 
 	resolve_complete.emit(result)

@@ -97,7 +97,7 @@
     <p><code>assets.json</code> is the production inventory, not a runtime texture registry. Keep its schema and <code>res://</code> references valid, and keep runtime texture paths in <code>resources/visual/first_pass_asset_map.json</code> or <code>resources/art/assetgen/runtime/manifest.json</code> where the validation test can import-load them.</p>
 
     <h2>Script Size Budget</h2>
-    <p>Combat, shop, collection, and run-summary scripts have a measured-line size budget checked by <code>res://tools/quality/script_size_budget.gd</code>. Oversized scripts fail CI unless they have a documented exception in <code>docs/script_size_budget.html</code> with a concrete removal path.</p>
+    <p>Production scripts under <code>scripts/</code>, excluding tests and probes, have a measured-line size budget checked by <code>res://tools/quality/script_size_budget.gd</code>. Oversized scripts fail CI unless they have a documented exception in <code>docs/script_size_budget.html</code> with a concrete removal path.</p>
   </main>
 </body>
 </html>

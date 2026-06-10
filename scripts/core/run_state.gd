@@ -53,14 +53,14 @@ const LEVEL_SEQUENCE: Array[String] = [
 	"advance",
 ]
 
-var player_state
-var player_progression_state
-var player_progression_service
-var content_registry
-var shop_state
-var shop_service
-var player_profile_state
-var meta_profile_state
+var player_state: PlayerState
+var player_progression_state: PlayerProgressionState
+var player_progression_service: PlayerProgressionService
+var content_registry: ContentRegistry
+var shop_state: ShopState
+var shop_service: ShopService
+var player_profile_state: PlayerProfileState
+var meta_profile_state: MetaProfileState
 var run_gold: int = 0
 var run_score: int = 0
 var _run_score_banked: bool = false
@@ -81,10 +81,10 @@ var _boss_relic_reward_options: Array[Dictionary] = []
 var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
-var _run_logger
-var _scene_router
-var _profile_repository
-var _balance_manager
+var _run_logger: RunLogger
+var _scene_router: SceneRouter
+var _profile_repository: ProfileRepository
+var _balance_manager: BalanceManager
 var _vfx_speed := VFX_SPEED_NORMAL
 var _combat_vfx_quality := COMBAT_VFX_QUALITY_LOW
 var _reduced_motion := false

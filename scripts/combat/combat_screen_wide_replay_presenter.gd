@@ -18,8 +18,9 @@ func bind(dependencies: Dictionary) -> void:
 	_runtime_sprite_presenter = dependencies.get("runtime_sprite_presenter")
 	_vfx_profile = dependencies.get("vfx_profile")
 
+
 func spawn_screen_wide_replay_event(global_center: Vector2, clean_kind: String, lifetime: float, intensity: int) -> void:
-	var layer_size := layer_size()
+	var layer_size := vfx_layer_size()
 	if layer_size.x <= 1.0 or layer_size.y <= 1.0:
 		return
 	clean_kind = result_vfx_kind_key(clean_kind)
@@ -473,7 +474,7 @@ func result_effect_colors(clean_kind: String) -> Dictionary:
 	return _vfx_profile.result_effect_colors(clean_kind)
 
 
-func layer_size() -> Vector2:
+func vfx_layer_size() -> Vector2:
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return Vector2.ZERO
 	var screen_size := _vfx_layer.size

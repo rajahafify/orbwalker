@@ -25,7 +25,11 @@ func run_all() -> Dictionary:
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
-	var error_text: String = callable.call()
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
 	if error_text != "":
 		failures.append("%s: %s" % [case_name, error_text])
 
@@ -39,7 +43,7 @@ func _test_horizontal_line_detection() -> String:
 		"HIAEG",
 		"AEGIH",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.total_combos < 1:
 		return "Expected at least 1 combo in first pass."
 	var first_group: Dictionary = result.passes[0].groups[0]
@@ -59,7 +63,7 @@ func _test_vertical_line_detection() -> String:
 		"EGAHI",
 		"IAEHG",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.total_combos < 1:
 		return "Expected at least 1 combo for vertical line."
 	var has_fire_column := false
@@ -81,7 +85,7 @@ func _test_l_shape_detection() -> String:
 		"EGAHI",
 		"IAEHG",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.total_combos < 1:
 		return "Expected at least 1 combo for L shape."
 	var found_l_group := false
@@ -103,7 +107,7 @@ func _test_t_shape_detection_and_clear_once() -> String:
 		"HIAEG",
 		"EGAHI",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.total_combos < 1:
 		return "Expected at least 1 combo for T shape."
 
@@ -129,7 +133,7 @@ func _test_no_diagonal_match() -> String:
 		"AGEHI",
 		"GHAEI",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.total_combos != 0:
 		return "Diagonal-only alignment should not produce a combo."
 	return ""
@@ -144,7 +148,7 @@ func _test_gravity_preserves_column_order() -> String:
 		"FHIAG",
 		"FGEHA",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.passes.is_empty():
 		return "Expected a pass to test gravity."
 
@@ -170,7 +174,7 @@ func _test_refill_fills_all_empties() -> String:
 		"AHIGE",
 		"GEAHI",
 	])
-	var result: Dictionary = _resolver.resolve_all(board, 1)
+	var result: Dictionary = _resolver.resolve_all(board, 1, false)
 	if result.passes.is_empty():
 		return "Expected at least one pass."
 	if result.passes[0].refill_spawns.is_empty():

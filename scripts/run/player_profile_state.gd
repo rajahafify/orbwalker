@@ -160,14 +160,14 @@ static func _migrate_legacy_profile_identity(config: ConfigFile, section: String
 
 
 static func _migrate_legacy_timestamps(config: ConfigFile, section: String, steps: Array[String]) -> void:
-	var created_unix := maxi(0, int(config.get_value(section, CREATED_UNIX_KEY, 0)))
-	var updated_unix := maxi(created_unix, int(config.get_value(section, UPDATED_UNIX_KEY, created_unix)))
+	var stored_created_unix := maxi(0, int(config.get_value(section, CREATED_UNIX_KEY, 0)))
+	var stored_updated_unix := maxi(stored_created_unix, int(config.get_value(section, UPDATED_UNIX_KEY, stored_created_unix)))
 	var changed := false
 	if not _has_config_value(config, section, CREATED_UNIX_KEY):
-		config.set_value(section, CREATED_UNIX_KEY, created_unix)
+		config.set_value(section, CREATED_UNIX_KEY, stored_created_unix)
 		changed = true
 	if not _has_config_value(config, section, UPDATED_UNIX_KEY):
-		config.set_value(section, UPDATED_UNIX_KEY, updated_unix)
+		config.set_value(section, UPDATED_UNIX_KEY, stored_updated_unix)
 		changed = true
 	if changed:
 		steps.append("timestamps_initialized")

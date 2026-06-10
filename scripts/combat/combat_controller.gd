@@ -103,8 +103,8 @@ enum InputPhase {
 
 var _settings := BoardGenerationSettings.new()
 var _board_model := BoardModel.new()
-var _resolver: Variant = BOARD_MATCH_RESOLVER_SCRIPT.new()
-var _combat: Variant
+var _resolver: BoardMatchResolverService = BOARD_MATCH_RESOLVER_SCRIPT.new()
+var _combat: CombatStateMachine = null
 var _player_state: PlayerState
 var _enemy_state: EnemyState
 var _progression_state: PlayerProgressionState
@@ -114,39 +114,39 @@ var _consumable_rng := RandomNumberGenerator.new()
 var _visuals: VisualRegistry = null
 var _player_loadout_hud: PlayerLoadoutHud = null
 var _outcome_overlay: CombatOutcomeOverlay = null
-var _debug_runtime: Variant = null
+var _debug_runtime: CombatDebugRuntime = null
 var _debug_console: CombatDebugConsole = null
-var _settings_command_handler: Variant = null
-var _combat_timer_service: Variant = null
-var _boss_reward_handler: Variant = null
-var _turn_log_presenter: Variant = null
-var _resolve_presenter: Variant = null
-var _combat_vfx_presenter: Variant = null
-var _board_controller: Variant = null
-var _hud_presenter: Variant = null
-var _hud_snapshot_provider: Variant = null
-var _vfx_target_resolver: Variant = null
-var _hud_stage_coordinator: Variant = null
-var _mastery_preview_coordinator: Variant = null
-var _player_hud_refresh_coordinator: Variant = null
-var _loadout_command_handler: Variant = null
-var _intent_hover_handler: Variant = null
-var _scene_transition_handler: Variant = null
-var _outcome_route_coordinator: Variant = null
-var _turn_resolution_coordinator: Variant = null
-var _tutorial_prompt_presenter: Variant = null
-var _tutorial_coachmark_coordinator: Variant = null
-var _tutorial_end_command_handler: Variant = null
-var _combat_consumable_service: Variant = null
-var _combat_audio_cue_player: Variant = null
-var _debug_state_provider: Variant = null
-var _board_debug_command_handler: Variant = null
-var _input_command_handler: Variant = null
-var _tutorial_director: Variant = null
+var _settings_command_handler: CombatSettingsCommandHandler = null
+var _combat_timer_service: CombatTimerService = null
+var _boss_reward_handler: CombatBossRewardHandler = null
+var _turn_log_presenter: CombatTurnLogPresenter = null
+var _resolve_presenter: CombatResolvePresenter = null
+var _combat_vfx_presenter: CombatVfxPresenter = null
+var _board_controller: BoardController = null
+var _hud_presenter: CombatHudPresenter = null
+var _hud_snapshot_provider: CombatHudSnapshotProvider = null
+var _vfx_target_resolver: CombatVfxTargetResolver = null
+var _hud_stage_coordinator: CombatHudStageCoordinator = null
+var _mastery_preview_coordinator: CombatMasteryPreviewCoordinator = null
+var _player_hud_refresh_coordinator: CombatPlayerHudRefreshCoordinator = null
+var _loadout_command_handler: CombatLoadoutCommandHandler = null
+var _intent_hover_handler: CombatIntentHoverHandler = null
+var _scene_transition_handler: CombatSceneTransitionHandler = null
+var _outcome_route_coordinator: CombatOutcomeRouteCoordinator = null
+var _turn_resolution_coordinator: CombatTurnResolutionCoordinator = null
+var _tutorial_prompt_presenter: CombatTutorialPromptPresenter = null
+var _tutorial_coachmark_coordinator: CombatTutorialCoachmarkCoordinator = null
+var _tutorial_end_command_handler: CombatTutorialEndCommandHandler = null
+var _combat_consumable_service: CombatConsumableService = null
+var _combat_audio_cue_player: CombatAudioCuePlayer = null
+var _debug_state_provider: CombatDebugStateProvider = null
+var _board_debug_command_handler: CombatBoardDebugCommandHandler = null
+var _input_command_handler: CombatInputCommandHandler = null
+var _tutorial_director: TutorialDirector = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
-var _model = null
-var _view = null
+var _model: CombatModel = null
+var _view: CombatView = null
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:

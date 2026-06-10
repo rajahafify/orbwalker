@@ -3,6 +3,7 @@
 /android/
 .obsidian/
 .memsearch/
+.codex/
 logs/
 tmp/
 /build/

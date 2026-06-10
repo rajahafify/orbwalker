@@ -408,6 +408,15 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_apply_font_sizes(viewport_size)
 
 
+func configure_focus_navigation() -> void:
+	var main_chain := _focusable_buttons(_main_menu_buttons())
+	_apply_focus_chain(main_chain)
+	_apply_focus_chain(_focusable_buttons([_reset_profile_button, _close_profile_button]))
+	_apply_focus_chain(_focusable_buttons(_settings_focus_controls()))
+	if _can_grab_main_menu_focus() and _start_run_button != null and not _start_run_button.disabled:
+		_start_run_button.grab_focus.call_deferred()
+
+
 static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return {"applied": false}
@@ -476,22 +485,30 @@ static func accessibility_audit_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -
 			_touch_target("footer_action_button", Vector2(footer_rect.size.x / 3.0, footer_rect.size.y)),
 			_touch_target("profile_action_button", Vector2(0.0, menu_button_height)),
 		],
-	"keyboard_focus_controls": [
-		"start_run_button",
-		"continue_button",
-		"tutorial_button",
-		"settings_button",
-		"profile_button",
-		"quit_button",
-		"settings_speed_buttons",
-		"settings_reduced_motion_button",
-		"settings_game_juice_button",
-		"settings_game_juice_flag_buttons",
-		"settings_reset_button",
-		"settings_close_button",
-		"reset_profile_button",
-		"close_profile_button",
-	],
+		"keyboard_focus_controls": [
+			"start_run_button",
+			"continue_button",
+			"tutorial_button",
+			"settings_button",
+			"profile_button",
+			"quit_button",
+			"settings_speed_buttons",
+			"settings_reduced_motion_button",
+			"settings_game_juice_button",
+			"settings_game_juice_flag_buttons",
+			"settings_reset_button",
+			"settings_close_button",
+			"reset_profile_button",
+			"close_profile_button",
+		],
+		"initial_focus_control": "start_run_button",
+		"main_menu_focus_chain": [
+			"start_run_button",
+			"tutorial_button",
+			"settings_button",
+			"profile_button",
+			"quit_button",
+		],
 	}
 
 
@@ -530,15 +547,22 @@ func show_settings(settings: Variant) -> void:
 	_update_settings_reduced_motion_button(bool(settings_dict.get("reduced_motion", false)))
 	_update_settings_game_juice_button(bool(settings_dict.get("game_juice", true)))
 	_update_settings_game_juice_flag_buttons(Dictionary(settings_dict.get("game_juice_flags", GAME_JUICE_FLAGS_SCRIPT.default_flags())))
+	_focus_first_control(_settings_focus_controls())
 
 
 func hide_settings() -> void:
 	if _settings_overlay != null:
 		_settings_overlay.visible = false
+	if _settings_button != null and not _settings_button.disabled:
+		_settings_button.grab_focus.call_deferred()
 
 
 func set_profile_overlay_visible(visible: bool) -> void:
 	_profile_overlay.visible = visible
+	if visible:
+		_focus_first_control([_reset_profile_button, _close_profile_button])
+	elif _profile_button != null and not _profile_button.disabled:
+		_profile_button.grab_focus.call_deferred()
 
 
 func set_profile_content(profile_name: String, profile_score: String) -> void:
@@ -548,6 +572,8 @@ func set_profile_content(profile_name: String, profile_score: String) -> void:
 
 func set_start_run_locked(locked: bool) -> void:
 	_start_run_button.disabled = locked
+	if not locked:
+		configure_focus_navigation()
 
 
 func set_collection_locked(locked: bool) -> void:
@@ -604,6 +630,73 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 
 func _main_menu_buttons() -> Array:
 	return [_start_run_button, _continue_button, _tutorial_button, _settings_button, _profile_button, _quit_button]
+
+
+func _settings_focus_controls() -> Array:
+	var controls: Array = []
+	controls.append_array(_settings_speed_buttons)
+	controls.append(_settings_reduced_motion_button)
+	controls.append(_settings_game_juice_button)
+	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
+		controls.append(_settings_game_juice_flag_buttons.get(flag_key, null))
+	controls.append(_settings_reset_button)
+	controls.append(_settings_close_button)
+	return controls
+
+
+func _focusable_buttons(raw_controls: Array) -> Array[Button]:
+	var controls: Array[Button] = []
+	for raw_control in raw_controls:
+		var control := raw_control as Button
+		if control == null:
+			continue
+		control.focus_mode = Control.FOCUS_ALL as Control.FocusMode
+		if not control.disabled and control.visible:
+			controls.append(control)
+	return controls
+
+
+func _apply_focus_chain(controls: Array[Button]) -> void:
+	if controls.is_empty():
+		return
+	for control in controls:
+		control.focus_mode = Control.FOCUS_ALL as Control.FocusMode
+	if controls.size() == 1:
+		return
+	for index in controls.size():
+		var control := controls[index]
+		var previous_control := controls[(index - 1 + controls.size()) % controls.size()]
+		var next_control := controls[(index + 1) % controls.size()]
+		if not _can_link_focus_neighbor(control, previous_control) or not _can_link_focus_neighbor(control, next_control):
+			continue
+		var previous_path := control.get_path_to(previous_control)
+		var next_path := control.get_path_to(next_control)
+		control.set("focus_previous", previous_path)
+		control.set("focus_next", next_path)
+		control.set("focus_neighbor_top", previous_path)
+		control.set("focus_neighbor_left", previous_path)
+		control.set("focus_neighbor_bottom", next_path)
+		control.set("focus_neighbor_right", next_path)
+
+
+func _can_link_focus_neighbor(control: Control, target: Control) -> bool:
+	return control != null and target != null and control.is_inside_tree() and target.is_inside_tree() and control.get_tree() == target.get_tree()
+
+
+func _can_grab_main_menu_focus() -> bool:
+	return not _is_overlay_visible(_settings_overlay) and not _is_overlay_visible(_profile_overlay)
+
+
+func _is_overlay_visible(overlay: Control) -> bool:
+	return overlay != null and overlay.visible
+
+
+func _focus_first_control(raw_controls: Array) -> void:
+	for raw_control in raw_controls:
+		var control := raw_control as Button
+		if control != null and not control.disabled and control.visible:
+			control.grab_focus.call_deferred()
+			return
 
 
 func _layout_settings_overlay(viewport_size: Vector2) -> void:

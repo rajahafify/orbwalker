@@ -52,6 +52,7 @@ func ready() -> void:
 	_refresh_profile_overlay()
 	_view.apply_chrome_styles()
 	_view.layout_ui(_host.get_viewport_rect().size)
+	_view.configure_focus_navigation()
 	_start_menu_music.call_deferred()
 	_host.set_process(true)
 
