@@ -282,11 +282,6 @@
                   <td><code>docs/test_plan.html</code> and <code>docs/itch_readiness_tasks.html</code> describe route, readability, mobile, and release-readiness checks.</td>
                   <td><span class="badge warn">Needs latest pass</span> Use the fresh APK for Android smoke coverage.</td>
                 </tr>
-                <tr>
-                  <td>Graphify</td>
-                  <td>No <code>graphify-out/</code> exists in the workspace. Full corpus has 2,352 files outside temp/log folders.</td>
-                  <td><span class="badge warn">Skipped full build</span> This report used scoped source/docs/history analysis.</td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -315,7 +310,6 @@
             <li>Install and smoke test <code>Orbwalker.apk</code> on the target Android device: Start Run, resolve a combat turn, route to shop, buy/reroll/continue, return to combat, reach victory/defeat summary.</li>
             <li>Capture a short fresh QA note in <code>docs/test_plan.html</code> or <code>docs/itch_readiness_tasks.html</code> with exact device, build timestamp, routes tested, and any UI overlap/readability issues.</li>
             <li>Keep future combat changes inside the existing presenter/service boundaries unless the task truly belongs in orchestration.</li>
-            <li>Consider a scoped graphify run later on <code>scripts/</code>, <code>scenes/</code>, and selected docs rather than the entire repo with raw assets.</li>
           </ol>
         </section>
 
