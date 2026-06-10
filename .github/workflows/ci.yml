@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GODOT_VERSION: 4.6.3
-      GODOT_BIN: ${{ runner.temp }}/godot/Godot_v4.6.3-stable_linux.x86_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,8 +88,10 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/godot"
           curl -L -o "${RUNNER_TEMP}/godot/godot.zip" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           unzip -q "${RUNNER_TEMP}/godot/godot.zip" -d "${RUNNER_TEMP}/godot"
-          chmod +x "${GODOT_BIN}"
-          "${GODOT_BIN}" --version
+          godot_bin="${RUNNER_TEMP}/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          echo "GODOT_BIN=${godot_bin}" >> "${GITHUB_ENV}"
+          chmod +x "${godot_bin}"
+          "${godot_bin}" --version
 
       - name: Import project
         run: |
