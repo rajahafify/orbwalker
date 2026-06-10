@@ -567,9 +567,9 @@ func add_gold(amount: int, source: String = "combat_gain") -> int:
 
 
 func spend_gold(amount: int) -> bool:
+	var signal_before := _capture_run_signal_state()
 	if not ensure_wallet_service().spend_gold(self, amount):
 		return false
-	var signal_before := _capture_run_signal_state()
 	_sync_player_gold_from_run()
 	_emit_run_state_signals(signal_before, "spend_gold", "spend_gold")
 	return true

@@ -18,9 +18,10 @@ func run_all() -> Dictionary:
 	_run_case("sell_refund_does_not_count_to_run_score", _test_sell_refund_does_not_count_to_run_score, failures)
 	_run_case("spend_gold_rejects_invalid_amounts", _test_spend_gold_rejects_invalid_amounts, failures)
 	_run_case("can_afford_and_set_gold_clamp", _test_can_afford_and_set_gold_clamp, failures)
+	_run_case("run_state_spend_gold_emits_gold_changed", _test_run_state_spend_gold_emits_gold_changed, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -105,4 +106,28 @@ func _test_can_afford_and_set_gold_clamp() -> String:
 		return "Expected 14 to be affordable when run_gold is 15."
 	if not service.can_afford(run_state, 15):
 		return "Expected 15 to be affordable when run_gold is 15."
+	return ""
+
+
+func _test_run_state_spend_gold_emits_gold_changed() -> String:
+	var previous_gold := RunState.run_gold
+	var events: Array[Dictionary] = []
+	var recorder := func(payload: Dictionary) -> void: events.append(payload)
+	RunState.gold_changed.connect(recorder)
+	RunState.set_gold(40)
+	events.clear()
+	var spent: bool = RunState.spend_gold(15)
+	RunState.gold_changed.disconnect(recorder)
+	RunState.set_gold(previous_gold)
+	if not spent:
+		return "Expected spend_gold to succeed with sufficient balance."
+	if events.size() != 1:
+		return "Expected spend_gold to emit gold_changed exactly once, got %d." % events.size()
+	var payload: Dictionary = events[0]
+	if int(payload.get("delta", 0)) != -15:
+		return "Expected gold_changed delta of -15, got %s." % str(payload.get("delta"))
+	if int(payload.get("gold", -1)) != 25:
+		return "Expected gold_changed to report 25 gold, got %s." % str(payload.get("gold"))
+	if String(payload.get("source", "")) != "spend_gold":
+		return "Expected gold_changed source of spend_gold, got %s." % String(payload.get("source", ""))
 	return ""
