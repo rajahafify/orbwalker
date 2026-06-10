@@ -132,16 +132,19 @@ func _fixture() -> Dictionary:
 	root.name = "Root"
 	var recorder := CallbackRecorder.new()
 	var coordinator: Variant = COORDINATOR_SCRIPT.new()
-	coordinator.bind(
-		root,
-		{
-			"continue": Callable(recorder, "continue_pressed"),
-			"new_run": Callable(recorder, "new_run_pressed"),
-			"main_menu": Callable(recorder, "main_menu_pressed"),
-			"speed_selected": Callable(recorder, "speed_selected"),
-			"quality_selected": Callable(recorder, "quality_selected"),
-			"reset_defaults": Callable(recorder, "reset_defaults_pressed"),
-		}
+	(
+		coordinator
+		. bind(
+			root,
+			{
+				"continue": Callable(recorder, "continue_pressed"),
+				"new_run": Callable(recorder, "new_run_pressed"),
+				"main_menu": Callable(recorder, "main_menu_pressed"),
+				"speed_selected": Callable(recorder, "speed_selected"),
+				"quality_selected": Callable(recorder, "quality_selected"),
+				"reset_defaults": Callable(recorder, "reset_defaults_pressed"),
+			}
+		)
 	)
 	return {
 		"root": root,

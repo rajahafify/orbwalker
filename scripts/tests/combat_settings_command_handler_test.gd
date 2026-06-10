@@ -70,11 +70,16 @@ class CallbackRecorder:
 		return turn_index
 
 	func trace_and_change_scene(scene_path: String, trace_source: String, trace_mark: String) -> void:
-		routes.append({
-			"scene_path": scene_path,
-			"trace_source": trace_source,
-			"trace_mark": trace_mark,
-		})
+		(
+			routes
+			. append(
+				{
+					"scene_path": scene_path,
+					"trace_source": trace_source,
+					"trace_mark": trace_mark,
+				}
+			)
+		)
 
 	func combat_speed_value() -> String:
 		if model == null:
@@ -106,18 +111,19 @@ class FakeSettingsController:
 		return flow_route_id
 
 	func _trace_and_change_scene_to_target(
-		scene_path: String,
-		current_route_id: String,
-		trace_source: String,
-		trace_mark: String,
-		_begin_payload_extra: Dictionary = {}
+		scene_path: String, current_route_id: String, trace_source: String, trace_mark: String, _begin_payload_extra: Dictionary = {}
 	) -> void:
-		trace_calls.append({
-			"scene_path": scene_path,
-			"current_route_id": current_route_id,
-			"trace_source": trace_source,
-			"trace_mark": trace_mark,
-		})
+		(
+			trace_calls
+			. append(
+				{
+					"scene_path": scene_path,
+					"current_route_id": current_route_id,
+					"trace_source": trace_source,
+					"trace_mark": trace_mark,
+				}
+			)
+		)
 
 	func _debug_set_input_phase(value: int) -> void:
 		if recorder != null:
@@ -372,25 +378,28 @@ func _fixture() -> Dictionary:
 	var recorder := CallbackRecorder.new()
 	recorder.model = model
 	var handler: Variant = HANDLER_SCRIPT.new()
-	handler.bind(
-		view,
-		model,
-		presenter,
-		{
-			HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(recorder, "set_input_phase"),
-			HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
-			HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(recorder, "set_status_color"),
-			HANDLER_SCRIPT.CALLBACK_CURRENT_TURN_INDEX: Callable(recorder, "current_turn_index"),
-			HANDLER_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(recorder, "trace_and_change_scene"),
-			HANDLER_SCRIPT.CALLBACK_COMBAT_SPEED_VALUE: Callable(recorder, "combat_speed_value"),
-			HANDLER_SCRIPT.CALLBACK_APPLY_VFX_SPEED: Callable(recorder, "apply_vfx_speed"),
-			HANDLER_SCRIPT.CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(recorder, "apply_feedback_settings"),
-		},
-		{
-			"player_input_phase_value": 0,
-			"locked_input_phase_value": 2,
-			"neutral_status_color": Color(1.0, 1.0, 1.0, 1.0),
-		}
+	(
+		handler
+		. bind(
+			view,
+			model,
+			presenter,
+			{
+				HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(recorder, "set_input_phase"),
+				HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
+				HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(recorder, "set_status_color"),
+				HANDLER_SCRIPT.CALLBACK_CURRENT_TURN_INDEX: Callable(recorder, "current_turn_index"),
+				HANDLER_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(recorder, "trace_and_change_scene"),
+				HANDLER_SCRIPT.CALLBACK_COMBAT_SPEED_VALUE: Callable(recorder, "combat_speed_value"),
+				HANDLER_SCRIPT.CALLBACK_APPLY_VFX_SPEED: Callable(recorder, "apply_vfx_speed"),
+				HANDLER_SCRIPT.CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(recorder, "apply_feedback_settings"),
+			},
+			{
+				"player_input_phase_value": 0,
+				"locked_input_phase_value": 2,
+				"neutral_status_color": Color(1.0, 1.0, 1.0, 1.0),
+			}
+		)
 	)
 	return {
 		"handler": handler,
@@ -412,15 +421,7 @@ func _controller_state_fixture() -> Dictionary:
 	controller.recorder = recorder
 	recorder.model = model
 	var handler: Variant = HANDLER_SCRIPT.new()
-	handler.bind_for_combat_controller(
-		view,
-		model,
-		presenter,
-		controller,
-		0,
-		2,
-		Color(1.0, 1.0, 1.0, 1.0)
-	)
+	handler.bind_for_combat_controller(view, model, presenter, controller, 0, 2, Color(1.0, 1.0, 1.0, 1.0))
 	return {
 		"handler": handler,
 		"view": view,
