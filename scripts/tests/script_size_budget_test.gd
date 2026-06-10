@@ -1,18 +1,36 @@
 extends RefCounted
 class_name ScriptSizeBudgetTest
 
-const SCRIPT_SIZE_BUDGET := preload("res://tools/quality/script_size_budget.gd")
+const SCRIPT_SIZE_BUDGET_PATH := "res://tools/quality/script_size_budget.gd"
+
+const EXPECTED_RATCHET_BASELINES := {
+	"res://scripts/combat/combat_controller.gd": 1962,
+	"res://scripts/ui/player_loadout_hud.gd": 1924,
+	"res://scripts/ui/visual_registry.gd": 1722,
+	"res://scripts/core/run_state.gd": 1538,
+	"res://scripts/combat/combat_max_vfx_overlay.gd": 1088,
+	"res://scripts/main_menu/main_menu_view.gd": 1007,
+	"res://scripts/content/content_registry.gd": 807,
+	"res://scripts/debug/vfx_gallery_show.gd": 761,
+	"res://scripts/combat/combat_layout_presenter.gd": 732,
+	"res://scripts/combat/combat_chrome_styler.gd": 701,
+	"res://scripts/board/board_view.gd": 598,
+	"res://scripts/combat/combat_view.gd": 549,
+}
 
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
-	var report: Dictionary = SCRIPT_SIZE_BUDGET.run_report()
+	var script_size_budget: Variant = ResourceLoader.load(SCRIPT_SIZE_BUDGET_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	var report: Dictionary = script_size_budget.run_report()
 	_run_case("budget_report_has_no_undocumented_exceptions", _test_budget_report_has_no_undocumented_exceptions.bind(report), failures)
 	_run_case("combat_scripts_are_scanned", _test_combat_scripts_are_scanned.bind(report), failures)
 	_run_case("production_script_directories_are_scanned", _test_production_script_directories_are_scanned.bind(report), failures)
+	_run_case("documented_exceptions_have_ratchet_baselines", _test_documented_exceptions_have_ratchet_baselines.bind(script_size_budget, report), failures)
+	_run_case("ratchet_baselines_match_current_sizes", _test_ratchet_baselines_match_current_sizes.bind(report), failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -71,6 +89,38 @@ func _test_production_script_directories_are_scanned(report: Dictionary) -> Stri
 	missing_dirs.sort()
 	if not missing_dirs.is_empty():
 		return "Expected every production script directory to be scanned; missing: %s" % ", ".join(missing_dirs)
+	return ""
+
+
+func _test_documented_exceptions_have_ratchet_baselines(script_size_budget: Variant, report: Dictionary) -> String:
+	if script_size_budget.DOCUMENTED_EXCEPTIONS.size() != EXPECTED_RATCHET_BASELINES.size():
+		return "Expected documented exception inventory to match the ratchet baseline inventory."
+	for path in EXPECTED_RATCHET_BASELINES.keys():
+		if not script_size_budget.DOCUMENTED_EXCEPTIONS.has(path):
+			return "Expected documented exception for %s." % path
+		var exception: Dictionary = script_size_budget.DOCUMENTED_EXCEPTIONS.get(path, {})
+		var expected_baseline := int(EXPECTED_RATCHET_BASELINES.get(path, 0))
+		if int(exception.get("baseline", 0)) != expected_baseline:
+			return "Expected %s ratchet baseline to be %d." % [path, expected_baseline]
+		var entry := _entry_for_path(report, path)
+		if entry.is_empty():
+			return "Expected ratcheted exception to be scanned: %s." % path
+		if not bool(entry.get("documented_exception", false)):
+			return "Expected ratcheted path to remain a documented exception: %s." % path
+		if int(entry.get("ratchet_baseline", 0)) != expected_baseline:
+			return "Expected report baseline for %s to be %d." % [path, expected_baseline]
+	return ""
+
+
+func _test_ratchet_baselines_match_current_sizes(report: Dictionary) -> String:
+	for path in EXPECTED_RATCHET_BASELINES.keys():
+		var entry := _entry_for_path(report, path)
+		if entry.is_empty():
+			return "Expected ratcheted path to be scanned: %s." % path
+		var expected_baseline := int(EXPECTED_RATCHET_BASELINES.get(path, 0))
+		var line_count := int(entry.get("line_count", -1))
+		if line_count != expected_baseline:
+			return "%s measured %d lines; update the ratchet baseline from %d in the same PR." % [path, line_count, expected_baseline]
 	return ""
 
 

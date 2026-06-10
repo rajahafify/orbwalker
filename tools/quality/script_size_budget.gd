@@ -11,72 +11,84 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
+		"baseline": 1962,
 		"owner": "P1-1",
 		"reason":
 		"Combat orchestration is still being decomposed; keep state-machine, input-phase, replay, and route authority here until smaller collaborators are covered.",
 	},
 	"res://scripts/combat/combat_chrome_styler.gd":
 	{
+		"baseline": 701,
 		"owner": "P1-2",
 		"reason":
 		"Combat chrome styling is centralized while the view split is still settling; split HUD, board, debug, and outcome chrome into focused stylers.",
 	},
 	"res://scripts/combat/combat_layout_presenter.gd":
 	{
+		"baseline": 732,
 		"owner": "P1-2",
 		"reason":
 		"Combat layout rules are centralized during view decomposition; split board, HUD, overlay, and debug layout surfaces after screenshot guards cover them.",
 	},
 	"res://scripts/combat/combat_view.gd":
 	{
+		"baseline": 549,
 		"owner": "P1-2/P5-2",
 		"reason":
 		"Combat view now routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.",
 	},
 	"res://scripts/combat/combat_max_vfx_overlay.gd":
 	{
+		"baseline": 1088,
 		"owner": "P1-2/P5-2",
 		"reason":
 		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",
 	},
 	"res://scripts/ui/player_loadout_hud.gd":
 	{
+		"baseline": 1924,
 		"owner": "R-P1-3",
 		"reason":
 		"Player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces; split visible rails into presenters before enforcing the default budget.",
 	},
 	"res://scripts/ui/visual_registry.gd":
 	{
+		"baseline": 1722,
 		"owner": "R-P1-3",
 		"reason":
 		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",
 	},
 	"res://scripts/core/run_state.gd":
 	{
+		"baseline": 1538,
 		"owner": "R-P1-2",
 		"reason":
 		"RunState still owns run progression, settings persistence, routing constants, tracing, and logging; extract settings/routing stores and type collaborators.",
 	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
+		"baseline": 1007,
 		"owner": "R-P1-3",
 		"reason":
 		"Main menu view combines layout, profile/log controls, debug affordances, and button wiring; split focused presenters and accessibility focus setup.",
 	},
 	"res://scripts/content/content_registry.gd":
 	{
+		"baseline": 807,
 		"owner": "R-P1-3",
 		"reason":
 		"Content registry remains a large code-backed catalog; move static records into resources or generated data while preserving typed lookup methods.",
 	},
 	"res://scripts/debug/vfx_gallery_show.gd":
 	{
+		"baseline": 761,
 		"owner": "R-P4-2",
 		"reason":
 		"Developer VFX gallery script owns catalog loading, preview construction, controls, and presentation; split gallery UI presenters as the tool stabilizes.",
 	},
 	"res://scripts/board/board_view.gd":
 	{
+		"baseline": 598,
 		"owner": "R-P1-3",
 		"reason":
 		"Board view still owns grid layout, cell rendering, touch projection, selection state, and animation surfaces; split render and input helpers.",
@@ -96,6 +108,7 @@ static func run_report() -> Dictionary:
 	var undocumented_count := 0
 	var documented_count := 0
 	var stale_exception_count := 0
+	var ratchet_failure_count := 0
 	var failures: Array[String] = []
 	var scanned_paths := {}
 
@@ -105,6 +118,13 @@ static func run_report() -> Dictionary:
 		var budget := _budget_for_path(path)
 		var over_budget := line_count > budget
 		var documented_exception := DOCUMENTED_EXCEPTIONS.has(path)
+		var ratchet_baseline := _ratchet_baseline_for_path(path)
+		if documented_exception:
+			var ratchet_failure := _ratchet_failure_message(path, line_count, ratchet_baseline)
+			if ratchet_failure != "":
+				ratchet_failure_count += 1
+				failures.append(ratchet_failure)
+				_print_warning(path, line_count, budget, ratchet_failure)
 		if over_budget:
 			over_budget_count += 1
 			if documented_exception:
@@ -123,6 +143,7 @@ static func run_report() -> Dictionary:
 			"path": path,
 			"line_count": line_count,
 			"budget": budget,
+			"ratchet_baseline": ratchet_baseline,
 			"over_budget": over_budget,
 			"documented_exception": documented_exception,
 		}
@@ -136,13 +157,14 @@ static func run_report() -> Dictionary:
 
 	print(
 		(
-			"[ScriptBudget] scanned=%d over_budget=%d documented_exceptions=%d undocumented=%d stale_exceptions=%d"
+			"[ScriptBudget] scanned=%d over_budget=%d documented_exceptions=%d undocumented=%d stale_exceptions=%d ratchet_failures=%d"
 			% [
 				entries.size(),
 				over_budget_count,
 				documented_count,
 				undocumented_count,
 				stale_exception_count,
+				ratchet_failure_count,
 			]
 		)
 	)
@@ -153,6 +175,7 @@ static func run_report() -> Dictionary:
 		"documented_exceptions": documented_count,
 		"undocumented": undocumented_count,
 		"stale_exceptions": stale_exception_count,
+		"ratchet_failures": ratchet_failure_count,
 		"entries": entries,
 		"failures": failures,
 	}
@@ -221,6 +244,21 @@ static func _budget_for_path(path: String) -> int:
 	return DEFAULT_BUDGET
 
 
+static func _ratchet_baseline_for_path(path: String) -> int:
+	var exception: Dictionary = DOCUMENTED_EXCEPTIONS.get(path, {})
+	return int(exception.get("baseline", 0))
+
+
+static func _ratchet_failure_message(path: String, line_count: int, baseline: int) -> String:
+	if baseline <= 0:
+		return "Documented exception is missing a ratchet baseline: %s" % path
+	if line_count > baseline:
+		return "Script exceeds ratchet baseline: %s lines=%d baseline=%d" % [path, line_count, baseline]
+	if line_count < baseline:
+		return "Script is below ratchet baseline; lower the checked-in baseline: %s lines=%d baseline=%d" % [path, line_count, baseline]
+	return ""
+
+
 static func _check_exception_doc() -> Array[String]:
 	var failures: Array[String] = []
 	var doc_source := FileAccess.get_file_as_string(DOC_PATH)
@@ -238,22 +276,25 @@ static func _check_exception_doc() -> Array[String]:
 
 static func _print_documented_exception(path: String, line_count: int, budget: int) -> void:
 	var exception: Dictionary = DOCUMENTED_EXCEPTIONS.get(path, {})
+	var baseline := int(exception.get("baseline", 0))
 	var message := (
-		"Documented exception: lines=%d budget=%d. %s"
+		"Documented exception: lines=%d budget=%d baseline=%d. %s"
 		% [
 			line_count,
 			budget,
+			baseline,
 			String(exception.get("reason", "")),
 		]
 	)
 	print("::warning file=%s,line=1,title=Script size budget::%s" % [path.trim_prefix("res://"), message])
 	print(
 		(
-			"[ScriptBudget][exception] %s lines=%d budget=%d owner=%s reason=%s"
+			"[ScriptBudget][exception] %s lines=%d budget=%d baseline=%d owner=%s reason=%s"
 			% [
 				path,
 				line_count,
 				budget,
+				baseline,
 				String(exception.get("owner", "")),
 				String(exception.get("reason", "")),
 			]
