@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GODOT_VERSION: 4.6.3
-      GODOT_BIN: ${{ runner.temp }}/godot/Godot_v4.6.3-stable_linux.x86_64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,26 +88,35 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/godot"
           curl -L -o "${RUNNER_TEMP}/godot/godot.zip" "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           unzip -q "${RUNNER_TEMP}/godot/godot.zip" -d "${RUNNER_TEMP}/godot"
-          chmod +x "${GODOT_BIN}"
-          "${GODOT_BIN}" --version
+          godot_bin="${RUNNER_TEMP}/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          echo "GODOT_BIN=${godot_bin}" >> "${GITHUB_ENV}"
+          chmod +x "${godot_bin}"
+          "${godot_bin}" --version
 
       - name: Import project
-        run: "${GODOT_BIN}" --headless --path . --import --quit
+        run: |
+          "${GODOT_BIN}" --headless --path . --import --quit
 
       - name: Check script size budget and ratchet
-        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_size_budget.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_size_budget.gd
 
       - name: Validate script loading
-        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_load_validation.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_load_validation.gd
 
       - name: Check test surface coverage
-        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/test_surface_coverage.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/test_surface_coverage.gd
 
       - name: Audit main menu localization
-        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_localization_audit.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_localization_audit.gd
 
       - name: Audit main menu accessibility
-        run: "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_accessibility_audit.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/main_menu_accessibility_audit.gd
 
       - name: Run tests
-        run: "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://scripts/tests/run_all_tests.gd
