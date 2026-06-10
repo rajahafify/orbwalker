@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbwalker — God Object Refactor Strategy (SOLID) — 2026-06-11</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#131a24; --panel:#161e2b;
+    --panel2:#1b2433; --line:#26303f; --ink:#e7edf5; --muted:#9fb0c3;
+    --gold:#eba945; --gold-soft:#caa15a; --green:#4fc78a; --red:#f0676a;
+    --blue:#5aa7e6; --purple:#a98be0; --chip:#212c3c;
+    --p0:#f0676a; --p1:#eba945; --p2:#5aa7e6; --p3:#4fc78a; --p4:#a98be0; --p5:#7d8da0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0f16,#0d1117 240px);
+    color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.86em}
+  code{background:#0b1119;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#d6e2f0}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px 90px}
+
+  header.hero{padding:54px 22px 30px;max-width:1080px;margin:0 auto}
+  .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--gold-soft);font-weight:700}
+  h1{font-size:34px;margin:.25em 0 .15em;line-height:1.15}
+  .sub{color:var(--muted);font-size:16px;max-width:760px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .pill{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:12.5px;color:var(--muted)}
+  .pill b{color:var(--ink)}
+  .pill.ok b{color:var(--green)}
+  .pill.bad b{color:var(--red)}
+
+  h2.section{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:46px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:14px 0 6px}
+  .legend .l{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px}
+  .legend .l b{display:block;color:var(--ink);margin-bottom:2px}
+  .legend .l .tag{font-weight:800;font-size:15px;margin-right:6px}
+
+  table.grid{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:13.5px}
+  table.grid th,table.grid td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .dim{color:var(--muted)}
+  .n{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+  .sev{font-weight:800;font-size:12px;border-radius:6px;padding:2px 9px;color:#0d1117;white-space:nowrap}
+  .sev.crit{background:var(--p0)}
+  .sev.high{background:var(--p1)}
+  .sev.med{background:var(--p2)}
+  .sev.watch{background:var(--p5)}
+
+  .badge{display:inline-block;font-weight:800;font-size:11.5px;border-radius:6px;padding:2px 8px;letter-spacing:.04em;border:1px solid var(--line);background:var(--chip)}
+  .badge.S{color:#f0676a}.badge.O{color:#eba945}.badge.L{color:#4fc78a}.badge.I{color:#5aa7e6}.badge.D{color:#a98be0}
+
+  .phase{margin:30px 0}
+  .phase-head{display:flex;align-items:center;gap:12px;margin:0 0 4px}
+  .ptag{font-weight:800;font-size:13px;color:#0d1117;border-radius:7px;padding:4px 10px;letter-spacing:.03em}
+  .phase-head h3{font-size:21px;margin:0}
+  .phase-goal{color:var(--muted);margin:2px 0 16px;font-size:14.5px}
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-left:3px solid var(--line);
+    border-radius:12px;padding:16px 18px;margin:12px 0;
+  }
+  .card.crit{border-left-color:var(--p0)}
+  .card.high{border-left-color:var(--p1)}
+  .card.med{border-left-color:var(--p2)}
+  .card h4{margin:0 0 2px;font-size:16.5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .card .file{color:var(--muted);font-size:12.5px;margin-bottom:10px}
+  .card p{margin:8px 0}
+  .card ul,.card ol{margin:8px 0;padding-left:22px}
+  .card li{margin:5px 0}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .box{background:#10161f;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.5px}
+  .box h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .box.before h5{color:var(--red)}
+  .box.after h5{color:var(--green)}
+  .box ul{margin:0;padding-left:18px}
+  .box li{margin:4px 0}
+
+  pre{
+    background:#0b1119;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow-x:auto;font-size:12.8px;line-height:1.55;
+    font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace;color:#d6e2f0;
+  }
+  pre .c{color:#677a90}
+  pre .k{color:#eba945}
+  pre .t{color:#5aa7e6}
+  pre .s{color:#4fc78a}
+
+  .callout{background:rgba(235,169,69,.07);border:1px solid rgba(235,169,69,.3);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout b{color:var(--gold)}
+  .callout.green{background:rgba(79,199,138,.07);border-color:rgba(79,199,138,.3)}
+  .callout.green b{color:var(--green)}
+
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 20px;font-size:14px}
+  .toc ol{margin:6px 0;padding-left:22px}
+  .toc li{margin:4px 0}
+
+  footer{color:var(--muted);font-size:12.5px;margin-top:60px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Orbwalker · Architecture</div>
+  <h1>God Object Refactor Strategy</h1>
+  <p class="sub">A phased, SOLID-driven plan to decompose the five god objects in the codebase. Each extraction is small, test-guarded, and shippable on its own — no big-bang rewrite.</p>
+  <div class="meta">
+    <span class="pill">Date <b>2026-06-11</b></span>
+    <span class="pill bad">God objects <b>5</b></span>
+    <span class="pill">Watch list <b>3</b></span>
+    <span class="pill">Total lines in scope <b>~8,200</b></span>
+    <span class="pill ok">Approach <b>Incremental, strangler-style</b></span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<h2 class="section">Contents</h2>
+<div class="toc">
+  <ol>
+    <li><a href="#solid">SOLID principles → how each applies here</a></li>
+    <li><a href="#inventory">God object inventory</a></li>
+    <li><a href="#playbook">The extraction playbook (rules for every step)</a></li>
+    <li><a href="#runstate">Strategy 1 — <code>run_state.gd</code></a></li>
+    <li><a href="#controller">Strategy 2 — <code>combat_controller.gd</code></a></li>
+    <li><a href="#hud">Strategy 3 — <code>player_loadout_hud.gd</code></a></li>
+    <li><a href="#registry">Strategy 4 — <code>visual_registry.gd</code></a></li>
+    <li><a href="#vfx">Strategy 5 — <code>combat_max_vfx_overlay.gd</code></a></li>
+    <li><a href="#roadmap">Phased roadmap</a></li>
+    <li><a href="#guardrails">Guardrails &amp; definition of done</a></li>
+  </ol>
+</div>
+
+<h2 class="section" id="solid">SOLID → How Each Principle Applies Here</h2>
+<div class="legend">
+  <div class="l"><b><span class="tag" style="color:var(--p0)">S</span>Single Responsibility</b>
+    The core violation in all five files. Every extraction below is an SRP cut: one class, one reason to change. Target budget: ≤ 400 lines / ≤ 30 functions per class.</div>
+  <div class="l"><b><span class="tag" style="color:var(--p1)">O</span>Open–Closed</b>
+    Adding a new shop offer type, VFX effect, or settings row must not require editing a 1,900-line hub. We replace if/elif dispatch with registries and per-type handler classes.</div>
+  <div class="l"><b><span class="tag" style="color:var(--p3)">L</span>Liskov Substitution</b>
+    Extracted services share base interfaces (e.g. <code>CombatPresenter</code>). Any presenter must be swappable in tests with a stub without the controller noticing.</div>
+  <div class="l"><b><span class="tag" style="color:var(--p2)">I</span>Interface Segregation</b>
+    Consumers currently depend on all of <code>RunState</code> to use one slice of it. We expose narrow facades (<code>WalletService</code>, <code>ShopService</code>) so the shop UI never sees profile code.</div>
+  <div class="l"><b><span class="tag" style="color:var(--p4)">D</span>Dependency Inversion</b>
+    High-level flow (controller) depends on injected abstractions, not on concrete autoload singletons reached via <code>get_node("/root/…")</code>. The existing <code>_bind_*</code> pattern in the controller is the right seam — extend it.</div>
+</div>
+
+<div class="callout">
+  <b>GDScript note:</b> Godot has no formal interfaces. We approximate them with base classes (<code>class_name</code> + overridable methods) or duck-typed contracts documented at the top of each service. Liskov/ISP still apply — they govern the <em>shape</em> of the contract, not the language feature.
+</div>
+
+<h2 class="section" id="inventory">God Object Inventory</h2>
+<table class="grid">
+  <tr><th>Severity</th><th>File</th><th>Lines</th><th>Funcs</th><th>Vars</th><th>Distinct responsibilities found</th></tr>
+  <tr><td><span class="sev crit">CRITICAL</span></td><td><code>scripts/core/run_state.gd</code></td><td class="n">1,538</td><td class="n">152</td><td class="n">39</td><td>Service locator, profile, meta-profile, unlocks, wallet/economy, shop lifecycle, treasure chests, balance levers, run lifecycle, transition snapshots, validation</td></tr>
+  <tr><td><span class="sev crit">CRITICAL</span></td><td><code>scripts/combat/combat_controller.gd</code></td><td class="n">1,962</td><td class="n">190</td><td class="n">47</td><td>Lifecycle, input, settings menu, debug console/overlay, tutorial-end flow, drag/swap, VFX binding, audio binding, scene transitions, test-item injection</td></tr>
+  <tr><td><span class="sev high">HIGH</span></td><td><code>scripts/ui/player_loadout_hud.gd</code></td><td class="n">1,924</td><td class="n">134</td><td class="n">34</td><td>Equipment slots, consumable slots, tooltips, drag-and-drop, sell flow, animations, layout/resize, signal fan-out (8 signals)</td></tr>
+  <tr><td><span class="sev high">HIGH</span></td><td><code>scripts/ui/visual_registry.gd</code></td><td class="n">1,723</td><td class="n">120</td><td class="n">39</td><td>Texture lookup, theme/style construction, palette data, per-screen style recipes, caching</td></tr>
+  <tr><td><span class="sev med">MEDIUM</span></td><td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td><td class="n">1,088</td><td class="n">131</td><td class="n">40</td><td>One node owning every max-tier VFX effect: spawning, pooling, tweening, cleanup per effect type</td></tr>
+  <tr><td><span class="sev watch">WATCH</span></td><td><code>scripts/main_menu/main_menu_view.gd</code></td><td class="n">1,007</td><td class="n">61</td><td class="n">49</td><td>49 member vars in one view — refactor only if it grows further</td></tr>
+  <tr><td><span class="sev watch">WATCH</span></td><td><code>scripts/content/content_registry.gd</code></td><td class="n">807</td><td class="n">33</td><td class="n">4</td><td>Mostly data tables — acceptable; consider moving tables to <code>.tres</code> resources later</td></tr>
+  <tr><td><span class="sev watch">WATCH</span></td><td><code>scripts/board/board_view.gd</code></td><td class="n">598</td><td class="n">49</td><td class="n">36</td><td>Near budget — freeze growth, extract on next feature touch</td></tr>
+</table>
+
+<h2 class="section" id="playbook">The Extraction Playbook</h2>
+<p>Every extraction in this document follows the same five steps. This is what makes the refactor safe and reviewable.</p>
+<div class="card">
+  <ol>
+    <li><b>Characterize first.</b> Before touching code, make sure the behavior being moved is covered by a test (extend <code>scripts/tests/</code>; <code>combat_model_test.gd</code> shows the house style). If no test exists, write a characterization test against the <em>current</em> behavior.</li>
+    <li><b>Extract the class, keep the facade.</b> Move the methods into a new class; the god object keeps thin one-line delegating methods so <em>zero call sites change</em> in the same PR. (Strangler pattern — the god object becomes a facade that shrinks over time.)</li>
+    <li><b>Inject, don't reach.</b> The new class receives its dependencies via constructor/<code>bind()</code> parameters — never via <code>get_node("/root/…")</code> or autoload references inside the class (DIP). The composition root (autoload <code>_ready</code> or controller <code>_bind_*</code>) does the wiring.</li>
+    <li><b>Migrate call sites in a follow-up PR.</b> Point callers at the new service, then delete the delegating methods from the facade.</li>
+    <li><b>Ratchet.</b> After each extraction, the god object's line count must go <em>down</em>. Never add new features to a file on this list — new code goes into the extracted services.</li>
+  </ol>
+</div>
+
+<!-- ============================== RUN STATE ============================== -->
+<h2 class="section" id="runstate">Strategy 1 — run_state.gd <span class="dim">(highest value, do first)</span></h2>
+
+<div class="card crit">
+  <h4><span class="sev crit">CRITICAL</span> Decompose the autoload into six injected services <span class="badge S">SRP</span> <span class="badge I">ISP</span> <span class="badge D">DIP</span></h4>
+  <div class="file">scripts/core/run_state.gd — 1,538 lines, 152 functions, 39 vars</div>
+
+  <p><b>Why first:</b> it's an autoload everything depends on, so every line removed here lowers coupling project-wide. Its seams are also the cleanest — the shop/economy block barely touches the profile block.</p>
+
+  <div class="split">
+    <div class="box before">
+      <h5>Before — one class, six jobs</h5>
+      <ul>
+        <li>10× <code>ensure_*</code> service-locator factories</li>
+        <li>Wallet: <code>add_gold / spend_gold / can_afford</code></li>
+        <li>Shop: open/reroll/buy/sell/close + treasure chests + relic offers</li>
+        <li>Profile &amp; meta-profile: reset/create/snapshot</li>
+        <li>Unlocks: <code>unlock_equipment / claim / consume_recent</code></li>
+        <li>Balance levers: snapshot/set/reset</li>
+        <li>Run lifecycle: <code>start_new_run / start_tutorial_run / reset_run</code></li>
+        <li>Transition snapshots: 3 paired snapshot/restore sets</li>
+      </ul>
+    </div>
+    <div class="box after">
+      <h5>After — RunState as thin composition root</h5>
+      <ul>
+        <li><code>core/wallet_service.gd</code> — gold only (~80 lines)</li>
+        <li><code>shop/shop_session.gd</code> — shop lifecycle, with its dependencies made explicit (see dependency map below; merge with existing <code>shop_service</code>)</li>
+        <li><code>core/profile_service.gd</code> — profile + meta-profile + unlocks (~300 lines)</li>
+        <li><code>core/balance_levers.gd</code> — prototype balance config (~100 lines)</li>
+        <li><code>core/run_lifecycle.gd</code> — new run / tutorial run / reset (~150 lines)</li>
+        <li><code>core/transition_snapshot.gd</code> — all snapshot/restore pairs (~200 lines)</li>
+        <li><code>RunState</code> keeps: wiring + ~20 delegating methods during migration (&lt; 300 lines at end state)</li>
+      </ul>
+    </div>
+  </div>
+
+  <p><b>ShopSession dependency map (do this before extracting).</b> The existing <code>shop_service.gd</code> takes the whole <code>RunState</code> node and reaches into seven things through it: <code>ShopState</code> (via <code>ensure_shop_state</code>), <code>ContentRegistry</code>, <code>ShopOfferPolicy</code> (already owned), gold mutation including refunds (<code>spend_gold</code> / <code>add_gold("shop_refund")</code>), <code>run_gold</code> for result reporting, <code>PlayerProgressionState</code> + <code>PlayerProgressionService</code> for buy/sell application, and relic-offer tracking (<code>set_relic_offer_id_for_level</code>, <code>dungeon_level</code>). "Depends only on wallet + content registry" is therefore <em>not</em> the target — if followed literally it forces either a hidden <code>RunState</code> back-reference or duplicated shop state. The actual goal is to make these seven dependencies <b>explicit constructor parameters</b>:</p>
+<pre><span class="c"># shop_session.gd — every current reach-in becomes a named, injected dependency</span>
+<span class="k">func</span> _init(wallet: <span class="t">WalletService</span>, content: <span class="t">ContentRegistry</span>, shop_state: <span class="t">ShopState</span>,
+        offer_policy: <span class="t">ShopOfferPolicy</span>,
+        progression_state: <span class="t">PlayerProgressionState</span>,  <span class="c"># buy/sell mutate the loadout…</span>
+        progression_service: <span class="t">PlayerProgressionService</span>,  <span class="c"># …through the service, on this state</span>
+        relic_tracker: <span class="t">RelicOfferTracker</span>) -&gt; <span class="t">void</span>: ...</pre>
+  <p>Refunds stay inside <code>WalletService</code> (<code>spend</code>/<code>refund</code> with reason strings), <code>run_gold</code> reporting reads from the wallet, and <code>set_relic_offer_id_for_level</code> moves into a small <code>RelicOfferTracker</code> (or lives on <code>ShopState</code>). If a dependency can't be named, that's a signal the seam isn't ready — map it first, extract second.</p>
+
+  <p><b>ShopOfferPolicy needs the same treatment — don't let the god object smuggle back in through the policy layer.</b> Every public method of <code>shop_offer_policy.gd</code> (<code>item_offers</code>, <code>relic_offer</code>, <code>first_shop_guarantee_entry</code>…) also takes <code>run_state: Node</code> and reaches through it for: <code>ensure_shop_state().next_offer_id()</code>, relic-offer tracking (<code>relic_offer_id_for_level</code> / <code>set_relic_offer_id_for_level</code>), equipped-equipment and owned-relic lookups from progression state, unlock checks, shop ordinal, and prototype reward levers — and it even forwards <code>run_state</code> into <code>content.shop_item_pool(level, run_state)</code>. If <code>ShopSession</code> gets clean constructor injection but keeps passing a <code>RunState</code> node into the policy, the refactor changes nothing. Fix: replace the <code>run_state</code> parameter with a <code>ShopOfferContext</code> value object built by <code>ShopSession</code> per call:</p>
+<pre><span class="c"># shop/shop_offer_context.gd — everything the policy may know, nothing more</span>
+<span class="k">class_name</span> <span class="t">ShopOfferContext</span>
+<span class="k">var</span> level: <span class="t">int</span>
+<span class="k">var</span> shop_ordinal: <span class="t">int</span>
+<span class="k">var</span> equipped_equipment_ids: <span class="t">Array</span>[<span class="t">String</span>]
+<span class="k">var</span> owned_relic_ids: <span class="t">Array</span>[<span class="t">String</span>]
+<span class="k">var</span> unlocked_equipment_ids: <span class="t">Array</span>[<span class="t">String</span>]
+<span class="k">var</span> cached_relic_offer_id: <span class="t">String</span>
+<span class="k">var</span> reward_levers: <span class="t">Dictionary</span>
+
+<span class="c"># policy signature becomes — a result object, because the policy has stateful</span>
+<span class="c"># outputs today (it mints offer ids via shop_state.next_offer_id() and clears</span>
+<span class="c"># stale cached relic ids inline):</span>
+<span class="k">func</span> item_offers(ctx: <span class="t">ShopOfferContext</span>, content: <span class="t">ContentRegistry</span>) -&gt; <span class="t">ShopOfferResult</span>
+
+<span class="c"># shop/shop_offer_result.gd</span>
+<span class="k">class_name</span> <span class="t">ShopOfferResult</span>
+<span class="k">var</span> offers: <span class="t">Array</span>[<span class="t">Dictionary</span>]  <span class="c"># offer_id left empty — ShopSession mints ids</span>
+<span class="k">var</span> clear_cached_relic_id: <span class="t">bool</span>  <span class="c"># relic offer was stale; session updates the tracker</span>
+<span class="k">var</span> cache_relic_offer_id: <span class="t">String</span>  <span class="c"># freshly selected relic to pin for this level (&quot;&quot; = none)</span></pre>
+  <p>The three mutations the policy currently performs inline move out as follows: <b>offer ids</b> — the policy returns offers without ids and <code>ShopSession</code> mints them via <code>shop_state.next_offer_id()</code> when applying the result (alternatively, preallocate a batch of ids into the context; returning id-less offers is simpler and keeps the context read-only). <b>Stale relic-cache clear</b> — the stale-id clear at <code>shop_offer_policy.gd:104</code> becomes the <code>clear_cached_relic_id</code> flag on the result, applied by the session to the <code>RelicOfferTracker</code>. <b>New relic-cache write</b> — when no cached id exists, <code>relic_offer()</code> currently picks a relic and writes it back via <code>set_relic_offer_id_for_level</code> (<code>shop_offer_policy.gd:105</code>+) so the same offer persists across shop refreshes; that selection comes back as <code>cache_relic_offer_id</code> and the session pins it in the tracker — the persistence guarantee is preserved, just applied in one place. With all three out, the policy is a pure function of context + content + RNG — trivially unit-testable. <code>ContentRegistry.shop_item_pool</code> must take the context (or the specific fields it uses) instead of the <code>run_state</code> node, for the same reason.</p>
+  <p><b>ISP payoff:</b> shop UI takes a <code>ShopSession</code>, combat reward code takes a <code>WalletService</code>, main menu takes a <code>ProfileService</code>. No consumer sees the other five services.</p>
+
+<pre><span class="c"># run_state.gd — end state: composition root only</span>
+<span class="k">var</span> wallet: <span class="t">WalletService</span>
+<span class="k">var</span> profile: <span class="t">ProfileService</span>
+<span class="k">var</span> shop: <span class="t">ShopSession</span>
+
+<span class="k">func</span> _ready() -&gt; <span class="t">void</span>:
+    wallet = <span class="t">WalletService</span>.new(_run_logger)
+    profile = <span class="t">ProfileService</span>.new(_profile_repository)
+    <span class="c"># DIP: all mapped deps injected, not reached for (see ShopSession dependency map above)</span>
+    shop = <span class="t">ShopSession</span>.new(wallet, content_registry, shop_state, offer_policy,
+            progression_state, progression_service, relic_tracker, _run_logger)
+
+<span class="c"># temporary facade kept during migration (step 2 of playbook):</span>
+<span class="k">func</span> spend_gold(amount: <span class="t">int</span>) -&gt; <span class="t">bool</span>: <span class="k">return</span> wallet.spend(amount)</pre>
+
+  <p><b>Extraction order</b> (one PR each):</p>
+  <ol>
+    <li><code>WalletService</code> — smallest, most-referenced; proves the pattern.</li>
+    <li><code>ShopSession</code> — inject the seven mapped dependencies above; fold in treasure chest and relic-offer methods.</li>
+    <li><code>TransitionSnapshot</code> — mechanical move of the 6 snapshot/restore methods.</li>
+    <li><code>ProfileService</code> + <code>BalanceLevers</code> + <code>RunLifecycle</code>.</li>
+    <li>Delete delegating facades; <code>RunState</code> is now wiring only.</li>
+  </ol>
+</div>
+
+<!-- ============================== COMBAT CONTROLLER ============================== -->
+<h2 class="section" id="controller">Strategy 2 — combat_controller.gd</h2>
+
+<div class="card crit">
+  <h4><span class="sev crit">CRITICAL</span> Finish the coordinator extraction already in flight <span class="badge S">SRP</span> <span class="badge O">OCP</span> <span class="badge D">DIP</span></h4>
+  <div class="file">scripts/combat/combat_controller.gd — 1,962 lines, 190 functions, 47 vars</div>
+
+  <p><b>Good news:</b> the architecture is already half-right. The <code>_bind_*</code> methods (<code>_bind_audio_cue_player</code>, <code>_bind_debug_state_provider</code>, <code>_bind_combat_vfx_presenter</code>…) are dependency injection seams, and commit <code>43d82ce</code> already extracted outcome-routing coordinators. The strategy is to keep pulling on that thread until the controller is <em>only</em> a composition root + signal router.</p>
+
+  <div class="split">
+    <div class="box before">
+      <h5>Remaining responsibility clusters</h5>
+      <ul>
+        <li>~14 <code>_on_settings_*</code> callbacks (speed, quality, reduced motion, juice flags, defaults)</li>
+        <li>Debug: console, overlay toggle, regenerate/print-board, run-tests, test-item injection</li>
+        <li>Tutorial-end continue/main-menu flow</li>
+        <li>Drag/swap state (<code>_drag_*</code> family)</li>
+        <li>Turn preview + combat state init</li>
+        <li>Viewport/input handling</li>
+      </ul>
+    </div>
+    <div class="box after">
+      <h5>Migration map — extend existing seams, don't create parallel ones</h5>
+      <ul>
+        <li>Settings callbacks → <b>existing</b> <code>CombatSettingsCommandHandler</code> + <code>CombatSettingsOverlayCoordinator</code>; the controller's <code>_on_settings_*</code> bodies move there, leaving connect-only stubs</li>
+        <li>Debug cluster → <b>existing</b> <code>CombatDebugRuntime</code>, <code>CombatBoardDebugCommandHandler</code>, <code>CombatDebugCommandAdapter</code>; remaining inline debug logic (overlay toggle, test-item buttons, run-tests) migrates into them</li>
+        <li>Tutorial-end flow → <b>existing</b> <code>CombatTutorialEndCommandHandler</code> + <code>CombatTutorialEndOverlayCoordinator</code></li>
+        <li>Input/viewport handling → <b>existing</b> <code>CombatInputCommandHandler</code></li>
+        <li>Drag/swap → <b>new</b> <code>combat/board_drag_coordinator.gd</code> (no existing owner for the <code>_drag_*</code> family)</li>
+        <li>Turn preview + state init → <b>new</b> <code>combat/combat_session.gd</code> (pure logic, headless-testable)</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>The codebase already has the right abstractions — the controller's problem is that it kept the method <em>bodies</em> after the handlers were introduced. Phase 2 is therefore mostly <b>migration into existing classes</b>, not new architecture: audit each controller method, find its rightful existing owner from the map above, and only create a new class for the two clusters with no owner.</p>
+
+  <p><b>Liskov/DIP rule for coordinators:</b> each gets a <code>bind(deps) → void</code> and <code>teardown() → void</code> contract matching the existing handler/coordinator pattern, so the controller treats every collaborator uniformly and tests can substitute stubs.</p>
+
+  <p><b>End state:</b> controller ≈ 400 lines — <code>_ready</code> wiring, signal connect/disconnect, and nothing with game logic in it. The test for "is it done": <em>no method in the controller contains an <code>if</code> about game rules.</em></p>
+</div>
+
+<!-- ============================== HUD ============================== -->
+<h2 class="section" id="hud">Strategy 3 — player_loadout_hud.gd</h2>
+
+<div class="card high">
+  <h4><span class="sev high">HIGH</span> Split into slot components + a thin coordinator <span class="badge S">SRP</span> <span class="badge L">LSP</span> <span class="badge I">ISP</span></h4>
+  <div class="file">scripts/ui/player_loadout_hud.gd — 1,924 lines, 134 functions, 34 vars, 8 signals</div>
+
+  <p>A HUD this size is almost always several widgets trapped in one script. Decompose along the natural UI seams — Godot scenes are the cheapest module boundary in the engine, so each piece becomes its own <code>.tscn</code> + script:</p>
+  <ul>
+    <li><code>ui/loadout/equipment_strip.gd</code> + scene — renders equipment slots, emits <code>slot_pressed(index)</code></li>
+    <li><code>ui/loadout/consumable_strip.gd</code> + scene — same contract as the equipment strip (<b>LSP:</b> both extend a common <code>ItemStrip</code> base so the HUD treats them identically)</li>
+    <li><code>ui/loadout/item_tooltip_presenter.gd</code> — tooltip build/show/hide; takes item data in, knows nothing about slots</li>
+    <li><code>ui/loadout/loadout_drag_handler.gd</code> — drag-and-drop + sell-drop logic</li>
+    <li><code>ui/loadout/loadout_animator.gd</code> — acquire/consume/unlock animations</li>
+    <li><code>player_loadout_hud.gd</code> shrinks to a coordinator that wires the strips to game state and re-emits its existing 8 public signals (external API unchanged → no call-site churn)</li>
+  </ul>
+  <p><b>ISP:</b> the strips receive plain item-view-model arrays (<code>Array[Dictionary]</code> or a small <code>ItemViewModel</code> resource), not <code>RunState</code>. Only the coordinator knows where data comes from — which also makes the strips reusable in the shop screen.</p>
+</div>
+
+<!-- ============================== VISUAL REGISTRY ============================== -->
+<h2 class="section" id="registry">Strategy 4 — visual_registry.gd</h2>
+
+<div class="card high">
+  <h4><span class="sev high">HIGH</span> Data goes to resources, recipes go to stylers <span class="badge S">SRP</span> <span class="badge O">OCP</span></h4>
+  <div class="file">scripts/ui/visual_registry.gd — 1,723 lines, 120 functions, 39 vars</div>
+
+  <p>A registry should be a lookup table, not a style factory. Two cuts:</p>
+  <ol>
+    <li><b>Data → resources.</b> Palette constants, texture maps, and per-item visual definitions move into <code>.tres</code> custom resources (<code>VisualTheme</code>, <code>OrbTextureSet</code>). The registry keeps only <code>get_*</code> lookups + caching (~300 lines). <b>OCP:</b> adding a new item's visuals becomes adding a resource file — zero code edits.</li>
+    <li><b>Style recipes → per-screen stylers.</b> Functions that <em>construct</em> StyleBoxes/themes for a specific screen move next to that screen (the codebase already has the pattern: <code>combat_chrome_styler.gd</code>). Shared builders go in <code>ui/style_builders.gd</code> as static helpers.</li>
+  </ol>
+  <p><b>Guardrail:</b> after the split, the registry may not <code>new()</code> any StyleBox — construction belongs to stylers, lookup belongs to the registry.</p>
+</div>
+
+<!-- ============================== VFX OVERLAY ============================== -->
+<h2 class="section" id="vfx">Strategy 5 — combat_max_vfx_overlay.gd</h2>
+
+<div class="card med">
+  <h4><span class="sev med">MEDIUM</span> Finish the migration to the existing presenter/recipe pattern <span class="badge S">SRP</span> <span class="badge O">OCP</span> <span class="badge L">LSP</span></h4>
+  <div class="file">scripts/combat/combat_max_vfx_overlay.gd — 1,088 lines, 131 functions, 40 vars</div>
+
+  <p><b>The pattern already exists — finish migrating to it.</b> The repo has ~25 <code>CombatMaxVfx*Presenter</code> classes (fire/ice/earth recipe presenters, burst particles, camera kick, coin rain, flipbooks, cleanup, …) plus <code>CombatMaxVfxAssetCatalog</code> and <code>CombatMaxVfxElementalRecipePolicy</code>. The overlay's problem is not a missing abstraction; it's that 131 functions of spawn/tween/cleanup logic stayed <em>inline in the overlay</em> instead of moving into presenters. Do <b>not</b> introduce a new <code>VfxEffect</code> hierarchy alongside the presenter/recipe pattern — that would leave two competing abstractions.</p>
+  <p>Strategy, per the playbook:</p>
+  <ol>
+    <li><b>Audit</b> each overlay function: does an existing presenter own this effect family? If yes, move the body there. If no, create a new <code>CombatMaxVfx*Presenter</code> following the existing naming and structure.</li>
+    <li><b>Formalize the implicit contract</b> the presenters already share, so dispatch is uniform and LSP holds. Make completion and cancellation concrete — not a vague signal placeholder:</li>
+  </ol>
+<pre><span class="c"># combat/combat_max_vfx_presenter_base.gd — codifies what presenters already do</span>
+<span class="k">class_name</span> <span class="t">CombatMaxVfxPresenterBase</span>
+<span class="k">signal</span> effect_finished(effect_id: <span class="t">String</span>)
+
+<span class="k">func</span> bind(host: <span class="t">CanvasItem</span>, catalog: <span class="t">CombatMaxVfxAssetCatalog</span>, profile: <span class="t">CombatVfxProfile</span>) -&gt; <span class="t">void</span>: <span class="k">pass</span>
+<span class="k">func</span> play(effect_id: <span class="t">String</span>, ctx: <span class="t">Dictionary</span>) -&gt; <span class="t">void</span>: <span class="k">pass</span>  <span class="c"># emits effect_finished when done</span>
+<span class="k">func</span> cancel_all() -&gt; <span class="t">void</span>: <span class="k">pass</span>  <span class="c"># kills tweens/particles, frees spawned nodes, no signal</span></pre>
+  <p>Callers that need to await completion connect to <code>effect_finished</code> (or <code>await presenter.effect_finished</code>); fire-and-forget callers just call <code>play</code>. <code>cancel_all</code> is what <code>CombatMaxVfxCleanupPresenter</code> effectively does today — promoting it to the base contract lets the overlay tear everything down uniformly.</p>
+  <p><b>End state:</b> the overlay is a dispatcher (~150 lines) that resolves <code>effect_id → presenter</code> via a registry map, applies reduced-motion/quality gates once (via the existing <code>CombatVfxProfile</code> / recipe-policy classes), and forwards. Adding a max-tier effect = new presenter file + one registry line (OCP), with zero edits to the overlay.</p>
+  <p><b>Apply the same audit</b> to <code>combat_vfx_presenter.gd</code> (650 lines) when it next needs a change — same base contract.</p>
+</div>
+
+<h2 class="section" id="roadmap">Phased Roadmap</h2>
+
+<div class="phase">
+  <div class="phase-head"><span class="ptag" style="background:var(--p0)">PHASE 1</span><h3>RunState decomposition</h3></div>
+  <p class="phase-goal">Highest leverage, cleanest seams. 5 PRs following the extraction order in Strategy 1. Exit: <code>run_state.gd</code> &lt; 300 lines.</p>
+</div>
+<div class="phase">
+  <div class="phase-head"><span class="ptag" style="background:var(--p1)">PHASE 2</span><h3>Combat controller coordinators</h3></div>
+  <p class="phase-goal">Continue the work started in <code>43d82ce</code>: settings → debug → tutorial → drag → session, one coordinator per PR. Exit: controller &lt; 400 lines, no game-rule logic.</p>
+</div>
+<div class="phase">
+  <div class="phase-head"><span class="ptag" style="background:var(--p2)">PHASE 3</span><h3>UI layer: HUD + visual registry</h3></div>
+  <p class="phase-goal">Strips/tooltip/drag out of the HUD; data-to-resources for the registry. These two interact (the HUD consumes registry styles), so sequence registry data extraction first.</p>
+</div>
+<div class="phase">
+  <div class="phase-head"><span class="ptag" style="background:var(--p3)">PHASE 4</span><h3>VFX presenter migration + watch-list cleanup</h3></div>
+  <p class="phase-goal">Migrate the overlay's inline effect logic into the existing <code>CombatMaxVfx*Presenter</code> classes; opportunistic extraction in <code>main_menu_view.gd</code> and <code>board_view.gd</code> as features touch them.</p>
+</div>
+
+<h2 class="section" id="guardrails">Guardrails &amp; Definition of Done</h2>
+
+<div class="card">
+  <ul>
+    <li><b>Size budget (baseline ratchet, enforced in review):</b> record each inventory file's current line count as a checked-in baseline; a PR fails the ratchet only if it leaves a listed file <em>above its baseline</em>, and any PR that lands below the old baseline lowers it. This permits transitional facade delegators (the playbook's step 2 adds a few lines while removing many) while still forcing net shrinkage — judge the diff per-PR, not per-edit. New/extracted classes: ≤ 400 lines and ≤ 30 functions.</li>
+    <li><b>One extraction per PR.</b> Behavior-preserving moves only; never mix a refactor with a feature or balance change.</li>
+    <li><b>Tests before moves.</b> Every extracted service gets headless unit tests in <code>scripts/tests/</code>; the existing 2,825-line <code>combat_model_test.gd</code> should also be split alongside Phase 2 so tests mirror the new module boundaries.</li>
+    <li><b>No new autoload reach-ins.</b> Extracted classes take dependencies via constructor/<code>bind()</code>. Grep gate: <code>get_node("/root/</code> must not appear in any new service file.</li>
+    <li><b>Facade deletion is part of done.</b> A strategy is complete only when the delegating methods are removed — a facade left forever is just a thinner god object.</li>
+  </ul>
+</div>
+
+<div class="callout green">
+  <b>Definition of done for the whole effort:</b> no non-test script over 800 lines; <code>RunState</code> and <code>CombatController</code> contain wiring only; adding a shop offer type, settings row, or VFX effect requires no edits to any file on the inventory list.
+</div>
+
+<footer>
+  Generated 2026-06-11 · Based on static analysis of <code>scripts/</code> (line/function/member counts + method-name responsibility clustering) · Companion to <a href="code_review_findings_2026-06-10.html">Code Review Findings 2026-06-10</a>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbwalker — Code Review Findings P0–P5 (2026-06-10)</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#131a24; --panel:#161e2b;
+    --panel2:#1b2433; --line:#26303f; --ink:#e7edf5; --muted:#9fb0c3;
+    --gold:#eba945; --gold-soft:#caa15a; --green:#4fc78a; --red:#f0676a;
+    --blue:#5aa7e6; --purple:#a98be0; --chip:#212c3c;
+    --p0:#f0676a; --p1:#eba945; --p2:#5aa7e6; --p3:#4fc78a; --p4:#a98be0; --p5:#7d8da0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0f16,#0d1117 240px);
+    color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.86em}
+  code{background:#0b1119;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#d6e2f0}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px 90px}
+
+  header.hero{padding:54px 22px 30px;max-width:1080px;margin:0 auto}
+  .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--gold-soft);font-weight:700}
+  h1{font-size:34px;margin:.25em 0 .15em;line-height:1.15}
+  .sub{color:var(--muted);font-size:16px;max-width:760px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .pill{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:12.5px;color:var(--muted)}
+  .pill b{color:var(--ink)}
+  .pill.ok b{color:var(--green)}
+
+  h2.section{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:46px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 6px}
+  .legend .l{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13px}
+  .legend .l b{display:block;color:var(--ink);margin-bottom:2px}
+
+  table.grid{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:13.5px}
+  table.grid th,table.grid td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.grid th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  .dim{color:var(--muted)}
+  .n{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+  .phase{margin:30px 0}
+  .phase-head{display:flex;align-items:center;gap:12px;margin:0 0 4px}
+  .ptag{font-weight:800;font-size:13px;color:#0d1117;border-radius:7px;padding:4px 10px;letter-spacing:.03em}
+  .phase-head h3{font-size:21px;margin:0}
+  .phase-goal{color:var(--muted);margin:2px 0 16px;font-size:14.5px}
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-left:3px solid var(--line);
+    border-radius:12px;padding:16px 18px;margin:12px 0;
+  }
+  .card h4{margin:0 0 2px;font-size:16.5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .id{font-family:ui-monospace,monospace;font-size:12px;color:#0d1117;background:var(--gold-soft);border-radius:5px;padding:2px 7px;font-weight:700}
+  .why{color:var(--muted);margin:8px 0 12px}
+  .lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-soft);font-weight:700;margin:12px 0 5px}
+  ul.act{margin:4px 0 0;padding-left:20px}
+  ul.act li{margin:3px 0}
+  .ac{background:#0b1119;border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin-top:11px;font-size:13.5px;color:var(--green)}
+  .ac b{color:var(--ink);font-weight:600}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+  .t{font-size:11.5px;background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:3px 9px;color:var(--muted)}
+  .t b{color:var(--ink)}
+  .files{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--gold-soft)}
+
+  .callout{background:#1a1410;border:1px solid #4a3a1f;border-radius:11px;padding:14px 17px;margin:16px 0;color:#e9d6b3}
+  .callout b{color:var(--gold)}
+
+  footer{color:var(--muted);font-size:12.5px;margin-top:50px;border-top:1px solid var(--line);padding-top:18px}
+
+  .c-p0{border-left-color:var(--p0)} .c-p1{border-left-color:var(--p1)}
+  .c-p2{border-left-color:var(--p2)} .c-p3{border-left-color:var(--p3)}
+  .c-p4{border-left-color:var(--p4)} .c-p5{border-left-color:var(--p5)}
+  .pt-p0{background:var(--p0)} .pt-p1{background:var(--p1)} .pt-p2{background:var(--p2)}
+  .pt-p3{background:var(--p3)} .pt-p4{background:var(--p4)} .pt-p5{background:var(--p5);color:#fff}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink)}
+  .sev{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:5px;padding:2px 8px;font-weight:700}
+  .sev.hi{background:#3a1d1f;color:#f0989a;border:1px solid #5c2c2f}
+  .sev.med{background:#3a2f17;color:#ecc77f;border:1px solid #5c4a24}
+  .sev.lo{background:#1d2c3a;color:#9cc6ea;border:1px solid #2c455c}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Orbwalker · Engineering</div>
+  <h1>Code Review Findings — P0&ndash;P5</h1>
+  <p class="sub">Findings from a full static review plus a live editor/runtime check over MCP on 2026-06-10. Each item records what was found, the evidence, and what should be done. Phases follow the taxonomy from <code>docs/codebase_quality_roadmap.html</code>: P0 integrity &rarr; P5 resilience.</p>
+  <div class="meta">
+    <span class="pill ok">Tests <b>79 suites · 371 cases · 0 failed</b></span>
+    <span class="pill ok">Runtime <b>main menu + combat boot clean</b></span>
+    <span class="pill">Combat first usable frame <b>~340 ms</b></span>
+    <span class="pill">Godot <b>4.6.3-stable</b></span>
+    <span class="pill">Scripts <b>241 (.gd), 76 test/probe</b></span>
+  </div>
+  <div class="toc">
+    <a href="#p0">P0 Integrity</a>
+    <a href="#p1">P1 Structure</a>
+    <a href="#p2">P2 Contracts</a>
+    <a href="#p3">P3 Test depth</a>
+    <a href="#p4">P4 Tooling/DX</a>
+    <a href="#p5">P5 Resilience</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2 class="section">Summary</h2>
+  <div class="callout"><b>Overall: healthy.</b> The full headless suite passes (371/371), CI gates are live, the combat decomposition pattern is consistently applied, and the live MCP check confirmed both <code>main_menu.tscn</code> and <code>combat.tscn</code> run with zero debugger errors. The findings below are debt and guard-integrity gaps, not broken behavior. Nothing here blocks a release build.</div>
+
+  <table class="grid">
+    <thead><tr><th>ID</th><th>Phase</th><th>Finding</th><th>Severity</th></tr></thead>
+    <tbody>
+      <tr><td class="files">R-P0-1</td><td>P0 Integrity</td><td>Script-size budget guard has blind spots — biggest files are never scanned</td><td><span class="sev hi">High</span></td></tr>
+      <tr><td class="files">R-P1-1</td><td>P1 Structure</td><td><code>combat_controller.gd</code> still a god object: 1,962 lines vs 400 budget</td><td><span class="sev hi">High</span></td></tr>
+      <tr><td class="files">R-P1-2</td><td>P1 Structure</td><td><code>RunState</code> autoload mixes run state, settings I/O, routing, logging (1,538 lines)</td><td><span class="sev med">Medium</span></td></tr>
+      <tr><td class="files">R-P1-3</td><td>P1 Structure</td><td>Unscanned UI god objects: <code>player_loadout_hud.gd</code> (1,924), <code>visual_registry.gd</code> (1,723)</td><td><span class="sev med">Medium</span></td></tr>
+      <tr><td class="files">R-P2-1</td><td>P2 Contracts</td><td><code>Variant</code>-typed collaborators forfeit type checking at the riskiest boundaries</td><td><span class="sev med">Medium</span></td></tr>
+      <tr><td class="files">R-P3-1</td><td>P3 Test depth</td><td>Board resolver tests spam <code>max_steps=1</code> warnings, masking real ones</td><td><span class="sev lo">Low</span></td></tr>
+      <tr><td class="files">R-P3-2</td><td>P3 Test depth</td><td>RID / ObjectDB leaks reported at headless test exit</td><td><span class="sev lo">Low</span></td></tr>
+      <tr><td class="files">R-P4-1</td><td>P4 Tooling/DX</td><td>Stale <code>tmp/desktop_layout_probe.gd</code> throws 7 parse errors on every editor start</td><td><span class="sev med">Medium</span></td></tr>
+      <tr><td class="files">R-P4-2</td><td>P4 Tooling/DX</td><td>~25 GDScript analyzer warnings (shadowing, unused vars) in combat VFX/view scripts</td><td><span class="sev lo">Low</span></td></tr>
+      <tr><td class="files">R-P5-1</td><td>P5 Resilience</td><td>No keyboard/controller focus navigation — main menu unreachable without touch/mouse</td><td><span class="sev lo">Low</span></td></tr>
+      <tr><td class="files">R-P5-2</td><td>P5 Resilience</td><td>Deprecated <code>graph_offset</code> in a visual shader resource (forward-compat risk)</td><td><span class="sev lo">Low</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ===================== P0 ===================== -->
+  <div class="phase" id="p0">
+    <div class="phase-head"><span class="ptag pt-p0">P0</span><h3>Foundational integrity</h3></div>
+    <p class="phase-goal">Guards must actually guard. A quality gate that silently skips the worst offenders is worse than no gate, because it certifies health it never measured.</p>
+
+    <div class="card c-p0">
+      <h4><span class="id">R-P0-1</span> Script-size budget guard has blind spots</h4>
+      <p class="why"><b>Finding:</b> <code>tools/quality/script_size_budget.gd</code> only scans <code>scripts/combat</code>, <code>scripts/shop</code>, <code>scripts/collection</code>, and <code>scripts/run_summary</code> (<code>SCAN_ROOTS</code>, lines 3&ndash;8). The four largest non-test, non-combat scripts in the repo therefore never appear in the budget report: <code>scripts/ui/player_loadout_hud.gd</code> (1,924 lines), <code>scripts/ui/visual_registry.gd</code> (1,723), <code>scripts/core/run_state.gd</code> (1,538), and <code>scripts/main_menu/main_menu_view.gd</code> (930). Two of these are larger than every documented combat exception except the controller itself. The CI log prints <code>scanned=118</code> against 165 non-test scripts.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Add <code>res://scripts/ui</code>, <code>res://scripts/core</code>, <code>res://scripts/main_menu</code>, and <code>res://scripts/board</code> to <code>SCAN_ROOTS</code>.</li>
+        <li>Document the four newly-visible over-budget files as exceptions with owners and reasons, exactly as the five combat exceptions are documented today.</li>
+        <li>Extend <code>script_size_budget_test.gd</code> with a case asserting the scan covers every non-test directory under <code>scripts/</code>, so a future folder can't silently escape.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> budget report scans all non-test script roots; <code>undocumented=0</code> still holds; new exceptions carry owner + reason; coverage test fails if a scripts/ subfolder is missing from the scan.</div>
+      <div class="tags"><span class="t files">tools/quality/script_size_budget.gd</span><span class="t files">scripts/tests/script_size_budget_test.gd</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== P1 ===================== -->
+  <div class="phase" id="p1">
+    <div class="phase-head"><span class="ptag pt-p1">P1</span><h3>Structural debt — the god objects</h3></div>
+    <p class="phase-goal">Continue the decomposition that is already working in combat, and extend it to the two large surfaces it hasn't reached: the UI layer and the <code>RunState</code> autoload.</p>
+
+    <div class="card c-p1">
+      <h4><span class="id">R-P1-1</span> <code>combat_controller.gd</code> remains the largest single risk</h4>
+      <p class="why"><b>Finding:</b> 1,962 lines against a 400-line budget, preloading ~37 collaborator scripts. The exception is documented (owner P1-1) and the recent commit history shows active extraction (outcome routing, turn resolution, HUD stage coordinators all landed recently), so this is known, fenced debt — but it is still the file where a regression is most likely to hide.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Keep extracting along the existing seams; the remaining in-controller candidates are replay sequencing (<code>TURN_REPLAY_*</code> constants and their consumers), combo popup presentation, and input-phase gating (<code>InputPhase</code> enum).</li>
+        <li>Each extraction follows the established pattern: small collaborator + dedicated <code>run_all()</code> test suite, landed in the same commit.</li>
+        <li>Ratchet the documented exception's line count down with each extraction so the budget exception cannot quietly grow back.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> controller below ~350 lines per the roadmap's P1-1 target; documented exception removed; combat flow tests stay green.</div>
+      <div class="tags"><span class="t files">scripts/combat/combat_controller.gd</span></div>
+    </div>
+
+    <div class="card c-p1">
+      <h4><span class="id">R-P1-2</span> <code>RunState</code> autoload mixes too many roles</h4>
+      <p class="why"><b>Finding:</b> <code>scripts/core/run_state.gd</code> (1,538 lines) owns run progression, gold/score, the level sequence, profile persistence, user-settings file I/O (<code>user://matchatro_settings.cfg</code>), scene route constants, flow tracing, and logging. Its collaborator members are untyped (<code>var player_state</code>, <code>var content_registry</code>, &hellip;), so none of its call sites get static checking.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Extract a <code>UserSettingsStore</code> for the cfg read/write (the <code>USER_SETTINGS_*</code> constants and their accessors) — it is the most self-contained slice and shop/combat/menu all consume it.</li>
+        <li>Move scene path constants next to <code>scene_router.gd</code>, which already exists as the routing seam.</li>
+        <li>Type the collaborator members (<code>var player_state: PlayerState</code>, &hellip;) — these classes already have <code>class_name</code> declarations or preloaded script constants.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> settings I/O lives in a tested store; RunState members typed; RunState enters the size-budget scan (R-P0-1) with a shrinking documented exception.</div>
+      <div class="tags"><span class="t files">scripts/core/run_state.gd</span><span class="t files">scripts/core/scene_router.gd</span></div>
+    </div>
+
+    <div class="card c-p1">
+      <h4><span class="id">R-P1-3</span> Unscanned UI god objects</h4>
+      <p class="why"><b>Finding:</b> <code>scripts/ui/player_loadout_hud.gd</code> (1,924 lines) and <code>scripts/ui/visual_registry.gd</code> (1,723 lines) are the second- and third-largest production scripts in the repo and have never been subject to the budget or the decomposition program. <code>visual_registry.gd</code> in particular looks like a static asset-path catalog that could largely become data (the same observation the budget doc already makes for <code>combat_max_vfx_overlay.gd</code>'s catalogs).</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Move <code>visual_registry.gd</code>'s static path/texture catalogs into <code>.tres</code> resources or a generated data file, leaving a thin typed lookup API.</li>
+        <li>Split <code>player_loadout_hud.gd</code> along its visible seams (equipment rail, consumable rail, mastery icons) using the presenter pattern combat already established.</li>
+        <li>Bring both under the size budget with documented exceptions first (R-P0-1), then ratchet down.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> both files visible in the budget report; catalogs out of code; each extracted presenter has its own test suite.</div>
+      <div class="tags"><span class="t files">scripts/ui/player_loadout_hud.gd</span><span class="t files">scripts/ui/visual_registry.gd</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== P2 ===================== -->
+  <div class="phase" id="p2">
+    <div class="phase-head"><span class="ptag pt-p2">P2</span><h3>Contracts &amp; type safety</h3></div>
+    <p class="phase-goal">The riskiest boundaries are exactly the ones typed <code>Variant</code> today.</p>
+
+    <div class="card c-p2">
+      <h4><span class="id">R-P2-1</span> <code>Variant</code>-typed collaborators in the combat controller</h4>
+      <p class="why"><b>Finding:</b> <code>combat_controller.gd</code> holds its most complex collaborators untyped: <code>var _combat: Variant</code>, <code>var _debug_runtime: Variant = null</code>, <code>var _settings_command_handler: Variant = null</code>, <code>var _combat_timer_service: Variant = null</code>, <code>var _resolver: Variant</code>. Any renamed or removed method on these classes becomes a runtime error instead of a parse error — in the one file least able to afford it. The live editor session also reported two "integer used where enum expected" analyzer warnings, the same class of silent coercion.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Give the collaborators <code>class_name</code> declarations where missing and type the fields. Where a preload cycle prevents it, type against a minimal interface-style base class instead of falling back to <code>Variant</code>.</li>
+        <li>Fix the two int-vs-enum sites with explicit <code>as</code> casts or proper enum values.</li>
+        <li>Apply the same pass to <code>RunState</code>'s members (tracked under R-P1-2).</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> zero <code>Variant</code>-typed collaborator fields in combat_controller; analyzer reports no int-vs-enum warnings on reload.</div>
+      <div class="tags"><span class="t files">scripts/combat/combat_controller.gd</span><span class="t files">scripts/core/run_state.gd</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== P3 ===================== -->
+  <div class="phase" id="p3">
+    <div class="phase-head"><span class="ptag pt-p3">P3</span><h3>Test depth &amp; signal quality</h3></div>
+    <p class="phase-goal">The suite is broad and green; the remaining work is making its output trustworthy enough that a new warning is a signal, not noise.</p>
+
+    <div class="card c-p3">
+      <h4><span class="id">R-P3-1</span> Board resolver tests spam expected warnings</h4>
+      <p class="why"><b>Finding:</b> Six cases in <code>scripts/tests/integrations/board_resolver_test.gd</code> intentionally call <code>resolve_all</code> with <code>max_steps=1</code>, and <code>board_match_resolver_service.gd:56</code> emits <code>push_warning("BoardMatchResolverService hit max_steps=1 before stabilizing")</code> each time. Six identical warning+backtrace blocks per run bury any genuine warning in the CI log.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Add a <code>suppress_warnings</code> (or <code>expected_truncation</code>) parameter to <code>resolve_all</code> that the tests pass, or have the service return the truncation fact in its result dictionary and let real callers decide whether to warn.</li>
+        <li>Goal state: a fully green run prints zero warnings, so any warning in CI is actionable.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> green headless run emits no <code>BoardMatchResolverService</code> warnings; the warning still fires for real gameplay truncation.</div>
+      <div class="tags"><span class="t files">scripts/board/board_match_resolver_service.gd</span><span class="t files">scripts/tests/integrations/board_resolver_test.gd</span></div>
+    </div>
+
+    <div class="card c-p3">
+      <h4><span class="id">R-P3-2</span> Resource leaks at test-runner exit</h4>
+      <p class="why"><b>Finding:</b> The headless run exits with <code>1 RID allocation of type RendererSceneCull::Instance leaked</code>, one <code>Camera</code> RID, one <code>CanvasItem</code> RID, and an ObjectDB instance leak. Some test or probe instantiates scene/canvas objects and never frees them. Harmless today, but it normalizes leak output — a future real leak in VFX overlays (which allocate heavily) would look identical.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Run the suite once with <code>--verbose</code> to identify the leaking suite (the camera RID suggests a 3D/viewport-using probe), then free the nodes in that suite's teardown.</li>
+        <li>Once clean, consider asserting on leak output in CI (grep the runner log for <code>leaked</code>) so it stays clean.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> headless exit prints no leaked RID/ObjectDB lines; CI fails if leak lines reappear.</div>
+      <div class="tags"><span class="t files">scripts/tests/run_all_tests.gd</span><span class="t files">scripts/debug/*</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== P4 ===================== -->
+  <div class="phase" id="p4">
+    <div class="phase-head"><span class="ptag pt-p4">P4</span><h3>Tooling &amp; developer experience</h3></div>
+    <p class="phase-goal">A quiet editor log is the cheapest quality tool there is.</p>
+
+    <div class="card c-p4">
+      <h4><span class="id">R-P4-1</span> Stale temp probe breaks editor startup log</h4>
+      <p class="why"><b>Finding:</b> <code>tmp/desktop_layout_probe.gd</code> (local-only; <code>tmp/</code> is gitignored and the hygiene test forbids tracking it) calls <code>build_desktop_layout_probe()</code> on <code>ShopView</code>, <code>RunSummaryView</code>, and <code>MainMenuView</code> — static methods that no longer exist. The editor logs 7 parse errors on every startup. Confirmed live via MCP on 2026-06-10.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Delete <code>tmp/desktop_layout_probe.gd</code> (it was a one-off desktop-viewport experiment; the per-view probes it called were removed).</li>
+        <li>If desktop layout probing is still wanted, rewrite it against the current API — only <code>CombatLayoutPresenter.build_layout_probe()</code> survives.</li>
+        <li>Optionally add <code>tmp/</code> to a <code>.gdignore</code> so the editor never parses scratch scripts.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> editor startup log shows zero parse errors.</div>
+      <div class="tags"><span class="t files">tmp/desktop_layout_probe.gd</span></div>
+    </div>
+
+    <div class="card c-p4">
+      <h4><span class="id">R-P4-2</span> Analyzer warning sweep in combat VFX/view scripts</h4>
+      <p class="why"><b>Finding:</b> The live editor session reports ~25 GDScript analyzer warnings concentrated around the VFX/view layer: <code>layer_size</code> parameters shadowing a function (8 sites), shadowed locals (<code>quality</code>, <code>preview</code>, <code>created_unix</code>, <code>updated_unix</code>, <code>item_id</code>), unused class variables (<code>_background</code>, <code>_next_button</code>, <code>_debug_toggle_button</code>, <code>_debug_overlay</code>, <code>_intent_badge</code>, <code>_player_hp_bar</code>, <code>_player_portrait</code>), and unused parameters in <code>spawn_bar_infusion()</code>. The unused class variables look like dead bindings left behind by the recent presenter extractions.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Delete the dead class-variable bindings — they imply node references that no longer have owners and will confuse the next extraction.</li>
+        <li>Rename shadowing locals/parameters (e.g. <code>layer_size</code> &rarr; <code>size</code> param or rename the function) and underscore-prefix intentionally unused parameters.</li>
+        <li>After the sweep, treat new analyzer warnings as review-blocking in the same spirit as the size budget.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> script reload in the editor produces zero analyzer warnings across <code>scripts/combat</code> and <code>scripts/ui</code>.</div>
+      <div class="tags"><span class="t files">scripts/combat/combat_vfx_presenter.gd</span><span class="t files">scripts/combat/combat_max_vfx_overlay.gd</span><span class="t files">scripts/ui/*</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== P5 ===================== -->
+  <div class="phase" id="p5">
+    <div class="phase-head"><span class="ptag pt-p5">P5</span><h3>Resilience &amp; forward compatibility</h3></div>
+    <p class="phase-goal">Long-horizon items: not needed for the Android release, cheap to note now.</p>
+
+    <div class="card c-p5">
+      <h4><span class="id">R-P5-1</span> No keyboard/controller focus path</h4>
+      <p class="why"><b>Finding:</b> Simulated <code>ui_down</code>/<code>ui_accept</code> input against the running main menu did nothing — no button takes initial focus, so the game is unreachable without touch/mouse. Reasonable scope for a touch-first Android title, but it limits desktop/itch.io play and accessibility, and <code>main_menu_accessibility_test.gd</code> currently doesn't cover focus navigation.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Decide explicitly: if desktop/itch is on the roadmap (the itch readiness docs suggest it is), set <code>focus_neighbor</code>/<code>grab_focus()</code> on the menu buttons and extend the accessibility test to walk the focus chain.</li>
+        <li>If touch-only is the deliberate scope, record that as a decision in <code>docs/architecture_decisions.html</code> so it stops resurfacing in reviews.</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> either a focus chain exists and is tested, or the scope cut is documented.</div>
+      <div class="tags"><span class="t files">scripts/main_menu/main_menu_view.gd</span><span class="t files">scripts/tests/main_menu_accessibility_test.gd</span></div>
+    </div>
+
+    <div class="card c-p5">
+      <h4><span class="id">R-P5-2</span> Deprecated <code>graph_offset</code> in a visual shader resource</h4>
+      <p class="why"><b>Finding:</b> Loading VFX assets during <code>combat_model_test.gd</code>'s asset-availability case (line 353) triggers <code>WARNING: graph_offset property is deprecated. Setting it has no effect</code> from a saved VisualShader resource. Cosmetic on 4.6, but deprecated properties are removal candidates in future Godot majors and will spam every asset-touching test until fixed.</p>
+      <div class="lab">What should be done</div>
+      <ul class="act">
+        <li>Identify the shader (re-run the suite; the warning's backtrace points at the asset list in the test), open it once in the editor, and re-save — Godot drops the deprecated property on save.</li>
+        <li>Sweep other <code>.tres</code> shader resources for the same property while at it (<code>grep -l graph_offset resources/ assets/</code>).</li>
+      </ul>
+      <div class="ac"><b>Acceptance:</b> headless run emits no deprecation warnings.</div>
+      <div class="tags"><span class="t files">scripts/tests/combat_model_test.gd:353</span><span class="t files">resources/, assets/ (visual shaders)</span></div>
+    </div>
+  </div>
+
+  <h2 class="section">What was verified, for the record</h2>
+  <div class="legend">
+    <div class="l"><b>Static review</b>241 scripts inventoried; largest files measured; budget tool, hygiene test, and CI workflow read in full.</div>
+    <div class="l"><b>Headless suite</b>Godot 4.6.3 <code>--headless --script run_all_tests.gd</code>: 79 suites, 371 cases, 0 failed.</div>
+    <div class="l"><b>Live editor (MCP)</b>Project info, error log, scene tree of <code>combat.tscn</code> inspected; zero session errors.</div>
+    <div class="l"><b>Live runtime (MCP)</b>Main menu and combat both launched; combat auto-started a run and rendered fully; FlowTrace showed clean load, first usable frame ~340 ms.</div>
+  </div>
+
+  <footer>
+    Generated 2026-06-10 from a Claude Code review session (static analysis + Godot MCP live check). Phase taxonomy follows <code>docs/codebase_quality_roadmap.html</code>. IDs are prefixed <code>R-</code> (review) to avoid colliding with roadmap item IDs.
+  </footer>
+
+</div>
+</body>
+</html>
