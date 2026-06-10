@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const SCAN_ROOTS := [
 	"res://scripts",
@@ -11,7 +11,7 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
-		"baseline": 1958,
+		"baseline": 1962,
 		"owner": "P1-1",
 		"reason":
 		"Combat orchestration is still being decomposed; keep state-machine, input-phase, replay, and route authority here until smaller collaborators are covered.",

@@ -478,11 +478,15 @@ func _bind_debug_console() -> void:
 func _bind_settings_command_handler() -> void:
 	if _settings_command_handler == null:
 		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
+	var current_turn_index_provider := func() -> int: return int(_combat.turn_index if _combat != null else 1)
+	var trace_and_change_scene := func(scene_path: String, trace_source: String, trace_mark: String) -> void:
+		_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), trace_source, trace_mark)
 	_settings_command_handler.bind_for_combat_controller(
 		_view,
 		_model,
 		_resolve_presenter,
 		self,
+		current_turn_index_provider, trace_and_change_scene,
 		int(InputPhase.PLAYER_INPUT),
 		int(InputPhase.LOCKED_EXTERNAL),
 		STATUS_COLOR_NEUTRAL

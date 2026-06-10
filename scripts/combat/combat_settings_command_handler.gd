@@ -46,6 +46,8 @@ func bind_for_combat_controller(
 	model: Variant,
 	resolve_presenter: Variant,
 	controller: Object,
+	current_turn_index_provider: Callable,
+	trace_and_change_scene: Callable,
 	player_input_phase_value: int,
 	locked_input_phase_value: int,
 	neutral_status_color: Color
@@ -58,8 +60,8 @@ func bind_for_combat_controller(
 			CALLBACK_SET_INPUT_PHASE: Callable(controller, "_debug_set_input_phase"),
 			CALLBACK_SET_STATUS_TEXT: Callable(controller, "_set_status_text"),
 			CALLBACK_SET_STATUS_COLOR: Callable(controller, "_set_status_color"),
-			CALLBACK_CURRENT_TURN_INDEX: Callable(self, "_resolve_current_turn_index").bind(controller),
-			CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(self, "_resolve_trace_and_change_scene").bind(controller),
+			CALLBACK_CURRENT_TURN_INDEX: current_turn_index_provider,
+			CALLBACK_TRACE_AND_CHANGE_SCENE: trace_and_change_scene,
 			CALLBACK_COMBAT_SPEED_VALUE: Callable(controller, "_combat_speed_value"),
 			CALLBACK_APPLY_VFX_SPEED: Callable(controller, "_apply_vfx_speed_setting"),
 			CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(controller, "_apply_feedback_settings"),
@@ -182,39 +184,6 @@ func _current_turn_index() -> int:
 
 func _trace_and_change_scene(scene_path: String, trace_source: String, trace_mark: String) -> void:
 	_call_callback(CALLBACK_TRACE_AND_CHANGE_SCENE, [scene_path, trace_source, trace_mark])
-
-
-func _resolve_current_turn_index(controller: Object) -> int:
-	if controller == null:
-		return 1
-	var raw_combat: Variant = controller.get("_combat") if controller.has_method("get") else null
-	if raw_combat is Dictionary:
-		var turn_index: Variant = raw_combat.get("turn_index", null)
-		if turn_index is int:
-			return int(turn_index)
-		if turn_index is float:
-			return int(turn_index)
-	if raw_combat is Object:
-		var object_turn_index: Variant = raw_combat.get("turn_index") if raw_combat.has_method("get") else null
-		if object_turn_index is int:
-			return int(object_turn_index)
-		if object_turn_index is float:
-			return int(object_turn_index)
-	return 1
-
-
-func _resolve_trace_and_change_scene(scene_path: String, trace_source: String, trace_mark: String, controller: Object) -> void:
-	var route_id := ""
-	if controller == null:
-		return
-	var callback_route: Callable = Callable(controller, "_flow_trace_route_id_value")
-	if callback_route.is_valid():
-		var callback_route_value: Variant = callback_route.call()
-		if callback_route_value is String:
-			route_id = String(callback_route_value)
-	var callback_change_scene: Callable = Callable(controller, "_trace_and_change_scene_to_target")
-	if callback_change_scene.is_valid():
-		callback_change_scene.call(scene_path, route_id, trace_source, trace_mark)
 
 
 func _combat_speed_value() -> String:
