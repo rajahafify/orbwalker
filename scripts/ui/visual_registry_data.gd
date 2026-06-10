@@ -34,7 +34,7 @@ const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.js
 const PATH_RUNTIME_COLLECTION_UI_DIR := "res://resources/art/assetgen/runtime/collection_ui"
 const PATH_RUNTIME_SHOP_UI_DIR := "res://resources/art/assetgen/runtime/shop_ui"
 
-const _ENEMY_PORTRAIT_PATHS := {
+const ENEMY_PORTRAIT_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
 	"ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
@@ -51,22 +51,22 @@ const _ENEMY_PORTRAIT_PATHS := {
 	"charger": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
 }
 
-const _ENEMY_STAGE_BACKGROUND_PATHS := {
+const ENEMY_STAGE_BACKGROUND_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/derived/combat_layers/generated_cavern_dungeon_bg_v1.png",
 }
 
-const _ENEMY_SPRITE_PATHS := {
+const ENEMY_SPRITE_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/enemy_sprites/generated_cavern_striker_sprite_wide_v1.png",
 }
 
-const _DERIVED_ORB_CONTRACT_FILENAMES := [
-	"orb_fire_clean.png",
-	"orb_ice_clean.png",
-	"orb_earth_clean.png",
-	"orb_heart_clean.png",
-	"orb_armor_clean.png",
-	"orb_gold_clean.png",
-]
+const DERIVED_ORB_FILENAME_BY_ID := {
+	OrbType.Id.FIRE: "orb_fire_clean.png",
+	OrbType.Id.ICE: "orb_ice_clean.png",
+	OrbType.Id.EARTH: "orb_earth_clean.png",
+	OrbType.Id.HEART: "orb_heart_clean.png",
+	OrbType.Id.ARMOR: "orb_armor_clean.png",
+	OrbType.Id.GOLD: "orb_gold_clean.png",
+}
 
 
 static func asset_contract_paths() -> Dictionary:
@@ -87,9 +87,9 @@ static func asset_contract_paths() -> Dictionary:
 		PATH_HERO_PORTRAIT,
 		PATH_FALLBACK_HERO_PORTRAIT,
 	]
-	imported_textures.append_array(dictionary_string_values(_ENEMY_PORTRAIT_PATHS))
-	imported_textures.append_array(dictionary_string_values(_ENEMY_STAGE_BACKGROUND_PATHS))
-	imported_textures.append_array(dictionary_string_values(_ENEMY_SPRITE_PATHS))
+	imported_textures.append_array(dictionary_string_values(ENEMY_PORTRAIT_PATHS))
+	imported_textures.append_array(dictionary_string_values(ENEMY_STAGE_BACKGROUND_PATHS))
+	imported_textures.append_array(dictionary_string_values(ENEMY_SPRITE_PATHS))
 	imported_textures.append_array(derived_orb_contract_paths())
 	imported_textures.append_array(path_keys(PATH_RUNTIME_SHOP_UI_DIR, ["shop_action_button_continue", "shop_action_button_reroll"]))
 	(
@@ -225,7 +225,8 @@ static func dictionary_string_values(source: Dictionary) -> Array[String]:
 
 static func derived_orb_contract_paths() -> Array[String]:
 	var paths: Array[String] = []
-	for file_name in _DERIVED_ORB_CONTRACT_FILENAMES:
+	for orb_id in DERIVED_ORB_FILENAME_BY_ID.keys():
+		var file_name := String(DERIVED_ORB_FILENAME_BY_ID[orb_id])
 		if file_name != "":
 			paths.append("%s/%s" % [PATH_DERIVED_ORB_DIR, file_name])
 	return paths

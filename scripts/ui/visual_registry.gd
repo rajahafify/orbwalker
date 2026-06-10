@@ -40,22 +40,7 @@ const _RARITY_INDEX := {
 	"rare": 2,
 }
 
-const _ENEMY_PORTRAIT_PATHS := {
-	"cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-	"cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
-	"ash_hunter": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
-	"ruin_lancer": "res://resources/art/first_pass/enemies/enemy_ruin_lancer.png",
-	"vault_executioner": "res://resources/art/first_pass/enemies/enemy_vault_executioner.png",
-	"goldbound_keeper": "res://resources/art/first_pass/enemies/enemy_goldbound_keeper.png",
-	"training_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-	"training_goblin": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-	"iron_gate": "res://resources/art/first_pass/enemies/boss_iron_gate.png",
-	"burning_knight": "res://resources/art/first_pass/enemies/boss_burning_knight.png",
-	"prism_warden": "res://resources/art/first_pass/enemies/boss_prism_warden.png",
-	"striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
-	"defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
-	"charger": "res://resources/art/first_pass/enemies/enemy_ash_hunter.png",
-}
+const _ENEMY_PORTRAIT_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS
 
 const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
 	"training_striker": "cavern_striker",
@@ -114,13 +99,9 @@ const _ENEMY_VISUAL_PROFILES := {
 	"prism_warden": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.35},
 }
 
-const _ENEMY_STAGE_BACKGROUND_PATHS := {
-	"cavern_striker": "res://resources/art/first_pass/derived/combat_layers/generated_cavern_dungeon_bg_v1.png",
-}
+const _ENEMY_STAGE_BACKGROUND_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS
 
-const _ENEMY_SPRITE_PATHS := {
-	"cavern_striker": "res://resources/art/first_pass/enemy_sprites/generated_cavern_striker_sprite_wide_v1.png",
-}
+const _ENEMY_SPRITE_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS
 
 const _ICON_INDEX_BY_KEY := {
 	"equipment_shortsword": 0,
@@ -197,14 +178,7 @@ const _MASTERY_ICON_BY_ORB_ID := {
 	OrbType.Id.ARMOR: "mastery_armor",
 	OrbType.Id.GOLD: "mastery_gold",
 }
-const _DERIVED_ORB_FILENAME_BY_ID := {
-	OrbType.Id.FIRE: "orb_fire_clean.png",
-	OrbType.Id.ICE: "orb_ice_clean.png",
-	OrbType.Id.EARTH: "orb_earth_clean.png",
-	OrbType.Id.HEART: "orb_heart_clean.png",
-	OrbType.Id.ARMOR: "orb_armor_clean.png",
-	OrbType.Id.GOLD: "orb_gold_clean.png",
-}
+const _DERIVED_ORB_FILENAME_BY_ID := VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID
 const _RUNTIME_ORB_KEY_BY_ID := {
 	OrbType.Id.FIRE: "fire",
 	OrbType.Id.ICE: "ice",

@@ -14,7 +14,7 @@ func run_all() -> Dictionary:
 	_run_case("fallback_contract_textures_import", _test_fallback_contract_textures_import, failures)
 	_run_case("first_pass_asset_map_paths_import", _test_first_pass_asset_map_paths_import, failures)
 	_run_case("runtime_manifest_paths_import", _test_runtime_manifest_paths_import, failures)
-	_run_case("visual_registry_data_contract_matches_script", _test_visual_registry_data_contract_matches_script, failures)
+	_run_case("visual_registry_lookup_tables_alias_data_script", _test_visual_registry_lookup_tables_alias_data_script, failures)
 	_run_case("production_asset_inventory_schema_and_paths", _test_production_asset_inventory_schema_and_paths, failures)
 
 	return {
@@ -108,30 +108,22 @@ func _test_runtime_manifest_paths_import() -> String:
 	return _assert_imported_textures(_unique_paths(texture_paths), "runtime manifest texture")
 
 
-func _test_visual_registry_data_contract_matches_script() -> String:
-	var script_contract := VISUAL_REGISTRY_SCRIPT.asset_contract_paths()
-	var data_contract := VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths()
-	var script_textures := _unique_paths(Array(script_contract.get("imported_textures", [])))
-	var data_textures := _unique_paths(Array(data_contract.get("imported_textures", [])))
-	if script_textures != data_textures:
-		return "asset_contract_paths imported_textures mismatch between VisualRegistry and VisualRegistryData."
-	var script_dirs := _unique_paths(Array(script_contract.get("directories", [])))
-	var data_dirs := _unique_paths(Array(data_contract.get("directories", [])))
-	if script_dirs != data_dirs:
-		return "asset_contract_paths directories mismatch between VisualRegistry and VisualRegistryData."
-	var script_json_files := _unique_paths(Array(script_contract.get("json_files", [])))
-	var data_json_files := _unique_paths(Array(data_contract.get("json_files", [])))
-	if script_json_files != data_json_files:
-		return "asset_contract_paths json_files mismatch between VisualRegistry and VisualRegistryData."
-	var script_groups := Dictionary(script_contract.get("imported_texture_groups", {}))
-	var data_groups := Dictionary(data_contract.get("imported_texture_groups", {}))
-	if script_groups.keys().size() != data_groups.keys().size():
-		return "asset_contract_paths imported_texture_groups size mismatch."
-	for group_name in script_groups.keys():
-		var script_group := _unique_paths(Array(script_groups.get(group_name, [])))
-		var data_group := _unique_paths(Array(data_groups.get(group_name, [])))
-		if script_group != data_group:
-			return "asset_contract_paths imported_texture_groups mismatch for group '%s'." % String(group_name)
+func _test_visual_registry_lookup_tables_alias_data_script() -> String:
+	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_PORTRAIT_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS):
+		return "VisualRegistry enemy portrait paths must alias VisualRegistryData, not duplicate it."
+	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_STAGE_BACKGROUND_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS):
+		return "VisualRegistry enemy stage background paths must alias VisualRegistryData, not duplicate it."
+	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_SPRITE_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS):
+		return "VisualRegistry enemy sprite paths must alias VisualRegistryData, not duplicate it."
+	if not is_same(VISUAL_REGISTRY_SCRIPT._DERIVED_ORB_FILENAME_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID):
+		return "VisualRegistry derived orb filenames must alias VisualRegistryData, not duplicate it."
+	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
+	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID.size():
+		return "Derived orb contract paths must cover every entry in DERIVED_ORB_FILENAME_BY_ID."
+	var contract_textures := _unique_paths(Array(VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths().get("imported_textures", [])))
+	for orb_path in orb_paths:
+		if not contract_textures.has(orb_path):
+			return "Derived orb contract path %s missing from imported_textures contract." % orb_path
 	return ""
 
 

@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const SCAN_ROOTS := [
 	"res://scripts",
@@ -53,7 +53,7 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/ui/visual_registry.gd":
 	{
-		"baseline": 1587,
+		"baseline": 1562,
 		"owner": "R-P1-3",
 		"reason":
 		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",
