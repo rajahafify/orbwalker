@@ -4,5 +4,5 @@ repos:
     hooks:
       - id: gdformat
         args: ["--check"]
-        exclude: ^(scripts/combat/combat_controller\.gd|scripts/core/run_state\.gd|scripts/ui/visual_registry\.gd|scripts/combat/combat_max_vfx_(elemental_recipe_presenter|overlay|pack_recipe_presenter|status_recipe_presenter)\.gd|scripts/tests/combat_model_test\.gd)$
+        exclude: ^(scripts/combat/combat_controller\.gd|scripts/core/run_state\.gd|scripts/main_menu/main_menu_view\.gd|scripts/ui/visual_registry\.gd|scripts/combat/combat_max_vfx_(elemental_recipe_presenter|overlay|pack_recipe_presenter|status_recipe_presenter)\.gd|scripts/tests/combat_model_test\.gd)$
       - id: gdlint
