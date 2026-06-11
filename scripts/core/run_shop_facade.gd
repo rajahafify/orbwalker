@@ -55,5 +55,5 @@ func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
 func apply_tutorial_shop_seed(action_offset: int) -> void:
 	if not _owner.tutorial_run_active:
 		return
-	var shop_seed := _owner.tutorial_seed + 50000 + _owner.dungeon_level * 1000 + _owner._step_index * 100 + maxi(0, action_offset)
+	var shop_seed: int = _owner.tutorial_seed + 50000 + _owner.dungeon_level * 1000 + _owner._step_index * 100 + maxi(0, action_offset)
 	_owner.ensure_shop_service().set_rng_seed(shop_seed)

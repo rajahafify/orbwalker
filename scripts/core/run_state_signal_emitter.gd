@@ -92,7 +92,7 @@ func _emit_run_step_changed_if_needed(previous: Dictionary, reason: String) -> v
 func _emit_run_state_changed_if_needed(previous: Dictionary, reason: String) -> void:
 	var previous_run_active := bool(previous.get("run_active", _owner.run_active))
 	var previous_run_victory := bool(previous.get("run_victory", _owner.run_victory))
-	var summary_available := not _owner._run_summary.is_empty()
+	var summary_available: bool = not _owner._run_summary.is_empty()
 	var previous_summary_available := bool(previous.get("summary_available", summary_available))
 	if previous_run_active == _owner.run_active and previous_run_victory == _owner.run_victory and previous_summary_available == summary_available:
 		return

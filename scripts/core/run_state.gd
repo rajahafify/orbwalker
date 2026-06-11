@@ -88,20 +88,20 @@ var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
 var _run_logger: RunLogger
-var _run_log_core_event_recorder
+var _run_log_core_event_recorder: RunLogCoreEventRecorder
 var _run_log_shop_event_recorder: RunLogShopEventRecorder
 var _scene_router: SceneRouter
 var _profile_repository: ProfileRepository
 var _balance_manager: BalanceManager
-var _user_settings_store
-var _profile_unlock_service
-var _signal_emitter
-var _transition_state_store
-var _profile_facade
-var _shop_facade
-var _contract_reporter
-var _encounter_catalog
-var _outcome_service
+var _user_settings_store: RunUserSettingsStore
+var _profile_unlock_service: RunProfileUnlockService
+var _signal_emitter: RunStateSignalEmitter
+var _transition_state_store: RunTransitionStateStore
+var _profile_facade: RunProfileFacade
+var _shop_facade: RunShopFacade
+var _contract_reporter: RunStateContractReporter
+var _encounter_catalog: RunEncounterCatalog
+var _outcome_service: RunOutcomeService
 
 func _ready() -> void:
 	if player_state == null:

@@ -80,7 +80,7 @@ func mark_fight_victory() -> Dictionary:
 		return {"ok": false, "reason": "run_not_active", "next_scene": _owner.SCENE_MAIN}
 	if not _owner.is_current_step_fight():
 		return {"ok": false, "reason": "not_fight_step", "next_scene": _owner.SCENE_MAIN}
-	var base_gold_reward := _owner.add_gold(_owner.prototype_fight_gold_reward_for(_owner.dungeon_level, _owner.current_step_key), "fight_base_reward")
+	var base_gold_reward: int = _owner.add_gold(_owner.prototype_fight_gold_reward_for(_owner.dungeon_level, _owner.current_step_key), "fight_base_reward")
 	(
 		_owner
 		. _ensure_run_log_core_event_recorder()
@@ -173,7 +173,7 @@ func prepare_boss_relic_reward_options() -> void:
 
 	var pick_count := mini(3, candidates.size())
 	for _i in pick_count:
-		var index := _owner._reward_rng.randi_range(0, candidates.size() - 1)
+		var index: int = _owner._reward_rng.randi_range(0, candidates.size() - 1)
 		var chosen: Dictionary = candidates[index]
 		(
 			_owner

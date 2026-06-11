@@ -71,7 +71,7 @@ func restore(snapshot_value: Dictionary) -> bool:
 func _restore_step(snapshot_value: Dictionary) -> void:
 	_owner.current_step_key = String(snapshot_value.get("current_step_key", _owner.current_step_key))
 	var saved_step_index := int(snapshot_value.get("step_index", -1))
-	var saved_step_index_valid := saved_step_index >= 0 and saved_step_index < _owner.LEVEL_SEQUENCE.size()
+	var saved_step_index_valid: bool = saved_step_index >= 0 and saved_step_index < _owner.LEVEL_SEQUENCE.size()
 	if saved_step_index_valid and String(_owner.LEVEL_SEQUENCE[saved_step_index]) == _owner.current_step_key:
 		_owner._step_index = saved_step_index
 	elif _owner.LEVEL_SEQUENCE.has(_owner.current_step_key):
