@@ -37,13 +37,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat view now routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.",
 	},
-	"res://scripts/combat/combat_max_vfx_overlay.gd":
-	{
-		"baseline": 863,
-		"owner": "P1-2/P5-2",
-		"reason":
-		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",
-	},
 	"res://scripts/ui/player_loadout_hud.gd":
 	{
 		"baseline": 1924,

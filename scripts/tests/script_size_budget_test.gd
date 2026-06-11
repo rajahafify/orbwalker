@@ -8,7 +8,6 @@ const EXPECTED_RATCHET_BASELINES := {
 	"res://scripts/ui/player_loadout_hud.gd": 1924,
 	"res://scripts/ui/visual_registry.gd": 1454,
 	"res://scripts/core/run_state.gd": 1461,
-	"res://scripts/combat/combat_max_vfx_overlay.gd": 863,
 	"res://scripts/main_menu/main_menu_view.gd": 1007,
 	"res://scripts/content/content_registry.gd": 807,
 	"res://scripts/debug/vfx_gallery_show.gd": 761,
