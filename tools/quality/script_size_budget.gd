@@ -46,7 +46,7 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/ui/player_loadout_hud.gd":
 	{
-		"baseline": 1924,
+		"baseline": 1790,
 		"owner": "R-P1-3",
 		"reason":
 		"Player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces; split visible rails into presenters before enforcing the default budget.",

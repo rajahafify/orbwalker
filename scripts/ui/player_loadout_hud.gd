@@ -2,15 +2,16 @@ extends RefCounted
 class_name PlayerLoadoutHud
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
+const MASTERY_SOURCE_HIGHLIGHTER_SCRIPT := preload("res://scripts/ui/player_loadout_mastery_source_highlighter.gd")
 
 signal equipment_slot_selected(slot_index: int)
 signal consumable_slot_selected(slot_index: int)
 signal sell_slot_requested(slot_type: String, slot_index: int)
 signal slot_hover_started(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2)
-signal slot_hover_ended()
+signal slot_hover_ended
 signal intent_preview_hovered(preview: Dictionary)
 signal intent_block_preview_hovered(preview: Dictionary)
-signal intent_preview_hover_ended()
+signal intent_preview_hover_ended
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
@@ -35,11 +36,6 @@ const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
 const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
 const COMBAT_MASTERY_HOVER_ALPHA := 0.20
 const COMBAT_MASTERY_HOVER_BORDER_ALPHA := 0.90
-const MASTERY_SOURCE_HIGHLIGHT_ALPHA := 0.22
-const MASTERY_SOURCE_HIGHLIGHT_BORDER_ALPHA := 0.94
-const MODIFIER_SOURCE_WIGGLE_SECONDS := 0.30
-const MODIFIER_SOURCE_WIGGLE_DEGREES := 6.0
-const MODIFIER_SOURCE_WIGGLE_SCALE := 1.08
 const COMBAT_MASTERY_ORDER: Array[int] = [
 	OrbType.Id.HEART,
 	OrbType.Id.ARMOR,
@@ -140,7 +136,7 @@ var _mastery_detail_effect: Label
 var _mastery_detail_value: Label
 var _mastery_detail_modifiers: Label
 var _mastery_detail_hovered_orb_id := -1
-var _highlighted_mastery_source_ids: Dictionary = {}
+var _mastery_source_highlighter: PlayerLoadoutMasterySourceHighlighter
 var _hud_section_node: Node = null
 
 
@@ -159,6 +155,7 @@ func set_visual_registry(visuals: VisualRegistry) -> void:
 func bind_player_hud(nodes: Dictionary) -> void:
 	_disconnect_hud_lifecycle()
 	_hud_nodes = nodes
+	_mastery_highlighter().bind_hud_nodes(_hud_nodes)
 	_connect_hud_lifecycle()
 	_ensure_slot_detail_popover()
 	_ensure_intent_damage_preview_nodes()
@@ -296,11 +293,11 @@ func populate_icon_row(row: Control, ids: Array, label: String, selectable_label
 		slot.add_child(icon)
 		if amount_label != null:
 			slot.add_child(amount_label)
-		_add_mastery_source_highlight(slot, SLOT_SIZE)
+		_mastery_highlighter().add_highlight(slot, SLOT_SIZE)
 		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, label, index, content, id_text, filled))
 		slot.mouse_exited.connect(_on_slot_mouse_exited)
 		row.add_child(slot)
-	_apply_mastery_source_highlights()
+	_mastery_highlighter().apply_highlights()
 
 
 func _render_player_data() -> void:
@@ -350,9 +347,7 @@ func _render_player_data() -> void:
 	var mastery_cards := _hud_nodes.get("mastery_cards") as Control
 	if mastery_cards != null:
 		populate_combat_mastery_panel(
-			mastery_cards,
-			Dictionary(progression_snapshot.get("mastery_levels", {})),
-			Dictionary(_player_data.get("combat_mastery_feedback_totals", {}))
+			mastery_cards, Dictionary(progression_snapshot.get("mastery_levels", {})), Dictionary(_player_data.get("combat_mastery_feedback_totals", {}))
 		)
 	_sync_combat_mastery_hover_payload(Dictionary(_player_data.get("combat_mastery_hover_payload", {})))
 	_suppress_native_slot_tooltips()
@@ -497,8 +492,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		feedback_label.position = Vector2.ZERO
 		feedback_label.size = card_size
 		feedback_label.add_theme_font_size_override(
-			"font_size",
-			COMBAT_MASTERY_COMPACT_FEEDBACK_NUMBER_FONT_SIZE if compact_mode else COMBAT_MASTERY_FEEDBACK_NUMBER_FONT_SIZE
+			"font_size", COMBAT_MASTERY_COMPACT_FEEDBACK_NUMBER_FONT_SIZE if compact_mode else COMBAT_MASTERY_FEEDBACK_NUMBER_FONT_SIZE
 		)
 		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.62, 1.0))
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
@@ -598,14 +592,7 @@ func clear_combat_mastery_hover_ui(row: Control) -> void:
 
 
 func pulse_modifier_sources(sources: Array) -> void:
-	for raw_source in sources:
-		var source: Dictionary = raw_source
-		var source_type := String(source.get("source_type", ""))
-		var source_id := String(source.get("source_id", ""))
-		if source_type == "" or source_id == "":
-			continue
-		var source_slot := _find_modifier_source_slot(source_type, source_id)
-		_pulse_modifier_source_slot(source_slot)
+	_mastery_highlighter().pulse_sources(sources)
 
 
 func _combat_mastery_feedback_number_text(value: int) -> String:
@@ -619,7 +606,12 @@ func _pulse_combat_mastery_feedback_label(feedback_label: Label) -> void:
 		return
 	feedback_label.scale = Vector2(1.18, 1.18)
 	var tween := feedback_label.create_tween()
-	tween.tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	(
+		tween
+		. tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS)
+		. set_trans(Tween.TRANS_BACK as Tween.TransitionType)
+		. set_ease(Tween.EASE_OUT as Tween.EaseType)
+	)
 
 
 func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
@@ -704,11 +696,15 @@ func _pulse_combat_mastery_activation(glow: ColorRect, frame: Panel, tier: int) 
 	if glow != null:
 		var original_glow_alpha := glow.modulate.a
 		tween.tween_property(glow, "modulate:a", minf(1.0, original_glow_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
-		tween.tween_property(glow, "modulate:a", original_glow_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+		tween.tween_property(glow, "modulate:a", original_glow_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(
+			COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5
+		)
 	if frame != null:
 		var original_frame_alpha := frame.modulate.a
 		tween.tween_property(frame, "modulate:a", minf(1.0, original_frame_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
-		tween.tween_property(frame, "modulate:a", original_frame_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
+		tween.tween_property(frame, "modulate:a", original_frame_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(
+			COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5
+		)
 
 
 func _combat_mastery_activation_frame_stylebox(orb_id: int, tier: int) -> StyleBoxFlat:
@@ -728,10 +724,11 @@ func _combat_mastery_card_name(orb_id: int) -> String:
 
 func _sync_combat_mastery_hover_payload(payload: Dictionary) -> void:
 	_mastery_hover_payload = payload.duplicate(true)
+	_mastery_highlighter().set_hover_payload(payload)
 	if _mastery_detail_hovered_orb_id >= 0:
 		_show_mastery_detail(_mastery_detail_hovered_orb_id)
 	else:
-		_apply_mastery_source_highlights()
+		_mastery_highlighter().apply_highlights()
 
 
 func _apply_hovered_combat_mastery(row: Control) -> void:
@@ -778,7 +775,7 @@ func _on_combat_mastery_card_mouse_exited(row: Control, orb_id: int) -> void:
 	if _mastery_detail_hovered_orb_id == orb_id:
 		_mastery_detail_hovered_orb_id = -1
 		_hide_mastery_detail()
-		_clear_mastery_source_highlights()
+	_mastery_highlighter().clear_highlights()
 	if _hovered_mastery_orb_id == orb_id:
 		_hovered_mastery_orb_id = -1
 	_apply_hovered_combat_mastery(row)
@@ -949,144 +946,19 @@ func _mastery_value_text(orb_id: int, orb_value: int) -> String:
 
 
 func _mastery_modifier_source_lines(orb_id: int) -> Array[String]:
-	var lines: Array[String] = []
-	for source in _mastery_modifier_sources(orb_id):
-		var source_name := String(source.get("display_name", source.get("source_id", "Unknown")))
-		lines.append(source_name)
-	return lines
-
-
-func _mastery_modifier_sources(orb_id: int) -> Array[Dictionary]:
-	var matching_sources: Array[Dictionary] = []
-	var combat_modifiers: Dictionary = _mastery_hover_payload.get("combat_modifiers", {})
-	var sources: Array = combat_modifiers.get("sources", [])
-	for raw_source in sources:
-		var source: Dictionary = raw_source
-		var source_modifiers: Dictionary = source.get("combat_modifiers", {})
-		if not _source_affects_orb_mastery(orb_id, source_modifiers):
-			continue
-		matching_sources.append(source)
-	return matching_sources
+	return _mastery_highlighter().source_lines(orb_id)
 
 
 func _set_mastery_source_highlights_for_orb(orb_id: int) -> void:
-	_highlighted_mastery_source_ids.clear()
-	for source in _mastery_modifier_sources(orb_id):
-		var source_type := String(source.get("source_type", ""))
-		var source_id := String(source.get("source_id", ""))
-		if source_type == "" or source_id == "":
-			continue
-		_highlighted_mastery_source_ids[_mastery_source_key(source_type, source_id)] = true
-	_apply_mastery_source_highlights()
+	_mastery_highlighter().set_highlights_for_orb(orb_id)
 
 
 func _clear_mastery_source_highlights() -> void:
-	_highlighted_mastery_source_ids.clear()
-	_apply_mastery_source_highlights()
+	_mastery_highlighter().clear_highlights()
 
 
 func _apply_mastery_source_highlights() -> void:
-	_apply_mastery_source_highlights_to_row(_hud_nodes.get("equipment_icons") as Control)
-	_apply_mastery_source_highlights_to_row(_hud_nodes.get("relic_icons") as Control)
-
-
-func _apply_mastery_source_highlights_to_row(row: Control) -> void:
-	if row == null:
-		return
-	for child in row.get_children():
-		var slot := child as Control
-		if slot == null:
-			continue
-		var highlight := slot.get_node_or_null("MasterySourceHighlight") as Panel
-		if highlight == null:
-			continue
-		var content_type := String(slot.get_meta("content_type", ""))
-		var content_id := String(slot.get_meta("content_id", ""))
-		highlight.visible = _highlighted_mastery_source_ids.has(_mastery_source_key(content_type, content_id))
-
-
-func _mastery_source_key(source_type: String, source_id: String) -> String:
-	return "%s:%s" % [source_type, source_id]
-
-
-func _find_modifier_source_slot(source_type: String, source_id: String) -> Control:
-	var rows := {
-		"equipment": _hud_nodes.get("equipment_icons") as Control,
-		"relic": _hud_nodes.get("relic_icons") as Control,
-	}
-	var row := rows.get(source_type, null) as Control
-	if row == null:
-		return null
-	for child in row.get_children():
-		var slot := child as Control
-		if slot == null:
-			continue
-		if String(slot.get_meta("content_type", "")) != source_type:
-			continue
-		if String(slot.get_meta("content_id", "")) == source_id:
-			return slot
-	return null
-
-
-func _pulse_modifier_source_slot(slot: Control) -> void:
-	if slot == null or not slot.is_inside_tree():
-		return
-	if slot.has_meta("modifier_wiggle_tween"):
-		var old_tween: Variant = slot.get_meta("modifier_wiggle_tween")
-		if old_tween is Tween and is_instance_valid(old_tween):
-			(old_tween as Tween).kill()
-	slot.pivot_offset = slot.size * 0.5
-	slot.rotation_degrees = 0.0
-	slot.scale = Vector2.ONE
-	var tween := slot.create_tween()
-	slot.set_meta("modifier_wiggle_tween", tween)
-	tween.set_parallel(true)
-	tween.tween_property(slot, "scale", Vector2(MODIFIER_SOURCE_WIGGLE_SCALE, MODIFIER_SOURCE_WIGGLE_SCALE), MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
-	tween.tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.18)
-	tween.chain().tween_property(slot, "rotation_degrees", MODIFIER_SOURCE_WIGGLE_DEGREES, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.28)
-	tween.chain().tween_property(slot, "rotation_degrees", -MODIFIER_SOURCE_WIGGLE_DEGREES * 0.45, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.22)
-	tween.chain().set_parallel(true)
-	tween.tween_property(slot, "rotation_degrees", 0.0, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30)
-	tween.tween_property(slot, "scale", Vector2.ONE, MODIFIER_SOURCE_WIGGLE_SECONDS * 0.30)
-
-
-func _add_mastery_source_highlight(slot: Control, slot_size: Vector2) -> void:
-	var highlight := Panel.new()
-	highlight.name = "MasterySourceHighlight"
-	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	highlight.position = Vector2.ZERO
-	highlight.size = slot_size
-	highlight.custom_minimum_size = slot_size
-	highlight.visible = false
-	highlight.add_theme_stylebox_override("panel", _mastery_source_highlight_stylebox())
-	slot.add_child(highlight)
-
-
-func _mastery_source_highlight_stylebox() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(1.0, 0.86, 0.26, MASTERY_SOURCE_HIGHLIGHT_ALPHA)
-	style.border_color = Color(1.0, 0.93, 0.48, MASTERY_SOURCE_HIGHLIGHT_BORDER_ALPHA)
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(6)
-	return style
-
-
-func _source_affects_orb_mastery(orb_id: int, modifiers: Dictionary) -> bool:
-	var orb_bonus_by_id: Dictionary = modifiers.get("orb_bonus_by_id", {})
-	if int(orb_bonus_by_id.get(orb_id, 0)) != 0:
-		return true
-	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
-			return int(modifiers.get("flat_damage_bonus", 0)) != 0 \
-				or int(modifiers.get("combo_flat_bonus", 0)) != 0 \
-				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0)
-		OrbType.Id.ARMOR:
-			return int(modifiers.get("start_turn_armor", 0)) != 0
-		OrbType.Id.HEART:
-			return int(modifiers.get("flat_heal_bonus", 0)) != 0
-		OrbType.Id.GOLD:
-			return int(modifiers.get("flat_gold_bonus", 0)) != 0
-	return false
+	_mastery_highlighter().apply_highlights()
 
 
 func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) -> void:
@@ -1128,7 +1000,7 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 		icon.custom_minimum_size = RELIC_ICON_SIZE
 		icon.texture = _visual_registry().clean_icon_for_key(String(content.get("icon_key", "")))
 		slot.add_child(icon)
-		_add_mastery_source_highlight(slot, RELIC_SLOT_SIZE)
+		_mastery_highlighter().add_highlight(slot, RELIC_SLOT_SIZE)
 		slot.mouse_entered.connect(_on_slot_mouse_entered.bind(slot, "relic", index, content, relic_id, true))
 		slot.mouse_exited.connect(_on_slot_mouse_exited)
 		row.add_child(slot)
@@ -1889,7 +1761,9 @@ func _update_selected_slot_popover() -> void:
 		return
 	var item_id := _slot_content_id(selected_kind, slot_index)
 	var content := lookup_content_definition(item_id)
-	_set_slot_popover_content(selected_kind, slot_index, String(content.get("display_name", item_id)), String(content.get("description", "")), slot.get_global_rect())
+	_set_slot_popover_content(
+		selected_kind, slot_index, String(content.get("display_name", item_id)), String(content.get("description", "")), slot.get_global_rect()
+	)
 
 
 func hide_slot_detail_popover() -> void:
@@ -1961,55 +1835,25 @@ func _update_slot_detail_bubble() -> void:
 	_slot_detail_bubble.size = bubble_size
 
 	var cursor_y := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
-	_apply_rect(
-		_slot_detail_title,
-		Rect2(
-			Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
-			Vector2(content_width, title_height)
-		)
-	)
+	_apply_rect(_slot_detail_title, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, title_height)))
 	cursor_y += title_height
 	if has_description:
 		cursor_y += row_gap
 		_slot_detail_description.visible = true
-		_apply_rect(
-			_slot_detail_description,
-			Rect2(
-				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
-				Vector2(content_width, description_height)
-			)
-		)
+		_apply_rect(_slot_detail_description, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, description_height)))
 		cursor_y += description_height
 	else:
 		_slot_detail_description.visible = false
-		_apply_rect(
-			_slot_detail_description,
-			Rect2(
-				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
-				Vector2(content_width, 0.0)
-			)
-		)
+		_apply_rect(_slot_detail_description, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, 0.0)))
 
 	_slot_detail_sell_button.visible = show_sell_action
 	_slot_detail_sell_button.disabled = _selected_slot_kind() == ""
 	_slot_detail_sell_button.text = "Sell  %s" % _selected_slot_sell_text()
 	if show_sell_action:
 		cursor_y += 12.0
-		_apply_rect(
-			_slot_detail_sell_button,
-			Rect2(
-				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
-				Vector2(content_width, sell_button_height)
-			)
-		)
+		_apply_rect(_slot_detail_sell_button, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, sell_button_height)))
 	else:
-		_apply_rect(
-			_slot_detail_sell_button,
-			Rect2(
-				Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y),
-				Vector2(content_width, 0.0)
-			)
-		)
+		_apply_rect(_slot_detail_sell_button, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, 0.0)))
 
 
 func _slot_detail_popover_width(parent_width: float) -> float:
@@ -2207,6 +2051,14 @@ func _visual_registry() -> VisualRegistry:
 	if _visuals == null:
 		_visuals = VISUAL_REGISTRY_SCRIPT.new()
 	return _visuals
+
+
+func _mastery_highlighter() -> PlayerLoadoutMasterySourceHighlighter:
+	if _mastery_source_highlighter == null:
+		_mastery_source_highlighter = MASTERY_SOURCE_HIGHLIGHTER_SCRIPT.new()
+		_mastery_source_highlighter.bind_hud_nodes(_hud_nodes)
+		_mastery_source_highlighter.set_hover_payload(_mastery_hover_payload)
+	return _mastery_source_highlighter
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
