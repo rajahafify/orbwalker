@@ -24,12 +24,26 @@ class FakeReplayRoutePresenter:
 	func supports_replay_impact(_kind: String, _screen_wide: bool = false) -> bool:
 		return supports_result
 
-	func spawn_replay_impact(_center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> bool:
-		spawn_calls.append({"presenter": label, "kind": kind, "draw_size": draw_size, "max_size": max_size, "base_size": base_size, "duration": duration, "intensity": intensity, "screen_wide": screen_wide})
+	func spawn_replay_impact(
+		_center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+	) -> bool:
+		spawn_calls.append(
+			{
+				"presenter": label,
+				"kind": kind,
+				"draw_size": draw_size,
+				"max_size": max_size,
+				"base_size": base_size,
+				"duration": duration,
+				"intensity": intensity,
+				"screen_wide": screen_wide
+			}
+		)
 		return spawn_result
 
 
-class FakeReplayRouteOverlay extends CombatMaxVfxOverlay:
+class FakeReplayRouteOverlay:
+	extends CombatMaxVfxOverlay
 	var force_status_available := true
 	var force_elemental_available := true
 	var force_pack_available := true
@@ -47,7 +61,9 @@ class FakeReplayRouteOverlay extends CombatMaxVfxOverlay:
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("combat_max_vfx_pack_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_pack_recipe_presenter_replay_impact_contract, failures)
-	_run_case("combat_max_vfx_elemental_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_elemental_recipe_presenter_replay_impact_contract, failures)
+	_run_case(
+		"combat_max_vfx_elemental_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_elemental_recipe_presenter_replay_impact_contract, failures
+	)
 	_run_case("combat_max_vfx_status_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_status_recipe_presenter_replay_impact_contract, failures)
 	_run_case("combat_max_vfx_overlay_routes_replay_to_status_presenter", _test_combat_max_vfx_overlay_routes_replay_to_status_presenter, failures)
 	_run_case("combat_max_vfx_overlay_falls_back_to_pack_route", _test_combat_max_vfx_overlay_falls_back_to_pack_route, failures)
@@ -80,11 +96,16 @@ func _replay_route_overlay_fixture() -> Dictionary:
 	layer.size = root.size
 	root.add_child(layer)
 	var overlay := FakeReplayRouteOverlay.new()
-	overlay.bind({
-		"vfx_layer": layer,
-		"visual_registry": VISUAL_REGISTRY_SCRIPT.new(),
-		"timer_owner": root,
-	})
+	(
+		overlay
+		. bind(
+			{
+				"vfx_layer": layer,
+				"visual_registry": VISUAL_REGISTRY_SCRIPT.new(),
+				"timer_owner": root,
+			}
+		)
+	)
 	return {
 		"root": root,
 		"layer": layer,
@@ -101,17 +122,45 @@ func _cleanup_vfx_fixture(fixture: Dictionary) -> void:
 func _test_combat_max_vfx_pack_recipe_presenter_replay_impact_contract() -> String:
 	var pack_calls: Array[Dictionary] = []
 	var presenter = COMBAT_MAX_VFX_PACK_RECIPE_PRESENTER_SCRIPT.new()
-	presenter.bind({
-		"kind_cleaner": func(kind: String) -> String:
-			var clean_kind := kind.strip_edges().to_lower()
-			if clean_kind == "heal":
-				return "heart"
-			return clean_kind,
-		"layer_size_provider": func() -> Vector2:
-			return Vector2(1000, 800),
-		"pack_effect_spawner": func(scene_key: String, center_local: Vector2, kind: String, draw_size: Vector2, lifetime: float, intensity: int, delay: float, move_offset: Vector2, rotation: float, z: float, alpha: float) -> void:
-			pack_calls.append({"key": scene_key, "center": center_local, "kind": kind, "size": draw_size, "lifetime": lifetime, "intensity": intensity, "delay": delay, "rotation": rotation, "z": z, "alpha": alpha}),
-	})
+	presenter.bind(
+		{
+			"kind_cleaner":
+			func(kind: String) -> String:
+				var clean_kind := kind.strip_edges().to_lower()
+				if clean_kind == "heal":
+					return "heart"
+				return clean_kind,
+			"layer_size_provider": func() -> Vector2: return Vector2(1000, 800),
+			"pack_effect_spawner":
+			func(
+				scene_key: String,
+				center_local: Vector2,
+				kind: String,
+				draw_size: Vector2,
+				lifetime: float,
+				intensity: int,
+				delay: float,
+				move_offset: Vector2,
+				rotation: float,
+				z: float,
+				alpha: float
+			) -> void:
+				pack_calls.append(
+					{
+						"key": scene_key,
+						"center": center_local,
+						"kind": kind,
+						"size": draw_size,
+						"lifetime": lifetime,
+						"intensity": intensity,
+						"delay": delay,
+						"rotation": rotation,
+						"z": z,
+						"alpha": alpha
+					}
+				),
+		}
+	)
 	if not presenter.supports_replay_impact("earth"):
 		return "Expected pack presenter to support replay impact."
 	if not presenter.spawn_replay_impact(Vector2(100, 160), "earth", Vector2(140, 120), 140.0, 188.0, 1.0, 4, false):
@@ -124,30 +173,65 @@ func _test_combat_max_vfx_pack_recipe_presenter_replay_impact_contract() -> Stri
 func _test_combat_max_vfx_elemental_recipe_presenter_replay_impact_contract() -> String:
 	var elemental_calls: Array[Dictionary] = []
 	var presenter = COMBAT_MAX_VFX_ELEMENTAL_RECIPE_PRESENTER_SCRIPT.new()
-	presenter.bind({
-		"kind_cleaner": func(kind: String) -> String:
-			var clean_kind := kind.strip_edges().to_lower()
-			if clean_kind == "heal":
-				return "heart"
-			return clean_kind,
-		"layer_size_provider": func() -> Vector2:
-			return Vector2(1000, 800),
-		"elemental_effect_spawner": func(scene_key: String, center_local: Vector2, kind: String, draw_size: Vector2, lifetime: float, intensity: int, delay: float, move_offset: Vector2, rotation: float, z: float, alpha: float) -> Node3D:
-			elemental_calls.append({"scene_key": scene_key, "center": center_local, "kind": kind, "size": draw_size, "duration": lifetime, "intensity": intensity, "delay": delay, "rotation": rotation, "z": z, "alpha": alpha})
-			return null,
-		"pack_impact_scene_key_provider": func(kind: String, intensity: int, screen_wide: bool) -> String:
-			return "impact_%s_%d" % [kind, intensity],
-		"pack_layer_spawner": func(scene_key: String, center: Vector2, kind: String, draw_size: Vector2, lifetime: float, intensity: int, delay: float, rotation: float, z: float, alpha: float) -> void:
-			pass,
-		"kind_colors_provider": func(kind: String) -> Dictionary:
-			return {"core": Color(0.8, 0.6, 0.2, 1.0), "accent": Color(1.0, 0.8, 0.2, 1.0)},
-		"coin_rain_spawner": func(center: Vector2, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"light_spawner": func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
-			pass,
-		"camera_kick_spawner": func(direction: Vector2, delay: float) -> void:
-			pass,
-	})
+	presenter.bind(
+		{
+			"kind_cleaner":
+			func(kind: String) -> String:
+				var clean_kind := kind.strip_edges().to_lower()
+				if clean_kind == "heal":
+					return "heart"
+				return clean_kind,
+			"layer_size_provider": func() -> Vector2: return Vector2(1000, 800),
+			"elemental_effect_spawner":
+			func(
+				scene_key: String,
+				center_local: Vector2,
+				kind: String,
+				draw_size: Vector2,
+				lifetime: float,
+				intensity: int,
+				delay: float,
+				move_offset: Vector2,
+				rotation: float,
+				z: float,
+				alpha: float
+			) -> Node3D:
+				elemental_calls.append(
+					{
+						"scene_key": scene_key,
+						"center": center_local,
+						"kind": kind,
+						"size": draw_size,
+						"duration": lifetime,
+						"intensity": intensity,
+						"delay": delay,
+						"rotation": rotation,
+						"z": z,
+						"alpha": alpha
+					}
+				)
+				return null,
+			"pack_impact_scene_key_provider": func(kind: String, intensity: int, screen_wide: bool) -> String: return "impact_%s_%d" % [kind, intensity],
+			"pack_layer_spawner":
+			func(
+				scene_key: String,
+				center: Vector2,
+				kind: String,
+				draw_size: Vector2,
+				lifetime: float,
+				intensity: int,
+				delay: float,
+				rotation: float,
+				z: float,
+				alpha: float
+			) -> void:
+				pass,
+			"kind_colors_provider": func(kind: String) -> Dictionary: return {"core": Color(0.8, 0.6, 0.2, 1.0), "accent": Color(1.0, 0.8, 0.2, 1.0)},
+			"coin_rain_spawner": func(center: Vector2, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void: pass,
+			"light_spawner": func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void: pass,
+			"camera_kick_spawner": func(direction: Vector2, delay: float) -> void: pass,
+		}
+	)
 	if not presenter.supports_replay_impact("fire"):
 		return "Expected elemental presenter to support fire replay impact."
 	if not presenter.spawn_replay_impact(Vector2(100, 160), "fire", Vector2(140, 120), 140.0, 188.0, 1.0, 4, false):
@@ -160,61 +244,136 @@ func _test_combat_max_vfx_elemental_recipe_presenter_replay_impact_contract() ->
 func _test_combat_max_vfx_status_recipe_presenter_replay_impact_contract() -> String:
 	var status_calls: Array[Dictionary] = []
 	var presenter = COMBAT_MAX_VFX_STATUS_RECIPE_PRESENTER_SCRIPT.new()
-	presenter.bind({
-		"kind_cleaner": func(kind: String) -> String:
-			var clean_kind := kind.strip_edges().to_lower()
-			if clean_kind == "heal":
-				return "heart"
-			return clean_kind,
-		"layer_size_provider": func() -> Vector2:
-			return Vector2(1000, 800),
-		"kind_colors_provider": func(kind: String) -> Dictionary:
-			return {"core": Color(0.8, 0.6, 0.2, 1.0)},
-		"status_sheet_key_provider": func(kind: String) -> String:
-			return "sheet_%s" % kind,
-		"status_trail_key_provider": func(kind: String) -> String:
-			return "trail_%s" % kind,
-		"status_flipbook_spawner": func(sheet_key: String, center_local: Vector2, draw_size: Vector2, lifetime: float, color: Color, delay: float, move_offset: Vector2, target_scale: float, z: float, rotation: float, loops: int) -> void:
-			status_calls.append({"key": sheet_key, "kind": sheet_key, "size": draw_size, "lifetime": lifetime, "color": color, "delay": delay, "loops": loops}),
-		"light_spawner": func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
-			pass,
-		"burst_particles_spawner": func(kind: String, center: Vector2, base_size: float, lifetime: float, intensity: int) -> void:
-			pass,
-		"atmospheric_replay_layer_spawner": func(kind: String, center: Vector2, max_size: float, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"coin_rain_spawner": func(center: Vector2, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"pack_impact_scene_key_provider": func(kind: String, intensity: int, screen_wide: bool) -> String:
-			return "impact_%s_%d" % [kind, intensity],
-		"pack_layer_spawner": func(scene_key: String, center: Vector2, kind: String, draw_size: Vector2, lifetime: float, intensity: int, delay: float, rotation: float, z: float, alpha: float) -> void:
-			pass,
-		"fire_replay_layers_spawner": func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"ice_replay_layers_spawner": func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"earth_replay_layers_spawner": func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void:
-			pass,
-		"fire_cast_layers_spawner": func(source: Vector2, target: Vector2, delta: Vector2, spool_size: Vector2, spool_duration: float, travel_duration: float, launch_delay: float, intensity: int, core: Color) -> void:
-			pass,
-		"ice_cast_layers_spawner": func(source: Vector2, target: Vector2, delta: Vector2, spool_size: Vector2, spool_duration: float, travel_duration: float, launch_delay: float, intensity: int, core: Color) -> void:
-			pass,
-		"earth_cast_layers_spawner": func(source: Vector2, target: Vector2, delta: Vector2, spool_size: Vector2, spool_duration: float, travel_duration: float, launch_delay: float, intensity: int, core: Color) -> void:
-			pass,
-		"fire_beam_layers_spawner": func(source: Vector2, delta: Vector2, duration: float, intensity: int, angle: float) -> void:
-			pass,
-		"windy_ice_block_travel_spawner": func(source: Vector2, target: Vector2, delta: Vector2, normal: Vector2, travel_size: Vector2, duration: float, launch_delay: float, intensity: int, angle: float) -> void:
-			pass,
-		"earth_fracture_travel_spawner": func(source: Vector2, target: Vector2, delta: Vector2, normal: Vector2, travel_size: Vector2, duration: float, launch_delay: float, intensity: int, angle: float, tier: int) -> void:
-			pass,
-		"earth_tier_provider": func(intensity: int) -> int:
-			return intensity,
-		"atmospheric_travel_spawner": func(kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float) -> void:
-			pass,
-		"beam_effect_spawner": func(source: Vector2, delta: Vector2, kind: String, duration: float, intensity: int, delay: float, radius_scale: float) -> void:
-			pass,
-		"camera_kick_spawner": func(direction: Vector2, delay: float) -> void:
-			pass,
-	})
+	presenter.bind(
+		{
+			"kind_cleaner":
+			func(kind: String) -> String:
+				var clean_kind := kind.strip_edges().to_lower()
+				if clean_kind == "heal":
+					return "heart"
+				return clean_kind,
+			"layer_size_provider": func() -> Vector2: return Vector2(1000, 800),
+			"kind_colors_provider": func(kind: String) -> Dictionary: return {"core": Color(0.8, 0.6, 0.2, 1.0)},
+			"status_sheet_key_provider": func(kind: String) -> String: return "sheet_%s" % kind,
+			"status_trail_key_provider": func(kind: String) -> String: return "trail_%s" % kind,
+			"status_flipbook_spawner":
+			func(
+				sheet_key: String,
+				center_local: Vector2,
+				draw_size: Vector2,
+				lifetime: float,
+				color: Color,
+				delay: float,
+				move_offset: Vector2,
+				target_scale: float,
+				z: float,
+				rotation: float,
+				loops: int
+			) -> void:
+				status_calls.append(
+					{"key": sheet_key, "kind": sheet_key, "size": draw_size, "lifetime": lifetime, "color": color, "delay": delay, "loops": loops}
+				),
+			"light_spawner": func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void: pass,
+			"burst_particles_spawner": func(kind: String, center: Vector2, base_size: float, lifetime: float, intensity: int) -> void: pass,
+			"atmospheric_replay_layer_spawner":
+			func(kind: String, center: Vector2, max_size: float, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void: pass,
+			"coin_rain_spawner": func(center: Vector2, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void: pass,
+			"pack_impact_scene_key_provider": func(kind: String, intensity: int, screen_wide: bool) -> String: return "impact_%s_%d" % [kind, intensity],
+			"pack_layer_spawner":
+			func(
+				scene_key: String,
+				center: Vector2,
+				kind: String,
+				draw_size: Vector2,
+				lifetime: float,
+				intensity: int,
+				delay: float,
+				rotation: float,
+				z: float,
+				alpha: float
+			) -> void:
+				pass,
+			"fire_replay_layers_spawner":
+			func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void: pass,
+			"ice_replay_layers_spawner":
+			func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void: pass,
+			"earth_replay_layers_spawner":
+			func(center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> void: pass,
+			"fire_cast_layers_spawner":
+			func(
+				source: Vector2,
+				target: Vector2,
+				delta: Vector2,
+				spool_size: Vector2,
+				spool_duration: float,
+				travel_duration: float,
+				launch_delay: float,
+				intensity: int,
+				core: Color
+			) -> void:
+				pass,
+			"ice_cast_layers_spawner":
+			func(
+				source: Vector2,
+				target: Vector2,
+				delta: Vector2,
+				spool_size: Vector2,
+				spool_duration: float,
+				travel_duration: float,
+				launch_delay: float,
+				intensity: int,
+				core: Color
+			) -> void:
+				pass,
+			"earth_cast_layers_spawner":
+			func(
+				source: Vector2,
+				target: Vector2,
+				delta: Vector2,
+				spool_size: Vector2,
+				spool_duration: float,
+				travel_duration: float,
+				launch_delay: float,
+				intensity: int,
+				core: Color
+			) -> void:
+				pass,
+			"fire_beam_layers_spawner": func(source: Vector2, delta: Vector2, duration: float, intensity: int, angle: float) -> void: pass,
+			"windy_ice_block_travel_spawner":
+			func(
+				source: Vector2,
+				target: Vector2,
+				delta: Vector2,
+				normal: Vector2,
+				travel_size: Vector2,
+				duration: float,
+				launch_delay: float,
+				intensity: int,
+				angle: float
+			) -> void:
+				pass,
+			"earth_fracture_travel_spawner":
+			func(
+				source: Vector2,
+				target: Vector2,
+				delta: Vector2,
+				normal: Vector2,
+				travel_size: Vector2,
+				duration: float,
+				launch_delay: float,
+				intensity: int,
+				angle: float,
+				tier: int
+			) -> void:
+				pass,
+			"earth_tier_provider": func(intensity: int) -> int: return intensity,
+			"atmospheric_travel_spawner":
+			func(kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float) -> void: pass,
+			"beam_effect_spawner":
+			func(source: Vector2, delta: Vector2, kind: String, duration: float, intensity: int, delay: float, radius_scale: float) -> void: pass,
+			"camera_kick_spawner": func(direction: Vector2, delay: float) -> void: pass,
+		}
+	)
 	if not presenter.supports_replay_impact("damage"):
 		return "Expected status presenter to support replay impact."
 	if not presenter.spawn_replay_impact(Vector2(100, 160), "damage", Vector2(140, 120), 140.0, 188.0, 1.0, 4, false):
