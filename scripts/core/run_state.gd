@@ -14,6 +14,7 @@ const META_PROFILE_STATE_SCRIPT := preload("res://scripts/run/meta_profile_state
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
 const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
+const WALLET_SERVICE_SCRIPT := preload("res://scripts/run/wallet_service.gd")
 const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
 const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
 const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repository.gd")
@@ -59,6 +60,7 @@ var player_progression_service: PlayerProgressionService
 var content_registry: ContentRegistry
 var shop_state: ShopState
 var shop_service: ShopService
+var wallet_service: WalletService
 var player_profile_state: PlayerProfileState
 var meta_profile_state: MetaProfileState
 var run_gold: int = 0
@@ -254,6 +256,12 @@ func ensure_shop_service():
 	if shop_service == null:
 		shop_service = SHOP_SERVICE_SCRIPT.new()
 	return shop_service
+
+
+func ensure_wallet_service():
+	if wallet_service == null:
+		wallet_service = WALLET_SERVICE_SCRIPT.new()
+	return wallet_service
 
 
 func _ensure_run_logger():
@@ -543,7 +551,7 @@ func current_combat_modifiers() -> Dictionary:
 
 func set_gold(amount: int) -> void:
 	var signal_before := _capture_run_signal_state()
-	run_gold = maxi(0, amount)
+	ensure_wallet_service().set_gold(self, amount)
 	_sync_player_gold_from_run()
 	_emit_run_state_signals(signal_before, "set_gold", "set_gold")
 
@@ -552,29 +560,23 @@ func add_gold(amount: int, source: String = "combat_gain") -> int:
 	if amount <= 0:
 		return 0
 	var signal_before := _capture_run_signal_state()
-	run_gold += amount
-	total_gold_earned += amount
-	if _gold_source_counts_for_run_score(source):
-		run_score += amount
+	ensure_wallet_service().add_gold(self, amount, source)
 	_sync_player_gold_from_run()
 	_emit_run_state_signals(signal_before, "add_gold", source)
 	return amount
 
 
 func spend_gold(amount: int) -> bool:
-	if amount < 0:
-		return false
-	if run_gold < amount:
-		return false
 	var signal_before := _capture_run_signal_state()
-	run_gold -= amount
+	if not ensure_wallet_service().spend_gold(self, amount):
+		return false
 	_sync_player_gold_from_run()
 	_emit_run_state_signals(signal_before, "spend_gold", "spend_gold")
 	return true
 
 
 func can_afford(amount: int) -> bool:
-	return amount >= 0 and run_gold >= amount
+	return ensure_wallet_service().can_afford(self, amount)
 
 
 func open_shop_for_current_level() -> Dictionary:
@@ -684,8 +686,7 @@ func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
 	_flow_trace_bump_transition_generation()
 	ensure_player_state().reset_for_new_run()
 	_sync_meta_profile_default_unlocks()
-	run_gold = _ensure_balance_manager().starting_gold()
-	run_score = 0
+	ensure_wallet_service().reset_for_new_run(self, _ensure_balance_manager().starting_gold())
 	_run_score_banked = false
 	ensure_player_state().gold = run_gold
 	dungeon_level = 1
@@ -700,7 +701,6 @@ func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
 	_step_index = 0
 	enemies_defeated = 0
 	bosses_defeated = 0
-	total_gold_earned = 0
 	_current_encounter.clear()
 	_boss_relic_reward_options.clear()
 	_boss_reward_claimed_relic_id = ""
@@ -789,9 +789,8 @@ func restore_run_transition_state(snapshot: Dictionary) -> bool:
 	run_victory = bool(snapshot.get("run_victory", run_victory))
 	tutorial_run_active = bool(snapshot.get("tutorial_run_active", tutorial_run_active))
 	tutorial_seed = maxi(1, int(snapshot.get("tutorial_seed", tutorial_seed)))
-	run_gold = maxi(0, int(snapshot.get("run_gold", run_gold)))
-	run_score = int(snapshot.get("run_score", run_score))
 	_run_score_banked = bool(snapshot.get("run_score_banked", _run_score_banked))
+	ensure_wallet_service().restore_from_snapshot(self, snapshot)
 	dungeon_level = maxi(1, int(snapshot.get("dungeon_level", dungeon_level)))
 	current_step_key = String(snapshot.get("current_step_key", current_step_key))
 	var saved_step_index := int(snapshot.get("step_index", -1))
@@ -808,7 +807,6 @@ func restore_run_transition_state(snapshot: Dictionary) -> bool:
 		current_step_key = String(LEVEL_SEQUENCE[_step_index])
 	enemies_defeated = maxi(0, int(snapshot.get("enemies_defeated", enemies_defeated)))
 	bosses_defeated = maxi(0, int(snapshot.get("bosses_defeated", bosses_defeated)))
-	total_gold_earned = maxi(0, int(snapshot.get("total_gold_earned", total_gold_earned)))
 	_current_encounter = Dictionary(snapshot.get("current_encounter", {})).duplicate(true)
 	_boss_relic_reward_options = Array(snapshot.get("boss_relic_reward_options", [])).duplicate(true)
 	_boss_reward_claimed_relic_id = String(snapshot.get("boss_reward_claimed_relic_id", ""))
@@ -1583,10 +1581,6 @@ func next_scene_path() -> String:
 	if is_current_step_boss_reward():
 		return SCENE_COMBAT
 	return SCENE_MAIN
-
-
-func _gold_source_counts_for_run_score(source: String) -> bool:
-	return source != "sell_refund" and source != "shop_refund" and source != "replacement_sell_refund"
 
 
 func _sync_meta_profile_default_unlocks() -> void:
