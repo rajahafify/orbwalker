@@ -17,6 +17,7 @@ const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
 const SHOP_SESSION_SCRIPT := preload("res://scripts/shop/shop_session.gd")
 const WALLET_SERVICE_SCRIPT := preload("res://scripts/run/wallet_service.gd")
 const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
+const RUN_LOG_SHOP_EVENT_RECORDER_SCRIPT := preload("res://scripts/core/run_log_shop_event_recorder.gd")
 const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
 const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repository.gd")
 const BALANCE_MANAGER_SCRIPT := preload("res://scripts/core/balance_manager.gd")
@@ -86,6 +87,7 @@ var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
 var _run_logger: RunLogger
+var _run_log_shop_event_recorder: RunLogShopEventRecorder
 var _scene_router: SceneRouter
 var _profile_repository: ProfileRepository
 var _balance_manager: BalanceManager
@@ -268,13 +270,14 @@ func ensure_shop_session():
 
 
 func _shop_session_hooks() -> Dictionary:
+	var shop_log_recorder: RunLogShopEventRecorder = _ensure_run_log_shop_event_recorder()
 	return {
 		SHOP_SESSION_SCRIPT.HOOK_APPLY_TUTORIAL_SHOP_SEED: _apply_tutorial_shop_seed,
-		SHOP_SESSION_SCRIPT.HOOK_APPEND_RUN_LOG: _run_log_append,
-		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_RESULT_BRIEF: _run_log_result_brief,
-		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SHOP_ACTION: _run_log_shop_action,
-		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT: _run_log_sanitize_shop_snapshot,
-		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_NEXT_SHOP_ORDINAL: _run_log_next_shop_ordinal,
+		SHOP_SESSION_SCRIPT.HOOK_APPEND_RUN_LOG: shop_log_recorder.append_run_log,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_RESULT_BRIEF: shop_log_recorder.result_brief,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SHOP_ACTION: shop_log_recorder.record_shop_action,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT: shop_log_recorder.sanitize_shop_snapshot,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_NEXT_SHOP_ORDINAL: shop_log_recorder.next_shop_ordinal,
 	}
 
 
@@ -288,6 +291,12 @@ func _ensure_run_logger():
 	if _run_logger == null:
 		_run_logger = RUN_LOGGER_SCRIPT.new(self)
 	return _run_logger
+
+
+func _ensure_run_log_shop_event_recorder() -> RunLogShopEventRecorder:
+	if _run_log_shop_event_recorder == null:
+		_run_log_shop_event_recorder = RUN_LOG_SHOP_EVENT_RECORDER_SCRIPT.new(_ensure_run_logger)
+	return _run_log_shop_event_recorder
 
 
 func _ensure_scene_router():
@@ -1074,8 +1083,8 @@ func advance_after_shop(mark_skipped: bool) -> Dictionary:
 		"shop_leave",
 		{
 			"mark_skipped": mark_skipped,
-			"shop_before": _run_log_sanitize_shop_snapshot(shop_before_close, run_gold),
-			"shop_after": _run_log_sanitize_shop_snapshot(ensure_shop_state().to_snapshot(), run_gold),
+			"shop_before": _ensure_run_log_shop_event_recorder().sanitize_shop_snapshot(shop_before_close, run_gold),
+			"shop_after": _ensure_run_log_shop_event_recorder().sanitize_shop_snapshot(ensure_shop_state().to_snapshot(), run_gold),
 		}
 	)
 	if not run_active:
@@ -1470,40 +1479,6 @@ func _run_log_append(event_type: String, payload: Dictionary) -> void:
 
 func _run_log_export_to_disk() -> void:
 	_ensure_run_logger().run_log_export_to_disk(RUN_LOG_EXPORT_DIR)
-
-
-func _run_log_result_brief(result: Dictionary) -> Dictionary:
-	return _ensure_run_logger().run_log_result_brief(result)
-
-
-func _run_log_shop_action(
-	action: String,
-	result: Dictionary,
-	request: Dictionary = {},
-	shop_before_snapshot: Dictionary = {},
-	gold_before: int = -1
-) -> void:
-	_ensure_run_logger().run_log_shop_action(action, result, request, shop_before_snapshot, gold_before)
-
-
-func _run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
-	return _ensure_run_logger().run_log_sanitize_shop_snapshot(shop_snapshot, gold_value)
-
-
-func _run_log_sanitize_shop_offer(offer: Dictionary, gold_value: int) -> Dictionary:
-	return _ensure_run_logger().run_log_sanitize_shop_offer(offer, gold_value)
-
-
-func _run_log_sanitize_shop_relic_offer(offer: Dictionary, gold_value: int) -> Dictionary:
-	return _ensure_run_logger().run_log_sanitize_shop_relic_offer(offer, gold_value)
-
-
-func _run_log_sanitize_treasure_chest_option(option: Dictionary, option_index: int = -1) -> Dictionary:
-	return _ensure_run_logger().run_log_sanitize_treasure_chest_option(option, option_index)
-
-
-func _run_log_next_shop_ordinal() -> int:
-	return _ensure_run_logger().run_log_next_shop_ordinal()
 
 
 func _run_log_capture_fight_outcome_payload(outcome: String, cause: String = "", extra: Dictionary = {}) -> Dictionary:
