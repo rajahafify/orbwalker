@@ -131,13 +131,16 @@ func _fixture(reason: String = "") -> Dictionary:
 	var board_controller := FakeBoardController.new()
 	var recorder := CallbackRecorder.new()
 	var router: Variant = ROUTER_SCRIPT.new()
-	router.bind(
-		{"model": model, "board_controller": board_controller},
-		{
-			ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(recorder, "clear_hover_state"),
-			ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
-			ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(recorder, "sync_model_state"),
-		}
+	(
+		router
+		. bind(
+			{"model": model, "board_controller": board_controller},
+			{
+				ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(recorder, "clear_hover_state"),
+				ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
+				ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(recorder, "sync_model_state"),
+			}
+		)
 	)
 	return {
 		"router": router,
