@@ -44,6 +44,34 @@ func handle_turn_outcome(phase: int, turn_log: Dictionary) -> Dictionary:
 	return _handle_continue_turn(turn_log)
 
 
+func handle_next_pressed(button_text: String = "") -> Dictionary:
+	if _run_state == null or _model == null:
+		return {"handled": false, "route": "missing_dependencies"}
+	if not _model.has_method("pending_next_scene_path"):
+		return {"handled": false, "route": "missing_model_method"}
+	var pending_scene := String(_model.pending_next_scene_path())
+	if pending_scene == "":
+		return {"handled": false, "route": "no_pending_scene"}
+	_flow_trace_mark("combat_next_button_pressed", {"button_text": button_text}, pending_scene)
+	_call(CALLBACK_PLAY_SFX, ["ui_accept"])
+	var target_scene := pending_scene
+	if _model.has_method("take_pending_next_scene_path"):
+		target_scene = String(_model.take_pending_next_scene_path())
+	else:
+		_model.clear_pending_next_scene_path()
+	_call(CALLBACK_HIDE_OUTCOME_SUMMARY)
+	_call(
+		CALLBACK_TRACE_AND_CHANGE_SCENE,
+		[
+			target_scene,
+			_current_route_id(),
+			"combat_next_button",
+			"combat_before_change_scene_to_file",
+		]
+	)
+	return {"handled": true, "route": "pending_scene_continue", "target_scene": target_scene}
+
+
 func _handle_victory(turn_log: Dictionary) -> Dictionary:
 	_call(CALLBACK_PLAY_SFX, ["victory"])
 	_flow_trace_mark("combat_before_mark_fight_victory")
