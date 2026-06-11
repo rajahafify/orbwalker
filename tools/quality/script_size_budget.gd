@@ -11,10 +11,10 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
-		"baseline": 1834,
+		"baseline": 968,
 		"owner": "P1-1",
 		"reason":
-		"Combat orchestration is still being decomposed; keep state-machine, input-phase, replay, and route authority here until smaller collaborators are covered.",
+		"Combat orchestration is still being decomposed; keep remaining input, replay, and route facades here until smaller collaborators are covered.",
 	},
 	"res://scripts/combat/combat_chrome_styler.gd":
 	{
