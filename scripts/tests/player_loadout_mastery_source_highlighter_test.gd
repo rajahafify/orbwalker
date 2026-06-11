@@ -2,6 +2,7 @@ extends RefCounted
 class_name PlayerLoadoutMasterySourceHighlighterTest
 
 const HIGHLIGHTER_SCRIPT := preload("res://scripts/ui/player_loadout_mastery_source_highlighter.gd")
+const ORB_TYPE := preload("res://scripts/board/orb_type.gd")
 
 
 func run_all() -> Dictionary:
@@ -55,11 +56,11 @@ func _test_highlights_matching_equipment_and_lists_sources() -> String:
 			}
 		)
 	)
-	highlighter.set_highlights_for_orb(OrbType.Id.FIRE)
+	highlighter.set_highlights_for_orb(ORB_TYPE.Id.FIRE)
 	var highlight := equipment_slot.get_node_or_null("MasterySourceHighlight") as Panel
 	if highlight == null or not highlight.visible:
 		return "Expected matching equipment source highlight to become visible."
-	if highlighter.source_lines(OrbType.Id.FIRE) != ["Ember Ring"]:
+	if highlighter.source_lines(ORB_TYPE.Id.FIRE) != ["Ember Ring"]:
 		return "Expected matching source display name in mastery source lines."
 	highlighter.clear_highlights()
 	if highlight.visible:

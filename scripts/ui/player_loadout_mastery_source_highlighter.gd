@@ -1,6 +1,7 @@
 extends RefCounted
 class_name PlayerLoadoutMasterySourceHighlighter
 
+const ORB_TYPE := preload("res://scripts/board/orb_type.gd")
 const MASTERY_SOURCE_HIGHLIGHT_ALPHA := 0.22
 const MASTERY_SOURCE_HIGHLIGHT_BORDER_ALPHA := 0.94
 const MODIFIER_SOURCE_WIGGLE_SECONDS := 0.30
@@ -164,16 +165,16 @@ func _source_affects_orb_mastery(orb_id: int, modifiers: Dictionary) -> bool:
 	if int(orb_bonus_by_id.get(orb_id, 0)) != 0:
 		return true
 	match orb_id:
-		OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH:
+		ORB_TYPE.Id.FIRE, ORB_TYPE.Id.ICE, ORB_TYPE.Id.EARTH:
 			return (
 				int(modifiers.get("flat_damage_bonus", 0)) != 0
 				or int(modifiers.get("combo_flat_bonus", 0)) != 0
 				or not is_equal_approx(float(modifiers.get("combo_multiplier_mult", 1.0)), 1.0)
 			)
-		OrbType.Id.ARMOR:
+		ORB_TYPE.Id.ARMOR:
 			return int(modifiers.get("start_turn_armor", 0)) != 0
-		OrbType.Id.HEART:
+		ORB_TYPE.Id.HEART:
 			return int(modifiers.get("flat_heal_bonus", 0)) != 0
-		OrbType.Id.GOLD:
+		ORB_TYPE.Id.GOLD:
 			return int(modifiers.get("flat_gold_bonus", 0)) != 0
 	return false

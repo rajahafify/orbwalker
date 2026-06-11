@@ -3,6 +3,9 @@ class_name PlayerLoadoutHud
 
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 const MASTERY_SOURCE_HIGHLIGHTER_SCRIPT := preload("res://scripts/ui/player_loadout_mastery_source_highlighter.gd")
+const MASTERY_PANEL_SCRIPT := preload("res://scripts/ui/player_loadout_mastery_panel.gd")
+const INTENT_PREVIEW_SCRIPT := preload("res://scripts/ui/player_loadout_intent_preview.gd")
+const SLOT_DETAIL_POPOVER_SCRIPT := preload("res://scripts/ui/player_loadout_slot_detail_popover.gd")
 
 signal equipment_slot_selected(slot_index: int)
 signal consumable_slot_selected(slot_index: int)
@@ -36,14 +39,7 @@ const COMBAT_MASTERY_ACTIVATION_ALPHA_STEP := 0.08
 const COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS := 0.24
 const COMBAT_MASTERY_HOVER_ALPHA := 0.20
 const COMBAT_MASTERY_HOVER_BORDER_ALPHA := 0.90
-const COMBAT_MASTERY_ORDER: Array[int] = [
-	OrbType.Id.HEART,
-	OrbType.Id.ARMOR,
-	OrbType.Id.GOLD,
-	OrbType.Id.FIRE,
-	OrbType.Id.ICE,
-	OrbType.Id.EARTH,
-]
+const COMBAT_MASTERY_ORDER: Array[int] = [3, 4, 5, 0, 1, 2]
 const RELIC_SLOT_SIZE := Vector2(64, 64)
 const RELIC_ICON_SIZE := Vector2(54, 54)
 const RELIC_SLOT_GAP := 10.0
@@ -136,7 +132,10 @@ var _mastery_detail_effect: Label
 var _mastery_detail_value: Label
 var _mastery_detail_modifiers: Label
 var _mastery_detail_hovered_orb_id := -1
-var _mastery_source_highlighter: PlayerLoadoutMasterySourceHighlighter
+var _mastery_source_highlighter: Variant
+var _mastery_panel_presenter: Variant
+var _intent_preview_presenter: Variant
+var _slot_detail_popover_presenter: Variant
 var _hud_section_node: Node = null
 
 
@@ -148,7 +147,7 @@ func set_selected_consumable_slot(slot_index: int) -> void:
 	_selected_consumable_slot = slot_index
 
 
-func set_visual_registry(visuals: VisualRegistry) -> void:
+func set_visual_registry(visuals: Variant) -> void:
 	_visuals = visuals
 
 
@@ -371,578 +370,75 @@ func _suppress_native_slot_tooltips() -> void:
 
 
 func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
-	_clear_children(row)
-	for index in range(COMBAT_MASTERY_ORDER.size()):
-		var orb_id: int = COMBAT_MASTERY_ORDER[index]
-		var cell := Control.new()
-		cell.name = "MasteryCell%d" % orb_id
-		cell.size = Vector2(MASTERY_CELL_WIDTH, MASTERY_SLOT_SIZE.y)
-		cell.position = Vector2(float(index) * (MASTERY_CELL_WIDTH + MASTERY_CELL_GAP), 0.0)
-
-		var slot := PanelContainer.new()
-		slot.name = "MasteryIconSlot"
-		slot.custom_minimum_size = MASTERY_SLOT_SIZE
-		slot.size = MASTERY_SLOT_SIZE
-		slot.position = Vector2.ZERO
-		slot.add_theme_stylebox_override("panel", _slot_stylebox())
-
-		var icon := TextureRect.new()
-		icon.name = "MasteryIcon"
-		icon.custom_minimum_size = MASTERY_ICON_INNER_SIZE
-		icon.size = MASTERY_ICON_INNER_SIZE
-		icon.position = Vector2((MASTERY_SLOT_SIZE.x - MASTERY_ICON_INNER_SIZE.x) * 0.5, (MASTERY_SLOT_SIZE.y - MASTERY_ICON_INNER_SIZE.y) * 0.5)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
-		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-		icon.texture = _visual_registry().mastery_icon(orb_id)
-		var level := int(mastery_levels.get(orb_id, 0))
-		icon.tooltip_text = "%s Mastery %d" % [OrbType.display_name(orb_id), level]
-		if level <= 0:
-			icon.modulate = Color(0.6, 0.6, 0.6, 0.7)
-		slot.add_child(icon)
-
-		var amount_label := Label.new()
-		amount_label.name = "MasteryAmount"
-		amount_label.text = str(level)
-		amount_label.position = Vector2(52.0, 0.0)
-		amount_label.size = Vector2(28.0, MASTERY_SLOT_SIZE.y)
-		amount_label.custom_minimum_size = amount_label.size
-		amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-		amount_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-		amount_label.add_theme_font_size_override("font_size", 24)
-		amount_label.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
-		amount_label.add_theme_constant_override("outline_size", 2)
-		amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
-
-		cell.add_child(slot)
-		cell.add_child(amount_label)
-		row.add_child(cell)
+	_mastery_panel().populate_mastery_row(row, mastery_levels)
 
 
 func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
-	if row == null:
-		return null
-	var card_name := _combat_mastery_card_name(orb_id)
-	for child in row.get_children():
-		if child.name == card_name:
-			return child as Control
-	return null
+	return _mastery_panel().get_combat_mastery_card(row, orb_id)
 
 
-func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
-	_clear_children(row)
-	var compact_mode := row.size.y > 0.0 and row.size.y <= 90.0
-	var card_size := COMBAT_MASTERY_COMPACT_CARD_SIZE if compact_mode else COMBAT_MASTERY_CARD_SIZE
-	var card_gap := COMBAT_MASTERY_COMPACT_CARD_GAP if compact_mode else COMBAT_MASTERY_CARD_GAP
-	var icon_size := COMBAT_MASTERY_COMPACT_ICON_SIZE if compact_mode else COMBAT_MASTERY_ICON_SIZE
-	var row_width := row.size.x if row.size.x > 0.0 else COMBAT_MASTERY_ROOT_RECT.size.x
-	var total_cards_width := card_size.x * float(COMBAT_MASTERY_ORDER.size())
-	total_cards_width += card_gap * float(COMBAT_MASTERY_ORDER.size() - 1)
-	var start_x := maxf(0.0, (row_width - total_cards_width) * 0.5)
-	for index in range(COMBAT_MASTERY_ORDER.size()):
-		var orb_id: int = COMBAT_MASTERY_ORDER[index]
-		var feedback_value := int(feedback_totals.get(orb_id, 0))
-
-		var card := Control.new()
-		card.name = _combat_mastery_card_name(orb_id)
-		card.clip_contents = true
-		card.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-		card.size = card_size
-		card.position = Vector2(start_x + float(index) * (card_size.x + card_gap), 0.0)
-
-		var panel := Panel.new()
-		panel.name = "CardPanel"
-		panel.custom_minimum_size = card_size
-		panel.size = card_size
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id))
-
-		var card_background := TextureRect.new()
-		card_background.name = "CardTexture"
-		card_background.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		card_background.position = Vector2.ZERO
-		card_background.size = card_size
-		card_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-		card_background.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-		card_background.texture = _visual_registry().mastery_card_texture(orb_id)
-		card_background.modulate = Color(1.0, 1.0, 1.0, 0.18)
-
-		var activation_glow := ColorRect.new()
-		activation_glow.name = "ActivationGlow"
-		activation_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		activation_glow.position = Vector2(4.0, 4.0)
-		activation_glow.size = card_size - Vector2(8.0, 8.0)
-		var activation_accent := OrbType.color(orb_id)
-		activation_glow.color = Color(activation_accent.r, activation_accent.g, activation_accent.b, 0.0)
-		activation_glow.visible = false
-
-		var icon := TextureRect.new()
-		icon.name = "MasteryIcon"
-		icon.custom_minimum_size = icon_size
-		icon.size = icon_size
-		icon.position = Vector2((card_size.x - icon_size.x) * 0.5, (card_size.y - icon_size.y) * 0.5)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
-		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
-
-		var feedback_label := Label.new()
-		feedback_label.name = "MasteryFeedback"
-		feedback_label.text = _combat_mastery_feedback_number_text(feedback_value)
-		feedback_label.position = Vector2.ZERO
-		feedback_label.size = card_size
-		feedback_label.add_theme_font_size_override(
-			"font_size", COMBAT_MASTERY_COMPACT_FEEDBACK_NUMBER_FONT_SIZE if compact_mode else COMBAT_MASTERY_FEEDBACK_NUMBER_FONT_SIZE
-		)
-		feedback_label.add_theme_color_override("font_color", Color(1.0, 0.94, 0.62, 1.0))
-		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-		feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-		feedback_label.pivot_offset = card_size * 0.5
-		feedback_label.add_theme_constant_override("outline_size", 2)
-		feedback_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.98))
-		feedback_label.visible = feedback_value > 0
-		feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
-
-		var activation_frame := Panel.new()
-		activation_frame.name = "ActivationFrame"
-		activation_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		activation_frame.position = Vector2.ZERO
-		activation_frame.size = card_size
-		activation_frame.visible = false
-
-		var hover_highlight := ColorRect.new()
-		hover_highlight.name = "HoverHighlight"
-		hover_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		hover_highlight.position = Vector2(2.0, 2.0)
-		hover_highlight.size = card_size - Vector2(4.0, 4.0)
-		hover_highlight.color = Color(1.0, 1.0, 1.0, 0.0)
-		hover_highlight.visible = false
-
-		var hover_frame := Panel.new()
-		hover_frame.name = "HoverFrame"
-		hover_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		hover_frame.position = Vector2.ZERO
-		hover_frame.size = card_size
-		hover_frame.visible = false
-
-		panel.add_child(card_background)
-		panel.add_child(activation_glow)
-		panel.add_child(icon)
-		panel.add_child(feedback_label)
-		panel.add_child(activation_frame)
-		panel.add_child(hover_highlight)
-		panel.add_child(hover_frame)
-		card.add_child(panel)
-		row.add_child(card)
-		card.mouse_entered.connect(_on_combat_mastery_card_mouse_entered.bind(row, orb_id, card))
-		card.mouse_exited.connect(_on_combat_mastery_card_mouse_exited.bind(row, orb_id))
-		_apply_combat_mastery_activation(card, orb_id, feedback_value, false)
-	_apply_hovered_combat_mastery(row)
+func populate_combat_mastery_panel(row: Control, mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
+	_mastery_panel().populate_combat_mastery_panel(row, mastery_levels, feedback_totals)
 
 
 func clear_combat_mastery_feedback(row: Control) -> void:
-	for orb_id in COMBAT_MASTERY_ORDER:
-		set_combat_mastery_feedback(row, int(orb_id), 0)
+	_mastery_panel().clear_combat_mastery_feedback(row)
 
 
 func set_combat_mastery_feedback(row: Control, orb_id: int, feedback_value: int) -> void:
-	if not OrbType.is_valid_id(orb_id):
-		return
-	var card: Control = get_combat_mastery_card(row, orb_id)
-	if card == null:
-		return
-	var panel: Control = card.get_node_or_null("CardPanel") as Control
-	if panel == null:
-		return
-	var feedback_label: Label = panel.get_node_or_null("MasteryFeedback") as Label
-	if feedback_label == null:
-		return
-	var previous_text := feedback_label.text
-	var feedback_text := _combat_mastery_feedback_number_text(feedback_value)
-	feedback_label.text = feedback_text
-	feedback_label.visible = feedback_value > 0
-	feedback_label.modulate = Color(1.0, 0.95, 0.66, 1.0) if feedback_label.visible else Color(1.0, 1.0, 1.0, 0.38)
-	if feedback_value > 0 and previous_text != feedback_text:
-		_pulse_combat_mastery_feedback_label(feedback_label)
-	_apply_combat_mastery_activation(card, orb_id, feedback_value, true)
+	_mastery_panel().set_combat_mastery_feedback(row, orb_id, feedback_value)
 
 
 func set_combat_mastery_hover_payload(payload: Dictionary) -> void:
-	_sync_combat_mastery_hover_payload(payload)
+	_mastery_panel().set_combat_mastery_hover_payload(payload)
 
 
 func set_hovered_combat_mastery(row: Control, orb_id: int) -> void:
-	_hovered_mastery_orb_id = orb_id if OrbType.is_valid_id(orb_id) else -1
-	_apply_hovered_combat_mastery(row)
+	_mastery_panel().set_hovered_combat_mastery(row, orb_id)
 
 
 func clear_hovered_combat_mastery(row: Control) -> void:
-	_hovered_mastery_orb_id = -1
-	_apply_hovered_combat_mastery(row)
-	if _mastery_detail_hovered_orb_id < 0:
-		_hide_mastery_detail()
+	_mastery_panel().clear_hovered_combat_mastery(row)
 
 
 func clear_combat_mastery_hover_ui(row: Control) -> void:
-	_hovered_mastery_orb_id = -1
-	_mastery_detail_hovered_orb_id = -1
-	_apply_hovered_combat_mastery(row)
-	_hide_mastery_detail()
-	_clear_mastery_source_highlights()
+	_mastery_panel().clear_combat_mastery_hover_ui(row)
 
 
 func pulse_modifier_sources(sources: Array) -> void:
 	_mastery_highlighter().pulse_sources(sources)
 
 
-func _combat_mastery_feedback_number_text(value: int) -> String:
-	if value <= 0:
-		return ""
-	return str(value)
-
-
-func _pulse_combat_mastery_feedback_label(feedback_label: Label) -> void:
-	if feedback_label == null or not feedback_label.is_inside_tree():
-		return
-	feedback_label.scale = Vector2(1.18, 1.18)
-	var tween := feedback_label.create_tween()
-	(
-		tween
-		. tween_property(feedback_label, "scale", Vector2(1.0, 1.0), COMBAT_MASTERY_FEEDBACK_POP_SECONDS)
-		. set_trans(Tween.TRANS_BACK as Tween.TransitionType)
-		. set_ease(Tween.EASE_OUT as Tween.EaseType)
-	)
-
-
-func _combat_mastery_card_stylebox(orb_id: int, activation_tier: int = 0) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var accent := OrbType.color(orb_id)
-	style.bg_color = Color(0.02, 0.05, 0.07, 0.70)
-	var border_alpha := 0.42 + 0.10 * float(maxi(0, activation_tier))
-	style.border_color = Color(accent.r, accent.g, accent.b, clampf(border_alpha, 0.0, 0.86))
-	style.border_blend = true
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	if activation_tier >= 2:
-		style.border_width_right = 2
-		style.border_width_bottom = 2
-	style.set_corner_radius_all(4)
-	style.shadow_color = Color(0.0, 0.0, 0.0, 0.42)
-	style.shadow_size = 3
-	style.shadow_offset = Vector2(1.0, 2.0)
-	style.content_margin_left = 4.0
-	style.content_margin_right = 4.0
-	style.content_margin_top = 3.0
-	style.content_margin_bottom = 3.0
-	return style
-
-
-func _apply_combat_mastery_activation(card: Control, orb_id: int, feedback_value: int, animate: bool) -> void:
-	if card == null:
-		return
-	var panel := card.get_node_or_null("CardPanel") as Control
-	if panel == null:
-		return
-	var glow := panel.get_node_or_null("ActivationGlow") as ColorRect
-	var frame := panel.get_node_or_null("ActivationFrame") as Panel
-	var card_background := panel.get_node_or_null("CardTexture") as TextureRect
-	var icon := panel.get_node_or_null("MasteryIcon") as TextureRect
-	var feedback_label := panel.get_node_or_null("MasteryFeedback") as Label
-	var active := feedback_value > 0
-	var tier := _combat_mastery_activation_tier(feedback_value)
-	var accent := OrbType.color(orb_id)
-	panel.add_theme_stylebox_override("panel", _combat_mastery_card_stylebox(orb_id, tier))
-	if card_background != null:
-		card_background.modulate = Color(1.0, 1.0, 1.0, 0.08 if active else 0.18)
-	if icon != null:
-		icon.visible = not active
-	if feedback_label != null:
-		feedback_label.visible = active
-	if glow != null:
-		glow.color = Color(accent.r, accent.g, accent.b, _combat_mastery_activation_alpha(tier) if active else 0.0)
-		glow.visible = active
-		glow.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	if frame != null:
-		frame.add_theme_stylebox_override("panel", _combat_mastery_activation_frame_stylebox(orb_id, tier))
-		frame.visible = active
-		frame.modulate = Color(1.0, 1.0, 1.0, 0.82 if active else 0.0)
-	if active and animate:
-		_pulse_combat_mastery_activation(glow, frame, tier)
-
-
-func _combat_mastery_activation_tier(feedback_value: int) -> int:
-	if feedback_value <= 0:
-		return 0
-	return clampi(int(ceil(float(feedback_value) / 5.0)), 1, 4)
-
-
-func _combat_mastery_activation_alpha(tier: int) -> float:
-	if tier <= 0:
-		return 0.0
-	return clampf(COMBAT_MASTERY_ACTIVATION_BASE_ALPHA + COMBAT_MASTERY_ACTIVATION_ALPHA_STEP * float(tier - 1), 0.0, 0.42)
-
-
-func _pulse_combat_mastery_activation(glow: ColorRect, frame: Panel, tier: int) -> void:
-	var target: Control = glow
-	if target == null:
-		target = frame
-	if target == null or tier <= 0 or not target.is_inside_tree():
-		return
-	var pulse_alpha := 0.16 + 0.05 * float(tier)
-	var tween := target.create_tween()
-	tween.set_parallel(true)
-	if glow != null:
-		var original_glow_alpha := glow.modulate.a
-		tween.tween_property(glow, "modulate:a", minf(1.0, original_glow_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
-		tween.tween_property(glow, "modulate:a", original_glow_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(
-			COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5
-		)
-	if frame != null:
-		var original_frame_alpha := frame.modulate.a
-		tween.tween_property(frame, "modulate:a", minf(1.0, original_frame_alpha + pulse_alpha), COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5)
-		tween.tween_property(frame, "modulate:a", original_frame_alpha, COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS).set_delay(
-			COMBAT_MASTERY_ACTIVATION_PULSE_SECONDS * 0.5
-		)
-
-
-func _combat_mastery_activation_frame_stylebox(orb_id: int, tier: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var accent := OrbType.color(orb_id)
-	var strength := 0.42 + 0.10 * float(maxi(1, tier))
-	style.bg_color = Color(accent.r, accent.g, accent.b, 0.0)
-	style.border_color = Color(accent.r, accent.g, accent.b, clampf(strength, 0.0, 0.88))
-	style.set_border_width_all(1 + mini(2, maxi(0, tier - 1)))
-	style.set_corner_radius_all(6)
-	return style
-
-
-func _combat_mastery_card_name(orb_id: int) -> String:
-	return "CombatMasteryCard%d" % orb_id
-
-
 func _sync_combat_mastery_hover_payload(payload: Dictionary) -> void:
-	_mastery_hover_payload = payload.duplicate(true)
-	_mastery_highlighter().set_hover_payload(payload)
-	if _mastery_detail_hovered_orb_id >= 0:
-		_show_mastery_detail(_mastery_detail_hovered_orb_id)
-	else:
-		_mastery_highlighter().apply_highlights()
+	_mastery_panel()._sync_combat_mastery_hover_payload(payload)
 
 
 func _apply_hovered_combat_mastery(row: Control) -> void:
-	if row == null:
-		return
-	for orb_id in COMBAT_MASTERY_ORDER:
-		var card := get_combat_mastery_card(row, orb_id)
-		if card == null:
-			continue
-		var panel := card.get_node_or_null("CardPanel") as Control
-		if panel == null:
-			continue
-		var hover_highlight := panel.get_node_or_null("HoverHighlight") as ColorRect
-		var hover_frame := panel.get_node_or_null("HoverFrame") as Panel
-		var active := int(orb_id) == _hovered_mastery_orb_id
-		if hover_highlight != null:
-			var accent := OrbType.color(int(orb_id))
-			hover_highlight.color = Color(accent.r, accent.g, accent.b, COMBAT_MASTERY_HOVER_ALPHA if active else 0.0)
-			hover_highlight.visible = active
-		if hover_frame != null:
-			hover_frame.add_theme_stylebox_override("panel", _combat_mastery_hover_frame_stylebox(int(orb_id)))
-			hover_frame.visible = active
-
-
-func _combat_mastery_hover_frame_stylebox(orb_id: int) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	var accent := OrbType.color(orb_id)
-	style.bg_color = Color(accent.r, accent.g, accent.b, 0.0)
-	style.border_color = Color(accent.r, accent.g, accent.b, COMBAT_MASTERY_HOVER_BORDER_ALPHA)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
-	return style
+	_mastery_panel()._apply_hovered_combat_mastery(row)
 
 
 func _on_combat_mastery_card_mouse_entered(row: Control, orb_id: int, card: Control) -> void:
-	if not OrbType.is_valid_id(orb_id):
-		return
-	_mastery_detail_hovered_orb_id = orb_id
-	set_hovered_combat_mastery(row, orb_id)
-	_show_mastery_detail(orb_id, card)
+	_mastery_panel()._on_combat_mastery_card_mouse_entered(row, orb_id, card)
 
 
 func _on_combat_mastery_card_mouse_exited(row: Control, orb_id: int) -> void:
-	if _mastery_detail_hovered_orb_id == orb_id:
-		_mastery_detail_hovered_orb_id = -1
-		_hide_mastery_detail()
-	_mastery_highlighter().clear_highlights()
-	if _hovered_mastery_orb_id == orb_id:
-		_hovered_mastery_orb_id = -1
-	_apply_hovered_combat_mastery(row)
+	_mastery_panel()._on_combat_mastery_card_mouse_exited(row, orb_id)
 
 
 func _ensure_mastery_detail_bubble() -> void:
-	if _mastery_detail_bubble != null:
-		return
-	var parent := _hud_nodes.get("popover_parent", null) as Control
-	if parent == null:
-		parent = _hud_nodes.get("section", null) as Control
-	if parent == null:
-		return
-
-	_mastery_detail_bubble = Panel.new()
-	_mastery_detail_bubble.name = "MasteryDetailBubble"
-	_mastery_detail_bubble.visible = false
-	_mastery_detail_bubble.z_index = int(_hud_nodes.get("popover_z_index", 210))
-	_mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(_mastery_detail_bubble)
-
-	_mastery_detail_title = Label.new()
-	_mastery_detail_title.name = "MasteryDetailTitle"
-	_mastery_detail_bubble.add_child(_mastery_detail_title)
-
-	_mastery_detail_effect = Label.new()
-	_mastery_detail_effect.name = "MasteryDetailEffect"
-	_mastery_detail_bubble.add_child(_mastery_detail_effect)
-
-	_mastery_detail_value = Label.new()
-	_mastery_detail_value.name = "MasteryDetailValue"
-	_mastery_detail_bubble.add_child(_mastery_detail_value)
-
-	_mastery_detail_modifiers = Label.new()
-	_mastery_detail_modifiers.name = "MasteryDetailModifiers"
-	_mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	_mastery_detail_bubble.add_child(_mastery_detail_modifiers)
-
-	_apply_mastery_detail_popover_chrome()
-
-
-func _apply_mastery_detail_popover_chrome() -> void:
-	if _mastery_detail_bubble == null:
-		return
-	var bubble_style := StyleBoxFlat.new()
-	bubble_style.bg_color = Color(0.03, 0.04, 0.05, 0.98)
-	bubble_style.border_color = Color(0.52, 0.60, 0.72, 0.94)
-	bubble_style.set_border_width_all(2)
-	bubble_style.set_corner_radius_all(8)
-	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
-
-	_apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
-	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
-	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
-	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
-	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
+	_mastery_panel()._ensure_mastery_detail_bubble()
 
 
 func _show_mastery_detail(orb_id: int, anchor_card: Control = null) -> void:
-	if not OrbType.is_valid_id(orb_id):
-		_hide_mastery_detail()
-		return
-	_ensure_mastery_detail_bubble()
-	if _mastery_detail_bubble == null:
-		return
-	var detail := _combat_mastery_detail_data(orb_id)
-	_mastery_detail_title.text = String(detail.get("title", ""))
-	_mastery_detail_effect.text = String(detail.get("effect", ""))
-	_mastery_detail_value.text = String(detail.get("value", ""))
-	_mastery_detail_modifiers.text = String(detail.get("modifiers", ""))
-	_mastery_detail_bubble.size = MASTERY_DETAIL_BUBBLE_SIZE
-	_mastery_detail_bubble.visible = true
-	_set_mastery_source_highlights_for_orb(orb_id)
-	_layout_mastery_detail_bubble(anchor_card)
+	_mastery_panel()._show_mastery_detail(orb_id, anchor_card)
 
 
 func _hide_mastery_detail() -> void:
-	if _mastery_detail_bubble == null:
-		return
-	_mastery_detail_bubble.visible = false
+	_mastery_panel()._hide_mastery_detail()
 
 
 func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
-	if _mastery_detail_bubble == null:
-		return
-	var parent := _mastery_detail_bubble.get_parent() as Control
-	if parent == null:
-		return
-	var anchor_rect := Rect2(Vector2.ZERO, Vector2.ZERO)
-	if anchor_card != null and is_instance_valid(anchor_card):
-		anchor_rect = _to_parent_rect(anchor_card.get_global_rect(), parent)
-	elif _mastery_detail_hovered_orb_id >= 0:
-		var row := _hud_nodes.get("mastery_cards") as Control
-		var fallback_card := get_combat_mastery_card(row, _mastery_detail_hovered_orb_id)
-		if fallback_card != null:
-			anchor_rect = _to_parent_rect(fallback_card.get_global_rect(), parent)
-	if anchor_rect.size == Vector2.ZERO:
-		return
-
-	var bubble_size := _mastery_detail_bubble.size
-	var local_x := anchor_rect.position.x + (anchor_rect.size.x - bubble_size.x) * 0.5
-	local_x = clampf(local_x, 0.0, maxf(0.0, parent.size.x - bubble_size.x))
-	var local_y := anchor_rect.position.y - bubble_size.y - 10.0
-	if local_y < 0.0:
-		local_y = anchor_rect.end.y + 10.0
-	_mastery_detail_bubble.position = Vector2(local_x, local_y)
-
-	_apply_rect(_mastery_detail_title, Rect2(Vector2(24.0, 20.0), Vector2(bubble_size.x - 48.0, 52.0)))
-	_apply_rect(_mastery_detail_effect, Rect2(Vector2(24.0, 88.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_apply_rect(_mastery_detail_value, Rect2(Vector2(24.0, 146.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(24.0, 208.0), Vector2(bubble_size.x - 48.0, bubble_size.y - 232.0)))
-
-
-func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
-	var inverse := parent.get_global_transform_with_canvas().affine_inverse()
-	var top_left := inverse * global_rect.position
-	var bottom_right := inverse * (global_rect.position + global_rect.size)
-	return Rect2(top_left, bottom_right - top_left)
-
-
-func _combat_mastery_detail_data(orb_id: int) -> Dictionary:
-	var mastery_levels: Dictionary = _mastery_hover_payload.get("mastery_levels", {})
-	var level := int(mastery_levels.get(orb_id, 0))
-	var orb_values: Dictionary = _mastery_hover_payload.get("orb_values_by_id", {})
-	var orb_value := int(orb_values.get(orb_id, 0))
-	var effect_text := _mastery_base_effect_text(orb_id, level)
-	var value_text := _mastery_value_text(orb_id, orb_value)
-	var source_lines := _mastery_modifier_source_lines(orb_id)
-	var modifiers_text := "No equipment or relic modifiers"
-	if not source_lines.is_empty():
-		modifiers_text = "Modifiers: %s" % "; ".join(source_lines)
-	return {
-		"title": "%s Mastery Lv %d" % [OrbType.display_name(orb_id), level],
-		"effect": effect_text,
-		"value": value_text,
-		"modifiers": modifiers_text,
-	}
-
-
-func _mastery_base_effect_text(orb_id: int, level: int) -> String:
-	match orb_id:
-		OrbType.Id.HEART:
-			return "Base effect: restore HP (mastery bonus +%d)" % level
-		OrbType.Id.ARMOR:
-			return "Base effect: gain Armor (mastery bonus +%d)" % level
-		OrbType.Id.GOLD:
-			return "Base effect: gain Gold (mastery bonus +%d)" % level
-		_:
-			return "Base effect: deal Damage (mastery bonus +%d)" % level
-
-
-func _mastery_value_text(orb_id: int, orb_value: int) -> String:
-	var label := "Per orb value"
-	match orb_id:
-		OrbType.Id.HEART:
-			label = "Per orb heal"
-		OrbType.Id.ARMOR:
-			label = "Per orb armor"
-		OrbType.Id.GOLD:
-			label = "Per orb gold"
-		_:
-			label = "Per orb damage"
-	return "%s: %d" % [label, orb_value]
+	_mastery_panel()._layout_mastery_detail_bubble(anchor_card)
 
 
 func _mastery_modifier_source_lines(orb_id: int) -> Array[String]:
@@ -1052,7 +548,7 @@ func apply_player_hud_layout(nodes: Dictionary, layout_override: Dictionary = {}
 
 
 func apply_player_hud_chrome(nodes: Dictionary) -> void:
-	var section_texture := _visual_registry().combat_player_hud_rail_texture()
+	var section_texture: Texture2D = _visual_registry().combat_player_hud_rail_texture()
 	if section_texture != null:
 		_apply_node_stylebox(nodes, "section", _texture_stylebox(section_texture, 26, 26, 26, 26, 10.0))
 		_apply_node_stylebox(nodes, "footer_panel", StyleBoxEmpty.new())
@@ -1336,247 +832,55 @@ func _apply_hud_label_style(label: Label, color: Color, font_size: int) -> void:
 
 
 func _sync_intent_damage_preview(preview: Dictionary) -> void:
-	_intent_damage_preview = preview.duplicate(true)
-	_ensure_intent_damage_preview_nodes()
-	_layout_player_armor_overshield(_current_visible_armor())
-	_layout_intent_damage_preview()
+	_intent_preview()._sync_intent_damage_preview(preview)
 
 
 func _current_visible_armor() -> int:
-	var display_values: Dictionary = _player_data.get("display_values", {})
-	if display_values.has("current_armor"):
-		return maxi(0, int(display_values.get("current_armor", 0)))
-	var player_state = _player_data.get("player_state", null)
-	if player_state != null:
-		return maxi(0, int(player_state.armor))
-	return 0
+	return _intent_preview()._current_visible_armor()
 
 
 func _ensure_intent_damage_preview_nodes() -> void:
-	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
-	if hp_bar != null:
-		if _player_armor_overshield_rect == null or not is_instance_valid(_player_armor_overshield_rect):
-			_player_armor_overshield_rect = ColorRect.new()
-			_player_armor_overshield_rect.name = "PlayerArmorOvershieldFill"
-			_player_armor_overshield_rect.color = Color(0.86, 0.90, 0.94, 0.46)
-			_player_armor_overshield_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-			_player_armor_overshield_rect.visible = false
-		if _player_armor_overshield_rect.get_parent() != hp_bar:
-			var existing_overshield_parent := _player_armor_overshield_rect.get_parent()
-			if existing_overshield_parent != null:
-				existing_overshield_parent.remove_child(_player_armor_overshield_rect)
-			hp_bar.add_child(_player_armor_overshield_rect)
-		if _intent_hp_danger_button == null or not is_instance_valid(_intent_hp_danger_button):
-			_intent_hp_danger_button = Button.new()
-			_intent_hp_danger_button.name = "HpDangerPreviewButton"
-			_intent_hp_danger_button.text = ""
-			_intent_hp_danger_button.focus_mode = Control.FOCUS_NONE as Control.FocusMode
-			_intent_hp_danger_button.visible = false
-			_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-			_intent_hp_danger_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND as Control.CursorShape
-			var clear_style := StyleBoxEmpty.new()
-			_intent_hp_danger_button.add_theme_stylebox_override("normal", clear_style)
-			_intent_hp_danger_button.add_theme_stylebox_override("hover", clear_style)
-			_intent_hp_danger_button.add_theme_stylebox_override("pressed", clear_style)
-			_intent_hp_danger_button.add_theme_stylebox_override("focus", clear_style)
-			_intent_hp_danger_button.mouse_entered.connect(_on_intent_damage_preview_hovered)
-			_intent_hp_danger_button.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
-		if _intent_hp_danger_button.get_parent() != hp_bar:
-			var existing_parent := _intent_hp_danger_button.get_parent()
-			if existing_parent != null:
-				existing_parent.remove_child(_intent_hp_danger_button)
-			hp_bar.add_child(_intent_hp_danger_button)
-		if _intent_hp_danger_empty == null or not is_instance_valid(_intent_hp_danger_empty):
-			_intent_hp_danger_empty = ColorRect.new()
-			_intent_hp_danger_empty.name = "HpDangerPreviewEmpty"
-			_intent_hp_danger_empty.color = Color(0.04, 0.07, 0.10, 1.0)
-			_intent_hp_danger_empty.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-			_intent_hp_danger_empty.visible = false
-		if _intent_hp_danger_empty.get_parent() != _intent_hp_danger_button:
-			var existing_empty_parent := _intent_hp_danger_empty.get_parent()
-			if existing_empty_parent != null:
-				existing_empty_parent.remove_child(_intent_hp_danger_empty)
-			_intent_hp_danger_button.add_child(_intent_hp_danger_empty)
-		if _intent_hp_danger_fill == null or not is_instance_valid(_intent_hp_danger_fill):
-			_intent_hp_danger_fill = ColorRect.new()
-			_intent_hp_danger_fill.name = "HpDangerPreviewFill"
-			_intent_hp_danger_fill.color = Color(1.0, 0.02, 0.02, 1.0)
-			_intent_hp_danger_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-			_intent_hp_danger_fill.visible = false
-		if _intent_hp_danger_fill.get_parent() != _intent_hp_danger_button:
-			var existing_fill_parent := _intent_hp_danger_fill.get_parent()
-			if existing_fill_parent != null:
-				existing_fill_parent.remove_child(_intent_hp_danger_fill)
-			_intent_hp_danger_button.add_child(_intent_hp_danger_fill)
-
-	if hp_bar != null:
-		if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
-			_intent_armor_risk_rect = ColorRect.new()
-			_intent_armor_risk_rect.name = "PlayerBlockIntentPreviewFill"
-			_intent_armor_risk_rect.color = Color(0.86, 0.90, 0.94, 0.68)
-			_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-			_intent_armor_risk_rect.visible = false
-			_intent_armor_risk_rect.mouse_entered.connect(_on_intent_block_preview_hovered)
-			_intent_armor_risk_rect.mouse_exited.connect(_on_intent_damage_preview_hover_ended)
-		if _intent_armor_risk_rect.get_parent() != hp_bar:
-			var existing_armor_parent := _intent_armor_risk_rect.get_parent()
-			if existing_armor_parent != null:
-				existing_armor_parent.remove_child(_intent_armor_risk_rect)
-			hp_bar.add_child(_intent_armor_risk_rect)
+	_intent_preview()._ensure_intent_damage_preview_nodes()
 
 
 func _layout_player_armor_overshield(armor: int) -> void:
-	if _player_armor_overshield_rect == null or not is_instance_valid(_player_armor_overshield_rect):
-		return
-	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
-	if hp_bar == null:
-		return
-	_player_armor_overshield_rect.visible = false
-	if armor <= 0:
-		return
-	var bar_width := maxf(0.0, hp_bar.size.x)
-	var bar_height := maxf(0.0, hp_bar.size.y)
-	var max_hp := maxf(1.0, hp_bar.max_value)
-	if bar_width <= 0.0 or bar_height <= 0.0:
-		return
-	var overshield_width := bar_width * clampf(float(armor) / max_hp, 0.0, 1.0)
-	if overshield_width <= 0.0:
-		return
-	_player_armor_overshield_rect.position = Vector2.ZERO
-	_player_armor_overshield_rect.size = Vector2(overshield_width, bar_height)
-	_player_armor_overshield_rect.visible = true
+	_intent_preview()._layout_player_armor_overshield(armor)
 
 
 func _layout_intent_damage_preview() -> void:
-	if _intent_hp_danger_button != null and is_instance_valid(_intent_hp_danger_button):
-		_intent_hp_danger_button.visible = false
-		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
-		_intent_hp_danger_fill.visible = false
-	if _intent_hp_danger_empty != null and is_instance_valid(_intent_hp_danger_empty):
-		_intent_hp_danger_empty.visible = false
-	_stop_intent_hp_danger_pulse()
-	_set_armor_risk_highlight(false)
-	if _intent_damage_preview.is_empty():
-		return
-	var hp_loss := maxi(0, int(_intent_damage_preview.get("hp_loss", 0)))
-	var blocked := maxi(0, int(_intent_damage_preview.get("blocked", 0)))
-	var fully_blocked := bool(_intent_damage_preview.get("fully_blocked", false))
-	if blocked > 0:
-		_layout_player_block_intent_preview(blocked)
-	if hp_loss > 0:
-		var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
-		if hp_bar == null or _intent_hp_danger_button == null or _intent_hp_danger_empty == null or _intent_hp_danger_fill == null:
-			return
-		var bar_width := maxf(0.0, hp_bar.size.x)
-		var bar_height := maxf(0.0, hp_bar.size.y)
-		if bar_width <= 0.0 or bar_height <= 0.0:
-			return
-		var max_hp := maxf(1.0, hp_bar.max_value)
-		var current_hp := float(maxi(0, int(_intent_damage_preview.get("current_hp", int(round(hp_bar.value))))))
-		var fill_width := bar_width * clampf(current_hp / max_hp, 0.0, 1.0)
-		var segment_width := bar_width * clampf(float(hp_loss) / max_hp, 0.0, 1.0)
-		segment_width = clampf(segment_width, 0.0, fill_width)
-		if segment_width > 0.0:
-			segment_width = maxf(segment_width, INTENT_PREVIEW_MIN_SEGMENT_WIDTH)
-			segment_width = minf(segment_width, fill_width)
-		if segment_width <= 0.0:
-			return
-		var segment_x := maxf(0.0, fill_width - segment_width)
-		_intent_hp_danger_button.position = Vector2(segment_x, 0.0)
-		_intent_hp_danger_button.size = Vector2(segment_width, bar_height)
-		_intent_hp_danger_button.visible = true
-		_intent_hp_danger_button.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-		_intent_hp_danger_empty.visible = true
-		_intent_hp_danger_empty.position = Vector2.ZERO
-		_intent_hp_danger_empty.size = _intent_hp_danger_button.size
-		_intent_hp_danger_fill.visible = true
-		_intent_hp_danger_fill.position = Vector2.ZERO
-		_intent_hp_danger_fill.size = _intent_hp_danger_button.size
-		_start_intent_hp_danger_pulse()
-		return
-	if fully_blocked:
-		return
+	_intent_preview()._layout_intent_damage_preview()
 
 
 func _layout_player_block_intent_preview(blocked: int) -> void:
-	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
-		return
-	var hp_bar := _hud_nodes.get("hp_bar") as ProgressBar
-	if hp_bar == null:
-		return
-	var bar_width := maxf(0.0, hp_bar.size.x)
-	var max_hp := maxf(1.0, hp_bar.max_value)
-	if bar_width <= 0.0 or blocked <= 0:
-		return
-	var preview_width := bar_width * clampf(float(blocked) / max_hp, 0.0, 1.0)
-	if preview_width <= 0.0:
-		return
-	_intent_armor_risk_rect.visible = true
-	_intent_armor_risk_rect.position = Vector2.ZERO
-	_intent_armor_risk_rect.size = Vector2(preview_width, hp_bar.size.y)
-	_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	_start_player_block_intent_preview_pulse()
+	_intent_preview()._layout_player_block_intent_preview(blocked)
 
 
 func _start_intent_hp_danger_pulse() -> void:
-	if _intent_hp_danger_fill == null or not is_instance_valid(_intent_hp_danger_fill):
-		return
-	_stop_intent_hp_danger_pulse()
-	_intent_hp_danger_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
-	_intent_hp_danger_pulse_tween = _intent_hp_danger_fill.create_tween()
-	_intent_hp_danger_pulse_tween.set_loops()
-	_intent_hp_danger_pulse_tween.tween_property(_intent_hp_danger_fill, "modulate:a", 0.0, INTENT_PREVIEW_PULSE_SECONDS)
-	_intent_hp_danger_pulse_tween.tween_property(_intent_hp_danger_fill, "modulate:a", 1.0, INTENT_PREVIEW_PULSE_SECONDS)
+	_intent_preview()._start_intent_hp_danger_pulse()
 
 
 func _stop_intent_hp_danger_pulse() -> void:
-	if _intent_hp_danger_pulse_tween != null and is_instance_valid(_intent_hp_danger_pulse_tween):
-		_intent_hp_danger_pulse_tween.kill()
-	_intent_hp_danger_pulse_tween = null
-	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
-		_intent_hp_danger_fill.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_intent_preview()._stop_intent_hp_danger_pulse()
 
 
 func _set_armor_risk_highlight(enabled: bool) -> void:
-	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
-		return
-	_intent_armor_risk_rect.visible = enabled
-	_intent_armor_risk_rect.mouse_filter = (Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE) as Control.MouseFilter
-	if enabled:
-		_start_player_block_intent_preview_pulse()
-		return
-	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
-		_intent_armor_risk_tween.kill()
-	_intent_armor_risk_tween = null
+	_intent_preview()._set_armor_risk_highlight(enabled)
 
 
 func _start_player_block_intent_preview_pulse() -> void:
-	if _intent_armor_risk_rect == null or not is_instance_valid(_intent_armor_risk_rect):
-		return
-	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
-		_intent_armor_risk_tween.kill()
-	_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	_intent_armor_risk_tween = _intent_armor_risk_rect.create_tween()
-	_intent_armor_risk_tween.set_loops()
-	_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.22, ARMOR_PREVIEW_PULSE_SECONDS)
-	_intent_armor_risk_tween.tween_property(_intent_armor_risk_rect, "modulate:a", 0.68, ARMOR_PREVIEW_PULSE_SECONDS)
+	_intent_preview()._start_player_block_intent_preview_pulse()
 
 
 func _on_intent_damage_preview_hovered() -> void:
-	if _intent_damage_preview.is_empty():
-		return
-	intent_preview_hovered.emit(_intent_damage_preview.duplicate(true))
+	_intent_preview()._on_intent_damage_preview_hovered()
 
 
 func _on_intent_block_preview_hovered() -> void:
-	if _intent_damage_preview.is_empty():
-		return
-	intent_block_preview_hovered.emit(_intent_damage_preview.duplicate(true))
+	_intent_preview()._on_intent_block_preview_hovered()
 
 
 func _on_intent_damage_preview_hover_ended() -> void:
-	intent_preview_hover_ended.emit()
+	_intent_preview()._on_intent_damage_preview_hover_ended()
 
 
 func _make_slot(index: int, filled: bool, slot_label: String, selectable_label: String = "") -> Control:
@@ -1664,253 +968,51 @@ func _make_badge_label(text: String, slot_size: Vector2) -> Label:
 
 
 func _ensure_slot_detail_popover() -> void:
-	if _slot_detail_bubble != null:
-		return
-	var parent := _hud_nodes.get("popover_parent", null) as Control
-	if parent == null:
-		parent = _hud_nodes.get("section", null) as Control
-	if parent == null:
-		return
-	_slot_detail_bubble = Panel.new()
-	_slot_detail_bubble.name = "SlotDetailBubble"
-	_slot_detail_bubble.visible = false
-	_slot_detail_bubble.z_index = int(_hud_nodes.get("popover_z_index", 210))
-	_slot_detail_bubble.mouse_filter = Control.MOUSE_FILTER_STOP as Control.MouseFilter
-	parent.add_child(_slot_detail_bubble)
-
-	_slot_detail_title = Label.new()
-	_slot_detail_title.name = "SlotDetailTitle"
-	_slot_detail_title.clip_text = true
-	_slot_detail_bubble.add_child(_slot_detail_title)
-
-	_slot_detail_description = Label.new()
-	_slot_detail_description.name = "SlotDetailDescription"
-	_slot_detail_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	_slot_detail_description.clip_text = true
-	_slot_detail_bubble.add_child(_slot_detail_description)
-
-	_slot_detail_sell_button = Button.new()
-	_slot_detail_sell_button.name = "SlotDetailSellButton"
-	_slot_detail_sell_button.text = "Sell"
-	_slot_detail_sell_button.visible = false
-	_slot_detail_sell_button.pressed.connect(_on_slot_detail_sell_pressed)
-	_slot_detail_bubble.add_child(_slot_detail_sell_button)
+	_slot_detail_popover()._ensure_slot_detail_popover()
 
 
 func _apply_slot_detail_popover_chrome() -> void:
-	if _slot_detail_bubble == null:
-		return
-	var bubble_style := StyleBoxFlat.new()
-	bubble_style.bg_color = Color(0.03, 0.04, 0.05, 0.98)
-	bubble_style.border_color = Color(0.68, 0.49, 0.23, 0.98)
-	bubble_style.set_border_width_all(2)
-	bubble_style.set_corner_radius_all(8)
-	_slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
-	_apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
-	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
-	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	_slot_detail_sell_button.add_theme_font_size_override("font_size", 26)
-	_slot_detail_sell_button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78, 1.0))
-	var normal := _button_stylebox(Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0))
-	var hover := _button_stylebox(Color(0.28, 0.18, 0.09, 0.98), Color(0.76, 0.59, 0.34, 1.0))
-	_slot_detail_sell_button.add_theme_stylebox_override("normal", normal)
-	_slot_detail_sell_button.add_theme_stylebox_override("hover", hover)
-	_slot_detail_sell_button.add_theme_stylebox_override("pressed", hover)
+	_slot_detail_popover()._apply_slot_detail_popover_chrome()
 
 
 func _button_stylebox(bg_color: Color, border_color: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg_color
-	style.border_color = border_color
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
-	return style
+	return _slot_detail_popover()._button_stylebox(bg_color, border_color)
 
 
 func _set_slot_popover_content(slot_type: String, slot_index: int, title: String, description: String, slot_global_rect: Rect2) -> void:
-	if _slot_detail_bubble == null:
-		return
-	_hover_slot_global_rect = slot_global_rect
-	_hover_slot_type = slot_type
-	_hover_slot_index = slot_index
-	_hover_slot_title = title
-	_hover_slot_description = description
-	_slot_detail_title.text = title
-	_slot_detail_description.text = description
-	_slot_detail_description.visible = description != ""
-	_slot_detail_bubble.visible = title != ""
-	_update_slot_detail_bubble()
+	_slot_detail_popover()._set_slot_popover_content(slot_type, slot_index, title, description, slot_global_rect)
 
 
 func _update_selected_slot_popover() -> void:
-	if _hover_slot_type != "":
-		return
-	var selected_kind := _selected_slot_kind()
-	if selected_kind == "":
-		hide_slot_detail_popover()
-		return
-	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
-	var row := _hud_nodes.get("equipment_icons") as Control
-	if selected_kind == "consumable":
-		row = _hud_nodes.get("consumable_icons") as Control
-	var slot := row.get_node_or_null("%sSlot%d" % [selected_kind.capitalize(), slot_index]) as Control if row != null else null
-	if slot == null:
-		return
-	var item_id := _slot_content_id(selected_kind, slot_index)
-	var content := lookup_content_definition(item_id)
-	_set_slot_popover_content(
-		selected_kind, slot_index, String(content.get("display_name", item_id)), String(content.get("description", "")), slot.get_global_rect()
-	)
+	_slot_detail_popover()._update_selected_slot_popover()
 
 
 func hide_slot_detail_popover() -> void:
-	if _slot_detail_bubble == null:
-		return
-	_hover_slot_global_rect = Rect2()
-	_hover_slot_type = ""
-	_hover_slot_index = -1
-	_hover_slot_title = ""
-	_hover_slot_description = ""
-	_slot_detail_bubble.visible = false
+	_slot_detail_popover().hide_slot_detail_popover()
 
 
 func _update_slot_detail_bubble() -> void:
-	if _slot_detail_bubble == null or not _slot_detail_bubble.visible:
-		return
-	var has_description := _slot_detail_description.text != ""
-	var show_sell_action := _slot_popover_shows_sell_action()
-	var parent := _slot_detail_bubble.get_parent() as Control
-	var parent_size := COMBAT_PLAYER_PANEL_SIZE
-	var slot_top_left: Vector2 = _hover_slot_global_rect.position
-	var slot_size: Vector2 = _hover_slot_global_rect.size
-	if parent != null:
-		parent_size = parent.size
-		var transform_inverse := parent.get_global_transform_with_canvas().affine_inverse()
-		slot_top_left = transform_inverse * _hover_slot_global_rect.position
-		var slot_bottom_right: Vector2 = transform_inverse * (_hover_slot_global_rect.position + _hover_slot_global_rect.size)
-		slot_size = slot_bottom_right - slot_top_left
-
-	var bubble_width := _slot_detail_popover_width(parent_size.x)
-	var max_width := maxf(280.0, parent_size.x - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
-	var max_height := maxf(108.0, parent_size.y - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
-	var bubble_size := Vector2(minf(bubble_width, max_width), SLOT_DETAIL_BUBBLE_MIN_HEIGHT)
-	var content_width := maxf(200.0, bubble_size.x - SLOT_DETAIL_BUBBLE_INTERNAL_PADDING * 2.0)
-
-	var title_height := 38.0
-	var row_gap := 10.0
-	var sell_button_height := 72.0 if show_sell_action else 0.0
-	var description_target_height := _slot_detail_description_height(_slot_detail_description.text, content_width, 18) if has_description else 0.0
-	var non_description_height := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING + title_height + SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
-	if has_description:
-		non_description_height += row_gap
-	if show_sell_action:
-		non_description_height += 12.0 + sell_button_height
-	var description_height := 0.0
-	if has_description:
-		var description_max_height := maxf(40.0, max_height - non_description_height)
-		description_height = minf(description_target_height, description_max_height)
-	var content_height := non_description_height + description_height
-	bubble_size.y = minf(max_height, maxf(SLOT_DETAIL_BUBBLE_MIN_HEIGHT, content_height))
-
-	var local_x: float = slot_top_left.x + (slot_size.x - bubble_size.x) * 0.5
-	local_x = clampf(
-		local_x,
-		SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN,
-		maxf(SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, parent_size.x - bubble_size.x - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN)
-	)
-	var preferred_above := slot_top_left.y - bubble_size.y - 12.0
-	var preferred_below := slot_top_left.y + slot_size.y + 12.0
-	var max_local_y := maxf(SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, parent_size.y - bubble_size.y - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN)
-	var local_y := preferred_above
-	if local_y < SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN:
-		local_y = preferred_below
-	if local_y > max_local_y:
-		local_y = max_local_y
-	local_y = clampf(local_y, SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN, max_local_y)
-
-	_slot_detail_bubble.position = Vector2(local_x, local_y)
-	_slot_detail_bubble.size = bubble_size
-
-	var cursor_y := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
-	_apply_rect(_slot_detail_title, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, title_height)))
-	cursor_y += title_height
-	if has_description:
-		cursor_y += row_gap
-		_slot_detail_description.visible = true
-		_apply_rect(_slot_detail_description, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, description_height)))
-		cursor_y += description_height
-	else:
-		_slot_detail_description.visible = false
-		_apply_rect(_slot_detail_description, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, 0.0)))
-
-	_slot_detail_sell_button.visible = show_sell_action
-	_slot_detail_sell_button.disabled = _selected_slot_kind() == ""
-	_slot_detail_sell_button.text = "Sell  %s" % _selected_slot_sell_text()
-	if show_sell_action:
-		cursor_y += 12.0
-		_apply_rect(_slot_detail_sell_button, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, sell_button_height)))
-	else:
-		_apply_rect(_slot_detail_sell_button, Rect2(Vector2(SLOT_DETAIL_BUBBLE_INTERNAL_PADDING, cursor_y), Vector2(content_width, 0.0)))
+	_slot_detail_popover()._update_slot_detail_bubble()
 
 
 func _slot_detail_popover_width(parent_width: float) -> float:
-	var available_width := maxf(280.0, parent_width - SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN * 2.0)
-	var title_len := float(_slot_detail_title.text.length())
-	var description_len := float(_slot_detail_description.text.length())
-	var title_bonus := minf(96.0, maxf(0.0, title_len - 18.0) * 2.2)
-	var description_bonus := minf(140.0, maxf(0.0, description_len - 72.0) * 1.2)
-	var desired := SLOT_DETAIL_BUBBLE_MIN_WIDTH + maxf(title_bonus, description_bonus)
-	return clampf(desired, SLOT_DETAIL_BUBBLE_MIN_WIDTH, minf(SLOT_DETAIL_BUBBLE_MAX_WIDTH, available_width))
+	return _slot_detail_popover()._slot_detail_popover_width(parent_width)
 
 
 func _slot_detail_description_height(description: String, width: float, font_size: int) -> float:
-	if description == "":
-		return 0.0
-	var chars_per_line := maxi(18, int(floor(width / maxf(7.0, float(font_size) * 0.53))))
-	var total_lines := 0
-	for segment in description.split("\n", false):
-		var segment_text := segment.strip_edges()
-		if segment_text == "":
-			total_lines += 1
-			continue
-		total_lines += maxi(1, int(ceil(float(segment_text.length()) / float(chars_per_line))))
-	total_lines = clampi(total_lines, 1, 10)
-	return float(total_lines) * (float(font_size) + 3.0) + 6.0
+	return _slot_detail_popover()._slot_detail_description_height(description, width, font_size)
 
 
 func _slot_popover_shows_sell_action() -> bool:
-	if _hover_slot_type != "equipment" and _hover_slot_type != "consumable":
-		return false
-	if _hover_slot_title == "":
-		return false
-	if _hover_slot_title.begins_with("Empty "):
-		return false
-	var selected_kind := _selected_slot_kind()
-	if selected_kind == "":
-		return false
-	var selected_slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
-	return selected_kind == _hover_slot_type and selected_slot_index == _hover_slot_index
+	return _slot_detail_popover()._slot_popover_shows_sell_action()
 
 
 func _selected_slot_sell_text() -> String:
-	var selected_kind := _selected_slot_kind()
-	if selected_kind == "":
-		return "Select slot"
-	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
-	var item_id := _slot_content_id(selected_kind, slot_index)
-	var content := lookup_content_definition(item_id)
-	return "+%d gold" % int(content.get("sell_value", content.get("base_price", 0)))
+	return _slot_detail_popover()._selected_slot_sell_text()
 
 
 func _selected_slot_kind() -> String:
-	if _slot_content_id("equipment", _selected_equipment_slot) != "":
-		return "equipment"
-	if _slot_content_id("consumable", _selected_consumable_slot) != "":
-		return "consumable"
-	return ""
+	return _slot_detail_popover()._selected_slot_kind()
 
 
 func _slot_content_id(slot_type: String, slot_index: int) -> String:
@@ -1922,41 +1024,23 @@ func _slot_content_id(slot_type: String, slot_index: int) -> String:
 
 
 func _on_slot_detail_sell_pressed() -> void:
-	var selected_kind := _selected_slot_kind()
-	if selected_kind == "":
-		return
-	var slot_index := _selected_equipment_slot if selected_kind == "equipment" else _selected_consumable_slot
-	sell_slot_requested.emit(selected_kind, slot_index)
+	_slot_detail_popover()._on_slot_detail_sell_pressed()
 
 
 func _has_inventory_focus() -> bool:
-	return _selected_equipment_slot >= 0 or _selected_consumable_slot >= 0 or (_slot_detail_bubble != null and _slot_detail_bubble.visible)
+	return _slot_detail_popover()._has_inventory_focus()
 
 
 func _is_inside_inventory_focus_area(global_point: Vector2) -> bool:
-	if _control_contains_point(_slot_detail_bubble, global_point):
-		return true
-	if _control_contains_point(_slot_detail_sell_button, global_point):
-		return true
-	for key in ["equipment_icons", "consumable_icons", "relic_icons"]:
-		if _point_hits_control_children(_hud_nodes.get(key) as Control, global_point):
-			return true
-	return false
+	return _slot_detail_popover()._is_inside_inventory_focus_area(global_point)
 
 
 func _point_hits_control_children(root: Control, global_point: Vector2) -> bool:
-	if root == null:
-		return false
-	for child in root.get_children():
-		if child is Control and _control_contains_point(child as Control, global_point):
-			return true
-	return false
+	return _slot_detail_popover()._point_hits_control_children(root, global_point)
 
 
 func _control_contains_point(control: Control, global_point: Vector2) -> bool:
-	if control == null or not control.is_visible_in_tree():
-		return false
-	return control.get_global_rect().has_point(global_point)
+	return _slot_detail_popover()._control_contains_point(control, global_point)
 
 
 func _badge_text_for(label: String, content: Dictionary) -> String:
@@ -1996,7 +1080,7 @@ func _slot_tooltip(content: Dictionary, fallback_id: String) -> String:
 
 
 func _slot_stylebox(selected: bool = false, empty: bool = false) -> StyleBox:
-	var slot_texture := _visual_registry().combat_slot_frame_texture(not empty)
+	var slot_texture: Texture2D = _visual_registry().combat_slot_frame_texture(not empty)
 	if slot_texture != null and not selected:
 		return _texture_stylebox(slot_texture, 20, 20, 20, 20, 6.0)
 	var style := StyleBoxFlat.new()
@@ -2047,18 +1131,39 @@ func _clear_children(node: Node) -> void:
 	UI_UTILS.clear_children(node)
 
 
-func _visual_registry() -> VisualRegistry:
+func _visual_registry() -> Variant:
 	if _visuals == null:
 		_visuals = VISUAL_REGISTRY_SCRIPT.new()
 	return _visuals
 
 
-func _mastery_highlighter() -> PlayerLoadoutMasterySourceHighlighter:
+func _mastery_highlighter() -> Variant:
 	if _mastery_source_highlighter == null:
 		_mastery_source_highlighter = MASTERY_SOURCE_HIGHLIGHTER_SCRIPT.new()
 		_mastery_source_highlighter.bind_hud_nodes(_hud_nodes)
 		_mastery_source_highlighter.set_hover_payload(_mastery_hover_payload)
 	return _mastery_source_highlighter
+
+
+func _mastery_panel() -> Variant:
+	if _mastery_panel_presenter == null:
+		_mastery_panel_presenter = MASTERY_PANEL_SCRIPT.new()
+		_mastery_panel_presenter.bind(self)
+	return _mastery_panel_presenter
+
+
+func _intent_preview() -> Variant:
+	if _intent_preview_presenter == null:
+		_intent_preview_presenter = INTENT_PREVIEW_SCRIPT.new()
+		_intent_preview_presenter.bind(self)
+	return _intent_preview_presenter
+
+
+func _slot_detail_popover() -> Variant:
+	if _slot_detail_popover_presenter == null:
+		_slot_detail_popover_presenter = SLOT_DETAIL_POPOVER_SCRIPT.new()
+		_slot_detail_popover_presenter.bind(self)
+	return _slot_detail_popover_presenter
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:

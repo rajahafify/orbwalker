@@ -3584,6 +3584,13 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Moved the orb catalog another step toward resource-backed data: <code>VisualRegistryOrbCatalog</code> now stores exported orb records and derives runtime orb key and derived filename indexes from the resource instance instead of exposing only code constants. <code>VisualRegistryData</code> keeps compatibility accessors, and <code>VisualRegistry</code> public lookup APIs remain unchanged. (source: <code>scripts/ui/visual_registry_orb_catalog.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
 <li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to assert the resource-backed orb catalog contract, alias identity, record coverage, and accessor parity. The VisualRegistry script-size ratchet baseline remains <code>1454</code> measured lines. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>docs/test_plan.html</code>)</li>
 </ul>
+
+<h2 id="2026-06-12-corrected-wave-7-track-e-playerloadouthud-decomposition">2026-06-12 - Corrected Wave 7 Track E PlayerLoadoutHud Decomposition</h2>
+<ul>
+<li>Reduced <code>scripts/ui/player_loadout_hud.gd</code> from the branch ratchet of <code>1790</code> to <code>952</code> measured lines, under the corrected <code>&lt;=962</code> Wave 7 target.</li>
+<li>Extracted typed collaborators for mastery cards/detail hover, player intent HP/armor previews, and slot detail popover/focus/sell handling while preserving <code>PlayerLoadoutHud</code> public methods and signals. (source: <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/ui/player_loadout_mastery_panel.gd</code>, <code>scripts/ui/player_loadout_intent_preview.gd</code>, <code>scripts/ui/player_loadout_slot_detail_popover.gd</code>)</li>
+<li>Added <code>scripts/tests/player_loadout_hud_collaborators_test.gd</code> and synced script-size ratchets/docs to <code>952</code>. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
       <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
