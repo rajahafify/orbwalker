@@ -6,14 +6,17 @@ func open_for_current_level(run_state: Node) -> Dictionary:
 	run_state._apply_tutorial_shop_seed(0)
 	var result: Dictionary = run_state.ensure_shop_service().open_shop(run_state, run_state.dungeon_level)
 	var shop_snapshot: Dictionary = run_state.ensure_shop_state().to_snapshot()
-	run_state._run_log_append(
-		"shop_open",
-		{
-			"result": run_state._run_log_result_brief(result),
-			"dungeon_level": run_state.dungeon_level,
-			"shop_ordinal": run_state._run_log_next_shop_ordinal(),
-			"shop": run_state._run_log_sanitize_shop_snapshot(shop_snapshot, run_state.run_gold),
-		}
+	(
+		run_state
+		. _run_log_append(
+			"shop_open",
+			{
+				"result": run_state._run_log_result_brief(result),
+				"dungeon_level": run_state.dungeon_level,
+				"shop_ordinal": run_state._run_log_next_shop_ordinal(),
+				"shop": run_state._run_log_sanitize_shop_snapshot(shop_snapshot, run_state.run_gold),
+			}
+		)
 	)
 	return result
 
@@ -28,35 +31,39 @@ func reroll_items(run_state: Node) -> Dictionary:
 
 
 func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
-	return _logged_shop_action(run_state, "buy_offer", {"offer_id": offer_id}, func() -> Dictionary:
-		return run_state.ensure_shop_service().buy_offer(run_state, offer_id)
+	return _logged_shop_action(
+		run_state, "buy_offer", {"offer_id": offer_id}, func() -> Dictionary: return run_state.ensure_shop_service().buy_offer(run_state, offer_id)
 	)
 
 
 func sell_equipped_item(run_state: Node, slot_index: int) -> Dictionary:
-	return _logged_shop_action(run_state, "sell_equipment", {"slot_index": slot_index}, func() -> Dictionary:
-		return run_state.ensure_shop_service().sell_equipped_item(run_state, slot_index)
+	return _logged_shop_action(
+		run_state,
+		"sell_equipment",
+		{"slot_index": slot_index},
+		func() -> Dictionary: return run_state.ensure_shop_service().sell_equipped_item(run_state, slot_index)
 	)
 
 
 func sell_consumable_item(run_state: Node, slot_index: int) -> Dictionary:
-	return _logged_shop_action(run_state, "sell_consumable", {"slot_index": slot_index}, func() -> Dictionary:
-		return run_state.ensure_shop_service().sell_consumable_item(run_state, slot_index)
+	return _logged_shop_action(
+		run_state,
+		"sell_consumable",
+		{"slot_index": slot_index},
+		func() -> Dictionary: return run_state.ensure_shop_service().sell_consumable_item(run_state, slot_index)
 	)
 
 
 func choose_treasure_chest_option(run_state: Node, option_index: int) -> Dictionary:
-	return _logged_shop_action(run_state, "choose_treasure_chest", {"option_index": option_index}, func() -> Dictionary:
-		return run_state.ensure_shop_service().choose_treasure_chest_option(run_state, option_index)
+	return _logged_shop_action(
+		run_state,
+		"choose_treasure_chest",
+		{"option_index": option_index},
+		func() -> Dictionary: return run_state.ensure_shop_service().choose_treasure_chest_option(run_state, option_index)
 	)
 
 
-func replace_pending_treasure_chest_option(
-	run_state: Node,
-	option_index: int,
-	slot_index: int,
-	sell_replaced: bool = false
-) -> Dictionary:
+func replace_pending_treasure_chest_option(run_state: Node, option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
 	return _logged_shop_action(
 		run_state,
 		"replace_treasure_chest_option",
@@ -65,19 +72,13 @@ func replace_pending_treasure_chest_option(
 			"slot_index": slot_index,
 			"sell_replaced": sell_replaced,
 		},
-		func() -> Dictionary:
-			return run_state.ensure_shop_service().replace_pending_treasure_chest_option(
-				run_state,
-				option_index,
-				slot_index,
-				sell_replaced
-			)
+		func() -> Dictionary: return run_state.ensure_shop_service().replace_pending_treasure_chest_option(run_state, option_index, slot_index, sell_replaced)
 	)
 
 
 func discard_pending_treasure_chest_options(run_state: Node) -> Dictionary:
-	return _logged_shop_action(run_state, "skip_treasure_chest", {}, func() -> Dictionary:
-		return run_state.ensure_shop_service().discard_pending_treasure_chest_options(run_state)
+	return _logged_shop_action(
+		run_state, "skip_treasure_chest", {}, func() -> Dictionary: return run_state.ensure_shop_service().discard_pending_treasure_chest_options(run_state)
 	)
 
 
