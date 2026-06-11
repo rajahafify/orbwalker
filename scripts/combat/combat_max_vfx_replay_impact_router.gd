@@ -42,10 +42,10 @@ func _supported_presenter(route: Dictionary, kind: String, screen_wide: bool) ->
 
 
 func _route_available(route: Dictionary) -> bool:
-	var availability: Callable = route.get("available", Callable())
-	if availability.is_valid():
+	var availability: Variant = route.get("available", false)
+	if availability is Callable and availability.is_valid():
 		return bool(availability.call())
-	return bool(route.get("available", false))
+	return bool(availability)
 
 
 func _route_accepts_kind(route: Dictionary, kind: String) -> bool:
