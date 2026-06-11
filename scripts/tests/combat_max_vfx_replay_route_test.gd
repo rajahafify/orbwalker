@@ -555,12 +555,12 @@ func _test_combat_max_vfx_replay_router_supports_callable_routes() -> String:
 
 
 func _test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability() -> String:
-	var status_available := true
+	var availability_state := {"status_available": true}
 	var policy = COMBAT_MAX_VFX_REPLAY_ROUTE_POLICY_SCRIPT.new()
-	policy.bind({"status_available": func() -> bool: return status_available})
+	policy.bind({"status_available": func() -> bool: return bool(availability_state["status_available"])})
 	if policy.armor_fallback_available():
 		return "Expected armor fallback to stay disabled while status availability is true."
-	status_available = false
+	availability_state["status_available"] = false
 	if not policy.armor_fallback_available():
 		return "Expected armor fallback to enable when explicit status availability is false."
 	return ""
