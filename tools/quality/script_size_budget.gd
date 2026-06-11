@@ -53,7 +53,7 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/ui/visual_registry.gd":
 	{
-		"baseline": 1468,
+		"baseline": 1454,
 		"owner": "R-P1-3",
 		"reason":
 		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",

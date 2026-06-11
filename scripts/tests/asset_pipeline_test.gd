@@ -110,6 +110,10 @@ func _test_runtime_manifest_paths_import() -> String:
 
 func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 	var alias_contract := VISUAL_REGISTRY_SCRIPT.lookup_table_alias_contract()
+	if not bool(alias_contract.get("intent_index_by_type", false)):
+		return "VisualRegistry intent indexes must alias VisualRegistryData, not duplicate them."
+	if not bool(alias_contract.get("rarity_index", false)):
+		return "VisualRegistry rarity indexes must alias VisualRegistryData, not duplicate them."
 	if not bool(alias_contract.get("enemy_portrait_paths", false)):
 		return "VisualRegistry enemy portrait paths must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("enemy_stage_background_paths", false)):
@@ -118,6 +122,8 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry enemy sprite paths must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("derived_orb_filename_by_id", false)):
 		return "VisualRegistry derived orb filenames must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("runtime_orb_key_by_id", false)):
+		return "VisualRegistry runtime orb keys must alias VisualRegistryData, not duplicate them."
 	if not bool(alias_contract.get("combat_stage_alias_by_enemy_id", false)):
 		return "VisualRegistry combat stage aliases must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("runtime_enemy_alias_by_id", false)):
@@ -140,6 +146,8 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry mastery card lookup must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("mastery_icon_by_orb_id", false)):
 		return "VisualRegistry mastery icon lookup must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("stable_placeholder_icon_colors", false)):
+		return "VisualRegistry stable placeholder icon colors must alias VisualRegistryData, not duplicate them."
 	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
 	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():
 		return "Derived orb contract paths must cover every entry in DERIVED_ORB_FILENAME_BY_ID."
