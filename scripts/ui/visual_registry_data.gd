@@ -2,6 +2,7 @@ extends RefCounted
 class_name VisualRegistryData
 
 const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
+const ORB_CATALOG_SCRIPT := preload("res://scripts/ui/visual_registry_orb_catalog.gd")
 
 const PATH_COMBAT_BACKGROUND := "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
 const PATH_COMBAT_ENEMY_STAGE_SHEET := "res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
@@ -208,28 +209,14 @@ const MASTERY_ICON_BY_ORB_ID := {
 	ORB_TYPE_SCRIPT.Id.GOLD: "mastery_gold",
 }
 
-const RUNTIME_ORB_KEY_BY_ID := {
-	ORB_TYPE_SCRIPT.Id.FIRE: "fire",
-	ORB_TYPE_SCRIPT.Id.ICE: "ice",
-	ORB_TYPE_SCRIPT.Id.EARTH: "earth",
-	ORB_TYPE_SCRIPT.Id.HEART: "heart",
-	ORB_TYPE_SCRIPT.Id.ARMOR: "armor",
-	ORB_TYPE_SCRIPT.Id.GOLD: "gold",
-}
+const RUNTIME_ORB_KEY_BY_ID := ORB_CATALOG_SCRIPT.RUNTIME_ORB_KEY_BY_ID
 
 const STABLE_PLACEHOLDER_ICON_COLORS := {
 	"treasure_chest_elemental": Color(0.90, 0.34, 0.16, 1.0),
 	"treasure_chest_fire": Color(0.90, 0.34, 0.16, 1.0),
 }
 
-const DERIVED_ORB_FILENAME_BY_ID := {
-	ORB_TYPE_SCRIPT.Id.FIRE: "orb_fire_clean.png",
-	ORB_TYPE_SCRIPT.Id.ICE: "orb_ice_clean.png",
-	ORB_TYPE_SCRIPT.Id.EARTH: "orb_earth_clean.png",
-	ORB_TYPE_SCRIPT.Id.HEART: "orb_heart_clean.png",
-	ORB_TYPE_SCRIPT.Id.ARMOR: "orb_armor_clean.png",
-	ORB_TYPE_SCRIPT.Id.GOLD: "orb_gold_clean.png",
-}
+const DERIVED_ORB_FILENAME_BY_ID := ORB_CATALOG_SCRIPT.DERIVED_ORB_FILENAME_BY_ID
 
 
 static func asset_contract_paths() -> Dictionary:
@@ -396,7 +383,15 @@ static func derived_orb_contract_paths() -> Array[String]:
 
 
 static func derived_orb_filename_count() -> int:
-	return DERIVED_ORB_FILENAME_BY_ID.size()
+	return ORB_CATALOG_SCRIPT.derived_orb_filename_count()
+
+
+static func catalog_ownership_contract() -> Dictionary:
+	return {
+		"runtime_orb_key_by_id": is_same(RUNTIME_ORB_KEY_BY_ID, ORB_CATALOG_SCRIPT.RUNTIME_ORB_KEY_BY_ID),
+		"derived_orb_filename_by_id": is_same(DERIVED_ORB_FILENAME_BY_ID, ORB_CATALOG_SCRIPT.DERIVED_ORB_FILENAME_BY_ID),
+		"derived_orb_filename_count": derived_orb_filename_count(),
+	}
 
 
 static func path_keys(base_path: String, keys: Array) -> Array[String]:
