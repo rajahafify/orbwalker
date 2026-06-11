@@ -335,7 +335,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li><code>CombatTurnResolutionCoordinator</code> now also owns the post-turn-resolution continuation guard through its existing <code>can_continue</code> callback. <code>CombatController</code> still performs the async turn resolution call and resolve-trace cleanup.</li>
 <li><code>combat_turn_resolution_coordinator_test.gd</code> covers both stop and continue outcomes for the delegated guard.</li>
-<li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 3, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1959</code>-line ratchet baseline.</li>
+<li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 3, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1952</code>-line ratchet baseline.</li>
 </ul>
 <p>Verification notes (2026-06-11, Wave 5 Track B combat resolution flow):</p>
 <ul>
@@ -1738,6 +1738,21 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_outcome_route_coordinator_test.gd</code> now pins pending-scene continuation and no-pending-scene no-op behavior in addition to existing victory, boss reward, final victory, defeat, and normal-turn routing cases.</li>
 <li>The checked script-size ratchet baseline for <code>scripts/combat/combat_controller.gd</code> is lowered from <code>1956</code> to <code>1942</code> measured lines for this extraction.</li>
 <li>Validation passed: <code>git diff --check</code>; Godot 4.6.3 console <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=171</code>, <code>over_budget=12</code>, <code>documented_exceptions=12</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; focused Godot console runner reported <code>combat_outcome_route_coordinator_test.gd</code> passed <code>7/7</code> and <code>script_size_budget_test.gd</code> passed <code>5/5</code>. The available Godot MCP editor session returned stale pre-change versions from another checkout, so MCP was not counted as validation evidence for this worktree. The Godot console still emitted existing typed-autoload parse noise for <code>RunState</code> global classes after script completion.</li>
+</ul>
+<p>Verification notes (2026-06-12, Wave 7 Track E PlayerLoadoutHud mastery source highlighter):</p>
+<ul>
+<li><code>PlayerLoadoutMasterySourceHighlighter</code> now owns mastery modifier source matching, source-line text, equipment/relic highlight overlays, and modifier-source pulse tweens. <code>PlayerLoadoutHud</code> keeps the public HUD facade and delegates source highlighting while preserving mastery card, detail bubble, equipment, consumable, and relic behavior.</li>
+<li><code>player_loadout_mastery_source_highlighter_test.gd</code> characterizes matching equipment highlights, source display-name lines, and highlight clearing.</li>
+<li>The checked script-size ratchet baseline for <code>scripts/ui/player_loadout_hud.gd</code> is lowered from <code>1924</code> to <code>1790</code> measured lines for this extraction.</li>
+<li>Validation passed: <code>pre_commit</code> <code>gdformat</code>/<code>gdlint</code> for touched GDScript files; non-headless Godot console <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=173</code>, <code>over_budget=12</code>, <code>documented_exceptions=12</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full local Godot console <code>res://scripts/tests/run_all_tests.gd</code> returned exit <code>0</code>. The local Godot console still emits existing standalone typed-autoload parse noise after script completion, so that noise was not counted as a focused failure.</li>
+</ul>
+
+<p>Verification notes (2026-06-12, corrected Wave 7 Track E PlayerLoadoutHud HUD decomposition):</p>
+<ul>
+<li><code>PlayerLoadoutHud</code> now delegates cohesive HUD surfaces to typed collaborators: <code>PlayerLoadoutMasteryPanel</code> for mastery cards/detail hover behavior, <code>PlayerLoadoutIntentPreview</code> for HP/armor intent preview overlays, and <code>PlayerLoadoutSlotDetailPopover</code> for slot detail layout, selection focus, and sell activation. The existing public facade methods and signals remain on <code>PlayerLoadoutHud</code>.</li>
+<li><code>player_loadout_hud_collaborators_test.gd</code> characterizes collaborator wiring, the public slot-detail probe, and visible-armor lookup through the intent preview boundary.</li>
+<li>The checked script-size ratchet baseline for <code>scripts/ui/player_loadout_hud.gd</code> is lowered from <code>1790</code> to <code>952</code> measured lines, satisfying the corrected Wave 7 target of <code>&lt;=962</code> measured lines from the original <code>1924</code> baseline.</li>
+<li>Validation notes: the local Godot MCP tool was unavailable in this session. Fallback non-headless Godot console runner showed <code>player_loadout_hud_collaborators_test.gd</code> passed <code>3/3</code> during the broad run; broad standalone runner still emitted existing typed-autoload/import-cache/resource noise outside this HUD slice. Final gate details are recorded in the implementation handoff.</li>
 </ul>
 <p>Verification notes (2026-05-04, AR-17 combat outcome and transition boundary review):</p>
 <ul>

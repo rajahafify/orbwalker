@@ -124,9 +124,9 @@
         <tr>
           <td><code>scripts/ui/player_loadout_hud.gd</code></td>
           <td><code>650</code></td>
-          <td><code>1924</code></td>
-          <td>The player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces in one script.</td>
-          <td>Split the visible rails into focused presenters with tests, then ratchet this exception down.</td>
+          <td><code>952</code></td>
+          <td>The HUD facade is at the half-size target, but the Wave 7 panel, popover, and intent-preview collaborators are still transitional owner-bound shards that share HUD private state.</td>
+          <td>Wave 8 must give each component its own bound node references and state, then add characterization for the slot-detail popover and intent preview before ratcheting further.</td>
         </tr>
         <tr>
           <td><code>scripts/ui/visual_registry.gd</code></td>
@@ -174,7 +174,7 @@
       </thead>
       <tbody>
         <tr><td><code>scripts/combat/combat_controller.gd</code></td><td><code>1942</code></td></tr>
-        <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td><code>1924</code></td></tr>
+        <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td><code>952</code></td></tr>
         <tr><td><code>scripts/ui/visual_registry.gd</code></td><td><code>1454</code></td></tr>
         <tr><td><code>scripts/main_menu/main_menu_view.gd</code></td><td><code>1007</code></td></tr>
         <tr><td><code>scripts/content/content_registry.gd</code></td><td><code>807</code></td></tr>
