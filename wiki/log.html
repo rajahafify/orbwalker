@@ -3515,6 +3515,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Moved another static VisualRegistry data slice into <code>scripts/ui/visual_registry_data.gd</code>: enemy stage aliases, runtime enemy aliases, placeholder runtime enemy keys, combat stage sheet indexes, and enemy visual profiles. <code>scripts/ui/visual_registry.gd</code> keeps the existing public lookup APIs and aliases the data tables instead of duplicating them.</li>
 <li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to characterize the new alias ownership, and lowered the VisualRegistry script-size ratchet baseline from <code>1561</code> to <code>1526</code> in <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, and <code>docs/script_size_budget.html</code>. (source: <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>, <code>scripts/tests/asset_pipeline_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>
+<h2 id="2026-06-11-shop-session-boundary-extraction">2026-06-11 - ShopSession Boundary Extraction</h2>
+<ul>
+<li>Added <code>scripts/shop/shop_session.gd</code> as the RunState-facing shop session boundary. It owns current-shop open wrappers, tutorial shop seed application, shop action Run Log capture, close-shop delegation, and shop transition snapshot/restore while preserving the existing <code>RunState</code> public shop facade methods. (source: <code>scripts/shop/shop_session.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Kept <code>ShopService</code> as the shop economy mutation authority for offer generation, rerolls, purchases, sells, relic offers, and treasure chest resolution. (source: <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Lowered the checked script-size ratchet baseline for <code>scripts/core/run_state.gd</code> from <code>1532</code> to <code>1472</code> measured lines and synced the script-size budget docs/tests. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
       <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
