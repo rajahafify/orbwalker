@@ -2,6 +2,7 @@ extends RefCounted
 class_name VisualRegistry
 
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
+const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
 const PATH_COMBAT_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_BACKGROUND
 const PATH_COMBAT_ENEMY_STAGE_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_ENEMY_STAGE_SHEET
 const PATH_SHOP_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_SHOP_BACKGROUND
@@ -52,89 +53,20 @@ const _ENEMY_STAGE_BACKGROUND_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_B
 
 const _ENEMY_SPRITE_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS
 
-const _ICON_INDEX_BY_KEY := {
-	"equipment_shortsword": 0,
-	"equipment_buckler": 1,
-	"equipment_coin_purse": 2,
-	"equipment_healing_charm": 3,
-	"equipment_stone_ring": 3,
-	"equipment_ember_ring": 8,
-	"equipment_frost_ring": 8,
-	"equipment_leather_gloves": 4,
-	"equipment_iron_helm": 1,
-	"equipment_combo_lens": 7,
-	"equipment_twin_blades": 5,
-	"equipment_war_banner": 9,
-	"equipment_tower_shield": 6,
-	"equipment_merchant_scales": 7,
-	"equipment_battle_drum": 14,
-	"equipment_earthbreaker_maul": 0,
-	"equipment_hearth_amulet": 3,
-	"equipment_alchemist_gloves": 4,
-	"equipment_training_manual": 12,
-	"equipment_mirror_charm": 13,
-	"equipment_ruby_brooch": 10,
-	"equipment_sapphire_brooch": 10,
-	"equipment_emerald_brooch": 10,
-	"equipment_royal_seal": 12,
-	"equipment_champion_plate": 11,
-	"consumable_fire_scroll": 6,
-	"consumable_ice_scroll": 7,
-	"consumable_earth_scroll": 8,
-	"consumable_heart_scroll": 3,
-	"consumable_armor_scroll": 1,
-	"consumable_gold_scroll": 2,
-}
-
-const _RELIC_INDEX_BY_KEY := {
-	"relic_stalwart_mantle": 0,
-	"relic_golden_idol": 1,
-	"relic_crown_of_chains": 2,
-	"relic_merchant_compass": 3,
-	"relic_deep_pockets": 4,
-}
-
-const _MASTERY_ORB_BY_ICON_KEY := {
-	"mastery_fire": OrbType.Id.FIRE,
-	"mastery_ice": OrbType.Id.ICE,
-	"mastery_earth": OrbType.Id.EARTH,
-	"mastery_heart": OrbType.Id.HEART,
-	"mastery_armor": OrbType.Id.ARMOR,
-	"mastery_gold": OrbType.Id.GOLD,
-}
-
-const _MASTERY_BEAM_BY_ORB_ID := {
-	OrbType.Id.FIRE: "fire",
-	OrbType.Id.ICE: "ice",
-	OrbType.Id.EARTH: "earth",
-	OrbType.Id.HEART: "heart",
-	OrbType.Id.ARMOR: "armor",
-	OrbType.Id.GOLD: "gold",
-}
-const _MASTERY_CARD_BY_ORB_ID := {
-	OrbType.Id.FIRE: "fire",
-	OrbType.Id.ICE: "ice",
-	OrbType.Id.EARTH: "earth",
-	OrbType.Id.HEART: "heart",
-	OrbType.Id.ARMOR: "armor",
-	OrbType.Id.GOLD: "gold",
-}
-const _MASTERY_ICON_BY_ORB_ID := {
-	OrbType.Id.FIRE: "mastery_fire",
-	OrbType.Id.ICE: "mastery_ice",
-	OrbType.Id.EARTH: "mastery_earth",
-	OrbType.Id.HEART: "mastery_heart",
-	OrbType.Id.ARMOR: "mastery_armor",
-	OrbType.Id.GOLD: "mastery_gold",
-}
+const _ICON_INDEX_BY_KEY := VISUAL_REGISTRY_DATA_SCRIPT.ICON_INDEX_BY_KEY
+const _RELIC_INDEX_BY_KEY := VISUAL_REGISTRY_DATA_SCRIPT.RELIC_INDEX_BY_KEY
+const _MASTERY_ORB_BY_ICON_KEY := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ORB_BY_ICON_KEY
+const _MASTERY_BEAM_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_BEAM_BY_ORB_ID
+const _MASTERY_CARD_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID
+const _MASTERY_ICON_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID
 const _DERIVED_ORB_FILENAME_BY_ID := VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID
 const _RUNTIME_ORB_KEY_BY_ID := {
-	OrbType.Id.FIRE: "fire",
-	OrbType.Id.ICE: "ice",
-	OrbType.Id.EARTH: "earth",
-	OrbType.Id.HEART: "heart",
-	OrbType.Id.ARMOR: "armor",
-	OrbType.Id.GOLD: "gold",
+	ORB_TYPE_SCRIPT.Id.FIRE: "fire",
+	ORB_TYPE_SCRIPT.Id.ICE: "ice",
+	ORB_TYPE_SCRIPT.Id.EARTH: "earth",
+	ORB_TYPE_SCRIPT.Id.HEART: "heart",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "armor",
+	ORB_TYPE_SCRIPT.Id.GOLD: "gold",
 }
 
 const _STABLE_PLACEHOLDER_ICON_COLORS := {
@@ -201,8 +133,15 @@ static func lookup_table_alias_contract() -> Dictionary:
 		"combat_stage_alias_by_enemy_id": is_same(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_ALIAS_BY_ENEMY_ID),
 		"runtime_enemy_alias_by_id": is_same(_RUNTIME_ENEMY_ALIAS_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ENEMY_ALIAS_BY_ID),
 		"placeholder_runtime_enemy_keys": is_same(_PLACEHOLDER_RUNTIME_ENEMY_KEYS, VISUAL_REGISTRY_DATA_SCRIPT.PLACEHOLDER_RUNTIME_ENEMY_KEYS),
-		"combat_stage_sheet_index_by_enemy_id": is_same(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID),
+		"combat_stage_sheet_index_by_enemy_id":
+		is_same(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID),
 		"enemy_visual_profiles": is_same(_ENEMY_VISUAL_PROFILES, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_VISUAL_PROFILES),
+		"icon_index_by_key": is_same(_ICON_INDEX_BY_KEY, VISUAL_REGISTRY_DATA_SCRIPT.ICON_INDEX_BY_KEY),
+		"relic_index_by_key": is_same(_RELIC_INDEX_BY_KEY, VISUAL_REGISTRY_DATA_SCRIPT.RELIC_INDEX_BY_KEY),
+		"mastery_orb_by_icon_key": is_same(_MASTERY_ORB_BY_ICON_KEY, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ORB_BY_ICON_KEY),
+		"mastery_beam_by_orb_id": is_same(_MASTERY_BEAM_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_BEAM_BY_ORB_ID),
+		"mastery_card_by_orb_id": is_same(_MASTERY_CARD_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID),
+		"mastery_icon_by_orb_id": is_same(_MASTERY_ICON_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID),
 	}
 
 
@@ -382,7 +321,7 @@ func mastery_icon(orb_id: int) -> Texture2D:
 
 
 func menu_mastery_icon(orb_id: int) -> Texture2D:
-	if not OrbType.is_valid_id(orb_id):
+	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
 		return placeholder_texture("mastery_missing")
 	var icon_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
 	if icon_key == "":
@@ -406,7 +345,7 @@ func icon_for_key(icon_key: String) -> Texture2D:
 
 
 func mastery_beam_texture(orb_id: int) -> Texture2D:
-	if not OrbType.is_valid_id(orb_id):
+	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
 		return null
 	var beam_suffix := String(_MASTERY_BEAM_BY_ORB_ID.get(orb_id, ""))
 	if beam_suffix == "":
@@ -422,7 +361,7 @@ func mastery_panel_frame_texture() -> Texture2D:
 
 
 func mastery_card_texture(orb_id: int) -> Texture2D:
-	if not OrbType.is_valid_id(orb_id):
+	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
 		return _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_missing", _derived_chrome_textures)
 	var card_suffix := String(_MASTERY_CARD_BY_ORB_ID.get(orb_id, ""))
 	if card_suffix == "":
@@ -920,12 +859,12 @@ func _build_orb_textures() -> void:
 	var cell_width := float(sheet.get_width()) / float(columns)
 	var cell_height := float(sheet.get_height()) / 2.0
 	var orb_ids: Array[int] = [
-		OrbType.Id.FIRE,
-		OrbType.Id.ICE,
-		OrbType.Id.EARTH,
-		OrbType.Id.HEART,
-		OrbType.Id.ARMOR,
-		OrbType.Id.GOLD,
+		ORB_TYPE_SCRIPT.Id.FIRE,
+		ORB_TYPE_SCRIPT.Id.ICE,
+		ORB_TYPE_SCRIPT.Id.EARTH,
+		ORB_TYPE_SCRIPT.Id.HEART,
+		ORB_TYPE_SCRIPT.Id.ARMOR,
+		ORB_TYPE_SCRIPT.Id.GOLD,
 	]
 	for index in orb_ids.size():
 		var column := index % columns
@@ -998,12 +937,12 @@ func _build_mastery_textures() -> void:
 	var cell_width := float(sheet.get_width()) / float(columns)
 	var cell_height := float(sheet.get_height()) / 2.0
 	var orb_ids: Array[int] = [
-		OrbType.Id.FIRE,
-		OrbType.Id.ICE,
-		OrbType.Id.EARTH,
-		OrbType.Id.HEART,
-		OrbType.Id.ARMOR,
-		OrbType.Id.GOLD,
+		ORB_TYPE_SCRIPT.Id.FIRE,
+		ORB_TYPE_SCRIPT.Id.ICE,
+		ORB_TYPE_SCRIPT.Id.EARTH,
+		ORB_TYPE_SCRIPT.Id.HEART,
+		ORB_TYPE_SCRIPT.Id.ARMOR,
+		ORB_TYPE_SCRIPT.Id.GOLD,
 	]
 	for index in orb_ids.size():
 		var column := index % columns

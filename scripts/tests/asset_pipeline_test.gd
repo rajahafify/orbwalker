@@ -128,6 +128,18 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry combat stage sheet indexes must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("enemy_visual_profiles", false)):
 		return "VisualRegistry enemy visual profiles must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("icon_index_by_key", false)):
+		return "VisualRegistry icon indexes must alias VisualRegistryData, not duplicate them."
+	if not bool(alias_contract.get("relic_index_by_key", false)):
+		return "VisualRegistry relic indexes must alias VisualRegistryData, not duplicate them."
+	if not bool(alias_contract.get("mastery_orb_by_icon_key", false)):
+		return "VisualRegistry mastery icon orb lookup must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("mastery_beam_by_orb_id", false)):
+		return "VisualRegistry mastery beam lookup must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("mastery_card_by_orb_id", false)):
+		return "VisualRegistry mastery card lookup must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("mastery_icon_by_orb_id", false)):
+		return "VisualRegistry mastery icon lookup must alias VisualRegistryData, not duplicate it."
 	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
 	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():
 		return "Derived orb contract paths must cover every entry in DERIVED_ORB_FILENAME_BY_ID."
