@@ -37,7 +37,8 @@ jobs:
           else
             before_commit="${{ github.event.before }}"
             if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
-              base_commit="$(git rev-list --max-parents=0 HEAD)"
+              git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
+              base_commit="$(git merge-base FETCH_HEAD HEAD)"
             else
               base_commit="${before_commit}"
             fi
@@ -56,7 +57,8 @@ jobs:
           else
             before_commit="${{ github.event.before }}"
             if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
-              base_commit="$(git rev-list --max-parents=0 HEAD)"
+              git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
+              base_commit="$(git merge-base FETCH_HEAD HEAD)"
             else
               base_commit="${before_commit}"
             fi
