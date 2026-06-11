@@ -12,7 +12,10 @@ const DEFAULT_ORB_RECORDS := [
 	{"orb_id": ORB_TYPE_SCRIPT.Id.GOLD, "runtime_key": "gold", "derived_filename": "orb_gold_clean.png"},
 ]
 
-@export var orb_records: Array[Dictionary] = []
+@export var orb_records: Array[Dictionary] = []:
+	set(value):
+		orb_records = value
+		_rebuild_indexes()
 
 var _runtime_orb_key_by_id := {}
 var _derived_orb_filename_by_id := {}
