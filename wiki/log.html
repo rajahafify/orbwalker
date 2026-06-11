@@ -3553,6 +3553,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Moved another static VisualRegistry data slice into <code>scripts/ui/visual_registry_data.gd</code>: intent badge indexes, rarity badge indexes, runtime orb keys, and stable placeholder icon colors. <code>scripts/ui/visual_registry.gd</code> keeps the existing public lookup APIs and aliases those tables instead of duplicating them. (source: <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>)</li>
 <li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to characterize the new alias ownership, and lowered the VisualRegistry script-size ratchet baseline from <code>1468</code> to <code>1454</code> in <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, and <code>docs/script_size_budget.html</code>. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>
+<h2 id="2026-06-11-visual-registry-orb-catalog-boundary">2026-06-11 - Visual registry orb catalog boundary</h2>
+<ul>
+<li>Added <code>scripts/ui/visual_registry_orb_catalog.gd</code> as a small <code>Resource</code>-based catalog wrapper for the mature orb lookup slice: runtime orb keys and derived orb filenames. <code>scripts/ui/visual_registry_data.gd</code> keeps the existing compatibility aliases so <code>scripts/ui/visual_registry.gd</code> public lookup APIs remain unchanged. (source: <code>scripts/ui/visual_registry_orb_catalog.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
+<li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to characterize catalog ownership, direct alias identity, and accessor parity for the orb catalog. The VisualRegistry ratchet baseline remains <code>1454</code> because <code>scripts/ui/visual_registry.gd</code> did not change size. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
       <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

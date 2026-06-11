@@ -5,6 +5,7 @@ const ASSET_INVENTORY_PATH := "res://assets.json"
 const COLLECTION_VIEW_SCRIPT := preload("res://scripts/collection/collection_view.gd")
 const MAIN_MENU_MODEL_SCRIPT := preload("res://scripts/main_menu/main_menu_model.gd")
 const RUN_SUMMARY_VIEW_SCRIPT := preload("res://scripts/run_summary/run_summary_view.gd")
+const VISUAL_REGISTRY_ORB_CATALOG_SCRIPT := preload("res://scripts/ui/visual_registry_orb_catalog.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 
@@ -148,6 +149,15 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry mastery icon lookup must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("stable_placeholder_icon_colors", false)):
 		return "VisualRegistry stable placeholder icon colors must alias VisualRegistryData, not duplicate them."
+	var catalog_contract := VISUAL_REGISTRY_DATA_SCRIPT.catalog_ownership_contract()
+	if not bool(catalog_contract.get("runtime_orb_key_by_id", false)):
+		return "VisualRegistryData runtime orb keys must alias VisualRegistryOrbCatalog, not duplicate them."
+	if not bool(catalog_contract.get("derived_orb_filename_by_id", false)):
+		return "VisualRegistryData derived orb filenames must alias VisualRegistryOrbCatalog, not duplicate them."
+	if VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ORB_KEY_BY_ID != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.runtime_orb_key_by_id():
+		return "VisualRegistryOrbCatalog runtime orb key accessor must preserve lookup parity."
+	if VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.derived_orb_filename_by_id():
+		return "VisualRegistryOrbCatalog derived orb filename accessor must preserve lookup parity."
 	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
 	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():
 		return "Derived orb contract paths must cover every entry in DERIVED_ORB_FILENAME_BY_ID."
