@@ -58,13 +58,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",
 	},
-	"res://scripts/core/run_state.gd":
-	{
-		"baseline": 1354,
-		"owner": "R-P1-2",
-		"reason":
-		"RunState still owns run progression, routing constants, tracing facades, and public profile/logging wrappers; continue extracting routing stores and typed run-state collaborators.",
-	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
 		"baseline": 1007,

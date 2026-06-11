@@ -24,6 +24,13 @@ const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repositor
 const BALANCE_MANAGER_SCRIPT := preload("res://scripts/core/balance_manager.gd")
 const RUN_USER_SETTINGS_STORE_SCRIPT := preload("res://scripts/core/run_user_settings_store.gd")
 const RUN_PROFILE_UNLOCK_SERVICE_SCRIPT := preload("res://scripts/core/run_profile_unlock_service.gd")
+const RUN_STATE_SIGNAL_EMITTER_SCRIPT := preload("res://scripts/core/run_state_signal_emitter.gd")
+const RUN_TRANSITION_STATE_STORE_SCRIPT := preload("res://scripts/core/run_transition_state_store.gd")
+const RUN_PROFILE_FACADE_SCRIPT := preload("res://scripts/core/run_profile_facade.gd")
+const RUN_SHOP_FACADE_SCRIPT := preload("res://scripts/core/run_shop_facade.gd")
+const RUN_STATE_CONTRACT_REPORTER_SCRIPT := preload("res://scripts/core/run_state_contract_reporter.gd")
+const RUN_ENCOUNTER_CATALOG_SCRIPT := preload("res://scripts/core/run_encounter_catalog.gd")
+const RUN_OUTCOME_SERVICE_SCRIPT := preload("res://scripts/core/run_outcome_service.gd")
 const RUN_LOG_EXPORT_DIR := "res://logs"
 const VFX_SPEED_SLOW := "slow"
 const VFX_SPEED_NORMAL := "normal"
@@ -88,133 +95,13 @@ var _profile_repository: ProfileRepository
 var _balance_manager: BalanceManager
 var _user_settings_store
 var _profile_unlock_service
-
-var _normal_encounters_by_level := {
-	1:
-	[
-		{
-			"enemy_id": "cavern_striker",
-			"display_name": "Cavern Striker",
-			"max_hp": 76,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 1, "attack": 0, "block": 8, "label": "Brace 8"},
-				{"type": 2, "attack": 9, "block": 6, "label": "Shield Bash 9 + Guard 6"},
-				{"type": 0, "attack": 11, "block": 0, "label": "Heavy Slash 11"},
-			],
-		},
-		{
-			"enemy_id": "cavern_defender",
-			"display_name": "Cavern Defender",
-			"max_hp": 82,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 1, "attack": 0, "block": 12, "label": "Fortify 12"},
-				{"type": 2, "attack": 8, "block": 9, "label": "Counter 8 + Guard 9"},
-				{"type": 0, "attack": 10, "block": 0, "label": "Crush 10"},
-			],
-		},
-	],
-	2:
-	[
-		{
-			"enemy_id": "ash_hunter",
-			"display_name": "Ash Hunter",
-			"max_hp": 94,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 0, "attack": 16, "block": 0, "label": "Torch Combo 16"},
-				{"type": 2, "attack": 14, "block": 3, "label": "Flare Cut 14 + Guard 3"},
-				{"type": 0, "attack": 18, "block": 0, "label": "Scorch Drive 18"},
-			],
-		},
-		{
-			"enemy_id": "ruin_lancer",
-			"display_name": "Ruin Lancer",
-			"max_hp": 98,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 0, "attack": 18, "block": 0, "label": "Pierce 18"},
-				{"type": 0, "attack": 16, "block": 0, "label": "Thrust 16"},
-				{"type": 2, "attack": 15, "block": 2, "label": "Jab 15 + Brace 2"},
-			],
-		},
-	],
-	3:
-	[
-		{
-			"enemy_id": "vault_executioner",
-			"display_name": "Vault Executioner",
-			"max_hp": 112,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 0, "attack": 18, "block": 0, "label": "Execution 18"},
-				{"type": 2, "attack": 12, "block": 9, "label": "Parry 9 + Cleave 12"},
-				{"type": 0, "attack": 17, "block": 0, "label": "Overhead 17"},
-			],
-		},
-		{
-			"enemy_id": "goldbound_keeper",
-			"display_name": "Goldbound Keeper",
-			"max_hp": 118,
-			"is_boss": false,
-			"intent_cycle":
-			[
-				{"type": 1, "attack": 0, "block": 14, "label": "Aegis 14"},
-				{"type": 0, "attack": 17, "block": 0, "label": "Coin Hammer 17"},
-				{"type": 2, "attack": 13, "block": 8, "label": "Rally 8 + Strike 13"},
-			],
-		},
-	],
-}
-
-var _boss_encounters_by_level := {
-	1:
-	{
-		"enemy_id": "iron_gate",
-		"display_name": "Iron Gate",
-		"max_hp": 142,
-		"is_boss": true,
-		"intent_cycle":
-		[
-			{"type": 1, "attack": 0, "block": 20, "label": "Fortress Stance 20"},
-			{"type": 2, "attack": 14, "block": 12, "label": "Wall Bash 14 + Guard 12"},
-			{"type": 0, "attack": 16, "block": 0, "label": "Gate Slam 16"},
-		],
-	},
-	2:
-	{
-		"enemy_id": "burning_knight",
-		"display_name": "Burning Knight",
-		"max_hp": 158,
-		"is_boss": true,
-		"intent_cycle":
-		[
-			{"type": 0, "attack": 24, "block": 0, "label": "Inferno Cleave 24"},
-			{"type": 0, "attack": 22, "block": 0, "label": "Scorching Lunge 22"},
-			{"type": 2, "attack": 18, "block": 4, "label": "Blazing Guard 4 + Slash 18"},
-		],
-	},
-	3:
-	{
-		"enemy_id": "prism_warden",
-		"display_name": "Prism Warden",
-		"max_hp": 176,
-		"is_boss": true,
-		"intent_cycle":
-		[
-			{"type": 1, "attack": 0, "block": 18, "label": "Prism Shield 18"},
-			{"type": 0, "attack": 24, "block": 0, "label": "Spectrum Beam 24"},
-			{"type": 2, "attack": 16, "block": 12, "label": "Refraction 12 + Burst 16"},
-		],
-	},
-}
-
+var _signal_emitter
+var _transition_state_store
+var _profile_facade
+var _shop_facade
+var _contract_reporter
+var _encounter_catalog
+var _outcome_service
 
 func _ready() -> void:
 	if player_state == null:
@@ -342,6 +229,48 @@ func _ensure_profile_unlock_service():
 	return _profile_unlock_service
 
 
+func _ensure_signal_emitter():
+	if _signal_emitter == null:
+		_signal_emitter = RUN_STATE_SIGNAL_EMITTER_SCRIPT.new(self)
+	return _signal_emitter
+
+
+func _ensure_transition_state_store():
+	if _transition_state_store == null:
+		_transition_state_store = RUN_TRANSITION_STATE_STORE_SCRIPT.new(self)
+	return _transition_state_store
+
+
+func _ensure_profile_facade():
+	if _profile_facade == null:
+		_profile_facade = RUN_PROFILE_FACADE_SCRIPT.new(self)
+	return _profile_facade
+
+
+func _ensure_shop_facade():
+	if _shop_facade == null:
+		_shop_facade = RUN_SHOP_FACADE_SCRIPT.new(self)
+	return _shop_facade
+
+
+func _ensure_contract_reporter():
+	if _contract_reporter == null:
+		_contract_reporter = RUN_STATE_CONTRACT_REPORTER_SCRIPT.new(self)
+	return _contract_reporter
+
+
+func _ensure_encounter_catalog():
+	if _encounter_catalog == null:
+		_encounter_catalog = RUN_ENCOUNTER_CATALOG_SCRIPT.new()
+	return _encounter_catalog
+
+
+func _ensure_outcome_service():
+	if _outcome_service == null:
+		_outcome_service = RUN_OUTCOME_SERVICE_SCRIPT.new(self)
+	return _outcome_service
+
+
 func ensure_player_profile_state() -> PlayerProfileState:
 	if player_profile_state == null:
 		player_profile_state = PLAYER_PROFILE_STATE_SCRIPT.new()
@@ -365,79 +294,7 @@ func player_state_content_errors() -> Array[Dictionary]:
 
 
 func run_contract_snapshot() -> Dictionary:
-	var snapshot := {
-		"run_state_owned_fields":
-		[
-			"run_active",
-			"run_victory",
-			"run_gold",
-			"run_score",
-			"dungeon_level",
-			"current_step_key",
-			"enemies_defeated",
-			"bosses_defeated",
-			"total_gold_earned",
-			"_relic_offer_ids_by_level",
-			"_current_encounter",
-			"_boss_relic_reward_options",
-			"_boss_reward_claimed_relic_id",
-			"_run_summary",
-			"_balance_manager",
-		],
-		"scene_route_constants":
-		{
-			"SCENE_MAIN": SCENE_MAIN,
-			"SCENE_COMBAT": SCENE_COMBAT,
-			"SCENE_SHOP": SCENE_SHOP,
-			"SCENE_RUN_SUMMARY": SCENE_RUN_SUMMARY,
-		},
-		"level_sequence": LEVEL_SEQUENCE.duplicate(),
-		"public_transition_action_api":
-		[
-			"start_new_run",
-			"skip_to_fight",
-			"mark_fight_victory",
-			"mark_player_defeated",
-			"advance_after_shop",
-			"advance_after_boss_reward",
-			"claim_boss_relic_reward",
-			"skip_boss_relic_reward",
-			"next_scene_path",
-			"run_summary_snapshot",
-			"run_log_snapshot",
-			"run_log_export_json",
-			"run_log_export_text",
-			"run_log_export_html",
-			"run_log_last_export_snapshot",
-			"run_log_last_export_paths",
-			"log_turn_result",
-			"prototype_balance_levers_snapshot",
-			"set_prototype_balance_levers",
-			"reset_prototype_balance_levers",
-			"prototype_fight_gold_reward_for",
-			"current_shop_ordinal_in_level",
-			"finish_tutorial_guidance",
-			"profile_snapshot",
-			"reset_profile",
-			"create_default_profile",
-			"meta_profile_snapshot",
-			"is_equipment_unlocked",
-			"unlock_equipment",
-			"claim_equipment_unlock",
-			"consume_recent_equipment_unlocks",
-			"add_total_score",
-		],
-		"content_dependency":
-		{
-			"content_registry_owner": "ContentRegistry",
-			"content_registry_provider": "ensure_content_registry",
-			"content_validation_method": "validate_player_state_content",
-			"combat_modifier_content_access": ["current_combat_modifiers", "ensure_content_registry"],
-			"shop_content_access": ["open_shop_for_current_level", "reroll_shop_items", "buy_shop_offer"],
-		},
-		"compatibility_note": "AR-07 contract snapshot only; no routing, transition, resolver, summary, or presentation behavior changes.",
-	}
-	return snapshot.duplicate(true)
+	return _ensure_contract_reporter().run_contract_snapshot()
 
 
 func prototype_balance_levers_snapshot() -> Dictionary:
@@ -467,33 +324,19 @@ func prototype_fight_gold_reward_for(level: int, _step_key: String = "") -> int:
 
 
 func progression_snapshot() -> Dictionary:
-	return ensure_player_progression_state().to_snapshot()
+	return _ensure_profile_facade().progression_snapshot()
 
 
 func profile_snapshot() -> Dictionary:
-	return ensure_player_profile_state().to_snapshot()
+	return _ensure_profile_facade().profile_snapshot()
 
 
 func meta_profile_snapshot() -> Dictionary:
-	return ensure_meta_profile_state().to_snapshot()
+	return _ensure_profile_facade().meta_profile_snapshot()
 
 
 func reset_profile() -> Dictionary:
-	var signal_before := _capture_run_signal_state()
-	var profile: PlayerProfileState = ensure_player_profile_state()
-	profile.reset_to_default()
-	meta_profile_state = profile.meta_profile
-	_sync_meta_profile_default_unlocks()
-	_save_profile()
-	reset_run("reset_profile", false)
-	_emit_run_state_signals(signal_before, "reset_profile", "reset_profile")
-	_emit_profile_changed("reset_profile")
-	return {
-		"ok": true,
-		"reason": "",
-		"profile": profile_snapshot(),
-		"meta_profile": meta_profile_snapshot(),
-	}
+	return _ensure_profile_facade().reset_profile()
 
 
 func create_default_profile() -> Dictionary:
@@ -501,110 +344,27 @@ func create_default_profile() -> Dictionary:
 
 
 func is_equipment_unlocked(item_id: String) -> bool:
-	if item_id == "":
-		return false
-	return ensure_meta_profile_state().is_equipment_unlocked(item_id)
+	return _ensure_profile_facade().is_equipment_unlocked(item_id)
 
 
 func unlock_equipment(item_id: String, source: String, emit_profile_signal: bool = true) -> Dictionary:
-	var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
-	if item_id == "":
-		return {"ok": false, "reason": "invalid_item_id"}
-	if equipment.is_empty():
-		return {"ok": false, "reason": "unknown_equipment_id"}
-	if is_equipment_unlocked(item_id):
-		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
-	if not ensure_meta_profile_state().unlock_equipment(item_id):
-		return {"ok": false, "reason": "unlock_failed", "meta_profile": meta_profile_snapshot()}
-
-	var unlock_payload := {
-		"item_id": item_id,
-		"display_name": String(equipment.get("display_name", item_id)),
-		"family_id": String(equipment.get("family_id", "")),
-		"rarity": String(equipment.get("rarity", "common")),
-		"rarity_color": String(equipment.get("rarity_color", "white")),
-		"source": source,
-		"unlock_cost": int(equipment.get("unlock_cost", 0)),
-	}
-	if source == "victory":
-		ensure_meta_profile_state().add_recent_equipment_unlock(unlock_payload)
-	_save_meta_profile()
-	if emit_profile_signal:
-		_emit_profile_changed("unlock_equipment", 0, unlock_payload)
-	return {
-		"ok": true,
-		"reason": "",
-		"unlock": unlock_payload,
-		"meta_profile": meta_profile_snapshot(),
-	}
+	return _ensure_profile_facade().unlock_equipment(item_id, source, emit_profile_signal)
 
 
 func claim_equipment_unlock(item_id: String) -> Dictionary:
-	var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
-	if item_id == "":
-		return {"ok": false, "reason": "invalid_item_id"}
-	if equipment.is_empty():
-		return {"ok": false, "reason": "unknown_equipment_id"}
-	if is_equipment_unlocked(item_id):
-		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
-
-	var unlock_cost := maxi(0, int(equipment.get("unlock_cost", 0)))
-	if not _ensure_profile_unlock_service().can_claim_equipment_unlock(equipment):
-		return {"ok": false, "reason": "unlock_prerequisite_not_met", "meta_profile": meta_profile_snapshot()}
-	if not ensure_meta_profile_state().spend_total_score(unlock_cost):
-		return {"ok": false, "reason": "insufficient_total_score", "meta_profile": meta_profile_snapshot()}
-
-	var unlock_result := unlock_equipment(item_id, "score_claim", false)
-	if not bool(unlock_result.get("ok", false)):
-		ensure_meta_profile_state().add_total_score(unlock_cost)
-		_save_meta_profile()
-		return unlock_result
-	_emit_profile_changed("claim_equipment_unlock", -unlock_cost, Dictionary(unlock_result.get("unlock", {})))
-	unlock_result["score_spent"] = unlock_cost
-	return unlock_result
+	return _ensure_profile_facade().claim_equipment_unlock(item_id)
 
 
 func consume_recent_equipment_unlocks() -> Array[Dictionary]:
-	var unlocks: Array[Dictionary] = ensure_meta_profile_state().consume_recent_equipment_unlocks()
-	_save_meta_profile()
-	_emit_profile_changed("consume_recent_equipment_unlocks", 0, {"consumed": unlocks.duplicate(true)})
-	return unlocks
+	return _ensure_profile_facade().consume_recent_equipment_unlocks()
 
 
 func add_total_score(amount: int) -> int:
-	var added: int = ensure_meta_profile_state().add_total_score(amount)
-	if added > 0:
-		_save_meta_profile()
-		_emit_profile_changed("add_total_score", added)
-	return added
+	return _ensure_profile_facade().add_total_score(amount)
 
 
 func current_combat_modifiers() -> Dictionary:
-	var modifiers := {
-		"orb_bonus_by_id": {},
-		"combo_flat_bonus": 0,
-		"combo_multiplier_mult": 1.0,
-		"start_turn_armor": 0,
-		"flat_damage_bonus": 0,
-		"flat_heal_bonus": 0,
-		"flat_gold_bonus": 0,
-		"sources": [],
-	}
-	var progression = ensure_player_progression_state()
-	var content = ensure_content_registry()
-	for item_id in progression.equipped_item_ids:
-		if item_id == "":
-			continue
-		var equipment: Dictionary = content.get_equipment(item_id)
-		_merge_combat_modifiers(modifiers, equipment)
-		_append_combat_modifier_source(modifiers, equipment, "equipment")
-	for relic_id in progression.relic_ids:
-		if relic_id == "":
-			continue
-		var relic: Dictionary = content.get_relic(relic_id)
-		_merge_combat_modifiers(modifiers, relic)
-		_append_combat_modifier_source(modifiers, relic, "relic")
-	return modifiers
+	return _ensure_profile_facade().current_combat_modifiers()
 
 
 func set_gold(amount: int) -> void:
@@ -638,54 +398,51 @@ func can_afford(amount: int) -> bool:
 
 
 func open_shop_for_current_level() -> Dictionary:
-	return ensure_shop_session().open_for_current_level(self)
+	return _ensure_shop_facade().open_shop_for_current_level()
 
 
 func reroll_shop_items() -> Dictionary:
-	return ensure_shop_session().reroll_items(self)
+	return _ensure_shop_facade().reroll_shop_items()
 
 
 func buy_shop_offer(offer_id: String) -> Dictionary:
-	return ensure_shop_session().buy_offer(self, offer_id)
+	return _ensure_shop_facade().buy_shop_offer(offer_id)
 
 
 func sell_equipped_item(slot_index: int) -> Dictionary:
-	return ensure_shop_session().sell_equipped_item(self, slot_index)
+	return _ensure_shop_facade().sell_equipped_item(slot_index)
 
 
 func sell_consumable_item(slot_index: int) -> Dictionary:
-	return ensure_shop_session().sell_consumable_item(self, slot_index)
+	return _ensure_shop_facade().sell_consumable_item(slot_index)
 
 
 func choose_treasure_chest_option(option_index: int) -> Dictionary:
-	return ensure_shop_session().choose_treasure_chest_option(self, option_index)
+	return _ensure_shop_facade().choose_treasure_chest_option(option_index)
 
 
 func replace_pending_treasure_chest_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
-	return ensure_shop_session().replace_pending_treasure_chest_option(self, option_index, slot_index, sell_replaced)
+	return _ensure_shop_facade().replace_pending_treasure_chest_option(option_index, slot_index, sell_replaced)
 
 
 func discard_pending_treasure_chest_options() -> Dictionary:
-	return ensure_shop_session().discard_pending_treasure_chest_options(self)
+	return _ensure_shop_facade().discard_pending_treasure_chest_options()
 
 
 func close_shop(mark_skipped: bool = false) -> void:
-	ensure_shop_session().close(self, mark_skipped)
+	_ensure_shop_facade().close_shop(mark_skipped)
 
 
 func relic_offer_id_for_level(level: int) -> String:
-	return String(_relic_offer_ids_by_level.get(maxi(1, level), ""))
+	return _ensure_shop_facade().relic_offer_id_for_level(level)
 
 
 func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
-	_relic_offer_ids_by_level[maxi(1, level)] = relic_id
+	_ensure_shop_facade().set_relic_offer_id_for_level(level, relic_id)
 
 
 func _apply_tutorial_shop_seed(action_offset: int) -> void:
-	if not tutorial_run_active:
-		return
-	var shop_seed := tutorial_seed + 50000 + dungeon_level * 1000 + _step_index * 100 + maxi(0, action_offset)
-	ensure_shop_service().set_rng_seed(shop_seed)
+	_ensure_shop_facade().apply_tutorial_shop_seed(action_offset)
 
 
 func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
@@ -756,146 +513,11 @@ func start_tutorial_run(seed_value: int = TUTORIAL_SEED) -> void:
 
 
 func snapshot_run_transition_state() -> Dictionary:
-	var snapshot := {
-		"player_state": _snapshot_player_state_for_transition(),
-		"player_progression_state": _snapshot_player_progression_state_for_transition(),
-		"shop_state": _snapshot_shop_state_for_transition(),
-		"run_active": run_active,
-		"run_victory": run_victory,
-		"tutorial_run_active": tutorial_run_active,
-		"tutorial_seed": tutorial_seed,
-		"run_gold": run_gold,
-		"run_score": run_score,
-		"run_score_banked": _run_score_banked,
-		"dungeon_level": dungeon_level,
-		"current_step_key": current_step_key,
-		"step_index": _step_index,
-		"enemies_defeated": enemies_defeated,
-		"bosses_defeated": bosses_defeated,
-		"total_gold_earned": total_gold_earned,
-		"current_encounter": _current_encounter.duplicate(true),
-		"boss_relic_reward_options": _boss_relic_reward_options.duplicate(true),
-		"boss_reward_claimed_relic_id": _boss_reward_claimed_relic_id,
-		"relic_offer_ids_by_level": _relic_offer_ids_by_level.duplicate(true),
-		"run_summary": _run_summary.duplicate(true),
-	}
-	snapshot.merge(_ensure_run_logger().transition_snapshot(), true)
-	snapshot.merge(_ensure_scene_router().transition_snapshot(), true)
-	return snapshot
+	return _ensure_transition_state_store().snapshot()
 
 
 func restore_run_transition_state(snapshot: Dictionary) -> bool:
-	if snapshot.is_empty():
-		return false
-	var signal_before := _capture_run_signal_state()
-	run_active = bool(snapshot.get("run_active", run_active))
-	run_victory = bool(snapshot.get("run_victory", run_victory))
-	tutorial_run_active = bool(snapshot.get("tutorial_run_active", tutorial_run_active))
-	tutorial_seed = maxi(1, int(snapshot.get("tutorial_seed", tutorial_seed)))
-	_run_score_banked = bool(snapshot.get("run_score_banked", _run_score_banked))
-	ensure_wallet_service().restore_from_snapshot(self, snapshot)
-	dungeon_level = maxi(1, int(snapshot.get("dungeon_level", dungeon_level)))
-	current_step_key = String(snapshot.get("current_step_key", current_step_key))
-	var saved_step_index := int(snapshot.get("step_index", -1))
-	var saved_step_index_valid := saved_step_index >= 0 and saved_step_index < LEVEL_SEQUENCE.size()
-	if saved_step_index_valid and String(LEVEL_SEQUENCE[saved_step_index]) == current_step_key:
-		_step_index = saved_step_index
-	elif LEVEL_SEQUENCE.has(current_step_key):
-		_step_index = LEVEL_SEQUENCE.find(current_step_key)
-	elif saved_step_index_valid:
-		_step_index = saved_step_index
-		current_step_key = String(LEVEL_SEQUENCE[_step_index])
-	else:
-		_step_index = 0
-		current_step_key = String(LEVEL_SEQUENCE[_step_index])
-	enemies_defeated = maxi(0, int(snapshot.get("enemies_defeated", enemies_defeated)))
-	bosses_defeated = maxi(0, int(snapshot.get("bosses_defeated", bosses_defeated)))
-	_current_encounter = Dictionary(snapshot.get("current_encounter", {})).duplicate(true)
-	_boss_relic_reward_options = Array(snapshot.get("boss_relic_reward_options", [])).duplicate(true)
-	_boss_reward_claimed_relic_id = String(snapshot.get("boss_reward_claimed_relic_id", ""))
-	_relic_offer_ids_by_level = Dictionary(snapshot.get("relic_offer_ids_by_level", {})).duplicate(true)
-	_run_summary = Dictionary(snapshot.get("run_summary", {})).duplicate(true)
-	_ensure_run_logger().restore_transition_snapshot(snapshot)
-	_ensure_scene_router().restore_transition_snapshot(snapshot)
-	_restore_player_state_for_transition(Dictionary(snapshot.get("player_state", {})))
-	_restore_player_progression_state_for_transition(Dictionary(snapshot.get("player_progression_state", {})))
-	_restore_shop_state_for_transition(Dictionary(snapshot.get("shop_state", {})))
-	_sync_player_gold_from_run()
-	_emit_run_state_signals(signal_before, "restore_run_transition_state", "restore_run_transition_state")
-	return true
-
-
-func _snapshot_player_state_for_transition() -> Dictionary:
-	var state = ensure_player_state()
-	return {
-		"max_hp": state.max_hp,
-		"current_hp": state.current_hp,
-		"armor": state.armor,
-		"gold": state.gold,
-		"equipment_slots": state.equipment_slots,
-		"consumable_slots": state.consumable_slots,
-		"move_timer_seconds": state.move_timer_seconds,
-		"increase_combo_modifier": state.increase_combo_modifier,
-		"more_combo_modifier": state.more_combo_modifier,
-	}
-
-
-func _restore_player_state_for_transition(snapshot: Dictionary) -> void:
-	if snapshot.is_empty():
-		return
-	var state = ensure_player_state()
-	state.max_hp = maxi(1, int(snapshot.get("max_hp", state.max_hp)))
-	state.current_hp = clampi(int(snapshot.get("current_hp", state.current_hp)), 0, state.max_hp)
-	state.armor = maxi(0, int(snapshot.get("armor", state.armor)))
-	state.gold = maxi(0, int(snapshot.get("gold", state.gold)))
-	state.equipment_slots = maxi(0, int(snapshot.get("equipment_slots", state.equipment_slots)))
-	state.consumable_slots = maxi(0, int(snapshot.get("consumable_slots", state.consumable_slots)))
-	state.move_timer_seconds = maxf(0.0, float(snapshot.get("move_timer_seconds", state.move_timer_seconds)))
-	state.increase_combo_modifier = int(snapshot.get("increase_combo_modifier", state.increase_combo_modifier))
-	state.more_combo_modifier = maxf(0.0, float(snapshot.get("more_combo_modifier", state.more_combo_modifier)))
-
-
-func _snapshot_player_progression_state_for_transition() -> Dictionary:
-	var progression = ensure_player_progression_state()
-	return {
-		"equipped_item_ids": progression.equipped_item_ids.duplicate(),
-		"held_consumable_ids": progression.held_consumable_ids.duplicate(),
-		"relic_ids": progression.relic_ids.duplicate(),
-		"mastery_levels": progression.mastery_levels.duplicate(true),
-		"active_effects_by_hook": progression.active_effects_by_hook.duplicate(true),
-	}
-
-
-func _restore_player_progression_state_for_transition(snapshot: Dictionary) -> void:
-	if snapshot.is_empty():
-		return
-	var progression = ensure_player_progression_state()
-	progression.equipped_item_ids = _string_array_from_snapshot(snapshot.get("equipped_item_ids", []), PlayerProgressionState.EQUIPMENT_SLOT_COUNT)
-	progression.held_consumable_ids = _string_array_from_snapshot(snapshot.get("held_consumable_ids", []), PlayerProgressionState.CONSUMABLE_SLOT_COUNT)
-	progression.relic_ids = _string_array_from_snapshot(snapshot.get("relic_ids", []), -1)
-	progression.mastery_levels = Dictionary(snapshot.get("mastery_levels", {})).duplicate(true)
-	progression.active_effects_by_hook = Dictionary(snapshot.get("active_effects_by_hook", {})).duplicate(true)
-
-
-func _snapshot_shop_state_for_transition() -> Dictionary:
-	return ensure_shop_session().snapshot_for_transition(self)
-
-
-func _restore_shop_state_for_transition(snapshot: Dictionary) -> void:
-	ensure_shop_session().restore_for_transition(self, snapshot)
-
-
-func _string_array_from_snapshot(raw_values: Variant, fixed_size: int = -1) -> Array[String]:
-	var values: Array = raw_values if raw_values is Array else []
-	var out: Array[String] = []
-	for raw_value in values:
-		out.append(String(raw_value))
-	if fixed_size >= 0:
-		while out.size() < fixed_size:
-			out.append("")
-		while out.size() > fixed_size:
-			out.remove_at(out.size() - 1)
-	return out
+	return _ensure_transition_state_store().restore(snapshot)
 
 
 func is_current_step_fight() -> bool:
@@ -954,7 +576,7 @@ func level_sequence_label() -> String:
 
 
 func current_level_boss_preview() -> Dictionary:
-	return _ensure_balance_manager().apply_to_encounter(Dictionary(_boss_encounters_by_level.get(dungeon_level, {})), dungeon_level, MAX_DUNGEON_LEVELS)
+	return _ensure_balance_manager().apply_to_encounter(_ensure_encounter_catalog().boss_encounter(dungeon_level), dungeon_level, MAX_DUNGEON_LEVELS)
 
 
 func current_level_boss_name() -> String:
@@ -995,143 +617,35 @@ func current_encounter_snapshot() -> Dictionary:
 
 
 func boss_relic_reward_options_snapshot() -> Array[Dictionary]:
-	return _boss_relic_reward_options.duplicate(true)
+	return _ensure_outcome_service().boss_relic_reward_options_snapshot()
 
 
 func claim_boss_relic_reward(option_index: int) -> Dictionary:
-	if not run_active:
-		return {"ok": false, "reason": "run_not_active"}
-	if not is_current_step_boss_reward():
-		return {"ok": false, "reason": "not_boss_reward_step"}
-	if option_index < 0 or option_index >= _boss_relic_reward_options.size():
-		return {"ok": false, "reason": "invalid_option_index"}
-
-	var option: Dictionary = _boss_relic_reward_options[option_index]
-	var relic_id := String(option.get("relic_id", ""))
-	var result: Dictionary = ensure_player_progression_service().add_relic(ensure_player_progression_state(), relic_id, ensure_content_registry())
-	var already_owned := String(result.get("reason", "")) == "relic_already_owned"
-	if not bool(result.get("ok", false)) and not already_owned:
-		return {
-			"ok": false,
-			"reason": String(result.get("reason", "relic_grant_failed")),
-		}
-
-	_boss_reward_claimed_relic_id = relic_id
-	_boss_relic_reward_options.clear()
-	_run_log_append(
-		"boss_reward_choice",
-		{
-			"option_index": option_index,
-			"relic_id": relic_id,
-			"display_name": String(option.get("display_name", relic_id)),
-			"already_owned": already_owned,
-		}
-	)
-	return {
-		"ok": true,
-		"reason": "",
-		"result":
-		{
-			"relic_id": relic_id,
-			"display_name": String(option.get("display_name", relic_id)),
-			"already_owned": already_owned,
-		},
-	}
+	return _ensure_outcome_service().claim_boss_relic_reward(option_index)
 
 
 func skip_boss_relic_reward() -> Dictionary:
-	if not run_active:
-		return {"ok": false, "reason": "run_not_active"}
-	if not is_current_step_boss_reward():
-		return {"ok": false, "reason": "not_boss_reward_step"}
-	_boss_reward_claimed_relic_id = ""
-	_boss_relic_reward_options.clear()
-	_run_log_append("boss_reward_skip", {})
-	return {"ok": true, "reason": ""}
+	return _ensure_outcome_service().skip_boss_relic_reward()
 
 
 func advance_after_boss_reward() -> Dictionary:
-	if not run_active:
-		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
-	if not is_current_step_boss_reward():
-		return {"ok": false, "reason": "not_boss_reward_step", "next_scene": SCENE_MAIN}
-	_advance_sequence("advance_after_boss_reward")
-	return _transition_result()
+	return _ensure_outcome_service().advance_after_boss_reward()
 
 
 func mark_fight_victory() -> Dictionary:
-	if not run_active:
-		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
-	if not is_current_step_fight():
-		return {"ok": false, "reason": "not_fight_step", "next_scene": SCENE_MAIN}
-	var base_gold_reward := add_gold(prototype_fight_gold_reward_for(dungeon_level, current_step_key), "fight_base_reward")
-	(
-		_ensure_run_log_core_event_recorder()
-		. record_fight_end(
-			"victory",
-			_current_encounter,
-			"",
-			{
-				"base_gold_reward": base_gold_reward,
-			}
-		)
-	)
-
-	enemies_defeated += 1
-	if bool(_current_encounter.get("is_boss", false)):
-		bosses_defeated += 1
-		if dungeon_level >= MAX_DUNGEON_LEVELS:
-			_finalize_run(true, "Final boss defeated.")
-			return _transition_result({"base_gold_reward": base_gold_reward})
-		_prepare_boss_relic_reward_options()
-	_advance_sequence("mark_fight_victory")
-	return _transition_result({"base_gold_reward": base_gold_reward})
+	return _ensure_outcome_service().mark_fight_victory()
 
 
 func mark_player_defeated(cause: String) -> Dictionary:
-	if run_active and is_current_step_fight():
-		_ensure_run_log_core_event_recorder().record_fight_end("defeat", _current_encounter, cause)
-	_finalize_run(false, cause)
-	return _transition_result()
+	return _ensure_outcome_service().mark_player_defeated(cause)
 
 
 func advance_after_shop(mark_skipped: bool) -> Dictionary:
-	var shop_before_close: Dictionary = ensure_shop_state().to_snapshot()
-	close_shop(mark_skipped)
-	_run_log_append(
-		"shop_leave",
-		{
-			"mark_skipped": mark_skipped,
-			"shop_before": _ensure_run_log_shop_event_recorder().sanitize_shop_snapshot(shop_before_close, run_gold),
-			"shop_after": _ensure_run_log_shop_event_recorder().sanitize_shop_snapshot(ensure_shop_state().to_snapshot(), run_gold),
-		}
-	)
-	if not run_active:
-		return {"ok": false, "reason": "run_not_active", "next_scene": SCENE_MAIN}
-	if not is_current_step_shop():
-		return {"ok": false, "reason": "not_shop_step", "next_scene": SCENE_MAIN}
-	_advance_sequence("advance_after_shop")
-	return _transition_result()
+	return _ensure_outcome_service().advance_after_shop(mark_skipped)
 
 
 func run_summary_snapshot() -> Dictionary:
-	if _run_summary.is_empty():
-		var meta_snapshot := meta_profile_snapshot()
-		return {
-			"victory": false,
-			"level_reached": dungeon_level,
-			"levels_cleared": maxi(0, dungeon_level - 1),
-			"enemies_defeated": enemies_defeated,
-			"bosses_defeated": bosses_defeated,
-			"gold_earned": total_gold_earned,
-			"final_gold": run_gold,
-			"run_score": run_score,
-			"total_score": int(meta_snapshot.get("total_score", 0)),
-			"cause": "Run not finished.",
-			"equipment_slots": progression_snapshot().get("equipment_slots", []),
-			"relic_ids": progression_snapshot().get("relic_ids", []),
-		}
-	return _run_summary.duplicate(true)
+	return _ensure_outcome_service().run_summary_snapshot()
 
 
 func run_log_snapshot() -> Dictionary:
@@ -1279,25 +793,16 @@ func _assign_current_fight() -> void:
 	var encounter: Dictionary = {}
 	var uses_tutorial_encounter := false
 	if tutorial_run_active:
-		encounter = _tutorial_encounter_for_current_step()
+		encounter = _ensure_encounter_catalog().tutorial_encounter_for(dungeon_level, current_step_key)
 		uses_tutorial_encounter = not encounter.is_empty()
 	if encounter.is_empty():
 		if current_step_key == "boss":
-			encounter = Dictionary(_boss_encounters_by_level.get(dungeon_level, {})).duplicate(true)
+			encounter = _ensure_encounter_catalog().boss_encounter(dungeon_level)
 		else:
-			var fights: Array = _normal_encounters_by_level.get(dungeon_level, [])
-			var fight_index := 0 if current_step_key == "enemy_1" else 1
-			if fight_index >= 0 and fight_index < fights.size():
-				encounter = Dictionary(fights[fight_index]).duplicate(true)
+			encounter = _ensure_encounter_catalog().normal_encounter(dungeon_level, current_step_key)
 
 	if encounter.is_empty():
-		encounter = {
-			"enemy_id": "training_goblin",
-			"display_name": "Training Goblin",
-			"max_hp": 90,
-			"is_boss": current_step_key == "boss",
-			"intent_cycle": [],
-		}
+		encounter = _ensure_encounter_catalog().fallback_encounter(current_step_key)
 
 	if not uses_tutorial_encounter:
 		encounter = _ensure_balance_manager().apply_to_encounter(encounter, dungeon_level, MAX_DUNGEON_LEVELS)
@@ -1308,100 +813,12 @@ func _assign_current_fight() -> void:
 	_ensure_run_log_core_event_recorder().record_fight_start(_current_encounter)
 
 
-func _tutorial_encounter_for_current_step() -> Dictionary:
-	if dungeon_level != 1 or current_step_key != "enemy_1":
-		return {}
-	return {
-		"enemy_id": "training_striker",
-		"display_name": "Training Striker",
-		"max_hp": 15,
-		"is_boss": false,
-		"intent_cycle":
-		[
-			{"type": 1, "attack": 0, "block": 8, "label": "Brace"},
-			{"type": 2, "attack": 30, "block": 6, "label": "Punishing Bash"},
-			{"type": 1, "attack": 0, "block": 10, "label": "Guard"},
-			{"type": 0, "attack": 20, "block": 0, "label": "Heavy Slash"},
-		],
-	}
-
-
 func _prepare_boss_relic_reward_options() -> void:
-	_boss_relic_reward_options.clear()
-	_boss_reward_claimed_relic_id = ""
-
-	var progression = ensure_player_progression_state()
-	var candidates: Array[Dictionary] = []
-	for relic_data in ensure_content_registry().list_relics():
-		var relic_id := String(relic_data.get("id", ""))
-		if relic_id == "":
-			continue
-		if progression.has_relic(relic_id):
-			continue
-		candidates.append(Dictionary(relic_data))
-	if candidates.is_empty():
-		for relic_data in ensure_content_registry().list_relics():
-			candidates.append(Dictionary(relic_data))
-	if candidates.is_empty():
-		return
-
-	var pick_count := mini(3, candidates.size())
-	for _i in pick_count:
-		var index := _reward_rng.randi_range(0, candidates.size() - 1)
-		var chosen: Dictionary = candidates[index]
-		(
-			_boss_relic_reward_options
-			. append(
-				{
-					"relic_id": String(chosen.get("id", "")),
-					"display_name": String(chosen.get("display_name", "Relic")),
-					"rarity": String(chosen.get("rarity", "common")),
-				}
-			)
-		)
-		candidates.remove_at(index)
+	_ensure_outcome_service().prepare_boss_relic_reward_options()
 
 
 func _finalize_run(victory: bool, cause: String) -> void:
-	var signal_before := _capture_run_signal_state()
-	run_active = false
-	run_victory = victory
-	var level_reached := dungeon_level
-	var levels_cleared := dungeon_level - 1
-	var victory_unlocks: Array[Dictionary] = []
-	if victory:
-		levels_cleared = MAX_DUNGEON_LEVELS
-		level_reached = MAX_DUNGEON_LEVELS
-		victory_unlocks = _ensure_profile_unlock_service().grant_victory_equipment_unlocks()
-	elif is_current_step_fight():
-		levels_cleared = dungeon_level - 1
-
-	var score_added := 0
-	if not _run_score_banked:
-		score_added = add_total_score(run_score)
-		_run_score_banked = true
-	var meta_snapshot := meta_profile_snapshot()
-	var progression := progression_snapshot()
-	_run_summary = {
-		"victory": victory,
-		"level_reached": level_reached,
-		"levels_cleared": maxi(0, levels_cleared),
-		"enemies_defeated": enemies_defeated,
-		"bosses_defeated": bosses_defeated,
-		"gold_earned": total_gold_earned,
-		"final_gold": run_gold,
-		"run_score": run_score,
-		"score_added_to_total": score_added,
-		"total_score": int(meta_snapshot.get("total_score", 0)),
-		"victory_equipment_unlocks": victory_unlocks,
-		"cause": cause,
-		"equipment_slots": progression.get("equipment_slots", []),
-		"relic_ids": progression.get("relic_ids", []),
-	}
-	_ensure_run_log_core_event_recorder().record_run_end(victory, cause, _run_summary)
-	if _ensure_run_logger().should_export_run_log_files():
-		_run_log_export_to_disk()
-	_emit_run_state_signals(signal_before, "finalize_run", "")
+	_ensure_outcome_service().finalize_run(victory, cause)
 
 
 func _run_log_reset() -> void:
@@ -1488,21 +905,7 @@ func _flow_trace_bump_transition_generation() -> void:
 
 
 func _step_display_name(step: String) -> String:
-	match step:
-		"enemy_1":
-			return "Enemy 1"
-		"enemy_2":
-			return "Enemy 2"
-		"boss":
-			return "Boss"
-		"shop":
-			return "Shop"
-		"boss_relic_reward":
-			return "Boss Relic Reward"
-		"advance":
-			return "Advance"
-		_:
-			return "Unknown"
+	return _ensure_encounter_catalog().step_display_name(step)
 
 
 func _sync_player_gold_from_run() -> void:
@@ -1510,154 +913,12 @@ func _sync_player_gold_from_run() -> void:
 
 
 func _capture_run_signal_state() -> Dictionary:
-	return {
-		"run_gold": run_gold,
-		"dungeon_level": dungeon_level,
-		"step_key": current_step_key,
-		"step_index": _step_index,
-		"run_active": run_active,
-		"run_victory": run_victory,
-		"summary_available": not _run_summary.is_empty(),
-		"run_summary": _run_summary.duplicate(true),
-	}
+	return _ensure_signal_emitter().capture()
 
 
 func _emit_run_state_signals(previous: Dictionary, reason: String, gold_source: String) -> void:
-	var source := gold_source if gold_source != "" else reason
-	_emit_gold_changed_if_needed(previous, source)
-	_emit_run_step_changed_if_needed(previous, reason)
-	_emit_run_summary_changed_if_needed(previous, reason)
-	_emit_run_state_changed_if_needed(previous, reason)
-
-
-func _emit_gold_changed_if_needed(previous: Dictionary, source: String) -> void:
-	var previous_gold := int(previous.get("run_gold", run_gold))
-	if previous_gold == run_gold:
-		return
-	(
-		gold_changed
-		. emit(
-			{
-				"gold": run_gold,
-				"previous_gold": previous_gold,
-				"delta": run_gold - previous_gold,
-				"source": source,
-				"run_score": run_score,
-				"total_gold_earned": total_gold_earned,
-			}
-		)
-	)
-
-
-func _emit_run_step_changed_if_needed(previous: Dictionary, reason: String) -> void:
-	var previous_level := int(previous.get("dungeon_level", dungeon_level))
-	var previous_step_key := String(previous.get("step_key", current_step_key))
-	var previous_step_index := int(previous.get("step_index", _step_index))
-	if previous_level == dungeon_level and previous_step_key == current_step_key and previous_step_index == _step_index:
-		return
-	(
-		run_step_changed
-		. emit(
-			{
-				"dungeon_level": dungeon_level,
-				"previous_dungeon_level": previous_level,
-				"step_key": current_step_key,
-				"previous_step_key": previous_step_key,
-				"step_index": _step_index,
-				"run_active": run_active,
-				"next_scene": next_scene_path(),
-				"reason": reason,
-			}
-		)
-	)
-
-
-func _emit_run_state_changed_if_needed(previous: Dictionary, reason: String) -> void:
-	var previous_run_active := bool(previous.get("run_active", run_active))
-	var previous_run_victory := bool(previous.get("run_victory", run_victory))
-	var summary_available := not _run_summary.is_empty()
-	var previous_summary_available := bool(previous.get("summary_available", summary_available))
-	if previous_run_active == run_active and previous_run_victory == run_victory and previous_summary_available == summary_available:
-		return
-	(
-		run_state_changed
-		. emit(
-			{
-				"run_active": run_active,
-				"previous_run_active": previous_run_active,
-				"run_victory": run_victory,
-				"previous_run_victory": previous_run_victory,
-				"summary_available": summary_available,
-				"reason": reason,
-				"next_scene": next_scene_path(),
-			}
-		)
-	)
-
-
-func _emit_run_summary_changed_if_needed(previous: Dictionary, reason: String) -> void:
-	var previous_summary := Dictionary(previous.get("run_summary", {}))
-	if previous_summary == _run_summary:
-		return
-	(
-		run_summary_changed
-		. emit(
-			{
-				"summary": _run_summary.duplicate(true),
-				"available": not _run_summary.is_empty(),
-				"reason": reason,
-			}
-		)
-	)
+	_ensure_signal_emitter().emit_run_state_signals(previous, reason, gold_source)
 
 
 func _emit_profile_changed(reason: String, score_delta: int = 0, unlock: Dictionary = {}) -> void:
-	(
-		profile_changed
-		. emit(
-			{
-				"reason": reason,
-				"profile": profile_snapshot(),
-				"meta_profile": meta_profile_snapshot(),
-				"score_delta": score_delta,
-				"unlock": unlock.duplicate(true),
-			}
-		)
-	)
-
-
-func _merge_combat_modifiers(target: Dictionary, source_data: Dictionary) -> void:
-	var modifiers: Dictionary = source_data.get("combat_modifiers", {})
-	var target_orb_bonus: Dictionary = target.get("orb_bonus_by_id", {})
-	var source_orb_bonus: Dictionary = modifiers.get("orb_bonus_by_id", {})
-	for orb_id in source_orb_bonus.keys():
-		var orb_key := int(orb_id)
-		target_orb_bonus[orb_key] = int(target_orb_bonus.get(orb_key, 0)) + int(source_orb_bonus.get(orb_id, 0))
-	target["orb_bonus_by_id"] = target_orb_bonus
-	target["combo_flat_bonus"] = int(target.get("combo_flat_bonus", 0)) + int(modifiers.get("combo_flat_bonus", 0))
-	target["combo_multiplier_mult"] = float(target.get("combo_multiplier_mult", 1.0)) * float(modifiers.get("combo_multiplier_mult", 1.0))
-	target["start_turn_armor"] = int(target.get("start_turn_armor", 0)) + int(modifiers.get("start_turn_armor", 0))
-	target["flat_damage_bonus"] = int(target.get("flat_damage_bonus", 0)) + int(modifiers.get("flat_damage_bonus", 0))
-	target["flat_heal_bonus"] = int(target.get("flat_heal_bonus", 0)) + int(modifiers.get("flat_heal_bonus", 0))
-	target["flat_gold_bonus"] = int(target.get("flat_gold_bonus", 0)) + int(modifiers.get("flat_gold_bonus", 0))
-
-
-func _append_combat_modifier_source(target: Dictionary, source_data: Dictionary, source_type: String) -> void:
-	if source_data.is_empty():
-		return
-	var source_modifiers: Dictionary = source_data.get("combat_modifiers", {})
-	if source_modifiers.is_empty():
-		return
-	var sources: Array = target.get("sources", [])
-	(
-		sources
-		. append(
-			{
-				"source_type": source_type,
-				"source_id": String(source_data.get("id", "")),
-				"display_name": String(source_data.get("display_name", source_data.get("id", "unknown"))),
-				"combat_modifiers": source_modifiers.duplicate(true),
-			}
-		)
-	)
-	target["sources"] = sources
+	_ensure_signal_emitter().emit_profile_changed(reason, score_delta, unlock)
