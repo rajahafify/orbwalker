@@ -5,6 +5,7 @@ var _routes: Array[Dictionary] = []
 
 
 func bind(dependencies: Dictionary) -> void:
+	# Route entries require an available bool/callable and may include a kind_filter callable.
 	_routes.clear()
 	for raw_route in Array(dependencies.get("routes", [])):
 		_routes.append(Dictionary(raw_route))

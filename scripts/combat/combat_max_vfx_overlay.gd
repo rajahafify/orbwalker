@@ -692,6 +692,7 @@ func _bind_projector() -> void:
 
 
 func _bind_replay_impact_router() -> void:
+	# Rebind after swapping presenter instances so routes hold the current presenters.
 	_replay_impact_router.bind({
 		"routes": [
 			{"presenter": _status_recipe_presenter, "available": Callable(self, "_status_vfx_available")},
