@@ -36,7 +36,7 @@ func run_log_snapshot() -> Dictionary:
 		"run_score": _owner.run_score,
 		"enemies_defeated": _owner.enemies_defeated,
 		"bosses_defeated": _owner.bosses_defeated,
-		"generate_log_files_enabled": _generate_log_files,
+		"generate_log_files_enabled": _owner.generate_run_log_files_enabled(),
 		"last_export": run_log_last_export_snapshot(),
 		"summary": _owner.run_summary_snapshot(),
 		"events": _events.duplicate(true),
@@ -171,7 +171,7 @@ func current_fight_turn_count() -> int:
 
 
 func should_export_run_log_files() -> bool:
-	return _generate_log_files
+	return _owner.generate_run_log_files_enabled()
 
 
 func run_log_export_to_disk(export_dir: String) -> void:

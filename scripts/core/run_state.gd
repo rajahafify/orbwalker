@@ -22,16 +22,9 @@ const RUN_LOG_SHOP_EVENT_RECORDER_SCRIPT := preload("res://scripts/core/run_log_
 const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
 const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repository.gd")
 const BALANCE_MANAGER_SCRIPT := preload("res://scripts/core/balance_manager.gd")
-const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+const RUN_USER_SETTINGS_STORE_SCRIPT := preload("res://scripts/core/run_user_settings_store.gd")
+const RUN_PROFILE_UNLOCK_SERVICE_SCRIPT := preload("res://scripts/core/run_profile_unlock_service.gd")
 const RUN_LOG_EXPORT_DIR := "res://logs"
-const USER_SETTINGS_PATH := "user://matchatro_settings.cfg"
-const USER_SETTINGS_SECTION := "run_log"
-const USER_SETTINGS_GENERATE_LOG_KEY := "generate_log"
-const USER_SETTINGS_GAMEPLAY_SECTION := "gameplay"
-const USER_SETTINGS_VFX_SPEED_KEY := "vfx_speed"
-const USER_SETTINGS_COMBAT_VFX_QUALITY_KEY := "combat_vfx_quality"
-const USER_SETTINGS_REDUCED_MOTION_KEY := "reduced_motion"
-const USER_SETTINGS_GAME_JUICE_KEY := "game_juice"
 const VFX_SPEED_SLOW := "slow"
 const VFX_SPEED_NORMAL := "normal"
 const VFX_SPEED_FAST := "fast"
@@ -93,11 +86,8 @@ var _run_log_shop_event_recorder: RunLogShopEventRecorder
 var _scene_router: SceneRouter
 var _profile_repository: ProfileRepository
 var _balance_manager: BalanceManager
-var _vfx_speed := VFX_SPEED_NORMAL
-var _combat_vfx_quality := COMBAT_VFX_QUALITY_LOW
-var _reduced_motion := false
-var _game_juice_enabled := true
-var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
+var _user_settings_store
+var _profile_unlock_service
 
 var _normal_encounters_by_level := {
 	1:
@@ -340,6 +330,18 @@ func _ensure_balance_manager():
 	return _balance_manager
 
 
+func _ensure_user_settings_store():
+	if _user_settings_store == null:
+		_user_settings_store = RUN_USER_SETTINGS_STORE_SCRIPT.new()
+	return _user_settings_store
+
+
+func _ensure_profile_unlock_service():
+	if _profile_unlock_service == null:
+		_profile_unlock_service = RUN_PROFILE_UNLOCK_SERVICE_SCRIPT.new(self)
+	return _profile_unlock_service
+
+
 func ensure_player_profile_state() -> PlayerProfileState:
 	if player_profile_state == null:
 		player_profile_state = PLAYER_PROFILE_STATE_SCRIPT.new()
@@ -547,7 +549,7 @@ func claim_equipment_unlock(item_id: String) -> Dictionary:
 		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
 
 	var unlock_cost := maxi(0, int(equipment.get("unlock_cost", 0)))
-	if not _can_claim_equipment_unlock(equipment):
+	if not _ensure_profile_unlock_service().can_claim_equipment_unlock(equipment):
 		return {"ok": false, "reason": "unlock_prerequisite_not_met", "meta_profile": meta_profile_snapshot()}
 	if not ensure_meta_profile_state().spend_total_score(unlock_cost):
 		return {"ok": false, "reason": "insufficient_total_score", "meta_profile": meta_profile_snapshot()}
@@ -1157,132 +1159,67 @@ func run_log_last_export_paths() -> Dictionary:
 
 
 func generate_run_log_files_enabled() -> bool:
-	return _ensure_run_logger().generate_run_log_files_enabled()
+	return _ensure_user_settings_store().generate_run_log_files
 
 
 func set_generate_run_log_files_enabled(enabled: bool) -> void:
-	_ensure_run_logger().set_generate_run_log_files_enabled(enabled)
-	_save_user_settings()
+	_ensure_user_settings_store().set_generate_run_log_files(enabled)
 
 
 func load_user_settings() -> void:
-	_ensure_run_logger().load_user_settings(USER_SETTINGS_PATH, USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY)
-	var config := ConfigFile.new()
-	var error := config.load(USER_SETTINGS_PATH)
-	if error == OK:
-		_vfx_speed = _normalized_vfx_speed(String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)))
-		_combat_vfx_quality = _normalized_combat_vfx_quality(
-			String(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality))
-		)
-		_reduced_motion = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion))
-		_game_juice_enabled = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_GAME_JUICE_KEY, _game_juice_enabled))
-		var loaded_flags := {}
-		for key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
-			loaded_flags[key] = bool(config.get_value(USER_SETTINGS_GAMEPLAY_SECTION, key, true))
-		_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.normalized_flags(loaded_flags)
+	_ensure_user_settings_store().load()
 
 
 func vfx_speed() -> String:
-	return _vfx_speed
+	return _ensure_user_settings_store().vfx_speed
 
 
 func set_vfx_speed(speed: String) -> void:
-	_vfx_speed = _normalized_vfx_speed(speed)
-	_save_user_settings()
+	_ensure_user_settings_store().set_vfx_speed(speed)
 
 
 func combat_vfx_quality() -> String:
-	return _combat_vfx_quality
+	return _ensure_user_settings_store().combat_vfx_quality
 
 
 func set_combat_vfx_quality(quality: String) -> void:
-	_combat_vfx_quality = _normalized_combat_vfx_quality(quality)
-	_save_user_settings()
+	_ensure_user_settings_store().set_combat_vfx_quality(quality)
 
 
 func reduced_motion_enabled() -> bool:
-	return _reduced_motion
+	return _ensure_user_settings_store().reduced_motion
 
 
 func set_reduced_motion_enabled(enabled: bool) -> void:
-	_reduced_motion = enabled
-	_save_user_settings()
+	_ensure_user_settings_store().set_reduced_motion_enabled(enabled)
 
 
 func game_juice_enabled() -> bool:
-	return _game_juice_enabled
+	return _ensure_user_settings_store().game_juice_enabled
 
 
 func set_game_juice_enabled(enabled: bool) -> void:
-	_game_juice_enabled = enabled
-	_save_user_settings()
+	_ensure_user_settings_store().set_game_juice_enabled(enabled)
 
 
 func game_juice_flags() -> Dictionary:
-	return _game_juice_flags.duplicate()
+	return _ensure_user_settings_store().game_juice_flags.duplicate()
 
 
 func game_juice_flag_enabled(flag_key: String) -> bool:
-	return _game_juice_enabled and bool(_game_juice_flags.get(flag_key, false))
+	return _ensure_user_settings_store().game_juice_flag_enabled(flag_key)
 
 
 func set_game_juice_flag_enabled(flag_key: String, enabled: bool) -> void:
-	if not GAME_JUICE_FLAGS_SCRIPT.is_valid_key(flag_key):
-		return
-	_game_juice_flags[flag_key] = enabled
-	_save_user_settings()
+	_ensure_user_settings_store().set_game_juice_flag_enabled(flag_key, enabled)
 
 
 func reset_combat_feedback_settings() -> void:
-	_vfx_speed = VFX_SPEED_NORMAL
-	_combat_vfx_quality = COMBAT_VFX_QUALITY_LOW
-	_reduced_motion = false
-	_game_juice_enabled = true
-	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.default_flags()
-	_save_user_settings()
+	_ensure_user_settings_store().reset_to_defaults()
 
 
 func combat_feedback_settings() -> Dictionary:
-	return {
-		"vfx_speed": _vfx_speed,
-		"combat_vfx_quality": _combat_vfx_quality,
-		"reduced_motion": _reduced_motion,
-		"game_juice": _game_juice_enabled,
-		"game_juice_flags": _game_juice_flags.duplicate(),
-	}
-
-
-func _save_user_settings() -> void:
-	var config := ConfigFile.new()
-	config.load(USER_SETTINGS_PATH)
-	config.set_value(USER_SETTINGS_SECTION, USER_SETTINGS_GENERATE_LOG_KEY, generate_run_log_files_enabled())
-	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_VFX_SPEED_KEY, _vfx_speed)
-	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_COMBAT_VFX_QUALITY_KEY, _combat_vfx_quality)
-	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_REDUCED_MOTION_KEY, _reduced_motion)
-	config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, USER_SETTINGS_GAME_JUICE_KEY, _game_juice_enabled)
-	for key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
-		config.set_value(USER_SETTINGS_GAMEPLAY_SECTION, key, bool(_game_juice_flags.get(key, true)))
-	var error := config.save(USER_SETTINGS_PATH)
-	if error != OK:
-		push_warning("Failed to save user settings at %s: %d" % [USER_SETTINGS_PATH, error])
-
-
-func _normalized_vfx_speed(speed: String) -> String:
-	var normalized := speed.strip_edges().to_lower()
-	match normalized:
-		VFX_SPEED_SLOW, VFX_SPEED_NORMAL, VFX_SPEED_FAST, VFX_SPEED_INSTANT:
-			return normalized
-		_:
-			return VFX_SPEED_NORMAL
-
-
-func _normalized_combat_vfx_quality(quality: String) -> String:
-	var normalized := quality.strip_edges().to_lower()
-	match normalized:
-		COMBAT_VFX_QUALITY_LOW, COMBAT_VFX_QUALITY_HIGH:
-			return normalized
-		_:
-			return COMBAT_VFX_QUALITY_LOW
+	return _ensure_user_settings_store().combat_feedback_settings()
 
 
 func _load_meta_profile() -> void:
@@ -1435,7 +1372,7 @@ func _finalize_run(victory: bool, cause: String) -> void:
 	if victory:
 		levels_cleared = MAX_DUNGEON_LEVELS
 		level_reached = MAX_DUNGEON_LEVELS
-		victory_unlocks = _grant_victory_equipment_unlocks()
+		victory_unlocks = _ensure_profile_unlock_service().grant_victory_equipment_unlocks()
 	elif is_current_step_fight():
 		levels_cleared = dungeon_level - 1
 
@@ -1507,59 +1444,7 @@ func next_scene_path() -> String:
 
 
 func _sync_meta_profile_default_unlocks() -> void:
-	var common_item_ids: Array[String] = []
-	for equipment in ensure_content_registry().list_equipment():
-		var data := Dictionary(equipment)
-		if String(data.get("rarity", "")) != "common":
-			continue
-		var item_id := String(data.get("id", ""))
-		if item_id != "":
-			common_item_ids.append(item_id)
-	if ensure_meta_profile_state().mark_default_unlocked(common_item_ids):
-		_save_meta_profile()
-
-
-func _can_claim_equipment_unlock(equipment: Dictionary) -> bool:
-	var rarity := String(equipment.get("rarity", "common"))
-	if rarity == "common":
-		return true
-	var previous_tier_item_id := _previous_tier_item_id(String(equipment.get("id", "")))
-	if previous_tier_item_id == "":
-		return false
-	return is_equipment_unlocked(previous_tier_item_id)
-
-
-func _previous_tier_item_id(target_item_id: String) -> String:
-	if target_item_id == "":
-		return ""
-	for raw_equipment in ensure_content_registry().list_equipment():
-		var equipment := Dictionary(raw_equipment)
-		if String(equipment.get("next_tier_item_id", "")) == target_item_id:
-			return String(equipment.get("id", ""))
-	return ""
-
-
-func _grant_victory_equipment_unlocks() -> Array[Dictionary]:
-	var unlocks: Array[Dictionary] = []
-	var progression = ensure_player_progression_state()
-	for slot_index in range(progression.equipped_item_ids.size()):
-		var item_id := String(progression.equipped_item_ids[slot_index])
-		if item_id == "":
-			continue
-		var equipment: Dictionary = ensure_content_registry().get_equipment(item_id)
-		if equipment.is_empty():
-			continue
-		var next_tier_item_id := String(equipment.get("next_tier_item_id", ""))
-		if next_tier_item_id == "" or is_equipment_unlocked(next_tier_item_id):
-			continue
-		var unlock_result := unlock_equipment(next_tier_item_id, "victory")
-		if not bool(unlock_result.get("ok", false)):
-			continue
-		var unlock_payload := Dictionary(unlock_result.get("unlock", {}))
-		unlock_payload["source_item_id"] = item_id
-		unlock_payload["slot_index"] = slot_index
-		unlocks.append(unlock_payload)
-	return unlocks
+	_ensure_profile_unlock_service().sync_default_unlocks()
 
 
 func flow_trace_begin(route_name: String, target_scene: String, details: Dictionary = {}) -> String:

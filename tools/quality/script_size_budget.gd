@@ -60,10 +60,10 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/core/run_state.gd":
 	{
-		"baseline": 1461,
+		"baseline": 1354,
 		"owner": "R-P1-2",
 		"reason":
-		"RunState still owns run progression, settings persistence, routing constants, tracing, and logging; continue extracting settings/routing stores and type collaborators.",
+		"RunState still owns run progression, routing constants, tracing facades, and public profile/logging wrappers; continue extracting routing stores and typed run-state collaborators.",
 	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
