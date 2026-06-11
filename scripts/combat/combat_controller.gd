@@ -1117,23 +1117,9 @@ func _on_next_button_pressed() -> void:
 	_bind_boss_reward_handler()
 	if _boss_reward_handler != null and _boss_reward_handler.handle_next_pressed():
 		return
-	if _model.pending_next_scene_path() == "":
-		return
-	RunState.flow_trace_mark(
-		"combat_next_button_pressed",
-		{"button_text": _view.next_button_text() if _view != null else ""},
-		_flow_trace_route_id_value(),
-		_model.pending_next_scene_path()
-	)
-	_audio_play_sfx("ui_accept")
-	var target_scene: String = _model.take_pending_next_scene_path()
-	_hide_outcome_summary()
-	_trace_and_change_scene_to_target(
-		target_scene,
-		_flow_trace_route_id_value(),
-		"combat_next_button",
-		"combat_before_change_scene_to_file"
-	)
+	_bind_outcome_route_coordinator()
+	if _outcome_route_coordinator != null:
+		_outcome_route_coordinator.handle_next_pressed(_view.next_button_text() if _view != null else "")
 
 
 func _play_turn_result_sfx(turn_log: Dictionary) -> void:

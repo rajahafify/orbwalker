@@ -33,12 +33,17 @@ class FakeRunState:
 		return defeat_transition.duplicate()
 
 	func flow_trace_mark(step: String, payload: Dictionary = {}, route_id: String = "", target_scene: String = "") -> void:
-		marks.append({
-			"step": step,
-			"payload": payload.duplicate(),
-			"route_id": route_id,
-			"target_scene": target_scene,
-		})
+		(
+			marks
+			. append(
+				{
+					"step": step,
+					"payload": payload.duplicate(),
+					"route_id": route_id,
+					"target_scene": target_scene,
+				}
+			)
+		)
 
 
 class FakeModel:
@@ -48,6 +53,11 @@ class FakeModel:
 
 	func set_pending_next_scene_path(path: String) -> void:
 		pending = path
+
+	func take_pending_next_scene_path() -> String:
+		var path := pending
+		pending = ""
+		return path
 
 	func clear_pending_next_scene_path() -> void:
 		pending = ""
@@ -130,21 +140,31 @@ class Recorder:
 		hidden_summaries += 1
 
 	func trace_and_change_scene(target_scene: String, route: String, source: String, before_change_step: String, extra: Dictionary = {}) -> void:
-		scene_changes.append({
-			"target_scene": target_scene,
-			"route_id": route,
-			"source": source,
-			"before_change_step": before_change_step,
-			"extra": extra,
-		})
+		(
+			scene_changes
+			. append(
+				{
+					"target_scene": target_scene,
+					"route_id": route,
+					"source": source,
+					"before_change_step": before_change_step,
+					"extra": extra,
+				}
+			)
+		)
 
 	func show_outcome_summary(title: String, body: String, show_button: bool, button_text: String = "Continue") -> void:
-		outcome_summaries.append({
-			"title": title,
-			"body": body,
-			"show_button": show_button,
-			"button_text": button_text,
-		})
+		(
+			outcome_summaries
+			. append(
+				{
+					"title": title,
+					"body": body,
+					"show_button": show_button,
+					"button_text": button_text,
+				}
+			)
+		)
 
 	func pulse_turn_summary(color) -> void:
 		pulses.append(color)
@@ -162,10 +182,12 @@ func run_all() -> Dictionary:
 	_run_case("boss_reward_holds_pending_route", _test_boss_reward_holds_pending_route, failures)
 	_run_case("final_victory_auto_routes_to_summary", _test_final_victory_auto_routes_to_summary, failures)
 	_run_case("defeat_sets_run_summary_pending", _test_defeat_sets_run_summary_pending, failures)
+	_run_case("next_button_continues_pending_scene", _test_next_button_continues_pending_scene, failures)
+	_run_case("next_button_without_pending_scene_is_noop", _test_next_button_without_pending_scene_is_noop, failures)
 	_run_case("normal_turn_updates_summary_and_begins_next_preview", _test_normal_turn_updates_summary_and_begins_next_preview, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 7,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -241,6 +263,44 @@ func _test_defeat_sets_run_summary_pending() -> String:
 	return _expect_mark(fixture.run_state, "combat_continue_available", RUN_SUMMARY_SCENE)
 
 
+func _test_next_button_continues_pending_scene() -> String:
+	var fixture := _new_fixture()
+	fixture.model.pending = SHOP_SCENE
+	var result: Dictionary = fixture.coordinator.handle_next_pressed("Continue")
+	if result.get("route") != "pending_scene_continue":
+		return "Expected pending scene continue route."
+	if fixture.model.pending != "":
+		return "Expected next button to consume pending scene."
+	if fixture.recorder.sfx != ["ui_accept"]:
+		return "Expected next button to play accept SFX."
+	if fixture.recorder.hidden_summaries != 1:
+		return "Expected next button to hide outcome summary."
+	if fixture.recorder.scene_changes.is_empty():
+		return "Expected next button to request scene transition."
+	var change: Dictionary = fixture.recorder.scene_changes[0]
+	if change.get("target_scene") != SHOP_SCENE or change.get("source") != "combat_next_button":
+		return "Expected combat next button transition metadata."
+	var mark_error := _expect_mark(fixture.run_state, "combat_next_button_pressed", SHOP_SCENE)
+	if mark_error != "":
+		return mark_error
+	var latest_mark: Dictionary = fixture.run_state.marks.back()
+	if String(Dictionary(latest_mark.get("payload", {})).get("button_text", "")) != "Continue":
+		return "Expected button text in next-button trace payload."
+	return ""
+
+
+func _test_next_button_without_pending_scene_is_noop() -> String:
+	var fixture := _new_fixture()
+	var result: Dictionary = fixture.coordinator.handle_next_pressed("Continue")
+	if result.get("route") != "no_pending_scene":
+		return "Expected no_pending_scene route."
+	if not fixture.recorder.sfx.is_empty() or not fixture.recorder.scene_changes.is_empty():
+		return "Expected no SFX or scene transition without a pending scene."
+	if not fixture.run_state.marks.is_empty():
+		return "Expected no trace marks without a pending scene."
+	return ""
+
+
 func _test_normal_turn_updates_summary_and_begins_next_preview() -> String:
 	var fixture := _new_fixture()
 	var result: Dictionary = fixture.coordinator.handle_turn_outcome(0, {"enemy_damage_taken": 2})
@@ -260,39 +320,42 @@ func _new_fixture() -> Dictionary:
 	var model := FakeModel.new()
 	var recorder := Recorder.new()
 	var coordinator: Variant = COORDINATOR_SCRIPT.new()
-	coordinator.bind(
-		{
-			"run_state": run_state,
-			"model": model,
-			"enemy_state": FakeEnemyState.new(),
-			"turn_log_presenter": FakeTurnLogPresenter.new(),
-		},
-		{
-			COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(recorder, "play_sfx"),
-			COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(recorder, "set_input_phase"),
-			COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: Callable(recorder, "append_turn_log"),
-			COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
-			COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(recorder, "set_status_color"),
-			COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(recorder, "append_combat_log"),
-			COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(recorder, "show_boss_reward_summary"),
-			COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(recorder, "set_turn_summary_text"),
-			COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(recorder, "current_route_id"),
-			COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(recorder, "hide_outcome_summary"),
-			COORDINATOR_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(recorder, "trace_and_change_scene"),
-			COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(recorder, "show_outcome_summary"),
-			COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(recorder, "pulse_turn_summary"),
-			COORDINATOR_SCRIPT.CALLBACK_BEGIN_TURN_PREVIEW: Callable(recorder, "begin_turn_preview"),
-			COORDINATOR_SCRIPT.CALLBACK_BUILD_RUN_OUTCOME_SUMMARY: Callable(recorder, "build_run_outcome_summary"),
-		},
-		{
-			"victory_phase_value": VICTORY_PHASE,
-			"defeat_phase_value": DEFEAT_PHASE,
-			"locked_input_phase_value": LOCKED_PHASE,
-			"positive_color": Color.GREEN,
-			"negative_color": Color.RED,
-			"default_victory_scene": "res://scenes/main_menu.tscn",
-			"run_summary_scene": RUN_SUMMARY_SCENE,
-		}
+	(
+		coordinator
+		. bind(
+			{
+				"run_state": run_state,
+				"model": model,
+				"enemy_state": FakeEnemyState.new(),
+				"turn_log_presenter": FakeTurnLogPresenter.new(),
+			},
+			{
+				COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(recorder, "play_sfx"),
+				COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(recorder, "set_input_phase"),
+				COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: Callable(recorder, "append_turn_log"),
+				COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(recorder, "set_status_text"),
+				COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(recorder, "set_status_color"),
+				COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(recorder, "append_combat_log"),
+				COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(recorder, "show_boss_reward_summary"),
+				COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(recorder, "set_turn_summary_text"),
+				COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(recorder, "current_route_id"),
+				COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(recorder, "hide_outcome_summary"),
+				COORDINATOR_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(recorder, "trace_and_change_scene"),
+				COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(recorder, "show_outcome_summary"),
+				COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(recorder, "pulse_turn_summary"),
+				COORDINATOR_SCRIPT.CALLBACK_BEGIN_TURN_PREVIEW: Callable(recorder, "begin_turn_preview"),
+				COORDINATOR_SCRIPT.CALLBACK_BUILD_RUN_OUTCOME_SUMMARY: Callable(recorder, "build_run_outcome_summary"),
+			},
+			{
+				"victory_phase_value": VICTORY_PHASE,
+				"defeat_phase_value": DEFEAT_PHASE,
+				"locked_input_phase_value": LOCKED_PHASE,
+				"positive_color": Color.GREEN,
+				"negative_color": Color.RED,
+				"default_victory_scene": "res://scenes/main_menu.tscn",
+				"run_summary_scene": RUN_SUMMARY_SCENE,
+			}
+		)
 	)
 	return {
 		"coordinator": coordinator,
