@@ -1106,16 +1106,11 @@ func _end_drag(timed_out: bool) -> void:
 		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
 	)
 	_bind_turn_resolution_coordinator()
-	if _turn_resolution_coordinator.should_route_resolved_board_to_combat(int(_input_phase_value())):
-		await _resolve_combat_turn_from_board(_last_resolve_result)
-		if _turn_resolution_coordinator.should_stop_after_turn_resolution():
-			_model.end_resolve_trace()
-			return
+	var turn_route_result: Dictionary = await _turn_resolution_coordinator.handle_resolved_board_turn(int(_input_phase_value()), _last_resolve_result)
+	if bool(turn_route_result.get("stop", false)):
+		_model.end_resolve_trace()
+		return
 	_model.end_resolve_trace()
-
-
-func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
-	await _turn_resolution_coordinator.resolve_player_turn(resolve_result)
 
 
 func _on_next_button_pressed() -> void:
