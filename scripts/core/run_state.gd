@@ -262,7 +262,7 @@ func ensure_shop_service():
 
 func ensure_shop_session():
 	if shop_session == null:
-		shop_session = SHOP_SESSION_SCRIPT.new()
+		shop_session = SHOP_SESSION_SCRIPT.create_for_run_state(self)
 	return shop_session
 
 
