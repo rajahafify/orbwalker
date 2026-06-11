@@ -1,11 +1,56 @@
 extends RefCounted
 class_name CombatMaxVfxReplayRoutePolicy
 
+const ROUTE_ARMOR_FALLBACK := "armor_fallback"
+const ROUTE_STATUS := "status"
+const ROUTE_ELEMENTAL := "elemental"
+const ROUTE_PACK := "pack"
+const ROUTE_LIGHTWEIGHT_FALLBACK := "lightweight_fallback"
+const DEFAULT_ROUTE_IDS: Array[String] = [
+	ROUTE_ARMOR_FALLBACK,
+	ROUTE_STATUS,
+	ROUTE_ELEMENTAL,
+	ROUTE_PACK,
+	ROUTE_LIGHTWEIGHT_FALLBACK,
+]
+
 var _status_available: Variant = false
 
 
 func bind(dependencies: Dictionary) -> void:
 	_status_available = dependencies.get("status_available", false)
+
+
+func default_routes(dependencies: Dictionary, fallback_presenter: Variant, armor_kind_filter: Callable) -> Array[Dictionary]:
+	return [
+		{
+			"id": ROUTE_ARMOR_FALLBACK,
+			"available": Callable(self, "armor_fallback_available"),
+			"kind_filter": armor_kind_filter,
+			"spawn": Callable(fallback_presenter, "spawn_armor_replay_fallback"),
+		},
+		{
+			"id": ROUTE_STATUS,
+			"presenter": dependencies.get("status_presenter"),
+			"available": dependencies.get("status_available", false),
+		},
+		{
+			"id": ROUTE_ELEMENTAL,
+			"presenter": dependencies.get("elemental_presenter"),
+			"available": dependencies.get("elemental_available", false),
+			"kind_filter": dependencies.get("should_use_elemental", Callable()),
+		},
+		{
+			"id": ROUTE_PACK,
+			"presenter": dependencies.get("pack_presenter"),
+			"available": dependencies.get("pack_available", false),
+		},
+		{
+			"id": ROUTE_LIGHTWEIGHT_FALLBACK,
+			"available": true,
+			"spawn": Callable(fallback_presenter, "spawn_lightweight_replay_fallback"),
+		},
+	]
 
 
 func armor_fallback_available() -> bool:

@@ -10,7 +10,6 @@ var _route_policy: Variant = COMBAT_MAX_VFX_REPLAY_ROUTE_POLICY_SCRIPT.new()
 
 
 func bind(dependencies: Dictionary) -> void:
-	# Route entries require an available bool/callable and may include a kind_filter callable.
 	_bind_route_policy(dependencies)
 	_bind_fallback_presenter(dependencies)
 	_routes.clear()
@@ -64,21 +63,7 @@ func _bind_fallback_presenter(dependencies: Dictionary) -> void:
 func _configured_routes(dependencies: Dictionary) -> Array:
 	if dependencies.has("routes"):
 		return Array(dependencies.get("routes", []))
-	return [
-		{
-			"available": Callable(_route_policy, "armor_fallback_available"),
-			"kind_filter": Callable(self, "_is_armor_kind"),
-			"spawn": Callable(_fallback_presenter, "spawn_armor_replay_fallback"),
-		},
-		{"presenter": dependencies.get("status_presenter"), "available": dependencies.get("status_available", false)},
-		{
-			"presenter": dependencies.get("elemental_presenter"),
-			"available": dependencies.get("elemental_available", false),
-			"kind_filter": dependencies.get("should_use_elemental", Callable()),
-		},
-		{"presenter": dependencies.get("pack_presenter"), "available": dependencies.get("pack_available", false)},
-		{"available": true, "spawn": Callable(_fallback_presenter, "spawn_lightweight_replay_fallback")},
-	]
+	return _route_policy.default_routes(dependencies, _fallback_presenter, Callable(self, "_is_armor_kind"))
 
 
 func _is_armor_kind(kind: String) -> bool:

@@ -115,6 +115,7 @@ func run_all() -> Dictionary:
 		_test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability,
 		failures
 	)
+	_run_case("combat_max_vfx_replay_route_policy_default_route_contract", _test_combat_max_vfx_replay_route_policy_default_route_contract, failures)
 	_run_case(
 		"combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes",
 		_test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes,
@@ -137,7 +138,7 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_overlay_armor_fallback_precedes_pack_route", _test_combat_max_vfx_overlay_armor_fallback_precedes_pack_route, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 15,
+		"total": 16,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -563,6 +564,37 @@ func _test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability(
 	availability_state["status_available"] = false
 	if not policy.armor_fallback_available():
 		return "Expected armor fallback to enable when explicit status availability is false."
+	return ""
+
+
+func _test_combat_max_vfx_replay_route_policy_default_route_contract() -> String:
+	var fallback_presenter := FakeReplayFallbackPresenter.new()
+	var policy = COMBAT_MAX_VFX_REPLAY_ROUTE_POLICY_SCRIPT.new()
+	policy.bind({"status_available": false})
+	var routes := policy.default_routes(
+		{
+			"status_presenter": FakeReplayRoutePresenter.new("status"),
+			"status_available": true,
+			"elemental_presenter": FakeReplayRoutePresenter.new("elemental"),
+			"elemental_available": true,
+			"should_use_elemental": func(kind: String) -> bool: return kind == "fire",
+			"pack_presenter": FakeReplayRoutePresenter.new("pack"),
+			"pack_available": true,
+		},
+		fallback_presenter,
+		func(kind: String) -> bool: return kind == "armor"
+	)
+	if routes.size() != policy.DEFAULT_ROUTE_IDS.size():
+		return "Expected policy default route count to match the explicit route id list."
+	for index in range(policy.DEFAULT_ROUTE_IDS.size()):
+		if String(routes[index].get("id", "")) != policy.DEFAULT_ROUTE_IDS[index]:
+			return "Expected default replay route order to preserve %s at index %d." % [policy.DEFAULT_ROUTE_IDS[index], index]
+	if not policy.route_supports(routes[0], "armor", false):
+		return "Expected armor fallback route to support armor through its fallback spawn callable."
+	if policy.route_supports(routes[0], "fire", false):
+		return "Expected armor fallback route to reject non-armor kinds."
+	if not policy.route_supports(routes[4], "unmapped", true):
+		return "Expected lightweight fallback route to remain the final catch-all."
 	return ""
 
 
