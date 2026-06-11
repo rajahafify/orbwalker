@@ -108,20 +108,23 @@ func run_log_reset() -> void:
 
 func run_log_append(event_type: String, payload: Dictionary) -> void:
 	_event_serial += 1
-	_events.append(
-		{
-			"seq": _event_serial,
-			"event": event_type,
-			"timestamp_unix": int(Time.get_unix_time_from_system()),
-			"timestamp_iso": Time.get_datetime_string_from_system(),
-			"run_id": _run_id,
-			"dungeon_level": _owner.dungeon_level,
-			"step_key": _owner.current_step_key,
-			"run_gold": _owner.run_gold,
-			"run_score": _owner.run_score,
-			"run_active": _owner.run_active,
-			"payload": payload.duplicate(true),
-		}
+	(
+		_events
+		. append(
+			{
+				"seq": _event_serial,
+				"event": event_type,
+				"timestamp_unix": int(Time.get_unix_time_from_system()),
+				"timestamp_iso": Time.get_datetime_string_from_system(),
+				"run_id": _run_id,
+				"dungeon_level": _owner.dungeon_level,
+				"step_key": _owner.current_step_key,
+				"run_gold": _owner.run_gold,
+				"run_score": _owner.run_score,
+				"run_active": _owner.run_active,
+				"payload": payload.duplicate(true),
+			}
+		)
 	)
 
 
@@ -161,6 +164,10 @@ func advance_turn_counter() -> void:
 
 func reset_fight_turn_counter() -> void:
 	_current_fight_turns = 0
+
+
+func current_fight_turn_count() -> int:
+	return _current_fight_turns
 
 
 func should_export_run_log_files() -> bool:
@@ -419,20 +426,3 @@ func run_log_next_shop_ordinal() -> int:
 		if String(entry.get("event", "")) == "shop_open":
 			count += 1
 	return count + 1
-
-
-func run_log_capture_fight_outcome_payload(outcome: String, cause: String = "", extra: Dictionary = {}) -> Dictionary:
-	var payload := {
-		"outcome": outcome,
-		"dungeon_level": _owner.dungeon_level,
-		"step_key": _owner.current_step_key,
-		"is_boss": bool(_owner._current_encounter.get("is_boss", false)),
-		"enemy_id": String(_owner._current_encounter.get("enemy_id", "")),
-		"enemy_name": String(_owner._current_encounter.get("display_name", "")),
-		"turn_count": _current_fight_turns,
-	}
-	if cause != "":
-		payload["cause"] = cause
-	for key in extra.keys():
-		payload[key] = extra[key]
-	return payload
