@@ -2,6 +2,7 @@ extends RefCounted
 class_name VisualRegistry
 
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
+const VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/ui/visual_registry_texture_factory.gd")
 const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
 const PATH_COMBAT_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_BACKGROUND
 const PATH_COMBAT_ENEMY_STAGE_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_ENEMY_STAGE_SHEET
@@ -74,6 +75,7 @@ var _derived_combat_ui_textures: Dictionary = {}
 var _vfx_textures: Dictionary = {}
 var _runtime_manifest: Dictionary = {}
 var _runtime_texture_cache: Dictionary = {}
+var _texture_factory: Resource = VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new()
 
 var _combat_background: Texture2D
 var _combat_enemy_stage_sheet: Texture2D
@@ -127,6 +129,8 @@ static func lookup_table_alias_contract() -> Dictionary:
 		"mastery_card_by_orb_id": is_same(_MASTERY_CARD_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID),
 		"mastery_icon_by_orb_id": is_same(_MASTERY_ICON_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID),
 		"stable_placeholder_icon_colors": is_same(_STABLE_PLACEHOLDER_ICON_COLORS, VISUAL_REGISTRY_DATA_SCRIPT.STABLE_PLACEHOLDER_ICON_COLORS),
+		"texture_factory_is_resource":
+		VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new() is Resource and VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().has_method("post_match_vfx_textures"),
 	}
 
 
@@ -481,7 +485,9 @@ func collection_card_frame(rarity: String) -> Texture2D:
 	if normalized != "uncommon" and normalized != "rare":
 		normalized = "common"
 	var texture := _collection_ui_texture("card_frame_%s" % normalized)
-	return texture if texture != null else placeholder_texture("collection_card_frame_%s_missing" % normalized, Color(0.12, 0.10, 0.08, 1.0), Vector2i(505, 720))
+	return (
+		texture if texture != null else placeholder_texture("collection_card_frame_%s_missing" % normalized, Color(0.12, 0.10, 0.08, 1.0), Vector2i(505, 720))
+	)
 
 
 func collection_relic_banner_frame(rarity: String) -> Texture2D:
@@ -489,7 +495,11 @@ func collection_relic_banner_frame(rarity: String) -> Texture2D:
 	if normalized != "uncommon" and normalized != "rare":
 		normalized = "common"
 	var texture := _collection_ui_texture("relic_banner_frame_%s" % normalized)
-	return texture if texture != null else placeholder_texture("collection_relic_banner_frame_%s_missing" % normalized, Color(0.12, 0.07, 0.14, 1.0), Vector2i(1032, 178))
+	return (
+		texture
+		if texture != null
+		else placeholder_texture("collection_relic_banner_frame_%s_missing" % normalized, Color(0.12, 0.07, 0.14, 1.0), Vector2i(1032, 178))
+	)
 
 
 func collection_price_badge() -> Texture2D:
@@ -543,10 +553,10 @@ func combat_enemy_stage_texture(enemy_id: String) -> Texture2D:
 	if stage_texture != null:
 		return stage_texture
 	var portrait_fallback := enemy_portrait(normalized_id)
-	return portrait_fallback if portrait_fallback != null else placeholder_texture(
-		"combat_stage_fallback_missing",
-		Color(0.08, 0.09, 0.12, 0.84),
-		Vector2i(1048, 336)
+	return (
+		portrait_fallback
+		if portrait_fallback != null
+		else placeholder_texture("combat_stage_fallback_missing", Color(0.08, 0.09, 0.12, 0.84), Vector2i(1048, 336))
 	)
 
 
@@ -591,10 +601,7 @@ func _combat_stage_sheet_texture(normalized_id: String) -> Texture2D:
 	var row := int(floor(float(index) / float(columns)))
 	var cell_width := float(_combat_enemy_stage_sheet.get_width()) / float(columns)
 	var cell_height := float(_combat_enemy_stage_sheet.get_height()) / float(rows)
-	var stage_texture := _atlas_region(
-		_combat_enemy_stage_sheet,
-		Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
-	)
+	var stage_texture := _atlas_region(_combat_enemy_stage_sheet, Rect2(cell_width * column, cell_height * row, cell_width, cell_height))
 	_combat_enemy_stage_textures[normalized_id] = stage_texture
 	return stage_texture
 
@@ -735,9 +742,7 @@ func vfx_texture(effect_name: String) -> Texture2D:
 func placeholder_texture(key: String, color: Color = Color(0.32, 0.32, 0.36, 1.0), size: Vector2i = Vector2i(96, 96)) -> Texture2D:
 	if _placeholder_cache.has(key):
 		return _placeholder_cache[key]
-	var image := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8 as Image.Format)
-	image.fill(color)
-	var texture := ImageTexture.create_from_image(image)
+	var texture: Texture2D = _texture_factory.placeholder_texture(color, size)
 	_placeholder_cache[key] = texture
 	return texture
 
@@ -947,12 +952,7 @@ func _build_icon_textures() -> void:
 	var atlas_index := 0
 	for row in rows:
 		for column in columns:
-			var region := Rect2(
-				cell_width * column,
-				cell_height * row,
-				cell_width,
-				cell_height
-			)
+			var region := Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
 			_icon_textures[atlas_index] = _atlas_region(sheet, region)
 			atlas_index += 1
 
@@ -983,131 +983,9 @@ func _build_vfx_textures() -> void:
 
 
 func _build_post_match_vfx_textures() -> void:
-	var specs := {
-		"post_match_fire": {
-			"accent": Color(1.0, 0.34, 0.12, 1.0),
-			"core": Color(1.0, 0.86, 0.42, 1.0),
-			"shape": "burst",
-		},
-		"post_match_ice": {
-			"accent": Color(0.42, 0.86, 1.0, 1.0),
-			"core": Color(0.88, 0.98, 1.0, 1.0),
-			"shape": "shards",
-		},
-		"post_match_earth": {
-			"accent": Color(0.45, 0.78, 0.34, 1.0),
-			"core": Color(0.88, 1.0, 0.58, 1.0),
-			"shape": "stone",
-		},
-		"post_match_gold": {
-			"accent": Color(1.0, 0.76, 0.18, 1.0),
-			"core": Color(1.0, 0.96, 0.52, 1.0),
-			"shape": "sparkle",
-		},
-		"post_match_heart": {
-			"accent": Color(0.34, 1.0, 0.52, 1.0),
-			"core": Color(0.86, 1.0, 0.82, 1.0),
-			"shape": "heal",
-		},
-		"post_match_armor": {
-			"accent": Color(0.55, 0.78, 1.0, 1.0),
-			"core": Color(0.92, 0.98, 1.0, 1.0),
-			"shape": "shield",
-		},
-		"post_match_damage": {
-			"accent": Color(1.0, 0.18, 0.16, 1.0),
-			"core": Color(1.0, 0.72, 0.56, 1.0),
-			"shape": "slash",
-		},
-	}
-	specs["post_match_healing"] = specs["post_match_heart"]
-	specs["post_match_armor_gain"] = specs["post_match_armor"]
-	for key in specs.keys():
-		var spec: Dictionary = specs[key]
-		_vfx_textures[key] = _make_post_match_vfx_texture(
-			String(spec.get("shape", "burst")),
-			spec.get("accent", Color.WHITE) as Color,
-			spec.get("core", Color.WHITE) as Color
-		)
-
-
-func _make_post_match_vfx_texture(shape: String, accent: Color, core: Color) -> Texture2D:
-	var size := 192
-	var center := Vector2(95.5, 95.5)
-	var image := Image.create(size, size, false, Image.FORMAT_RGBA8 as Image.Format)
-	image.fill(Color(1.0, 1.0, 1.0, 0.0))
-	for y in range(size):
-		for x in range(size):
-			var point := Vector2(float(x), float(y))
-			var offset := point - center
-			var distance := offset.length()
-			var angle := atan2(offset.y, offset.x)
-			var radial := clampf(1.0 - distance / 88.0, 0.0, 1.0)
-			var soft_glow := radial * radial * 0.38
-			var rim := maxf(0.0, 1.0 - absf(distance - 51.0) / 9.0) * 0.42
-			var hot_core := maxf(0.0, 1.0 - distance / 22.0) * 0.72
-			var shape_alpha := _post_match_shape_alpha(shape, offset, distance, angle)
-			var alpha := maxf(soft_glow, maxf(rim, maxf(hot_core, shape_alpha)))
-			if alpha <= 0.01:
-				continue
-			var mix := clampf(distance / 88.0, 0.0, 1.0)
-			var color := core.lerp(accent, mix)
-			if hot_core > 0.1:
-				color = color.lightened(hot_core * 0.34)
-			if shape == "ice" or shape == "shards":
-				color = color.lightened(maxf(0.0, shape_alpha - 0.34) * 0.25)
-			color.a = alpha
-			image.set_pixel(x, y, color)
-	return ImageTexture.create_from_image(image)
-
-
-func _post_match_shape_alpha(shape: String, offset: Vector2, distance: float, angle: float) -> float:
-	match shape:
-		"burst":
-			var flame := maxf(0.0, sin(angle * 5.0 + distance * 0.05))
-			var upper_lift := clampf((34.0 - offset.y) / 72.0, 0.0, 1.0)
-			var tongues := flame * clampf(1.0 - distance / 82.0, 0.0, 1.0)
-			var vertical_core := maxf(0.0, 1.0 - absf(offset.x) / (20.0 + upper_lift * 28.0)) * clampf((64.0 - offset.y) / 118.0, 0.0, 1.0)
-			return maxf(tongues * 0.70, vertical_core * 0.86)
-		"shards":
-			var primary := absf(offset.y + offset.x * 0.22)
-			var secondary := absf(offset.y - offset.x * 0.72)
-			var radial_spike := maxf(0.0, 1.0 - absf(sin(angle * 6.0)) / 0.16) * clampf(distance / 20.0, 0.0, 1.0)
-			var shards := maxf(clampf(1.0 - primary / 4.8, 0.0, 1.0), clampf(1.0 - secondary / 4.8, 0.0, 1.0))
-			return maxf(shards * clampf(1.0 - distance / 88.0, 0.0, 1.0), radial_spike * clampf(1.0 - distance / 84.0, 0.0, 1.0)) * 0.88
-		"stone":
-			var chunky := maxf(absf(offset.x * 0.92), absf(offset.y * 0.72))
-			var slab := clampf(1.0 - absf(chunky - 38.0) / 9.0, 0.0, 1.0)
-			var crack_a := clampf(1.0 - absf(offset.y + sin(offset.x * 0.10) * 16.0) / 4.0, 0.0, 1.0)
-			var crack_b := clampf(1.0 - absf(offset.x - cos(offset.y * 0.09) * 22.0) / 4.0, 0.0, 1.0)
-			return maxf(slab * 0.68, maxf(crack_a, crack_b) * clampf(1.0 - distance / 78.0, 0.0, 1.0) * 0.48)
-		"sparkle":
-			var cross := maxf(0.0, 1.0 - minf(absf(offset.x), absf(offset.y)) / 3.6) * clampf(1.0 - distance / 84.0, 0.0, 1.0)
-			var diagonal := maxf(0.0, 1.0 - absf(absf(offset.x) - absf(offset.y)) / 3.6) * clampf(1.0 - distance / 66.0, 0.0, 1.0)
-			var coin := clampf(1.0 - absf((offset / Vector2(28.0, 19.0)).length() - 1.0) / 0.16, 0.0, 1.0)
-			return maxf(maxf(cross * 0.92, diagonal * 0.50), coin * 0.56)
-		"heal":
-			var stream := maxf(0.0, 1.0 - absf(offset.x + sin(offset.y * 0.08) * 10.0) / 8.0) * clampf((66.0 - offset.y) / 128.0, 0.0, 1.0)
-			var leaf_a := maxf(0.0, 1.0 - (offset - Vector2(-13.0, -20.0)).length() / 20.0)
-			var leaf_b := maxf(0.0, 1.0 - (offset - Vector2(13.0, -27.0)).length() / 18.0)
-			var heart_lobes := maxf(
-				maxf(0.0, 1.0 - (offset - Vector2(-13.0, -8.0)).length() / 18.0),
-				maxf(0.0, 1.0 - (offset - Vector2(13.0, -8.0)).length() / 18.0)
-			)
-			return maxf(stream * 0.66, maxf(maxf(leaf_a, leaf_b) * 0.58, heart_lobes * 0.42))
-		"shield":
-			var top := maxf(absf(offset.x) / 43.0, absf(offset.y + 17.0) / 36.0)
-			var point := clampf(1.0 - absf(absf(offset.x) + offset.y - 56.0) / 8.0, 0.0, 1.0)
-			var rim := clampf(1.0 - absf(top - 1.0) / 0.10, 0.0, 1.0)
-			var center_bar := maxf(0.0, 1.0 - absf(offset.x) / 4.2) * clampf(1.0 - absf(offset.y + 2.0) / 42.0, 0.0, 1.0)
-			return maxf(maxf(rim, point) * 0.82, center_bar * 0.52)
-		"slash":
-			var slash_a := absf(offset.y + offset.x * 0.46)
-			var slash_b := absf(offset.y + offset.x * 0.46 + 26.0)
-			var cut := maxf(clampf(1.0 - slash_a / 5.5, 0.0, 1.0), clampf(1.0 - slash_b / 6.0, 0.0, 1.0) * 0.78)
-			return cut * clampf(1.0 - distance / 86.0, 0.0, 1.0) * 0.92
-		_:
-			return clampf(1.0 - distance / 78.0, 0.0, 1.0) * 0.55
+	var textures: Dictionary = _texture_factory.post_match_vfx_textures()
+	for key in textures.keys():
+		_vfx_textures[key] = textures[key]
 
 
 func _load_derived_icon(icon_key: String) -> Texture2D:
@@ -1195,10 +1073,7 @@ func _processed_icon_region(sheet: Texture2D, region: Rect2, remove_baked_checke
 		var trim_top := maxi(0, min_y - padding)
 		var trim_right := mini(w - 1, max_x + padding)
 		var trim_bottom := mini(h - 1, max_y + padding)
-		cropped = cropped.get_region(Rect2i(
-			Vector2i(trim_left, trim_top),
-			Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)
-		))
+		cropped = cropped.get_region(Rect2i(Vector2i(trim_left, trim_top), Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)))
 
 	return ImageTexture.create_from_image(cropped)
 
