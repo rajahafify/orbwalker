@@ -2,7 +2,6 @@ extends RefCounted
 class_name CombatMaxVfxEffectKeyCatalogTest
 
 const CATALOG_SCRIPT := preload("res://scripts/combat/combat_max_vfx_effect_key_catalog.gd")
-const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
 
 
 func run_all() -> Dictionary:
@@ -42,7 +41,7 @@ func _test_effect_key_catalog_preserves_overlay_mappings() -> String:
 		return "Expected armor impact key to remain armor_impact."
 	if catalog.particle_key("gold") != "coin_spin":
 		return "Expected gold particle key to remain coin_spin."
-	if catalog.kind_for_orb(ORB_TYPE_SCRIPT.Id.ICE) != "ice":
+	if catalog.kind_for_orb(OrbType.Id.ICE) != "ice":
 		return "Expected ice orb id to route to ice VFX."
 	if catalog.kind_for_orb(9999) != "damage":
 		return "Expected unknown orb ids to route to damage VFX."

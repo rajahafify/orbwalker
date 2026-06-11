@@ -1,8 +1,6 @@
 extends RefCounted
 class_name CombatMaxVfxEffectKeyCatalog
 
-const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
-
 
 func status_sheet_key(kind: String) -> String:
 	match clean_kind(kind):
@@ -201,17 +199,17 @@ func should_use_elemental_magic(kind: String) -> bool:
 
 func kind_for_orb(orb_id: int) -> String:
 	match orb_id:
-		ORB_TYPE_SCRIPT.Id.FIRE:
+		OrbType.Id.FIRE:
 			return "fire"
-		ORB_TYPE_SCRIPT.Id.ICE:
+		OrbType.Id.ICE:
 			return "ice"
-		ORB_TYPE_SCRIPT.Id.EARTH:
+		OrbType.Id.EARTH:
 			return "earth"
-		ORB_TYPE_SCRIPT.Id.HEART:
+		OrbType.Id.HEART:
 			return "heart"
-		ORB_TYPE_SCRIPT.Id.ARMOR:
+		OrbType.Id.ARMOR:
 			return "armor"
-		ORB_TYPE_SCRIPT.Id.GOLD:
+		OrbType.Id.GOLD:
 			return "gold"
 	return "damage"
 

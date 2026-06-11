@@ -120,7 +120,7 @@ func external_scene_paths() -> Dictionary:
 func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, _result_amount: int, intensity: int, screen_wide: bool) -> bool:
 	if not is_available() or global_center == Vector2.ZERO:
 		return false
-	var kind := _effect_key_catalog.clean_kind(clean_kind)
+	var kind: String = _effect_key_catalog.clean_kind(clean_kind)
 	var center := _global_to_overlay_local(global_center)
 	var max_size := maxf(draw_size.x, draw_size.y)
 	var basis_size := _replay_impact_basis_size(kind, draw_size, max_size)
