@@ -39,7 +39,7 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/combat/combat_max_vfx_overlay.gd":
 	{
-		"baseline": 1079,
+		"baseline": 863,
 		"owner": "P1-2/P5-2",
 		"reason":
 		"Max-combat VFX owns several effect families and asset path catalogs; split effect-family emitters and move static asset catalogs to resources.",

@@ -298,6 +298,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-7-track-d-vfx-effect-key-catalog">2026-06-12 - Wave 7 Track D VFX effect key catalog</h2>
+<ul>
+<li>Moved max-overlay effect kind normalization, status/atmospheric sheet key selection, impact/projectile/trail/mist/particle key lookup, and base/elemental color tables into <code>CombatMaxVfxEffectKeyCatalog</code>. <code>CombatMaxVfxOverlay</code> keeps lifecycle, coordinate projection, route order, and presenter binding while the overlay ratchet drops from <code>1079</code> to <code>863</code> measured lines. (source: <code>scripts/combat/combat_max_vfx_effect_key_catalog.gd</code>, <code>scripts/combat/combat_max_vfx_overlay.gd</code>, <code>scripts/tests/combat_max_vfx_effect_key_catalog_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-12-wave-6-track-d-vfx-replay-route-policy-hardening">2026-06-12 - Wave 6 Track D VFX replay route policy hardening</h2>
 <ul>
 <li>Moved the default max-overlay replay route catalog and stable route ids into <code>CombatMaxVfxReplayRoutePolicy</code>. <code>CombatMaxVfxReplayImpactRouter</code> now asks the policy for the default armor fallback, status, elemental, pack, and lightweight fallback route table while preserving first-handled dispatch and custom injected routes. (source: <code>scripts/combat/combat_max_vfx_replay_route_policy.gd</code>, <code>scripts/combat/combat_max_vfx_replay_impact_router.gd</code>, <code>scripts/tests/combat_max_vfx_replay_route_test.gd</code>)</li>
