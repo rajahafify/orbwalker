@@ -3510,6 +3510,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Converted wiki-local Obsidian-style references such as <code>[[architecture]]</code>, <code>[[features]]</code>, and <code>[[assetgen-workflow]]</code> into real browser links across <code>wiki/*.html</code>. Added a shared <code>Wiki Map</code> navigation block to every wiki page so the local LLM wiki can be browsed as an interconnected HTML knowledge base instead of isolated generated pages. Validation confirmed every wiki page now has local HTML links and no missing wiki-link targets. (source: <a href="../wiki/index.html"><code>wiki/index.html</code></a>, <a href="../wiki/architecture.html"><code>wiki/architecture.html</code></a>, <a href="../wiki/features.html"><code>wiki/features.html</code></a>, <a href="../wiki/assetgen-workflow.html"><code>wiki/assetgen-workflow.html</code></a>, <a href="../wiki/log.html"><code>wiki/log.html</code></a>)</li>
 </ul>
+<h2 id="2026-06-11-shop-session-boundary-extraction">2026-06-11 - ShopSession Boundary Extraction</h2>
+<ul>
+<li>Added <code>scripts/shop/shop_session.gd</code> as the RunState-facing shop session boundary. It owns current-shop open wrappers, tutorial shop seed application, shop action Run Log capture, close-shop delegation, and shop transition snapshot/restore while preserving the existing <code>RunState</code> public shop facade methods. (source: <code>scripts/shop/shop_session.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Kept <code>ShopService</code> as the shop economy mutation authority for offer generation, rerolls, purchases, sells, relic offers, and treasure chest resolution. (source: <code>scripts/shop/shop_service.gd</code>)</li>
+<li>Lowered the checked script-size ratchet baseline for <code>scripts/core/run_state.gd</code> from <code>1532</code> to <code>1472</code> measured lines and synced the script-size budget docs/tests. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
       <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

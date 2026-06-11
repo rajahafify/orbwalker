@@ -14,6 +14,7 @@ const META_PROFILE_STATE_SCRIPT := preload("res://scripts/run/meta_profile_state
 const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
 const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
 const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
+const SHOP_SESSION_SCRIPT := preload("res://scripts/shop/shop_session.gd")
 const WALLET_SERVICE_SCRIPT := preload("res://scripts/run/wallet_service.gd")
 const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
 const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
@@ -60,6 +61,7 @@ var player_progression_service: PlayerProgressionService
 var content_registry: ContentRegistry
 var shop_state: ShopState
 var shop_service: ShopService
+var shop_session
 var wallet_service: WalletService
 var player_profile_state: PlayerProfileState
 var meta_profile_state: MetaProfileState
@@ -256,6 +258,12 @@ func ensure_shop_service():
 	if shop_service == null:
 		shop_service = SHOP_SERVICE_SCRIPT.new()
 	return shop_service
+
+
+func ensure_shop_session():
+	if shop_session == null:
+		shop_session = SHOP_SESSION_SCRIPT.new()
+	return shop_session
 
 
 func ensure_wallet_service():
@@ -580,90 +588,39 @@ func can_afford(amount: int) -> bool:
 
 
 func open_shop_for_current_level() -> Dictionary:
-	_apply_tutorial_shop_seed(0)
-	var result: Dictionary = ensure_shop_service().open_shop(self, dungeon_level)
-	var shop_snapshot: Dictionary = ensure_shop_state().to_snapshot()
-	_run_log_append(
-		"shop_open",
-		{
-			"result": _run_log_result_brief(result),
-			"dungeon_level": dungeon_level,
-			"shop_ordinal": _run_log_next_shop_ordinal(),
-			"shop": _run_log_sanitize_shop_snapshot(shop_snapshot, run_gold),
-		}
-	)
-	return result
+	return ensure_shop_session().open_for_current_level(self)
 
 
 func reroll_shop_items() -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	_apply_tutorial_shop_seed(100 + ensure_shop_state().reroll_count)
-	var result: Dictionary = ensure_shop_service().reroll_shop_items(self)
-	_run_log_shop_action("reroll", result, {}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().reroll_items(self)
 
 
 func buy_shop_offer(offer_id: String) -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().buy_offer(self, offer_id)
-	_run_log_shop_action("buy_offer", result, {"offer_id": offer_id}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().buy_offer(self, offer_id)
 
 
 func sell_equipped_item(slot_index: int) -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().sell_equipped_item(self, slot_index)
-	_run_log_shop_action("sell_equipment", result, {"slot_index": slot_index}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().sell_equipped_item(self, slot_index)
 
 
 func sell_consumable_item(slot_index: int) -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().sell_consumable_item(self, slot_index)
-	_run_log_shop_action("sell_consumable", result, {"slot_index": slot_index}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().sell_consumable_item(self, slot_index)
 
 
 func choose_treasure_chest_option(option_index: int) -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().choose_treasure_chest_option(self, option_index)
-	_run_log_shop_action("choose_treasure_chest", result, {"option_index": option_index}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().choose_treasure_chest_option(self, option_index)
 
 
 func replace_pending_treasure_chest_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().replace_pending_treasure_chest_option(self, option_index, slot_index, sell_replaced)
-	_run_log_shop_action(
-		"replace_treasure_chest_option",
-		result,
-		{
-			"option_index": option_index,
-			"slot_index": slot_index,
-			"sell_replaced": sell_replaced,
-		},
-		shop_before,
-		gold_before
-	)
-	return result
+	return ensure_shop_session().replace_pending_treasure_chest_option(self, option_index, slot_index, sell_replaced)
 
 
 func discard_pending_treasure_chest_options() -> Dictionary:
-	var shop_before: Dictionary = ensure_shop_state().to_snapshot()
-	var gold_before := run_gold
-	var result: Dictionary = ensure_shop_service().discard_pending_treasure_chest_options(self)
-	_run_log_shop_action("skip_treasure_chest", result, {}, shop_before, gold_before)
-	return result
+	return ensure_shop_session().discard_pending_treasure_chest_options(self)
 
 
 func close_shop(mark_skipped: bool = false) -> void:
-	ensure_shop_state().close_shop(mark_skipped)
+	ensure_shop_session().close(self, mark_skipped)
 
 
 func relic_offer_id_for_level(level: int) -> String:
@@ -875,26 +832,11 @@ func _restore_player_progression_state_for_transition(snapshot: Dictionary) -> v
 
 
 func _snapshot_shop_state_for_transition() -> Dictionary:
-	var state = ensure_shop_state()
-	var snapshot: Dictionary = state.to_snapshot()
-	snapshot["offer_sequence"] = state.offer_sequence
-	return snapshot
+	return ensure_shop_session().snapshot_for_transition(self)
 
 
 func _restore_shop_state_for_transition(snapshot: Dictionary) -> void:
-	if snapshot.is_empty():
-		return
-	var state = ensure_shop_state()
-	state.active = bool(snapshot.get("active", state.active))
-	state.dungeon_level = maxi(1, int(snapshot.get("dungeon_level", state.dungeon_level)))
-	state.item_offers = Array(snapshot.get("item_offers", [])).duplicate(true)
-	state.relic_offer = Dictionary(snapshot.get("relic_offer", {})).duplicate(true)
-	state.reroll_count = maxi(0, int(snapshot.get("reroll_count", state.reroll_count)))
-	state.reroll_cost = maxi(0, int(snapshot.get("reroll_cost", state.reroll_cost)))
-	state.pending_treasure_chest_options = Array(snapshot.get("pending_treasure_chest_options", [])).duplicate(true)
-	state.pending_treasure_chest_offer_id = String(snapshot.get("pending_treasure_chest_offer_id", state.pending_treasure_chest_offer_id))
-	state.offer_sequence = maxi(1, int(snapshot.get("offer_sequence", state.offer_sequence)))
-	state.skipped = bool(snapshot.get("skipped", state.skipped))
+	ensure_shop_session().restore_for_transition(self, snapshot)
 
 
 func _string_array_from_snapshot(raw_values: Variant, fixed_size: int = -1) -> Array[String]:
