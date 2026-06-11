@@ -56,7 +56,7 @@ const DOCUMENTED_EXCEPTIONS := {
 		"baseline": 1333,
 		"owner": "R-P1-3",
 		"reason":
-		"Visual registry backend owns the remaining texture cache, atlas cleanup, and runtime loading families behind the public facade; split these families into focused cache/atlas/loading collaborators.",
+		"VisualRegistry facade is frozen as a thin compatibility layer; VisualRegistryBackend is the real Track C debt counter and owns the remaining texture cache, atlas cleanup, and runtime loading families to split next.",
 	},
 	"res://scripts/core/run_state.gd":
 	{

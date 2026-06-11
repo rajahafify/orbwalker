@@ -139,8 +139,8 @@
           <td><code>scripts/ui/visual_registry_backend.gd</code></td>
           <td><code>650</code></td>
           <td><code>1333</code></td>
-          <td>The visual registry backend owns the remaining texture cache, atlas cleanup, and runtime loading families behind the public facade.</td>
-          <td>Split these families into focused cache, atlas, and loading collaborators, then remove or ratchet down this backend exception.</td>
+          <td>The public <code>VisualRegistry</code> facade is intentionally frozen near 132 lines; <code>VisualRegistryBackend</code> is the real Track C debt counter.</td>
+          <td>Future Track C slices must lower the backend baseline by splitting cache, atlas cleanup, and runtime loading families; facade growth is not an acceptable substitute.</td>
         </tr>
         <tr>
           <td><code>scripts/core/run_state.gd</code></td>
