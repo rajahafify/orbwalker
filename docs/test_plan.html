@@ -320,6 +320,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_turn_resolution_coordinator_test.gd</code> covers the routing predicate for the configured resolving phase and non-routing player/external phases.</li>
 <li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 2, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1960</code>-line ratchet baseline. The aggregate runner still reports unrelated pre-existing asset/layout failures in <code>asset_pipeline_test.gd</code>, <code>top_header_contract_probe.gd</code>, <code>layout_snapshot_harness_test.gd</code>, <code>shop_layout_metrics_test.gd</code>, and <code>shop_view_layout_test.gd</code>.</li>
 </ul>
+<p>Verification notes (2026-06-11, Wave 4 Track B combat route continuation guard):</p>
+<ul>
+<li><code>CombatTurnResolutionCoordinator</code> now also owns the post-turn-resolution continuation guard through its existing <code>can_continue</code> callback. <code>CombatController</code> still performs the async turn resolution call and resolve-trace cleanup.</li>
+<li><code>combat_turn_resolution_coordinator_test.gd</code> covers both stop and continue outcomes for the delegated guard.</li>
+<li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 3, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1959</code>-line ratchet baseline.</li>
+</ul>
 <p>Verification notes (2026-05-30, profile save migration guard):</p>
 <ul>
 <li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>

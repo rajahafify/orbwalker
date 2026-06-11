@@ -1108,7 +1108,7 @@ func _end_drag(timed_out: bool) -> void:
 	_bind_turn_resolution_coordinator()
 	if _turn_resolution_coordinator.should_route_resolved_board_to_combat(int(_input_phase_value())):
 		await _resolve_combat_turn_from_board(_last_resolve_result)
-		if not _can_continue_after_async_wait():
+		if _turn_resolution_coordinator.should_stop_after_turn_resolution():
 			_model.end_resolve_trace()
 			return
 	_model.end_resolve_trace()

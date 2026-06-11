@@ -31,6 +31,10 @@ func should_route_resolved_board_to_combat(current_input_phase: int) -> bool:
 	return current_input_phase == _resolving_input_phase_value
 
 
+func should_stop_after_turn_resolution() -> bool:
+	return not _can_continue()
+
+
 func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 	if _combat == null or _model == null or _run_state == null:
 		return {"ok": false, "route": "missing_dependencies"}
