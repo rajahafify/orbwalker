@@ -326,6 +326,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_turn_resolution_coordinator_test.gd</code> covers both stop and continue outcomes for the delegated guard.</li>
 <li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 3, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1959</code>-line ratchet baseline.</li>
 </ul>
+<p>Verification notes (2026-06-11, Wave 5 Track B combat resolution flow):</p>
+<ul>
+<li><code>CombatTurnResolutionCoordinator</code> now owns the compact post-board-commit flow that skips combat resolution when input phase changed, runs turn resolution when still resolving, and reports whether async cancellation should stop controller cleanup. <code>CombatController</code> still owns drag completion, board resolve presentation, board commit, and resolve-trace lifetime.</li>
+<li><code>combat_turn_resolution_coordinator_test.gd</code> covers phase-change skip behavior, routed resolution/outcome reporting, turn-log metadata preservation, the existing double continuation checks, and safe stopping when the required <code>can_continue</code> callback is missing.</li>
+<li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 6, failed: 0 }</code>. Script-size budget passed with the combat controller ratchet lowered to <code>1956</code> lines.</li>
+</ul>
 <p>Verification notes (2026-05-30, profile save migration guard):</p>
 <ul>
 <li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>

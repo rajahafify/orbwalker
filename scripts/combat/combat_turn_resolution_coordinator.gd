@@ -35,6 +35,15 @@ func should_stop_after_turn_resolution() -> bool:
 	return not _can_continue()
 
 
+func handle_resolved_board_turn(current_input_phase: int, resolve_result: Dictionary) -> Dictionary:
+	if not should_route_resolved_board_to_combat(current_input_phase):
+		return {"routed": false, "stop": false, "route": "input_phase_changed"}
+	var outcome: Dictionary = await resolve_player_turn(resolve_result)
+	if should_stop_after_turn_resolution():
+		return {"routed": true, "stop": true, "route": "async_cancelled", "outcome": outcome}
+	return {"routed": true, "stop": false, "route": String(outcome.get("route", "resolved")), "outcome": outcome}
+
+
 func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 	if _combat == null or _model == null or _run_state == null:
 		return {"ok": false, "route": "missing_dependencies"}
@@ -89,7 +98,8 @@ func resolve_player_turn(resolve_result: Dictionary) -> Dictionary:
 
 func _can_continue() -> bool:
 	if not _callbacks.has(CALLBACK_CAN_CONTINUE):
-		return true
+		push_error("CombatTurnResolutionCoordinator requires a can_continue callback before async continuation checks.")
+		return false
 	return bool(_callbacks[CALLBACK_CAN_CONTINUE].call())
 
 
