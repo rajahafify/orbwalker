@@ -109,16 +109,27 @@ func _test_runtime_manifest_paths_import() -> String:
 
 
 func _test_visual_registry_lookup_tables_alias_data_script() -> String:
-	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_PORTRAIT_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS):
+	var alias_contract := VISUAL_REGISTRY_SCRIPT.lookup_table_alias_contract()
+	if not bool(alias_contract.get("enemy_portrait_paths", false)):
 		return "VisualRegistry enemy portrait paths must alias VisualRegistryData, not duplicate it."
-	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_STAGE_BACKGROUND_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS):
+	if not bool(alias_contract.get("enemy_stage_background_paths", false)):
 		return "VisualRegistry enemy stage background paths must alias VisualRegistryData, not duplicate it."
-	if not is_same(VISUAL_REGISTRY_SCRIPT._ENEMY_SPRITE_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS):
+	if not bool(alias_contract.get("enemy_sprite_paths", false)):
 		return "VisualRegistry enemy sprite paths must alias VisualRegistryData, not duplicate it."
-	if not is_same(VISUAL_REGISTRY_SCRIPT._DERIVED_ORB_FILENAME_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID):
+	if not bool(alias_contract.get("derived_orb_filename_by_id", false)):
 		return "VisualRegistry derived orb filenames must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("combat_stage_alias_by_enemy_id", false)):
+		return "VisualRegistry combat stage aliases must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("runtime_enemy_alias_by_id", false)):
+		return "VisualRegistry runtime enemy aliases must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("placeholder_runtime_enemy_keys", false)):
+		return "VisualRegistry placeholder runtime enemy keys must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("combat_stage_sheet_index_by_enemy_id", false)):
+		return "VisualRegistry combat stage sheet indexes must alias VisualRegistryData, not duplicate it."
+	if not bool(alias_contract.get("enemy_visual_profiles", false)):
+		return "VisualRegistry enemy visual profiles must alias VisualRegistryData, not duplicate it."
 	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
-	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID.size():
+	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():
 		return "Derived orb contract paths must cover every entry in DERIVED_ORB_FILENAME_BY_ID."
 	var contract_textures := _unique_paths(Array(VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths().get("imported_textures", [])))
 	for orb_path in orb_paths:

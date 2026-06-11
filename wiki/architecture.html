@@ -334,7 +334,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 </ul>
 <h3 id="visual-routing">Visual routing</h3>
 <ul>
-<li><code>visual_registry.gd</code> centralizes first-pass texture lookup and fallback behavior for combat and shop presentation. (source: <code>scripts/ui/visual_registry.gd</code>)</li>
+<li><code>visual_registry.gd</code> remains the public first-pass texture lookup and fallback API for combat and shop presentation, while <code>visual_registry_data.gd</code> owns static visual path tables and enemy visual lookup tables that do not need runtime cache state. Current moved data includes background/path constants, enemy portrait/stage/sprite paths, derived orb filenames, enemy stage aliases, runtime enemy aliases, placeholder runtime enemy keys, combat stage sheet indexes, and enemy visual profiles. (source: <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>)</li>
 </ul>
 <h3 id="scene-structure">Scene structure</h3>
 <ul>
