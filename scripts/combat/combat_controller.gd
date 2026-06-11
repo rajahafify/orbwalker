@@ -1105,6 +1105,7 @@ func _end_drag(timed_out: bool) -> void:
 		resolve_trace_origin_usec,
 		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
 	)
+	_bind_turn_resolution_coordinator()
 	if _turn_resolution_coordinator.should_route_resolved_board_to_combat(int(_input_phase_value())):
 		await _resolve_combat_turn_from_board(_last_resolve_result)
 		if not _can_continue_after_async_wait():
@@ -1114,9 +1115,6 @@ func _end_drag(timed_out: bool) -> void:
 
 
 func _resolve_combat_turn_from_board(resolve_result: Dictionary) -> void:
-	if _combat == null:
-		return
-	_bind_turn_resolution_coordinator()
 	await _turn_resolution_coordinator.resolve_player_turn(resolve_result)
 
 
@@ -2000,7 +1998,8 @@ func _bind_turn_resolution_coordinator() -> void:
 			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(self, "_sync_combat_mastery_preview_totals"),
 			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
 			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
-		}
+		},
+		{COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CONFIG_RESOLVING_INPUT_PHASE_VALUE: int(InputPhase.RESOLVING)}
 	)
 
 
