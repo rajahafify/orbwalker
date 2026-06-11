@@ -6,7 +6,9 @@ const COLLECTION_VIEW_SCRIPT := preload("res://scripts/collection/collection_vie
 const MAIN_MENU_MODEL_SCRIPT := preload("res://scripts/main_menu/main_menu_model.gd")
 const RUN_SUMMARY_VIEW_SCRIPT := preload("res://scripts/run_summary/run_summary_view.gd")
 const VISUAL_REGISTRY_ORB_CATALOG_SCRIPT := preload("res://scripts/ui/visual_registry_orb_catalog.gd")
+const VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/ui/visual_registry_texture_factory.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+const VISUAL_REGISTRY_BACKEND_SCRIPT := preload("res://scripts/ui/visual_registry_backend.gd")
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 
 
@@ -149,6 +151,29 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry mastery icon lookup must alias VisualRegistryData, not duplicate it."
 	if not bool(alias_contract.get("stable_placeholder_icon_colors", false)):
 		return "VisualRegistry stable placeholder icon colors must alias VisualRegistryData, not duplicate them."
+	if not bool(alias_contract.get("texture_factory_is_resource", false)):
+		return "VisualRegistry procedural texture generation must delegate to VisualRegistryTextureFactory."
+	if not bool(alias_contract.get("backend_is_refcounted", false)):
+		return "VisualRegistry must expose a RefCounted backend collaborator."
+	if not bool(alias_contract.get("backend_has_orb_texture", false)):
+		return "VisualRegistry backend must preserve the orb texture lookup API."
+	if not bool(alias_contract.get("backend_has_placeholder_texture", false)):
+		return "VisualRegistry backend must preserve fallback placeholder texture lookup."
+	var registry_backend_contract := VISUAL_REGISTRY_SCRIPT.new().backend_contract()
+	if not bool(registry_backend_contract.get("backend_is_refcounted", false)):
+		return "VisualRegistry facade must delegate to a RefCounted backend."
+	if not bool(registry_backend_contract.get("backend_has_combat_background", false)):
+		return "VisualRegistry facade backend must preserve combat background lookup."
+	var backend_alias_contract := VISUAL_REGISTRY_BACKEND_SCRIPT.lookup_table_alias_contract()
+	if not bool(backend_alias_contract.get("intent_index_by_type", false)):
+		return "VisualRegistryBackend must keep existing data alias ownership."
+	var texture_factory_contract := VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().post_match_vfx_contract()
+	if not bool(texture_factory_contract.get("factory_is_resource", false)):
+		return "VisualRegistryTextureFactory default instance must be a Resource."
+	if int(texture_factory_contract.get("spec_count", 0)) < 7:
+		return "VisualRegistryTextureFactory must own every post-match VFX texture spec."
+	if not bool(texture_factory_contract.get("alias_healing", false)) or not bool(texture_factory_contract.get("alias_armor_gain", false)):
+		return "VisualRegistryTextureFactory must preserve post-match VFX aliases."
 	var catalog_contract := VISUAL_REGISTRY_DATA_SCRIPT.catalog_ownership_contract()
 	if not bool(catalog_contract.get("catalog_is_resource", false)):
 		return "VisualRegistryData orb catalog must be backed by a VisualRegistryOrbCatalog Resource."
@@ -162,8 +187,7 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistryOrbCatalog runtime orb key accessor must preserve lookup parity."
 	if VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id() != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.derived_orb_filename_by_id():
 		return "VisualRegistryOrbCatalog derived orb filename accessor must preserve lookup parity."
-	var custom_catalog = VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.new()
-	custom_catalog.orb_records = [{"orb_id": 42, "runtime_key": "custom", "derived_filename": "orb_custom.png"}]
+	var custom_catalog = VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.new([{"orb_id": 42, "runtime_key": "custom", "derived_filename": "orb_custom.png"}])
 	if Dictionary(custom_catalog.get_runtime_orb_key_by_id()) != {42: "custom"}:
 		return "VisualRegistryOrbCatalog must rebuild runtime orb key indexes when exported records are assigned."
 	if Dictionary(custom_catalog.get_derived_orb_filename_by_id()) != {42: "orb_custom.png"}:
