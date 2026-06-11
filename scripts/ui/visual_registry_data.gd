@@ -118,6 +118,84 @@ const ENEMY_VISUAL_PROFILES := {
 	"prism_warden": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.35},
 }
 
+const ICON_INDEX_BY_KEY := {
+	"equipment_shortsword": 0,
+	"equipment_buckler": 1,
+	"equipment_coin_purse": 2,
+	"equipment_healing_charm": 3,
+	"equipment_stone_ring": 3,
+	"equipment_ember_ring": 8,
+	"equipment_frost_ring": 8,
+	"equipment_leather_gloves": 4,
+	"equipment_iron_helm": 1,
+	"equipment_combo_lens": 7,
+	"equipment_twin_blades": 5,
+	"equipment_war_banner": 9,
+	"equipment_tower_shield": 6,
+	"equipment_merchant_scales": 7,
+	"equipment_battle_drum": 14,
+	"equipment_earthbreaker_maul": 0,
+	"equipment_hearth_amulet": 3,
+	"equipment_alchemist_gloves": 4,
+	"equipment_training_manual": 12,
+	"equipment_mirror_charm": 13,
+	"equipment_ruby_brooch": 10,
+	"equipment_sapphire_brooch": 10,
+	"equipment_emerald_brooch": 10,
+	"equipment_royal_seal": 12,
+	"equipment_champion_plate": 11,
+	"consumable_fire_scroll": 6,
+	"consumable_ice_scroll": 7,
+	"consumable_earth_scroll": 8,
+	"consumable_heart_scroll": 3,
+	"consumable_armor_scroll": 1,
+	"consumable_gold_scroll": 2,
+}
+
+const RELIC_INDEX_BY_KEY := {
+	"relic_stalwart_mantle": 0,
+	"relic_golden_idol": 1,
+	"relic_crown_of_chains": 2,
+	"relic_merchant_compass": 3,
+	"relic_deep_pockets": 4,
+}
+
+const MASTERY_ORB_BY_ICON_KEY := {
+	"mastery_fire": ORB_TYPE_SCRIPT.Id.FIRE,
+	"mastery_ice": ORB_TYPE_SCRIPT.Id.ICE,
+	"mastery_earth": ORB_TYPE_SCRIPT.Id.EARTH,
+	"mastery_heart": ORB_TYPE_SCRIPT.Id.HEART,
+	"mastery_armor": ORB_TYPE_SCRIPT.Id.ARMOR,
+	"mastery_gold": ORB_TYPE_SCRIPT.Id.GOLD,
+}
+
+const MASTERY_BEAM_BY_ORB_ID := {
+	ORB_TYPE_SCRIPT.Id.FIRE: "fire",
+	ORB_TYPE_SCRIPT.Id.ICE: "ice",
+	ORB_TYPE_SCRIPT.Id.EARTH: "earth",
+	ORB_TYPE_SCRIPT.Id.HEART: "heart",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "armor",
+	ORB_TYPE_SCRIPT.Id.GOLD: "gold",
+}
+
+const MASTERY_CARD_BY_ORB_ID := {
+	ORB_TYPE_SCRIPT.Id.FIRE: "fire",
+	ORB_TYPE_SCRIPT.Id.ICE: "ice",
+	ORB_TYPE_SCRIPT.Id.EARTH: "earth",
+	ORB_TYPE_SCRIPT.Id.HEART: "heart",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "armor",
+	ORB_TYPE_SCRIPT.Id.GOLD: "gold",
+}
+
+const MASTERY_ICON_BY_ORB_ID := {
+	ORB_TYPE_SCRIPT.Id.FIRE: "mastery_fire",
+	ORB_TYPE_SCRIPT.Id.ICE: "mastery_ice",
+	ORB_TYPE_SCRIPT.Id.EARTH: "mastery_earth",
+	ORB_TYPE_SCRIPT.Id.HEART: "mastery_heart",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "mastery_armor",
+	ORB_TYPE_SCRIPT.Id.GOLD: "mastery_gold",
+}
+
 const DERIVED_ORB_FILENAME_BY_ID := {
 	ORB_TYPE_SCRIPT.Id.FIRE: "orb_fire_clean.png",
 	ORB_TYPE_SCRIPT.Id.ICE: "orb_ice_clean.png",
