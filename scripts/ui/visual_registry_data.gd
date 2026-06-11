@@ -36,6 +36,18 @@ const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.js
 const PATH_RUNTIME_COLLECTION_UI_DIR := "res://resources/art/assetgen/runtime/collection_ui"
 const PATH_RUNTIME_SHOP_UI_DIR := "res://resources/art/assetgen/runtime/shop_ui"
 
+const INTENT_INDEX_BY_TYPE := {
+	0: 0,  # ATTACK
+	1: 1,  # BLOCK
+	2: 2,  # ATTACK_AND_BLOCK
+}
+
+const RARITY_INDEX := {
+	"common": 0,
+	"uncommon": 1,
+	"rare": 2,
+}
+
 const ENEMY_PORTRAIT_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/enemies/enemy_cavern_striker.png",
 	"cavern_defender": "res://resources/art/first_pass/enemies/enemy_cavern_defender.png",
@@ -194,6 +206,20 @@ const MASTERY_ICON_BY_ORB_ID := {
 	ORB_TYPE_SCRIPT.Id.HEART: "mastery_heart",
 	ORB_TYPE_SCRIPT.Id.ARMOR: "mastery_armor",
 	ORB_TYPE_SCRIPT.Id.GOLD: "mastery_gold",
+}
+
+const RUNTIME_ORB_KEY_BY_ID := {
+	ORB_TYPE_SCRIPT.Id.FIRE: "fire",
+	ORB_TYPE_SCRIPT.Id.ICE: "ice",
+	ORB_TYPE_SCRIPT.Id.EARTH: "earth",
+	ORB_TYPE_SCRIPT.Id.HEART: "heart",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "armor",
+	ORB_TYPE_SCRIPT.Id.GOLD: "gold",
+}
+
+const STABLE_PLACEHOLDER_ICON_COLORS := {
+	"treasure_chest_elemental": Color(0.90, 0.34, 0.16, 1.0),
+	"treasure_chest_fire": Color(0.90, 0.34, 0.16, 1.0),
 }
 
 const DERIVED_ORB_FILENAME_BY_ID := {
