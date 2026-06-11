@@ -110,7 +110,11 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_replay_router_uses_first_handled_route", _test_combat_max_vfx_replay_router_uses_first_handled_route, failures)
 	_run_case("combat_max_vfx_replay_router_respects_route_gates", _test_combat_max_vfx_replay_router_respects_route_gates, failures)
 	_run_case("combat_max_vfx_replay_router_supports_callable_routes", _test_combat_max_vfx_replay_router_supports_callable_routes, failures)
-	_run_case("combat_max_vfx_replay_route_policy_uses_explicit_status_availability", _test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability, failures)
+	_run_case(
+		"combat_max_vfx_replay_route_policy_uses_explicit_status_availability",
+		_test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability,
+		failures
+	)
 	_run_case(
 		"combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes",
 		_test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes,
