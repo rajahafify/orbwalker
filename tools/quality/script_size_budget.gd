@@ -49,7 +49,7 @@ const DOCUMENTED_EXCEPTIONS := {
 		"baseline": 952,
 		"owner": "R-P1-3",
 		"reason":
-		"Player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces; split visible rails into presenters before enforcing the default budget.",
+		"Player loadout HUD facade is at the half-size target, but Wave 7 panel/popover/preview components still depend on HUD private state; Wave 8 must bind component-owned nodes/state and add popover/intent characterization.",
 	},
 	"res://scripts/ui/visual_registry.gd":
 	{
