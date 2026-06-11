@@ -11,24 +11,6 @@ const HOOK_RUN_LOG_NEXT_SHOP_ORDINAL := "run_log_next_shop_ordinal"
 var _hooks: Dictionary = {}
 
 
-static func create_for_run_state(run_state: Node) -> ShopSession:
-	var session := ShopSession.new()
-	(
-		session
-		. configure_hooks(
-			{
-				HOOK_APPLY_TUTORIAL_SHOP_SEED: Callable(run_state, "_apply_tutorial_shop_seed"),
-				HOOK_APPEND_RUN_LOG: Callable(run_state, "_run_log_append"),
-				HOOK_RUN_LOG_RESULT_BRIEF: Callable(run_state, "_run_log_result_brief"),
-				HOOK_RUN_LOG_SHOP_ACTION: Callable(run_state, "_run_log_shop_action"),
-				HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT: Callable(run_state, "_run_log_sanitize_shop_snapshot"),
-				HOOK_RUN_LOG_NEXT_SHOP_ORDINAL: Callable(run_state, "_run_log_next_shop_ordinal"),
-			}
-		)
-	)
-	return session
-
-
 func configure_hooks(hooks: Dictionary) -> void:
 	_hooks = hooks.duplicate()
 

@@ -262,8 +262,20 @@ func ensure_shop_service():
 
 func ensure_shop_session():
 	if shop_session == null:
-		shop_session = SHOP_SESSION_SCRIPT.create_for_run_state(self)
+		shop_session = SHOP_SESSION_SCRIPT.new()
+		shop_session.configure_hooks(_shop_session_hooks())
 	return shop_session
+
+
+func _shop_session_hooks() -> Dictionary:
+	return {
+		SHOP_SESSION_SCRIPT.HOOK_APPLY_TUTORIAL_SHOP_SEED: _apply_tutorial_shop_seed,
+		SHOP_SESSION_SCRIPT.HOOK_APPEND_RUN_LOG: _run_log_append,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_RESULT_BRIEF: _run_log_result_brief,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SHOP_ACTION: _run_log_shop_action,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT: _run_log_sanitize_shop_snapshot,
+		SHOP_SESSION_SCRIPT.HOOK_RUN_LOG_NEXT_SHOP_ORDINAL: _run_log_next_shop_ordinal,
+	}
 
 
 func ensure_wallet_service():
