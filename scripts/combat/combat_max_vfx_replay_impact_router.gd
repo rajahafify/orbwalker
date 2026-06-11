@@ -22,6 +22,7 @@ func bind(dependencies: Dictionary) -> void:
 
 
 func supports_replay_impact(kind: String, screen_wide: bool = false) -> bool:
+	# The default lightweight fallback route accepts every kind, so production callers should treat this as capability coverage, not a selective gate.
 	for route in _routes:
 		if _route_supports(route, kind, screen_wide):
 			return true
@@ -123,6 +124,7 @@ func _configured_routes(dependencies: Dictionary) -> Array:
 
 
 func _armor_replay_fallback_available() -> bool:
+	# Default route order puts the status presenter first; the armor fallback intentionally mirrors the old "status unavailable" short-circuit.
 	for route in _routes:
 		if route.get("presenter") != null:
 			return not _route_available(route)
