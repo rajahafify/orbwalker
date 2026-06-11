@@ -1105,7 +1105,7 @@ func _end_drag(timed_out: bool) -> void:
 		resolve_trace_origin_usec,
 		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
 	)
-	if _input_phase_value() == InputPhase.RESOLVING:
+	if _turn_resolution_coordinator.should_route_resolved_board_to_combat(int(_input_phase_value())):
 		await _resolve_combat_turn_from_board(_last_resolve_result)
 		if not _can_continue_after_async_wait():
 			_model.end_resolve_trace()

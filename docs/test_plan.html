@@ -314,6 +314,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>combat_player_hud_refresh_coordinator_test.gd</code> covers base payload/render behavior, staged display values feeding the intent preview, callback-gated preview suppression, and payload construction when no view is bound.</li>
 <li>Validation passed with Godot 4.6.3 headless: aggregate runner <code>74</code> suites, <code>295</code> cases, <code>0</code> failed; script-load validation <code>scanned=190</code>, <code>loaded=190</code>, <code>failed=0</code>; test-surface coverage <code>83</code>/<code>112</code> production scripts (<code>74.11%</code>, floor <code>71.00%</code>); throwaway pre-commit environment passed the changed-file hook set. The console still prints the existing VisualShader graph-offset warning, resolver max-step warnings in resolver tests, and exit-time GDAI/resource cleanup noise.</li>
 </ul>
+<p>Verification notes (2026-06-11, Wave 3 Track B combat turn routing boundary):</p>
+<ul>
+<li><code>CombatTurnResolutionCoordinator</code> now owns the small predicate that decides whether a resolved board output should continue into combat turn resolution for the active input phase. <code>CombatController</code> still owns drag ending, board resolve presentation, board commit, and async cancellation checks.</li>
+<li><code>combat_turn_resolution_coordinator_test.gd</code> covers the routing predicate for the configured resolving phase and non-routing player/external phases.</li>
+<li>Validation passed for the focused coordinator suite with Godot 4.6.3 headless: <code>{ passed: true, total: 2, failed: 0 }</code>. Script-size budget passed with the combat controller still at its <code>1960</code>-line ratchet baseline. The aggregate runner still reports unrelated pre-existing asset/layout failures in <code>asset_pipeline_test.gd</code>, <code>top_header_contract_probe.gd</code>, <code>layout_snapshot_harness_test.gd</code>, <code>shop_layout_metrics_test.gd</code>, and <code>shop_view_layout_test.gd</code>.</li>
+</ul>
 <p>Verification notes (2026-05-30, profile save migration guard):</p>
 <ul>
 <li><code>PlayerProfileState</code> now has an explicit <code>migrate_config_to_current(...)</code> contract for profile saves, keeps writes pinned to the current schema version, and rejects unsupported future schema versions before loading them.</li>
