@@ -6,6 +6,7 @@ const COMBAT_MAX_VFX_ELEMENTAL_RECIPE_PRESENTER_SCRIPT := preload("res://scripts
 const COMBAT_MAX_VFX_STATUS_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_status_recipe_presenter.gd")
 const COMBAT_MAX_VFX_REPLAY_FALLBACK_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_fallback_presenter.gd")
 const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_impact_router.gd")
+const COMBAT_MAX_VFX_REPLAY_ROUTE_POLICY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_route_policy.gd")
 const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
@@ -109,6 +110,7 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_replay_router_uses_first_handled_route", _test_combat_max_vfx_replay_router_uses_first_handled_route, failures)
 	_run_case("combat_max_vfx_replay_router_respects_route_gates", _test_combat_max_vfx_replay_router_respects_route_gates, failures)
 	_run_case("combat_max_vfx_replay_router_supports_callable_routes", _test_combat_max_vfx_replay_router_supports_callable_routes, failures)
+	_run_case("combat_max_vfx_replay_route_policy_uses_explicit_status_availability", _test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability, failures)
 	_run_case(
 		"combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes",
 		_test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes,
@@ -119,6 +121,11 @@ func run_all() -> Dictionary:
 		_test_combat_max_vfx_replay_router_default_lightweight_fallback_is_final_catch_all,
 		failures
 	)
+	_run_case(
+		"combat_max_vfx_replay_router_armor_fallback_uses_status_availability_not_presenter_order",
+		_test_combat_max_vfx_replay_router_armor_fallback_uses_status_availability_not_presenter_order,
+		failures
+	)
 	_run_case("combat_max_vfx_replay_fallback_presenter_armor_contract", _test_combat_max_vfx_replay_fallback_presenter_armor_contract, failures)
 	_run_case("combat_max_vfx_replay_fallback_presenter_lightweight_contract", _test_combat_max_vfx_replay_fallback_presenter_lightweight_contract, failures)
 	_run_case("combat_max_vfx_overlay_routes_replay_to_status_presenter", _test_combat_max_vfx_overlay_routes_replay_to_status_presenter, failures)
@@ -126,7 +133,7 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_overlay_armor_fallback_precedes_pack_route", _test_combat_max_vfx_overlay_armor_fallback_precedes_pack_route, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 13,
+		"total": 15,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -543,6 +550,18 @@ func _test_combat_max_vfx_replay_router_supports_callable_routes() -> String:
 	return ""
 
 
+func _test_combat_max_vfx_replay_route_policy_uses_explicit_status_availability() -> String:
+	var status_available := true
+	var policy = COMBAT_MAX_VFX_REPLAY_ROUTE_POLICY_SCRIPT.new()
+	policy.bind({"status_available": func() -> bool: return status_available})
+	if policy.armor_fallback_available():
+		return "Expected armor fallback to stay disabled while status availability is true."
+	status_available = false
+	if not policy.armor_fallback_available():
+		return "Expected armor fallback to enable when explicit status availability is false."
+	return ""
+
+
 func _test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes() -> String:
 	var status_presenter := FakeReplayRoutePresenter.new("status")
 	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
@@ -597,6 +616,33 @@ func _test_combat_max_vfx_replay_router_default_lightweight_fallback_is_final_ca
 		return "Expected router to try available matching presenter routes before lightweight fallback."
 	if fallback_presenter.lightweight_calls.size() != 1 or not fallback_presenter.armor_calls.is_empty():
 		return "Expected lightweight fallback to be the final catch-all route."
+	return ""
+
+
+func _test_combat_max_vfx_replay_router_armor_fallback_uses_status_availability_not_presenter_order() -> String:
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	var fallback_presenter := FakeReplayFallbackPresenter.new()
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"fallback_presenter": fallback_presenter,
+			"status_presenter": status_presenter,
+			"status_available": true,
+			"elemental_presenter": elemental_presenter,
+			"elemental_available": false,
+			"should_use_elemental": func(_kind: String) -> bool: return true,
+			"pack_presenter": pack_presenter,
+			"pack_available": false,
+		}
+	)
+	if not router.spawn_replay_impact(Vector2(10, 20), "armor", Vector2(30, 40), 40.0, 90.0, 0.7, 3, false):
+		return "Expected status route to handle armor when explicit status availability is true."
+	if fallback_presenter.armor_calls.size() != 0:
+		return "Expected armor fallback to stay gated by explicit status availability."
+	if status_presenter.spawn_calls.size() != 1:
+		return "Expected status presenter to receive armor when status is available."
 	return ""
 
 
