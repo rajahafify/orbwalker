@@ -96,9 +96,9 @@
         <tr>
           <td><code>scripts/combat/combat_controller.gd</code></td>
           <td><code>400</code></td>
-          <td><code>1942</code></td>
-          <td>P1-1 decomposition is still in progress; combat state-machine, input-phase authority, replay ordering, and route control remain centralized while collaborators continue to land with tests.</td>
-          <td>Keep extracting one owned surface at a time until controller orchestration falls under the target, then remove this exception.</td>
+          <td><code>968</code></td>
+          <td>P1-1 decomposition is still in progress. Wave 7 reduced the facade to the half-size target, but the new lifecycle and binding coordinators are transitional owner-bound shards that still read and assign controller private fields.</td>
+          <td>Wave 8 must convert lifecycle/binding setup into real seams: pass scripts/constants in, return constructed dependencies, and let the controller assign its own fields before this exception is lowered again.</td>
         </tr>
         <tr>
           <td><code>scripts/combat/combat_chrome_styler.gd</code></td>
@@ -173,7 +173,7 @@
         <tr><th>Path</th><th>Ratchet baseline</th></tr>
       </thead>
       <tbody>
-        <tr><td><code>scripts/combat/combat_controller.gd</code></td><td><code>1942</code></td></tr>
+        <tr><td><code>scripts/combat/combat_controller.gd</code></td><td><code>968</code></td></tr>
         <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td><code>952</code></td></tr>
         <tr><td><code>scripts/ui/visual_registry.gd</code></td><td><code>1454</code></td></tr>
         <tr><td><code>scripts/main_menu/main_menu_view.gd</code></td><td><code>1007</code></td></tr>

@@ -11,10 +11,10 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
-		"baseline": 1942,
+		"baseline": 968,
 		"owner": "P1-1",
 		"reason":
-		"Combat orchestration is still being decomposed; keep state-machine, input-phase, replay, and route authority here until smaller collaborators are covered.",
+		"Combat orchestration is still being decomposed; Wave 7 moved lifecycle/binding wiring into transitional owner-bound coordinators, so Wave 8 must convert those private reach-ins into returned dependencies or owned services.",
 	},
 	"res://scripts/combat/combat_chrome_styler.gd":
 	{

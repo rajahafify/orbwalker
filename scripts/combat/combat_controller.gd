@@ -39,6 +39,12 @@ const COMBAT_INPUT_PHASE_ROUTER_SCRIPT := preload("res://scripts/combat/combat_i
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
+const COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT := preload("res://scripts/combat/combat_tutorial_drag_flow.gd")
+const COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT := preload("res://scripts/combat/combat_resolve_trace_logger.gd")
+const COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT := preload("res://scripts/combat/combat_enemy_attack_replay.gd")
+const COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_replay_coordinator.gd")
+const COMBAT_CONTROLLER_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_controller_lifecycle.gd")
+const COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_controller_binding_coordinator.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
@@ -138,6 +144,11 @@ var _turn_resolution_coordinator: CombatTurnResolutionCoordinator = null
 var _tutorial_prompt_presenter: CombatTutorialPromptPresenter = null
 var _tutorial_coachmark_coordinator: CombatTutorialCoachmarkCoordinator = null
 var _tutorial_end_command_handler: CombatTutorialEndCommandHandler = null
+var _tutorial_drag_flow: CombatTutorialDragFlow = null
+var _resolve_trace_logger: CombatResolveTraceLogger = null
+var _turn_replay_coordinator: CombatTurnReplayCoordinator = null
+var _lifecycle: CombatControllerLifecycle = null
+var _binding_coordinator: CombatControllerBindingCoordinator = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _debug_state_provider: CombatDebugStateProvider = null
@@ -145,7 +156,6 @@ var _board_debug_command_handler: CombatBoardDebugCommandHandler = null
 var _input_command_handler: CombatInputCommandHandler = null
 var _input_phase_router: CombatInputPhaseRouter = null
 var _tutorial_director: TutorialDirector = null
-var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
 var _model: CombatModel = null
 var _view: CombatView = null
@@ -208,15 +218,12 @@ func on_settings_button_pressed() -> void:
 func on_next_button_pressed() -> void:
 	_on_next_button_pressed()
 
+
 func _enter_tree() -> void:
 	if _flow_trace_route_id_value() == "":
 		_set_flow_trace_route_id(RunState.flow_trace_active_route_id())
 	if _flow_trace_route_id_value() == "":
-		_set_flow_trace_route_id(RunState.flow_trace_begin(
-			"combat_scene_load",
-			"res://scenes/combat.tscn",
-			{"source": "combat._enter_tree"}
-		))
+		_set_flow_trace_route_id(RunState.flow_trace_begin("combat_scene_load", "res://scenes/combat.tscn", {"source": "combat._enter_tree"}))
 	_sync_model_state()
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id_value())
 
@@ -237,165 +244,13 @@ func _resolve_board_view() -> BoardView:
 
 
 func _ready() -> void:
-	if _board_view == null:
-		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
-		return
-	if _flow_trace_route_id_value() == "":
-		_set_flow_trace_route_id(RunState.flow_trace_active_route_id())
-	if _flow_trace_route_id_value() == "":
-		_set_flow_trace_route_id(RunState.flow_trace_begin(
-			"combat_scene_load",
-			"res://scenes/combat.tscn",
-			{"source": "combat._ready"}
-		))
-	RunState.flow_trace_mark("combat_ready_start", {}, _flow_trace_route_id_value())
-	_audio_play_music("combat")
-	RunState.flow_trace_mark("combat_after_music", {}, _flow_trace_route_id_value())
-	_ensure_runtime_helpers()
-	_bind_outcome_overlay()
-	_bind_boss_reward_handler()
-	if _resolve_presenter == null:
-		_resolve_presenter = COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
-	var spawn_vfx_texture_callback: Callable = Callable(self, "_spawn_vfx_texture")
-	var resolve_presenter_bindings := {
-		"board": _board,
-		"board_view": _board_view,
-		"board_panel": null,
-		"board_controller": _board_controller,
-		"timer_owner": _host,
-		"spawn_vfx_texture_callback": spawn_vfx_texture_callback,
-		"combo_sound_callback": _on_presenter_combo_sound,
-	}
-	if _view != null:
-		resolve_presenter_bindings = _view.resolve_presenter_bindings(
-			_board_controller,
-			_host,
-			spawn_vfx_texture_callback,
-			_on_presenter_combo_sound
-		)
-	_resolve_presenter.bind(resolve_presenter_bindings)
-	_resolve_presenter.set_combat_speed(_combat_speed_value())
-	_bind_debug_console()
-	_bind_settings_command_handler()
-	_consumable_rng.randomize()
-	if _view != null:
-		_view.bootstrap_background()
-	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _flow_trace_route_id_value())
-	_ensure_boss_reward_controls()
-	_ensure_outcome_overlay_layer()
-	if _view != null:
-		_view.set_dependencies({
-			"visual_registry": _visuals,
-			"player_loadout_hud": _player_loadout_hud,
-			"debug_console": _debug_console,
-			"outcome_overlay": _outcome_overlay,
-		})
-		_view.setup_rendering_helpers()
-	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _flow_trace_route_id_value())
-	if _view != null:
-		_view.bind_player_hud()
-	_bind_combat_vfx_presenter()
-	if _view != null:
-		_view.bind_layout_presenter()
-	_bind_board_controller()
-	RunState.flow_trace_mark("combat_after_hud_bind", {}, _flow_trace_route_id_value())
-	_apply_visual_chrome()
-	RunState.flow_trace_mark("combat_after_chrome", {}, _flow_trace_route_id_value())
-	_resolver.match_found.connect(_on_resolver_match_found)
-	_resolver.cells_cleared.connect(_on_resolver_cells_cleared)
-	_resolver.gravity_applied.connect(_on_resolver_gravity_applied)
-	_resolver.refill_applied.connect(_on_resolver_refill_applied)
-	_resolver.cascade_step_complete.connect(_on_resolver_cascade_step_complete)
-	_resolver.resolve_complete.connect(_on_resolver_complete)
-	_player_loadout_hud.consumable_slot_selected.connect(_try_use_consumable_slot)
-	_player_loadout_hud.sell_slot_requested.connect(_on_player_hud_sell_slot_requested)
-	_player_loadout_hud.intent_preview_hovered.connect(_on_intent_damage_preview_hovered)
-	_player_loadout_hud.intent_block_preview_hovered.connect(_on_intent_block_preview_hovered)
-	_player_loadout_hud.intent_preview_hover_ended.connect(_on_intent_damage_preview_hover_ended)
-	_connect_view_signals()
-	_initialize_combat_state()
-	RunState.flow_trace_mark("combat_after_initialize_state", {}, _flow_trace_route_id_value())
-	_create_new_board()
-	RunState.flow_trace_mark("combat_after_board_create", {}, _flow_trace_route_id_value())
-	if _debug_runtime != null:
-		_debug_runtime.bootstrap_hidden(Callable(self, "_on_console_input_text_submitted"))
-	_host.get_viewport().size_changed.connect(_on_viewport_size_changed)
-	if _view != null:
-		_view.set_vfx_layer_visible(true)
-	_host.set_process(true)
-	_apply_combat_layout()
-	RunState.flow_trace_mark("combat_after_layout", {}, _flow_trace_route_id_value())
-	_begin_turn_preview()
-	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _flow_trace_route_id_value())
-	call_deferred("_trace_flow_first_usable_frame")
-	call_deferred("_apply_orb_texture_map_deferred")
+	_bind_lifecycle()
+	_lifecycle.ready()
 
 
 func _ensure_runtime_helpers() -> void:
-	if _visuals == null:
-		_visuals = VISUAL_REGISTRY_SCRIPT.new()
-	if _player_loadout_hud == null:
-		_player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
-	_player_loadout_hud.set_visual_registry(_visuals)
-	if _outcome_overlay == null:
-		_outcome_overlay = COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
-	if _turn_log_presenter == null:
-		_turn_log_presenter = COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
-	if _debug_runtime == null:
-		_debug_runtime = COMBAT_DEBUG_RUNTIME_SCRIPT.new()
-	_debug_console = _debug_runtime.console()
-	if _settings_command_handler == null:
-		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
-	if _combat_timer_service == null:
-		_combat_timer_service = COMBAT_TIMER_SERVICE_SCRIPT.new()
-	if _boss_reward_handler == null:
-		_boss_reward_handler = COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
-	if _combat_vfx_presenter == null:
-		_combat_vfx_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	if _board_controller == null:
-		_board_controller = BOARD_CONTROLLER_SCRIPT.new()
-	if _hud_presenter == null:
-		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
-	if _hud_snapshot_provider == null:
-		_hud_snapshot_provider = COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
-	if _vfx_target_resolver == null:
-		_vfx_target_resolver = COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
-	if _hud_stage_coordinator == null:
-		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
-	if _mastery_preview_coordinator == null:
-		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
-	if _player_hud_refresh_coordinator == null:
-		_player_hud_refresh_coordinator = COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
-	if _loadout_command_handler == null:
-		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
-	if _intent_hover_handler == null:
-		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
-	if _scene_transition_handler == null:
-		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
-	if _outcome_route_coordinator == null:
-		_outcome_route_coordinator = COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
-	if _turn_resolution_coordinator == null:
-		_turn_resolution_coordinator = COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
-	if _tutorial_prompt_presenter == null:
-		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
-	if _tutorial_coachmark_coordinator == null:
-		_tutorial_coachmark_coordinator = COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
-	if _tutorial_end_command_handler == null:
-		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
-	if _combat_consumable_service == null:
-		_combat_consumable_service = COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
-	if _board_debug_command_handler == null:
-		_board_debug_command_handler = COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
-	if _input_command_handler == null:
-		_input_command_handler = COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
-	_bind_audio_cue_player()
-	_bind_debug_state_provider()
-	if _tutorial_director == null:
-		_tutorial_director = COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
-	if _combat_consumable_service != null and _combat_consumable_service.has_method("bind"):
-		_combat_consumable_service.bind({
-			"convert_random_non_target_orbs": Callable(self, "_convert_random_non_target_orbs"),
-		})
+	_bind_lifecycle()
+	_lifecycle.ensure_runtime_helpers()
 
 
 func _bind_audio_cue_player() -> void:
@@ -411,107 +266,45 @@ func _bind_audio_cue_player() -> void:
 func _bind_debug_state_provider() -> void:
 	if _debug_state_provider == null:
 		_debug_state_provider = COMBAT_DEBUG_STATE_PROVIDER_SCRIPT.new()
-	_debug_state_provider.bind({
-		"combat": _combat,
-		"enemy_state": _enemy_state,
-		"player_state": _player_state,
-		"board_model": _board_model,
-		"board_controller": _board_controller,
-		"turn_log_presenter": _turn_log_presenter,
-		"input_phase_value": Callable(self, "_input_phase_value"),
-	})
+	(
+		_debug_state_provider
+		. bind(
+			{
+				"combat": _combat,
+				"enemy_state": _enemy_state,
+				"player_state": _player_state,
+				"board_model": _board_model,
+				"board_controller": _board_controller,
+				"turn_log_presenter": _turn_log_presenter,
+				"input_phase_value": Callable(self, "_input_phase_value"),
+			}
+		)
+	)
 
 
 func _bind_board_debug_command_handler() -> void:
-	if _board_debug_command_handler == null:
-		_board_debug_command_handler = COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
-	_board_debug_command_handler.bind(
-		{
-			"board_controller": _board_controller,
-			"board_model": _board_model,
-			"settings": _settings,
-			"combat": _combat,
-			"run_state": RunState,
-			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
-		},
-		{
-			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(self, "_debug_set_input_phase"),
-			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
-			COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(self, "_sync_tutorial_coachmark"),
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_board_debug_command_handler()
 
 
 func _bind_input_command_handler() -> void:
-	if _input_command_handler == null:
-		_input_command_handler = COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
-	_input_command_handler.bind(
-		{"view": _view},
-		{
-			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: Callable(self, "_toggle_debug_overlay"),
-			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: Callable(self, "_create_new_board"),
-			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: Callable(self, "_print_board_model"),
-			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(self, "_try_use_first_consumable"),
-			COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: Callable(self, "_set_viewport_input_handled"),
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_input_command_handler()
 
 
 func _bind_debug_console() -> void:
-	if _debug_runtime == null:
-		_debug_runtime = COMBAT_DEBUG_RUNTIME_SCRIPT.new()
-	_bind_debug_state_provider()
-	_debug_runtime.bind_for_combat_controller(
-		_view,
-		_turn_log_presenter,
-		self,
-		int(InputPhase.LOCKED_EXTERNAL),
-		{
-			"command_output_log_color": COMMAND_OUTPUT_LOG_COLOR,
-			"max_combat_log_lines": MAX_COMBAT_LOG_LINES,
-			"initial_log_level": LOG_LEVEL_NORMAL,
-		},
-		_debug_state_provider.callbacks()
-	)
-	_debug_console = _debug_runtime.console()
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_debug_console()
 
 
 func _bind_settings_command_handler() -> void:
-	if _settings_command_handler == null:
-		_settings_command_handler = COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
-	var current_turn_index_provider := func() -> int: return int(_combat.turn_index if _combat != null else 1)
-	var trace_and_change_scene := func(scene_path: String, trace_source: String, trace_mark: String) -> void:
-		_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), trace_source, trace_mark)
-	_settings_command_handler.bind_for_combat_controller(
-		_view,
-		_model,
-		_resolve_presenter,
-		self,
-		current_turn_index_provider, trace_and_change_scene,
-		int(InputPhase.PLAYER_INPUT),
-		int(InputPhase.LOCKED_EXTERNAL),
-		STATUS_COLOR_NEUTRAL
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_settings_command_handler()
 
 
 func _connect_view_signals() -> void:
-	if _view == null:
-		return
-	_view.enemy_intent_bubble_hovered.connect(_on_enemy_intent_bubble_hovered)
-	_view.enemy_block_preview_hovered.connect(_on_enemy_block_preview_hovered)
-	_view.intent_hover_ended.connect(_on_intent_damage_preview_hover_ended)
-	_view.tutorial_end_continue_pressed.connect(_on_tutorial_end_continue_pressed)
-	_view.tutorial_end_main_menu_pressed.connect(_on_tutorial_end_main_menu_pressed)
-	_view.settings_continue_pressed.connect(_on_settings_continue_pressed)
-	_view.settings_new_run_pressed.connect(_on_settings_new_run_pressed)
-	_view.settings_main_menu_pressed.connect(_on_settings_main_menu_pressed)
-	_view.settings_speed_selected.connect(_on_settings_speed_selected)
-	_view.settings_quality_selected.connect(_on_settings_quality_selected)
-	_view.settings_reduced_motion_toggled.connect(_on_settings_reduced_motion_toggled)
-	_view.settings_game_juice_toggled.connect(_on_settings_game_juice_toggled)
-	_view.settings_game_juice_flag_toggled.connect(_on_settings_game_juice_flag_toggled)
-	_view.settings_defaults_reset.connect(_on_settings_defaults_reset)
+	_bind_lifecycle()
+	_lifecycle.connect_view_signals()
 
 
 func _exit_tree() -> void:
@@ -519,22 +312,23 @@ func _exit_tree() -> void:
 
 
 func _trace_flow_first_usable_frame() -> void:
-	RunState.flow_trace_mark(
-		"combat_first_usable_frame",
-		{"source": "combat._ready_deferred"},
-		_flow_trace_route_id_value()
-	)
+	RunState.flow_trace_mark("combat_first_usable_frame", {"source": "combat._ready_deferred"}, _flow_trace_route_id_value())
 
 
 func _apply_orb_texture_map_deferred() -> void:
-	_board_view.set_orb_texture_map({
-		OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
-		OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
-		OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
-		OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
-		OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
-		OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
-	})
+	(
+		_board_view
+		. set_orb_texture_map(
+			{
+				OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
+				OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
+				OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
+				OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
+				OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
+				OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
+			}
+		)
+	)
 	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id_value())
 
 
@@ -548,23 +342,8 @@ func _bind_combat_vfx_presenter() -> void:
 
 
 func _bind_board_controller() -> void:
-	if _board_controller == null:
-		return
-	_board_controller.bind(
-		{
-			"board_view": _board_view,
-			"board_model": _board_model,
-		},
-		{
-			"swap_animation_seconds": SWAP_ANIMATION_SECONDS,
-			"swap_sound_callback": _on_drag_swap_success,
-			"match_groups_callback": _drag_match_groups,
-			"move_timer_seconds_callback": _drag_move_timer_seconds,
-			"drag_input_result_callback": _on_board_drag_input_result,
-			"hovered_orb_changed_callback": _on_board_hovered_orb_changed,
-		}
-	)
-	_apply_feedback_settings()
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_board_controller()
 
 
 func _on_drag_swap_success() -> void:
@@ -595,133 +374,31 @@ func _drag_move_time_left() -> float:
 
 func _apply_visual_chrome() -> void:
 	if _view != null:
-		_view.apply_visual_chrome({
-			"font_size_title": FONT_SIZE_TITLE,
-			"font_size_value": FONT_SIZE_VALUE,
-			"font_size_meta": FONT_SIZE_META,
-			"font_size_row_label": FONT_SIZE_ROW_LABEL,
-			"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
-			"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
-			"debug_input_height": DEBUG_INPUT_HEIGHT,
-		})
+		(
+			_view
+			. apply_visual_chrome(
+				{
+					"font_size_title": FONT_SIZE_TITLE,
+					"font_size_value": FONT_SIZE_VALUE,
+					"font_size_meta": FONT_SIZE_META,
+					"font_size_row_label": FONT_SIZE_ROW_LABEL,
+					"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
+					"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
+					"debug_input_height": DEBUG_INPUT_HEIGHT,
+				}
+			)
+		)
 		_view.set_top_bar_text(RunState.level_sequence_label(), "Gold 0")
 
 
 func _initialize_combat_state() -> void:
-	if not RunState.run_active:
-		RunState.flow_trace_mark(
-			"combat_initialize_no_active_run_starting_new",
-			{},
-			_flow_trace_route_id_value()
-		)
-		RunState.start_new_run()
-	if RunState.is_current_step_boss_reward():
-		_player_state = RunState.ensure_player_state()
-		_progression_state = RunState.ensure_player_progression_state()
-		_player_state.set_mastery_level_provider(Callable(_progression_state, "mastery_level"))
-		var preview: Dictionary = RunState.current_level_boss_preview()
-		_enemy_state = ENEMY_STATE_SCRIPT.new()
-		_enemy_state.configure_from_blueprint(preview)
-		_bind_hud_stage_coordinator()
-		_combat = null
-		_model.clear_outcome_transition_queued()
-		_model.clear_pending_next_scene_path()
-		_hide_outcome_summary()
-		_refresh_character_portraits()
-		_refresh_build_icon_rows(_progression_state.to_snapshot())
-		_show_boss_reward_summary("Boss defeated.")
-		_set_status_text("Boss defeated. Choose one boss relic before continuing.")
-		_set_status_color(STATUS_COLOR_WARNING)
-		_bind_debug_state_provider()
-		RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _flow_trace_route_id_value())
-		return
-	if not RunState.is_current_step_fight():
-		var redirect_scene := RunState.next_scene_path()
-		if redirect_scene != "":
-			RunState.flow_trace_mark(
-				"combat_initialize_redirect_before_change_scene",
-				{"source": "_initialize_combat_state"},
-				_flow_trace_route_id_value(),
-				redirect_scene
-			)
-			var change_result: Variant = RunState.flow_trace_change_scene(
-				_host.get_tree(),
-				redirect_scene,
-				_flow_trace_route_id_value(),
-				"combat._initialize_combat_state",
-				"",
-				_on_combat_scene_post_ready_rollback
-			)
-			if not FLOW_RESULT_UTILS.scene_change_succeeded(change_result):
-				_handle_combat_scene_change_failure(
-					redirect_scene,
-					_flow_trace_route_id_value(),
-					"combat._initialize_combat_state",
-					change_result
-				)
-		return
-
-	_player_state = RunState.ensure_player_state()
-	_progression_state = RunState.ensure_player_progression_state()
-	_player_state.set_mastery_level_provider(Callable(_progression_state, "mastery_level"))
-	var encounter: Dictionary = RunState.current_encounter_snapshot()
-	_enemy_state = ENEMY_STATE_SCRIPT.new()
-	_enemy_state.configure_from_blueprint(encounter)
-	_bind_hud_stage_coordinator()
-	_refresh_character_portraits()
-	_combat = COMBAT_STATE_MACHINE_SCRIPT.new()
-	_combat.start_fight(_player_state, _enemy_state)
-	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
-	_model.clear_outcome_transition_queued()
-	_model.clear_pending_next_scene_path()
-	_hide_outcome_summary()
-	_update_hud()
-	if _debug_runtime != null:
-		_debug_runtime.clear_log()
-	_append_combat_log("Run flow: %s" % RunState.level_sequence_label())
-	if String(encounter.get("step_key", "")) == "enemy_1":
-		_append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
-	_append_combat_log("Fight started: %s HP %d." % [_enemy_state.display_name, _enemy_state.max_hp])
-	_append_combat_log("Player start: HP %d/%d, Gold %d." % [_player_state.current_hp, _player_state.max_hp, _player_state.gold])
-	if content_errors.is_empty():
-		_append_combat_log("Milestone 5 content validation: OK.")
-	else:
-		_append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
-		for error in content_errors:
-			_append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
-	_bind_debug_state_provider()
+	_bind_lifecycle()
+	_lifecycle.initialize_combat_state()
 
 
 func _begin_turn_preview() -> void:
-	if _combat == null:
-		return
-	if _combat.is_fight_over():
-		return
-
-	_combat.reset_to_intent_preview()
-	_combat.begin_player_input()
-	_set_input_phase(InputPhase.PLAYER_INPUT)
-	_model.clear_pending_next_scene_path()
-	_hide_outcome_summary()
-	_set_turn_summary_text(_tutorial_turn_summary_text() if RunState.is_tutorial_run() else "Turn Summary: Awaiting move.")
-	_set_status_text(
-		_tutorial_turn_status_text()
-		if RunState.is_tutorial_run()
-		else "%s | Turn %d." % [
-			RunState.level_sequence_label(),
-			_combat.turn_index,
-		]
-	)
-	_set_status_color(STATUS_COLOR_NEUTRAL)
-	_update_hud()
-	_clear_combat_mastery_hover_state()
-	_sync_tutorial_coachmark()
-	_append_combat_log(
-		"Turn %d intent: %s." % [
-			_combat.turn_index,
-			_format_intent(_enemy_state.get_current_intent()),
-		]
-	)
+	_bind_lifecycle()
+	_lifecycle.begin_turn_preview()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -820,10 +497,15 @@ func _on_run_tests_button_pressed() -> void:
 	var report: Dictionary = TEST_RUNNER_SCRIPT.run_all()
 	if bool(report.get("passed", false)):
 		_set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
-		print("[Combat Debug Tests] Passed %d cases across %d suites." % [
-			int(report.get("total", 0)),
-			int(report.get("suite_count", 0)),
-		])
+		print(
+			(
+				"[Combat Debug Tests] Passed %d cases across %d suites."
+				% [
+					int(report.get("total", 0)),
+					int(report.get("suite_count", 0)),
+				]
+			)
+		)
 		return
 
 	_set_status_text("Tests failed (%d/%d). See output." % [int(report.get("failed", 0)), int(report.get("total", 0))])
@@ -864,13 +546,7 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: Random
 func _process(delta: float) -> void:
 	if _combat_timer_service == null:
 		return
-	var drag_update: Dictionary = _combat_timer_service.process(
-		_board_controller,
-		_view,
-		_player_state,
-		delta,
-		_input_phase_value() == InputPhase.PLAYER_INPUT
-	)
+	var drag_update: Dictionary = _combat_timer_service.process(_board_controller, _view, _player_state, delta, _input_phase_value() == InputPhase.PLAYER_INPUT)
 	_handle_drag_input_result(drag_update)
 
 
@@ -894,9 +570,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 	var action := String(result.get("action", ""))
 	if action == "start":
 		_clear_combat_mastery_hover_state()
-		var tutorial_start_path := _active_tutorial_drag_path()
-		if not tutorial_start_path.is_empty() and _board_model != null:
-			_tutorial_drag_board_snapshot = _board_model.clone()
+		_bind_tutorial_drag_flow()
+		_tutorial_drag_flow.handle_start()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		if _view != null:
 			_view.sync_timer_display(_drag_move_time_left(), COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
@@ -904,18 +579,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		_set_status_color(STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
-		var drag_path: Array = result.get("path", [])
-		var tutorial_drag_path := _active_tutorial_drag_path()
-		if not tutorial_drag_path.is_empty():
-			if _tutorial_director == null or not _tutorial_director.did_complete_drag_path(drag_path, tutorial_drag_path):
-				_reset_incomplete_tutorial_drag()
-				_set_status_text(_active_tutorial_retry_status_text())
-				_set_status_color(STATUS_COLOR_WARNING)
-				_sync_tutorial_coachmark()
-				return
-			_tutorial_drag_board_snapshot = null
-			_hide_tutorial_coachmark()
-		_end_drag(bool(result.get("timed_out", false)))
+		_bind_tutorial_drag_flow()
+		_tutorial_drag_flow.handle_end(result)
 
 
 func _create_new_board() -> void:
@@ -938,43 +603,6 @@ func _tutorial_turn_status_text() -> String:
 func _sync_tutorial_coachmark() -> void:
 	_bind_tutorial_coachmark_coordinator()
 	_tutorial_coachmark_coordinator.sync()
-
-
-func _show_shop_damage_tutorial_end_modal() -> void:
-	_bind_tutorial_coachmark_coordinator()
-	_tutorial_coachmark_coordinator.show_shop_damage_modal()
-
-
-func _active_tutorial_drag_path() -> Array[Vector2i]:
-	_bind_tutorial_coachmark_coordinator()
-	return _tutorial_coachmark_coordinator.active_drag_path()
-
-
-func _active_tutorial_retry_status_text() -> String:
-	_bind_tutorial_coachmark_coordinator()
-	return _tutorial_coachmark_coordinator.active_retry_status_text()
-
-
-func _reset_incomplete_tutorial_drag() -> void:
-	if _board_controller == null:
-		return
-	if _tutorial_drag_board_snapshot != null:
-		_board_controller.abort()
-		_board_controller.set_board_model(_tutorial_drag_board_snapshot.clone())
-		_board_model = _board_controller.current_board_model()
-		_tutorial_drag_board_snapshot = null
-		return
-	var current_seed := int(_board_controller.board_seed()) if _board_controller.has_method("board_seed") else -1
-	if current_seed > 0:
-		_set_board_seed(current_seed)
-	elif _board_controller.has_method("reset_visuals"):
-		_board_controller.reset_visuals()
-
-
-func _hide_tutorial_coachmark() -> void:
-	_bind_tutorial_coachmark_coordinator()
-	_tutorial_coachmark_coordinator.hide_coachmark()
-	_tutorial_drag_board_snapshot = null
 
 
 func _print_board_model() -> void:
@@ -1030,6 +658,7 @@ func _console_on_skip_success() -> void:
 	_create_new_board()
 	_begin_turn_preview()
 
+
 func _format_intent(intent: Dictionary) -> String:
 	_bind_debug_state_provider()
 	return String(_debug_state_provider.format_intent(intent))
@@ -1044,73 +673,8 @@ func _debug_set_pending_next_scene_path(scene_path: String) -> void:
 
 
 func _end_drag(timed_out: bool) -> void:
-	if _board_controller == null:
-		return
-
-	if _view != null:
-		_view.sync_timer_display(0.0, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
-	var move_end_reason := "released"
-	if timed_out:
-		move_end_reason = "timer expired"
-	_set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
-	_set_status_color(STATUS_COLOR_WARNING)
-	var resolve_trace_origin_usec := Time.get_ticks_usec()
-	_model.begin_resolve_trace(resolve_trace_origin_usec, _resolve_trace_enabled())
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=resolve_start move_end_reason=\"%s\" board_seed=%d" % [move_end_reason, _board_model.rng_seed]
-	)
-
-	_board_controller.reset_visuals()
-	_board_controller.clear_board_presentation()
-	_set_input_phase(InputPhase.RESOLVING)
-	_reset_combat_mastery_preview()
-	var resolve_models: Dictionary = _board_controller.prepare_visual_model_for_resolve()
-	var visual_board_model: BoardModel = resolve_models.get("visual_board_model") as BoardModel
-	var simulation_board_model: BoardModel = resolve_models.get("simulation_board_model") as BoardModel
-	if visual_board_model == null or simulation_board_model == null:
-		visual_board_model = _board_model.clone()
-		simulation_board_model = _board_model.clone()
-		_board_view.set_board_presentation_model(visual_board_model)
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=visual_state_ready board_seed=%d" % visual_board_model.rng_seed
-	)
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=simulation_resolve_start board_seed=%d" % simulation_board_model.rng_seed
-	)
-	_last_resolve_result = _resolver.resolve_all(simulation_board_model)
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=simulation_resolve_complete total_combos=%d passes=%d" % [
-			int(_last_resolve_result.get("total_combos", 0)),
-			Array(_last_resolve_result.get("passes", [])).size(),
-		]
-	)
-	await _play_resolve_animations(_last_resolve_result, visual_board_model, resolve_trace_origin_usec)
-	if not _can_continue_after_async_wait(true):
-		_model.end_resolve_trace()
-		return
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=resolve_presentation_complete total_combos=%d passes=%d" % [
-			int(_last_resolve_result.get("total_combos", 0)),
-			Array(_last_resolve_result.get("passes", [])).size(),
-		]
-	)
-	_board_controller.commit_model_after_resolve(simulation_board_model)
-	_board_model = _board_controller.current_board_model()
-	_resolve_trace(
-		resolve_trace_origin_usec,
-		"phase=final_board_commit board_seed=%d" % _board_model.rng_seed
-	)
-	_bind_turn_resolution_coordinator()
-	var turn_route_result: Dictionary = await _turn_resolution_coordinator.handle_resolved_board_turn(int(_input_phase_value()), _last_resolve_result)
-	if bool(turn_route_result.get("stop", false)):
-		_model.end_resolve_trace()
-		return
-	_model.end_resolve_trace()
+	_bind_lifecycle()
+	await _lifecycle.end_drag(timed_out)
 
 
 func _on_next_button_pressed() -> void:
@@ -1167,18 +731,21 @@ func _bind_outcome_overlay() -> void:
 func _bind_boss_reward_handler() -> void:
 	if _boss_reward_handler == null:
 		_boss_reward_handler = COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
-	_boss_reward_handler.bind(
-		_outcome_overlay,
-		_view,
-		_model,
-		_visuals,
-		{
-			"set_status_text": Callable(self, "_set_status_text"),
-			"update_hud": Callable(self, "_update_hud"),
-			"play_sfx": Callable(self, "_audio_play_sfx"),
-			"apply_layout": Callable(self, "_apply_combat_layout"),
-			"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
-		}
+	(
+		_boss_reward_handler
+		. bind(
+			_outcome_overlay,
+			_view,
+			_model,
+			_visuals,
+			{
+				"set_status_text": Callable(self, "_set_status_text"),
+				"update_hud": Callable(self, "_update_hud"),
+				"play_sfx": Callable(self, "_audio_play_sfx"),
+				"apply_layout": Callable(self, "_apply_combat_layout"),
+				"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
+			}
+		)
 	)
 
 
@@ -1214,20 +781,10 @@ func _show_boss_reward_summary(body: String) -> void:
 
 
 func _trace_and_change_scene_to_target(
-	target_scene: String,
-	current_route_id: String,
-	source: String,
-	before_change_step: String,
-	begin_payload_extra: Dictionary = {}
+	target_scene: String, current_route_id: String, source: String, before_change_step: String, begin_payload_extra: Dictionary = {}
 ) -> void:
 	_bind_scene_transition_handler()
-	_scene_transition_handler.trace_and_change_scene_to_target(
-		target_scene,
-		current_route_id,
-		source,
-		before_change_step,
-		begin_payload_extra
-	)
+	_scene_transition_handler.trace_and_change_scene_to_target(target_scene, current_route_id, source, before_change_step, begin_payload_extra)
 
 
 func _on_combat_scene_post_ready_rollback(result: Dictionary) -> void:
@@ -1311,46 +868,8 @@ func _apply_vfx_speed_setting() -> void:
 
 
 func _apply_feedback_settings() -> void:
-	_apply_vfx_speed_setting()
-	var raw_game_juice_flags := RunState.game_juice_flags()
-	var effective_game_juice_flags := _effective_game_juice_flags_for_motion(raw_game_juice_flags)
-	var refill_overshoot_enabled := RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(GAME_JUICE_FLAGS_SCRIPT.GRAVITY_REFILL_OVERSHOOT, true))
-	if _board_controller != null and _board_controller.has_method("set_refill_overshoot_enabled"):
-		_board_controller.set_refill_overshoot_enabled(refill_overshoot_enabled)
-	if _combat_vfx_presenter != null:
-		if _combat_vfx_presenter.has_method("set_post_match_vfx_quality"):
-			_combat_vfx_presenter.set_post_match_vfx_quality(RunState.combat_vfx_quality())
-		if _combat_vfx_presenter.has_method("set_reduced_motion_enabled"):
-			_combat_vfx_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
-		if _combat_vfx_presenter.has_method("set_game_juice_enabled"):
-			_combat_vfx_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
-		if _combat_vfx_presenter.has_method("set_game_juice_flags"):
-			_combat_vfx_presenter.set_game_juice_flags(effective_game_juice_flags)
-	if _resolve_presenter != null and _resolve_presenter.has_method("set_reduced_motion_enabled"):
-		_resolve_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
-	if _resolve_presenter != null and _resolve_presenter.has_method("set_game_juice_enabled"):
-		_resolve_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
-	if _resolve_presenter != null and _resolve_presenter.has_method("set_game_juice_flags"):
-		_resolve_presenter.set_game_juice_flags(effective_game_juice_flags)
-	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("set_game_juice_enabled"):
-		_combat_audio_cue_player.set_game_juice_enabled(RunState.game_juice_enabled())
-	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("set_game_juice_flags"):
-		_combat_audio_cue_player.set_game_juice_flags(raw_game_juice_flags)
-	if _view != null and _view.has_method("set_enemy_reaction_settings"):
-		_view.set_enemy_reaction_settings(
-			RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(GAME_JUICE_FLAGS_SCRIPT.ENEMY_REACTION_CHARACTER, true)),
-			RunState.reduced_motion_enabled()
-		)
-
-
-func _effective_game_juice_flags_for_motion(flags: Dictionary) -> Dictionary:
-	var effective := GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
-	if not RunState.reduced_motion_enabled():
-		return effective
-	for flag_key in GAME_JUICE_FLAGS_SCRIPT.all_keys():
-		if GAME_JUICE_FLAGS_SCRIPT.is_motion_heavy(flag_key):
-			effective[flag_key] = false
-	return effective
+	_bind_binding_coordinator()
+	_binding_coordinator.apply_feedback_settings()
 
 
 func _timer_ready_seconds() -> float:
@@ -1366,23 +885,22 @@ func _abort_active_drag() -> void:
 		_view.sync_timer_display(0.0, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
-func _play_resolve_animations(
-	result: Dictionary,
-	visual_board_model: BoardModel = null,
-	resolve_trace_origin_usec: int = 0
-) -> void:
+func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0) -> void:
 	if result.total_combos <= 0 or _resolve_presenter == null:
 		return
-	await _resolve_presenter.play_resolve_animations(
-		result,
-		visual_board_model,
-		resolve_trace_origin_usec,
-		{
-			"trace_callback": _resolve_trace,
-			"combo_preview_callback": _on_resolve_presenter_combo_preview,
-			"combo_feedback_callback": _on_resolve_presenter_combo_feedback,
-			"set_pass_index_callback": _on_resolve_presenter_pass_index,
-		}
+	await (
+		_resolve_presenter
+		. play_resolve_animations(
+			result,
+			visual_board_model,
+			resolve_trace_origin_usec,
+			{
+				"trace_callback": _resolve_trace,
+				"combo_preview_callback": _on_resolve_presenter_combo_preview,
+				"combo_feedback_callback": _on_resolve_presenter_combo_feedback,
+				"set_pass_index_callback": _on_resolve_presenter_pass_index,
+			}
+		)
 	)
 
 
@@ -1452,10 +970,7 @@ func _release_combat_mastery_feedback(orb_id: int) -> void:
 
 func _release_remaining_combat_mastery_feedback() -> void:
 	_bind_mastery_preview_coordinator()
-	await _mastery_preview_coordinator.release_remaining(
-		Callable(self, "_wait_combat_speed"),
-		Callable(self, "_can_continue_after_async_wait")
-	)
+	await _mastery_preview_coordinator.release_remaining(Callable(self, "_wait_combat_speed"), Callable(self, "_can_continue_after_async_wait"))
 
 
 func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
@@ -1509,225 +1024,8 @@ func _build_run_outcome_summary(fallback_cause: String = "") -> String:
 
 
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
-	_bind_hud_stage_coordinator()
-	var vfx_presenter: Variant = _combat_vfx_presenter
-	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
-	var enemy_blocked := int(turn_log.get("enemy_blocked", 0))
-	var fire_damage := int(turn_log.get("fire_damage", 0))
-	var ice_damage := int(turn_log.get("ice_damage", 0))
-	var earth_damage := int(turn_log.get("earth_damage", 0))
-	var heart_heal := int(turn_log.get("healed", 0))
-	var armor_gain := int(turn_log.get("armor_gained", 0))
-	var gold_gain := int(turn_log.get("gold_gained", 0))
-	var flat_damage_bonus := int(turn_log.get("flat_damage_bonus", 0))
-	var prep_armor_added := int(turn_log.get("prep_armor_added", 0))
-	var applied_flat_heal_bonus := maxi(0, heart_heal - int(turn_log.get("heart_base", 0)))
-	var applied_flat_gold_bonus := maxi(0, gold_gain - int(turn_log.get("gold_base", 0)))
-	_bind_vfx_target_resolver()
-	var replay_targets: Dictionary = _vfx_target_resolver.replay_targets()
-	var enemy_target: Vector2 = replay_targets.get("enemy_target", Vector2.ZERO)
-	var player_target: Vector2 = replay_targets.get("player_target", Vector2.ZERO)
-	var player_hp_target: Vector2 = replay_targets.get("player_hp_target", Vector2.ZERO)
-	var armor_mastery_target: Vector2 = replay_targets.get("armor_target", Vector2.ZERO)
-	var enemy_impact_size: Vector2 = replay_targets.get("enemy_impact_size", Vector2(84, 84))
-	var player_hp_impact_size: Vector2 = replay_targets.get("player_hp_impact_size", Vector2(180, 76))
-	var armor_mastery_impact_size: Vector2 = replay_targets.get("armor_impact_size", Vector2(360, 360))
-	var gold_impact_size: Vector2 = replay_targets.get("gold_impact_size", Vector2(70, 70))
-	var damage_lifetime := _combat_speed_duration(0.42)
-	var player_lifetime := _combat_speed_duration(0.45)
-	var gold_lifetime := _combat_speed_duration(0.55)
-	var label_lifetime := _combat_speed_duration(0.72)
-
-	if heart_heal > 0:
-		if applied_flat_heal_bonus > 0:
-			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _modifier_sources_for_key("flat_heal_bonus"))
-			if not _can_continue_after_async_wait():
-				return
-		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
-		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(player_hp_target, "heart", player_hp_impact_size, player_lifetime, heart_heal)
-			vfx_presenter.spawn_result_label("+%d" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -22), heart_heal)
-		_play_impact_sfx("heal", "player")
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-		_hud_stage_coordinator.stage_player_hp(staged_hp_before_heal + heart_heal)
-		_release_combat_mastery_feedback(OrbType.Id.HEART)
-
-	if armor_gain > 0:
-		var staged_armor_before_gain: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
-		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(armor_mastery_target, "armor", armor_mastery_impact_size, player_lifetime, armor_gain)
-			vfx_presenter.spawn_armor_bar_linger(armor_mastery_target, armor_mastery_impact_size, player_lifetime, armor_gain)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, armor_mastery_target, player_lifetime)
-			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, armor_mastery_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
-		_play_impact_sfx("armor", "player")
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-		_hud_stage_coordinator.stage_player_armor(staged_armor_before_gain + armor_gain)
-		_release_combat_mastery_feedback(OrbType.Id.ARMOR)
-
-	if gold_gain > 0:
-		if applied_flat_gold_bonus > 0:
-			await _apply_end_modifier_feedback(OrbType.Id.GOLD, applied_flat_gold_bonus, _modifier_sources_for_key("flat_gold_bonus"))
-			if not _can_continue_after_async_wait():
-				return
-		var staged_gold_before_gain: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
-		if vfx_presenter != null:
-			vfx_presenter.spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
-			vfx_presenter.spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
-			vfx_presenter.spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
-		_play_impact_sfx("gold", "player")
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-		_hud_stage_coordinator.stage_gold(staged_gold_before_gain + gold_gain)
-		_release_combat_mastery_feedback(OrbType.Id.GOLD)
-
-	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
-		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
-		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
-		if not _can_continue_after_async_wait():
-			return
-
-	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		if fire_damage > 0:
-			var fire_replay_ok: bool = await _replay_elemental_damage_result(
-				OrbType.Id.FIRE,
-				fire_damage,
-				enemy_target,
-				enemy_impact_size,
-				damage_lifetime,
-				label_lifetime
-			)
-			if not fire_replay_ok:
-				return
-		if ice_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
-			var ice_replay_ok: bool = await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
-			if not ice_replay_ok:
-				return
-		if earth_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
-			var earth_replay_ok: bool = await _replay_elemental_damage_result(
-				OrbType.Id.EARTH,
-				earth_damage,
-				enemy_target,
-				enemy_impact_size,
-				damage_lifetime,
-				label_lifetime
-			)
-			if not earth_replay_ok:
-				return
-	elif enemy_damage > 0:
-		var impact_orb := _dominant_orb_for_matches(turn_log.get("matched_counts", {}))
-		if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
-			var dominant_replay_ok: bool = await _replay_elemental_damage_result(
-				impact_orb,
-				enemy_damage,
-				enemy_target,
-				enemy_impact_size,
-				damage_lifetime,
-				label_lifetime
-			)
-			if not dominant_replay_ok:
-				return
-			_hud_stage_coordinator.stage_enemy_result()
-		else:
-			if vfx_presenter != null:
-				vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
-				vfx_presenter.spawn_mastery_beam(impact_orb, enemy_target, damage_lifetime)
-				vfx_presenter.spawn_result_label("%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage)
-			if _view != null and _view.has_method("play_enemy_hit_reaction"):
-				_view.play_enemy_hit_reaction(enemy_damage)
-			_play_impact_sfx(_mastery_impact_kind(impact_orb), "enemy")
-			await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-			if not _can_continue_after_async_wait():
-				return
-			_hud_stage_coordinator.stage_enemy_result()
-			_release_combat_mastery_feedback(impact_orb)
-	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		_hud_stage_coordinator.stage_enemy_result()
-	if enemy_blocked > 0:
-		if vfx_presenter != null:
-			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
-		_hud_stage_coordinator.stage_enemy_result()
-	await _release_remaining_combat_mastery_feedback()
-	if not _can_continue_after_async_wait():
-		return
-	var enemy_attack_resolution: Dictionary = turn_log.get("enemy_attack_resolution", {})
-	if prep_armor_added > 0 and int(enemy_attack_resolution.get("incoming", 0)) > 0:
-		await _apply_end_modifier_feedback(OrbType.Id.ARMOR, prep_armor_added, _modifier_sources_for_key("start_turn_armor"))
-		if not _can_continue_after_async_wait():
-			return
-	await _replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
-	if not _can_continue_after_async_wait():
-		return
-	await _wait_combat_speed(TURN_REPLAY_FINAL_HOLD_SECONDS)
-	if not _can_continue_after_async_wait():
-		return
-	_reset_combat_mastery_preview()
-
-
-func _replay_elemental_damage_result(
-	orb_id: int,
-	damage_amount: int,
-	enemy_target: Vector2,
-	enemy_impact_size: Vector2,
-	damage_lifetime: float,
-	label_lifetime: float
-) -> bool:
-	_bind_hud_stage_coordinator()
-	var vfx_presenter: Variant = _combat_vfx_presenter
-	if vfx_presenter != null:
-		vfx_presenter.spawn_mastery_cast_sequence(
-			orb_id,
-			enemy_target,
-			_combat_speed_duration(ELEMENTAL_CAST_SPOOL_SECONDS),
-			_combat_speed_duration(ELEMENTAL_CAST_LAUNCH_SECONDS),
-			damage_amount
-		)
-		await _wait_combat_speed(ELEMENTAL_CAST_SPOOL_SECONDS)
-		if not _can_continue_after_async_wait():
-			return false
-		await _wait_combat_speed(ELEMENTAL_CAST_LAUNCH_SECONDS)
-		if not _can_continue_after_async_wait():
-			return false
-	if vfx_presenter != null:
-		var impact_kind := _mastery_impact_kind(orb_id)
-		var resolved_impact_size := _enemy_result_impact_size(orb_id, enemy_impact_size, damage_amount, vfx_presenter)
-		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
-		vfx_presenter.screen_nudge(damage_amount, enemy_target)
-		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
-	if _view != null and _view.has_method("play_enemy_hit_reaction"):
-		_view.play_enemy_hit_reaction(damage_amount)
-	_play_impact_sfx(_mastery_impact_kind(orb_id), "enemy")
-	if vfx_presenter != null:
-		await vfx_presenter.hit_stop(0.04)
-	await _wait_combat_speed(ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
-	if not _can_continue_after_async_wait():
-		return false
-	_hud_stage_coordinator.stage_enemy_damage_step(damage_amount)
-	_release_combat_mastery_feedback(orb_id)
-	return true
-
-
-func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int, vfx_presenter: Variant) -> Vector2:
-	_bind_vfx_target_resolver()
-	_vfx_target_resolver.bind({
-		"view": _view,
-		"vfx_presenter": vfx_presenter,
-	})
-	return _vfx_target_resolver.enemy_result_impact_size(orb_id, fallback_size, amount)
-
-
-func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
-	_bind_mastery_preview_coordinator()
-	await _mastery_preview_coordinator.apply_end_modifier_feedback(
-		orb_id,
-		amount,
-		sources,
-		Callable(self, "_wait_combat_speed")
-	)
+	_bind_turn_replay_coordinator()
+	await _turn_replay_coordinator.replay_turn_resolution_from_log(turn_log)
 
 
 func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
@@ -1748,10 +1046,7 @@ func _update_hud() -> void:
 	_bind_hud_snapshot_provider()
 	var hud_snapshot: Dictionary = _hud_presenter.build_hud_snapshot(_hud_snapshot_provider.build_snapshot())
 	if _view != null:
-		_view.apply_hud_snapshot(
-			hud_snapshot,
-			{"refresh_build_icon_rows": Callable(self, "_refresh_build_icon_rows")}
-		)
+		_view.apply_hud_snapshot(hud_snapshot, {"refresh_build_icon_rows": Callable(self, "_refresh_build_icon_rows")})
 
 
 func _ensure_hud_presenter() -> void:
@@ -1760,228 +1055,91 @@ func _ensure_hud_presenter() -> void:
 
 
 func _bind_hud_snapshot_provider() -> void:
-	if _hud_snapshot_provider == null:
-		_hud_snapshot_provider = COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
-	_hud_snapshot_provider.bind(
-		{
-			"run_state": RunState,
-			"model": _model,
-			"player_state": _player_state,
-			"enemy_state": _enemy_state,
-			"combat": _combat,
-			"view": _view,
-			"visuals": _visuals,
-			"turn_log_presenter": _turn_log_presenter,
-		},
-		{
-			"input_phase_value": Callable(self, "_input_phase_value"),
-			"drag_active": Callable(self, "_drag_active"),
-			"drag_move_time_left": Callable(self, "_drag_move_time_left"),
-			"timer_ready_seconds": Callable(self, "_timer_ready_seconds"),
-			"show_intent_preview": Callable(self, "_should_show_intent_damage_preview"),
-		},
-		{
-			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_hud_snapshot_provider()
 
 
 func _bind_vfx_target_resolver() -> void:
 	if _vfx_target_resolver == null:
 		_vfx_target_resolver = COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
-	_vfx_target_resolver.bind({
-		"view": _view,
-		"vfx_presenter": _combat_vfx_presenter,
-	})
+	(
+		_vfx_target_resolver
+		. bind(
+			{
+				"view": _view,
+				"vfx_presenter": _combat_vfx_presenter,
+			}
+		)
+	)
 
 
 func _bind_hud_stage_coordinator() -> void:
 	if _hud_stage_coordinator == null:
 		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
-	_hud_stage_coordinator.bind(_model, _player_state, _enemy_state, {
-		COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
-	})
+	(
+		_hud_stage_coordinator
+		. bind(
+			_model,
+			_player_state,
+			_enemy_state,
+			{
+				COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
+			}
+		)
+	)
 
 
 func _bind_mastery_preview_coordinator() -> void:
 	if _mastery_preview_coordinator == null:
 		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
-	_mastery_preview_coordinator.bind(_model, _player_state, _view, {
-		"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
-		"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
-		"combat_modifiers": RunState.current_combat_modifiers(),
-	})
+	(
+		_mastery_preview_coordinator
+		. bind(
+			_model,
+			_player_state,
+			_view,
+			{
+				"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
+				"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
+				"combat_modifiers": RunState.current_combat_modifiers(),
+			}
+		)
+	)
 
 
 func _bind_player_hud_refresh_coordinator() -> void:
-	if _player_hud_refresh_coordinator == null:
-		_player_hud_refresh_coordinator = COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
-	_ensure_hud_presenter()
-	_bind_mastery_preview_coordinator()
-	_player_hud_refresh_coordinator.bind(
-		{
-			"model": _model,
-			"player_state": _player_state,
-			"enemy_state": _enemy_state,
-			"visuals": _visuals,
-			"view": _view,
-			"hud_presenter": _hud_presenter,
-			"mastery_preview_coordinator": _mastery_preview_coordinator,
-		},
-		{
-			COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.CALLBACK_SHOULD_SHOW_INTENT_DAMAGE_PREVIEW: Callable(self, "_should_show_intent_damage_preview"),
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_player_hud_refresh_coordinator()
 
 
 func _bind_loadout_command_handler() -> void:
-	if _loadout_command_handler == null:
-		_loadout_command_handler = COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
-	_loadout_command_handler.bind(
-		{
-			"run_state": RunState,
-			"combat": _combat,
-			"view": _view,
-			"board_controller": _board_controller,
-			"board_view": _board_view,
-			"board_model": _board_model,
-			"consumable_service": _combat_consumable_service,
-			"consumable_rng": _consumable_rng,
-		},
-		{
-			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
-			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
-			COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
-		},
-		{"player_input_phase_value": int(InputPhase.PLAYER_INPUT)}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_loadout_command_handler()
 
 
 func _bind_intent_hover_handler() -> void:
-	if _intent_hover_handler == null:
-		_intent_hover_handler = COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
-	_bind_debug_state_provider()
-	_intent_hover_handler.bind(
-		{
-			"run_state": RunState,
-			"combat": _combat,
-			"enemy_state": _enemy_state,
-			"model": _model,
-			"view": _view,
-		},
-		{
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(self, "_set_turn_summary_text"),
-			COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(_debug_state_provider, "format_intent"),
-		},
-		{
-			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
-			"warning_color": STATUS_COLOR_WARNING,
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_intent_hover_handler()
 
 
 func _bind_scene_transition_handler() -> void:
-	if _scene_transition_handler == null:
-		_scene_transition_handler = COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
-	_scene_transition_handler.bind(
-		{
-			"run_state": RunState,
-			"scene_tree": _host.get_tree() if _host != null else null,
-			"model": _model,
-		},
-		{
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_LOCK_EXTERNAL_INPUT: Callable(self, "_lock_scene_transition_input"),
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(self, "_show_outcome_summary"),
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
-			COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
-		},
-		{
-			"negative_color": STATUS_COLOR_NEGATIVE,
-			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_scene_transition_handler()
 
 
 func _bind_outcome_route_coordinator() -> void:
-	if _outcome_route_coordinator == null:
-		_outcome_route_coordinator = COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
-	_outcome_route_coordinator.bind(
-		{
-			"run_state": RunState,
-			"model": _model,
-			"enemy_state": _enemy_state,
-			"turn_log_presenter": _turn_log_presenter,
-		},
-		{
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(self, "_audio_play_sfx"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(self, "_set_input_phase"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: Callable(self, "_append_turn_log"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(self, "_append_combat_log"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(self, "_show_boss_reward_summary"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(self, "_set_turn_summary_text"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(self, "_hide_outcome_summary"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(self, "_trace_and_change_scene_to_target"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(self, "_show_outcome_summary"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(self, "_pulse_turn_summary"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BEGIN_TURN_PREVIEW: Callable(self, "_begin_turn_preview"),
-			COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BUILD_RUN_OUTCOME_SUMMARY: Callable(self, "_build_run_outcome_summary"),
-		},
-		{
-			"victory_phase_value": int(COMBAT_PHASE_VICTORY),
-			"defeat_phase_value": int(COMBAT_PHASE_DEFEAT),
-			"locked_input_phase_value": int(InputPhase.LOCKED_EXTERNAL),
-			"positive_color": STATUS_COLOR_POSITIVE,
-			"negative_color": STATUS_COLOR_NEGATIVE,
-			"default_victory_scene": "res://scenes/main_menu.tscn",
-			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_outcome_route_coordinator()
 
 
 func _bind_input_phase_router() -> void:
-	if _input_phase_router == null:
-		_input_phase_router = COMBAT_INPUT_PHASE_ROUTER_SCRIPT.new()
-	_input_phase_router.bind(
-		{"model": _ensure_model(), "board_controller": _board_controller},
-		{
-			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(self, "_clear_combat_mastery_hover_state"),
-			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(self, "_sync_model_state"),
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_input_phase_router()
 
 
 func _bind_turn_resolution_coordinator() -> void:
-	if _turn_resolution_coordinator == null:
-		_turn_resolution_coordinator = COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
-	_bind_hud_stage_coordinator()
-	_bind_outcome_route_coordinator()
-	_turn_resolution_coordinator.bind(
-		{
-			"combat": _combat,
-			"model": _model,
-			"run_state": RunState,
-			"hud_stage_coordinator": _hud_stage_coordinator,
-			"outcome_route_coordinator": _outcome_route_coordinator,
-		},
-		{
-			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_REPLAY_TURN_RESOLUTION: Callable(self, "_replay_turn_resolution_from_log"),
-			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(self, "_can_continue_after_async_wait"),
-			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(self, "_sync_combat_mastery_preview_totals"),
-			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
-			COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(self, "_flow_trace_route_id_value"),
-		},
-		{COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CONFIG_RESOLVING_INPUT_PHASE_VALUE: int(InputPhase.RESOLVING)}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_turn_resolution_coordinator()
 
 
 func _bind_tutorial_prompt_presenter() -> void:
@@ -1991,41 +1149,47 @@ func _bind_tutorial_prompt_presenter() -> void:
 
 
 func _bind_tutorial_coachmark_coordinator() -> void:
-	if _tutorial_coachmark_coordinator == null:
-		_tutorial_coachmark_coordinator = COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
-	_bind_tutorial_prompt_presenter()
-	_tutorial_coachmark_coordinator.bind(
-		{
-			"run_state": RunState,
-			"combat": _combat,
-			"tutorial_director": _tutorial_director,
-			"view": _view,
-			"board_view": _board_view,
-			"board_controller": _board_controller,
-			"prompt_presenter": _tutorial_prompt_presenter,
-		},
-		{
-			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(self, "_input_phase_value"),
-			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
-			COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(self, "_set_status_color"),
-		},
-		{
-			"player_input_phase_value": int(InputPhase.PLAYER_INPUT),
-			"warning_status_color": STATUS_COLOR_WARNING,
-		}
-	)
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_tutorial_coachmark_coordinator()
+
+
+func _bind_tutorial_drag_flow() -> void:
+	_bind_binding_coordinator()
+	_binding_coordinator.bind_tutorial_drag_flow()
+
+
+func _set_board_model_from_tutorial_drag_flow(board_model: BoardModel) -> void:
+	_board_model = board_model
+
+
+func _bind_resolve_trace_logger() -> void:
+	if _resolve_trace_logger == null:
+		_resolve_trace_logger = COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT.new()
+	_resolve_trace_logger.bind(_model)
+
+
+func _bind_lifecycle() -> void:
+	if _lifecycle == null:
+		_lifecycle = COMBAT_CONTROLLER_LIFECYCLE_SCRIPT.new()
+	_lifecycle.bind(self)
+
+
+func _bind_binding_coordinator() -> void:
+	if _binding_coordinator == null:
+		_binding_coordinator = COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT.new()
+	_binding_coordinator.bind(self)
+
+
+func _bind_turn_replay_coordinator() -> void:
+	if _turn_replay_coordinator == null:
+		_turn_replay_coordinator = COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT.new()
+	_turn_replay_coordinator.bind(self)
 
 
 func _bind_tutorial_end_command_handler() -> void:
 	if _tutorial_end_command_handler == null:
 		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
-	_tutorial_end_command_handler.bind_for_combat_controller(
-		RunState,
-		_tutorial_director,
-		_view,
-		self,
-		STATUS_COLOR_NEUTRAL
-	)
+	_tutorial_end_command_handler.bind_for_combat_controller(RunState, _tutorial_director, _view, self, STATUS_COLOR_NEUTRAL)
 
 
 func _should_show_intent_damage_preview() -> bool:
@@ -2060,13 +1224,15 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 
 func _append_turn_log(turn_log: Dictionary) -> void:
 	var context := {
-		"player_end": {
+		"player_end":
+		{
 			"hp": int(_player_state.current_hp if _player_state != null else 0),
 			"max_hp": int(_player_state.max_hp if _player_state != null else 0),
 			"armor": int(_player_state.armor if _player_state != null else 0),
 			"gold": int(_player_state.gold if _player_state != null else 0),
 		},
-		"enemy_end": {
+		"enemy_end":
+		{
 			"hp": int(_enemy_state.current_hp if _enemy_state != null else 0),
 			"max_hp": int(_enemy_state.max_hp if _enemy_state != null else 0),
 		},
@@ -2080,17 +1246,9 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 		_append_combat_log(line)
 
 
-func _resolve_trace_enabled() -> bool:
-	return true
-
-
 func _resolve_trace(start_ticks_usec: int, message: String) -> void:
-	if not _resolve_trace_enabled():
-		return
-	if start_ticks_usec <= 0:
-		return
-	var elapsed_ms := maxi(0, int(float(Time.get_ticks_usec() - start_ticks_usec) / 1000.0))
-	print("[ResolveTrace +%04dms] %s" % [elapsed_ms, message])
+	_bind_resolve_trace_logger()
+	_resolve_trace_logger.trace(start_ticks_usec, message)
 
 
 func _orb_values_by_id() -> Dictionary:
@@ -2118,138 +1276,24 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
 	_bind_hud_stage_coordinator()
-	var vfx_presenter: Variant = _combat_vfx_presenter
-	if bool(turn_log.get("enemy_intent_skipped", false)):
-		return
-	var enemy_attack: Dictionary = turn_log.get("enemy_attack_resolution", {})
-	var blocked_by_armor := int(enemy_attack.get("blocked_by_armor", 0))
-	var hp_damage := int(enemy_attack.get("hp_damage", 0))
-	if blocked_by_armor <= 0 and hp_damage <= 0:
-		return
-	var enemy_source: Vector2 = Vector2.ZERO
-	var player_impact_target: Vector2 = Vector2.ZERO
-	if _view != null:
-		enemy_source = _view.enemy_vfx_target_global(0.56)
-		player_impact_target = _view.player_vfx_target_global(0.58)
-	if player_impact_target == Vector2.ZERO:
-		player_impact_target = player_target
-	var cue_lifetime := _combat_speed_duration(0.24)
-	var travel_lifetime := _combat_speed_duration(0.28)
-	var impact_lifetime := _combat_speed_duration(0.34)
-	if vfx_presenter != null:
-		vfx_presenter.spawn_enemy_attack_cue(enemy_source, cue_lifetime)
-		vfx_presenter.spawn_enemy_attack_travel(enemy_source, player_impact_target, travel_lifetime)
-	if blocked_by_armor > 0:
-		if vfx_presenter != null:
-			vfx_presenter.spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
-			vfx_presenter.screen_nudge(blocked_by_armor, player_impact_target)
-		var block_text := "-%d Damage Blocked" % blocked_by_armor
-		if vfx_presenter != null:
-			vfx_presenter.spawn_result_label(block_text, player_target, "block", label_lifetime, Vector2(0, 18))
-		_play_enemy_attack_result_sfx({"blocked_by_armor": blocked_by_armor, "hp_damage": 0})
-		if vfx_presenter != null:
-			await vfx_presenter.hit_stop(0.035)
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-		_hud_stage_coordinator.stage_player_block_step(blocked_by_armor)
-		if hp_damage <= 0:
-			_hud_stage_coordinator.stage_player_final()
-			return
-	if hp_damage > 0:
-		if vfx_presenter != null:
-			vfx_presenter.spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
-			vfx_presenter.screen_nudge(hp_damage + 2, player_impact_target)
-			vfx_presenter.spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
-		_play_enemy_attack_result_sfx({"blocked_by_armor": 0, "hp_damage": hp_damage})
-		if vfx_presenter != null:
-			await vfx_presenter.hit_stop(0.045)
-		await _wait_combat_speed(TURN_REPLAY_STEP_SECONDS)
-		if not _can_continue_after_async_wait():
-			return
-	_hud_stage_coordinator.stage_player_final()
+	var replay: CombatEnemyAttackReplay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
+	var replay_dependencies := {"view": _view, "vfx_presenter": _combat_vfx_presenter, "hud_stage_coordinator": _hud_stage_coordinator}
+	var replay_callbacks := {
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: Callable(self, "_combat_speed_duration"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_WAIT_COMBAT_SPEED: Callable(self, "_wait_combat_speed"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(self, "_can_continue_after_async_wait"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(self, "_play_enemy_attack_result_sfx"),
+	}
+	replay.bind(replay_dependencies, replay_callbacks, {"turn_replay_step_seconds": TURN_REPLAY_STEP_SECONDS})
+	await replay.replay(turn_log, player_target, label_lifetime)
 
 
 func _spawn_vfx_texture(
-	texture: Texture2D,
-	global_center: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+	texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 ) -> void:
 	if _combat_vfx_presenter == null:
 		return
 	_combat_vfx_presenter.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
-
-
-func _mastery_impact_kind(orb_id: int) -> String:
-	if _combat_vfx_presenter != null:
-		return String(_combat_vfx_presenter.mastery_impact_kind(orb_id))
-	match orb_id:
-		OrbType.Id.FIRE:
-			return "fire"
-		OrbType.Id.ICE:
-			return "ice"
-		OrbType.Id.EARTH:
-			return "earth"
-		OrbType.Id.HEART:
-			return "heart"
-		OrbType.Id.ARMOR:
-			return "armor"
-		OrbType.Id.GOLD:
-			return "gold"
-		_:
-			return "fire"
-
-
-func _result_label_kind_for_orb(orb_id: int) -> String:
-	match orb_id:
-		OrbType.Id.ICE:
-			return "ice"
-		OrbType.Id.EARTH:
-			return "earth"
-		_:
-			return "fire"
-
-
-func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:
-	var selected_orb: int = OrbType.Id.FIRE
-	var selected_count: int = -1
-	for orb_id in COMBAT_MASTERY_RESOLUTION_ORDER:
-		var count: int = int(matched_counts.get(orb_id, 0))
-		if count > selected_count:
-			selected_count = count
-			selected_orb = int(orb_id)
-	if selected_count <= 0:
-		return OrbType.Id.FIRE
-	return selected_orb
-
-
-func _dominant_damage_orb_for_turn(turn_log: Dictionary) -> int:
-	var selected_orb: int = OrbType.Id.FIRE
-	var selected_amount: int = -1
-	var damage_by_orb := {
-		OrbType.Id.FIRE: int(turn_log.get("fire_damage", 0)),
-		OrbType.Id.ICE: int(turn_log.get("ice_damage", 0)),
-		OrbType.Id.EARTH: int(turn_log.get("earth_damage", 0)),
-	}
-	for raw_orb_id in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
-		var orb_id := int(raw_orb_id)
-		var amount := int(damage_by_orb.get(orb_id, 0))
-		if amount > selected_amount:
-			selected_amount = amount
-			selected_orb = orb_id
-	if selected_amount > 0:
-		return selected_orb
-	var matched_counts: Dictionary = turn_log.get("matched_counts", {})
-	selected_amount = -1
-	for raw_orb_id in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
-		var orb_id := int(raw_orb_id)
-		var amount := int(matched_counts.get(orb_id, 0))
-		if amount > selected_amount:
-			selected_amount = amount
-			selected_orb = orb_id
-	return selected_orb
 
 
 func _on_resolver_match_found(groups: Array) -> void:
@@ -2279,54 +1323,3 @@ func _apply_combat_layout() -> void:
 func _refresh_character_portraits() -> void:
 	if _view != null:
 		_view.refresh_character_portraits(String(_enemy_state.enemy_id if _enemy_state != null else ""))
-
-
-func _on_resolver_cells_cleared(cells: Array) -> void:
-	if not _model.resolve_trace_active():
-		return
-	_resolve_trace(
-		_model.resolve_trace_origin_usec(),
-		"phase=clear_applied source=simulation_signal cells=%d" % cells.size()
-	)
-
-
-func _on_resolver_gravity_applied(fall_moves: Array) -> void:
-	if not _model.resolve_trace_active():
-		return
-	_resolve_trace(
-		_model.resolve_trace_origin_usec(),
-		"phase=gravity_applied source=simulation_signal moves=%d" % fall_moves.size()
-	)
-
-
-func _on_resolver_refill_applied(refill_spawns: Array) -> void:
-	if not _model.resolve_trace_active():
-		return
-	_resolve_trace(
-		_model.resolve_trace_origin_usec(),
-		"phase=refill_applied source=simulation_signal spawns=%d" % refill_spawns.size()
-	)
-
-
-func _on_resolver_cascade_step_complete(step_index: int, total_combos: int) -> void:
-	if not _model.resolve_trace_active():
-		return
-	_resolve_trace(
-		_model.resolve_trace_origin_usec(),
-		"phase=pass_complete source=simulation_signal step_index=%d total_combos=%d" % [
-			step_index,
-			total_combos,
-		]
-	)
-
-
-func _on_resolver_complete(result: Dictionary) -> void:
-	if not _model.resolve_trace_active():
-		return
-	_resolve_trace(
-		_model.resolve_trace_origin_usec(),
-		"phase=simulation_resolve_complete source=signal total_combos=%d passes=%d" % [
-			int(result.get("total_combos", 0)),
-			Array(result.get("passes", [])).size(),
-		]
-	)
