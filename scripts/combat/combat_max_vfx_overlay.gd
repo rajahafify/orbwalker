@@ -151,24 +151,7 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 		_spawn_max_armor_grid_snap(center, base_size * 0.74, duration, intensity)
 		_spawn_light(center, core, 2.5 + float(intensity) * 0.30, base_size * 1.10, duration * 0.72)
 		return true
-	if _status_vfx_available():
-		_spawn_status_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
-		_spawn_light(center, core, 2.9 + float(intensity) * 0.38, base_size * 1.24, duration * 0.76)
-		return true
-	if _elemental_magic_available() and _should_use_elemental_magic(kind):
-		_spawn_elemental_replay_recipe(kind, center, max_size, base_size, duration, intensity, screen_wide)
-		_spawn_light(center, core, 2.7 + float(intensity) * 0.34, base_size * 1.20, duration * 0.78)
-		return true
-	if _pack_vfx_available():
-		var impact_scene := _pack_impact_scene_key(kind, intensity, screen_wide)
-		var pack_size := Vector2(base_size, base_size) * (1.15 if screen_wide else 0.72)
-		_spawn_pack_effect(impact_scene, center, kind, pack_size, duration, intensity, 0.0, Vector2.ZERO, 0.0, 0.0, 1.0)
-		_spawn_pack_effect(_pack_hit_scene_key(kind), center, kind, pack_size * 0.58, duration * 0.74, intensity, 0.035, Vector2.ZERO, 0.0, 1.2, 0.82)
-		_spawn_light(center, core, 2.4 + float(intensity) * 0.34, base_size * 1.15, duration * 0.65)
-		if screen_wide:
-			_spawn_pack_screen_wide(kind, center, duration, intensity)
-		if kind == "gold":
-			_spawn_coin_rain(center, max_size, duration, intensity, screen_wide)
+	if _dispatch_replay_impact(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide):
 		return true
 	_spawn_light(center, core, 2.4 + float(intensity) * 0.34, base_size * 1.15, duration * 0.65)
 	_spawn_flipbook(_impact_key(kind), center, Vector2(base_size, base_size), duration, Color(1, 1, 1, 0.95), 0.0, Vector2.ZERO, 1.12 + float(intensity) * 0.04, 0.0, 0.18)
@@ -180,6 +163,19 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 	if kind == "gold":
 		_spawn_coin_rain(center, max_size, duration, intensity, false)
 	return true
+
+
+func _dispatch_replay_impact(kind: String, center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> bool:
+	if _status_vfx_available() and _status_recipe_presenter.supports_replay_impact(kind, screen_wide):
+		if _status_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
+			return true
+	if _elemental_magic_available() and _should_use_elemental_magic(kind) and _elemental_recipe_presenter.supports_replay_impact(kind, screen_wide):
+		if _elemental_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
+			return true
+	if _pack_vfx_available() and _pack_recipe_presenter.supports_replay_impact(kind, screen_wide):
+		if _pack_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
+			return true
+	return false
 
 
 func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> bool:
@@ -552,6 +548,9 @@ func _bind_pack_recipe_presenter() -> void:
 		"kind_cleaner": Callable(self, "_clean_kind"),
 		"layer_size_provider": Callable(self, "_vfx_layer_size"),
 		"pack_effect_spawner": Callable(self, "_spawn_pack_effect"),
+		"kind_colors_provider": Callable(self, "_kind_colors"),
+		"light_spawner": Callable(self, "_spawn_light"),
+		"coin_rain_spawner": Callable(self, "_spawn_coin_rain"),
 	})
 
 
@@ -559,6 +558,7 @@ func _bind_elemental_recipe_presenter() -> void:
 	_elemental_recipe_presenter.bind({
 		"kind_cleaner": Callable(self, "_clean_kind"),
 		"layer_size_provider": Callable(self, "_vfx_layer_size"),
+		"kind_colors_provider": Callable(self, "_kind_colors"),
 		"elemental_effect_spawner": Callable(self, "_spawn_elemental_effect"),
 		"effect_stretcher": Callable(self, "_stretch_effect"),
 		"pack_impact_scene_key_provider": Callable(self, "_pack_impact_scene_key"),
