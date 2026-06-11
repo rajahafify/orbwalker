@@ -27,6 +27,7 @@ const COMBAT_MAX_VFX_LIGHT_PRESENTER_SCRIPT := preload("res://scripts/combat/com
 const COMBAT_MAX_VFX_CLEANUP_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_cleanup_presenter.gd")
 const COMBAT_MAX_VFX_CAMERA_KICK_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_camera_kick_presenter.gd")
 const COMBAT_MAX_VFX_PROJECTOR_SCRIPT := preload("res://scripts/combat/combat_max_vfx_projector.gd")
+const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_impact_router.gd")
 const OVERLAY_Z_INDEX := 122
 
 var _vfx_layer: Control
@@ -69,6 +70,7 @@ var _light_presenter: Variant = COMBAT_MAX_VFX_LIGHT_PRESENTER_SCRIPT.new()
 var _cleanup_presenter: Variant = COMBAT_MAX_VFX_CLEANUP_PRESENTER_SCRIPT.new()
 var _camera_kick_presenter: Variant = COMBAT_MAX_VFX_CAMERA_KICK_PRESENTER_SCRIPT.new()
 var _projector: Variant = COMBAT_MAX_VFX_PROJECTOR_SCRIPT.new()
+var _replay_impact_router: Variant = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
 
 
 func bind(dependencies: Dictionary) -> void:
@@ -100,6 +102,7 @@ func bind(dependencies: Dictionary) -> void:
 	_bind_cleanup_presenter()
 	_bind_camera_kick_presenter()
 	_bind_projector()
+	_bind_replay_impact_router()
 
 
 func is_available() -> bool:
@@ -151,7 +154,7 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 		_spawn_max_armor_grid_snap(center, base_size * 0.74, duration, intensity)
 		_spawn_light(center, core, 2.5 + float(intensity) * 0.30, base_size * 1.10, duration * 0.72)
 		return true
-	if _dispatch_replay_impact(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide):
+	if _replay_impact_router.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
 		return true
 	_spawn_light(center, core, 2.4 + float(intensity) * 0.34, base_size * 1.15, duration * 0.65)
 	_spawn_flipbook(_impact_key(kind), center, Vector2(base_size, base_size), duration, Color(1, 1, 1, 0.95), 0.0, Vector2.ZERO, 1.12 + float(intensity) * 0.04, 0.0, 0.18)
@@ -163,19 +166,6 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 	if kind == "gold":
 		_spawn_coin_rain(center, max_size, duration, intensity, false)
 	return true
-
-
-func _dispatch_replay_impact(kind: String, center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool) -> bool:
-	if _status_vfx_available() and _status_recipe_presenter.supports_replay_impact(kind, screen_wide):
-		if _status_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
-			return true
-	if _elemental_magic_available() and _should_use_elemental_magic(kind) and _elemental_recipe_presenter.supports_replay_impact(kind, screen_wide):
-		if _elemental_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
-			return true
-	if _pack_vfx_available() and _pack_recipe_presenter.supports_replay_impact(kind, screen_wide):
-		if _pack_recipe_presenter.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
-			return true
-	return false
 
 
 func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> bool:
@@ -698,6 +688,17 @@ func _bind_camera_kick_presenter() -> void:
 func _bind_projector() -> void:
 	_projector.bind({
 		"layer_size_provider": Callable(self, "_vfx_layer_size"),
+	})
+
+
+func _bind_replay_impact_router() -> void:
+	# Rebind after swapping presenter instances so routes hold the current presenters.
+	_replay_impact_router.bind({
+		"routes": [
+			{"presenter": _status_recipe_presenter, "available": Callable(self, "_status_vfx_available")},
+			{"presenter": _elemental_recipe_presenter, "available": Callable(self, "_elemental_magic_available"), "kind_filter": Callable(self, "_should_use_elemental_magic")},
+			{"presenter": _pack_recipe_presenter, "available": Callable(self, "_pack_vfx_available")},
+		],
 	})
 
 
