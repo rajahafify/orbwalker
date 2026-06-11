@@ -150,13 +150,17 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 	if not bool(alias_contract.get("stable_placeholder_icon_colors", false)):
 		return "VisualRegistry stable placeholder icon colors must alias VisualRegistryData, not duplicate them."
 	var catalog_contract := VISUAL_REGISTRY_DATA_SCRIPT.catalog_ownership_contract()
+	if not bool(catalog_contract.get("catalog_is_resource", false)):
+		return "VisualRegistryData orb catalog must be backed by a VisualRegistryOrbCatalog Resource."
 	if not bool(catalog_contract.get("runtime_orb_key_by_id", false)):
-		return "VisualRegistryData runtime orb keys must alias VisualRegistryOrbCatalog, not duplicate them."
+		return "VisualRegistryData runtime orb keys must alias the VisualRegistryOrbCatalog resource, not duplicate them."
 	if not bool(catalog_contract.get("derived_orb_filename_by_id", false)):
-		return "VisualRegistryData derived orb filenames must alias VisualRegistryOrbCatalog, not duplicate them."
-	if VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ORB_KEY_BY_ID != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.runtime_orb_key_by_id():
+		return "VisualRegistryData derived orb filenames must alias the VisualRegistryOrbCatalog resource, not duplicate them."
+	if int(catalog_contract.get("record_count", 0)) != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():
+		return "VisualRegistryOrbCatalog resource records must cover every derived orb filename."
+	if VISUAL_REGISTRY_DATA_SCRIPT.runtime_orb_key_by_id() != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.runtime_orb_key_by_id():
 		return "VisualRegistryOrbCatalog runtime orb key accessor must preserve lookup parity."
-	if VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.derived_orb_filename_by_id():
+	if VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id() != VISUAL_REGISTRY_ORB_CATALOG_SCRIPT.derived_orb_filename_by_id():
 		return "VisualRegistryOrbCatalog derived orb filename accessor must preserve lookup parity."
 	var orb_paths := VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_contract_paths()
 	if orb_paths.size() != VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_count():

@@ -3563,6 +3563,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Added <code>scripts/ui/visual_registry_orb_catalog.gd</code> as a small <code>Resource</code>-based catalog wrapper for the mature orb lookup slice: runtime orb keys and derived orb filenames. <code>scripts/ui/visual_registry_data.gd</code> keeps the existing compatibility aliases so <code>scripts/ui/visual_registry.gd</code> public lookup APIs remain unchanged. (source: <code>scripts/ui/visual_registry_orb_catalog.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
 <li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to characterize catalog ownership, direct alias identity, and accessor parity for the orb catalog. The VisualRegistry ratchet baseline remains <code>1454</code> because <code>scripts/ui/visual_registry.gd</code> did not change size. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>
+<h2 id="2026-06-12-visual-registry-orb-catalog-resource-data">2026-06-12 - Visual registry orb catalog resource data</h2>
+<ul>
+<li>Moved the orb catalog another step toward resource-backed data: <code>VisualRegistryOrbCatalog</code> now stores exported orb records and derives runtime orb key and derived filename indexes from the resource instance instead of exposing only code constants. <code>VisualRegistryData</code> keeps compatibility accessors, and <code>VisualRegistry</code> public lookup APIs remain unchanged. (source: <code>scripts/ui/visual_registry_orb_catalog.gd</code>, <code>scripts/ui/visual_registry_data.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
+<li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> to assert the resource-backed orb catalog contract, alias identity, record coverage, and accessor parity. The VisualRegistry script-size ratchet baseline remains <code>1454</code> measured lines. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
       <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
