@@ -298,6 +298,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-11-wave-2-track-d-vfx-replay-route-dispatch">2026-06-11 - Wave 2 Track D VFX replay route dispatch</h2>
+<ul>
+<li>Moved max-overlay replay impact route ordering into <code>CombatMaxVfxReplayImpactRouter</code>, a focused presenter-contract collaborator that dispatches to status, elemental, and pack recipe presenters by availability, kind filter, support check, and first handled result. <code>CombatMaxVfxOverlay</code> keeps coordinate conversion, replay sizing, armor fallback, and fallback lightweight effects. (source: <code>scripts/combat/combat_max_vfx_replay_impact_router.gd</code>, <code>scripts/combat/combat_max_vfx_overlay.gd</code>, <code>scripts/tests/combat_max_vfx_replay_route_test.gd</code>)</li>
+</ul>
 <h2 id="2026-05-30-combat-scene-binding-contract-cleanup">2026-05-30 - Combat scene binding contract cleanup</h2>
 <ul>
 <li>Reduced combat scene host duplication by replacing the large <code>@onready</code> node mirror and hand-maintained root dictionary with a single <code>ROOT_NODE_BINDINGS</code> map in <code>scripts/scenes/combat.gd</code>. The existing <code>CombatController.bind(host, root_nodes, model, view)</code> and <code>CombatView.bind(root_nodes)</code> interfaces were preserved.</li>

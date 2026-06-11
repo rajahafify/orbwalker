@@ -4,6 +4,8 @@ class_name CombatMaxVfxReplayRouteTest
 const COMBAT_MAX_VFX_PACK_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_pack_recipe_presenter.gd")
 const COMBAT_MAX_VFX_ELEMENTAL_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_elemental_recipe_presenter.gd")
 const COMBAT_MAX_VFX_STATUS_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_status_recipe_presenter.gd")
+const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_impact_router.gd")
+const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 
 
@@ -43,7 +45,7 @@ class FakeReplayRoutePresenter:
 
 
 class FakeReplayRouteOverlay:
-	extends CombatMaxVfxOverlay
+	extends COMBAT_MAX_VFX_OVERLAY_SCRIPT
 	var force_status_available := true
 	var force_elemental_available := true
 	var force_pack_available := true
@@ -65,11 +67,13 @@ func run_all() -> Dictionary:
 		"combat_max_vfx_elemental_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_elemental_recipe_presenter_replay_impact_contract, failures
 	)
 	_run_case("combat_max_vfx_status_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_status_recipe_presenter_replay_impact_contract, failures)
+	_run_case("combat_max_vfx_replay_router_uses_first_handled_route", _test_combat_max_vfx_replay_router_uses_first_handled_route, failures)
+	_run_case("combat_max_vfx_replay_router_respects_route_gates", _test_combat_max_vfx_replay_router_respects_route_gates, failures)
 	_run_case("combat_max_vfx_overlay_routes_replay_to_status_presenter", _test_combat_max_vfx_overlay_routes_replay_to_status_presenter, failures)
 	_run_case("combat_max_vfx_overlay_falls_back_to_pack_route", _test_combat_max_vfx_overlay_falls_back_to_pack_route, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 7,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -383,6 +387,59 @@ func _test_combat_max_vfx_status_recipe_presenter_replay_impact_contract() -> St
 	return ""
 
 
+func _test_combat_max_vfx_replay_router_uses_first_handled_route() -> String:
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	status_presenter.spawn_result = false
+	elemental_presenter.spawn_result = true
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"routes":
+			[
+				{"presenter": status_presenter, "available": true},
+				{"presenter": elemental_presenter, "available": true},
+				{"presenter": pack_presenter, "available": true},
+			]
+		}
+	)
+	if not router.supports_replay_impact("fire", false):
+		return "Expected router to report replay support when any available route supports it."
+	if not router.spawn_replay_impact(Vector2(100, 160), "fire", Vector2(140, 120), 140.0, 188.0, 1.0, 4, false):
+		return "Expected router to return true when a later route handles replay impact."
+	if status_presenter.spawn_calls.size() != 1 or elemental_presenter.spawn_calls.size() != 1:
+		return "Expected router to try status, then elemental."
+	if not pack_presenter.spawn_calls.is_empty():
+		return "Expected router to stop after the first handled route."
+	return ""
+
+
+func _test_combat_max_vfx_replay_router_respects_route_gates() -> String:
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	var status_available := false
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"routes":
+			[
+				{"presenter": status_presenter, "available": func() -> bool: return status_available},
+				{"presenter": elemental_presenter, "available": true, "kind_filter": func(kind: String) -> bool: return kind == "fire"},
+				{"presenter": pack_presenter, "available": true},
+			]
+		}
+	)
+	if not router.spawn_replay_impact(Vector2(100, 160), "earth", Vector2(140, 120), 140.0, 188.0, 1.0, 4, false):
+		return "Expected router to fall through disabled and filtered routes to pack."
+	if not status_presenter.spawn_calls.is_empty() or not elemental_presenter.spawn_calls.is_empty():
+		return "Expected unavailable status and filtered elemental routes not to spawn."
+	if pack_presenter.spawn_calls.size() != 1:
+		return "Expected pack route to handle after gates decline earlier routes."
+	return ""
+
+
 func _test_combat_max_vfx_overlay_routes_replay_to_status_presenter() -> String:
 	var fixture := _replay_route_overlay_fixture()
 	var overlay := fixture["overlay"] as FakeReplayRouteOverlay
@@ -394,6 +451,7 @@ func _test_combat_max_vfx_overlay_routes_replay_to_status_presenter() -> String:
 	overlay._status_recipe_presenter = status_presenter
 	overlay._elemental_recipe_presenter = elemental_presenter
 	overlay._pack_recipe_presenter = pack_presenter
+	overlay._bind_replay_impact_router()
 	var handled := overlay.spawn_replay_impact(Vector2(540, 960), "fire", Vector2(240, 120), 0.45, 4, 4, false)
 	_cleanup_vfx_fixture(fixture)
 	if not handled:
@@ -416,6 +474,7 @@ func _test_combat_max_vfx_overlay_falls_back_to_pack_route() -> String:
 	overlay._status_recipe_presenter = status_presenter
 	overlay._elemental_recipe_presenter = elemental_presenter
 	overlay._pack_recipe_presenter = pack_presenter
+	overlay._bind_replay_impact_router()
 	var handled := overlay.spawn_replay_impact(Vector2(540, 960), "earth", Vector2(240, 120), 0.45, 4, 4, false)
 	_cleanup_vfx_fixture(fixture)
 	if not handled:
