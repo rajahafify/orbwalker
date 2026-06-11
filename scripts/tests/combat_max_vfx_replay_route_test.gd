@@ -4,6 +4,7 @@ class_name CombatMaxVfxReplayRouteTest
 const COMBAT_MAX_VFX_PACK_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_pack_recipe_presenter.gd")
 const COMBAT_MAX_VFX_ELEMENTAL_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_elemental_recipe_presenter.gd")
 const COMBAT_MAX_VFX_STATUS_RECIPE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_status_recipe_presenter.gd")
+const COMBAT_MAX_VFX_REPLAY_FALLBACK_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_fallback_presenter.gd")
 const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_impact_router.gd")
 const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
@@ -61,6 +62,43 @@ class FakeReplayRouteOverlay:
 		return force_pack_available
 
 
+class FakeReplayFallbackPresenter:
+	extends RefCounted
+
+	var bind_calls := 0
+	var armor_calls: Array[Dictionary] = []
+	var lightweight_calls: Array[Dictionary] = []
+
+	func bind(_dependencies: Dictionary) -> void:
+		bind_calls += 1
+
+	func spawn_armor_replay_fallback(
+		center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+	) -> bool:
+		armor_calls.append(_call_record(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide))
+		return true
+
+	func spawn_lightweight_replay_fallback(
+		center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+	) -> bool:
+		lightweight_calls.append(_call_record(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide))
+		return true
+
+	func _call_record(
+		center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+	) -> Dictionary:
+		return {
+			"center": center,
+			"kind": kind,
+			"draw_size": draw_size,
+			"max_size": max_size,
+			"base_size": base_size,
+			"duration": duration,
+			"intensity": intensity,
+			"screen_wide": screen_wide
+		}
+
+
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("combat_max_vfx_pack_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_pack_recipe_presenter_replay_impact_contract, failures)
@@ -71,12 +109,24 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_replay_router_uses_first_handled_route", _test_combat_max_vfx_replay_router_uses_first_handled_route, failures)
 	_run_case("combat_max_vfx_replay_router_respects_route_gates", _test_combat_max_vfx_replay_router_respects_route_gates, failures)
 	_run_case("combat_max_vfx_replay_router_supports_callable_routes", _test_combat_max_vfx_replay_router_supports_callable_routes, failures)
+	_run_case(
+		"combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes",
+		_test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes,
+		failures
+	)
+	_run_case(
+		"combat_max_vfx_replay_router_default_lightweight_fallback_is_final_catch_all",
+		_test_combat_max_vfx_replay_router_default_lightweight_fallback_is_final_catch_all,
+		failures
+	)
+	_run_case("combat_max_vfx_replay_fallback_presenter_armor_contract", _test_combat_max_vfx_replay_fallback_presenter_armor_contract, failures)
+	_run_case("combat_max_vfx_replay_fallback_presenter_lightweight_contract", _test_combat_max_vfx_replay_fallback_presenter_lightweight_contract, failures)
 	_run_case("combat_max_vfx_overlay_routes_replay_to_status_presenter", _test_combat_max_vfx_overlay_routes_replay_to_status_presenter, failures)
 	_run_case("combat_max_vfx_overlay_falls_back_to_pack_route", _test_combat_max_vfx_overlay_falls_back_to_pack_route, failures)
 	_run_case("combat_max_vfx_overlay_armor_fallback_precedes_pack_route", _test_combat_max_vfx_overlay_armor_fallback_precedes_pack_route, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 9,
+		"total": 13,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -490,6 +540,155 @@ func _test_combat_max_vfx_replay_router_supports_callable_routes() -> String:
 		return "Expected callable replay route to handle after presenter declines."
 	if presenter.spawn_calls.size() != 1 or callable_calls.size() != 1:
 		return "Expected router to try presenter route before callable fallback."
+	return ""
+
+
+func _test_combat_max_vfx_replay_router_default_armor_fallback_precedes_presenter_routes() -> String:
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	var fallback_presenter := FakeReplayFallbackPresenter.new()
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"fallback_presenter": fallback_presenter,
+			"status_presenter": status_presenter,
+			"status_available": false,
+			"elemental_presenter": elemental_presenter,
+			"elemental_available": true,
+			"should_use_elemental": func(_kind: String) -> bool: return true,
+			"pack_presenter": pack_presenter,
+			"pack_available": true,
+		}
+	)
+	if not router.spawn_replay_impact(Vector2(10, 20), "armor", Vector2(30, 40), 40.0, 90.0, 0.7, 3, false):
+		return "Expected default armor replay fallback to handle before presenter routes when status is unavailable."
+	if fallback_presenter.bind_calls != 1 or fallback_presenter.armor_calls.size() != 1:
+		return "Expected router to bind and call the fallback presenter armor surface."
+	if not status_presenter.spawn_calls.is_empty() or not elemental_presenter.spawn_calls.is_empty() or not pack_presenter.spawn_calls.is_empty():
+		return "Expected default armor fallback to precede presenter routes."
+	return ""
+
+
+func _test_combat_max_vfx_replay_router_default_lightweight_fallback_is_final_catch_all() -> String:
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	var fallback_presenter := FakeReplayFallbackPresenter.new()
+	status_presenter.spawn_result = false
+	elemental_presenter.spawn_result = false
+	pack_presenter.spawn_result = false
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"fallback_presenter": fallback_presenter,
+			"status_presenter": status_presenter,
+			"status_available": true,
+			"elemental_presenter": elemental_presenter,
+			"elemental_available": true,
+			"should_use_elemental": func(kind: String) -> bool: return kind == "fire",
+			"pack_presenter": pack_presenter,
+			"pack_available": true,
+		}
+	)
+	if not router.spawn_replay_impact(Vector2(10, 20), "gold", Vector2(30, 40), 40.0, 90.0, 0.7, 3, true):
+		return "Expected default lightweight fallback to handle after presenter routes decline."
+	if status_presenter.spawn_calls.size() != 1 or not elemental_presenter.spawn_calls.is_empty() or pack_presenter.spawn_calls.size() != 1:
+		return "Expected router to try available matching presenter routes before lightweight fallback."
+	if fallback_presenter.lightweight_calls.size() != 1 or not fallback_presenter.armor_calls.is_empty():
+		return "Expected lightweight fallback to be the final catch-all route."
+	return ""
+
+
+func _test_combat_max_vfx_replay_fallback_presenter_armor_contract() -> String:
+	var armor_calls: Array[Dictionary] = []
+	var light_calls: Array[Dictionary] = []
+	var presenter = COMBAT_MAX_VFX_REPLAY_FALLBACK_PRESENTER_SCRIPT.new()
+	presenter.bind(
+		{
+			"kind_colors": func(_kind: String) -> Dictionary: return {"core": Color(0.2, 0.4, 0.8, 1.0)},
+			"armor_grid_snap_spawner":
+			func(center: Vector2, radius: float, duration: float, intensity: int) -> void:
+				armor_calls.append({"center": center, "radius": radius, "duration": duration, "intensity": intensity}),
+			"light_spawner":
+			func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
+				light_calls.append({"center": center, "color": color, "energy": energy, "radius": radius, "lifetime": lifetime}),
+		}
+	)
+	if not presenter.spawn_armor_replay_fallback(Vector2(5, 6), "armor", Vector2(20, 20), 80.0, 100.0, 0.9, 4, false):
+		return "Expected armor replay fallback presenter to spawn when required callbacks are bound."
+	if armor_calls.size() != 1 or light_calls.size() != 1:
+		return "Expected armor replay fallback to emit grid snap and light."
+	if not is_equal_approx(float(armor_calls[0]["radius"]), 74.0):
+		return "Expected armor grid snap radius to preserve base-size scaling."
+	if not is_equal_approx(float(light_calls[0]["energy"]), 3.7):
+		return "Expected armor light energy to preserve intensity scaling."
+	return ""
+
+
+func _test_combat_max_vfx_replay_fallback_presenter_lightweight_contract() -> String:
+	var light_calls: Array[Dictionary] = []
+	var flipbook_calls: Array[Dictionary] = []
+	var burst_calls: Array[Dictionary] = []
+	var screen_wide_calls: Array[Dictionary] = []
+	var coin_calls: Array[Dictionary] = []
+	var presenter = COMBAT_MAX_VFX_REPLAY_FALLBACK_PRESENTER_SCRIPT.new()
+	presenter.bind(
+		{
+			"kind_colors": func(_kind: String) -> Dictionary: return {"accent": Color(1.0, 0.8, 0.2, 1.0), "core": Color(1.0, 0.6, 0.1, 1.0)},
+			"impact_key": func(kind: String) -> String: return "impact_%s" % kind,
+			"mist_key": func(kind: String) -> String: return "mist_%s" % kind,
+			"light_spawner":
+			func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
+				light_calls.append({"center": center, "color": color, "energy": energy, "radius": radius, "lifetime": lifetime}),
+			"flipbook_spawner":
+			func(
+				key: String,
+				center: Vector2,
+				draw_size: Vector2,
+				lifetime: float,
+				color: Color,
+				delay: float,
+				move_offset: Vector2,
+				target_scale: float,
+				z: float,
+				rotation: float
+			) -> void:
+				flipbook_calls.append(
+					{
+						"key": key,
+						"center": center,
+						"draw_size": draw_size,
+						"lifetime": lifetime,
+						"color": color,
+						"delay": delay,
+						"move_offset": move_offset,
+						"target_scale": target_scale,
+						"z": z,
+						"rotation": rotation
+					}
+				),
+			"burst_particles_spawner":
+			func(kind: String, center: Vector2, max_size: float, lifetime: float, intensity: int) -> void:
+				burst_calls.append({"kind": kind, "center": center, "max_size": max_size, "lifetime": lifetime, "intensity": intensity}),
+			"screen_wide_spawner":
+			func(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
+				screen_wide_calls.append({"kind": kind, "center": center, "lifetime": lifetime, "intensity": intensity}),
+			"coin_rain_spawner":
+			func(center: Vector2, max_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void:
+				coin_calls.append({"center": center, "max_size": max_size, "lifetime": lifetime, "intensity": intensity, "screen_wide": screen_wide}),
+		}
+	)
+	if not presenter.spawn_lightweight_replay_fallback(Vector2(5, 6), "gold", Vector2(20, 20), 80.0, 100.0, 0.9, 4, true):
+		return "Expected lightweight replay fallback presenter to spawn when required callbacks are bound."
+	if light_calls.size() != 1 or flipbook_calls.size() != 3:
+		return "Expected lightweight fallback to emit light and three flipbook layers."
+	if String(flipbook_calls[0]["key"]) != "impact_gold" or String(flipbook_calls[2]["key"]) != "mist_gold":
+		return "Expected lightweight fallback to use injected impact and mist keys."
+	if burst_calls.size() != 1 or screen_wide_calls.size() != 1 or coin_calls.size() != 1:
+		return "Expected lightweight fallback to keep optional burst, screen-wide, and gold coin effects."
+	if bool(coin_calls[0]["screen_wide"]):
+		return "Expected gold coin fallback to preserve the legacy non-screen-wide coin flag."
 	return ""
 
 
