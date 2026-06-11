@@ -394,15 +394,18 @@ func _test_combat_max_vfx_replay_router_uses_first_handled_route() -> String:
 	status_presenter.spawn_result = false
 	elemental_presenter.spawn_result = true
 	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
-	router.bind(
-		{
-			"routes":
-			[
-				{"presenter": status_presenter, "available": true},
-				{"presenter": elemental_presenter, "available": true},
-				{"presenter": pack_presenter, "available": true},
-			]
-		}
+	(
+		router
+		. bind(
+			{
+				"routes":
+				[
+					{"presenter": status_presenter, "available": true},
+					{"presenter": elemental_presenter, "available": true},
+					{"presenter": pack_presenter, "available": true},
+				]
+			}
+		)
 	)
 	if not router.supports_replay_impact("fire", false):
 		return "Expected router to report replay support when any available route supports it."
