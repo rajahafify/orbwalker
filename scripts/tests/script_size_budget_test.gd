@@ -1,4 +1,4 @@
-﻿extends RefCounted
+extends RefCounted
 class_name ScriptSizeBudgetTest
 
 const SCRIPT_SIZE_BUDGET_PATH := "res://tools/quality/script_size_budget.gd"

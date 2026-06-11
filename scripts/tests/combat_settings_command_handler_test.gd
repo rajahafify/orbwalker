@@ -424,9 +424,7 @@ func _controller_state_fixture() -> Dictionary:
 	var current_turn_index_provider := func() -> int: return int(controller._combat.turn_index if controller._combat != null else 1)
 	var trace_and_change_scene := func(scene_path: String, trace_source: String, trace_mark: String) -> void:
 		controller._trace_and_change_scene_to_target(scene_path, controller._flow_trace_route_id_value(), trace_source, trace_mark)
-	handler.bind_for_combat_controller(
-		view, model, presenter, controller, current_turn_index_provider, trace_and_change_scene, 0, 2, Color(1.0, 1.0, 1.0, 1.0)
-	)
+	handler.bind_for_combat_controller(view, model, presenter, controller, current_turn_index_provider, trace_and_change_scene, 0, 2, Color(1.0, 1.0, 1.0, 1.0))
 	return {
 		"handler": handler,
 		"view": view,
