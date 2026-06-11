@@ -42,10 +42,10 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var player_hp_impact_size: Vector2 = replay_targets.get("player_hp_impact_size", Vector2(180, 76))
 	var armor_mastery_impact_size: Vector2 = replay_targets.get("armor_impact_size", Vector2(360, 360))
 	var gold_impact_size: Vector2 = replay_targets.get("gold_impact_size", Vector2(70, 70))
-	var damage_lifetime := _owner._combat_speed_duration(0.42)
-	var player_lifetime := _owner._combat_speed_duration(0.45)
-	var gold_lifetime := _owner._combat_speed_duration(0.55)
-	var label_lifetime := _owner._combat_speed_duration(0.72)
+	var damage_lifetime: float = _owner._combat_speed_duration(0.42)
+	var player_lifetime: float = _owner._combat_speed_duration(0.45)
+	var gold_lifetime: float = _owner._combat_speed_duration(0.55)
+	var label_lifetime: float = _owner._combat_speed_duration(0.72)
 
 	if heart_heal > 0:
 		if applied_flat_heal_bonus > 0:

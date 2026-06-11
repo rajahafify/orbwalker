@@ -144,11 +144,11 @@ var _turn_resolution_coordinator: CombatTurnResolutionCoordinator = null
 var _tutorial_prompt_presenter: CombatTutorialPromptPresenter = null
 var _tutorial_coachmark_coordinator: CombatTutorialCoachmarkCoordinator = null
 var _tutorial_end_command_handler: CombatTutorialEndCommandHandler = null
-var _tutorial_drag_flow: CombatTutorialDragFlow = null
-var _resolve_trace_logger: CombatResolveTraceLogger = null
-var _turn_replay_coordinator: CombatTurnReplayCoordinator = null
-var _lifecycle: CombatControllerLifecycle = null
-var _binding_coordinator: CombatControllerBindingCoordinator = null
+var _tutorial_drag_flow = null
+var _resolve_trace_logger = null
+var _turn_replay_coordinator = null
+var _lifecycle = null
+var _binding_coordinator = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _debug_state_provider: CombatDebugStateProvider = null
@@ -1276,7 +1276,7 @@ func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
 	_bind_hud_stage_coordinator()
-	var replay: CombatEnemyAttackReplay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
+	var replay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
 	var replay_dependencies := {"view": _view, "vfx_presenter": _combat_vfx_presenter, "hud_stage_coordinator": _hud_stage_coordinator}
 	var replay_callbacks := {
 		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: Callable(self, "_combat_speed_duration"),
