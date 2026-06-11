@@ -298,6 +298,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-6-track-a-core-run-log-event-recorder">2026-06-12 - Wave 6 Track A core Run Log event recorder</h2>
+<ul>
+<li>Added <code>RunLogCoreEventRecorder</code> as the non-shop Run Log event collaborator for run start, fight start, turn result, fight end, and run end payload construction. <code>RunState</code> keeps the public facade and delegates core event recording, while <code>RunLogShopEventRecorder</code> and <code>ShopSession</code> remain the shop-specific boundary. The <code>run_state.gd</code> script-size ratchet drops to <code>1461</code> measured lines. (source: <code>scripts/core/run_log_core_event_recorder.gd</code>, <code>scripts/core/run_state.gd</code>, <code>scripts/tests/run_log_core_event_recorder_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>)</li>
+</ul>
 <h2 id="2026-06-11-wave-5-track-d-vfx-replay-route-cleanup">2026-06-11 - Wave 5 Track D VFX replay route cleanup</h2>
 <ul>
 <li>Added <code>CombatMaxVfxReplayRoutePolicy</code> as the narrow max-overlay replay route availability/support collaborator. Armor fallback availability now uses the explicit <code>status_available</code> dependency instead of relying on the first presenter route's position, while <code>CombatMaxVfxReplayImpactRouter</code> keeps route-table binding and first-handled dispatch. (source: <code>scripts/combat/combat_max_vfx_replay_route_policy.gd</code>, <code>scripts/combat/combat_max_vfx_replay_impact_router.gd</code>, <code>scripts/tests/combat_max_vfx_replay_route_test.gd</code>)</li>
