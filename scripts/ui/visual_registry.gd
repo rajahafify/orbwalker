@@ -42,62 +42,11 @@ const _RARITY_INDEX := {
 
 const _ENEMY_PORTRAIT_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS
 
-const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
-	"training_striker": "cavern_striker",
-	"training_goblin": "cavern_striker",
-	"striker": "cavern_striker",
-	"defender": "cavern_defender",
-	"charger": "ruin_lancer",
-}
-
-const _RUNTIME_ENEMY_ALIAS_BY_ID := {
-	"training_striker": "enemy_cavern_striker",
-	"training_goblin": "enemy_cavern_striker",
-	"striker": "enemy_cavern_striker",
-	"defender": "enemy_cavern_defender",
-	"charger": "enemy_charger",
-	"cavern_striker": "enemy_cavern_striker",
-	"cavern_defender": "enemy_cavern_defender",
-	"ash_hunter": "enemy_ash_hunter",
-	"ruin_lancer": "enemy_ruin_lancer",
-	"vault_executioner": "enemy_vault_executioner",
-	"goldbound_keeper": "enemy_goldbound_keeper",
-	"iron_gate": "boss_iron_gate",
-	"burning_knight": "boss_burning_knight",
-	"prism_warden": "boss_prism_warden",
-}
-
-const _PLACEHOLDER_RUNTIME_ENEMY_KEYS := {
-	"enemy_charger": true,
-	"enemy_ruin_lancer": true,
-	"enemy_vault_executioner": true,
-	"enemy_goldbound_keeper": true,
-}
-
-const _COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID := {
-	"cavern_striker": 0,
-	"cavern_defender": 1,
-	"ash_hunter": 2,
-	"ruin_lancer": 1,
-	"vault_executioner": 1,
-	"goldbound_keeper": 1,
-	"iron_gate": 1,
-	"burning_knight": 2,
-	"prism_warden": 3,
-}
-
-const _ENEMY_VISUAL_PROFILES := {
-	"default": {"scale": 1.0, "offset": Vector2.ZERO, "shadow_scale": 1.0, "shadow_alpha": 0.34},
-	"cavern_striker": {"scale": 0.98, "offset": Vector2(0.0, 4.0), "shadow_scale": 0.92, "shadow_alpha": 0.30},
-	"cavern_defender": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.96, "shadow_alpha": 0.32},
-	"ash_hunter": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.95, "shadow_alpha": 0.31},
-	"ruin_lancer": {"scale": 1.02, "offset": Vector2(0.0, -2.0), "shadow_scale": 0.98, "shadow_alpha": 0.32},
-	"vault_executioner": {"scale": 1.04, "offset": Vector2(0.0, -4.0), "shadow_scale": 1.02, "shadow_alpha": 0.34},
-	"goldbound_keeper": {"scale": 1.04, "offset": Vector2(0.0, -2.0), "shadow_scale": 1.04, "shadow_alpha": 0.34},
-	"iron_gate": {"scale": 1.16, "offset": Vector2(0.0, -18.0), "shadow_scale": 1.22, "shadow_alpha": 0.38},
-	"burning_knight": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.36},
-	"prism_warden": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.35},
-}
+const _COMBAT_STAGE_ALIAS_BY_ENEMY_ID := VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_ALIAS_BY_ENEMY_ID
+const _RUNTIME_ENEMY_ALIAS_BY_ID := VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ENEMY_ALIAS_BY_ID
+const _PLACEHOLDER_RUNTIME_ENEMY_KEYS := VISUAL_REGISTRY_DATA_SCRIPT.PLACEHOLDER_RUNTIME_ENEMY_KEYS
+const _COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID := VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID
+const _ENEMY_VISUAL_PROFILES := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_VISUAL_PROFILES
 
 const _ENEMY_STAGE_BACKGROUND_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS
 
@@ -241,6 +190,20 @@ func _init() -> void:
 
 static func asset_contract_paths() -> Dictionary:
 	return VISUAL_REGISTRY_DATA_SCRIPT.asset_contract_paths()
+
+
+static func lookup_table_alias_contract() -> Dictionary:
+	return {
+		"enemy_portrait_paths": is_same(_ENEMY_PORTRAIT_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS),
+		"enemy_stage_background_paths": is_same(_ENEMY_STAGE_BACKGROUND_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS),
+		"enemy_sprite_paths": is_same(_ENEMY_SPRITE_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS),
+		"derived_orb_filename_by_id": is_same(_DERIVED_ORB_FILENAME_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID),
+		"combat_stage_alias_by_enemy_id": is_same(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_ALIAS_BY_ENEMY_ID),
+		"runtime_enemy_alias_by_id": is_same(_RUNTIME_ENEMY_ALIAS_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ENEMY_ALIAS_BY_ID),
+		"placeholder_runtime_enemy_keys": is_same(_PLACEHOLDER_RUNTIME_ENEMY_KEYS, VISUAL_REGISTRY_DATA_SCRIPT.PLACEHOLDER_RUNTIME_ENEMY_KEYS),
+		"combat_stage_sheet_index_by_enemy_id": is_same(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID),
+		"enemy_visual_profiles": is_same(_ENEMY_VISUAL_PROFILES, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_VISUAL_PROFILES),
+	}
 
 
 func combat_background() -> Texture2D:

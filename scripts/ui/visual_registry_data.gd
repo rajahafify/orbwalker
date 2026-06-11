@@ -1,6 +1,8 @@
 extends RefCounted
 class_name VisualRegistryData
 
+const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
+
 const PATH_COMBAT_BACKGROUND := "res://resources/art/assetgen/backgrounds/combat_background_candidate_01.png"
 const PATH_COMBAT_ENEMY_STAGE_SHEET := "res://resources/art/assetgen/backgrounds/combat_enemy_stage_art_candidate_01.png"
 const PATH_SHOP_BACKGROUND := "res://resources/art/assetgen/backgrounds/shop_background_candidate_01.png"
@@ -59,13 +61,70 @@ const ENEMY_SPRITE_PATHS := {
 	"cavern_striker": "res://resources/art/first_pass/enemy_sprites/generated_cavern_striker_sprite_wide_v1.png",
 }
 
+const COMBAT_STAGE_ALIAS_BY_ENEMY_ID := {
+	"training_striker": "cavern_striker",
+	"training_goblin": "cavern_striker",
+	"striker": "cavern_striker",
+	"defender": "cavern_defender",
+	"charger": "ruin_lancer",
+}
+
+const RUNTIME_ENEMY_ALIAS_BY_ID := {
+	"training_striker": "enemy_cavern_striker",
+	"training_goblin": "enemy_cavern_striker",
+	"striker": "enemy_cavern_striker",
+	"defender": "enemy_cavern_defender",
+	"charger": "enemy_charger",
+	"cavern_striker": "enemy_cavern_striker",
+	"cavern_defender": "enemy_cavern_defender",
+	"ash_hunter": "enemy_ash_hunter",
+	"ruin_lancer": "enemy_ruin_lancer",
+	"vault_executioner": "enemy_vault_executioner",
+	"goldbound_keeper": "enemy_goldbound_keeper",
+	"iron_gate": "boss_iron_gate",
+	"burning_knight": "boss_burning_knight",
+	"prism_warden": "boss_prism_warden",
+}
+
+const PLACEHOLDER_RUNTIME_ENEMY_KEYS := {
+	"enemy_charger": true,
+	"enemy_ruin_lancer": true,
+	"enemy_vault_executioner": true,
+	"enemy_goldbound_keeper": true,
+}
+
+const COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID := {
+	"cavern_striker": 0,
+	"cavern_defender": 1,
+	"ash_hunter": 2,
+	"ruin_lancer": 1,
+	"vault_executioner": 1,
+	"goldbound_keeper": 1,
+	"iron_gate": 1,
+	"burning_knight": 2,
+	"prism_warden": 3,
+}
+
+const ENEMY_VISUAL_PROFILES := {
+	"default": {"scale": 1.0, "offset": Vector2.ZERO, "shadow_scale": 1.0, "shadow_alpha": 0.34},
+	"cavern_striker": {"scale": 0.98, "offset": Vector2(0.0, 4.0), "shadow_scale": 0.92, "shadow_alpha": 0.30},
+	"cavern_defender": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.96, "shadow_alpha": 0.32},
+	"ash_hunter": {"scale": 1.0, "offset": Vector2(0.0, 2.0), "shadow_scale": 0.95, "shadow_alpha": 0.31},
+	"ruin_lancer": {"scale": 1.02, "offset": Vector2(0.0, -2.0), "shadow_scale": 0.98, "shadow_alpha": 0.32},
+	"vault_executioner": {"scale": 1.04, "offset": Vector2(0.0, -4.0), "shadow_scale": 1.02, "shadow_alpha": 0.34},
+	"goldbound_keeper": {"scale": 1.04, "offset": Vector2(0.0, -2.0), "shadow_scale": 1.04, "shadow_alpha": 0.34},
+	"iron_gate": {"scale": 1.16, "offset": Vector2(0.0, -18.0), "shadow_scale": 1.22, "shadow_alpha": 0.38},
+	"burning_knight": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.36},
+	"prism_warden": {"scale": 1.12, "offset": Vector2(0.0, -14.0), "shadow_scale": 1.14, "shadow_alpha": 0.35},
+}
+
 const DERIVED_ORB_FILENAME_BY_ID := {
-	OrbType.Id.FIRE: "orb_fire_clean.png",
-	OrbType.Id.ICE: "orb_ice_clean.png",
-	OrbType.Id.EARTH: "orb_earth_clean.png",
-	OrbType.Id.HEART: "orb_heart_clean.png",
-	OrbType.Id.ARMOR: "orb_armor_clean.png",
-	OrbType.Id.GOLD: "orb_gold_clean.png",
+	ORB_TYPE_SCRIPT.Id.FIRE: "orb_fire_clean.png",
+	ORB_TYPE_SCRIPT.Id.ICE: "orb_ice_clean.png",
+	ORB_TYPE_SCRIPT.Id.EARTH: "orb_earth_clean.png",
+	ORB_TYPE_SCRIPT.Id.HEART: "orb_heart_clean.png",
+	ORB_TYPE_SCRIPT.Id.ARMOR: "orb_armor_clean.png",
+	ORB_TYPE_SCRIPT.Id.GOLD: "orb_gold_clean.png",
 }
 
 
@@ -230,6 +289,10 @@ static func derived_orb_contract_paths() -> Array[String]:
 		if file_name != "":
 			paths.append("%s/%s" % [PATH_DERIVED_ORB_DIR, file_name])
 	return paths
+
+
+static func derived_orb_filename_count() -> int:
+	return DERIVED_ORB_FILENAME_BY_ID.size()
 
 
 static func path_keys(base_path: String, keys: Array) -> Array[String]:
