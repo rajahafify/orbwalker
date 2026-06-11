@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatInputPhaseRouterTest
 
 const ROUTER_SCRIPT := preload("res://scripts/combat/combat_input_phase_router.gd")
+const COMBAT_CONTROLLER_SCRIPT := preload("res://scripts/combat/combat_controller.gd")
 
 
 class FakeModel:
@@ -51,9 +52,10 @@ func run_all() -> Dictionary:
 	_run_case("player_input_enables_board_without_hover_clear", _test_player_input_enables_board_without_hover_clear, failures)
 	_run_case("resolving_disables_board_and_clears_hover", _test_resolving_disables_board_and_clears_hover, failures)
 	_run_case("locked_external_disables_board_and_reports_reason", _test_locked_external_disables_board_and_reports_reason, failures)
+	_run_case("router_phase_constants_match_controller_enum", _test_router_phase_constants_match_controller_enum, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -122,6 +124,16 @@ func _test_locked_external_disables_board_and_reports_reason() -> String:
 		return "Expected locked phase to report the model external lock reason."
 	if recorder.sync_count != 1:
 		return "Expected model sync after phase routing."
+	return ""
+
+
+func _test_router_phase_constants_match_controller_enum() -> String:
+	if ROUTER_SCRIPT.PHASE_PLAYER_INPUT != int(COMBAT_CONTROLLER_SCRIPT.InputPhase.PLAYER_INPUT):
+		return "Expected router player-input phase to match CombatController.InputPhase."
+	if ROUTER_SCRIPT.PHASE_RESOLVING != int(COMBAT_CONTROLLER_SCRIPT.InputPhase.RESOLVING):
+		return "Expected router resolving phase to match CombatController.InputPhase."
+	if ROUTER_SCRIPT.PHASE_LOCKED_EXTERNAL != int(COMBAT_CONTROLLER_SCRIPT.InputPhase.LOCKED_EXTERNAL):
+		return "Expected router external-lock phase to match CombatController.InputPhase."
 	return ""
 
 
