@@ -14,6 +14,7 @@ class FakeReplayRoutePresenter:
 
 	var label: String
 	var supports_result := true
+	var supports_screen_wide := true
 	var spawn_result := true
 	var spawn_calls: Array[Dictionary] = []
 
@@ -23,8 +24,8 @@ class FakeReplayRoutePresenter:
 	func bind(_dependencies: Dictionary) -> void:
 		pass
 
-	func supports_replay_impact(_kind: String, _screen_wide: bool = false) -> bool:
-		return supports_result
+	func supports_replay_impact(_kind: String, screen_wide: bool = false) -> bool:
+		return supports_result and (supports_screen_wide or not screen_wide)
 
 	func spawn_replay_impact(
 		_center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
@@ -69,11 +70,13 @@ func run_all() -> Dictionary:
 	_run_case("combat_max_vfx_status_recipe_presenter_replay_impact_contract", _test_combat_max_vfx_status_recipe_presenter_replay_impact_contract, failures)
 	_run_case("combat_max_vfx_replay_router_uses_first_handled_route", _test_combat_max_vfx_replay_router_uses_first_handled_route, failures)
 	_run_case("combat_max_vfx_replay_router_respects_route_gates", _test_combat_max_vfx_replay_router_respects_route_gates, failures)
+	_run_case("combat_max_vfx_replay_router_supports_callable_routes", _test_combat_max_vfx_replay_router_supports_callable_routes, failures)
 	_run_case("combat_max_vfx_overlay_routes_replay_to_status_presenter", _test_combat_max_vfx_overlay_routes_replay_to_status_presenter, failures)
 	_run_case("combat_max_vfx_overlay_falls_back_to_pack_route", _test_combat_max_vfx_overlay_falls_back_to_pack_route, failures)
+	_run_case("combat_max_vfx_overlay_armor_fallback_precedes_pack_route", _test_combat_max_vfx_overlay_armor_fallback_precedes_pack_route, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 7,
+		"total": 9,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -443,6 +446,53 @@ func _test_combat_max_vfx_replay_router_respects_route_gates() -> String:
 	return ""
 
 
+func _test_combat_max_vfx_replay_router_supports_callable_routes() -> String:
+	var presenter := FakeReplayRoutePresenter.new("presenter")
+	presenter.supports_screen_wide = false
+	presenter.spawn_result = false
+	var callable_calls: Array[Dictionary] = []
+	var router = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
+	router.bind(
+		{
+			"routes":
+			[
+				{"presenter": presenter, "available": true},
+				{
+					"available": true,
+					"kind_filter": func(kind: String) -> bool: return kind == "gold",
+					"supports": func(kind: String, screen_wide: bool) -> bool: return kind == "gold" and not screen_wide,
+					"spawn":
+					func(
+						center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
+					) -> bool:
+						callable_calls.append(
+							{
+								"center": center,
+								"kind": kind,
+								"draw_size": draw_size,
+								"max_size": max_size,
+								"base_size": base_size,
+								"duration": duration,
+								"intensity": intensity,
+								"screen_wide": screen_wide
+							}
+						)
+						return true,
+				},
+			]
+		}
+	)
+	if not router.supports_replay_impact("gold", false):
+		return "Expected router to report support for callable replay routes."
+	if router.supports_replay_impact("gold", true):
+		return "Expected callable route support gate to receive screen-wide flag."
+	if not router.spawn_replay_impact(Vector2(10, 20), "gold", Vector2(30, 40), 40.0, 90.0, 0.7, 3, false):
+		return "Expected callable replay route to handle after presenter declines."
+	if presenter.spawn_calls.size() != 1 or callable_calls.size() != 1:
+		return "Expected router to try presenter route before callable fallback."
+	return ""
+
+
 func _test_combat_max_vfx_overlay_routes_replay_to_status_presenter() -> String:
 	var fixture := _replay_route_overlay_fixture()
 	var overlay := fixture["overlay"] as FakeReplayRouteOverlay
@@ -463,6 +513,27 @@ func _test_combat_max_vfx_overlay_routes_replay_to_status_presenter() -> String:
 		return "Expected status presenter replay route to run once."
 	if not elemental_presenter.spawn_calls.is_empty() or not pack_presenter.spawn_calls.is_empty():
 		return "Expected overlay replay route to stop at status presenter when handled."
+	return ""
+
+
+func _test_combat_max_vfx_overlay_armor_fallback_precedes_pack_route() -> String:
+	var fixture := _replay_route_overlay_fixture()
+	var overlay := fixture["overlay"] as FakeReplayRouteOverlay
+	overlay.force_status_available = false
+	overlay.force_pack_available = true
+	var status_presenter := FakeReplayRoutePresenter.new("status")
+	var elemental_presenter := FakeReplayRoutePresenter.new("elemental")
+	var pack_presenter := FakeReplayRoutePresenter.new("pack")
+	overlay._status_recipe_presenter = status_presenter
+	overlay._elemental_recipe_presenter = elemental_presenter
+	overlay._pack_recipe_presenter = pack_presenter
+	overlay._bind_replay_impact_router()
+	var handled := overlay.spawn_replay_impact(Vector2(540, 960), "armor", Vector2(240, 120), 0.45, 4, 4, false)
+	_cleanup_vfx_fixture(fixture)
+	if not handled:
+		return "Expected armor replay fallback to handle when status sheets are unavailable."
+	if not status_presenter.spawn_calls.is_empty() or not elemental_presenter.spawn_calls.is_empty() or not pack_presenter.spawn_calls.is_empty():
+		return "Expected armor replay fallback to run before presenter-backed routes."
 	return ""
 
 

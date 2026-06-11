@@ -143,29 +143,11 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 		return false
 	var kind := _clean_kind(clean_kind)
 	var center := _global_to_overlay_local(global_center)
-	var colors := _kind_colors(kind)
-	var accent: Color = colors.get("accent", Color.WHITE)
-	var core: Color = colors.get("core", Color.WHITE)
 	var max_size := maxf(draw_size.x, draw_size.y)
 	var basis_size := _replay_impact_basis_size(kind, draw_size, max_size)
 	var base_size := basis_size * (2.25 + float(intensity) * 0.22)
 	var duration := maxf(0.32, lifetime * 1.10)
-	if kind == "armor" and not _status_vfx_available():
-		_spawn_max_armor_grid_snap(center, base_size * 0.74, duration, intensity)
-		_spawn_light(center, core, 2.5 + float(intensity) * 0.30, base_size * 1.10, duration * 0.72)
-		return true
-	if _replay_impact_router.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
-		return true
-	_spawn_light(center, core, 2.4 + float(intensity) * 0.34, base_size * 1.15, duration * 0.65)
-	_spawn_flipbook(_impact_key(kind), center, Vector2(base_size, base_size), duration, Color(1, 1, 1, 0.95), 0.0, Vector2.ZERO, 1.12 + float(intensity) * 0.04, 0.0, 0.18)
-	_spawn_flipbook("shockwave_ring", center, Vector2(base_size * 0.92, base_size * 0.92), duration * 0.78, Color(core.r, core.g, core.b, 0.82), 0.03, Vector2.ZERO, 1.52 + float(intensity) * 0.07, -0.8, 0.0)
-	_spawn_flipbook(_mist_key(kind), center + Vector2(0.0, max_size * 0.08), Vector2(base_size * 1.10, base_size * 0.78), duration * 1.08, Color(accent.r, accent.g, accent.b, 0.36), 0.04, Vector2(0.0, -max_size * 0.10), 1.18, -1.2, 0.08)
-	_spawn_burst_particles(kind, center, max_size, duration, intensity)
-	if screen_wide:
-		_spawn_screen_wide(kind, center, duration, intensity)
-	if kind == "gold":
-		_spawn_coin_rain(center, max_size, duration, intensity, false)
-	return true
+	return _replay_impact_router.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide)
 
 
 func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> bool:
@@ -694,11 +676,22 @@ func _bind_projector() -> void:
 func _bind_replay_impact_router() -> void:
 	# Rebind after swapping presenter instances so routes hold the current presenters.
 	_replay_impact_router.bind({
-		"routes": [
-			{"presenter": _status_recipe_presenter, "available": Callable(self, "_status_vfx_available")},
-			{"presenter": _elemental_recipe_presenter, "available": Callable(self, "_elemental_magic_available"), "kind_filter": Callable(self, "_should_use_elemental_magic")},
-			{"presenter": _pack_recipe_presenter, "available": Callable(self, "_pack_vfx_available")},
-		],
+		"status_presenter": _status_recipe_presenter,
+		"elemental_presenter": _elemental_recipe_presenter,
+		"pack_presenter": _pack_recipe_presenter,
+		"status_available": Callable(self, "_status_vfx_available"),
+		"elemental_available": Callable(self, "_elemental_magic_available"),
+		"pack_available": Callable(self, "_pack_vfx_available"),
+		"should_use_elemental": Callable(self, "_should_use_elemental_magic"),
+		"kind_colors": Callable(self, "_kind_colors"),
+		"impact_key": Callable(self, "_impact_key"),
+		"mist_key": Callable(self, "_mist_key"),
+		"armor_grid_snap_spawner": Callable(self, "_spawn_max_armor_grid_snap"),
+		"light_spawner": Callable(self, "_spawn_light"),
+		"flipbook_spawner": Callable(self, "_spawn_flipbook"),
+		"burst_particles_spawner": Callable(self, "_spawn_burst_particles"),
+		"screen_wide_spawner": Callable(self, "_spawn_screen_wide"),
+		"coin_rain_spawner": Callable(self, "_spawn_coin_rain"),
 	})
 
 
