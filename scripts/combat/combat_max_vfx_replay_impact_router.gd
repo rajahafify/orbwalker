@@ -5,7 +5,9 @@ var _routes: Array[Dictionary] = []
 
 
 func bind(dependencies: Dictionary) -> void:
-	_routes = Array(dependencies.get("routes", []))
+	_routes.clear()
+	for raw_route in Array(dependencies.get("routes", [])):
+		_routes.append(Dictionary(raw_route))
 
 
 func supports_replay_impact(kind: String, screen_wide: bool = false) -> bool:

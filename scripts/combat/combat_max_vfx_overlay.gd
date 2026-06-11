@@ -154,7 +154,7 @@ func spawn_replay_impact(global_center: Vector2, clean_kind: String, draw_size: 
 		_spawn_max_armor_grid_snap(center, base_size * 0.74, duration, intensity)
 		_spawn_light(center, core, 2.5 + float(intensity) * 0.30, base_size * 1.10, duration * 0.72)
 		return true
-	if _replay_impact_router.spawn_replay_impact(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide):
+	if _replay_impact_router.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide):
 		return true
 	_spawn_light(center, core, 2.4 + float(intensity) * 0.34, base_size * 1.15, duration * 0.65)
 	_spawn_flipbook(_impact_key(kind), center, Vector2(base_size, base_size), duration, Color(1, 1, 1, 0.95), 0.0, Vector2.ZERO, 1.12 + float(intensity) * 0.04, 0.0, 0.18)
