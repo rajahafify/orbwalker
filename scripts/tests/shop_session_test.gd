@@ -9,10 +9,11 @@ func run_all() -> Dictionary:
 	_run_case("direct_session_uses_injected_logging_and_tutorial_hooks", _test_direct_session_uses_injected_logging_and_tutorial_hooks, failures)
 	_run_case("run_state_facade_opens_shop_and_logs", _test_run_state_facade_opens_shop_and_logs, failures)
 	_run_case("run_state_facade_logs_shop_actions", _test_run_state_facade_logs_shop_actions, failures)
+	_run_case("run_state_facade_logs_reroll_before_after_payloads", _test_run_state_facade_logs_reroll_before_after_payloads, failures)
 	_run_case("transition_snapshot_preserves_shop_session_state", _test_transition_snapshot_preserves_shop_session_state, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -219,6 +220,34 @@ func _test_run_state_facade_logs_shop_actions() -> String:
 	return error_text
 
 
+func _test_run_state_facade_logs_reroll_before_after_payloads() -> String:
+	var saved_snapshot: Dictionary = RunState.snapshot_run_transition_state()
+	RunState.start_tutorial_run()
+	RunState.mark_fight_victory()
+	RunState.open_shop_for_current_level()
+	var gold_before := int(RunState.run_gold)
+	var result: Dictionary = RunState.reroll_shop_items()
+	var error_text := ""
+	if not bool(result.get("ok", false)):
+		error_text = "Expected reroll to succeed in tutorial first shop."
+	var last_event := _last_run_log_event()
+	var payload: Dictionary = Dictionary(last_event.get("payload", {}))
+	if error_text == "" and String(last_event.get("event", "")) != "shop_action":
+		error_text = "Expected reroll to log a shop_action event."
+	if error_text == "" and String(payload.get("action", "")) != "reroll":
+		error_text = "Expected logged action to be reroll."
+	if error_text == "" and int(payload.get("gold_before", -1)) != gold_before:
+		error_text = "Expected reroll log to preserve gold_before."
+	if error_text == "" and int(payload.get("gold_after", -1)) != int(RunState.run_gold):
+		error_text = "Expected reroll log to preserve gold_after."
+	if error_text == "" and Dictionary(payload.get("shop_before", {})).is_empty():
+		error_text = "Expected reroll log to include sanitized shop_before."
+	if error_text == "" and Dictionary(payload.get("shop_after", {})).is_empty():
+		error_text = "Expected reroll log to include sanitized shop_after."
+	RunState.restore_run_transition_state(saved_snapshot)
+	return error_text
+
+
 func _test_transition_snapshot_preserves_shop_session_state() -> String:
 	var saved_snapshot: Dictionary = RunState.snapshot_run_transition_state()
 	RunState.start_tutorial_run()
@@ -227,7 +256,8 @@ func _test_transition_snapshot_preserves_shop_session_state() -> String:
 	var shop: Variant = RunState.ensure_shop_state()
 	shop.offer_sequence = 42
 	shop.pending_treasure_chest_offer_id = "offer_7"
-	shop.pending_treasure_chest_options = [{"type": "equipment", "content_id": "shortsword"}]
+	shop.pending_treasure_chest_options.clear()
+	shop.pending_treasure_chest_options.append({"type": "equipment", "content_id": "shortsword"})
 	var transition_snapshot: Dictionary = RunState.snapshot_run_transition_state()
 	shop.close_shop(true)
 	shop.offer_sequence = 1
