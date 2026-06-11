@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 
 const SCAN_ROOTS := [
 	"res://scripts",
