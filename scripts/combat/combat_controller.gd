@@ -35,6 +35,7 @@ const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat
 const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
 const COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_outcome_route_coordinator.gd")
 const COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_resolution_coordinator.gd")
+const COMBAT_INPUT_PHASE_ROUTER_SCRIPT := preload("res://scripts/combat/combat_input_phase_router.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
@@ -142,6 +143,7 @@ var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _debug_state_provider: CombatDebugStateProvider = null
 var _board_debug_command_handler: CombatBoardDebugCommandHandler = null
 var _input_command_handler: CombatInputCommandHandler = null
+var _input_phase_router: CombatInputPhaseRouter = null
 var _tutorial_director: TutorialDirector = null
 var _tutorial_drag_board_snapshot: BoardModel = null
 var _host: Control = null
@@ -1277,24 +1279,8 @@ func set_external_input_locked(locked: bool, reason: String = "") -> void:
 
 
 func _set_input_phase(phase: InputPhase) -> void:
-	_ensure_model().set_input_phase(int(phase))
-	var current_phase: InputPhase = _input_phase_value()
-	if current_phase != InputPhase.PLAYER_INPUT:
-		_clear_combat_mastery_hover_state()
-
-	match current_phase:
-		InputPhase.PLAYER_INPUT:
-			if _board_controller != null:
-				_board_controller.set_input_enabled(true)
-		InputPhase.RESOLVING:
-			if _board_controller != null:
-				_board_controller.set_input_enabled(false)
-		InputPhase.LOCKED_EXTERNAL:
-			if _board_controller != null:
-				_board_controller.set_input_enabled(false)
-			if _ensure_model().external_lock_reason() != "":
-				_set_status_text("Input locked: %s" % _ensure_model().external_lock_reason())
-	_sync_model_state()
+	_bind_input_phase_router()
+	_input_phase_router.set_phase(int(phase))
 
 
 func _lock_scene_transition_input() -> void:
@@ -1978,6 +1964,19 @@ func _bind_outcome_route_coordinator() -> void:
 			"negative_color": STATUS_COLOR_NEGATIVE,
 			"default_victory_scene": "res://scenes/main_menu.tscn",
 			"run_summary_scene": RunState.SCENE_RUN_SUMMARY,
+		}
+	)
+
+
+func _bind_input_phase_router() -> void:
+	if _input_phase_router == null:
+		_input_phase_router = COMBAT_INPUT_PHASE_ROUTER_SCRIPT.new()
+	_input_phase_router.bind(
+		{"model": _ensure_model(), "board_controller": _board_controller},
+		{
+			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(self, "_clear_combat_mastery_hover_state"),
+			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(self, "_set_status_text"),
+			COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(self, "_sync_model_state"),
 		}
 	)
 
