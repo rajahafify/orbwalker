@@ -37,6 +37,8 @@ const PATH_RUNTIME_MANIFEST := "res://resources/art/assetgen/runtime/manifest.js
 const PATH_RUNTIME_COLLECTION_UI_DIR := "res://resources/art/assetgen/runtime/collection_ui"
 const PATH_RUNTIME_SHOP_UI_DIR := "res://resources/art/assetgen/runtime/shop_ui"
 
+static var orb_catalog: Resource = ORB_CATALOG_SCRIPT.default_catalog()
+
 const INTENT_INDEX_BY_TYPE := {
 	0: 0,  # ATTACK
 	1: 1,  # BLOCK
@@ -209,14 +211,14 @@ const MASTERY_ICON_BY_ORB_ID := {
 	ORB_TYPE_SCRIPT.Id.GOLD: "mastery_gold",
 }
 
-const RUNTIME_ORB_KEY_BY_ID := ORB_CATALOG_SCRIPT.RUNTIME_ORB_KEY_BY_ID
+static var runtime_orb_key_by_id_table: Dictionary = orb_catalog.get_runtime_orb_key_by_id()
 
 const STABLE_PLACEHOLDER_ICON_COLORS := {
 	"treasure_chest_elemental": Color(0.90, 0.34, 0.16, 1.0),
 	"treasure_chest_fire": Color(0.90, 0.34, 0.16, 1.0),
 }
 
-const DERIVED_ORB_FILENAME_BY_ID := ORB_CATALOG_SCRIPT.DERIVED_ORB_FILENAME_BY_ID
+static var derived_orb_filename_by_id_table: Dictionary = orb_catalog.get_derived_orb_filename_by_id()
 
 
 static func asset_contract_paths() -> Dictionary:
@@ -375,22 +377,33 @@ static func dictionary_string_values(source: Dictionary) -> Array[String]:
 
 static func derived_orb_contract_paths() -> Array[String]:
 	var paths: Array[String] = []
-	for orb_id in DERIVED_ORB_FILENAME_BY_ID.keys():
-		var file_name := String(DERIVED_ORB_FILENAME_BY_ID[orb_id])
+	var filename_by_id := derived_orb_filename_by_id()
+	for orb_id in filename_by_id.keys():
+		var file_name := String(filename_by_id[orb_id])
 		if file_name != "":
 			paths.append("%s/%s" % [PATH_DERIVED_ORB_DIR, file_name])
 	return paths
 
 
+static func runtime_orb_key_by_id() -> Dictionary:
+	return runtime_orb_key_by_id_table
+
+
+static func derived_orb_filename_by_id() -> Dictionary:
+	return derived_orb_filename_by_id_table
+
+
 static func derived_orb_filename_count() -> int:
-	return ORB_CATALOG_SCRIPT.derived_orb_filename_count()
+	return orb_catalog.get_derived_orb_filename_count()
 
 
 static func catalog_ownership_contract() -> Dictionary:
 	return {
-		"runtime_orb_key_by_id": is_same(RUNTIME_ORB_KEY_BY_ID, ORB_CATALOG_SCRIPT.RUNTIME_ORB_KEY_BY_ID),
-		"derived_orb_filename_by_id": is_same(DERIVED_ORB_FILENAME_BY_ID, ORB_CATALOG_SCRIPT.DERIVED_ORB_FILENAME_BY_ID),
+		"catalog_is_resource": orb_catalog is Resource and orb_catalog.get_script() == ORB_CATALOG_SCRIPT,
+		"runtime_orb_key_by_id": is_same(runtime_orb_key_by_id_table, orb_catalog.get_runtime_orb_key_by_id()),
+		"derived_orb_filename_by_id": is_same(derived_orb_filename_by_id_table, orb_catalog.get_derived_orb_filename_by_id()),
 		"derived_orb_filename_count": derived_orb_filename_count(),
+		"record_count": orb_catalog.orb_records.size(),
 	}
 
 

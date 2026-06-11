@@ -50,9 +50,10 @@ const _MASTERY_ORB_BY_ICON_KEY := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ORB_BY_ICO
 const _MASTERY_BEAM_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_BEAM_BY_ORB_ID
 const _MASTERY_CARD_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID
 const _MASTERY_ICON_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID
-const _DERIVED_ORB_FILENAME_BY_ID := VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID
-const _RUNTIME_ORB_KEY_BY_ID := VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ORB_KEY_BY_ID
 const _STABLE_PLACEHOLDER_ICON_COLORS := VISUAL_REGISTRY_DATA_SCRIPT.STABLE_PLACEHOLDER_ICON_COLORS
+
+static var _derived_orb_filename_by_id: Dictionary = VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id()
+static var _runtime_orb_key_by_id: Dictionary = VISUAL_REGISTRY_DATA_SCRIPT.runtime_orb_key_by_id()
 
 var _warned_keys: Dictionary = {}
 var _placeholder_cache: Dictionary = {}
@@ -111,8 +112,8 @@ static func lookup_table_alias_contract() -> Dictionary:
 		"enemy_portrait_paths": is_same(_ENEMY_PORTRAIT_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS),
 		"enemy_stage_background_paths": is_same(_ENEMY_STAGE_BACKGROUND_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS),
 		"enemy_sprite_paths": is_same(_ENEMY_SPRITE_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS),
-		"derived_orb_filename_by_id": is_same(_DERIVED_ORB_FILENAME_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.DERIVED_ORB_FILENAME_BY_ID),
-		"runtime_orb_key_by_id": is_same(_RUNTIME_ORB_KEY_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ORB_KEY_BY_ID),
+		"derived_orb_filename_by_id": is_same(_derived_orb_filename_by_id, VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id()),
+		"runtime_orb_key_by_id": is_same(_runtime_orb_key_by_id, VISUAL_REGISTRY_DATA_SCRIPT.runtime_orb_key_by_id()),
 		"combat_stage_alias_by_enemy_id": is_same(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_ALIAS_BY_ENEMY_ID),
 		"runtime_enemy_alias_by_id": is_same(_RUNTIME_ENEMY_ALIAS_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ENEMY_ALIAS_BY_ID),
 		"placeholder_runtime_enemy_keys": is_same(_PLACEHOLDER_RUNTIME_ENEMY_KEYS, VISUAL_REGISTRY_DATA_SCRIPT.PLACEHOLDER_RUNTIME_ENEMY_KEYS),
@@ -862,13 +863,13 @@ func _build_orb_textures() -> void:
 
 func _try_build_runtime_orb_textures() -> bool:
 	var loaded_orbs: Dictionary = {}
-	for orb_id in _RUNTIME_ORB_KEY_BY_ID.keys():
-		var runtime_key := String(_RUNTIME_ORB_KEY_BY_ID[orb_id])
+	for orb_id in _runtime_orb_key_by_id.keys():
+		var runtime_key := String(_runtime_orb_key_by_id[orb_id])
 		var texture := _runtime_texture("orbs", runtime_key)
 		if texture == null:
 			return false
 		loaded_orbs[orb_id] = texture
-	if loaded_orbs.size() != _RUNTIME_ORB_KEY_BY_ID.size():
+	if loaded_orbs.size() != _runtime_orb_key_by_id.size():
 		return false
 	for orb_id in loaded_orbs.keys():
 		_orb_textures[orb_id] = loaded_orbs[orb_id]
@@ -877,8 +878,8 @@ func _try_build_runtime_orb_textures() -> bool:
 
 func _try_build_derived_orb_textures() -> bool:
 	var loaded_orbs: Dictionary = {}
-	for orb_id in _DERIVED_ORB_FILENAME_BY_ID.keys():
-		var file_name := String(_DERIVED_ORB_FILENAME_BY_ID[orb_id])
+	for orb_id in _derived_orb_filename_by_id.keys():
+		var file_name := String(_derived_orb_filename_by_id[orb_id])
 		if file_name == "":
 			return false
 		var path := "%s/%s" % [PATH_DERIVED_ORB_DIR, file_name]
@@ -886,7 +887,7 @@ func _try_build_derived_orb_textures() -> bool:
 		if texture == null:
 			return false
 		loaded_orbs[orb_id] = texture
-	if loaded_orbs.size() != _DERIVED_ORB_FILENAME_BY_ID.size():
+	if loaded_orbs.size() != _derived_orb_filename_by_id.size():
 		return false
 	for orb_id in loaded_orbs.keys():
 		_orb_textures[orb_id] = loaded_orbs[orb_id]
