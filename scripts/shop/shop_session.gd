@@ -1,22 +1,50 @@
 extends RefCounted
 class_name ShopSession
 
+const HOOK_APPLY_TUTORIAL_SHOP_SEED := "apply_tutorial_shop_seed"
+const HOOK_APPEND_RUN_LOG := "append_run_log"
+const HOOK_RUN_LOG_RESULT_BRIEF := "run_log_result_brief"
+const HOOK_RUN_LOG_SHOP_ACTION := "run_log_shop_action"
+const HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT := "run_log_sanitize_shop_snapshot"
+const HOOK_RUN_LOG_NEXT_SHOP_ORDINAL := "run_log_next_shop_ordinal"
 
-func open_for_current_level(run_state: Node) -> Dictionary:
-	run_state._apply_tutorial_shop_seed(0)
-	var result: Dictionary = run_state.ensure_shop_service().open_shop(run_state, run_state.dungeon_level)
-	var shop_snapshot: Dictionary = run_state.ensure_shop_state().to_snapshot()
+var _hooks: Dictionary = {}
+
+
+static func create_for_run_state(run_state: Node) -> ShopSession:
+	var session := ShopSession.new()
 	(
-		run_state
-		. _run_log_append(
-			"shop_open",
+		session
+		. configure_hooks(
 			{
-				"result": run_state._run_log_result_brief(result),
-				"dungeon_level": run_state.dungeon_level,
-				"shop_ordinal": run_state._run_log_next_shop_ordinal(),
-				"shop": run_state._run_log_sanitize_shop_snapshot(shop_snapshot, run_state.run_gold),
+				HOOK_APPLY_TUTORIAL_SHOP_SEED: Callable(run_state, "_apply_tutorial_shop_seed"),
+				HOOK_APPEND_RUN_LOG: Callable(run_state, "_run_log_append"),
+				HOOK_RUN_LOG_RESULT_BRIEF: Callable(run_state, "_run_log_result_brief"),
+				HOOK_RUN_LOG_SHOP_ACTION: Callable(run_state, "_run_log_shop_action"),
+				HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT: Callable(run_state, "_run_log_sanitize_shop_snapshot"),
+				HOOK_RUN_LOG_NEXT_SHOP_ORDINAL: Callable(run_state, "_run_log_next_shop_ordinal"),
 			}
 		)
+	)
+	return session
+
+
+func configure_hooks(hooks: Dictionary) -> void:
+	_hooks = hooks.duplicate()
+
+
+func open_for_current_level(run_state: Node) -> Dictionary:
+	_apply_tutorial_shop_seed(0)
+	var result: Dictionary = run_state.ensure_shop_service().open_shop(run_state, run_state.dungeon_level)
+	var shop_snapshot: Dictionary = run_state.ensure_shop_state().to_snapshot()
+	_append_run_log(
+		"shop_open",
+		{
+			"result": _run_log_result_brief(result),
+			"dungeon_level": run_state.dungeon_level,
+			"shop_ordinal": _run_log_next_shop_ordinal(),
+			"shop": _run_log_sanitize_shop_snapshot(shop_snapshot, run_state.run_gold),
+		}
 	)
 	return result
 
@@ -24,9 +52,9 @@ func open_for_current_level(run_state: Node) -> Dictionary:
 func reroll_items(run_state: Node) -> Dictionary:
 	var shop_before: Dictionary = run_state.ensure_shop_state().to_snapshot()
 	var gold_before := int(run_state.run_gold)
-	run_state._apply_tutorial_shop_seed(100 + run_state.ensure_shop_state().reroll_count)
+	_apply_tutorial_shop_seed(100 + run_state.ensure_shop_state().reroll_count)
 	var result: Dictionary = run_state.ensure_shop_service().reroll_shop_items(run_state)
-	run_state._run_log_shop_action("reroll", result, {}, shop_before, gold_before)
+	_run_log_shop_action("reroll", result, {}, shop_before, gold_before)
 	return result
 
 
@@ -113,5 +141,49 @@ func _logged_shop_action(run_state: Node, action: String, request: Dictionary, o
 	var shop_before: Dictionary = run_state.ensure_shop_state().to_snapshot()
 	var gold_before := int(run_state.run_gold)
 	var result: Dictionary = operation.call()
-	run_state._run_log_shop_action(action, result, request, shop_before, gold_before)
+	_run_log_shop_action(action, result, request, shop_before, gold_before)
 	return result
+
+
+func _hook(name: String) -> Callable:
+	var callable: Callable = _hooks.get(name, Callable())
+	return callable if callable.is_valid() else Callable()
+
+
+func _apply_tutorial_shop_seed(action_offset: int) -> void:
+	var callable := _hook(HOOK_APPLY_TUTORIAL_SHOP_SEED)
+	if callable.is_valid():
+		callable.call(action_offset)
+
+
+func _append_run_log(event_type: String, payload: Dictionary) -> void:
+	var callable := _hook(HOOK_APPEND_RUN_LOG)
+	if callable.is_valid():
+		callable.call(event_type, payload)
+
+
+func _run_log_result_brief(result: Dictionary) -> Dictionary:
+	var callable := _hook(HOOK_RUN_LOG_RESULT_BRIEF)
+	if callable.is_valid():
+		return Dictionary(callable.call(result))
+	return result.duplicate(true)
+
+
+func _run_log_shop_action(action: String, result: Dictionary, request: Dictionary = {}, shop_before_snapshot: Dictionary = {}, gold_before: int = -1) -> void:
+	var callable := _hook(HOOK_RUN_LOG_SHOP_ACTION)
+	if callable.is_valid():
+		callable.call(action, result, request, shop_before_snapshot, gold_before)
+
+
+func _run_log_sanitize_shop_snapshot(shop_snapshot: Dictionary, gold_value: int) -> Dictionary:
+	var callable := _hook(HOOK_RUN_LOG_SANITIZE_SHOP_SNAPSHOT)
+	if callable.is_valid():
+		return Dictionary(callable.call(shop_snapshot, gold_value))
+	return shop_snapshot.duplicate(true)
+
+
+func _run_log_next_shop_ordinal() -> int:
+	var callable := _hook(HOOK_RUN_LOG_NEXT_SHOP_ORDINAL)
+	if callable.is_valid():
+		return int(callable.call())
+	return 1
