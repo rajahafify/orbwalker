@@ -61,7 +61,7 @@ var player_progression_service: PlayerProgressionService
 var content_registry: ContentRegistry
 var shop_state: ShopState
 var shop_service: ShopService
-var shop_session
+var shop_session: ShopSession
 var wallet_service: WalletService
 var player_profile_state: PlayerProfileState
 var meta_profile_state: MetaProfileState
