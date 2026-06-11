@@ -136,11 +136,11 @@
           <td>Split the visible rails into focused presenters with tests, then ratchet this exception down.</td>
         </tr>
         <tr>
-          <td><code>scripts/ui/visual_registry.gd</code></td>
+          <td><code>scripts/ui/visual_registry_backend.gd</code></td>
           <td><code>650</code></td>
           <td><code>1333</code></td>
-          <td>The visual registry remains a large code-backed art catalog.</td>
-          <td>Move static paths and texture maps into resources or generated data while keeping a thin typed lookup API.</td>
+          <td>The visual registry backend owns the remaining texture cache, atlas cleanup, and runtime loading families behind the public facade.</td>
+          <td>Split these families into focused cache, atlas, and loading collaborators, then remove or ratchet down this backend exception.</td>
         </tr>
         <tr>
           <td><code>scripts/core/run_state.gd</code></td>
@@ -189,7 +189,7 @@
       <tbody>
         <tr><td><code>scripts/combat/combat_controller.gd</code></td><td><code>1942</code></td></tr>
         <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td><code>1924</code></td></tr>
-        <tr><td><code>scripts/ui/visual_registry.gd</code></td><td><code>1333</code></td></tr>
+        <tr><td><code>scripts/ui/visual_registry_backend.gd</code></td><td><code>1333</code></td></tr>
         <tr><td><code>scripts/core/run_state.gd</code></td><td><code>1461</code></td></tr>
         <tr><td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td><td><code>1079</code></td></tr>
         <tr><td><code>scripts/main_menu/main_menu_view.gd</code></td><td><code>1007</code></td></tr>

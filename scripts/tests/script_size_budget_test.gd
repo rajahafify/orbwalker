@@ -6,7 +6,7 @@ const SCRIPT_SIZE_BUDGET_PATH := "res://tools/quality/script_size_budget.gd"
 const EXPECTED_RATCHET_BASELINES := {
 	"res://scripts/combat/combat_controller.gd": 1942,
 	"res://scripts/ui/player_loadout_hud.gd": 1924,
-	"res://scripts/ui/visual_registry.gd": 1333,
+	"res://scripts/ui/visual_registry_backend.gd": 1333,
 	"res://scripts/core/run_state.gd": 1461,
 	"res://scripts/combat/combat_max_vfx_overlay.gd": 1079,
 	"res://scripts/main_menu/main_menu_view.gd": 1007,

@@ -8,6 +8,7 @@ const RUN_SUMMARY_VIEW_SCRIPT := preload("res://scripts/run_summary/run_summary_
 const VISUAL_REGISTRY_ORB_CATALOG_SCRIPT := preload("res://scripts/ui/visual_registry_orb_catalog.gd")
 const VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/ui/visual_registry_texture_factory.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
+const VISUAL_REGISTRY_BACKEND_SCRIPT := preload("res://scripts/ui/visual_registry_backend.gd")
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 
 
@@ -152,6 +153,20 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 		return "VisualRegistry stable placeholder icon colors must alias VisualRegistryData, not duplicate them."
 	if not bool(alias_contract.get("texture_factory_is_resource", false)):
 		return "VisualRegistry procedural texture generation must delegate to VisualRegistryTextureFactory."
+	if not bool(alias_contract.get("backend_is_refcounted", false)):
+		return "VisualRegistry must expose a RefCounted backend collaborator."
+	if not bool(alias_contract.get("backend_has_orb_texture", false)):
+		return "VisualRegistry backend must preserve the orb texture lookup API."
+	if not bool(alias_contract.get("backend_has_placeholder_texture", false)):
+		return "VisualRegistry backend must preserve fallback placeholder texture lookup."
+	var registry_backend_contract := VISUAL_REGISTRY_SCRIPT.new().backend_contract()
+	if not bool(registry_backend_contract.get("backend_is_refcounted", false)):
+		return "VisualRegistry facade must delegate to a RefCounted backend."
+	if not bool(registry_backend_contract.get("backend_has_combat_background", false)):
+		return "VisualRegistry facade backend must preserve combat background lookup."
+	var backend_alias_contract := VISUAL_REGISTRY_BACKEND_SCRIPT.lookup_table_alias_contract()
+	if not bool(backend_alias_contract.get("intent_index_by_type", false)):
+		return "VisualRegistryBackend must keep existing data alias ownership."
 	var texture_factory_contract := VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().post_match_vfx_contract()
 	if not bool(texture_factory_contract.get("factory_is_resource", false)):
 		return "VisualRegistryTextureFactory default instance must be a Resource."

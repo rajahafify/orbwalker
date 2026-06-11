@@ -3584,6 +3584,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Added <code>scripts/ui/visual_registry_texture_factory.gd</code> as the resource-backed owner for procedural placeholder textures and post-match VFX texture generation. <code>VisualRegistry</code> keeps its public lookup/cache methods and delegates this full procedural texture family to the factory. (source: <code>scripts/ui/visual_registry_texture_factory.gd</code>, <code>scripts/ui/visual_registry.gd</code>)</li>
 <li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> with the factory ownership/alias contract and lowered the VisualRegistry script-size ratchet baseline from <code>1454</code> to <code>1333</code> measured lines in <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, and <code>docs/script_size_budget.html</code>. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>docs/test_plan.html</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
+      <h2 id="2026-06-12-visual-registry-facade-target">2026-06-12 - Visual registry facade target</h2>
+<ul>
+<li>Reduced <code>scripts/ui/visual_registry.gd</code> to a compatibility facade measured at <code>132</code> lines, below the corrected Wave 7 half-baseline target of <code>727</code> measured lines. The moved runtime cache, atlas cleanup, texture loading, and lookup implementation now lives in <code>scripts/ui/visual_registry_backend.gd</code>. (source: <code>scripts/ui/visual_registry.gd</code>, <code>scripts/ui/visual_registry_backend.gd</code>)</li>
+<li>Extended <code>scripts/tests/asset_pipeline_test.gd</code> with a facade/backend contract and moved the over-budget ratchet exception from <code>visual_registry.gd</code> to <code>visual_registry_backend.gd</code> in the budget tool, tests, and docs. (source: <code>scripts/tests/asset_pipeline_test.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

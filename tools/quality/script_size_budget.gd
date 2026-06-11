@@ -51,12 +51,12 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Player loadout HUD owns equipment, consumable, mastery, tooltip, and input surfaces; split visible rails into presenters before enforcing the default budget.",
 	},
-	"res://scripts/ui/visual_registry.gd":
+	"res://scripts/ui/visual_registry_backend.gd":
 	{
 		"baseline": 1333,
 		"owner": "R-P1-3",
 		"reason":
-		"Visual registry is still a code-backed art catalog; move static paths and texture maps into resources or generated data behind a thin lookup API.",
+		"Visual registry backend owns the remaining texture cache, atlas cleanup, and runtime loading families behind the public facade; split these families into focused cache/atlas/loading collaborators.",
 	},
 	"res://scripts/core/run_state.gd":
 	{
