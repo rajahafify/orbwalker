@@ -98,7 +98,9 @@ static func bind_lifecycle(current: Variant, script: Variant, owner: Variant) ->
 static func bind_turn_replay_coordinator(current: Variant, script: Variant, owner: Variant, run_state: Variant) -> Variant:
 	var coordinator: Variant = current if current != null else script.new()
 	Callable(owner, "_bind_hud_stage_coordinator").call()
-	Callable(owner, "_bind_vfx_target_resolver").call()
+	Callable(owner, "_bind_presentation_router").call()
+	var presentation_router: Variant = owner.get("_presentation_router")
+	Callable(presentation_router, "bind_vfx_target_resolver").call()
 	Callable(owner, "_bind_mastery_preview_coordinator").call()
 	Callable(owner, "_bind_audio_router").call()
 	var contract: Variant = owner.CONTRACT
@@ -114,9 +116,9 @@ static func bind_turn_replay_coordinator(current: Variant, script: Variant, owne
 		"combat_modifiers": run_state.current_combat_modifiers(),
 	}
 	var callbacks := {
-		script.CALLBACK_COMBAT_SPEED_DURATION: Callable(owner, "_combat_speed_duration"),
-		script.CALLBACK_WAIT_COMBAT_SPEED: Callable(owner, "_wait_combat_speed"),
-		script.CALLBACK_CAN_CONTINUE: Callable(owner, "_can_continue_after_async_wait"),
+		script.CALLBACK_COMBAT_SPEED_DURATION: Callable(presentation_router, "combat_speed_duration"),
+		script.CALLBACK_WAIT_COMBAT_SPEED: Callable(presentation_router, "wait_combat_speed"),
+		script.CALLBACK_CAN_CONTINUE: Callable(presentation_router, "can_continue_after_async_wait"),
 		script.CALLBACK_PLAY_IMPACT_SFX: Callable(audio_router, "play_impact_sfx"),
 		script.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(audio_router, "play_enemy_attack_result_sfx"),
 	}

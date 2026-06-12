@@ -21,6 +21,15 @@ class FakeInputPhaseRouter:
 		bind_args = [dependencies, callbacks]
 
 
+class FakePresentationRouter:
+	extends RefCounted
+
+	var applied_vfx_speed_calls := 0
+
+	func apply_vfx_speed_setting() -> void:
+		applied_vfx_speed_calls += 1
+
+
 class FakeSettingsTarget:
 	extends RefCounted
 
@@ -54,6 +63,7 @@ class FakeOwner:
 
 	var _view_actions := FakeViewActions.new()
 	var _input_phase_router: Variant = FakeInputPhaseRouter.new()
+	var _presentation_router: Variant = FakePresentationRouter.new()
 	var _model: Variant = "model"
 	var _board_controller: Variant = FakeSettingsTarget.new()
 	var _combat_vfx_presenter: Variant = FakeSettingsTarget.new()
@@ -61,7 +71,6 @@ class FakeOwner:
 	var _combat_audio_cue_player: Variant = FakeSettingsTarget.new()
 	var _view: Variant = FakeSettingsTarget.new()
 	var ensured_model_calls := 0
-	var applied_vfx_speed_calls := 0
 
 	func _ensure_model() -> Variant:
 		ensured_model_calls += 1
@@ -79,8 +88,8 @@ class FakeOwner:
 	func _abort_active_drag() -> void:
 		pass
 
-	func _apply_vfx_speed_setting() -> void:
-		applied_vfx_speed_calls += 1
+	func _bind_presentation_router() -> void:
+		pass
 
 
 func run_all() -> Dictionary:
@@ -126,8 +135,8 @@ func _test_apply_feedback_settings_uses_bound_targets() -> String:
 	coordinator.bind(owner)
 	coordinator.apply_feedback_settings()
 
-	if owner.applied_vfx_speed_calls != 1:
-		return "Expected feedback settings to call the owner VFX-speed hook."
+	if owner._presentation_router.applied_vfx_speed_calls != 1:
+		return "Expected feedback settings to call the presentation router VFX-speed hook."
 	if not owner._board_controller.calls.has("refill_overshoot"):
 		return "Expected board controller feedback setting."
 	if not owner._combat_vfx_presenter.calls.has("game_juice_flags"):

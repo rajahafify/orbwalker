@@ -57,6 +57,7 @@ var _binding_coordinator = null
 var _view_actions: Variant = null
 var _hud_update_router: Variant = null
 var _board_debug_router: Variant = null
+var _presentation_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -110,7 +111,7 @@ func unhandled_input(event: InputEvent) -> void:
 
 
 func on_viewport_size_changed() -> void:
-	_apply_combat_layout()
+	_presentation_callback("apply_combat_layout").call()
 
 
 func on_back_button_pressed() -> void:
@@ -138,14 +139,17 @@ func on_next_button_pressed() -> void:
 func _bind_audio_router() -> void:
 	if _audio_router == null:
 		_audio_router = CONTRACT.COMBAT_CONTROLLER_AUDIO_ROUTER_SCRIPT.new()
-	_audio_router.bind(
-		{
-			"cue_player": _combat_audio_cue_player,
-			"cue_player_script": CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT,
-			"runtime_binder": CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT,
-			"host": _host,
-			"run_state": RunState,
-		}
+	(
+		_audio_router
+		. bind(
+			{
+				"cue_player": _combat_audio_cue_player,
+				"cue_player_script": CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT,
+				"runtime_binder": CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT,
+				"host": _host,
+				"run_state": RunState,
+			}
+		)
 	)
 	_combat_audio_cue_player = _audio_router.cue_player()
 
@@ -175,6 +179,17 @@ func _bind_board_debug_router() -> void:
 func _board_debug_callback(method_name: String) -> Callable:
 	_bind_board_debug_router()
 	return Callable(_board_debug_router, method_name)
+
+
+func _bind_presentation_router() -> void:
+	if _presentation_router == null:
+		_presentation_router = CONTRACT.COMBAT_CONTROLLER_PRESENTATION_ROUTER_SCRIPT.new()
+	_presentation_router.bind(self)
+
+
+func _presentation_callback(method_name: String) -> Callable:
+	_bind_presentation_router()
+	return Callable(_presentation_router, method_name)
 
 
 func _bind_debug_state_provider() -> void:
@@ -224,10 +239,6 @@ func _trace_flow_first_usable_frame() -> void:
 	RunState.flow_trace_mark("combat_first_usable_frame", {"source": "combat._ready_deferred"}, _flow_trace_route_id_value())
 
 
-func _apply_orb_texture_map_deferred() -> void:
-	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_orb_texture_map(_board_view, _visuals, RunState, Callable(self, "_flow_trace_route_id_value"))
-
-
 func _bind_combat_vfx_presenter() -> void:
 	if _combat_vfx_presenter == null or _view == null:
 		return
@@ -262,10 +273,6 @@ func _drag_move_time_left() -> float:
 	if _combat_timer_service == null:
 		return 0.0
 	return _combat_timer_service.move_time_left(_board_controller)
-
-
-func _apply_visual_chrome() -> void:
-	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_visual_chrome(_view, RunState)
 
 
 func _begin_turn_preview() -> void:
@@ -393,7 +400,7 @@ func _bind_boss_reward_handler() -> void:
 				"set_status_text": Callable(_view_actions, "set_status_text"),
 				"update_hud": _hud_update_callback("update_hud"),
 				"play_sfx": _audio_router_callback("play_sfx"),
-				"apply_layout": Callable(self, "_apply_combat_layout"),
+				"apply_layout": _presentation_callback("apply_combat_layout"),
 				"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
 			}
 		)
@@ -465,20 +472,6 @@ func _combat_speed_value() -> String:
 	return _ensure_model().combat_speed()
 
 
-func _apply_vfx_speed_setting() -> void:
-	if _combat_vfx_presenter == null or not _combat_vfx_presenter.has_method("set_post_match_vfx_speed_scale"):
-		return
-	match _combat_speed_value():
-		CONTRACT.COMBAT_SPEED_SLOW:
-			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.35)
-		CONTRACT.COMBAT_SPEED_FAST:
-			_combat_vfx_presenter.set_post_match_vfx_speed_scale(1.0)
-		CONTRACT.COMBAT_SPEED_INSTANT:
-			_combat_vfx_presenter.set_post_match_vfx_speed_scale(2.0)
-		_:
-			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.55)
-
-
 func _apply_feedback_settings() -> void:
 	_bind_binding_coordinator()
 	_binding_coordinator.apply_feedback_settings()
@@ -497,36 +490,6 @@ func _abort_active_drag() -> void:
 		_view.sync_timer_display(0.0, CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
-func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0) -> void:
-	_bind_mastery_preview_coordinator()
-	await (
-		CONTRACT
-		. COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT
-		. play_resolve_animations(
-			_resolve_presenter,
-			result,
-			visual_board_model,
-			resolve_trace_origin_usec,
-			{
-				"trace_callback": _resolve_trace,
-				"combo_preview_callback": Callable(_mastery_preview_coordinator, "preview_match_feedback_value"),
-				"combo_feedback_callback": Callable(_mastery_preview_coordinator, "show_match_feedback"),
-				"set_pass_index_callback": Callable(_model, "set_resolve_trace_pass_index"),
-			}
-		)
-	)
-
-
-func _combat_speed_duration(base_seconds: float) -> float:
-	if _resolve_presenter != null:
-		return _resolve_presenter.combat_speed_duration(base_seconds)
-	return base_seconds
-
-
-func _wait_combat_speed(base_seconds: float) -> void:
-	await CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.wait_combat_speed(_resolve_presenter, _host, base_seconds)
-
-
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
 	return CONTRACT.COMBAT_TURN_LOG_WRITER_SCRIPT.build_run_outcome_summary(_turn_log_presenter, RunState, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
 
@@ -534,16 +497,6 @@ func _build_run_outcome_summary(fallback_cause: String = "") -> String:
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	_bind_turn_replay_coordinator()
 	await _turn_replay_coordinator.replay_turn_resolution_from_log(turn_log)
-
-
-func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
-	return CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.can_continue_after_async_wait(_host, _board_view, require_board_view)
-
-
-func _bind_vfx_target_resolver() -> void:
-	_vfx_target_resolver = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_vfx_target_resolver(
-		_vfx_target_resolver, CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT, _view, _combat_vfx_presenter
-	)
 
 
 func _bind_hud_stage_coordinator() -> void:
@@ -568,7 +521,7 @@ func _bind_mastery_preview_coordinator() -> void:
 			{
 				"board_view": _board_view,
 				"combat_vfx_presenter": _combat_vfx_presenter,
-				"combat_speed_duration_callback": Callable(self, "_combat_speed_duration"),
+				"combat_speed_duration_callback": _presentation_callback("combat_speed_duration"),
 			}
 		)
 	)
@@ -653,7 +606,7 @@ func _bind_view_actions() -> void:
 	_view_actions.bind(
 		{"view": _view, "outcome_overlay": _outcome_overlay, "debug_runtime": _debug_runtime},
 		{
-			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_APPLY_LAYOUT: Callable(self, "_apply_combat_layout"),
+			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_APPLY_LAYOUT: _presentation_callback("apply_combat_layout"),
 			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_BIND_BOSS_REWARD_HANDLER: Callable(self, "_bind_boss_reward_handler"),
 			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_BOSS_REWARD_HANDLER: func() -> Variant: return _boss_reward_handler,
 		}
@@ -720,33 +673,8 @@ func _resolve_trace(start_ticks_usec: int, message: String) -> void:
 	_resolve_trace_logger.trace(start_ticks_usec, message)
 
 
-func _spawn_vfx_texture(
-	texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
-) -> void:
-	if _combat_vfx_presenter == null:
-		return
-	_combat_vfx_presenter.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
-
-
 func _on_resolver_match_found(groups: Array) -> void:
 	_bind_view_actions()
 	_audio_router_callback("play_sfx").call("match")
 	_view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
 	_view_actions.set_status_color(CONTRACT.STATUS_COLOR_WARNING)
-
-
-func _apply_combat_layout() -> void:
-	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_combat_layout(
-		_view,
-		_host,
-		_combat_timer_service,
-		_board_controller,
-		_player_state,
-		_tutorial_prompt_presenter,
-		CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
-	)
-
-
-func _refresh_character_portraits() -> void:
-	if _view != null:
-		_view.refresh_character_portraits(String(_enemy_state.enemy_id if _enemy_state != null else ""))
