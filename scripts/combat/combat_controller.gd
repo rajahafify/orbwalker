@@ -41,10 +41,13 @@ const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/com
 const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
 const COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT := preload("res://scripts/combat/combat_tutorial_drag_flow.gd")
 const COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT := preload("res://scripts/combat/combat_resolve_trace_logger.gd")
-const COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT := preload("res://scripts/combat/combat_enemy_attack_replay.gd")
 const COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_replay_coordinator.gd")
+const COMBAT_TURN_LOG_WRITER_SCRIPT := preload("res://scripts/combat/combat_turn_log_writer.gd")
+const COMBAT_MASTERY_FILL_STREAMER_SCRIPT := preload("res://scripts/combat/combat_mastery_fill_streamer.gd")
 const COMBAT_CONTROLLER_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_controller_lifecycle.gd")
 const COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_controller_binding_coordinator.gd")
+const COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_runtime_binder.gd")
+const COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT := preload("res://scripts/combat/combat_controller_presentation_driver.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
@@ -65,23 +68,6 @@ const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
 const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
 const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
-const ICON_INNER_SIZE := Vector2(74, 74)
-const SLOT_SIZE := Vector2(88, 88)
-const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
-const MASTERY_SLOT_SIZE := Vector2(44, 44)
-const DESIGN_SIZE := Vector2(1080, 1920)
-const EQUIPMENT_RAIL_RECT := Rect2(Vector2(22, 136), Vector2(488, 88))
-const CONSUMABLE_RAIL_RECT := Rect2(Vector2(518, 136), Vector2(280, 88))
-const FONT_SIZE_TITLE := 20
-const FONT_SIZE_VALUE := 18
-const FONT_SIZE_META := 15
-const FONT_SIZE_ROW_LABEL := 16
-const DEBUG_TEXT_FONT_SIZE := 24
-const DEBUG_INPUT_FONT_SIZE := 24
-const DEBUG_INPUT_HEIGHT := 72.0
-const COMBO_POPUP_SIZE := Vector2(420.0, 96.0)
-const COMBO_POPUP_BASE_FONT_SIZE := 42
-const COMBO_POPUP_MAX_FONT_SIZE := 78
 const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
 const COMBAT_SPEED_SLOW := "slow"
 const COMBAT_SPEED_NORMAL := "normal"
@@ -254,21 +240,17 @@ func _ensure_runtime_helpers() -> void:
 
 
 func _bind_audio_cue_player() -> void:
-	if _combat_audio_cue_player == null:
-		_combat_audio_cue_player = COMBAT_AUDIO_CUE_PLAYER_SCRIPT.new()
-	_combat_audio_cue_player.bind(_host)
-	if _combat_audio_cue_player.has_method("set_game_juice_enabled"):
-		_combat_audio_cue_player.set_game_juice_enabled(RunState.game_juice_enabled())
-	if _combat_audio_cue_player.has_method("set_game_juice_flags"):
-		_combat_audio_cue_player.set_game_juice_flags(RunState.game_juice_flags())
+	_combat_audio_cue_player = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_audio_cue_player(
+		_combat_audio_cue_player, COMBAT_AUDIO_CUE_PLAYER_SCRIPT, _host, RunState
+	)
 
 
 func _bind_debug_state_provider() -> void:
-	if _debug_state_provider == null:
-		_debug_state_provider = COMBAT_DEBUG_STATE_PROVIDER_SCRIPT.new()
-	(
-		_debug_state_provider
-		. bind(
+	_debug_state_provider = (
+		COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
+		. bind_debug_state_provider(
+			_debug_state_provider,
+			COMBAT_DEBUG_STATE_PROVIDER_SCRIPT,
 			{
 				"combat": _combat,
 				"enemy_state": _enemy_state,
@@ -316,20 +298,7 @@ func _trace_flow_first_usable_frame() -> void:
 
 
 func _apply_orb_texture_map_deferred() -> void:
-	(
-		_board_view
-		. set_orb_texture_map(
-			{
-				OrbType.Id.FIRE: _visuals.orb_texture(OrbType.Id.FIRE),
-				OrbType.Id.ICE: _visuals.orb_texture(OrbType.Id.ICE),
-				OrbType.Id.EARTH: _visuals.orb_texture(OrbType.Id.EARTH),
-				OrbType.Id.HEART: _visuals.orb_texture(OrbType.Id.HEART),
-				OrbType.Id.ARMOR: _visuals.orb_texture(OrbType.Id.ARMOR),
-				OrbType.Id.GOLD: _visuals.orb_texture(OrbType.Id.GOLD),
-			}
-		)
-	)
-	RunState.flow_trace_mark("combat_after_texture_map", {}, _flow_trace_route_id_value())
+	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_orb_texture_map(_board_view, _visuals, RunState, Callable(self, "_flow_trace_route_id_value"))
 
 
 func _bind_combat_vfx_presenter() -> void:
@@ -373,22 +342,7 @@ func _drag_move_time_left() -> float:
 
 
 func _apply_visual_chrome() -> void:
-	if _view != null:
-		(
-			_view
-			. apply_visual_chrome(
-				{
-					"font_size_title": FONT_SIZE_TITLE,
-					"font_size_value": FONT_SIZE_VALUE,
-					"font_size_meta": FONT_SIZE_META,
-					"font_size_row_label": FONT_SIZE_ROW_LABEL,
-					"debug_text_font_size": DEBUG_TEXT_FONT_SIZE,
-					"debug_input_font_size": DEBUG_INPUT_FONT_SIZE,
-					"debug_input_height": DEBUG_INPUT_HEIGHT,
-				}
-			)
-		)
-		_view.set_top_bar_text(RunState.level_sequence_label(), "Gold 0")
+	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_visual_chrome(_view, RunState)
 
 
 func _initialize_combat_state() -> void:
@@ -723,17 +677,15 @@ func _audio_play_sfx(key: String) -> void:
 
 
 func _bind_outcome_overlay() -> void:
-	if _outcome_overlay == null or _view == null:
-		return
-	_view.bind_outcome_overlay(_outcome_overlay)
+	COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_outcome_overlay(_view, _outcome_overlay)
 
 
 func _bind_boss_reward_handler() -> void:
-	if _boss_reward_handler == null:
-		_boss_reward_handler = COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
-	(
-		_boss_reward_handler
-		. bind(
+	_boss_reward_handler = (
+		COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
+		. bind_boss_reward_handler(
+			_boss_reward_handler,
+			COMBAT_BOSS_REWARD_HANDLER_SCRIPT,
 			_outcome_overlay,
 			_view,
 			_model,
@@ -886,11 +838,10 @@ func _abort_active_drag() -> void:
 
 
 func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0) -> void:
-	if result.total_combos <= 0 or _resolve_presenter == null:
-		return
 	await (
-		_resolve_presenter
+		COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT
 		. play_resolve_animations(
+			_resolve_presenter,
 			result,
 			visual_board_model,
 			resolve_trace_origin_usec,
@@ -934,23 +885,14 @@ func _combat_speed_duration(base_seconds: float) -> float:
 
 
 func _wait_combat_speed(base_seconds: float) -> void:
-	if _resolve_presenter != null:
-		await _resolve_presenter.wait_combat_speed(base_seconds)
-		return
-	var tree := _host.get_tree()
-	if tree == null:
-		return
-	if base_seconds <= 0.01:
-		await tree.process_frame
-		return
-	await tree.create_timer(base_seconds).timeout
+	await COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.wait_combat_speed(_resolve_presenter, _host, base_seconds)
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	_bind_mastery_preview_coordinator()
 	var preview_amount := _preview_match_feedback_value(group, combo_value)
 	_mastery_preview_coordinator.show_match_feedback(group, combo_value)
-	_spawn_match_mastery_fill_stream(group, preview_amount)
+	COMBAT_MASTERY_FILL_STREAMER_SCRIPT.spawn(group, preview_amount, _board_view, _combat_vfx_presenter, _combat_speed_duration(0.46))
 
 
 func _reset_combat_mastery_preview() -> void:
@@ -978,49 +920,8 @@ func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
 	return int(_mastery_preview_coordinator.preview_match_feedback_value(group, combo_value))
 
 
-func _spawn_match_mastery_fill_stream(group: Dictionary, preview_amount: int) -> void:
-	if preview_amount <= 0 or _combat_vfx_presenter == null:
-		return
-	if _board_view == null or not is_instance_valid(_board_view):
-		return
-	var orb_id := int(group.get("orb_id", -1))
-	if not OrbType.is_valid_id(orb_id):
-		return
-	var source_global := _match_group_global_center(group)
-	if source_global == Vector2.ZERO:
-		return
-	var fill_lifetime := _combat_speed_duration(0.46)
-	_combat_vfx_presenter.spawn_mastery_fill_stream(orb_id, source_global, preview_amount, fill_lifetime)
-
-
-func _match_group_global_center(group: Dictionary) -> Vector2:
-	if _board_view == null or not is_instance_valid(_board_view):
-		return Vector2.ZERO
-	var cells: Array = group.get("cells", [])
-	if cells.is_empty():
-		return Vector2.ZERO
-	var local_sum := Vector2.ZERO
-	var valid_count := 0
-	for raw_cell in cells:
-		var cell: Vector2i = raw_cell
-		if not _board_view.is_cell_valid(cell):
-			continue
-		local_sum += _board_view.get_cell_center(cell)
-		valid_count += 1
-	if valid_count <= 0:
-		return Vector2.ZERO
-	var local_center := local_sum / float(valid_count)
-	return _board_view.get_global_transform_with_canvas() * local_center
-
-
-func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
-	_bind_mastery_preview_coordinator()
-	return _mastery_preview_coordinator.modifier_sources_for_key(key)
-
-
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
-	var summary: Dictionary = RunState.run_summary_snapshot()
-	return _turn_log_presenter.build_run_outcome_summary(summary, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
+	return COMBAT_TURN_LOG_WRITER_SCRIPT.build_run_outcome_summary(_turn_log_presenter, RunState, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
 
 
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
@@ -1029,13 +930,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 
 func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
-	if not (_host != null and is_instance_valid(_host) and _host.is_inside_tree()):
-		return false
-	if _host.get_tree() == null:
-		return false
-	if require_board_view and (_board_view == null or not is_instance_valid(_board_view)):
-		return false
-	return true
+	return COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.can_continue_after_async_wait(_host, _board_view, require_board_view)
 
 
 func _update_hud() -> void:
@@ -1060,50 +955,27 @@ func _bind_hud_snapshot_provider() -> void:
 
 
 func _bind_vfx_target_resolver() -> void:
-	if _vfx_target_resolver == null:
-		_vfx_target_resolver = COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
-	(
-		_vfx_target_resolver
-		. bind(
-			{
-				"view": _view,
-				"vfx_presenter": _combat_vfx_presenter,
-			}
-		)
+	_vfx_target_resolver = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_vfx_target_resolver(
+		_vfx_target_resolver, COMBAT_VFX_TARGET_RESOLVER_SCRIPT, _view, _combat_vfx_presenter
 	)
 
 
 func _bind_hud_stage_coordinator() -> void:
-	if _hud_stage_coordinator == null:
-		_hud_stage_coordinator = COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
-	(
-		_hud_stage_coordinator
-		. bind(
-			_model,
-			_player_state,
-			_enemy_state,
-			{
-				COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(self, "_update_hud"),
-			}
-		)
+	_hud_stage_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_hud_stage_coordinator(
+		_hud_stage_coordinator, COMBAT_HUD_STAGE_COORDINATOR_SCRIPT, _model, _player_state, _enemy_state, Callable(self, "_update_hud")
 	)
 
 
 func _bind_mastery_preview_coordinator() -> void:
-	if _mastery_preview_coordinator == null:
-		_mastery_preview_coordinator = COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
-	(
-		_mastery_preview_coordinator
-		. bind(
-			_model,
-			_player_state,
-			_view,
-			{
-				"resolution_order": COMBAT_MASTERY_RESOLUTION_ORDER,
-				"feedback_stagger_seconds": COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
-				"combat_modifiers": RunState.current_combat_modifiers(),
-			}
-		)
+	_mastery_preview_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_mastery_preview_coordinator(
+		_mastery_preview_coordinator,
+		COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
+		_model,
+		_player_state,
+		_view,
+		COMBAT_MASTERY_RESOLUTION_ORDER,
+		COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
+		RunState.current_combat_modifiers()
 	)
 
 
@@ -1143,9 +1015,9 @@ func _bind_turn_resolution_coordinator() -> void:
 
 
 func _bind_tutorial_prompt_presenter() -> void:
-	if _tutorial_prompt_presenter == null:
-		_tutorial_prompt_presenter = COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
-	_tutorial_prompt_presenter.bind(_host)
+	_tutorial_prompt_presenter = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_prompt_presenter(
+		_tutorial_prompt_presenter, COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT, _host
+	)
 
 
 func _bind_tutorial_coachmark_coordinator() -> void:
@@ -1163,15 +1035,11 @@ func _set_board_model_from_tutorial_drag_flow(board_model: BoardModel) -> void:
 
 
 func _bind_resolve_trace_logger() -> void:
-	if _resolve_trace_logger == null:
-		_resolve_trace_logger = COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT.new()
-	_resolve_trace_logger.bind(_model)
+	_resolve_trace_logger = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_resolve_trace_logger(_resolve_trace_logger, COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT, _model)
 
 
 func _bind_lifecycle() -> void:
-	if _lifecycle == null:
-		_lifecycle = COMBAT_CONTROLLER_LIFECYCLE_SCRIPT.new()
-	_lifecycle.bind(self)
+	_lifecycle = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_lifecycle(_lifecycle, COMBAT_CONTROLLER_LIFECYCLE_SCRIPT, self)
 
 
 func _bind_binding_coordinator() -> void:
@@ -1181,15 +1049,15 @@ func _bind_binding_coordinator() -> void:
 
 
 func _bind_turn_replay_coordinator() -> void:
-	if _turn_replay_coordinator == null:
-		_turn_replay_coordinator = COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT.new()
-	_turn_replay_coordinator.bind(self)
+	_turn_replay_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_turn_replay_coordinator(
+		_turn_replay_coordinator, COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT, self
+	)
 
 
 func _bind_tutorial_end_command_handler() -> void:
-	if _tutorial_end_command_handler == null:
-		_tutorial_end_command_handler = COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
-	_tutorial_end_command_handler.bind_for_combat_controller(RunState, _tutorial_director, _view, self, STATUS_COLOR_NEUTRAL)
+	_tutorial_end_command_handler = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_end_command_handler(
+		_tutorial_end_command_handler, COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT, RunState, _tutorial_director, _view, self, STATUS_COLOR_NEUTRAL
+	)
 
 
 func _should_show_intent_damage_preview() -> bool:
@@ -1223,41 +1091,14 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
-	var context := {
-		"player_end":
-		{
-			"hp": int(_player_state.current_hp if _player_state != null else 0),
-			"max_hp": int(_player_state.max_hp if _player_state != null else 0),
-			"armor": int(_player_state.armor if _player_state != null else 0),
-			"gold": int(_player_state.gold if _player_state != null else 0),
-		},
-		"enemy_end":
-		{
-			"hp": int(_enemy_state.current_hp if _enemy_state != null else 0),
-			"max_hp": int(_enemy_state.max_hp if _enemy_state != null else 0),
-		},
-		"orb_values_by_id": _orb_values_by_id(),
-	}
-	var log_level := LOG_LEVEL_NORMAL
-	if _debug_runtime != null:
-		log_level = _debug_runtime.log_level()
-	var lines: Array[String] = _turn_log_presenter.build_turn_log_lines(turn_log, log_level, context)
-	for line in lines:
-		_append_combat_log(line)
+	COMBAT_TURN_LOG_WRITER_SCRIPT.append_turn_log(
+		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(self, "_append_combat_log"), LOG_LEVEL_NORMAL
+	)
 
 
 func _resolve_trace(start_ticks_usec: int, message: String) -> void:
 	_bind_resolve_trace_logger()
 	_resolve_trace_logger.trace(start_ticks_usec, message)
-
-
-func _orb_values_by_id() -> Dictionary:
-	var values := {}
-	if _player_state == null:
-		return values
-	for orb_id in OrbType.ALL_TYPES:
-		values[int(orb_id)] = _player_state.orb_value(int(orb_id))
-	return values
 
 
 func _append_combat_log(message: String, is_command_output: bool = false) -> void:
@@ -1272,20 +1113,6 @@ func debug_console_log(message: String) -> void:
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
 	_bind_player_hud_refresh_coordinator()
 	_player_hud_refresh_coordinator.refresh_build_icon_rows(progression_snapshot)
-
-
-func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
-	_bind_hud_stage_coordinator()
-	var replay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
-	var replay_dependencies := {"view": _view, "vfx_presenter": _combat_vfx_presenter, "hud_stage_coordinator": _hud_stage_coordinator}
-	var replay_callbacks := {
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: Callable(self, "_combat_speed_duration"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_WAIT_COMBAT_SPEED: Callable(self, "_wait_combat_speed"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(self, "_can_continue_after_async_wait"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(self, "_play_enemy_attack_result_sfx"),
-	}
-	replay.bind(replay_dependencies, replay_callbacks, {"turn_replay_step_seconds": TURN_REPLAY_STEP_SECONDS})
-	await replay.replay(turn_log, player_target, label_lifetime)
 
 
 func _spawn_vfx_texture(
@@ -1307,17 +1134,9 @@ func _on_viewport_size_changed() -> void:
 
 
 func _apply_combat_layout() -> void:
-	if _view == null:
-		return
-	var layout_result: Dictionary = _view.apply_combat_layout(
-		_host.get_viewport_rect().size,
-		_combat_timer_service.layout_timer_seconds(_board_controller, _player_state) if _combat_timer_service != null else 0.0,
-		_combat_timer_service.layout_timer_state(_board_controller) if _combat_timer_service != null else COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
+	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_combat_layout(
+		_view, _host, _combat_timer_service, _board_controller, _player_state, _tutorial_prompt_presenter, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
 	)
-	if not bool(layout_result.get("applied", false)):
-		return
-	if _tutorial_prompt_presenter != null and _tutorial_prompt_presenter.is_visible():
-		_tutorial_prompt_presenter.layout()
 
 
 func _refresh_character_portraits() -> void:

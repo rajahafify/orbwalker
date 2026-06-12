@@ -11,10 +11,10 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
-		"baseline": 968,
+		"baseline": 797,
 		"owner": "P1-1",
 		"reason":
-		"Combat orchestration is still being decomposed; Wave 7 moved lifecycle/binding wiring into transitional owner-bound coordinators, so Wave 8 must convert those private reach-ins into returned dependencies or owned services.",
+		"Combat orchestration is now below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while callback and binding seams are converted into wiring-only ownership.",
 	},
 	"res://scripts/combat/combat_chrome_styler.gd":
 	{
