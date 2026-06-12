@@ -60,6 +60,7 @@ var _board_debug_router: Variant = null
 var _presentation_router: Variant = null
 var _input_router: Variant = null
 var _intent_router: Variant = null
+var _tutorial_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -212,6 +213,17 @@ func _intent_callback(method_name: String) -> Callable:
 	return Callable(_intent_router, method_name)
 
 
+func _bind_tutorial_router() -> void:
+	if _tutorial_router == null:
+		_tutorial_router = CONTRACT.COMBAT_CONTROLLER_TUTORIAL_ROUTER_SCRIPT.new()
+	_tutorial_router.bind(self)
+
+
+func _tutorial_callback(method_name: String) -> Callable:
+	_bind_tutorial_router()
+	return Callable(_tutorial_router, method_name)
+
+
 func _bind_debug_state_provider() -> void:
 	_bind_view_actions()
 	_debug_state_provider = (
@@ -282,23 +294,6 @@ func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: Random
 	if _board_controller == null:
 		return 0
 	return int(_board_controller.convert_random_non_target_orbs(target_orb_id, count, rng))
-
-
-func _tutorial_turn_summary_text() -> String:
-	if _tutorial_director == null:
-		return ""
-	return _tutorial_director.turn_summary_text()
-
-
-func _tutorial_turn_status_text() -> String:
-	if _tutorial_director == null:
-		return ""
-	return _tutorial_director.turn_status_text(int(_combat.turn_index if _combat != null else 1))
-
-
-func _sync_tutorial_coachmark() -> void:
-	_bind_tutorial_coachmark_coordinator()
-	_tutorial_coachmark_coordinator.sync()
 
 
 func _on_console_input_text_submitted(text: String) -> void:
@@ -476,26 +471,6 @@ func _bind_input_phase_router() -> void:
 func _bind_turn_resolution_coordinator() -> void:
 	_bind_binding_coordinator()
 	_binding_coordinator.bind_turn_resolution_coordinator()
-
-
-func _bind_tutorial_prompt_presenter() -> void:
-	_tutorial_prompt_presenter = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_prompt_presenter(
-		_tutorial_prompt_presenter, CONTRACT.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT, _host
-	)
-
-
-func _bind_tutorial_coachmark_coordinator() -> void:
-	_bind_binding_coordinator()
-	_binding_coordinator.bind_tutorial_coachmark_coordinator()
-
-
-func _bind_tutorial_drag_flow() -> void:
-	_bind_binding_coordinator()
-	_binding_coordinator.bind_tutorial_drag_flow()
-
-
-func _set_board_model_from_tutorial_drag_flow(board_model: BoardModel) -> void:
-	_board_model = board_model
 
 
 func _bind_resolve_trace_logger() -> void:

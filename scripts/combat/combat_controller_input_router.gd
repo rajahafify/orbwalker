@@ -91,7 +91,8 @@ func handle_drag_input_result(result: Dictionary) -> void:
 	var action := String(result.get("action", ""))
 	if action == "start":
 		clear_combat_mastery_hover_state()
-		_owner.call("_bind_tutorial_drag_flow")
+		_owner.call("_bind_tutorial_router")
+		_owner.get("_tutorial_router").bind_drag_flow()
 		_owner.get("_tutorial_drag_flow").handle_start()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		var view: Variant = _owner_value("_view")
@@ -101,7 +102,8 @@ func handle_drag_input_result(result: Dictionary) -> void:
 		view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
-		_owner.call("_bind_tutorial_drag_flow")
+		_owner.call("_bind_tutorial_router")
+		_owner.get("_tutorial_router").bind_drag_flow()
 		_owner.get("_tutorial_drag_flow").handle_end(result)
 
 

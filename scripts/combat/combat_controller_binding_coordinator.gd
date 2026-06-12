@@ -59,6 +59,11 @@ func _intent_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_intent_router"), method_name)
 
 
+func _tutorial_callback(method_name: String) -> Callable:
+	_owner.call("_bind_tutorial_router")
+	return Callable(_owner.get("_tutorial_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -84,7 +89,7 @@ func bind_board_debug_command_handler() -> void:
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: _input_callback("debug_set_input_phase"),
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
-				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _tutorial_callback("sync_coachmark"),
 			}
 		)
 	)
@@ -389,58 +394,5 @@ func bind_input_phase_router() -> void:
 				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_DRAG_ACTIVE: _input_callback("drag_active"),
 				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_ABORT_ACTIVE_DRAG: _input_callback("abort_active_drag"),
 			}
-		)
-	)
-
-
-func bind_tutorial_coachmark_coordinator() -> void:
-	var contract: Variant = _contract()
-	if _owner_value("_tutorial_coachmark_coordinator") == null:
-		_set_owner_value("_tutorial_coachmark_coordinator", contract.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new())
-	_owner_callback("_bind_tutorial_prompt_presenter").call()
-	(
-		_owner_value("_tutorial_coachmark_coordinator")
-		. bind(
-			{
-				"run_state": RunState,
-				"combat": _owner_value("_combat"),
-				"tutorial_director": _owner_value("_tutorial_director"),
-				"view": _owner_value("_view"),
-				"board_view": _owner_value("_board_view"),
-				"board_controller": _owner_value("_board_controller"),
-				"prompt_presenter": _owner_value("_tutorial_prompt_presenter"),
-			},
-			{
-				contract.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
-				contract.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
-				contract.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
-			},
-			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT), "warning_status_color": contract.STATUS_COLOR_WARNING}
-		)
-	)
-
-
-func bind_tutorial_drag_flow() -> void:
-	var contract: Variant = _contract()
-	if _owner_value("_tutorial_drag_flow") == null:
-		_set_owner_value("_tutorial_drag_flow", contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.new())
-	_owner_callback("_bind_tutorial_coachmark_coordinator").call()
-	(
-		_owner_value("_tutorial_drag_flow")
-		. bind(
-			{
-				"board_model": _owner_value("_board_model"),
-				"board_controller": _owner_value("_board_controller"),
-				"tutorial_director": _owner_value("_tutorial_director"),
-				"coachmark_coordinator": _owner_value("_tutorial_coachmark_coordinator"),
-			},
-			{
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_END_DRAG: _owner_callback("_end_drag"),
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_BOARD_SEED: _board_debug_callback("set_board_seed"),
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_BOARD_MODEL_CHANGED: _owner_callback("_set_board_model_from_tutorial_drag_flow"),
-			},
-			{"warning_status_color": contract.STATUS_COLOR_WARNING}
 		)
 	)

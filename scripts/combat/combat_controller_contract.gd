@@ -64,6 +64,7 @@ const COMBAT_CONTROLLER_PRESENTATION_ROUTER_SCRIPT := preload("res://scripts/com
 const COMBAT_CONTROLLER_INPUT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_input_router.gd")
 const COMBAT_CONTROLLER_INTENT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_intent_router.gd")
 const COMBAT_CONTROLLER_FEEDBACK_SETTINGS_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_feedback_settings_router.gd")
+const COMBAT_CONTROLLER_TUTORIAL_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_tutorial_router.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
 const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_board_debug_command_handler.gd")
 const COMBAT_INPUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_input_command_handler.gd")
