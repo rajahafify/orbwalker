@@ -164,7 +164,7 @@
   <tr><th>Satellite</th><th>Reach-ins</th><th>Owner</th><th>Priority</th></tr>
   <tr><td><code>combat_controller_lifecycle.gd</code></td><td class="bad">98</td><td>CombatController</td><td class="bad">P2 — runtime-helper, state initialization, resolve flow, turn preview, and signal wiring moved out; ready flow still writes owner fields</td></tr>
   <tr><td><code>player_loadout_intent_preview.gd</code></td><td class="bad">129</td><td>PlayerLoadoutHud</td><td class="warn">P2 — no direct tests either</td></tr>
-  <tr><td><code>combat_controller_binding_coordinator.gd</code></td><td class="warn">82</td><td>CombatController</td><td class="bad">P2 — composition root in exile; continue explicit dependency binding</td></tr>
+  <tr><td><code>combat_controller_binding_coordinator.gd</code></td><td class="warn">63</td><td>CombatController</td><td class="bad">P2 — composition root in exile; setup binding moved out, remaining coordinator paths need explicit dependency seams</td></tr>
   <tr><td><code>player_loadout_slot_detail_popover.gd</code></td><td class="bad">98</td><td>PlayerLoadoutHud</td><td class="warn">P2 — no direct tests either</td></tr>
   <tr><td><code>player_loadout_mastery_panel.gd</code></td><td class="warn">84</td><td>PlayerLoadoutHud</td><td class="warn">P3 — has contract test</td></tr>
   <tr><td><code>combat_max_vfx_overlay_lifecycle.gd</code></td><td class="warn">65</td><td>CombatMaxVfxOverlay</td><td class="warn">P3 — node construction; return-don't-write fix</td></tr>
