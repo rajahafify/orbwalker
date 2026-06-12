@@ -70,7 +70,7 @@ class FakeOwner:
 		unlock_calls.append(unlock.duplicate(true))
 		return {"ok": true, "reason": "", "unlock": unlock}
 
-	func _save_meta_profile() -> void:
+	func save_meta_profile() -> void:
 		meta.saved_count += 1
 
 
@@ -98,7 +98,7 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 
 func _test_sync_defaults_saves_when_common_unlocks_change() -> String:
 	var owner := FakeOwner.new()
-	var service = SERVICE_SCRIPT.new(owner)
+	var service = SERVICE_SCRIPT.new(owner, Callable(owner, "save_meta_profile"))
 	service.sync_default_unlocks()
 	if not owner.is_equipment_unlocked("starter_sword"):
 		return "Expected common starter equipment to be default unlocked."

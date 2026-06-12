@@ -2,10 +2,14 @@ extends RefCounted
 class_name RunShopFacade
 
 var _owner
+var _relic_offer_ids_by_level: Dictionary
+var _step_index_provider: Callable
 
 
-func _init(owner) -> void:
+func _init(owner, relic_offer_ids_by_level: Dictionary = {}, step_index_provider: Callable = Callable()) -> void:
 	_owner = owner
+	_relic_offer_ids_by_level = relic_offer_ids_by_level
+	_step_index_provider = step_index_provider
 
 
 func open_shop_for_current_level() -> Dictionary:
@@ -45,15 +49,16 @@ func close_shop(mark_skipped: bool = false) -> void:
 
 
 func relic_offer_id_for_level(level: int) -> String:
-	return String(_owner._relic_offer_ids_by_level.get(maxi(1, level), ""))
+	return String(_relic_offer_ids_by_level.get(maxi(1, level), ""))
 
 
 func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
-	_owner._relic_offer_ids_by_level[maxi(1, level)] = relic_id
+	_relic_offer_ids_by_level[maxi(1, level)] = relic_id
 
 
 func apply_tutorial_shop_seed(action_offset: int) -> void:
 	if not _owner.tutorial_run_active:
 		return
-	var shop_seed: int = _owner.tutorial_seed + 50000 + _owner.dungeon_level * 1000 + _owner._step_index * 100 + maxi(0, action_offset)
+	var step_index := int(_step_index_provider.call()) if _step_index_provider.is_valid() else 0
+	var shop_seed: int = _owner.tutorial_seed + 50000 + _owner.dungeon_level * 1000 + step_index * 100 + maxi(0, action_offset)
 	_owner.ensure_shop_service().set_rng_seed(shop_seed)

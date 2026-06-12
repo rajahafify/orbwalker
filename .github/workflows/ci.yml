@@ -36,7 +36,7 @@ jobs:
             base_commit="$(git merge-base FETCH_HEAD HEAD)"
           else
             before_commit="${{ github.event.before }}"
-            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
+            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]] || ! git cat-file -e "${before_commit}^{commit}" 2>/dev/null; then
               git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
               base_commit="$(git merge-base FETCH_HEAD HEAD)"
             else
@@ -56,7 +56,7 @@ jobs:
             base_commit="$(git merge-base FETCH_HEAD HEAD)"
           else
             before_commit="${{ github.event.before }}"
-            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]]; then
+            if [[ -z "${before_commit}" || "${before_commit}" =~ ^0+$ ]] || ! git cat-file -e "${before_commit}^{commit}" 2>/dev/null; then
               git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
               base_commit="$(git merge-base FETCH_HEAD HEAD)"
             else
@@ -101,6 +101,10 @@ jobs:
       - name: Check script size budget and ratchet
         run: |
           "${GODOT_BIN}" --headless --path . --script res://tools/quality/script_size_budget.gd
+
+      - name: Check owner reach-in budget and ratchet
+        run: |
+          "${GODOT_BIN}" --headless --path . --script res://tools/quality/owner_reach_in_budget.gd
 
       - name: Validate script loading
         run: |

@@ -178,6 +178,10 @@
   <b>Honest accounting:</b> the five tracked files shrank by a combined ~4,200 measured lines, but ~2,300 of that lives on in owner-coupled satellites, and total repo script mass <em>grew</em> across Waves 7–8 (facade/boilerplate overhead). The ratchet measures the right files but not the right property — it cannot distinguish decomposition from relocation. PR #30 is the template for doing it right: its store has <b>zero</b> reach-ins and ~470 lines were deleted outright.
 </div>
 
+<div class="callout">
+  <b>Wave 9 guardrail:</b> <code>tools/quality/owner_reach_in_budget.gd</code> now ratchets the reach-in table above in CI. A PR fails if it adds a new owner-private reach-in file, increases any baseline, or lowers a count without lowering the checked-in baseline in the same change. This makes relocation visible mechanically instead of relying on review memory.
+</div>
+
 <h2 class="section">Review Program Stats</h2>
 <table class="grid">
   <tr><th>Wave</th><th>PRs</th><th>Review outcome</th></tr>
