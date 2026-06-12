@@ -2,10 +2,12 @@ extends RefCounted
 class_name RunProfileUnlockService
 
 var _owner
+var _save_meta_profile: Callable
 
 
-func _init(owner) -> void:
+func _init(owner, save_meta_profile: Callable = Callable()) -> void:
 	_owner = owner
+	_save_meta_profile = save_meta_profile
 
 
 func sync_default_unlocks() -> void:
@@ -18,7 +20,8 @@ func sync_default_unlocks() -> void:
 		if item_id != "":
 			common_item_ids.append(item_id)
 	if _owner.ensure_meta_profile_state().mark_default_unlocked(common_item_ids):
-		_owner._save_meta_profile()
+		if _save_meta_profile.is_valid():
+			_save_meta_profile.call()
 
 
 func can_claim_equipment_unlock(equipment: Dictionary) -> bool:

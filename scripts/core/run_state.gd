@@ -225,13 +225,13 @@ func _ensure_user_settings_store():
 
 func _ensure_profile_unlock_service():
 	if _profile_unlock_service == null:
-		_profile_unlock_service = RUN_PROFILE_UNLOCK_SERVICE_SCRIPT.new(self)
+		_profile_unlock_service = RUN_PROFILE_UNLOCK_SERVICE_SCRIPT.new(self, Callable(self, "_save_meta_profile"))
 	return _profile_unlock_service
 
 
 func _ensure_signal_emitter():
 	if _signal_emitter == null:
-		_signal_emitter = RUN_STATE_SIGNAL_EMITTER_SCRIPT.new(self)
+		_signal_emitter = RUN_STATE_SIGNAL_EMITTER_SCRIPT.new(self, func() -> int: return _step_index, func() -> Dictionary: return _run_summary)
 	return _signal_emitter
 
 
@@ -249,7 +249,7 @@ func _ensure_profile_facade():
 
 func _ensure_shop_facade():
 	if _shop_facade == null:
-		_shop_facade = RUN_SHOP_FACADE_SCRIPT.new(self)
+		_shop_facade = RUN_SHOP_FACADE_SCRIPT.new(self, _relic_offer_ids_by_level, func() -> int: return _step_index)
 	return _shop_facade
 
 
