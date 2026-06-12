@@ -49,6 +49,11 @@ func _presentation_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_presentation_router"), method_name)
 
 
+func _input_callback(method_name: String) -> Callable:
+	_owner.call("_bind_input_router")
+	return Callable(_owner.get("_input_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -155,10 +160,10 @@ func bind_board_controller() -> void:
 			},
 			{
 				"swap_sound": _audio_router_callback("play_sfx").bind("swap"),
-				"match_groups": _owner_callback("_drag_match_groups"),
-				"move_timer_seconds": _owner_callback("_drag_move_timer_seconds"),
-				"drag_input_result": _owner_callback("_on_board_drag_input_result"),
-				"hovered_orb_changed": _owner_callback("_on_board_hovered_orb_changed"),
+				"match_groups": _input_callback("drag_match_groups"),
+				"move_timer_seconds": _input_callback("drag_move_timer_seconds"),
+				"drag_input_result": _input_callback("on_board_drag_input_result"),
+				"hovered_orb_changed": _input_callback("on_board_hovered_orb_changed"),
 				"apply_feedback_settings": _owner_callback("_apply_feedback_settings"),
 			},
 			{"swap_animation_seconds": contract.SWAP_ANIMATION_SECONDS}
@@ -177,11 +182,11 @@ func bind_input_command_handler() -> void:
 		. bind(
 			{"view": _owner_value("_view")},
 			{
-				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: _owner_callback("_toggle_debug_overlay"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: _input_callback("toggle_debug_overlay"),
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: _board_debug_callback("create_new_board"),
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: _board_debug_callback("print_board_model"),
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(loadout_command_handler, "try_use_first_consumable"),
-				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: _owner_callback("_set_viewport_input_handled"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: _input_callback("set_viewport_input_handled"),
 			}
 		)
 	)
@@ -373,11 +378,11 @@ func bind_input_phase_router() -> void:
 		. bind(
 			{"model": _owner_callback("_ensure_model").call(), "board_controller": _owner_value("_board_controller")},
 			{
-				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: _owner_callback("_clear_combat_mastery_hover_state"),
+				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: _input_callback("clear_combat_mastery_hover_state"),
 				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: _owner_callback("_sync_model_state"),
-				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_DRAG_ACTIVE: _owner_callback("_drag_active"),
-				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_ABORT_ACTIVE_DRAG: _owner_callback("_abort_active_drag"),
+				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_DRAG_ACTIVE: _input_callback("drag_active"),
+				contract.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_ABORT_ACTIVE_DRAG: _input_callback("abort_active_drag"),
 			}
 		)
 	)

@@ -45,6 +45,11 @@ func _presentation_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_presentation_router"), method_name)
 
 
+func _input_callback(method_name: String) -> Callable:
+	_owner.call("_bind_input_router")
+	return Callable(_owner.get("_input_router"), method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
@@ -432,7 +437,7 @@ func _bind_turn_preview_coordinator() -> void:
 			{
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
-				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: _owner_callback("_clear_combat_mastery_hover_state"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: _input_callback("clear_combat_mastery_hover_state"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: _owner_callback("_format_intent"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_SUMMARY_TEXT: _owner_callback("_tutorial_turn_summary_text"),

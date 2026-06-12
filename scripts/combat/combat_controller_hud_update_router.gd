@@ -52,9 +52,9 @@ func _bind_hud_snapshot_provider() -> void:
 			},
 			{
 				"input_phase_value": _owner_callback("_input_phase_value"),
-				"drag_active": _owner_callback("_drag_active"),
-				"drag_move_time_left": _owner_callback("_drag_move_time_left"),
-				"timer_ready_seconds": _owner_callback("_timer_ready_seconds"),
+				"drag_active": _input_callback("drag_active"),
+				"drag_move_time_left": _input_callback("drag_move_time_left"),
+				"timer_ready_seconds": _input_callback("timer_ready_seconds"),
 				"show_intent_preview": _owner_callback("_should_show_intent_damage_preview"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
@@ -76,3 +76,8 @@ func _contract() -> Variant:
 
 func _owner_callback(method_name: String) -> Callable:
 	return Callable(_owner, method_name)
+
+
+func _input_callback(method_name: String) -> Callable:
+	_owner.call("_bind_input_router")
+	return Callable(_owner.get("_input_router"), method_name)
