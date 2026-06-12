@@ -16,13 +16,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat orchestration is now below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while callback and binding seams are converted into wiring-only ownership.",
 	},
-	"res://scripts/combat/combat_chrome_styler.gd":
-	{
-		"baseline": 701,
-		"owner": "P1-2",
-		"reason":
-		"Combat chrome styling is centralized while the view split is still settling; split HUD, board, debug, and outcome chrome into focused stylers.",
-	},
 	"res://scripts/combat/combat_layout_presenter.gd":
 	{
 		"baseline": 732,

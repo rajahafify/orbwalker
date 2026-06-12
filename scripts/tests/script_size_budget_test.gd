@@ -8,7 +8,6 @@ const EXPECTED_RATCHET_BASELINES := {
 	"res://scripts/main_menu/main_menu_view.gd": 704,
 	"res://scripts/debug/vfx_gallery_show.gd": 761,
 	"res://scripts/combat/combat_layout_presenter.gd": 732,
-	"res://scripts/combat/combat_chrome_styler.gd": 701,
 	"res://scripts/board/board_view.gd": 598,
 	"res://scripts/combat/combat_view.gd": 549,
 }
