@@ -393,58 +393,6 @@ func bind_input_phase_router() -> void:
 	)
 
 
-func apply_feedback_settings() -> void:
-	var contract: Variant = _contract()
-	_presentation_callback("apply_vfx_speed_setting").call()
-	var raw_game_juice_flags := RunState.game_juice_flags()
-	var effective_game_juice_flags := _effective_game_juice_flags_for_motion(raw_game_juice_flags)
-	var refill_overshoot_enabled := (
-		RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(contract.GAME_JUICE_FLAGS_SCRIPT.GRAVITY_REFILL_OVERSHOOT, true))
-	)
-	var board_controller: Variant = _owner_value("_board_controller")
-	if board_controller != null and board_controller.has_method("set_refill_overshoot_enabled"):
-		board_controller.set_refill_overshoot_enabled(refill_overshoot_enabled)
-	var combat_vfx_presenter: Variant = _owner_value("_combat_vfx_presenter")
-	if combat_vfx_presenter != null:
-		if combat_vfx_presenter.has_method("set_post_match_vfx_quality"):
-			combat_vfx_presenter.set_post_match_vfx_quality(RunState.combat_vfx_quality())
-		if combat_vfx_presenter.has_method("set_reduced_motion_enabled"):
-			combat_vfx_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
-		if combat_vfx_presenter.has_method("set_game_juice_enabled"):
-			combat_vfx_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
-		if combat_vfx_presenter.has_method("set_game_juice_flags"):
-			combat_vfx_presenter.set_game_juice_flags(effective_game_juice_flags)
-	var resolve_presenter: Variant = _owner_value("_resolve_presenter")
-	if resolve_presenter != null and resolve_presenter.has_method("set_reduced_motion_enabled"):
-		resolve_presenter.set_reduced_motion_enabled(RunState.reduced_motion_enabled())
-	if resolve_presenter != null and resolve_presenter.has_method("set_game_juice_enabled"):
-		resolve_presenter.set_game_juice_enabled(RunState.game_juice_enabled())
-	if resolve_presenter != null and resolve_presenter.has_method("set_game_juice_flags"):
-		resolve_presenter.set_game_juice_flags(effective_game_juice_flags)
-	var combat_audio_cue_player: Variant = _owner_value("_combat_audio_cue_player")
-	if combat_audio_cue_player != null and combat_audio_cue_player.has_method("set_game_juice_enabled"):
-		combat_audio_cue_player.set_game_juice_enabled(RunState.game_juice_enabled())
-	if combat_audio_cue_player != null and combat_audio_cue_player.has_method("set_game_juice_flags"):
-		combat_audio_cue_player.set_game_juice_flags(raw_game_juice_flags)
-	var view: Variant = _owner_value("_view")
-	if view != null and view.has_method("set_enemy_reaction_settings"):
-		view.set_enemy_reaction_settings(
-			RunState.game_juice_enabled() and bool(effective_game_juice_flags.get(contract.GAME_JUICE_FLAGS_SCRIPT.ENEMY_REACTION_CHARACTER, true)),
-			RunState.reduced_motion_enabled()
-		)
-
-
-func _effective_game_juice_flags_for_motion(flags: Dictionary) -> Dictionary:
-	var game_juice_flags_script: Variant = _contract().GAME_JUICE_FLAGS_SCRIPT
-	var effective: Dictionary = game_juice_flags_script.normalized_flags(flags)
-	if not RunState.reduced_motion_enabled():
-		return effective
-	for flag_key in game_juice_flags_script.all_keys():
-		if game_juice_flags_script.is_motion_heavy(flag_key):
-			effective[flag_key] = false
-	return effective
-
-
 func bind_tutorial_coachmark_coordinator() -> void:
 	var contract: Variant = _contract()
 	if _owner_value("_tutorial_coachmark_coordinator") == null:
