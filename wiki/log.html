@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-46-runtime-helper-factory-ownership">2026-06-13 - Wave 46 runtime helper factory ownership</h2>
+<ul>
+<li>Moved combat runtime-helper owner writeback and post-create wiring out of <code>CombatControllerLifecycle</code> into <code>CombatControllerRuntimeHelperFactory</code>. The factory now owns helper value collection, script-map construction, helper creation, owner writeback, player-HUD visual registry sync, debug-console sync, audio/debug-state binding, and combat-consumable callback binding. (source: <code>scripts/combat/combat_controller_runtime_helper_factory.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
+<li>Reduced <code>combat_controller_lifecycle.gd</code> from <code>385</code> to <code>266</code> measured lines and from <code>34</code> to <code>30</code> functions, bringing it under the extracted-collaborator function-count cap. (source: <code>scripts/tests/combat_controller_runtime_helper_factory_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-45-feedback-settings-router">2026-06-13 - Wave 45 feedback settings router</h2>
 <ul>
 <li>Added <code>CombatControllerFeedbackSettingsRouter</code> as the feedback-settings fanout owner for VFX speed, refill overshoot, reduced motion, game-juice flags, audio cue-player settings, and enemy reaction settings. <code>CombatControllerBindingCoordinator</code> no longer owns this non-binding behavior. (source: <code>scripts/combat/combat_controller_feedback_settings_router.gd</code>, <code>scripts/combat/combat_controller_binding_coordinator.gd</code>, <code>scripts/combat/combat_controller.gd</code>)</li>
