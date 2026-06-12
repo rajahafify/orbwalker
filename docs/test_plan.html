@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 13 CombatView VFX binding split):</p>
+<ul>
+<li><code>CombatViewVfxBindings</code> now owns VFX target resolution, board fullscreen sizing, VFX presenter binding dictionaries, and resolve-presenter binding dictionaries. <code>CombatView</code> keeps its public view API while delegating target math and dependency assembly.</li>
+<li><code>scripts/combat/combat_view.gd</code> dropped from <code>549</code> to <code>488</code> measured lines, putting it under the <code>500</code> view budget and deleting its script-size exception. The extracted VFX binding helper stays within the strategy budget at <code>66</code> measured lines / <code>7</code> functions.</li>
+<li>Validation passed: <code>git diff --check</code>; changed-file <code>pre_commit</code> hooks for touched GDScript; <code>res://tools/quality/script_load_validation.gd</code> reported <code>309</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=213</code>, <code>over_budget=5</code>, <code>documented_exceptions=5</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>95</code> suites, <code>445</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 13 VFX gallery control split):</p>
 <ul>
 <li><code>VfxGalleryShowControls</code> now owns the VFX gallery header, control panel, preview frame, shared labels, panel styling, and child-clearing helper. <code>VfxGalleryShow</code> keeps preview targets, playback sequencing, presenter binding, and target geometry.</li>
@@ -1753,7 +1759,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li><code>RunLogShopEventRecorder</code> now owns the ShopSession-facing Run Log hook surface for shop-open append, result summaries, shop action logging, sanitized shop snapshots, and shop ordinal lookup. <code>RunState</code> keeps the public shop facade wrappers and direct hook wiring, while <code>RunLogger</code> remains the backing event/export owner.</li>
 <li><code>shop_session_test.gd</code> now checks public <code>RunState</code> reroll logging preserves <code>gold_before</code>, <code>gold_after</code>, and sanitized before/after shop snapshots. The direct fake-run-state/session test path remains intact so <code>ShopSession</code> can still run without RunState.</li>
 <li>Validation passed: <code>git diff --check</code>; <code>python -m pre_commit run --files scripts/core/run_log_shop_event_recorder.gd scripts/core/run_state.gd scripts/tests/shop_session_test.gd</code>; non-headless Godot console focused <code>shop_session_test.gd</code> reported <code>passed=true,total=5,failed=0</code>; non-headless Godot console <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=169</code>, <code>over_budget=12</code>, <code>documented_exceptions=12</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>. The active Godot MCP session was not counted as validation evidence for this worktree.</li>
-<li>The checked script-size ratchet baseline for <code>scripts/core/run_state.gd</code> is lowered from <code>1482</code> to <code>1469</code> measured lines for this extraction.</li>
+<li>The checked script-size ratchet baseline for <code>scripts/core/run_state.gd</code> is lowered from <code>1482</code> to <code>1466</code> measured lines for this extraction.</li>
 </ul>
 <p>Verification notes (2026-06-12, Wave 6 Track A core Run Log event recorder):</p>
 <ul>

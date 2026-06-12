@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-13-combat-view-vfx-binding-split">2026-06-12 - Wave 13 combat view VFX binding split</h2>
+<ul>
+<li>Moved CombatView VFX target resolution, board fullscreen sizing, VFX presenter binding dictionaries, and resolve-presenter binding dictionaries into <code>CombatViewVfxBindings</code>. Public view methods remain stable while target math and dependency assembly live in the helper. (source: <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_view_vfx_bindings.gd</code>)</li>
+<li>Reduced <code>scripts/combat/combat_view.gd</code> from <code>549</code> to <code>488</code> measured lines and removed its script-size exception. The extracted VFX binding helper stays within the strategy budget at <code>66</code> measured lines / <code>7</code> functions. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
 <h2 id="2026-06-12-wave-13-vfx-gallery-control-split">2026-06-12 - Wave 13 VFX gallery control split</h2>
 <ul>
 <li>Moved the VFX gallery header, control panel, preview frame, shared labels, panel styling, and child-clearing helper from <code>VfxGalleryShow</code> into <code>VfxGalleryShowControls</code>. <code>VfxGalleryShow</code> now keeps preview target construction, playback sequencing, presenter binding, and target geometry. (source: <code>scripts/debug/vfx_gallery_show.gd</code>, <code>scripts/debug/vfx_gallery_show_controls.gd</code>)</li>
@@ -3640,7 +3645,7 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <h2 id="2026-06-11-shop-run-log-event-recorder">2026-06-11 - Shop Run Log Event Recorder</h2>
 <ul>
 <li>Added <code>scripts/core/run_log_shop_event_recorder.gd</code> as the focused shop Run Log hook surface between <code>RunState</code>, <code>ShopSession</code>, and <code>RunLogger</code>. It receives the logger through an explicit callable provider and exposes shop-open append, result-summary, shop-action, sanitized-snapshot, and shop-ordinal methods for RunState's direct hook table. (source: <code>scripts/core/run_log_shop_event_recorder.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
-<li>Removed RunState's private shop-specific Run Log wrapper cluster while keeping the public shop facade methods behavior-preserving and preserving ShopSession's already-constructed Callable API. The checked <code>run_state.gd</code> ratchet baseline dropped from <code>1482</code> to <code>1469</code> measured lines. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/shop/shop_session.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+<li>Removed RunState's private shop-specific Run Log wrapper cluster while keeping the public shop facade methods behavior-preserving and preserving ShopSession's already-constructed Callable API. The checked <code>run_state.gd</code> ratchet baseline dropped from <code>1482</code> to <code>1466</code> measured lines. (source: <code>scripts/core/run_state.gd</code>, <code>scripts/shop/shop_session.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>
 <h2 id="2026-06-11-visual-registry-icon-and-mastery-data-split">2026-06-11 - Visual registry icon and mastery data split</h2>
 <ul>

@@ -26,6 +26,8 @@ const COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT := preload("res://scripts/combat/comba
 const COMBAT_PLAYER_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_player_hud_presenter.gd")
 const COMBAT_HUD_SNAPSHOT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_presenter.gd")
 const COMBAT_CHARACTER_VISUALS_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_character_visuals_presenter.gd")
+const COMBAT_VIEW_CHROME_BINDINGS_SCRIPT := preload("res://scripts/combat/combat_view_chrome_bindings.gd")
+const COMBAT_VIEW_VFX_BINDINGS_SCRIPT := preload("res://scripts/combat/combat_view_vfx_bindings.gd")
 
 const ENEMY_PANEL_RECT := Rect2(Vector2(16, 132), Vector2(1048, 432))
 const BOARD_PANEL_RECT := Rect2(Vector2(16, 660), Vector2(1048, 756))
@@ -94,48 +96,39 @@ func set_dependencies(dependencies: Dictionary) -> void:
 
 
 func set_status_text(text: String) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_status_text(text)
+	_surface().set_status_text(text)
 
 
 func set_status_color(color: Color) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_status_color(color)
+	_surface().set_status_color(color)
 
 
 func set_turn_summary_text(text: String) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_turn_summary_text(text)
+	_surface().set_turn_summary_text(text)
 
 
 func turn_summary_text() -> String:
-	_ensure_surface_presenter()
-	return _surface_presenter.turn_summary_text()
+	return _surface().turn_summary_text()
 
 
 func pulse_turn_summary(tint: Color) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.pulse_turn_summary(tint)
+	_surface().pulse_turn_summary(tint)
 
 
 func debug_console_nodes() -> Dictionary:
-	_ensure_surface_presenter()
-	return _surface_presenter.debug_console_nodes()
+	return _surface().debug_console_nodes()
 
 
 func connect_debug_console_submit(on_submitted: Callable) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.connect_debug_console_submit(on_submitted)
+	_surface().connect_debug_console_submit(on_submitted)
 
 
 func set_debug_toggle_button_visible(visible: bool) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_debug_toggle_button_visible(visible)
+	_surface().set_debug_toggle_button_visible(visible)
 
 
 func set_debug_overlay_visible(visible: bool) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_debug_overlay_visible(visible)
+	_surface().set_debug_overlay_visible(visible)
 
 
 func show_settings_overlay(settings: Variant) -> void:
@@ -150,132 +143,89 @@ func hide_settings_overlay() -> void:
 
 
 func toggle_debug_overlay() -> bool:
-	_ensure_surface_presenter()
-	return _surface_presenter.toggle_debug_overlay()
+	return _surface().toggle_debug_overlay()
 
 
 func bind_outcome_overlay(outcome_overlay: Variant, config: Dictionary = {}) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.bind_outcome_overlay(outcome_overlay, config)
+	_surface().bind_outcome_overlay(outcome_overlay, config)
 
 
 func set_outcome_body_text(text: String) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_outcome_body_text(text)
+	_surface().set_outcome_body_text(text)
 
 
 func set_outcome_next_button_disabled(disabled: bool) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_outcome_next_button_disabled(disabled)
+	_surface().set_outcome_next_button_disabled(disabled)
 
 
 func next_button_text() -> String:
-	_ensure_surface_presenter()
-	return _surface_presenter.next_button_text()
+	return _surface().next_button_text()
 
 
 func bind_player_hud(popover_parent: Control = null, popover_z_index: int = 210) -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.bind_player_hud(popover_parent, popover_z_index)
+	_player_hud().bind_player_hud(popover_parent, popover_z_index)
 
 
 func enemy_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return Vector2.ZERO
-	return _player_hud_presenter.vfx_target_global("_enemy_portrait", vertical_bias)
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.presenter_target_global(_player_hud_presenter, "_enemy_portrait", vertical_bias)
 
 
 func enemy_vfx_size() -> Vector2:
 	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return Vector2.ZERO
-	return _player_hud_presenter.vfx_size("_enemy_portrait")
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.presenter_size(_player_hud_presenter, "_enemy_portrait")
 
 
 func player_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return Vector2.ZERO
-	return _player_hud_presenter.vfx_target_global("_player_portrait", vertical_bias)
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.presenter_target_global(_player_hud_presenter, "_player_portrait", vertical_bias)
 
 
 func player_hp_bar_vfx_target_global(vertical_bias: float = 0.5) -> Vector2:
 	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return Vector2.ZERO
-	return _player_hud_presenter.vfx_target_global("_player_hp_bar", vertical_bias)
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.presenter_target_global(_player_hud_presenter, "_player_hp_bar", vertical_bias)
 
 
 func player_hp_bar_vfx_size() -> Vector2:
 	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return Vector2.ZERO
-	return _player_hud_presenter.vfx_size("_player_hp_bar")
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.presenter_size(_player_hud_presenter, "_player_hp_bar")
 
 
 func board_vfx_target_global() -> Vector2:
-	return _control_center_global(_board if _board != null else _board_panel)
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.board_target_global(_board, _board_panel)
 
 
 func board_fullscreen_vfx_size() -> Vector2:
-	var layer_size := Vector2.ZERO
-	if _vfx_layer != null:
-		layer_size = _vfx_layer.get_global_rect().size
-	var board_size := Vector2.ZERO
-	var board_control := _board if _board != null else _board_panel
-	if board_control != null:
-		board_size = board_control.get_global_rect().size
-	return Vector2(
-		maxf(layer_size.x, board_size.x * 1.55),
-		maxf(layer_size.y, board_size.y * 1.55)
-	)
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.board_fullscreen_size(_vfx_layer, _board, _board_panel)
 
 
 func vfx_presenter_bindings(visual_registry: Variant, player_loadout_hud: Variant, timer_owner: Node) -> Dictionary:
-	var resolved_visual_registry: Variant = visual_registry if visual_registry != null else _visuals
-	var resolved_player_loadout_hud: Variant = player_loadout_hud if player_loadout_hud != null else _player_loadout_hud
-	return {
-		"vfx_layer": _vfx_layer,
-		"visual_registry": resolved_visual_registry,
-		"player_loadout_hud": resolved_player_loadout_hud,
-		"elemental_mastery_cards": _elemental_mastery_cards,
-		"timer_owner": timer_owner,
-		"shake_target": _layout_root,
-	}
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.vfx_presenter_bindings(
+		_vfx_layer, _visuals, _player_loadout_hud, _elemental_mastery_cards, _layout_root, visual_registry, player_loadout_hud, timer_owner
+	)
 
 
 func resolve_presenter_bindings(
-	board_controller: Variant,
-	timer_owner: Node,
-	spawn_vfx_texture_callback: Callable,
-	combo_sound_callback: Callable
+	board_controller: Variant, timer_owner: Node, spawn_vfx_texture_callback: Callable, combo_sound_callback: Callable
 ) -> Dictionary:
-	return {
-		"board": _board,
-		"board_view": _board_view,
-		"board_panel": _board_panel,
-		"board_controller": board_controller,
-		"timer_owner": timer_owner,
-		"spawn_vfx_texture_callback": spawn_vfx_texture_callback,
-		"combo_sound_callback": combo_sound_callback,
-	}
+	return COMBAT_VIEW_VFX_BINDINGS_SCRIPT.resolve_presenter_bindings(
+		_board, _board_view, _board_panel, board_controller, timer_owner, spawn_vfx_texture_callback, combo_sound_callback
+	)
 
 
 func bootstrap_background() -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.bootstrap_background()
+	_surface().bootstrap_background()
 
 
 func set_top_bar_text(level_text: String, hint_text: String) -> void:
 	_ensure_hud_snapshot_presenter()
 	if _hud_snapshot_presenter != null:
-		_hud_snapshot_presenter.apply_top_hud({
+		var payload := {
 			"level_text": level_text,
 			"enemy_step_text": _enemy_step_label.text if _enemy_step_label != null else "FIGHT",
 			"gold_text": hint_text,
-		})
+		}
+		_hud_snapshot_presenter.apply_top_hud(payload)
 
 
 func setup_rendering_helpers() -> void:
@@ -293,13 +243,14 @@ func setup_rendering_helpers() -> void:
 func bind_layout_presenter() -> void:
 	if _combat_layout_presenter == null:
 		_combat_layout_presenter = COMBAT_LAYOUT_PRESENTER_SCRIPT.new()
-	_combat_layout_presenter.bind(COMBAT_LAYOUT_PRESENTER_SCRIPT.nodes_from_root_nodes(_root_nodes, {
+	var extras := {
 		"enemy_stage_backdrop": _enemy_stage_backdrop,
 		"enemy_ground_shadow": _enemy_ground_shadow,
 		"enemy_text_scrim": _enemy_text_scrim,
 		"player_loadout_hud": _player_loadout_hud,
 		"outcome_overlay": _outcome_overlay,
-	}))
+	}
+	_combat_layout_presenter.bind(COMBAT_LAYOUT_PRESENTER_SCRIPT.nodes_from_root_nodes(_root_nodes, extras))
 
 
 func apply_combat_layout(viewport_size: Vector2, timer_seconds: float, timer_state: String) -> Dictionary:
@@ -327,96 +278,71 @@ func apply_loadout_rail_layout() -> void:
 
 
 func render_player_loadout(payload: Dictionary, deferred_layout: bool = true) -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.render_player_loadout(payload)
+	_player_hud().render_player_loadout(payload)
 	if deferred_layout:
 		call_deferred("apply_loadout_rail_layout")
 
 
 func handle_player_hud_global_click(global_position: Vector2) -> bool:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return false
-	return bool(_player_hud_presenter.handle_global_click(global_position))
+	return bool(_player_hud().handle_global_click(global_position))
 
 
 func hide_player_hud_slot_popover() -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.hide_slot_popover()
+	_player_hud().hide_slot_popover()
 
 
 func lookup_player_hud_content_definition(item_id: String) -> Dictionary:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter == null:
-		return {}
-	return _player_hud_presenter.lookup_content_definition(item_id)
+	return _player_hud().lookup_content_definition(item_id)
 
 
 func clear_hovered_combat_mastery() -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.clear_hovered_mastery()
+	_player_hud().clear_hovered_mastery()
 
 
 func set_hovered_combat_mastery(orb_id: int) -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.set_hovered_mastery(orb_id)
+	_player_hud().set_hovered_mastery(orb_id)
 
 
 func clear_combat_mastery_feedback() -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.clear_mastery_feedback()
+	_player_hud().clear_mastery_feedback()
 
 
 func set_combat_mastery_feedback(orb_id: int, total: int) -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.set_mastery_feedback(orb_id, total)
+	_player_hud().set_mastery_feedback(orb_id, total)
 
 
 func pulse_combat_modifier_sources(sources: Array) -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.pulse_modifier_sources(sources)
+	_player_hud().pulse_modifier_sources(sources)
 
 
 func clear_combat_mastery_hover_ui() -> void:
-	_ensure_player_hud_presenter()
-	if _player_hud_presenter != null:
-		_player_hud_presenter.clear_mastery_hover_ui()
+	_player_hud().clear_mastery_hover_ui()
 
 
 func apply_visual_chrome(style_config: Dictionary) -> void:
-	COMBAT_CHROME_STYLER_SCRIPT.apply_visual_chrome(
-		COMBAT_CHROME_STYLER_SCRIPT.nodes_from_root_nodes(_root_nodes, {
-			"enemy_stage_backdrop": _enemy_stage_backdrop,
-			"enemy_ground_shadow": _enemy_ground_shadow,
-			"enemy_text_scrim": _enemy_text_scrim,
-			"debug_console": _debug_console,
-			"player_loadout_hud": _player_loadout_hud,
-			"player_hud_nodes": _combat_player_hud_nodes(),
-			"visual_registry": _visuals,
-		}),
-		style_config
-	)
+	var extras := {
+		"enemy_stage_backdrop": _enemy_stage_backdrop,
+		"enemy_ground_shadow": _enemy_ground_shadow,
+		"enemy_text_scrim": _enemy_text_scrim,
+		"debug_console": _debug_console,
+		"player_loadout_hud": _player_loadout_hud,
+		"player_hud_nodes": _combat_player_hud_nodes(),
+		"visual_registry": _visuals,
+	}
+	COMBAT_VIEW_CHROME_BINDINGS_SCRIPT.apply_visual_chrome(COMBAT_CHROME_STYLER_SCRIPT, _root_nodes, extras, style_config)
 	_ensure_character_visuals_presenter()
 	if _character_visuals_presenter != null:
 		_character_visuals_presenter.ensure_placeholders()
-	_apply_zone_guides()
+	_apply_zone_guide_bindings()
 
 
 func set_zone_guides_enabled(enabled: bool) -> void:
 	_zone_guides_enabled = enabled
-	_apply_zone_guides()
+	_apply_zone_guide_bindings()
 
 
 func set_vfx_layer_visible(visible: bool) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.set_vfx_layer_visible(visible)
+	_surface().set_vfx_layer_visible(visible)
 
 
 func apply_hud_snapshot(hud_snapshot: Dictionary, callbacks: Dictionary = {}) -> void:
@@ -439,8 +365,7 @@ func refresh_character_portraits(enemy_id: String) -> void:
 
 
 func sync_timer_display(seconds_left: float, state: String) -> void:
-	_ensure_surface_presenter()
-	_surface_presenter.sync_timer_display(seconds_left, state)
+	_surface().sync_timer_display(seconds_left, state)
 
 
 func start_enemy_intent_hover_emphasis(kind: String) -> void:
@@ -502,16 +427,19 @@ func _ensure_tutorial_end_overlay_coordinator() -> void:
 		return
 	if _tutorial_end_overlay_coordinator == null:
 		_tutorial_end_overlay_coordinator = COMBAT_TUTORIAL_END_OVERLAY_COORDINATOR_SCRIPT.new()
-	_tutorial_end_overlay_coordinator.bind(
-		_layout_root,
-		{
-			"equipment_icons": _equipment_icons,
-			"elemental_mastery_panel": _elemental_mastery_panel,
-		},
-		{
-			"continue": Callable(self, "_emit_tutorial_end_continue_pressed"),
-			"main_menu": Callable(self, "_emit_tutorial_end_main_menu_pressed"),
-		}
+	(
+		_tutorial_end_overlay_coordinator
+		. bind(
+			_layout_root,
+			{
+				"equipment_icons": _equipment_icons,
+				"elemental_mastery_panel": _elemental_mastery_panel,
+			},
+			{
+				"continue": Callable(self, "_emit_tutorial_end_continue_pressed"),
+				"main_menu": Callable(self, "_emit_tutorial_end_main_menu_pressed"),
+			}
+		)
 	)
 
 
@@ -550,13 +478,16 @@ func _sync_enemy_stage(snapshot: Dictionary) -> void:
 func _ensure_enemy_intent_presenter() -> void:
 	if _enemy_intent_presenter == null:
 		_enemy_intent_presenter = COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.new()
-	_enemy_intent_presenter.bind(
-		_root_nodes,
-		{
-			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_INTENT_HOVERED: Callable(self, "_emit_enemy_intent_bubble_hovered"),
-			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_BLOCK_HOVERED: Callable(self, "_emit_enemy_block_preview_hovered"),
-			COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
-		}
+	(
+		_enemy_intent_presenter
+		. bind(
+			_root_nodes,
+			{
+				COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_INTENT_HOVERED: Callable(self, "_emit_enemy_intent_bubble_hovered"),
+				COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_BLOCK_HOVERED: Callable(self, "_emit_enemy_block_preview_hovered"),
+				COMBAT_ENEMY_INTENT_PRESENTER_SCRIPT.CALLBACK_HOVER_ENDED: Callable(self, "_on_intent_damage_preview_hover_ended"),
+			}
+		)
 	)
 
 
@@ -573,19 +504,22 @@ func _ensure_settings_overlay_coordinator() -> void:
 		return
 	if _settings_overlay_coordinator == null:
 		_settings_overlay_coordinator = COMBAT_SETTINGS_OVERLAY_COORDINATOR_SCRIPT.new()
-	_settings_overlay_coordinator.bind(
-		_layout_root,
-		{
-			"continue": Callable(self, "_emit_settings_continue_pressed"),
-			"new_run": Callable(self, "_emit_settings_new_run_pressed"),
-			"main_menu": Callable(self, "_emit_settings_main_menu_pressed"),
-			"speed_selected": Callable(self, "_emit_settings_speed_selected"),
-			"quality_selected": Callable(self, "_emit_settings_quality_selected"),
-			"reduced_motion_toggled": Callable(self, "_emit_settings_reduced_motion_toggled"),
-			"game_juice_toggled": Callable(self, "_emit_settings_game_juice_toggled"),
-			"game_juice_flag_toggled": Callable(self, "_emit_settings_game_juice_flag_toggled"),
-			"reset_defaults": Callable(self, "_emit_settings_defaults_reset"),
-		}
+	(
+		_settings_overlay_coordinator
+		. bind(
+			_layout_root,
+			{
+				"continue": Callable(self, "_emit_settings_continue_pressed"),
+				"new_run": Callable(self, "_emit_settings_new_run_pressed"),
+				"main_menu": Callable(self, "_emit_settings_main_menu_pressed"),
+				"speed_selected": Callable(self, "_emit_settings_speed_selected"),
+				"quality_selected": Callable(self, "_emit_settings_quality_selected"),
+				"reduced_motion_toggled": Callable(self, "_emit_settings_reduced_motion_toggled"),
+				"game_juice_toggled": Callable(self, "_emit_settings_game_juice_toggled"),
+				"game_juice_flag_toggled": Callable(self, "_emit_settings_game_juice_flag_toggled"),
+				"reset_defaults": Callable(self, "_emit_settings_defaults_reset"),
+			}
+		)
 	)
 
 
@@ -623,15 +557,6 @@ func _emit_settings_game_juice_flag_toggled(flag_key: String) -> void:
 
 func _emit_settings_defaults_reset() -> void:
 	settings_defaults_reset.emit()
-
-
-func _control_center_global(control: Control) -> Vector2:
-	if control == null:
-		return Vector2.ZERO
-	var rect := control.get_global_rect()
-	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
-		return Vector2.ZERO
-	return rect.position + rect.size * 0.5
 
 
 func _layout_enemy_block_intent_preview() -> void:
@@ -678,12 +603,17 @@ func _ensure_enemy_stage_presenter() -> void:
 	if _enemy_stage_presenter == null:
 		_enemy_stage_presenter = COMBAT_ENEMY_STAGE_PRESENTER_SCRIPT.new()
 	_enemy_stage_presenter.bind(_enemy_stage, _enemy_portrait, _visuals)
-	_enemy_stage_presenter.bind_snapshot_nodes({
-		"enemy_hp_bar": _enemy_hp_bar,
-		"enemy_name_label": _enemy_name_label,
-		"enemy_label": _enemy_label,
-		"enemy_hp_text_label": _enemy_hp_text_label,
-	})
+	(
+		_enemy_stage_presenter
+		. bind_snapshot_nodes(
+			{
+				"enemy_hp_bar": _enemy_hp_bar,
+				"enemy_name_label": _enemy_name_label,
+				"enemy_label": _enemy_label,
+				"enemy_hp_text_label": _enemy_hp_text_label,
+			}
+		)
+	)
 	if _enemy_stage_presenter.has_method("set_reaction_settings"):
 		_enemy_stage_presenter.set_reaction_settings(_enemy_reaction_enabled, _enemy_reaction_reduced_motion)
 
@@ -696,22 +626,26 @@ func _sync_enemy_stage_presenter_nodes() -> void:
 	_enemy_text_scrim = _enemy_stage_presenter.text_scrim()
 
 
-func _apply_zone_guides() -> void:
-	_set_zone_guide(_top_bar, "TopBar")
-	_set_zone_guide(_enemy_panel, "EnemyPanel")
-	_set_zone_guide(_combat_strip, "CombatStrip")
-	_set_zone_guide(_board_panel, "BoardPanel")
-	_set_zone_guide(_player_panel, "PlayerPanel")
-
-
-func _set_zone_guide(zone: Control, label_text: String) -> void:
-	COMBAT_CHROME_STYLER_SCRIPT.apply_zone_guide(zone, label_text, _zone_guides_enabled)
+func _apply_zone_guide_bindings() -> void:
+	var zones := {
+		"TopBar": _top_bar,
+		"EnemyPanel": _enemy_panel,
+		"CombatStrip": _combat_strip,
+		"BoardPanel": _board_panel,
+		"PlayerPanel": _player_panel,
+	}
+	COMBAT_VIEW_CHROME_BINDINGS_SCRIPT.apply_zone_guides(COMBAT_CHROME_STYLER_SCRIPT, zones, _zone_guides_enabled)
 
 
 func _ensure_surface_presenter() -> void:
 	if _surface_presenter == null:
 		_surface_presenter = COMBAT_SURFACE_PRESENTER_SCRIPT.new()
 	_sync_surface_presenter()
+
+
+func _surface() -> Variant:
+	_ensure_surface_presenter()
+	return _surface_presenter
 
 
 func _sync_surface_presenter() -> void:
@@ -728,6 +662,11 @@ func _ensure_player_hud_presenter() -> void:
 	if _player_hud_presenter == null:
 		_player_hud_presenter = COMBAT_PLAYER_HUD_PRESENTER_SCRIPT.new()
 	_player_hud_presenter.bind(_player_loadout_hud, _root_nodes)
+
+
+func _player_hud() -> Variant:
+	_ensure_player_hud_presenter()
+	return _player_hud_presenter
 
 
 func _ensure_hud_snapshot_presenter() -> void:
