@@ -37,13 +37,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Developer VFX gallery script owns catalog loading, preview construction, controls, and presentation; split gallery UI presenters as the tool stabilizes.",
 	},
-	"res://scripts/board/board_view.gd":
-	{
-		"baseline": 598,
-		"owner": "R-P1-3",
-		"reason":
-		"Board view still owns grid layout, cell rendering, touch projection, selection state, and animation surfaces; split render and input helpers.",
-	},
 }
 
 
