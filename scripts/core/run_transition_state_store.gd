@@ -4,10 +4,12 @@ class_name RunTransitionStateStore
 const PLAYER_PROGRESSION_STATE_SCRIPT := preload("res://scripts/run/player_progression_state.gd")
 
 var _owner
+var _hooks: Dictionary = {}
 
 
-func _init(owner) -> void:
+func _init(owner, hooks: Dictionary = {}) -> void:
 	_owner = owner
+	_hooks = hooks
 
 
 func snapshot() -> Dictionary:
@@ -21,50 +23,50 @@ func snapshot() -> Dictionary:
 		"tutorial_seed": _owner.tutorial_seed,
 		"run_gold": _owner.run_gold,
 		"run_score": _owner.run_score,
-		"run_score_banked": _owner._run_score_banked,
+		"run_score_banked": _call_hook("run_score_banked", []),
 		"dungeon_level": _owner.dungeon_level,
 		"current_step_key": _owner.current_step_key,
-		"step_index": _owner._step_index,
+		"step_index": _call_hook("step_index", []),
 		"enemies_defeated": _owner.enemies_defeated,
 		"bosses_defeated": _owner.bosses_defeated,
 		"total_gold_earned": _owner.total_gold_earned,
-		"current_encounter": _owner._current_encounter.duplicate(true),
-		"boss_relic_reward_options": _owner._boss_relic_reward_options.duplicate(true),
-		"boss_reward_claimed_relic_id": _owner._boss_reward_claimed_relic_id,
-		"relic_offer_ids_by_level": _owner._relic_offer_ids_by_level.duplicate(true),
-		"run_summary": _owner._run_summary.duplicate(true),
+		"current_encounter": Dictionary(_call_hook("current_encounter", [])).duplicate(true),
+		"boss_relic_reward_options": Array(_call_hook("boss_relic_reward_options", [])).duplicate(true),
+		"boss_reward_claimed_relic_id": String(_call_hook("boss_reward_claimed_relic_id", [])),
+		"relic_offer_ids_by_level": Dictionary(_call_hook("relic_offer_ids_by_level", [])).duplicate(true),
+		"run_summary": Dictionary(_call_hook("run_summary", [])).duplicate(true),
 	}
-	snapshot_value.merge(_owner._ensure_run_logger().transition_snapshot(), true)
-	snapshot_value.merge(_owner._ensure_scene_router().transition_snapshot(), true)
+	snapshot_value.merge(Dictionary(_call_hook("run_logger_transition_snapshot", [])), true)
+	snapshot_value.merge(Dictionary(_call_hook("scene_router_transition_snapshot", [])), true)
 	return snapshot_value
 
 
 func restore(snapshot_value: Dictionary) -> bool:
 	if snapshot_value.is_empty():
 		return false
-	var signal_before: Dictionary = _owner._capture_run_signal_state()
+	var signal_before: Dictionary = _call_hook("capture_run_signal_state", [])
 	_owner.run_active = bool(snapshot_value.get("run_active", _owner.run_active))
 	_owner.run_victory = bool(snapshot_value.get("run_victory", _owner.run_victory))
 	_owner.tutorial_run_active = bool(snapshot_value.get("tutorial_run_active", _owner.tutorial_run_active))
 	_owner.tutorial_seed = maxi(1, int(snapshot_value.get("tutorial_seed", _owner.tutorial_seed)))
-	_owner._run_score_banked = bool(snapshot_value.get("run_score_banked", _owner._run_score_banked))
+	_call_hook("set_run_score_banked", [bool(snapshot_value.get("run_score_banked", _call_hook("run_score_banked", [])))])
 	_owner.ensure_wallet_service().restore_from_snapshot(_owner, snapshot_value)
 	_owner.dungeon_level = maxi(1, int(snapshot_value.get("dungeon_level", _owner.dungeon_level)))
 	_restore_step(snapshot_value)
 	_owner.enemies_defeated = maxi(0, int(snapshot_value.get("enemies_defeated", _owner.enemies_defeated)))
 	_owner.bosses_defeated = maxi(0, int(snapshot_value.get("bosses_defeated", _owner.bosses_defeated)))
-	_owner._current_encounter = Dictionary(snapshot_value.get("current_encounter", {})).duplicate(true)
-	_owner._boss_relic_reward_options = Array(snapshot_value.get("boss_relic_reward_options", [])).duplicate(true)
-	_owner._boss_reward_claimed_relic_id = String(snapshot_value.get("boss_reward_claimed_relic_id", ""))
-	_owner._relic_offer_ids_by_level = Dictionary(snapshot_value.get("relic_offer_ids_by_level", {})).duplicate(true)
-	_owner._run_summary = Dictionary(snapshot_value.get("run_summary", {})).duplicate(true)
-	_owner._ensure_run_logger().restore_transition_snapshot(snapshot_value)
-	_owner._ensure_scene_router().restore_transition_snapshot(snapshot_value)
+	_call_hook("set_current_encounter", [Dictionary(snapshot_value.get("current_encounter", {})).duplicate(true)])
+	_call_hook("set_boss_relic_reward_options", [Array(snapshot_value.get("boss_relic_reward_options", [])).duplicate(true)])
+	_call_hook("set_boss_reward_claimed_relic_id", [String(snapshot_value.get("boss_reward_claimed_relic_id", ""))])
+	_call_hook("set_relic_offer_ids_by_level", [Dictionary(snapshot_value.get("relic_offer_ids_by_level", {})).duplicate(true)])
+	_call_hook("set_run_summary", [Dictionary(snapshot_value.get("run_summary", {})).duplicate(true)])
+	_call_hook("restore_run_logger_transition_snapshot", [snapshot_value])
+	_call_hook("restore_scene_router_transition_snapshot", [snapshot_value])
 	_restore_player_state(Dictionary(snapshot_value.get("player_state", {})))
 	_restore_player_progression_state(Dictionary(snapshot_value.get("player_progression_state", {})))
 	_restore_shop_state(Dictionary(snapshot_value.get("shop_state", {})))
-	_owner._sync_player_gold_from_run()
-	_owner._emit_run_state_signals(signal_before, "restore_run_transition_state", "restore_run_transition_state")
+	_call_hook("sync_player_gold_from_run", [])
+	_call_hook("emit_run_state_signals", [signal_before, "restore_run_transition_state", "restore_run_transition_state"])
 	return true
 
 
@@ -73,15 +75,15 @@ func _restore_step(snapshot_value: Dictionary) -> void:
 	var saved_step_index := int(snapshot_value.get("step_index", -1))
 	var saved_step_index_valid: bool = saved_step_index >= 0 and saved_step_index < _owner.LEVEL_SEQUENCE.size()
 	if saved_step_index_valid and String(_owner.LEVEL_SEQUENCE[saved_step_index]) == _owner.current_step_key:
-		_owner._step_index = saved_step_index
+		_call_hook("set_step_index", [saved_step_index])
 	elif _owner.LEVEL_SEQUENCE.has(_owner.current_step_key):
-		_owner._step_index = _owner.LEVEL_SEQUENCE.find(_owner.current_step_key)
+		_call_hook("set_step_index", [_owner.LEVEL_SEQUENCE.find(_owner.current_step_key)])
 	elif saved_step_index_valid:
-		_owner._step_index = saved_step_index
-		_owner.current_step_key = String(_owner.LEVEL_SEQUENCE[_owner._step_index])
+		_call_hook("set_step_index", [saved_step_index])
+		_owner.current_step_key = String(_owner.LEVEL_SEQUENCE[int(_call_hook("step_index", []))])
 	else:
-		_owner._step_index = 0
-		_owner.current_step_key = String(_owner.LEVEL_SEQUENCE[_owner._step_index])
+		_call_hook("set_step_index", [0])
+		_owner.current_step_key = String(_owner.LEVEL_SEQUENCE[int(_call_hook("step_index", []))])
 
 
 func _snapshot_player_state() -> Dictionary:
@@ -159,3 +161,11 @@ func _string_array_from_snapshot(raw_values: Variant, fixed_size: int = -1) -> A
 		while out.size() > fixed_size:
 			out.remove_at(out.size() - 1)
 	return out
+
+
+func _call_hook(key: String, args: Array) -> Variant:
+	var hook: Callable = _hooks.get(key, Callable())
+	if not hook.is_valid():
+		push_error("RunTransitionStateStore missing required hook: %s" % key)
+		return null
+	return hook.callv(args)
