@@ -16,13 +16,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat orchestration is now below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while callback and binding seams are converted into wiring-only ownership.",
 	},
-	"res://scripts/combat/combat_view.gd":
-	{
-		"baseline": 549,
-		"owner": "P1-2/P5-2",
-		"reason":
-		"Combat view now routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.",
-	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
 		"baseline": 704,
