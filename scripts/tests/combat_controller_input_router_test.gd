@@ -84,6 +84,15 @@ class FakeTutorialDragFlow:
 		end_results.append(result)
 
 
+class FakeTutorialRouter:
+	extends RefCounted
+
+	var bind_drag_flow_calls := 0
+
+	func bind_drag_flow() -> void:
+		bind_drag_flow_calls += 1
+
+
 class FakeDebugRuntime:
 	extends RefCounted
 
@@ -125,12 +134,13 @@ class FakeOwner:
 	var _view_actions: Variant = FakeViewActions.new()
 	var _mastery_preview_coordinator: Variant = FakeMasteryPreviewCoordinator.new()
 	var _tutorial_drag_flow: Variant = FakeTutorialDragFlow.new()
+	var _tutorial_router: Variant = FakeTutorialRouter.new()
 	var _debug_runtime: Variant = FakeDebugRuntime.new()
 	var _hud_update_router: Variant = FakeHudUpdateRouter.new()
 	var _model: Variant = FakeModel.new()
 	var bind_view_actions_calls := 0
 	var bind_mastery_calls := 0
-	var bind_tutorial_calls := 0
+	var bind_tutorial_router_calls := 0
 	var bind_hud_calls := 0
 	var set_input_phase_calls: Array[int] = []
 	var input_phase := InputPhase.PLAYER_INPUT
@@ -144,8 +154,8 @@ class FakeOwner:
 	func _bind_mastery_preview_coordinator() -> void:
 		bind_mastery_calls += 1
 
-	func _bind_tutorial_drag_flow() -> void:
-		bind_tutorial_calls += 1
+	func _bind_tutorial_router() -> void:
+		bind_tutorial_router_calls += 1
 
 	func _bind_hud_update_router() -> void:
 		bind_hud_calls += 1
@@ -197,6 +207,7 @@ func _test_start_and_end_drag_routes_to_tutorial_flow() -> String:
 	router.handle_drag_input_result({"action": "end", "ok": true})
 
 	var tutorial: FakeTutorialDragFlow = owner._tutorial_drag_flow
+	var tutorial_router: FakeTutorialRouter = owner._tutorial_router
 	var mastery: FakeMasteryPreviewCoordinator = owner._mastery_preview_coordinator
 	var view: FakeView = owner._view
 	if mastery.cleared != 1:
@@ -205,6 +216,8 @@ func _test_start_and_end_drag_routes_to_tutorial_flow() -> String:
 		return "Expected start-drag to notify the tutorial drag flow."
 	if tutorial.end_results != [{"action": "end", "ok": true}]:
 		return "Expected end-drag to forward the drag result."
+	if owner.bind_tutorial_router_calls != 2 or tutorial_router.bind_drag_flow_calls != 2:
+		return "Expected drag start/end to bind tutorial flow through the tutorial router."
 	if view.timer_syncs.size() != 1 or view.timer_syncs[0].get("seconds_left") != 2.5:
 		return "Expected start-drag to refresh the timer display with remaining drag time."
 	return ""
