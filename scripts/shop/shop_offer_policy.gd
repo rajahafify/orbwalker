@@ -8,7 +8,8 @@ const ITEM_TYPE_TREASURE_CHEST := "treasure_chest"
 const ITEM_TYPE_RELIC := "relic"
 
 const DEFAULT_PRICING := {
-	"rarity_base": {
+	"rarity_base":
+	{
 		"common": 10,
 		"uncommon": 16,
 		"rare": 24,
@@ -22,6 +23,20 @@ const SHOP_MULTIPLIER_MIN := 0.1
 
 var _rng := RandomNumberGenerator.new()
 var _seeded: bool = false
+var _content_lookups: Dictionary = {}
+
+
+func _init() -> void:
+	register_content_lookup(ITEM_TYPE_EQUIPMENT, func(content: Variant, content_id: String) -> Dictionary: return content.get_equipment(content_id))
+	register_content_lookup(ITEM_TYPE_CONSUMABLE, func(content: Variant, content_id: String) -> Dictionary: return content.get_consumable(content_id))
+	register_content_lookup(ITEM_TYPE_MASTERY_CARD, func(content: Variant, content_id: String) -> Dictionary: return content.get_mastery_card(content_id))
+	register_content_lookup(ITEM_TYPE_TREASURE_CHEST, func(content: Variant, content_id: String) -> Dictionary: return content.get_treasure_chest(content_id))
+
+
+func register_content_lookup(entry_type: String, lookup: Callable) -> void:
+	if entry_type == "" or not lookup.is_valid():
+		return
+	_content_lookups[entry_type] = lookup
 
 
 func set_rng_seed(seed_value: int) -> void:
@@ -55,7 +70,11 @@ func item_offers(run_state: Node, content: Variant, level: int) -> Array[Diction
 	if not guaranteed_entry.is_empty():
 		selected_entries.append(guaranteed_entry)
 		pool = _pool_without_entry(pool, guaranteed_entry)
-	if selected_entries.size() < 3 and _entries_include_type(pool, ITEM_TYPE_TREASURE_CHEST) and not _entries_include_type(selected_entries, ITEM_TYPE_TREASURE_CHEST):
+	if (
+		selected_entries.size() < 3
+		and _entries_include_type(pool, ITEM_TYPE_TREASURE_CHEST)
+		and not _entries_include_type(selected_entries, ITEM_TYPE_TREASURE_CHEST)
+	):
 		var guaranteed_treasure_chest := _pick_random_entry_of_type(pool, ITEM_TYPE_TREASURE_CHEST)
 		if not guaranteed_treasure_chest.is_empty():
 			selected_entries.append(guaranteed_treasure_chest)
@@ -63,11 +82,7 @@ func item_offers(run_state: Node, content: Variant, level: int) -> Array[Diction
 	while selected_entries.size() < 3:
 		var has_treasure_chest_selected := _entries_include_type(selected_entries, ITEM_TYPE_TREASURE_CHEST)
 		var allow_treasure_chest := not has_treasure_chest_selected or not _entries_include_non_treasure_chest(pool)
-		var weighted_entry := _pick_weighted_entry(
-			pool,
-			_count_entries_of_type(selected_entries, ITEM_TYPE_CONSUMABLE) < 1,
-			allow_treasure_chest
-		)
+		var weighted_entry := _pick_weighted_entry(pool, _count_entries_of_type(selected_entries, ITEM_TYPE_CONSUMABLE) < 1, allow_treasure_chest)
 		if weighted_entry.is_empty():
 			break
 		selected_entries.append(weighted_entry)
@@ -81,15 +96,7 @@ func item_offers(run_state: Node, content: Variant, level: int) -> Array[Diction
 		var content_data := content_by_type(content, entry_type, content_id)
 		if content_data.is_empty():
 			continue
-		offers.append(
-			offer_from_content(
-				content,
-				entry_type,
-				content_data,
-				level,
-				run_state.ensure_shop_state().next_offer_id("item")
-			)
-		)
+		offers.append(offer_from_content(content, entry_type, content_data, level, run_state.ensure_shop_state().next_offer_id("item")))
 	return offers
 
 
@@ -113,13 +120,7 @@ func relic_offer(run_state: Node, content: Variant, level: int) -> Dictionary:
 	var relic_data: Dictionary = content.get_relic(relic_id)
 	if relic_data.is_empty():
 		return {}
-	var offer := offer_from_content(
-		content,
-		ITEM_TYPE_RELIC,
-		relic_data,
-		level,
-		run_state.ensure_shop_state().next_offer_id("relic")
-	)
+	var offer := offer_from_content(content, ITEM_TYPE_RELIC, relic_data, level, run_state.ensure_shop_state().next_offer_id("relic"))
 	if cached_offer_owned:
 		offer["sold_out"] = true
 		offer["available"] = false
@@ -140,27 +141,42 @@ func treasure_chest_options(run_state: Node, content: Variant, treasure_chest_da
 			continue
 		if target_orb_id >= 0 and int(item.get("target_orb_id", -1)) != target_orb_id:
 			continue
-		candidates.append({
-			"type": ITEM_TYPE_EQUIPMENT,
-			"content_id": item_id,
-			"display_name": String(item.get("display_name", "Equipment")),
-		})
+		(
+			candidates
+			. append(
+				{
+					"type": ITEM_TYPE_EQUIPMENT,
+					"content_id": item_id,
+					"display_name": String(item.get("display_name", "Equipment")),
+				}
+			)
+		)
 	for item in content.list_consumables():
 		if target_orb_id >= 0 and int(item.get("target_orb_id", -1)) != target_orb_id:
 			continue
-		candidates.append({
-			"type": ITEM_TYPE_CONSUMABLE,
-			"content_id": String(item.get("id", "")),
-			"display_name": String(item.get("display_name", "Consumable")),
-		})
+		(
+			candidates
+			. append(
+				{
+					"type": ITEM_TYPE_CONSUMABLE,
+					"content_id": String(item.get("id", "")),
+					"display_name": String(item.get("display_name", "Consumable")),
+				}
+			)
+		)
 	for item in content.list_mastery_cards():
 		if target_orb_id >= 0 and int(item.get("target_orb_id", -1)) != target_orb_id:
 			continue
-		candidates.append({
-			"type": ITEM_TYPE_MASTERY_CARD,
-			"content_id": String(item.get("id", "")),
-			"display_name": String(item.get("display_name", "Mastery")),
-		})
+		(
+			candidates
+			. append(
+				{
+					"type": ITEM_TYPE_MASTERY_CARD,
+					"content_id": String(item.get("id", "")),
+					"display_name": String(item.get("display_name", "Mastery")),
+				}
+			)
+		)
 
 	if candidates.is_empty():
 		return options
@@ -197,13 +213,7 @@ func first_shop_guarantee_entry(run_state: Node, content: Variant, level: int, p
 	var target_price := 10
 	if run_state.has_method("prototype_fight_gold_reward_for"):
 		target_price = int(run_state.prototype_fight_gold_reward_for(level, "enemy_1"))
-	var preferred_shortsword := _matching_pool_entry_with_price(
-		content,
-		{"type": ITEM_TYPE_EQUIPMENT, "id": "shortsword"},
-		level,
-		target_price,
-		pool
-	)
+	var preferred_shortsword := _matching_pool_entry_with_price(content, {"type": ITEM_TYPE_EQUIPMENT, "id": "shortsword"}, level, target_price, pool)
 	if not preferred_shortsword.is_empty() and _entry_is_damage_equipment(content, preferred_shortsword):
 		return preferred_shortsword
 	var fallback_damage := _first_affordable_damage_equipment(content, level, target_price, pool)
@@ -226,17 +236,10 @@ func entry_offer_price(content: Variant, entry: Dictionary, level: int) -> int:
 
 
 func content_by_type(content: Variant, entry_type: String, content_id: String) -> Dictionary:
-	match entry_type:
-		ITEM_TYPE_EQUIPMENT:
-			return content.get_equipment(content_id)
-		ITEM_TYPE_CONSUMABLE:
-			return content.get_consumable(content_id)
-		ITEM_TYPE_MASTERY_CARD:
-			return content.get_mastery_card(content_id)
-		ITEM_TYPE_TREASURE_CHEST:
-			return content.get_treasure_chest(content_id)
-		_:
-			return {}
+	var lookup: Callable = _content_lookups.get(entry_type, Callable())
+	if not lookup.is_valid():
+		return {}
+	return Dictionary(lookup.call(content, content_id))
 
 
 func pricing(content: Variant) -> Dictionary:
@@ -353,10 +356,15 @@ func _pick_weighted_entry(pool: Array[Dictionary], allow_consumable: bool, allow
 		if weight <= 0:
 			continue
 		total_weight += weight
-		weighted_candidates.append({
-			"entry": entry,
-			"weight": weight,
-		})
+		(
+			weighted_candidates
+			. append(
+				{
+					"entry": entry,
+					"weight": weight,
+				}
+			)
+		)
 	if total_weight <= 0:
 		return {}
 	var roll := _rng.randi_range(1, total_weight)
