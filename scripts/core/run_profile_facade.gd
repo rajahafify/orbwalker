@@ -2,10 +2,12 @@ extends RefCounted
 class_name RunProfileFacade
 
 var _owner
+var _hooks: Dictionary = {}
 
 
-func _init(owner) -> void:
+func _init(owner, hooks: Dictionary = {}) -> void:
 	_owner = owner
+	_hooks = hooks
 
 
 func progression_snapshot() -> Dictionary:
@@ -21,15 +23,15 @@ func meta_profile_snapshot() -> Dictionary:
 
 
 func reset_profile() -> Dictionary:
-	var signal_before: Dictionary = _owner._capture_run_signal_state()
+	var signal_before: Dictionary = _call_hook("capture_run_signal_state", [])
 	var profile = _owner.ensure_player_profile_state()
 	profile.reset_to_default()
 	_owner.meta_profile_state = profile.meta_profile
-	_owner._sync_meta_profile_default_unlocks()
-	_owner._save_profile()
+	_call_hook("sync_meta_profile_default_unlocks", [])
+	_call_hook("save_profile", [])
 	_owner.reset_run("reset_profile", false)
-	_owner._emit_run_state_signals(signal_before, "reset_profile", "reset_profile")
-	_owner._emit_profile_changed("reset_profile")
+	_call_hook("emit_run_state_signals", [signal_before, "reset_profile", "reset_profile"])
+	_call_hook("emit_profile_changed", ["reset_profile"])
 	return {
 		"ok": true,
 		"reason": "",
@@ -66,9 +68,9 @@ func unlock_equipment(item_id: String, source: String, emit_profile_signal: bool
 	}
 	if source == "victory":
 		_owner.ensure_meta_profile_state().add_recent_equipment_unlock(unlock_payload)
-	_owner._save_meta_profile()
+	_call_hook("save_meta_profile", [])
 	if emit_profile_signal:
-		_owner._emit_profile_changed("unlock_equipment", 0, unlock_payload)
+		_call_hook("emit_profile_changed", ["unlock_equipment", 0, unlock_payload])
 	return {
 		"ok": true,
 		"reason": "",
@@ -87,7 +89,7 @@ func claim_equipment_unlock(item_id: String) -> Dictionary:
 		return {"ok": false, "reason": "equipment_already_unlocked", "meta_profile": meta_profile_snapshot()}
 
 	var unlock_cost := maxi(0, int(equipment.get("unlock_cost", 0)))
-	if not _owner._ensure_profile_unlock_service().can_claim_equipment_unlock(equipment):
+	if not _profile_unlock_service().can_claim_equipment_unlock(equipment):
 		return {"ok": false, "reason": "unlock_prerequisite_not_met", "meta_profile": meta_profile_snapshot()}
 	if not _owner.ensure_meta_profile_state().spend_total_score(unlock_cost):
 		return {"ok": false, "reason": "insufficient_total_score", "meta_profile": meta_profile_snapshot()}
@@ -95,25 +97,25 @@ func claim_equipment_unlock(item_id: String) -> Dictionary:
 	var unlock_result: Dictionary = unlock_equipment(item_id, "score_claim", false)
 	if not bool(unlock_result.get("ok", false)):
 		_owner.ensure_meta_profile_state().add_total_score(unlock_cost)
-		_owner._save_meta_profile()
+		_call_hook("save_meta_profile", [])
 		return unlock_result
-	_owner._emit_profile_changed("claim_equipment_unlock", -unlock_cost, Dictionary(unlock_result.get("unlock", {})))
+	_call_hook("emit_profile_changed", ["claim_equipment_unlock", -unlock_cost, Dictionary(unlock_result.get("unlock", {}))])
 	unlock_result["score_spent"] = unlock_cost
 	return unlock_result
 
 
 func consume_recent_equipment_unlocks() -> Array[Dictionary]:
 	var unlocks: Array[Dictionary] = _owner.ensure_meta_profile_state().consume_recent_equipment_unlocks()
-	_owner._save_meta_profile()
-	_owner._emit_profile_changed("consume_recent_equipment_unlocks", 0, {"consumed": unlocks.duplicate(true)})
+	_call_hook("save_meta_profile", [])
+	_call_hook("emit_profile_changed", ["consume_recent_equipment_unlocks", 0, {"consumed": unlocks.duplicate(true)}])
 	return unlocks
 
 
 func add_total_score(amount: int) -> int:
 	var added: int = _owner.ensure_meta_profile_state().add_total_score(amount)
 	if added > 0:
-		_owner._save_meta_profile()
-		_owner._emit_profile_changed("add_total_score", added)
+		_call_hook("save_meta_profile", [])
+		_call_hook("emit_profile_changed", ["add_total_score", added])
 	return added
 
 
@@ -176,3 +178,15 @@ func _append_combat_modifier_source(target: Dictionary, source_data: Dictionary,
 		)
 	)
 	target["sources"] = sources
+
+
+func _profile_unlock_service() -> Variant:
+	return _call_hook("profile_unlock_service", [])
+
+
+func _call_hook(key: String, args: Array) -> Variant:
+	var hook: Callable = _hooks.get(key, Callable())
+	if not hook.is_valid():
+		push_error("RunProfileFacade missing required hook: %s" % key)
+		return null
+	return hook.callv(args)

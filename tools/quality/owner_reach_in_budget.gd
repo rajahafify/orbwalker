@@ -16,7 +16,6 @@ const DOCUMENTED_REACH_INS := {
 	"res://scripts/ui/player_loadout_mastery_panel.gd": 84,
 	"res://scripts/core/run_outcome_service.gd": 35,
 	"res://scripts/core/run_transition_state_store.gd": 26,
-	"res://scripts/core/run_profile_facade.gd": 14,
 }
 
 

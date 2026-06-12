@@ -3772,6 +3772,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Changed <code>CombatMaxVfxOverlayLifecycle</code> from an owner-private shard into the owner of max-VFX overlay viewport state. The lifecycle now stores the container, viewport, 3D root, camera, and ambient light itself, and binds presenters from explicit layer/timer/catalog/presenter/callback dependencies supplied by <code>CombatMaxVfxOverlay</code>. (source: <code>scripts/combat/combat_max_vfx_overlay_lifecycle.gd</code>, <code>scripts/combat/combat_max_vfx_overlay.gd</code>)</li>
 <li>Removed <code>combat_max_vfx_overlay_lifecycle.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>65</code> to <code>0</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/combat_max_vfx_overlay_lifecycle_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-run-profile-facade-hook-ownership">2026-06-13 - Run profile facade hook ownership</h2>
+<ul>
+<li>Changed <code>RunProfileFacade</code> to use injected hooks for RunState-private save, signal, and profile-unlock-service behavior, with <code>RunState</code> wiring the hooks through bare method references. The facade keeps public state API access for profile/meta-profile/progression reads and writes. (source: <code>scripts/core/run_profile_facade.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Removed <code>run_profile_facade.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>14</code> to <code>0</code>, and added direct hook coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/run_profile_facade_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
