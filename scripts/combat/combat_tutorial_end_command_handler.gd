@@ -29,35 +29,6 @@ func bind(dependencies: Dictionary, callbacks: Dictionary = {}, config: Dictiona
 	_neutral_status_color = config.get("neutral_status_color", Color.WHITE)
 
 
-func bind_for_combat_controller(
-	run_state: Variant,
-	tutorial_director: Variant,
-	view: Variant,
-	controller: Object,
-	neutral_status_color: Color
-) -> void:
-	bind(
-		{
-			"run_state": run_state,
-			"tutorial_director": tutorial_director,
-			"view": view,
-		},
-		{
-			CALLBACK_CURRENT_ROUTE_ID: Callable(controller, "_flow_trace_route_id_value"),
-			CALLBACK_CURRENT_TURN_INDEX: Callable(controller, "_settings_current_turn_index"),
-			CALLBACK_SHOW_SHOP_DAMAGE_MODAL: Callable(controller, "_show_shop_damage_tutorial_end_modal"),
-			CALLBACK_PLAY_SFX: Callable(controller, "_audio_play_sfx"),
-			CALLBACK_SET_STATUS_TEXT: Callable(controller, "_set_status_text"),
-			CALLBACK_SET_STATUS_COLOR: Callable(controller, "_set_status_color"),
-			CALLBACK_UPDATE_HUD: Callable(controller, "_update_hud"),
-			CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(controller, "_trace_and_change_scene_to_target"),
-		},
-		{
-			"neutral_status_color": neutral_status_color,
-		}
-	)
-
-
 func continue_pressed() -> void:
 	if _tutorial_director != null and _tutorial_director.has_method("advance_post_shop_step"):
 		if String(_tutorial_director.advance_post_shop_step()) != "":
@@ -78,12 +49,7 @@ func main_menu_pressed() -> void:
 	_finish_tutorial_guidance()
 	_hide_tutorial_end_modal()
 	_play_sfx("ui_accept")
-	_trace_and_change_scene(
-		SCENE_MAIN_MENU,
-		_current_route_id(),
-		TRACE_SOURCE_MAIN_MENU,
-		TRACE_MARK_MAIN_MENU
-	)
+	_trace_and_change_scene(SCENE_MAIN_MENU, _current_route_id(), TRACE_SOURCE_MAIN_MENU, TRACE_MARK_MAIN_MENU)
 
 
 func _finish_tutorial_guidance() -> void:

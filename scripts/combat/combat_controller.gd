@@ -57,6 +57,7 @@ var _binding_coordinator = null
 var _view_actions: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
+var _audio_router: Variant = null
 var _debug_state_provider: CombatDebugStateProvider = null
 var _board_debug_command_handler: CombatBoardDebugCommandHandler = null
 var _input_command_handler: CombatInputCommandHandler = null
@@ -132,10 +133,24 @@ func on_next_button_pressed() -> void:
 		_outcome_route_coordinator.handle_next_pressed(_view.next_button_text() if _view != null else "")
 
 
-func _bind_audio_cue_player() -> void:
-	_combat_audio_cue_player = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_audio_cue_player(
-		_combat_audio_cue_player, CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT, _host, RunState
+func _bind_audio_router() -> void:
+	if _audio_router == null:
+		_audio_router = CONTRACT.COMBAT_CONTROLLER_AUDIO_ROUTER_SCRIPT.new()
+	_audio_router.bind(
+		{
+			"cue_player": _combat_audio_cue_player,
+			"cue_player_script": CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT,
+			"runtime_binder": CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT,
+			"host": _host,
+			"run_state": RunState,
+		}
 	)
+	_combat_audio_cue_player = _audio_router.cue_player()
+
+
+func _audio_router_callback(method_name: String) -> Callable:
+	_bind_audio_router()
+	return Callable(_audio_router, method_name)
 
 
 func _bind_debug_state_provider() -> void:
@@ -201,10 +216,6 @@ func _bind_combat_vfx_presenter() -> void:
 func _bind_board_controller() -> void:
 	_bind_binding_coordinator()
 	_binding_coordinator.bind_board_controller()
-
-
-func _on_drag_swap_success() -> void:
-	_audio_play_sfx("swap")
 
 
 func _drag_match_groups() -> Array:
@@ -360,42 +371,6 @@ func _end_drag(timed_out: bool) -> void:
 	await _lifecycle.end_drag(timed_out)
 
 
-func _play_turn_result_sfx(turn_log: Dictionary) -> void:
-	_bind_audio_cue_player()
-	_combat_audio_cue_player.play_turn_result(turn_log)
-
-
-func _play_mastery_effect_sfx(effect_kind: String) -> void:
-	_bind_audio_cue_player()
-	_combat_audio_cue_player.play_mastery_effect(effect_kind)
-
-
-func _play_impact_sfx(impact_kind: String, target: String = "enemy") -> void:
-	_bind_audio_cue_player()
-	if _combat_audio_cue_player.has_method("play_impact"):
-		_combat_audio_cue_player.play_impact(impact_kind, target)
-	else:
-		_combat_audio_cue_player.play_mastery_effect(impact_kind)
-
-
-func _play_enemy_attack_result_sfx(result: Dictionary) -> void:
-	_bind_audio_cue_player()
-	if _combat_audio_cue_player.has_method("play_enemy_attack_result"):
-		_combat_audio_cue_player.play_enemy_attack_result(result)
-	else:
-		_combat_audio_cue_player.play_turn_result({"enemy_attack_resolution": result})
-
-
-func _audio_play_music(key: String) -> void:
-	_bind_audio_cue_player()
-	_combat_audio_cue_player.play_music(key)
-
-
-func _audio_play_sfx(key: String) -> void:
-	_bind_audio_cue_player()
-	_combat_audio_cue_player.play_sfx(key)
-
-
 func _bind_outcome_overlay() -> void:
 	CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_outcome_overlay(_view, _outcome_overlay)
 
@@ -414,7 +389,7 @@ func _bind_boss_reward_handler() -> void:
 			{
 				"set_status_text": Callable(_view_actions, "set_status_text"),
 				"update_hud": Callable(self, "_update_hud"),
-				"play_sfx": Callable(self, "_audio_play_sfx"),
+				"play_sfx": _audio_router_callback("play_sfx"),
 				"apply_layout": Callable(self, "_apply_combat_layout"),
 				"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
 			}
@@ -537,13 +512,6 @@ func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel
 			}
 		)
 	)
-
-
-func _on_presenter_combo_sound(combo_value: int = 1) -> void:
-	if _combat_audio_cue_player != null and _combat_audio_cue_player.has_method("play_match_clear"):
-		_combat_audio_cue_player.play_match_clear(combo_value)
-	else:
-		_audio_play_sfx("combo")
 
 
 func _combat_speed_duration(base_seconds: float) -> float:
@@ -785,7 +753,7 @@ func _spawn_vfx_texture(
 
 func _on_resolver_match_found(groups: Array) -> void:
 	_bind_view_actions()
-	_audio_play_sfx("match")
+	_audio_router_callback("play_sfx").call("match")
 	_view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
 	_view_actions.set_status_color(CONTRACT.STATUS_COLOR_WARNING)
 

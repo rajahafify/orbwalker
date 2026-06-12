@@ -30,13 +30,18 @@ func _owner_callback(method_name: String) -> Callable:
 	return Callable(_owner, method_name)
 
 
+func _audio_router_callback(method_name: String) -> Callable:
+	_owner.call("_bind_audio_router")
+	return Callable(_owner.get("_audio_router"), method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
 		return
 	_ensure_combat_route_id()
 	_mark_flow("combat_ready_start")
-	Callable(_owner, "_audio_play_music").call("combat")
+	_audio_router_callback("play_music").call("combat")
 	_mark_flow("combat_after_music")
 	ensure_runtime_helpers()
 	_owner.call("_bind_outcome_overlay")
@@ -109,7 +114,7 @@ func _ready_flow_dependencies() -> Dictionary:
 func _ready_flow_callbacks() -> Dictionary:
 	return {
 		"spawn_vfx_texture": Callable(_owner, "_spawn_vfx_texture"),
-		"combo_sound": Callable(_owner, "_on_presenter_combo_sound"),
+		"combo_sound": _audio_router_callback("play_match_clear"),
 		"console_input_submitted": Callable(_owner, "_on_console_input_text_submitted"),
 		"viewport_size_changed": Callable(_owner, "on_viewport_size_changed"),
 		"apply_combat_layout": Callable(_owner, "_apply_combat_layout"),
@@ -133,7 +138,7 @@ func ensure_runtime_helpers() -> void:
 	var debug_runtime: Variant = _owner_value("_debug_runtime")
 	if debug_runtime != null:
 		_set_owner_value("_debug_console", debug_runtime.console())
-	_owner_callback("_bind_audio_cue_player").call()
+	_owner_callback("_bind_audio_router").call()
 	_owner_callback("_bind_debug_state_provider").call()
 	var combat_consumable_service: Variant = _owner_value("_combat_consumable_service")
 	if combat_consumable_service != null and combat_consumable_service.has_method("bind"):
@@ -329,7 +334,7 @@ func _bind_resolve_flow_coordinator() -> void:
 				"combat_modifiers": RunState.current_combat_modifiers(),
 			},
 			{
-				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: _owner_callback("_audio_play_sfx"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: _audio_router_callback("play_sfx"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TIMER_DISPLAY: Callable(self, "_sync_timer_display"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),

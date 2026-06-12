@@ -100,7 +100,9 @@ static func bind_turn_replay_coordinator(current: Variant, script: Variant, owne
 	Callable(owner, "_bind_hud_stage_coordinator").call()
 	Callable(owner, "_bind_vfx_target_resolver").call()
 	Callable(owner, "_bind_mastery_preview_coordinator").call()
+	Callable(owner, "_bind_audio_router").call()
 	var contract: Variant = owner.CONTRACT
+	var audio_router: Variant = owner.get("_audio_router")
 	var dependencies := {
 		"model": owner.get("_model"),
 		"player_state": owner.get("_player_state"),
@@ -115,8 +117,8 @@ static func bind_turn_replay_coordinator(current: Variant, script: Variant, owne
 		script.CALLBACK_COMBAT_SPEED_DURATION: Callable(owner, "_combat_speed_duration"),
 		script.CALLBACK_WAIT_COMBAT_SPEED: Callable(owner, "_wait_combat_speed"),
 		script.CALLBACK_CAN_CONTINUE: Callable(owner, "_can_continue_after_async_wait"),
-		script.CALLBACK_PLAY_IMPACT_SFX: Callable(owner, "_play_impact_sfx"),
-		script.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(owner, "_play_enemy_attack_result_sfx"),
+		script.CALLBACK_PLAY_IMPACT_SFX: Callable(audio_router, "play_impact_sfx"),
+		script.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(audio_router, "play_enemy_attack_result_sfx"),
 	}
 	var config := {
 		script.CONFIG_TURN_REPLAY_STEP_SECONDS: contract.TURN_REPLAY_STEP_SECONDS,
@@ -133,5 +135,25 @@ static func bind_tutorial_end_command_handler(
 	current: Variant, script: Variant, run_state: Variant, tutorial_director: Variant, view: Variant, owner: Variant, neutral_color: Color
 ) -> Variant:
 	var handler: Variant = current if current != null else script.new()
-	handler.bind_for_combat_controller(run_state, tutorial_director, view, owner, neutral_color)
+	Callable(owner, "_bind_audio_router").call()
+	Callable(owner, "_bind_view_actions").call()
+	var audio_router: Variant = owner.get("_audio_router")
+	var view_actions: Variant = owner.get("_view_actions")
+	var current_turn_index := func() -> int:
+		var combat: Variant = owner.get("_combat")
+		return int(combat.turn_index if combat != null else 1)
+	var show_shop_damage_modal := func() -> void:
+		if view != null and view.has_method("show_tutorial_end_modal"):
+			view.show_tutorial_end_modal("shop_damage")
+	var callbacks := {
+		script.CALLBACK_CURRENT_ROUTE_ID: Callable(owner, "_flow_trace_route_id_value"),
+		script.CALLBACK_CURRENT_TURN_INDEX: current_turn_index,
+		script.CALLBACK_SHOW_SHOP_DAMAGE_MODAL: show_shop_damage_modal,
+		script.CALLBACK_PLAY_SFX: Callable(audio_router, "play_sfx"),
+		script.CALLBACK_SET_STATUS_TEXT: Callable(view_actions, "set_status_text"),
+		script.CALLBACK_SET_STATUS_COLOR: Callable(view_actions, "set_status_color"),
+		script.CALLBACK_UPDATE_HUD: Callable(owner, "_update_hud"),
+		script.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(owner, "_trace_and_change_scene_to_target"),
+	}
+	handler.bind({"run_state": run_state, "tutorial_director": tutorial_director, "view": view}, callbacks, {"neutral_status_color": neutral_color})
 	return handler
