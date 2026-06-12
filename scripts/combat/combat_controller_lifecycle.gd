@@ -40,6 +40,11 @@ func _hud_update_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_hud_update_router"), method_name)
 
 
+func _presentation_callback(method_name: String) -> Callable:
+	_owner.call("_bind_presentation_router")
+	return Callable(_owner.get("_presentation_router"), method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
@@ -64,7 +69,7 @@ func ready() -> void:
 	_owner.call("_bind_combat_vfx_presenter")
 	_owner.call("_bind_board_controller")
 	_mark_flow("combat_after_hud_bind")
-	_owner.call("_apply_visual_chrome")
+	_presentation_callback("apply_visual_chrome").call()
 	_mark_flow("combat_after_chrome")
 	_owner.call("_bind_resolve_trace_logger")
 	connect_signals()
@@ -119,13 +124,13 @@ func _ready_flow_dependencies() -> Dictionary:
 
 func _ready_flow_callbacks() -> Dictionary:
 	return {
-		"spawn_vfx_texture": Callable(_owner, "_spawn_vfx_texture"),
+		"spawn_vfx_texture": _presentation_callback("spawn_vfx_texture"),
 		"combo_sound": _audio_router_callback("play_match_clear"),
 		"console_input_submitted": Callable(_owner, "_on_console_input_text_submitted"),
 		"viewport_size_changed": Callable(_owner, "on_viewport_size_changed"),
-		"apply_combat_layout": Callable(_owner, "_apply_combat_layout"),
+		"apply_combat_layout": _presentation_callback("apply_combat_layout"),
 		"trace_first_usable_frame": Callable(_owner, "_trace_flow_first_usable_frame"),
-		"apply_orb_texture_map_deferred": Callable(_owner, "_apply_orb_texture_map_deferred"),
+		"apply_orb_texture_map_deferred": _presentation_callback("apply_orb_texture_map_deferred"),
 	}
 
 
@@ -300,7 +305,8 @@ func _bind_state_initializer() -> void:
 			{
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_APPLY_STATE: Callable(self, "_apply_initialized_combat_state"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_HUD_STAGE: _owner_callback("_bind_hud_stage_coordinator"),
-				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS: _owner_callback("_refresh_character_portraits"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS:
+				_presentation_callback("refresh_character_portraits"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: _hud_update_callback("refresh_build_icon_rows"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_DEBUG_STATE_PROVIDER: _owner_callback("_bind_debug_state_provider"),
@@ -346,8 +352,8 @@ func _bind_resolve_flow_coordinator() -> void:
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_MASTERY_PREVIEW: _owner_callback("_bind_mastery_preview_coordinator"),
-				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_RESOLVE_ANIMATIONS: _owner_callback("_play_resolve_animations"),
-				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _owner_callback("_can_continue_after_async_wait"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_RESOLVE_ANIMATIONS: _presentation_callback("play_resolve_animations"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _presentation_callback("can_continue_after_async_wait"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_TURN_RESOLUTION: _owner_callback("_bind_turn_resolution_coordinator"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_APPLY_BOARD_MODEL: Callable(self, "_apply_committed_board_model"),

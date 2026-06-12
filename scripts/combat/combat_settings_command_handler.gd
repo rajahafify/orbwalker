@@ -52,6 +52,12 @@ func bind_for_combat_controller(
 	locked_input_phase_value: int,
 	neutral_status_color: Color
 ) -> void:
+	var apply_vfx_speed_callback := Callable()
+	if controller.has_method("_bind_presentation_router"):
+		controller.call("_bind_presentation_router")
+		apply_vfx_speed_callback = Callable(controller.get("_presentation_router"), "apply_vfx_speed_setting")
+	elif controller.has_method("_apply_vfx_speed_setting"):
+		apply_vfx_speed_callback = Callable(controller, "_apply_vfx_speed_setting")
 	bind(
 		view,
 		model,
@@ -63,7 +69,7 @@ func bind_for_combat_controller(
 			CALLBACK_CURRENT_TURN_INDEX: current_turn_index_provider,
 			CALLBACK_TRACE_AND_CHANGE_SCENE: trace_and_change_scene,
 			CALLBACK_COMBAT_SPEED_VALUE: Callable(controller, "_combat_speed_value"),
-			CALLBACK_APPLY_VFX_SPEED: Callable(controller, "_apply_vfx_speed_setting"),
+			CALLBACK_APPLY_VFX_SPEED: apply_vfx_speed_callback,
 			CALLBACK_APPLY_FEEDBACK_SETTINGS: Callable(controller, "_apply_feedback_settings"),
 		},
 		{

@@ -44,6 +44,11 @@ func _board_debug_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_board_debug_router"), method_name)
 
 
+func _presentation_callback(method_name: String) -> Callable:
+	_owner.call("_bind_presentation_router")
+	return Callable(_owner.get("_presentation_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -349,7 +354,7 @@ func bind_turn_resolution_coordinator() -> void:
 			},
 			{
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_REPLAY_TURN_RESOLUTION: _owner_callback("_replay_turn_resolution_from_log"),
-				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _owner_callback("_can_continue_after_async_wait"),
+				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _presentation_callback("can_continue_after_async_wait"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(mastery_preview_coordinator, "sync_totals"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: _owner_callback("_flow_trace_route_id_value"),
@@ -380,7 +385,7 @@ func bind_input_phase_router() -> void:
 
 func apply_feedback_settings() -> void:
 	var contract: Variant = _contract()
-	_owner_callback("_apply_vfx_speed_setting").call()
+	_presentation_callback("apply_vfx_speed_setting").call()
 	var raw_game_juice_flags := RunState.game_juice_flags()
 	var effective_game_juice_flags := _effective_game_juice_flags_for_motion(raw_game_juice_flags)
 	var refill_overshoot_enabled := (
