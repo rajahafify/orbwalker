@@ -2,8 +2,22 @@ extends RefCounted
 class_name DebugVfxGalleryTest
 
 const CATALOG_SCRIPT := preload("res://scripts/debug/vfx_debug_catalog.gd")
+const SHOW_CONTROLS_SCRIPT := preload("res://scripts/debug/vfx_gallery_show_controls.gd")
 const INDEX_SCENE_PATH := "res://scenes/debug/vfx_gallery_index.tscn"
 const SHOW_SCENE_PATH := "res://scenes/debug/vfx_gallery_show.tscn"
+
+
+class CallbackProbe:
+	extends RefCounted
+
+	var play_count := 0
+	var selected_index := -1
+
+	func play() -> void:
+		play_count += 1
+
+	func select(index: int) -> void:
+		selected_index = index
 
 
 func run_all() -> Dictionary:
@@ -11,9 +25,10 @@ func run_all() -> Dictionary:
 	_run_case("catalog_entries_are_valid", _test_catalog_entries_are_valid, failures)
 	_run_case("catalog_ids_are_unique", _test_catalog_ids_are_unique, failures)
 	_run_case("debug_gallery_scenes_load", _test_debug_gallery_scenes_load, failures)
+	_run_case("show_controls_build_contract", _test_show_controls_build_contract, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -74,4 +89,54 @@ func _test_debug_gallery_scenes_load() -> String:
 		if instance == null:
 			return "Expected debug gallery scene to instantiate at %s." % scene_path
 		instance.free()
+	return ""
+
+
+func _test_show_controls_build_contract() -> String:
+	var owner := Control.new()
+	var probe := CallbackProbe.new()
+	var nodes: Dictionary = (
+		SHOW_CONTROLS_SCRIPT
+		. build(
+			owner,
+			{
+				"restart_playback": probe.play,
+				"entry_selected": probe.select,
+			}
+		)
+	)
+	for key in [
+		"entry_select",
+		"phase_select",
+		"quality_select",
+		"amount_slider",
+		"amount_spin",
+		"speed_slider",
+		"loop_toggle",
+		"anchors_toggle",
+		"clean_toggle",
+		"play_button",
+		"preset_row",
+		"status_label",
+		"description_label",
+		"preview_root",
+	]:
+		if not nodes.has(key):
+			owner.free()
+			return "Expected VFX gallery controls to expose node key: %s." % key
+	var play_button := nodes["play_button"] as Button
+	play_button.pressed.emit()
+	if probe.play_count != 1:
+		owner.free()
+		return "Expected play button to call restart callback."
+	var entry_select := nodes["entry_select"] as OptionButton
+	entry_select.item_selected.emit(3)
+	if probe.selected_index != 3:
+		owner.free()
+		return "Expected entry select to call selected callback."
+	var preview_root := nodes["preview_root"] as Control
+	if preview_root == null or not preview_root.clip_contents:
+		owner.free()
+		return "Expected preview root to clip VFX preview contents."
+	owner.free()
 	return ""
