@@ -1,6 +1,7 @@
 extends RefCounted
 class_name CombatTurnReplayCoordinator
 
+const COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT := preload("res://scripts/combat/combat_enemy_attack_replay.gd")
 const COMBAT_MASTERY_RESOLUTION_ORDER: Array[int] = [
 	OrbType.Id.HEART,
 	OrbType.Id.ARMOR,
@@ -49,7 +50,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if heart_heal > 0:
 		if applied_flat_heal_bonus > 0:
-			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _owner._modifier_sources_for_key("flat_heal_bonus"))
+			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _modifier_sources_for_key("flat_heal_bonus"))
 			if not _owner._can_continue_after_async_wait():
 				return
 		var staged_hp_before_heal: int = _owner._model.staged_hud_value("player_hp", int(_owner._player_state.current_hp))
@@ -79,7 +80,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if gold_gain > 0:
 		if applied_flat_gold_bonus > 0:
-			await _apply_end_modifier_feedback(OrbType.Id.GOLD, applied_flat_gold_bonus, _owner._modifier_sources_for_key("flat_gold_bonus"))
+			await _apply_end_modifier_feedback(OrbType.Id.GOLD, applied_flat_gold_bonus, _modifier_sources_for_key("flat_gold_bonus"))
 			if not _owner._can_continue_after_async_wait():
 				return
 		var staged_gold_before_gain: int = _owner._model.staged_hud_value("player_gold", int(_owner._player_state.gold))
@@ -96,7 +97,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
 		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
-		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _owner._modifier_sources_for_key("flat_damage_bonus"))
+		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
 		if not _owner._can_continue_after_async_wait():
 			return
 
@@ -126,10 +127,10 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		return
 	var enemy_attack_resolution: Dictionary = turn_log.get("enemy_attack_resolution", {})
 	if prep_armor_added > 0 and int(enemy_attack_resolution.get("incoming", 0)) > 0:
-		await _apply_end_modifier_feedback(OrbType.Id.ARMOR, prep_armor_added, _owner._modifier_sources_for_key("start_turn_armor"))
+		await _apply_end_modifier_feedback(OrbType.Id.ARMOR, prep_armor_added, _modifier_sources_for_key("start_turn_armor"))
 		if not _owner._can_continue_after_async_wait():
 			return
-	await _owner._replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
+	await _replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
 	if not _owner._can_continue_after_async_wait():
 		return
 	await _owner._wait_combat_speed(_owner.TURN_REPLAY_FINAL_HOLD_SECONDS)
@@ -217,6 +218,30 @@ func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int,
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
 	_owner._bind_mastery_preview_coordinator()
 	await _owner._mastery_preview_coordinator.apply_end_modifier_feedback(orb_id, amount, sources, Callable(_owner, "_wait_combat_speed"))
+
+
+func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
+	Callable(_owner, "_bind_mastery_preview_coordinator").call()
+	var coordinator: Variant = _owner.get("_mastery_preview_coordinator")
+	return coordinator.modifier_sources_for_key(key)
+
+
+func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
+	_owner._bind_hud_stage_coordinator()
+	var replay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
+	var replay_dependencies := {
+		"view": _owner._view,
+		"vfx_presenter": _owner._combat_vfx_presenter,
+		"hud_stage_coordinator": _owner._hud_stage_coordinator,
+	}
+	var replay_callbacks := {
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: Callable(_owner, "_combat_speed_duration"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_WAIT_COMBAT_SPEED: Callable(_owner, "_wait_combat_speed"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(_owner, "_can_continue_after_async_wait"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(_owner, "_play_enemy_attack_result_sfx"),
+	}
+	replay.bind(replay_dependencies, replay_callbacks, {"turn_replay_step_seconds": _owner.TURN_REPLAY_STEP_SECONDS})
+	await replay.replay(turn_log, player_target, label_lifetime)
 
 
 func _mastery_impact_kind(orb_id: int) -> String:
