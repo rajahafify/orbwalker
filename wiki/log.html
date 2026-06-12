@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-45-feedback-settings-router">2026-06-13 - Wave 45 feedback settings router</h2>
+<ul>
+<li>Added <code>CombatControllerFeedbackSettingsRouter</code> as the feedback-settings fanout owner for VFX speed, refill overshoot, reduced motion, game-juice flags, audio cue-player settings, and enemy reaction settings. <code>CombatControllerBindingCoordinator</code> no longer owns this non-binding behavior. (source: <code>scripts/combat/combat_controller_feedback_settings_router.gd</code>, <code>scripts/combat/combat_controller_binding_coordinator.gd</code>, <code>scripts/combat/combat_controller.gd</code>)</li>
+<li>Reduced <code>combat_controller_binding_coordinator.gd</code> from <code>440</code> to <code>392</code> measured lines while preserving full-suite behavior through a new direct feedback-router test. (source: <code>scripts/tests/combat_controller_feedback_settings_router_test.gd</code>, <code>scripts/tests/combat_controller_binding_coordinator_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-44-combat-callback-routing">2026-06-13 - Wave 44 combat callback routing</h2>
 <ul>
 <li>Added <code>CombatControllerIntentRouter</code> as the intent callback owner for preview visibility, player/enemy hover forwarding, enemy intent bubble forwarding, and intent text formatting. Lifecycle, HUD snapshot, and player-HUD refresh callbacks now target the intent router instead of controller callback facades. (source: <code>scripts/combat/combat_controller_intent_router.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>, <code>scripts/combat/combat_controller_hud_update_router.gd</code>, <code>scripts/combat/combat_controller_binding_coordinator.gd</code>)</li>

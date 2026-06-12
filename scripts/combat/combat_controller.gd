@@ -403,8 +403,7 @@ func _combat_speed_value() -> String:
 
 
 func _apply_feedback_settings() -> void:
-	_bind_binding_coordinator()
-	_binding_coordinator.apply_feedback_settings()
+	CONTRACT.COMBAT_CONTROLLER_FEEDBACK_SETTINGS_ROUTER_SCRIPT.apply(self)
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
