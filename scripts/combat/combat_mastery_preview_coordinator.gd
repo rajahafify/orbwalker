@@ -1,11 +1,15 @@
 extends RefCounted
 class_name CombatMasteryPreviewCoordinator
 
+const COMBAT_MASTERY_FILL_STREAMER_SCRIPT := preload("res://scripts/combat/combat_mastery_fill_streamer.gd")
 const DEFAULT_FEEDBACK_STAGGER_SECONDS := 0.08
 
 var _model: Variant = null
 var _player_state: Variant = null
 var _view: Variant = null
+var _board_view: Variant = null
+var _combat_vfx_presenter: Variant = null
+var _combat_speed_duration_callback: Callable
 var _resolution_order: Array[int] = []
 var _feedback_stagger_seconds := DEFAULT_FEEDBACK_STAGGER_SECONDS
 var _base_amounts: Dictionary = {}
@@ -16,6 +20,9 @@ func bind(model: Variant, player_state: Variant, view: Variant, config: Dictiona
 	_model = model
 	_player_state = player_state
 	_view = view
+	_board_view = config.get("board_view")
+	_combat_vfx_presenter = config.get("combat_vfx_presenter")
+	_combat_speed_duration_callback = config.get("combat_speed_duration_callback", Callable())
 	_resolution_order = []
 	for raw_orb_id in Array(config.get("resolution_order", [])):
 		_resolution_order.append(int(raw_orb_id))
@@ -42,9 +49,11 @@ func show_match_feedback(group: Dictionary, combo_value: int) -> void:
 	var base_amount := _preview_match_base_feedback_value(group)
 	if base_amount <= 0:
 		return
+	var preview_amount := _project_feedback_value(orb_id, base_amount, combo_value)
 	_base_amounts[orb_id] = int(_base_amounts.get(orb_id, 0)) + base_amount
 	_pulse_modifier_sources(preview_modifier_sources_for_orb(orb_id))
 	_sync_for_combo(combo_value)
+	COMBAT_MASTERY_FILL_STREAMER_SCRIPT.spawn(group, preview_amount, _board_view, _combat_vfx_presenter, _combat_speed_duration(0.46))
 
 
 func sync_totals() -> void:
@@ -204,6 +213,12 @@ func _project_feedback_value(orb_id: int, base_amount: int, combo_value: int) ->
 			return int(round(float(base_amount) * float(_player_state.combo_multiplier(combo_value + combo_flat_bonus)) * combo_multiplier_mult))
 		_:
 			return base_amount
+
+
+func _combat_speed_duration(base_seconds: float) -> float:
+	if _combat_speed_duration_callback.is_valid():
+		return float(_combat_speed_duration_callback.call(base_seconds))
+	return base_seconds
 
 
 func _modifier_sources_for_orb_bonus(orb_id: int) -> Array[Dictionary]:

@@ -55,7 +55,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if not _owner._can_continue_after_async_wait():
 			return
 		_owner._hud_stage_coordinator.stage_player_hp(staged_hp_before_heal + heart_heal)
-		_owner._release_combat_mastery_feedback(OrbType.Id.HEART)
+		_mastery_preview_coordinator().release_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
 		var staged_armor_before_gain: int = _owner._model.staged_hud_value("player_armor", int(_owner._player_state.armor))
@@ -69,7 +69,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if not _owner._can_continue_after_async_wait():
 			return
 		_owner._hud_stage_coordinator.stage_player_armor(staged_armor_before_gain + armor_gain)
-		_owner._release_combat_mastery_feedback(OrbType.Id.ARMOR)
+		_mastery_preview_coordinator().release_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
 		if applied_flat_gold_bonus > 0:
@@ -86,7 +86,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if not _owner._can_continue_after_async_wait():
 			return
 		_owner._hud_stage_coordinator.stage_gold(staged_gold_before_gain + gold_gain)
-		_owner._release_combat_mastery_feedback(OrbType.Id.GOLD)
+		_mastery_preview_coordinator().release_feedback(OrbType.Id.GOLD)
 
 	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
 		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
@@ -115,7 +115,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 		if vfx_presenter != null:
 			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
 		_owner._hud_stage_coordinator.stage_enemy_result()
-	await _owner._release_remaining_combat_mastery_feedback()
+	await _mastery_preview_coordinator().release_remaining(Callable(_owner, "_wait_combat_speed"), Callable(_owner, "_can_continue_after_async_wait"))
 	if not _owner._can_continue_after_async_wait():
 		return
 	var enemy_attack_resolution: Dictionary = turn_log.get("enemy_attack_resolution", {})
@@ -129,7 +129,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_FINAL_HOLD_SECONDS)
 	if not _owner._can_continue_after_async_wait():
 		return
-	_owner._reset_combat_mastery_preview()
+	_mastery_preview_coordinator().reset(RunState.current_combat_modifiers())
 
 
 func _replay_dominant_enemy_damage(
@@ -160,7 +160,7 @@ func _replay_dominant_enemy_damage(
 	if not _owner._can_continue_after_async_wait():
 		return false
 	_owner._hud_stage_coordinator.stage_enemy_result()
-	_owner._release_combat_mastery_feedback(impact_orb)
+	_mastery_preview_coordinator().release_feedback(impact_orb)
 	return true
 
 
@@ -198,7 +198,7 @@ func _replay_elemental_damage_result(
 	if not _owner._can_continue_after_async_wait():
 		return false
 	_owner._hud_stage_coordinator.stage_enemy_damage_step(damage_amount)
-	_owner._release_combat_mastery_feedback(orb_id)
+	_mastery_preview_coordinator().release_feedback(orb_id)
 	return true
 
 
@@ -209,14 +209,16 @@ func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int,
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
-	_owner._bind_mastery_preview_coordinator()
-	await _owner._mastery_preview_coordinator.apply_end_modifier_feedback(orb_id, amount, sources, Callable(_owner, "_wait_combat_speed"))
+	await _mastery_preview_coordinator().apply_end_modifier_feedback(orb_id, amount, sources, Callable(_owner, "_wait_combat_speed"))
 
 
 func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
-	Callable(_owner, "_bind_mastery_preview_coordinator").call()
-	var coordinator: Variant = _owner.get("_mastery_preview_coordinator")
-	return coordinator.modifier_sources_for_key(key)
+	return _mastery_preview_coordinator().modifier_sources_for_key(key)
+
+
+func _mastery_preview_coordinator() -> Variant:
+	_owner._bind_mastery_preview_coordinator()
+	return _owner._mastery_preview_coordinator
 
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:

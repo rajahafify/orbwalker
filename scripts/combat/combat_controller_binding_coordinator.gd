@@ -159,7 +159,8 @@ func bind_player_hud_refresh_coordinator() -> void:
 	if _owner._player_hud_refresh_coordinator == null:
 		_owner._player_hud_refresh_coordinator = _owner.CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
 	_owner._ensure_hud_presenter()
-	_owner._bind_mastery_preview_coordinator()
+	Callable(_owner, "_bind_mastery_preview_coordinator").call()
+	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
 	(
 		_owner
 		. _player_hud_refresh_coordinator
@@ -293,6 +294,8 @@ func bind_turn_resolution_coordinator() -> void:
 	if _owner._turn_resolution_coordinator == null:
 		_owner._turn_resolution_coordinator = _owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
 	_owner._bind_hud_stage_coordinator()
+	Callable(_owner, "_bind_mastery_preview_coordinator").call()
+	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
 	_owner._bind_outcome_route_coordinator()
 	(
 		_owner
@@ -308,7 +311,7 @@ func bind_turn_resolution_coordinator() -> void:
 			{
 				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_REPLAY_TURN_RESOLUTION: Callable(_owner, "_replay_turn_resolution_from_log"),
 				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(_owner, "_can_continue_after_async_wait"),
-				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(_owner, "_sync_combat_mastery_preview_totals"),
+				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(mastery_preview_coordinator, "sync_totals"),
 				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
 				_owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(_owner, "_flow_trace_route_id_value"),
 			},

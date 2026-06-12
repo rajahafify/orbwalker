@@ -54,7 +54,8 @@ static func bind_mastery_preview_coordinator(
 	view: Variant,
 	resolution_order: Array[int],
 	feedback_seconds: float,
-	modifiers: Dictionary
+	modifiers: Dictionary,
+	presentation_dependencies: Dictionary = {}
 ) -> Variant:
 	var coordinator: Variant = current if current != null else script.new()
 	(
@@ -67,6 +68,9 @@ static func bind_mastery_preview_coordinator(
 				"resolution_order": resolution_order,
 				"feedback_stagger_seconds": feedback_seconds,
 				"combat_modifiers": modifiers,
+				"board_view": presentation_dependencies.get("board_view"),
+				"combat_vfx_presenter": presentation_dependencies.get("combat_vfx_presenter"),
+				"combat_speed_duration_callback": presentation_dependencies.get("combat_speed_duration_callback", Callable()),
 			}
 		)
 	)
