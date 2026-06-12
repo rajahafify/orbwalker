@@ -12,26 +12,43 @@ func bind(owner: Variant) -> void:
 	_view_actions = owner.get("_view_actions")
 
 
+func _owner_value(property_name: String) -> Variant:
+	return _owner.get(property_name)
+
+
+func _set_owner_value(property_name: String, value: Variant) -> void:
+	_owner.set(property_name, value)
+
+
+func _contract() -> Variant:
+	return _owner.CONTRACT
+
+
+func _owner_callback(method_name: String) -> Callable:
+	return Callable(_owner, method_name)
+
+
 func bind_board_debug_command_handler() -> void:
-	if _owner._board_debug_command_handler == null:
-		_owner._board_debug_command_handler = _owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
+	var contract: Variant = _contract()
+	if _owner_value("_board_debug_command_handler") == null:
+		_set_owner_value("_board_debug_command_handler", contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new())
+	var handler: Variant = _owner_value("_board_debug_command_handler")
 	(
-		_owner
-		. _board_debug_command_handler
+		handler
 		. bind(
 			{
-				"board_controller": _owner._board_controller,
-				"board_model": _owner._board_model,
-				"settings": _owner._settings,
-				"combat": _owner._combat,
+				"board_controller": _owner_value("_board_controller"),
+				"board_model": _owner_value("_board_model"),
+				"settings": _owner_value("_settings"),
+				"combat": _owner_value("_combat"),
 				"run_state": RunState,
 				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
 			},
 			{
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_debug_set_input_phase"),
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(_owner, "_sync_tutorial_coachmark"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_debug_set_input_phase"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
 			}
 		)
 	)
@@ -105,50 +122,49 @@ func bind_board_controller() -> void:
 
 
 func bind_input_command_handler() -> void:
-	if _owner._input_command_handler == null:
-		_owner._input_command_handler = _owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
+	var contract: Variant = _contract()
+	if _owner_value("_input_command_handler") == null:
+		_set_owner_value("_input_command_handler", contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new())
 	bind_loadout_command_handler()
 	var loadout_command_handler: Variant = _owner.get("_loadout_command_handler")
 	(
-		_owner
-		. _input_command_handler
+		_owner_value("_input_command_handler")
 		. bind(
-			{"view": _owner._view},
+			{"view": _owner_value("_view")},
 			{
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: Callable(_owner, "_toggle_debug_overlay"),
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: Callable(_owner, "_create_new_board"),
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: Callable(_owner, "_print_board_model"),
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE:
-				Callable(loadout_command_handler, "try_use_first_consumable"),
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: Callable(_owner, "_set_viewport_input_handled"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: _owner_callback("_toggle_debug_overlay"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: _owner_callback("_create_new_board"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: _owner_callback("_print_board_model"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(loadout_command_handler, "try_use_first_consumable"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: _owner_callback("_set_viewport_input_handled"),
 			}
 		)
 	)
 
 
 func bind_hud_snapshot_provider() -> void:
-	if _owner._hud_snapshot_provider == null:
-		_owner._hud_snapshot_provider = _owner.CONTRACT.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
+	var contract: Variant = _contract()
+	if _owner_value("_hud_snapshot_provider") == null:
+		_set_owner_value("_hud_snapshot_provider", contract.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new())
 	(
-		_owner
-		. _hud_snapshot_provider
+		_owner_value("_hud_snapshot_provider")
 		. bind(
 			{
 				"run_state": RunState,
-				"model": _owner._model,
-				"player_state": _owner._player_state,
-				"enemy_state": _owner._enemy_state,
-				"combat": _owner._combat,
-				"view": _owner._view,
-				"visuals": _owner._visuals,
-				"turn_log_presenter": _owner._turn_log_presenter,
+				"model": _owner_value("_model"),
+				"player_state": _owner_value("_player_state"),
+				"enemy_state": _owner_value("_enemy_state"),
+				"combat": _owner_value("_combat"),
+				"view": _owner_value("_view"),
+				"visuals": _owner_value("_visuals"),
+				"turn_log_presenter": _owner_value("_turn_log_presenter"),
 			},
 			{
-				"input_phase_value": Callable(_owner, "_input_phase_value"),
-				"drag_active": Callable(_owner, "_drag_active"),
-				"drag_move_time_left": Callable(_owner, "_drag_move_time_left"),
-				"timer_ready_seconds": Callable(_owner, "_timer_ready_seconds"),
-				"show_intent_preview": Callable(_owner, "_should_show_intent_damage_preview"),
+				"input_phase_value": _owner_callback("_input_phase_value"),
+				"drag_active": _owner_callback("_drag_active"),
+				"drag_move_time_left": _owner_callback("_drag_move_time_left"),
+				"timer_ready_seconds": _owner_callback("_timer_ready_seconds"),
+				"show_intent_preview": _owner_callback("_should_show_intent_damage_preview"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
 		)
@@ -156,54 +172,54 @@ func bind_hud_snapshot_provider() -> void:
 
 
 func bind_player_hud_refresh_coordinator() -> void:
-	if _owner._player_hud_refresh_coordinator == null:
-		_owner._player_hud_refresh_coordinator = _owner.CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
+	var contract: Variant = _contract()
+	if _owner_value("_player_hud_refresh_coordinator") == null:
+		_set_owner_value("_player_hud_refresh_coordinator", contract.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new())
 	_owner._ensure_hud_presenter()
 	Callable(_owner, "_bind_mastery_preview_coordinator").call()
 	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
 	(
-		_owner
-		. _player_hud_refresh_coordinator
+		_owner_value("_player_hud_refresh_coordinator")
 		. bind(
 			{
-				"model": _owner._model,
-				"player_state": _owner._player_state,
-				"enemy_state": _owner._enemy_state,
-				"visuals": _owner._visuals,
-				"view": _owner._view,
-				"hud_presenter": _owner._hud_presenter,
-				"mastery_preview_coordinator": _owner._mastery_preview_coordinator,
+				"model": _owner_value("_model"),
+				"player_state": _owner_value("_player_state"),
+				"enemy_state": _owner_value("_enemy_state"),
+				"visuals": _owner_value("_visuals"),
+				"view": _owner_value("_view"),
+				"hud_presenter": _owner_value("_hud_presenter"),
+				"mastery_preview_coordinator": mastery_preview_coordinator,
 			},
 			{
-				_owner.CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.CALLBACK_SHOULD_SHOW_INTENT_DAMAGE_PREVIEW:
-				Callable(_owner, "_should_show_intent_damage_preview"),
+				contract.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.CALLBACK_SHOULD_SHOW_INTENT_DAMAGE_PREVIEW:
+				_owner_callback("_should_show_intent_damage_preview"),
 			}
 		)
 	)
 
 
 func bind_loadout_command_handler() -> void:
-	if _owner._loadout_command_handler == null:
-		_owner._loadout_command_handler = _owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
+	var contract: Variant = _contract()
+	if _owner_value("_loadout_command_handler") == null:
+		_set_owner_value("_loadout_command_handler", contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new())
 	(
-		_owner
-		. _loadout_command_handler
+		_owner_value("_loadout_command_handler")
 		. bind(
 			{
 				"run_state": RunState,
-				"combat": _owner._combat,
-				"view": _owner._view,
-				"board_controller": _owner._board_controller,
-				"board_view": _owner._board_view,
-				"board_model": _owner._board_model,
-				"consumable_service": _owner._combat_consumable_service,
-				"consumable_rng": _owner._consumable_rng,
+				"combat": _owner_value("_combat"),
+				"view": _owner_value("_view"),
+				"board_controller": _owner_value("_board_controller"),
+				"board_view": _owner_value("_board_view"),
+				"board_model": _owner_value("_board_model"),
+				"consumable_service": _owner_value("_combat_consumable_service"),
+				"consumable_rng": _owner_value("_consumable_rng"),
 			},
 			{
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
+				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
+				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
 		)
