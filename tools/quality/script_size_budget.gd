@@ -37,13 +37,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat view now routes settings overlays, enemy stage reactions, tutorial overlays, HUD snapshots, and VFX bindings while view decomposition is in progress.",
 	},
-	"res://scripts/ui/player_loadout_hud.gd":
-	{
-		"baseline": 952,
-		"owner": "R-P1-3",
-		"reason":
-		"Player loadout HUD facade is at the half-size target, but Wave 7 panel/popover/preview components still depend on HUD private state; Wave 8 must bind component-owned nodes/state and add popover/intent characterization.",
-	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
 		"baseline": 704,

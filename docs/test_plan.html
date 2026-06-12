@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 11 PlayerLoadoutHud layout/chrome split):</p>
+<ul>
+<li><code>PlayerLoadoutHudLayout</code> now owns fixed player-HUD geometry, compact/full footer layout, node visibility rules, and the shop HUD layout preset. <code>PlayerLoadoutHudChromeStyler</code> now owns HUD panel, label, and progressbar chrome from explicit <code>nodes</code> and <code>visuals</code> inputs.</li>
+<li><code>scripts/ui/player_loadout_hud.gd</code> dropped from <code>952</code> to <code>646</code> measured lines, putting it under the normal <code>650</code> budget and deleting its script-size exception. The extracted layout/chrome collaborators stay within the strategy budget at <code>175</code> measured lines / <code>11</code> functions and <code>92</code> measured lines / <code>6</code> functions.</li>
+<li>Validation passed: <code>git diff --check</code>; changed-file <code>pre_commit</code> hooks for touched GDScript; <code>res://tools/quality/script_load_validation.gd</code> reported <code>299</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=204</code>, <code>over_budget=7</code>, <code>documented_exceptions=7</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>94</code> suites, <code>437</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 10 MainMenuView settings overlay split):</p>
 <ul>
 <li><code>MainMenuSettingsOverlay</code> now owns settings overlay node creation, layout, styling, focus controls, settings-state rendering, and settings action signals. <code>MainMenuView</code> keeps its public settings signals and delegates overlay behavior without the new collaborator reaching into view private state.</li>
