@@ -109,7 +109,7 @@
     <td><span class="status done">EXCEPTION DELETED</span></td>
   </tr>
   <tr>
-    <td><code>combat/combat_controller.gd</code></td><td class="n">1,962</td><td class="n">569</td>
+    <td><code>combat/combat_controller.gd</code></td><td class="n">1,962</td><td class="n">551</td>
     <td><div class="bar"><div class="fill" style="width:71%"></div><span class="lbl">-71%</span></div></td>
     <td class="dim">&lt; 400, no game-rule logic</td>
     <td><span class="status partial">PARTLY RELOCATED</span></td>
@@ -195,9 +195,9 @@
   <tr><td>Tests before moves</td><td><span class="status partial">PARTIAL</span></td><td>110 suites now exist, and follow-up ownership tests cover the HUD helpers plus the binding/lifecycle cleanup directly. Wave 7's original bulk moves still missed the strict tests-before-move bar, and <code>combat_model_test.gd</code> was not split alongside the controller work.</td></tr>
   <tr><td>No new autoload/root reach-ins</td><td><span class="status partial">PARTIAL</span></td><td>The literal <code>get_node("/root/</code> grep gate is not present, but the owner-private reach-in gate is now strict: the checked allowlist is empty and future <code>_owner._</code>, <code>owner._</code>, or <code>_hud._</code> usage fails the ratchet.</td></tr>
   <tr><td>Facade deletion is part of done</td><td><span class="status partial">PARTIAL</span></td><td><code>run_state.gd</code>'s private log-wrapper cluster was deleted, but <code>VisualRegistry</code> remains a permanent compatibility facade and RunState still keeps many public wrappers.</td></tr>
-  <tr><td>No non-test script over 800 measured lines</td><td><span class="status done">MET</span></td><td><code>script_size_budget.gd</code> reports the only remaining documented script is <code>combat_controller.gd</code> at <code>569</code>.</td></tr>
+  <tr><td>No non-test script over 800 measured lines</td><td><span class="status done">MET</span></td><td><code>script_size_budget.gd</code> reports the only remaining documented script is <code>combat_controller.gd</code> at <code>551</code>.</td></tr>
   <tr><td><code>RunState</code> contains wiring only</td><td><span class="status partial">CLOSE</span></td><td>641 lines: composition root + public facade wrappers + run-flow state. Wrapper deletion (playbook step 5) not started.</td></tr>
-  <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>569 measured lines remain after state initialization, resolve flow, turn preview, and signal wiring moved into explicit collaborators. The owner-private reach-in cleanup is complete, but the controller and lifecycle/binding satellites still need a final composition-root audit before the controller can be treated as wiring-only.</td></tr>
+  <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>551 measured lines remain after state initialization, resolve flow, turn preview, signal wiring, and audio routing moved into explicit collaborators. The owner-private reach-in cleanup is complete, but the controller still needs a final composition-root audit before it can be treated as wiring-only.</td></tr>
   <tr><td>New VFX effect = no edits to listed files</td><td><span class="status done">MET</span></td><td>Route policy + presenter contract: new effect is a presenter file + one policy route entry.</td></tr>
   <tr><td>New shop offer type = no edits to listed files</td><td><span class="status done">MET</span></td><td><code>ShopService</code> delegates offer application to <code>ShopOfferApplicator</code> and exposes <code>register_offer_type_handler()</code>. <code>ShopOfferPolicy.register_content_lookup()</code> lets new types join shop generation without editing the listed god-object files; <code>shop_offer_applicator_test.gd</code> and <code>shop_offer_policy_test.gd</code> characterize the custom-type path.</td></tr>
   <tr><td>New settings row = no edits to listed files</td><td><span class="status done">MET</span></td><td>Settings command handler + overlay coordinator own the full path since Wave 2.</td></tr>

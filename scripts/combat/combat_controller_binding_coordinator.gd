@@ -29,6 +29,11 @@ func _owner_callback(method_name: String) -> Callable:
 	return Callable(_owner, method_name)
 
 
+func _audio_router_callback(method_name: String) -> Callable:
+	_owner.call("_bind_audio_router")
+	return Callable(_owner.get("_audio_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -134,7 +139,7 @@ func bind_board_controller() -> void:
 				"board_model": _owner_value("_board_model"),
 			},
 			{
-				"swap_sound": _owner_callback("_on_drag_swap_success"),
+				"swap_sound": _audio_router_callback("play_sfx").bind("swap"),
 				"match_groups": _owner_callback("_drag_match_groups"),
 				"move_timer_seconds": _owner_callback("_drag_move_timer_seconds"),
 				"drag_input_result": _owner_callback("_on_board_drag_input_result"),
@@ -314,7 +319,7 @@ func bind_outcome_route_coordinator() -> void:
 				"turn_log_presenter": _owner_value("_turn_log_presenter")
 			},
 			{
-				contract.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: _owner_callback("_audio_play_sfx"),
+				contract.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: _audio_router_callback("play_sfx"),
 				contract.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
 				contract.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: _owner_callback("_append_turn_log"),
 				contract.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
