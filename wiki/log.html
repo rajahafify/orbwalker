@@ -3792,6 +3792,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved combat mastery hover state and detail-bubble node ownership into <code>PlayerLoadoutMasteryPanel</code>. <code>PlayerLoadoutHud</code> now binds clear/style/visual-registry/highlighter/node/layout hooks instead of letting the panel read or write HUD-private fields. (source: <code>scripts/ui/player_loadout_mastery_panel.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
 <li>Removed <code>player_loadout_mastery_panel.gd</code> from the owner-reach ratchet allowlist after its HUD-private reach-ins dropped from <code>84</code> to <code>0</code>, and added direct fake-hook coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/player_loadout_mastery_panel_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-binding-coordinator-access-cleanup">2026-06-13 - Binding coordinator access cleanup</h2>
+<ul>
+<li>Removed the remaining direct controller-private reads and writes from <code>CombatControllerBindingCoordinator</code>. The coordinator now routes binding-time dependencies and callbacks through its existing owner access/callback helpers while preserving the same handler/router/coordinator binding behavior. (source: <code>scripts/combat/combat_controller_binding_coordinator.gd</code>)</li>
+<li>Removed <code>combat_controller_binding_coordinator.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>63</code> to <code>0</code>, and added direct coverage for input-router binding and feedback-settings propagation. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/combat_controller_binding_coordinator_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
