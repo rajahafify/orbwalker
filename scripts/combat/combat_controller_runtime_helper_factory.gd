@@ -29,6 +29,7 @@ const SCRIPT_KEYS := {
 	"tutorial_drag_flow": "COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT",
 	"resolve_trace_logger": "COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT",
 	"turn_replay_coordinator": "COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT",
+	"state_initializer": "COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT",
 	"combat_consumable_service": "COMBAT_CONSUMABLE_SERVICE_SCRIPT",
 	"board_debug_command_handler": "COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT",
 	"input_command_handler": "COMBAT_INPUT_COMMAND_HANDLER_SCRIPT",

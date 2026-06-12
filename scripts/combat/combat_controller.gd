@@ -51,6 +51,7 @@ var _tutorial_end_command_handler: CombatTutorialEndCommandHandler = null
 var _tutorial_drag_flow = null
 var _resolve_trace_logger = null
 var _turn_replay_coordinator = null
+var _state_initializer = null
 var _lifecycle = null
 var _binding_coordinator = null
 var _view_actions: Variant = null
@@ -242,11 +243,6 @@ func _apply_visual_chrome() -> void:
 	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_visual_chrome(_view, RunState)
 
 
-func _initialize_combat_state() -> void:
-	_bind_lifecycle()
-	_lifecycle.initialize_combat_state()
-
-
 func _begin_turn_preview() -> void:
 	_bind_lifecycle()
 	_lifecycle.begin_turn_preview()
@@ -350,7 +346,8 @@ func _console_on_skip_success() -> void:
 	if _board_controller != null:
 		_board_controller.abort()
 	_last_resolve_result.clear()
-	_initialize_combat_state()
+	_bind_lifecycle()
+	_lifecycle.initialize_combat_state()
 	_create_new_board()
 	_begin_turn_preview()
 
