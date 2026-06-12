@@ -3717,6 +3717,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Changed <code>CombatTurnReplayCoordinator</code> from whole-controller binding to explicit dependencies, callbacks, and timing config for model/player state, HUD staging, VFX presenter/target resolver, mastery preview, wait/continue callbacks, and impact SFX. (source: <code>scripts/combat/combat_turn_replay_coordinator.gd</code>, <code>scripts/combat/combat_controller_runtime_binder.gd</code>)</li>
 <li>Removed <code>combat_turn_replay_coordinator.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>67</code> to <code>0</code>. The combat controller size baseline remains <code>572</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>docs/refactor_progress_report_2026-06-12.html</code>)</li>
+</ul>
+      <h2 id="2026-06-12-binding-coordinator-dependency-pass">2026-06-12 - Binding coordinator dependency pass</h2>
+<ul>
+<li>Converted the board-debug, input-command, HUD snapshot, player-HUD refresh, and loadout binding paths in <code>CombatControllerBindingCoordinator</code> to use local owner access helpers instead of direct owner-private field reads/writes. (source: <code>scripts/combat/combat_controller_binding_coordinator.gd</code>)</li>
+<li>Lowered the binding coordinator owner-reach ratchet from <code>118</code> to <code>82</code>; <code>combat_controller.gd</code> remains unchanged at <code>572</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
