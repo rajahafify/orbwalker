@@ -144,7 +144,10 @@
 
 <h2 class="section" id="wave7-closeout">Wave 7 Closeout Progress</h2>
 <div class="callout green">
-  <b>2026-06-12 status:</b> the five original god-object files have all crossed the requested half-size target; <code>CombatController</code> is now under the whole-effort 800-line ceiling; and <code>RunState</code>, <code>PlayerLoadoutHud</code>, <code>VisualRegistry</code>/<code>VisualRegistryBackend</code>, <code>CombatMaxVfxOverlay</code>, and <code>CombatChromeStyler</code> are below the normal script budget. The remaining architecture risk is concentrated in combat view/layout surfaces, board view, debug VFX gallery, and transitional owner-bound collaborators.
+  <b>2026-06-12 status:</b> the five original god-object files have all crossed the requested half-size target; <code>CombatController</code> is now under the whole-effort 800-line ceiling; and <code>RunState</code>, <code>PlayerLoadoutHud</code>, <code>VisualRegistry</code>/<code>VisualRegistryBackend</code>, <code>CombatMaxVfxOverlay</code>, <code>CombatChromeStyler</code>, and <code>CombatLayoutPresenter</code> are below the normal script budget. The remaining architecture risk is concentrated in combat view surfaces, board view, debug VFX gallery, and transitional owner-bound collaborators.
+</div>
+<div class="callout green">
+  <b>Wave 12 layout update:</b> <code>CombatLayoutPresenter</code> layout geometry moved into <code>CombatLayoutGeometry</code>. The presenter is now under its normal script-size budget at <code>394</code> measured lines, the new geometry owner is <code>343</code> measured lines / <code>14</code> functions, and the layout-presenter budget exception is retired.
 </div>
 <table class="grid">
   <tr><th>Original god object</th><th>Start</th><th>Current</th><th>Half-size target</th><th>Status</th><th>Next pressure point</th></tr>

@@ -16,13 +16,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat orchestration is now below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while callback and binding seams are converted into wiring-only ownership.",
 	},
-	"res://scripts/combat/combat_layout_presenter.gd":
-	{
-		"baseline": 732,
-		"owner": "P1-2",
-		"reason":
-		"Combat layout rules are centralized during view decomposition; split board, HUD, overlay, and debug layout surfaces after screenshot guards cover them.",
-	},
 	"res://scripts/combat/combat_view.gd":
 	{
 		"baseline": 549,

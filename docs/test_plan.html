@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 12 CombatLayoutPresenter geometry split):</p>
+<ul>
+<li><code>CombatLayoutGeometry</code> now owns deterministic layout constants, layout-probe geometry, readability zones, overlap filtering, board sizing, and player-HUD override geometry. <code>CombatLayoutPresenter</code> keeps node binding and runtime application.</li>
+<li><code>scripts/combat/combat_layout_presenter.gd</code> dropped from <code>732</code> to <code>394</code> measured lines, putting it under the normal <code>650</code> budget and deleting its script-size exception. The extracted geometry owner stays within the strategy budget at <code>343</code> measured lines / <code>14</code> functions.</li>
+<li>Validation passed: <code>git diff --check</code>; changed-file <code>pre_commit</code> hooks for touched GDScript; <code>res://tools/quality/script_load_validation.gd</code> reported <code>308</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=212</code>, <code>over_budget=5</code>, <code>documented_exceptions=5</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; <code>res://tools/quality/owner_reach_in_budget.gd</code> passed; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>95</code> suites, <code>445</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 12 CombatChromeStyler helper split):</p>
 <ul>
 <li><code>CombatChromeStyler</code> now keeps the public chrome node-map contract and <code>apply_visual_chrome()</code> orchestration, while <code>CombatChromeThemeHelpers</code> owns reusable stylebox, progress-bar, button, timer, loadout, outcome, debug, stat-chip, decorative-overlay, and zone-guide styling helpers.</li>

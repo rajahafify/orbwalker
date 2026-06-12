@@ -2,15 +2,18 @@ extends RefCounted
 class_name CombatLayoutPresenterTest
 
 const PRESENTER_SCRIPT := preload("res://scripts/combat/combat_layout_presenter.gd")
+const GEOMETRY_SCRIPT := preload("res://scripts/combat/combat_layout_geometry.gd")
 
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("nodes_from_root_nodes_preserves_layout_contract", _test_nodes_from_root_nodes_preserves_layout_contract, failures)
 	_run_case("nodes_from_root_nodes_derives_top_bar_row_and_runtime_extras", _test_nodes_from_root_nodes_derives_top_bar_row_and_runtime_extras, failures)
+	_run_case("layout_probe_facade_matches_geometry_owner", _test_layout_probe_facade_matches_geometry_owner, failures)
+	_run_case("geometry_player_hud_override_extends_footer", _test_geometry_player_hud_override_extends_footer, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 2,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -56,13 +59,16 @@ func _test_nodes_from_root_nodes_derives_top_bar_row_and_runtime_extras() -> Str
 	var runtime_backdrop := TextureRect.new()
 	var player_loadout_hud := RefCounted.new()
 	var outcome_overlay := RefCounted.new()
-	var nodes: Dictionary = PRESENTER_SCRIPT.nodes_from_root_nodes(
-		{"_top_bar": top_bar},
-		{
-			"enemy_stage_backdrop": runtime_backdrop,
-			"player_loadout_hud": player_loadout_hud,
-			"outcome_overlay": outcome_overlay,
-		}
+	var nodes: Dictionary = (
+		PRESENTER_SCRIPT
+		. nodes_from_root_nodes(
+			{"_top_bar": top_bar},
+			{
+				"enemy_stage_backdrop": runtime_backdrop,
+				"player_loadout_hud": player_loadout_hud,
+				"outcome_overlay": outcome_overlay,
+			}
+		)
 	)
 	if nodes.get("top_bar_row") != top_bar_row:
 		top_bar.free()
@@ -78,4 +84,35 @@ func _test_nodes_from_root_nodes_derives_top_bar_row_and_runtime_extras() -> Str
 		return "Expected non-node layout extras to be carried through."
 	top_bar.free()
 	runtime_backdrop.free()
+	return ""
+
+
+func _test_layout_probe_facade_matches_geometry_owner() -> String:
+	var viewport_size := Vector2(1080, 2280)
+	var presenter_probe: Dictionary = PRESENTER_SCRIPT.build_layout_probe(viewport_size)
+	var geometry_probe: Dictionary = GEOMETRY_SCRIPT.build_layout_probe(viewport_size)
+	if presenter_probe.get("applied", false) != geometry_probe.get("applied", false):
+		return "Expected presenter layout probe facade to preserve applied state."
+	if presenter_probe.get("layout_root_size", Vector2.ZERO) != geometry_probe.get("layout_root_size", Vector2.ZERO):
+		return "Expected presenter layout probe facade to preserve root size."
+	if presenter_probe.get("board_size", Vector2.ZERO) != geometry_probe.get("board_size", Vector2.ZERO):
+		return "Expected presenter layout probe facade to preserve board size."
+	var presenter_zones: Dictionary = presenter_probe.get("zone_rects", {})
+	var geometry_zones: Dictionary = geometry_probe.get("zone_rects", {})
+	if presenter_zones.get("primary", {}) != geometry_zones.get("primary", {}):
+		return "Expected presenter layout probe facade to preserve primary zones."
+	return ""
+
+
+func _test_geometry_player_hud_override_extends_footer() -> String:
+	var section_rect := Rect2(Vector2(0, 1428), Vector2(1080, 612))
+	var override: Dictionary = GEOMETRY_SCRIPT.player_hud_layout_override_for_section(section_rect)
+	if override.get("section", Rect2()) != section_rect:
+		return "Expected geometry override to preserve the requested section rect."
+	var footer_panel: Rect2 = override.get("footer_panel", Rect2())
+	if footer_panel.size.y != 444.0:
+		return "Expected footer panel to absorb extra section height."
+	var mastery_panel: Rect2 = override.get("mastery_panel", Rect2())
+	if mastery_panel.size.y != 160.0:
+		return "Expected mastery panel height to stay fixed while footer grows."
 	return ""
