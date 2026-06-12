@@ -39,15 +39,6 @@ var _selected_consumable_slot := -1
 var _empty_silhouette_cache: Dictionary = {}
 var _hud_nodes: Dictionary = {}
 var _player_data: Dictionary = {}
-var _slot_detail_bubble: Panel
-var _slot_detail_title: Label
-var _slot_detail_description: Label
-var _slot_detail_sell_button: Button
-var _hover_slot_global_rect := Rect2()
-var _hover_slot_type := ""
-var _hover_slot_index := -1
-var _hover_slot_title := ""
-var _hover_slot_description := ""
 var _layout_override: Dictionary = {}
 var _hovered_mastery_orb_id := -1
 var _mastery_hover_payload: Dictionary = {}
@@ -144,7 +135,7 @@ func update_player_hud_layout() -> void:
 func handle_global_click(global_point: Vector2) -> bool:
 	if not _has_inventory_focus():
 		return false
-	if _control_contains_point(_slot_detail_sell_button, global_point):
+	if _slot_detail_popover()._is_slot_detail_sell_button(global_point):
 		_on_slot_detail_sell_pressed()
 		return true
 	if _is_inside_inventory_focus_area(global_point):
@@ -615,11 +606,7 @@ func _on_slot_mouse_entered(slot: Control, slot_type: String, slot_index: int, c
 
 func _on_slot_mouse_exited() -> void:
 	slot_hover_ended.emit()
-	_hover_slot_global_rect = Rect2()
-	_hover_slot_type = ""
-	_hover_slot_index = -1
-	_hover_slot_title = ""
-	_hover_slot_description = ""
+	_slot_detail_popover().clear_hover_state()
 	_update_selected_slot_popover()
 
 
@@ -705,6 +692,10 @@ func _has_inventory_focus() -> bool:
 
 func _is_inside_inventory_focus_area(global_point: Vector2) -> bool:
 	return _slot_detail_popover()._is_inside_inventory_focus_area(global_point)
+
+
+func _is_slot_detail_sell_button(global_point: Vector2) -> bool:
+	return _slot_detail_popover()._is_slot_detail_sell_button(global_point)
 
 
 func _point_hits_control_children(root: Control, global_point: Vector2) -> bool:
@@ -841,5 +832,18 @@ func _intent_preview() -> Variant:
 func _slot_detail_popover() -> Variant:
 	if _slot_detail_popover_presenter == null:
 		_slot_detail_popover_presenter = SLOT_DETAIL_POPOVER_SCRIPT.new()
-		_slot_detail_popover_presenter.bind(self)
+		_slot_detail_popover_presenter.bind(
+			{
+				"hud_nodes_provider": func() -> Dictionary: return _hud_nodes,
+				"player_data_provider": func() -> Dictionary: return _player_data,
+				"selected_equipment_slot_provider": func() -> int: return _selected_equipment_slot,
+				"selected_consumable_slot_provider": func() -> int: return _selected_consumable_slot,
+				"content_lookup": Callable(self, "lookup_content_definition"),
+				"apply_rect": Callable(self, "_apply_rect"),
+			},
+			{
+				SLOT_DETAIL_POPOVER_SCRIPT.CALLBACK_SELL_SLOT_REQUESTED:
+				func(slot_type: String, slot_index: int) -> void: sell_slot_requested.emit(slot_type, slot_index),
+			}
+		)
 	return _slot_detail_popover_presenter
