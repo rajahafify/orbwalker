@@ -3722,6 +3722,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Converted the board-debug, input-command, HUD snapshot, player-HUD refresh, and loadout binding paths in <code>CombatControllerBindingCoordinator</code> to use local owner access helpers instead of direct owner-private field reads/writes. (source: <code>scripts/combat/combat_controller_binding_coordinator.gd</code>)</li>
 <li>Lowered the binding coordinator owner-reach ratchet from <code>118</code> to <code>82</code>; <code>combat_controller.gd</code> remains unchanged at <code>572</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-12-lifecycle-runtime-helper-factory">2026-06-12 - Lifecycle runtime-helper factory</h2>
+<ul>
+<li>Moved the runtime-helper construction table out of <code>CombatControllerLifecycle.ensure_runtime_helpers()</code> into <code>CombatControllerRuntimeHelperFactory</code>. The factory creates missing helpers from an explicit script map and preserves already-injected collaborators. (source: <code>scripts/combat/combat_controller_runtime_helper_factory.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
+<li>Lowered the lifecycle owner-reach ratchet from <code>228</code> to <code>166</code>; <code>combat_controller.gd</code> remains unchanged at <code>572</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

@@ -1,0 +1,77 @@
+extends RefCounted
+class_name CombatControllerRuntimeHelperFactoryTest
+
+const CONTRACT := preload("res://scripts/combat/combat_controller_contract.gd")
+const FACTORY := preload("res://scripts/combat/combat_controller_runtime_helper_factory.gd")
+
+
+func run_all() -> Dictionary:
+	var failures: Array[String] = []
+	_run_case("factory_creates_missing_helpers", _test_factory_creates_missing_helpers, failures)
+	_run_case("factory_preserves_existing_helpers", _test_factory_preserves_existing_helpers, failures)
+	return {"passed": failures.is_empty(), "total": 2, "failed": failures.size(), "failures": failures}
+
+
+func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
+	if error_text != "":
+		failures.append("%s: %s" % [case_name, error_text])
+
+
+func _test_factory_creates_missing_helpers() -> String:
+	var helpers: Dictionary = FACTORY.ensure_helpers({}, _script_map())
+	var missing: Array[String] = []
+	for key in FACTORY.SCRIPT_KEYS.keys():
+		if helpers.get(key) == null:
+			missing.append(String(key))
+	if not missing.is_empty():
+		return "Expected factory to create every runtime helper; missing %s." % ", ".join(missing)
+	return ""
+
+
+func _test_factory_preserves_existing_helpers() -> String:
+	var existing := RefCounted.new()
+	var helpers: Dictionary = FACTORY.ensure_helpers({"visuals": existing}, _script_map())
+	if helpers.get("visuals") != existing:
+		return "Expected factory to preserve existing helper instances."
+	return ""
+
+
+func _script_map() -> Dictionary:
+	return {
+		"VISUAL_REGISTRY_SCRIPT": CONTRACT.VISUAL_REGISTRY_SCRIPT,
+		"PLAYER_LOADOUT_HUD_SCRIPT": CONTRACT.PLAYER_LOADOUT_HUD_SCRIPT,
+		"COMBAT_OUTCOME_OVERLAY_SCRIPT": CONTRACT.COMBAT_OUTCOME_OVERLAY_SCRIPT,
+		"COMBAT_TURN_LOG_PRESENTER_SCRIPT": CONTRACT.COMBAT_TURN_LOG_PRESENTER_SCRIPT,
+		"COMBAT_DEBUG_RUNTIME_SCRIPT": CONTRACT.COMBAT_DEBUG_RUNTIME_SCRIPT,
+		"COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT": CONTRACT.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT,
+		"COMBAT_TIMER_SERVICE_SCRIPT": CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT,
+		"COMBAT_BOSS_REWARD_HANDLER_SCRIPT": CONTRACT.COMBAT_BOSS_REWARD_HANDLER_SCRIPT,
+		"COMBAT_VFX_PRESENTER_SCRIPT": CONTRACT.COMBAT_VFX_PRESENTER_SCRIPT,
+		"BOARD_CONTROLLER_SCRIPT": CONTRACT.BOARD_CONTROLLER_SCRIPT,
+		"COMBAT_HUD_PRESENTER_SCRIPT": CONTRACT.COMBAT_HUD_PRESENTER_SCRIPT,
+		"COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT": CONTRACT.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT,
+		"COMBAT_VFX_TARGET_RESOLVER_SCRIPT": CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT,
+		"COMBAT_HUD_STAGE_COORDINATOR_SCRIPT": CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT,
+		"COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT": CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
+		"COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT": CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT,
+		"COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT": CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT,
+		"COMBAT_INTENT_HOVER_HANDLER_SCRIPT": CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT,
+		"COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT": CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT,
+		"COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT": CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT,
+		"COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT": CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT,
+		"COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT": CONTRACT.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT,
+		"COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT": CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT,
+		"COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT": CONTRACT.COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT,
+		"COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT": CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT,
+		"COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT": CONTRACT.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT,
+		"COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT": CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT,
+		"COMBAT_CONSUMABLE_SERVICE_SCRIPT": CONTRACT.COMBAT_CONSUMABLE_SERVICE_SCRIPT,
+		"COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT": CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT,
+		"COMBAT_INPUT_COMMAND_HANDLER_SCRIPT": CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT,
+		"COMBAT_GUIDANCE_DIRECTOR_SCRIPT": CONTRACT.COMBAT_GUIDANCE_DIRECTOR_SCRIPT,
+	}
