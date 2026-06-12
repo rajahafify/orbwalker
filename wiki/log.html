@@ -3737,6 +3737,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved drag-end resolve orchestration out of <code>CombatControllerLifecycle</code> into <code>CombatResolveFlowCoordinator</code>, covering handled drag completion, resolve tracing, visual/simulation board model prep, resolver execution, resolve animation, final board commit, and turn-resolution routing. (source: <code>scripts/combat/combat_resolve_flow_coordinator.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
 <li>Lowered the lifecycle owner-reach ratchet from <code>138</code> to <code>118</code>; <code>combat_controller.gd</code> remains at <code>571</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-turn-preview-coordinator">2026-06-13 - Turn preview coordinator</h2>
+<ul>
+<li>Moved begin-turn preview orchestration out of <code>CombatControllerLifecycle</code> into <code>CombatTurnPreviewCoordinator</code>, covering intent-preview reset, player-input phase setup, pending-scene cleanup, outcome hiding, turn summary/status text, HUD refresh, mastery-hover cleanup, tutorial coachmark sync, and intent log formatting. (source: <code>scripts/combat/combat_turn_preview_coordinator.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
+<li>Lowered the lifecycle owner-reach ratchet from <code>118</code> to <code>110</code>; <code>combat_controller.gd</code> remains at <code>571</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/combat_turn_preview_coordinator_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
