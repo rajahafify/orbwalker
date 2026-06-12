@@ -46,10 +46,10 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/ui/visual_registry_backend.gd":
 	{
-		"baseline": 1333,
+		"baseline": 877,
 		"owner": "R-P1-3",
 		"reason":
-		"VisualRegistry facade is frozen as a thin compatibility layer; VisualRegistryBackend is the real Track C debt counter and owns the remaining texture cache, atlas cleanup, and runtime loading families to split next.",
+		"VisualRegistry facade is frozen as a thin compatibility layer; VisualRegistryBackend is the real Track C debt counter and still owns enemy lookup, atlas slicing, chrome, and combat UI lookup families to split next.",
 	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{

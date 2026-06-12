@@ -3,6 +3,7 @@ class_name VisualRegistryBackend
 
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 const VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/ui/visual_registry_texture_factory.gd")
+const VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT := preload("res://scripts/ui/visual_registry_texture_store.gd")
 const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
 const PATH_COMBAT_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_BACKGROUND
 const PATH_COMBAT_ENEMY_STAGE_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_ENEMY_STAGE_SHEET
@@ -73,9 +74,8 @@ var _derived_hud_textures: Dictionary = {}
 var _derived_chrome_textures: Dictionary = {}
 var _derived_combat_ui_textures: Dictionary = {}
 var _vfx_textures: Dictionary = {}
-var _runtime_manifest: Dictionary = {}
-var _runtime_texture_cache: Dictionary = {}
 var _texture_factory: Resource = VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new()
+var _texture_store = VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new()
 
 var _combat_background: Texture2D
 var _combat_enemy_stage_sheet: Texture2D
@@ -96,7 +96,6 @@ var _mastery_textures_built := false
 var _icon_textures_built := false
 var _relic_textures_built := false
 var _vfx_textures_built := false
-var _runtime_manifest_loaded := false
 
 
 func _init() -> void:
@@ -131,6 +130,8 @@ static func lookup_table_alias_contract() -> Dictionary:
 		"stable_placeholder_icon_colors": is_same(_STABLE_PLACEHOLDER_ICON_COLORS, VISUAL_REGISTRY_DATA_SCRIPT.STABLE_PLACEHOLDER_ICON_COLORS),
 		"texture_factory_is_resource":
 		VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new() is Resource and VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().has_method("post_match_vfx_textures"),
+		"texture_store_is_refcounted":
+		VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new() is RefCounted and VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new().has_method("runtime_texture"),
 	}
 
 
@@ -159,12 +160,12 @@ func enemy_portrait(enemy_id: String) -> Texture2D:
 	if path == "":
 		_warn_missing("enemy_id:%s" % normalized_id)
 		var fallback := String(_ENEMY_PORTRAIT_PATHS.get("cavern_striker", ""))
-		var fallback_texture := _safe_load_texture(fallback, "enemy_fallback")
+		var fallback_texture := _texture_store.safe_load_texture(fallback, "enemy_fallback")
 		if fallback_texture != null:
 			_enemy_portrait_textures[normalized_id] = fallback_texture
 			return fallback_texture
 		return placeholder_texture("enemy_portrait")
-	var loaded := _safe_load_texture(path, "enemy:%s" % normalized_id)
+	var loaded := _texture_store.safe_load_texture(path, "enemy:%s" % normalized_id)
 	if loaded != null:
 		_enemy_portrait_textures[normalized_id] = loaded
 		return loaded
@@ -178,7 +179,7 @@ func enemy_stage_background(enemy_id: String) -> Texture2D:
 	var path := String(_ENEMY_STAGE_BACKGROUND_PATHS.get(normalized_id, ""))
 	if path == "":
 		return combat_background()
-	var loaded := _safe_load_texture(path, "enemy_stage_bg:%s" % normalized_id)
+	var loaded := _texture_store.safe_load_texture(path, "enemy_stage_bg:%s" % normalized_id)
 	if loaded != null:
 		_enemy_stage_background_textures[normalized_id] = loaded
 		return loaded
@@ -190,14 +191,14 @@ func enemy_sprite(enemy_id: String) -> Texture2D:
 	if _enemy_sprite_textures.has(normalized_id):
 		return _enemy_sprite_textures[normalized_id]
 	var runtime_key := _runtime_enemy_key(enemy_id)
-	var runtime_texture := _runtime_texture("enemies", runtime_key)
+	var runtime_texture := _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "enemies", runtime_key)
 	if runtime_texture != null:
 		_enemy_sprite_textures[normalized_id] = runtime_texture
 		return runtime_texture
 	_warn_missing("runtime_enemy:%s:%s" % [normalized_id, runtime_key])
 	var path := String(_ENEMY_SPRITE_PATHS.get(normalized_id, ""))
 	if path != "":
-		var loaded := _safe_load_texture(path, "enemy_sprite:%s" % normalized_id)
+		var loaded := _texture_store.safe_load_texture(path, "enemy_sprite:%s" % normalized_id)
 		if loaded != null:
 			_enemy_sprite_textures[normalized_id] = loaded
 			return loaded
@@ -218,7 +219,7 @@ func enemy_visual_profile(enemy_id: String) -> Dictionary:
 func combat_enemy_visual_debug_info(enemy_id: String) -> Dictionary:
 	var normalized_id := _normalized_enemy_visual_id(enemy_id)
 	var runtime_key := _runtime_enemy_key(enemy_id)
-	var runtime_entry := _runtime_texture_entry("enemies", runtime_key)
+	var runtime_entry := _texture_store.runtime_texture_entry(PATH_RUNTIME_MANIFEST, "enemies", runtime_key)
 	var stage_key := "combat_stage_%s" % normalized_id
 	var stage_path := _combat_stage_sheet_debug_path(normalized_id)
 	var stage_fallback := false
@@ -302,7 +303,7 @@ func rarity_badge(rarity: String) -> Texture2D:
 func mastery_icon(orb_id: int) -> Texture2D:
 	var runtime_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
 	if runtime_key != "":
-		var runtime_texture := _runtime_texture("mastery", runtime_key)
+		var runtime_texture := _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "mastery", runtime_key)
 		if runtime_texture != null:
 			return runtime_texture
 	_ensure_mastery_textures()
@@ -592,7 +593,7 @@ func _combat_stage_sheet_texture(normalized_id: String) -> Texture2D:
 	if index < 0:
 		return null
 	if _combat_enemy_stage_sheet == null:
-		_combat_enemy_stage_sheet = _safe_load_texture(PATH_COMBAT_ENEMY_STAGE_SHEET, "combat_enemy_stage_sheet")
+		_combat_enemy_stage_sheet = _texture_store.safe_load_texture(PATH_COMBAT_ENEMY_STAGE_SHEET, "combat_enemy_stage_sheet")
 	if _combat_enemy_stage_sheet == null:
 		return null
 	var columns := 2
@@ -751,19 +752,19 @@ func _ensure_background_textures() -> void:
 	if _backgrounds_loaded:
 		return
 	_backgrounds_loaded = true
-	_combat_background = _safe_load_texture(PATH_COMBAT_BACKGROUND, "combat_background")
-	_shop_background = _safe_load_texture(PATH_SHOP_BACKGROUND, "shop_background")
+	_combat_background = _texture_store.safe_load_texture(PATH_COMBAT_BACKGROUND, "combat_background")
+	_shop_background = _texture_store.safe_load_texture(PATH_SHOP_BACKGROUND, "shop_background")
 
 
 func _ensure_hero_portrait() -> void:
 	if _hero_portrait_loaded:
 		return
 	_hero_portrait_loaded = true
-	_hero_portrait = _runtime_texture("heroes", "hero_orbwalker")
+	_hero_portrait = _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "heroes", "hero_orbwalker")
 	if _hero_portrait == null:
-		_hero_portrait = _safe_load_texture(PATH_FALLBACK_HERO_PORTRAIT, "hero_portrait_fallback")
+		_hero_portrait = _texture_store.safe_load_texture(PATH_FALLBACK_HERO_PORTRAIT, "hero_portrait_fallback")
 	if _hero_portrait == null:
-		_hero_portrait = _safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
+		_hero_portrait = _texture_store.safe_load_texture(PATH_HERO_PORTRAIT, "hero_portrait")
 
 
 func _ensure_shop_merchant_header_texture() -> void:
@@ -773,7 +774,7 @@ func _ensure_shop_merchant_header_texture() -> void:
 	for path in SHOP_MERCHANT_HEADER_CANDIDATE_PATHS:
 		if not ResourceLoader.exists(path):
 			continue
-		var loaded := _safe_load_texture(path, "shop_merchant_header")
+		var loaded := _texture_store.safe_load_texture(path, "shop_merchant_header")
 		if loaded != null:
 			_shop_merchant_header = loaded
 			return
@@ -783,9 +784,9 @@ func _ensure_ui_sheets() -> void:
 	if _ui_sheets_loaded:
 		return
 	_ui_sheets_loaded = true
-	_ui_frames = _safe_load_texture(PATH_UI_FRAME_SHEET, "ui_frame_sheet")
-	_ui_bars = _safe_load_texture(PATH_UI_BAR_SHEET, "ui_bar_sheet")
-	_ui_shop_cards = _safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
+	_ui_frames = _texture_store.safe_load_texture(PATH_UI_FRAME_SHEET, "ui_frame_sheet")
+	_ui_bars = _texture_store.safe_load_texture(PATH_UI_BAR_SHEET, "ui_bar_sheet")
+	_ui_shop_cards = _texture_store.safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
 
 
 func _ensure_orb_textures() -> void:
@@ -842,7 +843,7 @@ func _build_orb_textures() -> void:
 		return
 	if _try_build_derived_orb_textures():
 		return
-	var sheet := _safe_load_texture(PATH_ORB_SHEET, "orb_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_ORB_SHEET, "orb_sheet")
 	if sheet == null:
 		return
 	var columns := 3
@@ -870,7 +871,7 @@ func _try_build_runtime_orb_textures() -> bool:
 	var loaded_orbs: Dictionary = {}
 	for orb_id in _runtime_orb_key_by_id.keys():
 		var runtime_key := String(_runtime_orb_key_by_id[orb_id])
-		var texture := _runtime_texture("orbs", runtime_key)
+		var texture := _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "orbs", runtime_key)
 		if texture == null:
 			return false
 		loaded_orbs[orb_id] = texture
@@ -888,7 +889,7 @@ func _try_build_derived_orb_textures() -> bool:
 		if file_name == "":
 			return false
 		var path := "%s/%s" % [PATH_DERIVED_ORB_DIR, file_name]
-		var texture := _safe_load_texture(path, "derived_orb:%s" % file_name)
+		var texture := _texture_store.safe_load_texture(path, "derived_orb:%s" % file_name)
 		if texture == null:
 			return false
 		loaded_orbs[orb_id] = texture
@@ -900,7 +901,7 @@ func _try_build_derived_orb_textures() -> bool:
 
 
 func _build_intent_textures() -> void:
-	var sheet := _safe_load_texture(PATH_INTENT_SHEET, "intent_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_INTENT_SHEET, "intent_sheet")
 	if sheet == null:
 		return
 	var count := 3
@@ -910,7 +911,7 @@ func _build_intent_textures() -> void:
 
 
 func _build_rarity_textures() -> void:
-	var sheet := _safe_load_texture(PATH_RARITY_SHEET, "rarity_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_RARITY_SHEET, "rarity_sheet")
 	if sheet == null:
 		return
 	var count := 3
@@ -920,7 +921,7 @@ func _build_rarity_textures() -> void:
 
 
 func _build_mastery_textures() -> void:
-	var sheet := _safe_load_texture(PATH_MASTERY_SHEET, "mastery_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_MASTERY_SHEET, "mastery_sheet")
 	if sheet == null:
 		return
 	var columns := 3
@@ -942,7 +943,7 @@ func _build_mastery_textures() -> void:
 
 
 func _build_icon_textures() -> void:
-	var sheet := _safe_load_texture(PATH_ITEM_SHEET, "item_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_ITEM_SHEET, "item_sheet")
 	if sheet == null:
 		return
 	var columns := 5
@@ -958,7 +959,7 @@ func _build_icon_textures() -> void:
 
 
 func _build_relic_textures() -> void:
-	var sheet := _safe_load_texture(PATH_RELIC_SHEET, "relic_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_RELIC_SHEET, "relic_sheet")
 	if sheet == null:
 		return
 	var columns := 5
@@ -968,7 +969,7 @@ func _build_relic_textures() -> void:
 
 
 func _build_vfx_textures() -> void:
-	var sheet := _safe_load_texture(PATH_VFX_SHEET, "vfx_sheet")
+	var sheet := _texture_store.safe_load_texture(PATH_VFX_SHEET, "vfx_sheet")
 	if sheet == null:
 		_build_post_match_vfx_textures()
 		return
@@ -1019,7 +1020,7 @@ func _load_derived_texture(base_path: String, key: String, cache: Dictionary) ->
 	if ResourceLoader.exists(path):
 		loaded = load(path)
 	if loaded == null:
-		var safe_loaded := _safe_load_texture(path, key)
+		var safe_loaded := _texture_store.safe_load_texture(path, key)
 		if safe_loaded == null:
 			return null
 		cache[key] = safe_loaded
@@ -1038,445 +1039,8 @@ func _atlas_region(sheet: Texture2D, region: Rect2) -> AtlasTexture:
 	return atlas
 
 
-func _processed_icon_region(sheet: Texture2D, region: Rect2, remove_baked_checker: bool = false) -> Texture2D:
-	var source_image: Image = sheet.get_image()
-	if source_image == null:
-		return _atlas_region(sheet, region)
-
-	var x0 := int(floor(region.position.x))
-	var y0 := int(floor(region.position.y))
-	var w := int(floor(region.size.x))
-	var h := int(floor(region.size.y))
-	if w <= 0 or h <= 0:
-		return _atlas_region(sheet, region)
-
-	var cropped := Image.create(w, h, false, Image.FORMAT_RGBA8 as Image.Format)
-	for y in h:
-		for x in w:
-			var c := source_image.get_pixel(x0 + x, y0 + y)
-			if _is_checker_pixel(c) or (remove_baked_checker and _is_bright_neutral_background_candidate(c)):
-				c.a = 0.0
-			cropped.set_pixel(x, y, c)
-
-	_clear_edge_checker_noise(cropped)
-	if not remove_baked_checker:
-		_clear_edge_sampled_background(cropped)
-	_keep_significant_icon_components(cropped)
-	var bounds := _content_bounds(cropped)
-	var min_x := int(bounds.x)
-	var min_y := int(bounds.y)
-	var max_x := int(bounds.z)
-	var max_y := int(bounds.w)
-	if max_x >= min_x and max_y >= min_y:
-		var padding := 4
-		var trim_left := maxi(0, min_x - padding)
-		var trim_top := maxi(0, min_y - padding)
-		var trim_right := mini(w - 1, max_x + padding)
-		var trim_bottom := mini(h - 1, max_y + padding)
-		cropped = cropped.get_region(Rect2i(Vector2i(trim_left, trim_top), Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)))
-
-	return ImageTexture.create_from_image(cropped)
-
-
-func _processed_orb_region(sheet: Texture2D, region: Rect2) -> Texture2D:
-	var source_image: Image = sheet.get_image()
-	if source_image == null:
-		return _atlas_region(sheet, region)
-
-	var x0 := int(floor(region.position.x))
-	var y0 := int(floor(region.position.y))
-	var w := int(floor(region.size.x))
-	var h := int(floor(region.size.y))
-	if w <= 0 or h <= 0:
-		return _atlas_region(sheet, region)
-
-	var cropped := Image.create(w, h, false, Image.FORMAT_RGBA8 as Image.Format)
-	for y in h:
-		for x in w:
-			var c := source_image.get_pixel(x0 + x, y0 + y)
-			if _is_checker_pixel(c):
-				c.a = 0.0
-			elif c.a > 0.01:
-				c = _tone_map_board_orb_color(c)
-			cropped.set_pixel(x, y, c)
-
-	_clear_edge_checker_noise(cropped)
-	_keep_primary_orb_component(cropped)
-
-	# Trim transparent borders so the orb fills BoardView cells instead of appearing tiny.
-	var bounds := _content_bounds(cropped)
-	var min_x := int(bounds.x)
-	var min_y := int(bounds.y)
-	var max_x := int(bounds.z)
-	var max_y := int(bounds.w)
-	if max_x >= min_x and max_y >= min_y:
-		var padding := 4
-		var trim_left := maxi(0, min_x - padding)
-		var trim_top := maxi(0, min_y - padding)
-		var trim_right := mini(w - 1, max_x + padding)
-		var trim_bottom := mini(h - 1, max_y + padding)
-		var trim_position := Vector2i(trim_left, trim_top)
-		var trim_size := Vector2i(trim_right - trim_left + 1, trim_bottom - trim_top + 1)
-		var trim_rect := Rect2i(trim_position, trim_size)
-		cropped = cropped.get_region(trim_rect)
-
-	return ImageTexture.create_from_image(cropped)
-
-
-func _content_bounds(image: Image) -> Vector4i:
-	var min_x := image.get_width()
-	var min_y := image.get_height()
-	var max_x := -1
-	var max_y := -1
-	for y in image.get_height():
-		for x in image.get_width():
-			var c := image.get_pixel(x, y)
-			if c.a <= 0.01:
-				continue
-			min_x = mini(min_x, x)
-			min_y = mini(min_y, y)
-			max_x = maxi(max_x, x)
-			max_y = maxi(max_y, y)
-	return Vector4i(min_x, min_y, max_x, max_y)
-
-
-func _tone_map_board_orb_color(c: Color) -> Color:
-	var alpha := c.a
-	var luminance := c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722
-	var saturation_factor := 1.04
-	var brightness_factor := 0.94
-	var floor_lift := 0.025
-	c.r = clampf(lerpf(luminance, c.r, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
-	c.g = clampf(lerpf(luminance, c.g, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
-	c.b = clampf(lerpf(luminance, c.b, saturation_factor) * brightness_factor + floor_lift, 0.0, 1.0)
-	c.a = alpha
-	return c
-
-
-func _keep_primary_orb_component(image: Image) -> void:
-	var width: int = image.get_width()
-	var height: int = image.get_height()
-	if width <= 0 or height <= 0:
-		return
-
-	var visited := PackedByteArray()
-	visited.resize(width * height)
-	var labels := PackedInt32Array()
-	labels.resize(width * height)
-	var component_sizes: Array[int] = []
-	var component_touches_center: Array[bool] = []
-	var component_index := 0
-	var center_x: int = int(width * 0.5)
-	var center_y: int = int(height * 0.5)
-	var center_radius_sq := 16
-
-	for y in range(height):
-		for x in range(width):
-			var idx := y * width + x
-			if visited[idx] == 1:
-				continue
-			var c := image.get_pixel(x, y)
-			if c.a <= 0.01:
-				visited[idx] = 1
-				continue
-
-			component_index += 1
-			var size := 0
-			var touches_center := false
-			var queue: Array[Vector2i] = [Vector2i(x, y)]
-			visited[idx] = 1
-			labels[idx] = component_index
-			while not queue.is_empty():
-				var p: Vector2i = queue.pop_back()
-				size += 1
-				var dx := p.x - center_x
-				var dy := p.y - center_y
-				if dx * dx + dy * dy <= center_radius_sq:
-					touches_center = true
-				for n in [Vector2i(p.x - 1, p.y), Vector2i(p.x + 1, p.y), Vector2i(p.x, p.y - 1), Vector2i(p.x, p.y + 1)]:
-					if n.x < 0 or n.x >= width or n.y < 0 or n.y >= height:
-						continue
-					var n_idx: int = n.y * width + n.x
-					if visited[n_idx] == 1:
-						continue
-					visited[n_idx] = 1
-					var nc := image.get_pixel(n.x, n.y)
-					if nc.a <= 0.01:
-						continue
-					labels[n_idx] = component_index
-					queue.append(n)
-
-			component_sizes.append(size)
-			component_touches_center.append(touches_center)
-
-	if component_index <= 1:
-		return
-
-	var keep_component := -1
-	for i in range(component_sizes.size()):
-		if component_touches_center[i]:
-			keep_component = i + 1
-			break
-	if keep_component == -1:
-		var best_size := -1
-		for i in range(component_sizes.size()):
-			if component_sizes[i] > best_size:
-				best_size = component_sizes[i]
-				keep_component = i + 1
-
-	for y in range(height):
-		for x in range(width):
-			var idx := y * width + x
-			if labels[idx] != keep_component:
-				var cc := image.get_pixel(x, y)
-				if cc.a > 0.01:
-					cc.a = 0.0
-					image.set_pixel(x, y, cc)
-
-
-func _keep_significant_icon_components(image: Image) -> void:
-	var width: int = image.get_width()
-	var height: int = image.get_height()
-	if width <= 0 or height <= 0:
-		return
-
-	var visited := PackedByteArray()
-	visited.resize(width * height)
-	var labels := PackedInt32Array()
-	labels.resize(width * height)
-	var component_sizes: Array[int] = []
-	var component_centers: Array[Vector2] = []
-	var component_index := 0
-
-	for y in range(height):
-		for x in range(width):
-			var idx := y * width + x
-			if visited[idx] == 1:
-				continue
-			var c := image.get_pixel(x, y)
-			if c.a <= 0.01:
-				visited[idx] = 1
-				continue
-
-			component_index += 1
-			var size := 0
-			var sum := Vector2.ZERO
-			var queue: Array[Vector2i] = [Vector2i(x, y)]
-			visited[idx] = 1
-			labels[idx] = component_index
-			while not queue.is_empty():
-				var p: Vector2i = queue.pop_back()
-				size += 1
-				sum += Vector2(float(p.x), float(p.y))
-				for n in [Vector2i(p.x - 1, p.y), Vector2i(p.x + 1, p.y), Vector2i(p.x, p.y - 1), Vector2i(p.x, p.y + 1)]:
-					if n.x < 0 or n.x >= width or n.y < 0 or n.y >= height:
-						continue
-					var n_idx: int = n.y * width + n.x
-					if visited[n_idx] == 1:
-						continue
-					visited[n_idx] = 1
-					var nc := image.get_pixel(n.x, n.y)
-					if nc.a <= 0.01:
-						continue
-					labels[n_idx] = component_index
-					queue.append(n)
-
-			component_sizes.append(size)
-			component_centers.append(sum / float(maxi(1, size)))
-
-	if component_index <= 1:
-		return
-
-	var max_size := 0
-	for size in component_sizes:
-		max_size = maxi(max_size, size)
-	if max_size <= 0:
-		return
-
-	var keep_labels := {}
-	var center := Vector2(float(width) * 0.5, float(height) * 0.5)
-	var max_distance := center.length()
-	for i in range(component_sizes.size()):
-		var size_ratio := float(component_sizes[i]) / float(max_size)
-		var distance_ratio := component_centers[i].distance_to(center) / maxf(1.0, max_distance)
-		if size_ratio >= 0.18 or (size_ratio >= 0.08 and distance_ratio <= 0.45):
-			keep_labels[i + 1] = true
-
-	if keep_labels.is_empty():
-		var largest_label := 1
-		var largest_size := component_sizes[0]
-		for i in range(1, component_sizes.size()):
-			if component_sizes[i] > largest_size:
-				largest_size = component_sizes[i]
-				largest_label = i + 1
-		keep_labels[largest_label] = true
-
-	for y in range(height):
-		for x in range(width):
-			var idx := y * width + x
-			if labels[idx] != 0 and not keep_labels.has(labels[idx]):
-				var cc := image.get_pixel(x, y)
-				if cc.a > 0.01:
-					cc.a = 0.0
-					image.set_pixel(x, y, cc)
-
-
-func _is_checker_pixel(c: Color) -> bool:
-	var rg_diff := absf(c.r - c.g)
-	var gb_diff := absf(c.g - c.b)
-	if rg_diff > 0.02 or gb_diff > 0.02:
-		return false
-	var brightness := (c.r + c.g + c.b) / 3.0
-	return brightness >= 0.72 and brightness <= 0.96 and c.a >= 0.99
-
-
-func _is_loose_checker_pixel(c: Color) -> bool:
-	if c.a <= 0.01:
-		return false
-	var rg_diff := absf(c.r - c.g)
-	var gb_diff := absf(c.g - c.b)
-	if rg_diff > 0.06 or gb_diff > 0.06:
-		return false
-	var brightness := (c.r + c.g + c.b) / 3.0
-	return brightness >= 0.20 and brightness <= 0.95
-
-
-func _clear_edge_checker_noise(image: Image) -> void:
-	var width: int = image.get_width()
-	var height: int = image.get_height()
-	if width <= 0 or height <= 0:
-		return
-
-	var visited := PackedByteArray()
-	visited.resize(width * height)
-	var stack: Array[Vector2i] = []
-
-	for x in range(width):
-		stack.append(Vector2i(x, 0))
-		stack.append(Vector2i(x, height - 1))
-	for y in range(height):
-		stack.append(Vector2i(0, y))
-		stack.append(Vector2i(width - 1, y))
-
-	while not stack.is_empty():
-		var p_variant: Variant = stack.pop_back()
-		if not (p_variant is Vector2i):
-			continue
-		var p: Vector2i = p_variant
-		var x: int = p.x
-		var y: int = p.y
-		if x < 0 or x >= width or y < 0 or y >= height:
-			continue
-		var index: int = y * width + x
-		if visited[index] == 1:
-			continue
-		visited[index] = 1
-		var c := image.get_pixel(x, y)
-		if not _is_loose_checker_pixel(c):
-			continue
-		c.a = 0.0
-		image.set_pixel(x, y, c)
-		stack.append(Vector2i(x - 1, y))
-		stack.append(Vector2i(x + 1, y))
-		stack.append(Vector2i(x, y - 1))
-		stack.append(Vector2i(x, y + 1))
-
-
-func _clear_edge_sampled_background(image: Image) -> void:
-	var width: int = image.get_width()
-	var height: int = image.get_height()
-	if width <= 0 or height <= 0:
-		return
-
-	var samples: Array[Color] = []
-	for x in range(width):
-		_add_unique_background_sample(samples, image.get_pixel(x, 0))
-		_add_unique_background_sample(samples, image.get_pixel(x, height - 1))
-	for y in range(height):
-		_add_unique_background_sample(samples, image.get_pixel(0, y))
-		_add_unique_background_sample(samples, image.get_pixel(width - 1, y))
-	if samples.is_empty():
-		return
-
-	var visited := PackedByteArray()
-	visited.resize(width * height)
-	var stack: Array[Vector2i] = []
-	for x in range(width):
-		stack.append(Vector2i(x, 0))
-		stack.append(Vector2i(x, height - 1))
-	for y in range(height):
-		stack.append(Vector2i(0, y))
-		stack.append(Vector2i(width - 1, y))
-
-	while not stack.is_empty():
-		var p: Vector2i = stack.pop_back()
-		if p.x < 0 or p.x >= width or p.y < 0 or p.y >= height:
-			continue
-		var index := p.y * width + p.x
-		if visited[index] == 1:
-			continue
-		visited[index] = 1
-		var c := image.get_pixel(p.x, p.y)
-		if not _matches_sampled_background(c, samples):
-			continue
-		c.a = 0.0
-		image.set_pixel(p.x, p.y, c)
-		stack.append(Vector2i(p.x - 1, p.y))
-		stack.append(Vector2i(p.x + 1, p.y))
-		stack.append(Vector2i(p.x, p.y - 1))
-		stack.append(Vector2i(p.x, p.y + 1))
-
-
-func _add_unique_background_sample(samples: Array[Color], c: Color) -> void:
-	if c.a <= 0.01:
-		return
-	if not _is_neutral_background_candidate(c):
-		return
-	for sample in samples:
-		if _color_distance_rgb(c, sample) <= 0.08:
-			return
-	if samples.size() < 6:
-		samples.append(c)
-
-
-func _matches_sampled_background(c: Color, samples: Array[Color]) -> bool:
-	if c.a <= 0.01:
-		return false
-	if not _is_neutral_background_candidate(c):
-		return false
-	for sample in samples:
-		if _color_distance_rgb(c, sample) <= 0.10:
-			return true
-	return false
-
-
-func _is_neutral_background_candidate(c: Color) -> bool:
-	var rg_diff := absf(c.r - c.g)
-	var gb_diff := absf(c.g - c.b)
-	var rb_diff := absf(c.r - c.b)
-	var brightness := (c.r + c.g + c.b) / 3.0
-	return rg_diff <= 0.08 and gb_diff <= 0.08 and rb_diff <= 0.08 and (brightness <= 0.18 or brightness >= 0.72)
-
-
-func _is_bright_neutral_background_candidate(c: Color) -> bool:
-	if c.a <= 0.01:
-		return false
-	var rg_diff := absf(c.r - c.g)
-	var gb_diff := absf(c.g - c.b)
-	var rb_diff := absf(c.r - c.b)
-	var brightness := (c.r + c.g + c.b) / 3.0
-	return rg_diff <= 0.08 and gb_diff <= 0.08 and rb_diff <= 0.08 and brightness >= 0.72
-
-
-func _color_distance_rgb(a: Color, b: Color) -> float:
-	var dr := a.r - b.r
-	var dg := a.g - b.g
-	var db := a.b - b.b
-	return sqrt(dr * dr + dg * dg + db * db)
-
-
 func _runtime_icon_texture(icon_key: String) -> Texture2D:
-	return _runtime_texture("icons", icon_key.strip_edges().to_lower())
+	return _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "icons", icon_key.strip_edges().to_lower())
 
 
 func _collection_ui_texture(key: String) -> Texture2D:
@@ -1484,12 +1048,7 @@ func _collection_ui_texture(key: String) -> Texture2D:
 	if normalized_key == "":
 		return null
 	var path := "%s/%s.png" % [PATH_RUNTIME_COLLECTION_UI_DIR, normalized_key]
-	if _runtime_texture_cache.has(path):
-		return _runtime_texture_cache[path]
-	var texture := _load_runtime_png_texture(path, "collection_ui:%s" % normalized_key)
-	if texture != null:
-		_runtime_texture_cache[path] = texture
-	return texture
+	return _texture_store.cached_png_texture(path, "collection_ui:%s" % normalized_key)
 
 
 func _shop_ui_texture(key: String) -> Texture2D:
@@ -1497,96 +1056,7 @@ func _shop_ui_texture(key: String) -> Texture2D:
 	if normalized_key == "":
 		return null
 	var path := "%s/%s.png" % [PATH_RUNTIME_SHOP_UI_DIR, normalized_key]
-	if _runtime_texture_cache.has(path):
-		return _runtime_texture_cache[path]
-	var texture := _load_runtime_png_texture(path, "shop_ui:%s" % normalized_key)
-	if texture != null:
-		_runtime_texture_cache[path] = texture
-	return texture
-
-
-func _runtime_texture_entry(category: String, key: String) -> Dictionary:
-	if category == "" or key == "":
-		return {}
-	_ensure_runtime_manifest()
-	if _runtime_manifest.is_empty():
-		return {}
-	var categories := Dictionary(_runtime_manifest.get("categories", {}))
-	var category_entries := Dictionary(categories.get(category, {}))
-	return Dictionary(category_entries.get(key, {}))
-
-
-func _runtime_texture(category: String, key: String) -> Texture2D:
-	if category == "" or key == "":
-		return null
-	var entry := _runtime_texture_entry(category, key)
-	var path := String(entry.get("path", ""))
-	if path == "":
-		return null
-	if _runtime_texture_cache.has(path):
-		return _runtime_texture_cache[path]
-	var texture := _load_runtime_png_texture(path, "runtime:%s:%s" % [category, key])
-	if texture != null:
-		_runtime_texture_cache[path] = texture
-	return texture
-
-
-func _ensure_runtime_manifest() -> void:
-	if _runtime_manifest_loaded:
-		return
-	_runtime_manifest_loaded = true
-	if not FileAccess.file_exists(PATH_RUNTIME_MANIFEST):
-		return
-	var file := FileAccess.open(PATH_RUNTIME_MANIFEST, FileAccess.READ)
-	if file == null:
-		_warn_missing("runtime_manifest")
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		_runtime_manifest = parsed
-	else:
-		_warn_missing("runtime_manifest_parse")
-
-
-func _load_runtime_png_texture(path: String, key: String) -> Texture2D:
-	if ResourceLoader.exists(path):
-		var loaded: Variant = load(path)
-		var imported_texture := loaded as Texture2D
-		if imported_texture != null:
-			return imported_texture
-	if FileAccess.file_exists(path):
-		var image := Image.new()
-		var load_error := image.load(path)
-		if load_error == OK:
-			return ImageTexture.create_from_image(image)
-	_warn_missing("texture_path:%s" % key)
-	return null
-
-
-func _safe_load_texture(path: String, key: String) -> Texture2D:
-	if ResourceLoader.exists(path):
-		var loaded: Variant = load(path)
-		var texture := loaded as Texture2D
-		if texture != null:
-			return texture
-	if FileAccess.file_exists(path):
-		var image := Image.new()
-		var load_error := image.load(path)
-		if load_error == OK:
-			return ImageTexture.create_from_image(image)
-	_warn_missing("texture_path:%s" % key)
-	return null
-
-
-func _load_image_texture(path: String, key: String) -> Texture2D:
-	if not FileAccess.file_exists(path):
-		_warn_missing("texture_path:%s" % key)
-		return null
-	var image := Image.new()
-	var load_error := image.load(path)
-	if load_error == OK:
-		return ImageTexture.create_from_image(image)
-	return null
+	return _texture_store.cached_png_texture(path, "shop_ui:%s" % normalized_key)
 
 
 func _warn_missing(key: String) -> void:
