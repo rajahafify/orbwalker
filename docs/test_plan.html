@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 12 shop offer handler registry):</p>
+<ul>
+<li><code>ShopOfferApplicator</code> now owns per-offer-type application and treasure-chest replacement dispatch. <code>ShopOfferTypeHandlers</code> contains the default equipment, consumable, mastery-card, treasure-chest, and relic handlers, including the existing replacement sell-refund behavior.</li>
+<li><code>ShopService.register_offer_type_handler()</code> lets a new offer type register its application handler and optional content lookup without editing the service's hardcoded dispatch. <code>ShopOfferPolicy.register_content_lookup()</code> removes the remaining hardcoded content lookup switch from shop generation.</li>
+<li>Validation passed: changed-file <code>pre_commit</code> hooks for touched GDScript; <code>git diff --check</code>; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=210</code>, <code>over_budget=7</code>, <code>documented_exceptions=7</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; <code>res://tools/quality/owner_reach_in_budget.gd</code> passed; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>95</code> suites, <code>441</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 11 PlayerLoadoutHud layout/chrome split):</p>
 <ul>
 <li><code>PlayerLoadoutHudLayout</code> now owns fixed player-HUD geometry, compact/full footer layout, node visibility rules, and the shop HUD layout preset. <code>PlayerLoadoutHudChromeStyler</code> now owns HUD panel, label, and progressbar chrome from explicit <code>nodes</code> and <code>visuals</code> inputs.</li>

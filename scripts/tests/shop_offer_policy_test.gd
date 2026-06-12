@@ -109,10 +109,11 @@ func run_all() -> Dictionary:
 	_run_case("first_shop_guarantee_prefers_affordable_damage", _test_first_shop_guarantee_prefers_affordable_damage, failures)
 	_run_case("item_offers_skip_equipped_and_include_treasure_chest", _test_item_offers_skip_equipped_and_include_treasure_chest, failures)
 	_run_case("treasure_chest_options_filter_equipped_locked_and_orb", _test_treasure_chest_options_filter_equipped_locked_and_orb, failures)
+	_run_case("custom_content_lookup_supports_new_offer_type", _test_custom_content_lookup_supports_new_offer_type, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -249,17 +250,64 @@ func _test_treasure_chest_options_filter_equipped_locked_and_orb() -> String:
 	content.mastery_cards = {
 		"fire_mastery": _mastery("fire_mastery", 7, OrbType.Id.FIRE),
 	}
-	var options: Array[Dictionary] = policy.treasure_chest_options(run_state, content, {
-		"target_orb_id": OrbType.Id.FIRE,
-		"option_count": 3,
-	})
+	var options: Array[Dictionary] = (
+		policy
+		. treasure_chest_options(
+			run_state,
+			content,
+			{
+				"target_orb_id": OrbType.Id.FIRE,
+				"option_count": 3,
+			}
+		)
+	)
 	run_state.free()
 	if options.size() != 3:
 		return "Expected three fire treasure chest options, got %d." % options.size()
-	if _options_include_content(options, "owned_fire") or _options_include_content(options, "locked_fire") or _options_include_content(options, "ice_spear") or _options_include_content(options, "ice_potion"):
+	if (
+		_options_include_content(options, "owned_fire")
+		or _options_include_content(options, "locked_fire")
+		or _options_include_content(options, "ice_spear")
+		or _options_include_content(options, "ice_potion")
+	):
 		return "Expected treasure chest options to skip equipped, locked, and off-orb candidates."
-	if not _options_include_content(options, "fire_axe") or not _options_include_content(options, "fire_potion") or not _options_include_content(options, "fire_mastery"):
+	if (
+		not _options_include_content(options, "fire_axe")
+		or not _options_include_content(options, "fire_potion")
+		or not _options_include_content(options, "fire_mastery")
+	):
 		return "Expected treasure chest options to include eligible fire equipment, consumable, and mastery."
+	return ""
+
+
+func _test_custom_content_lookup_supports_new_offer_type() -> String:
+	var policy: Variant = POLICY_SCRIPT.new()
+	var fixture := _fixture()
+	var run_state: FakeRunState = fixture["run_state"]
+	var content: FakeContent = fixture["content"]
+	content.item_pool = [{"type": "voucher", "id": "starter_voucher"}]
+	policy.register_content_lookup(
+		"voucher",
+		func(_content: Variant, content_id: String) -> Dictionary:
+			return {
+				"id": content_id,
+				"display_name": "Starter Voucher",
+				"description": "A custom shop offer.",
+				"rarity": "common",
+				"base_price": 5,
+			}
+	)
+	var offers: Array[Dictionary] = policy.item_offers(run_state, content, 2)
+	run_state.free()
+	if offers.size() != 1:
+		return "Expected one custom voucher offer, got %d." % offers.size()
+	var offer: Dictionary = offers[0]
+	if String(offer.get("type", "")) != "voucher":
+		return "Expected custom offer type voucher."
+	if String(offer.get("content_id", "")) != "starter_voucher":
+		return "Expected custom offer to preserve content id."
+	if int(offer.get("price", 0)) != 7:
+		return "Expected custom offer to use normal pricing rules at level 2."
 	return ""
 
 

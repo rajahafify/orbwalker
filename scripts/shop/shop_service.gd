@@ -2,6 +2,7 @@ extends RefCounted
 class_name ShopService
 
 const SHOP_OFFER_POLICY_SCRIPT := preload("res://scripts/shop/shop_offer_policy.gd")
+const SHOP_OFFER_APPLICATOR_SCRIPT := preload("res://scripts/shop/shop_offer_applicator.gd")
 
 const ITEM_TYPE_EQUIPMENT := "equipment"
 const ITEM_TYPE_CONSUMABLE := "consumable"
@@ -10,6 +11,7 @@ const ITEM_TYPE_TREASURE_CHEST := "treasure_chest"
 const ITEM_TYPE_RELIC := "relic"
 
 var _offer_policy: Variant = SHOP_OFFER_POLICY_SCRIPT.new()
+var _offer_applicator: Variant = SHOP_OFFER_APPLICATOR_SCRIPT.new()
 
 
 func set_rng_seed(seed_value: int) -> void:
@@ -18,6 +20,16 @@ func set_rng_seed(seed_value: int) -> void:
 
 func randomize_rng() -> void:
 	_offer_policy.randomize_rng()
+
+
+func register_offer_type_handler(offer_type: String, handler: Variant, content_lookup: Callable = Callable()) -> void:
+	_offer_applicator.register_handler(offer_type, handler)
+	if content_lookup.is_valid():
+		_offer_policy.register_content_lookup(offer_type, content_lookup)
+
+
+func offer_type_handler_keys() -> Array[String]:
+	return _offer_applicator.handler_keys()
 
 
 func open_shop(run_state: Node, level: int = -1) -> Dictionary:
@@ -70,10 +82,16 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 
 		item_offer["sold_out"] = true
 		shop.item_offers[item_index] = item_offer
-		return _result(shop, run_state.run_gold, true, "", {
-			"offer_id": offer_id,
-			"type": String(item_offer.get("type", "")),
-		})
+		return _result(
+			shop,
+			run_state.run_gold,
+			true,
+			"",
+			{
+				"offer_id": offer_id,
+				"type": String(item_offer.get("type", "")),
+			}
+		)
 
 	if String(shop.relic_offer.get("offer_id", "")) == offer_id:
 		if bool(shop.relic_offer.get("sold_out", false)):
@@ -87,10 +105,16 @@ func buy_offer(run_state: Node, offer_id: String) -> Dictionary:
 		shop.relic_offer["sold_out"] = true
 		shop.relic_offer["available"] = false
 		run_state.set_relic_offer_id_for_level(shop.dungeon_level, String(shop.relic_offer.get("content_id", "")))
-		return _result(shop, run_state.run_gold, true, "", {
-			"offer_id": offer_id,
-			"type": ITEM_TYPE_RELIC,
-		})
+		return _result(
+			shop,
+			run_state.run_gold,
+			true,
+			"",
+			{
+				"offer_id": offer_id,
+				"type": ITEM_TYPE_RELIC,
+			}
+		)
 
 	return _result(shop, run_state.run_gold, false, "offer_not_found")
 
@@ -152,9 +176,15 @@ func choose_treasure_chest_option(run_state: Node, option_index: int) -> Diction
 		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "treasure_chest_apply_failed")))
 	shop.pending_treasure_chest_options.clear()
 	shop.pending_treasure_chest_offer_id = ""
-	return _result(shop, run_state.run_gold, true, "", {
-		"granted": option,
-	})
+	return _result(
+		shop,
+		run_state.run_gold,
+		true,
+		"",
+		{
+			"granted": option,
+		}
+	)
 
 
 func replace_pending_treasure_chest_option(run_state: Node, option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
@@ -175,10 +205,16 @@ func replace_pending_treasure_chest_option(run_state: Node, option_index: int, s
 		return _result(shop, run_state.run_gold, false, String(apply_result.get("reason", "treasure_chest_replace_failed")))
 	shop.pending_treasure_chest_options.clear()
 	shop.pending_treasure_chest_offer_id = ""
-	return _result(shop, run_state.run_gold, true, "", {
-		"granted": option,
-		"replacement": apply_result.get("result", {}),
-	})
+	return _result(
+		shop,
+		run_state.run_gold,
+		true,
+		"",
+		{
+			"granted": option,
+			"replacement": apply_result.get("result", {}),
+		}
+	)
 
 
 func discard_pending_treasure_chest_options(run_state: Node) -> Dictionary:
@@ -187,116 +223,43 @@ func discard_pending_treasure_chest_options(run_state: Node) -> Dictionary:
 		return _result(shop, run_state.run_gold, false, "no_pending_treasure_chest_options")
 	shop.pending_treasure_chest_options.clear()
 	shop.pending_treasure_chest_offer_id = ""
-	return _result(shop, run_state.run_gold, true, "", {
-		"discarded": true,
-	})
+	return _result(
+		shop,
+		run_state.run_gold,
+		true,
+		"",
+		{
+			"discarded": true,
+		}
+	)
 
 
 func _apply_offer(run_state: Node, content, shop, offer: Dictionary) -> Dictionary:
-	var offer_type := String(offer.get("type", ""))
-	var content_id := String(offer.get("content_id", ""))
-	var progression_state = run_state.ensure_player_progression_state()
-	var progression_service = run_state.ensure_player_progression_service()
-
-	match offer_type:
-		ITEM_TYPE_EQUIPMENT:
-			return progression_service.equip_item(progression_state, content_id, content)
-		ITEM_TYPE_CONSUMABLE:
-			return progression_service.add_consumable(progression_state, content_id, content)
-		ITEM_TYPE_MASTERY_CARD:
-			var mastery_data: Dictionary = content.get_mastery_card(content_id)
-			return progression_service.grant_mastery(
-				progression_state,
-				int(mastery_data.get("target_orb_id", -1)),
-				int(mastery_data.get("amount", 1))
-			)
-		ITEM_TYPE_TREASURE_CHEST:
-			var treasure_chest_data: Dictionary = content.get_treasure_chest(content_id)
-			shop.pending_treasure_chest_offer_id = String(offer.get("offer_id", ""))
-			shop.pending_treasure_chest_options = _offer_policy.treasure_chest_options(run_state, content, treasure_chest_data)
-			return {
-				"ok": not shop.pending_treasure_chest_options.is_empty(),
-				"reason": "" if not shop.pending_treasure_chest_options.is_empty() else "treasure_chest_generated_no_options",
-			}
-		ITEM_TYPE_RELIC:
-			return progression_service.add_relic(progression_state, content_id, content)
-		_:
-			return {
-				"ok": false,
-				"reason": "unsupported_offer_type",
-			}
+	return _offer_applicator.apply_offer(_application_context(run_state, content, shop), offer)
 
 
 func _apply_treasure_chest_option(run_state: Node, content, option: Dictionary) -> Dictionary:
-	var progression_state = run_state.ensure_player_progression_state()
-	var progression_service = run_state.ensure_player_progression_service()
-	var option_type := String(option.get("type", ""))
-	var content_id := String(option.get("content_id", ""))
-	match option_type:
-		ITEM_TYPE_EQUIPMENT:
-			return progression_service.equip_item(progression_state, content_id, content)
-		ITEM_TYPE_CONSUMABLE:
-			return progression_service.add_consumable(progression_state, content_id, content)
-		ITEM_TYPE_MASTERY_CARD:
-			var mastery_data: Dictionary = content.get_mastery_card(content_id)
-			return progression_service.grant_mastery(
-				progression_state,
-				int(mastery_data.get("target_orb_id", -1)),
-				int(mastery_data.get("amount", 1))
-			)
-		_:
-			return {
-				"ok": false,
-				"reason": "unsupported_treasure_chest_option",
-			}
+	return _offer_applicator.apply_treasure_chest_option(_application_context(run_state, content, run_state.ensure_shop_state()), option)
 
 
 func _apply_treasure_chest_option_to_slot(run_state: Node, content, option: Dictionary, slot_index: int, sell_replaced: bool) -> Dictionary:
-	var progression_state = run_state.ensure_player_progression_state()
-	var progression_service = run_state.ensure_player_progression_service()
 	var option_type := String(option.get("type", ""))
-	var content_id := String(option.get("content_id", ""))
-	match option_type:
-		ITEM_TYPE_EQUIPMENT:
-			var replaced_item_id := ""
-			if slot_index >= 0 and slot_index < progression_state.equipped_item_ids.size():
-				replaced_item_id = String(progression_state.equipped_item_ids[slot_index])
-			if replaced_item_id == "":
-				return {
-					"ok": false,
-					"reason": "replacement_slot_empty",
-				}
-			var replace_result: Dictionary = progression_service.replace_equipment(progression_state, slot_index, content_id, content)
-			if not bool(replace_result.get("ok", false)):
-				return replace_result
-			var payload: Dictionary = replace_result.get("result", {})
-			if sell_replaced and replaced_item_id != "":
-				var replaced_data: Dictionary = content.get_equipment(replaced_item_id)
-				var gold_gained := maxi(0, int(replaced_data.get("sell_value", replaced_data.get("base_price", 0))))
-				run_state.add_gold(gold_gained, "replacement_sell_refund")
-				payload["gold_gained"] = gold_gained
-			return {
-				"ok": true,
-				"reason": "",
-				"result": payload,
-			}
-		ITEM_TYPE_CONSUMABLE:
-			if slot_index < 0 or slot_index >= progression_state.held_consumable_ids.size():
-				return {
-					"ok": false,
-					"reason": "invalid_consumable_slot_index",
-				}
-			if String(progression_state.held_consumable_ids[slot_index]) == "":
-				return {
-					"ok": false,
-					"reason": "replacement_slot_empty",
-				}
-			return progression_service.replace_consumable(progression_state, slot_index, content_id, content)
-		_:
-			return {
-				"ok": false,
-				"reason": "unsupported_replacement_option",
-			}
+	if option_type != ITEM_TYPE_EQUIPMENT and option_type != ITEM_TYPE_CONSUMABLE:
+		return {"ok": false, "reason": "unsupported_replacement_option"}
+	return _offer_applicator.replace_treasure_chest_option(
+		_application_context(run_state, content, run_state.ensure_shop_state()), option, slot_index, sell_replaced
+	)
+
+
+func _application_context(run_state: Node, content, shop) -> Dictionary:
+	return {
+		"run_state": run_state,
+		"content": content,
+		"shop": shop,
+		"offer_policy": _offer_policy,
+		"progression_state": run_state.ensure_player_progression_state(),
+		"progression_service": run_state.ensure_player_progression_service(),
+	}
 
 
 func _find_offer_index(offers: Array[Dictionary], offer_id: String) -> int:

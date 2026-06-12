@@ -144,7 +144,7 @@
   <tr><th>Strategy item</th><th>Status</th><th>What actually happened</th></tr>
   <tr><td>Phase 1 · <code>WalletService</code></td><td><span class="status done">DONE</span></td><td>PR #1 (Wave 1). Transitional field-mutation design kept; signal-ordering P1 caught in review and fixed.</td></tr>
   <tr><td>Phase 1 · <code>ShopSession</code> + hook inversion</td><td><span class="status done">DONE</span></td><td>PRs #6 → #9 → #15 → #20: extraction → injected hooks → wiring moved to RunState → log recorder. The full 4-wave arc is the program's best-executed sequence.</td></tr>
-  <tr><td>Phase 1 · <code>ShopOfferContext</code> / pure offer policy</td><td><span class="status notdone">NOT DONE</span></td><td><code>ShopOfferPolicy</code> still takes <code>run_state: Node</code> on every public method. The strategy's value-object purification was never scheduled.</td></tr>
+  <tr><td>Phase 1 · <code>ShopOfferContext</code> / pure offer policy</td><td><span class="status partial">PARTIAL</span></td><td>Offer-type extensibility is now registry-backed: <code>ShopOfferApplicator</code> owns per-type apply/replace behavior and <code>ShopOfferPolicy.register_content_lookup()</code> owns per-type content lookup. The broader value-object purification remains open because <code>ShopOfferPolicy</code> still takes <code>run_state: Node</code> for shop-generation state.</td></tr>
   <tr><td>Phase 1 · <code>TransitionSnapshot</code>, <code>ProfileService</code>, <code>BalanceLevers</code>, <code>RunLifecycle</code></td><td><span class="status partial">PARTIAL</span></td><td>Delivered as #27's nine collaborators (settings store, encounter catalog, outcome service, transition store, profile facade/unlock service, signal emitter, contract reporter) — different names, same coverage. Three of them still reach into RunState privates.</td></tr>
   <tr><td>Phase 2 · Migrate into existing handlers (settings, debug, tutorial, input)</td><td><span class="status done">DONE</span></td><td>PRs #3, #7, #11, #16, #17, #21 — incl. the reflection regression caught and reverted in Wave 1 review.</td></tr>
   <tr><td>Phase 2 · Controller = composition root only</td><td><span class="status changed">DIVERGED</span></td><td>Wave 7 (#26) moved the composition root itself into <code>binding_coordinator</code>/<code>lifecycle</code> satellites that read/write controller privates — the opposite of the plan. The 968 number includes ~800 satellite lines of its own wiring.</td></tr>
@@ -208,7 +208,7 @@
   <tr><td><code>RunState</code> contains wiring only</td><td><span class="status partial">CLOSE</span></td><td>641 lines: composition root + public facade wrappers + run-flow state. Wrapper deletion (playbook step 5) not started.</td></tr>
   <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>Wiring itself was exiled to reach-in satellites; game-flow logic remains in controller.</td></tr>
   <tr><td>New VFX effect = no edits to listed files</td><td><span class="status done">MET</span></td><td>Route policy + presenter contract: new effect is a presenter file + one policy route entry.</td></tr>
-  <tr><td>New shop offer type = no edits to listed files</td><td><span class="status notdone">NOT MET</span></td><td>Blocked on the never-built <code>ShopOfferContext</code>; offer types still live in <code>ShopService._apply_offer</code> dispatch.</td></tr>
+  <tr><td>New shop offer type = no edits to listed files</td><td><span class="status done">MET</span></td><td><code>ShopService</code> delegates offer application to <code>ShopOfferApplicator</code> and exposes <code>register_offer_type_handler()</code>. <code>ShopOfferPolicy.register_content_lookup()</code> lets new types join shop generation without editing the listed god-object files; <code>shop_offer_applicator_test.gd</code> and <code>shop_offer_policy_test.gd</code> characterize the custom-type path.</td></tr>
   <tr><td>New settings row = no edits to listed files</td><td><span class="status done">MET</span></td><td>Settings command handler + overlay coordinator own the full path since Wave 2.</td></tr>
 </table>
 
@@ -231,7 +231,7 @@
 </div>
 <div class="card">
   <h4>5 · New entrants <span class="dim">(watch list graduation)</span></h4>
-  <p><code>main_menu_view.gd</code> (1,007) is now the single largest script in the repo and has never had a track. <code>ShopOfferContext</code> remains the unbuilt piece of the original Phase 1 — schedule it or strike it from the strategy explicitly.</p>
+  <p><code>ShopOfferContext</code> remains the unbuilt purity piece of the original Phase 1, but the OCP requirement for adding a new offer type is now covered by the applicator/content-lookup registries. The remaining high-value follow-up is to replace the policy's broader <code>run_state</code> dependency with an explicit context value.</p>
 </div>
 
 <footer>
