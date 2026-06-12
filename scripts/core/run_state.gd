@@ -103,6 +103,7 @@ var _contract_reporter
 var _encounter_catalog
 var _outcome_service
 
+
 func _ready() -> void:
 	if player_state == null:
 		player_state = PLAYER_STATE_SCRIPT.new()
@@ -243,8 +244,20 @@ func _ensure_transition_state_store():
 
 func _ensure_profile_facade():
 	if _profile_facade == null:
-		_profile_facade = RUN_PROFILE_FACADE_SCRIPT.new(self)
+		_profile_facade = RUN_PROFILE_FACADE_SCRIPT.new(self, _profile_facade_hooks())
 	return _profile_facade
+
+
+func _profile_facade_hooks() -> Dictionary:
+	return {
+		"capture_run_signal_state": _capture_run_signal_state,
+		"sync_meta_profile_default_unlocks": _sync_meta_profile_default_unlocks,
+		"save_profile": _save_profile,
+		"save_meta_profile": _save_meta_profile,
+		"emit_run_state_signals": _emit_run_state_signals,
+		"emit_profile_changed": _emit_profile_changed,
+		"profile_unlock_service": _ensure_profile_unlock_service,
+	}
 
 
 func _ensure_shop_facade():
@@ -337,10 +350,6 @@ func meta_profile_snapshot() -> Dictionary:
 
 func reset_profile() -> Dictionary:
 	return _ensure_profile_facade().reset_profile()
-
-
-func create_default_profile() -> Dictionary:
-	return reset_profile()
 
 
 func is_equipment_unlocked(item_id: String) -> bool:
