@@ -107,6 +107,8 @@ func bind_board_controller() -> void:
 func bind_input_command_handler() -> void:
 	if _owner._input_command_handler == null:
 		_owner._input_command_handler = _owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
+	bind_loadout_command_handler()
+	var loadout_command_handler: Variant = _owner.get("_loadout_command_handler")
 	(
 		_owner
 		. _input_command_handler
@@ -116,7 +118,8 @@ func bind_input_command_handler() -> void:
 				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: Callable(_owner, "_toggle_debug_overlay"),
 				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: Callable(_owner, "_create_new_board"),
 				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: Callable(_owner, "_print_board_model"),
-				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(_owner, "_try_use_first_consumable"),
+				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE:
+				Callable(loadout_command_handler, "try_use_first_consumable"),
 				_owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: Callable(_owner, "_set_viewport_input_handled"),
 			}
 		)

@@ -291,61 +291,6 @@ func _on_settings_button_pressed() -> void:
 	_settings_command_handler.open()
 
 
-func _on_settings_continue_pressed() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.continue_combat()
-
-
-func _on_settings_new_run_pressed() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.start_new_run()
-
-
-func _on_settings_main_menu_pressed() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.return_to_main_menu()
-
-
-func _on_settings_speed_selected(speed: String) -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.select_speed(speed)
-
-
-func _on_settings_quality_selected(quality: String) -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.select_quality(quality)
-
-
-func _on_settings_reduced_motion_toggled() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.toggle_reduced_motion()
-
-
-func _on_settings_game_juice_toggled() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.toggle_game_juice()
-
-
-func _on_settings_game_juice_flag_toggled(flag_key: String) -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.toggle_game_juice_flag(flag_key)
-
-
-func _on_settings_defaults_reset() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.reset_feedback_settings()
-
-
-func _on_tutorial_end_continue_pressed() -> void:
-	_bind_tutorial_end_command_handler()
-	_tutorial_end_command_handler.continue_pressed()
-
-
-func _on_tutorial_end_main_menu_pressed() -> void:
-	_bind_tutorial_end_command_handler()
-	_tutorial_end_command_handler.main_menu_pressed()
-
-
 func _on_run_tests_button_pressed() -> void:
 	_bind_view_actions()
 	var report: Dictionary = CONTRACT.TEST_RUNNER_SCRIPT.run_all()
@@ -374,21 +319,6 @@ func _on_add_test_equipment_button_pressed() -> void:
 func _on_add_test_consumable_button_pressed() -> void:
 	_bind_loadout_command_handler()
 	_loadout_command_handler.add_test_consumable()
-
-
-func _try_use_first_consumable() -> void:
-	_bind_loadout_command_handler()
-	_loadout_command_handler.try_use_first_consumable()
-
-
-func _try_use_consumable_slot(slot_index: int) -> void:
-	_bind_loadout_command_handler()
-	_loadout_command_handler.try_use_consumable_slot(slot_index)
-
-
-func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> void:
-	_bind_loadout_command_handler()
-	_loadout_command_handler.sell_slot_requested(slot_type, slot_index)
 
 
 func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
@@ -881,6 +811,7 @@ func _bind_resolve_trace_logger() -> void:
 
 
 func _bind_lifecycle() -> void:
+	_bind_view_actions()
 	_lifecycle = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_lifecycle(_lifecycle, CONTRACT.COMBAT_CONTROLLER_LIFECYCLE_SCRIPT, self)
 
 

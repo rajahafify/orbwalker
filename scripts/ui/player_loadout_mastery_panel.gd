@@ -1,6 +1,7 @@
 extends RefCounted
 class_name PlayerLoadoutMasteryPanel
 
+const HUD_CHROME_STYLER_SCRIPT := preload("res://scripts/ui/player_loadout_hud_chrome_styler.gd")
 const ORB_TYPE := preload("res://scripts/board/orb_type.gd")
 const MASTERY_ICON_INNER_SIZE := Vector2(34, 34)
 const MASTERY_SLOT_SIZE := Vector2(44, 44)
@@ -488,13 +489,13 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_hud._mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	_hud._apply_hud_label_style(_hud._mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
 	_hud._mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_hud._apply_hud_label_style(_hud._mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
 	_hud._mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_hud._apply_hud_label_style(_hud._mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
 	_hud._mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_hud._apply_hud_label_style(_hud._mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
 	_hud._mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_hud._mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 

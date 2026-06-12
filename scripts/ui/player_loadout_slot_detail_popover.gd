@@ -1,6 +1,7 @@
 extends RefCounted
 class_name PlayerLoadoutSlotDetailPopover
 
+const HUD_CHROME_STYLER_SCRIPT := preload("res://scripts/ui/player_loadout_hud_chrome_styler.gd")
 const SLOT_DETAIL_BUBBLE_MIN_WIDTH := 440.0
 const SLOT_DETAIL_BUBBLE_MAX_WIDTH := 640.0
 const SLOT_DETAIL_BUBBLE_MIN_HEIGHT := 144.0
@@ -59,9 +60,9 @@ func _apply_slot_detail_popover_chrome() -> void:
 	bubble_style.set_border_width_all(2)
 	bubble_style.set_corner_radius_all(8)
 	_hud._slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
-	_hud._apply_hud_label_style(_hud._slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
 	_hud._slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_hud._apply_hud_label_style(_hud._slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
 	_hud._slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_hud._slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 	_hud._slot_detail_sell_button.add_theme_font_size_override("font_size", 26)
