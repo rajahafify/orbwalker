@@ -14,18 +14,12 @@ const COMBAT_SCREEN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/combat/c
 const COMBAT_SPARK_BURST_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_spark_burst_presenter.gd")
 const COMBAT_MASTERY_FILL_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_mastery_fill_vfx_presenter.gd")
 const COMBAT_MASTERY_CAST_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_mastery_cast_vfx_presenter.gd")
+const COMBAT_VFX_REPLAY_RESULT_POLICY_SCRIPT := preload("res://scripts/combat/combat_vfx_replay_result_policy.gd")
+const COMBAT_VFX_MASTERY_BEAM_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_mastery_beam_presenter.gd")
 const COMBAT_ARMOR_LINGER_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_armor_linger_vfx_presenter.gd")
 const COMBAT_HEALING_BAR_INFUSION_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_healing_bar_infusion_vfx_presenter.gd")
 const COMBAT_STYLIZED_REPLAY_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_stylized_replay_vfx_presenter.gd")
 const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
-
-const MASTERY_BEAM_AURA_THICKNESS := 472.0
-const MASTERY_BEAM_GLOW_THICKNESS := 344.0
-const MASTERY_BEAM_SOLID_THICKNESS := 216.0
-const MASTERY_BEAM_CORE_THICKNESS := 216.0
-const MASTERY_BEAM_HOT_CORE_THICKNESS := 80.0
-const MASTERY_BEAM_GLOW_ALPHA := 0.82
-const MASTERY_BEAM_SOLID_ALPHA := 0.38
 
 var _vfx_layer: Control
 var _visual_registry: Variant
@@ -46,6 +40,8 @@ var _screen_feedback_presenter: Variant = COMBAT_SCREEN_FEEDBACK_PRESENTER_SCRIP
 var _spark_burst_presenter: Variant = COMBAT_SPARK_BURST_PRESENTER_SCRIPT.new()
 var _mastery_fill_vfx_presenter: Variant = COMBAT_MASTERY_FILL_VFX_PRESENTER_SCRIPT.new()
 var _mastery_cast_vfx_presenter: Variant = COMBAT_MASTERY_CAST_VFX_PRESENTER_SCRIPT.new()
+var _replay_result_policy: Variant = COMBAT_VFX_REPLAY_RESULT_POLICY_SCRIPT.new()
+var _mastery_beam_presenter: Variant = COMBAT_VFX_MASTERY_BEAM_PRESENTER_SCRIPT.new()
 var _armor_linger_vfx_presenter: Variant = COMBAT_ARMOR_LINGER_VFX_PRESENTER_SCRIPT.new()
 var _healing_bar_infusion_vfx_presenter: Variant = COMBAT_HEALING_BAR_INFUSION_VFX_PRESENTER_SCRIPT.new()
 var _stylized_replay_vfx_presenter: Variant = COMBAT_STYLIZED_REPLAY_VFX_PRESENTER_SCRIPT.new()
@@ -55,20 +51,6 @@ var _reduced_motion := false
 var _game_juice_enabled := false
 var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 
-const RESULT_VFX_TIER_THRESHOLDS := {
-	"fire": [6, 10, 16],
-	"ice": [6, 10, 16],
-	"earth": [6, 10, 16],
-	"damage": [6, 10, 16],
-	"heart": [4, 8, 12],
-	"armor": [4, 8, 12],
-	"gold": [3, 6, 10],
-}
-const RESULT_VFX_DEFAULT_THRESHOLDS := [6, 10, 16]
-const RESULT_VFX_TIER_SIZE_SCALES := [1.85, 2.25, 3.0]
-const RESULT_VFX_TIER_LIFETIME_SCALES := [1.18, 1.24, 1.30]
-const RESULT_VFX_TIER_ALPHA := [0.98, 1.0, 1.0]
-const RESULT_VFX_TIER_BRIGHTNESS := [1.20, 1.28, 1.36]
 const DEFAULT_POST_MATCH_VFX_SPEED_SCALE := 0.55
 const POST_MATCH_EFFECT_Z_INDEX := 124
 const FORCE_MAX_COMBAT_VFX := true
@@ -132,6 +114,11 @@ func bind(dependencies: Dictionary) -> void:
 	mastery_cast_dependencies["runtime_primitive_presenter"] = _runtime_primitive_presenter
 	mastery_cast_dependencies["vfx_profile"] = _vfx_profile
 	_mastery_cast_vfx_presenter.bind(mastery_cast_dependencies)
+	var mastery_beam_dependencies := dependencies.duplicate()
+	mastery_beam_dependencies["max_vfx_overlay"] = _max_vfx_overlay
+	mastery_beam_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
+	mastery_beam_dependencies["mastery_cast_vfx_presenter"] = _mastery_cast_vfx_presenter
+	_mastery_beam_presenter.bind(mastery_beam_dependencies)
 	var screen_wide_dependencies := dependencies.duplicate()
 	screen_wide_dependencies["post_match_policy"] = _post_match_policy
 	screen_wide_dependencies["runtime_primitive_presenter"] = _runtime_primitive_presenter
@@ -210,10 +197,16 @@ func spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, 
 	spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
 
 
-func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
+func spawn_vfx_texture(
+	texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+) -> void:
 	if texture == null or _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
-	if _use_max_combat_vfx() and _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS) and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color):
+	if (
+		_use_max_combat_vfx()
+		and _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
+		and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color)
+	):
 		return
 	var sprite := TextureRect.new()
 	sprite.texture = texture
@@ -234,16 +227,20 @@ func spawn_vfx_texture(texture: Texture2D, global_center: Vector2, draw_size: Ve
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
 	if global_center == Vector2.ZERO:
 		return
-	var clean_kind := _result_vfx_kind_key(impact_kind)
+	var clean_kind: String = _replay_result_policy.result_vfx_kind_key(impact_kind)
 	if _visual_registry == null and not ["armor", "heart"].has(clean_kind):
 		return
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
-	var profile := replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime) if impact_juice_enabled else {
-		"draw_size": draw_size,
-		"lifetime": _post_match_vfx_lifetime(lifetime),
-		"modulate_color": Color(1.0, 1.0, 1.0, 0.86),
-		"tier_index": 0,
-	}
+	var profile := (
+		replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime)
+		if impact_juice_enabled
+		else {
+			"draw_size": draw_size,
+			"lifetime": _post_match_vfx_lifetime(lifetime),
+			"modulate_color": Color(1.0, 1.0, 1.0, 0.86),
+			"tier_index": 0,
+		}
+	)
 	var profile_size: Vector2 = profile.get("draw_size", draw_size)
 	var profile_lifetime := float(profile.get("lifetime", lifetime))
 	var profile_color: Color = profile.get("modulate_color", Color(1.0, 1.0, 1.0, 0.92))
@@ -256,9 +253,17 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 			_spawn_armor_bar_linger_effect(global_center, profile_size, profile_lifetime, intensity)
 		return
 	if clean_kind == "heart":
-		_healing_bar_infusion_vfx_presenter.spawn_bar_infusion(global_center, draw_size, profile_lifetime, result_amount, intensity, _reduced_motion or not impact_juice_enabled)
+		_healing_bar_infusion_vfx_presenter.spawn_bar_infusion(
+			global_center, draw_size, profile_lifetime, result_amount, intensity, _reduced_motion or not impact_juice_enabled
+		)
 		return
-	if _use_max_combat_vfx() and impact_juice_enabled and _max_vfx_overlay.spawn_replay_impact(global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)):
+	if (
+		_use_max_combat_vfx()
+		and impact_juice_enabled
+		and _max_vfx_overlay.spawn_replay_impact(
+			global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)
+		)
+	):
 		return
 	var impact_texture: Texture2D = _visual_registry.mastery_impact_texture(impact_kind)
 	if impact_texture == null:
@@ -275,51 +280,26 @@ func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
-	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
+	var tier_index: int = _replay_result_policy.result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
 	var intensity: int = _stylized_replay_vfx_presenter.replay_effect_intensity(result_amount, tier_index)
 	var duration := _post_match_vfx_lifetime(maxf(0.60, lifetime) * (1.70 + float(tier_index) * 0.16))
 	_spawn_armor_bar_linger_effect(global_center, draw_size, duration, intensity)
 
 
 func replay_result_impact_profile(impact_kind: String, result_amount: int, base_draw_size: Vector2, base_lifetime: float) -> Dictionary:
-	var tier := replay_result_vfx_tier(impact_kind, result_amount)
-	var tier_index := _result_vfx_tier_index(tier)
-	var size_scale: float = RESULT_VFX_TIER_SIZE_SCALES[tier_index]
-	var lifetime_scale: float = RESULT_VFX_TIER_LIFETIME_SCALES[tier_index]
-	return {
-		"tier": tier,
-		"tier_index": tier_index,
-		"draw_size": base_draw_size * size_scale,
-		"lifetime": _post_match_vfx_lifetime(base_lifetime * lifetime_scale),
-		"modulate_color": _result_impact_modulate_color(impact_kind, tier),
-	}
+	return _replay_result_policy.replay_result_impact_profile(impact_kind, result_amount, base_draw_size, base_lifetime, _post_match_vfx_speed_scale)
 
 
 func replay_result_vfx_tier(impact_kind: String, result_amount: int) -> int:
-	if result_amount <= 0:
-		return 0
-	var clean_kind := _result_vfx_kind_key(impact_kind)
-	var thresholds: Array = RESULT_VFX_TIER_THRESHOLDS.get(clean_kind, RESULT_VFX_DEFAULT_THRESHOLDS)
-	var medium_threshold := int(thresholds[0]) if thresholds.size() > 0 else int(RESULT_VFX_DEFAULT_THRESHOLDS[0])
-	var high_threshold := int(thresholds[1]) if thresholds.size() > 1 else int(RESULT_VFX_DEFAULT_THRESHOLDS[1])
-	var signature_threshold := int(thresholds[2]) if thresholds.size() > 2 else int(RESULT_VFX_DEFAULT_THRESHOLDS[2])
-	if result_amount >= signature_threshold:
-		return 3
-	if result_amount >= high_threshold:
-		return 2
-	if result_amount >= medium_threshold:
-		return 1
-	return 1
+	return _replay_result_policy.replay_result_vfx_tier(impact_kind, result_amount)
 
 
 func result_vfx_size_scale(impact_kind: String, result_amount: int) -> float:
-	var tier := replay_result_vfx_tier(impact_kind, result_amount)
-	return RESULT_VFX_TIER_SIZE_SCALES[_result_vfx_tier_index(tier)]
+	return _replay_result_policy.result_vfx_size_scale(impact_kind, result_amount)
 
 
 func replay_result_is_screen_wide(impact_kind: String, result_amount: int) -> bool:
-	var tier := replay_result_vfx_tier(impact_kind, result_amount)
-	return _result_vfx_tier_index(tier) >= RESULT_VFX_TIER_SIZE_SCALES.size() - 1
+	return _replay_result_policy.replay_result_is_screen_wide(impact_kind, result_amount)
 
 
 func post_match_runtime_vfx_caps() -> Dictionary:
@@ -356,7 +336,14 @@ func max_combat_vfx_available() -> bool:
 
 
 func _use_max_combat_vfx() -> bool:
-	return _game_juice_enabled and FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _any_max_overlay_flag_enabled() and _max_vfx_overlay != null and _max_vfx_overlay.is_available()
+	return (
+		_game_juice_enabled
+		and FORCE_MAX_COMBAT_VFX
+		and post_match_vfx_quality_uses_max_overlay()
+		and _any_max_overlay_flag_enabled()
+		and _max_vfx_overlay != null
+		and _max_vfx_overlay.is_available()
+	)
 
 
 func _any_max_overlay_flag_enabled() -> bool:
@@ -365,6 +352,7 @@ func _any_max_overlay_flag_enabled() -> bool:
 		or _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS)
 		or _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_CARD_INTAKE_FLARE)
 	)
+
 
 func _juice_enabled(flag_key: String) -> bool:
 	return _game_juice_enabled and bool(_game_juice_flags.get(flag_key, true))
@@ -386,7 +374,7 @@ func post_match_runtime_particle_count(intensity: int, multiplier: float = 1.0) 
 
 
 func _post_match_vfx_lifetime(lifetime: float) -> float:
-	return lifetime / maxf(0.25, _post_match_vfx_speed_scale)
+	return _replay_result_policy.post_match_vfx_lifetime(lifetime, _post_match_vfx_speed_scale)
 
 
 func spawn_result_label(text: String, global_center: Vector2, kind: String, lifetime: float, offset: Vector2 = Vector2.ZERO, result_amount: int = 0) -> Label:
@@ -399,7 +387,15 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	var label_scale := result_vfx_size_scale(kind, result_amount) if impact_juice_enabled else 1.0
 	if clean_kind == "heal":
 		label_scale = 1.16
-	return _result_label_presenter.spawn_result_label(text, global_center, lifetime, Vector2(offset.x, -26.0) if clean_kind == "heal" else offset, label_scale, _vfx_profile.result_label_color(kind, impact_juice_enabled), 22.0 if clean_kind == "heal" else 54.0)
+	return _result_label_presenter.spawn_result_label(
+		text,
+		global_center,
+		lifetime,
+		Vector2(offset.x, -26.0) if clean_kind == "heal" else offset,
+		label_scale,
+		_vfx_profile.result_label_color(kind, impact_juice_enabled),
+		22.0 if clean_kind == "heal" else 54.0
+	)
 
 
 func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> void:
@@ -434,53 +430,9 @@ func mastery_impact_kind(orb_id: int) -> String:
 	return _vfx_profile.mastery_impact_kind(orb_id)
 
 
-func _result_impact_modulate_color(impact_kind: String, tier: int) -> Color:
-	var clean_kind := _result_vfx_kind_key(impact_kind)
-	var base := Color(1.0, 1.0, 1.0, 1.0)
-	match clean_kind:
-		"fire":
-			base = Color(1.0, 0.66, 0.42, 1.0)
-		"ice":
-			base = Color(0.68, 0.92, 1.0, 1.0)
-		"earth":
-			base = Color(0.72, 0.94, 0.58, 1.0)
-		"heart":
-			base = Color(0.72, 1.0, 0.78, 1.0)
-		"armor":
-			base = Color(0.82, 0.92, 1.0, 1.0)
-		"gold":
-			base = Color(1.0, 0.92, 0.5, 1.0)
-		"damage":
-			base = Color(1.0, 0.48, 0.38, 1.0)
-	var tier_index := _result_vfx_tier_index(tier)
-	var alpha: float = RESULT_VFX_TIER_ALPHA[tier_index]
-	var brightness: float = RESULT_VFX_TIER_BRIGHTNESS[tier_index]
-	return Color(
-		clampf(base.r * brightness, 0.0, 1.0),
-		clampf(base.g * brightness, 0.0, 1.0),
-		clampf(base.b * brightness, 0.0, 1.0),
-		alpha
-	)
-
-
-func _result_vfx_tier_index(tier: int) -> int:
-	if tier <= 0:
-		return 0
-	return clampi(tier - 1, 0, RESULT_VFX_TIER_SIZE_SCALES.size() - 1)
-
-
-func _result_vfx_kind_key(impact_kind: String) -> String:
-	var clean_kind := impact_kind.strip_edges().to_lower()
-	if clean_kind == "heal":
-		return "heart"
-	if clean_kind == "block":
-		return "armor"
-	if clean_kind == "damage":
-		return "damage"
-	return clean_kind
-
-
-func _spawn_stylized_replay_effect(global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, result_amount: int, tier_index: int) -> void:
+func _spawn_stylized_replay_effect(
+	global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, result_amount: int, tier_index: int
+) -> void:
 	var screen_wide := replay_result_is_screen_wide(clean_kind, result_amount)
 	_stylized_replay_vfx_presenter.spawn_stylized_replay_effect(global_center, clean_kind, draw_size, lifetime, result_amount, tier_index, screen_wide)
 
@@ -496,10 +448,7 @@ func control_global_center(control: Control, vertical_bias: float = 0.5) -> Vect
 	var rect := control.get_global_rect()
 	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
 		return Vector2.ZERO
-	return Vector2(
-		rect.position.x + rect.size.x * 0.5,
-		rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0)
-	)
+	return Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y + rect.size.y * clampf(vertical_bias, 0.0, 1.0))
 
 
 func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_lifetime: float, travel_lifetime: float, result_amount: int = 0) -> void:
@@ -521,9 +470,12 @@ func spawn_mastery_cast_sequence(orb_id: int, target_global: Vector2, spool_life
 	if delta.length() <= 1.0:
 		return
 	var clean_kind := mastery_impact_kind(orb_id)
-	var tier_index := _result_vfx_tier_index(replay_result_vfx_tier(clean_kind, result_amount))
+	var tier_index: int = _replay_result_policy.result_vfx_tier_index(replay_result_vfx_tier(clean_kind, result_amount))
 	var intensity: int = _stylized_replay_vfx_presenter.replay_effect_intensity(result_amount, tier_index)
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_cast_sequence(orb_id, source_point, target_global, spool_lifetime, travel_lifetime, result_amount):
+	if (
+		_use_max_combat_vfx()
+		and _max_vfx_overlay.spawn_mastery_cast_sequence(orb_id, source_point, target_global, spool_lifetime, travel_lifetime, result_amount)
+	):
 		return
 	_mastery_cast_vfx_presenter.spawn_cast_spool(source_local, orb_id, spool_lifetime, intensity)
 	_mastery_cast_vfx_presenter.spawn_cast_travel(source_local, target_local, orb_id, travel_lifetime, spool_lifetime, intensity)
@@ -556,160 +508,9 @@ func spawn_mastery_fill_stream(orb_id: int, source_global: Vector2, amount: int,
 
 
 func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, orb_or_target: Variant, lifetime: float = 0.42) -> void:
-	if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS):
-		return
-	var source: Control = null
-	var target_global := Vector2.ZERO
-	var orb_id := OrbType.Id.FIRE
-	var beam_lifetime := lifetime
-
-	if source_orb_or_node is int:
-		orb_id = int(source_orb_or_node)
-		source = _mastery_card_source(orb_id)
-		if source == null:
-			return
-		target_global = target_or_start
-		if orb_or_target is Vector2:
-			target_global = orb_or_target
-		elif orb_or_target is float:
-			beam_lifetime = float(orb_or_target)
-	elif source_orb_or_node is Control:
-		source = source_orb_or_node
-		if orb_or_target is int:
-			orb_id = int(orb_or_target)
-		elif orb_or_target is float:
-			beam_lifetime = float(orb_or_target)
-		target_global = target_or_start
-	else:
-		return
-
-	if source == null or target_global == Vector2.ZERO:
-		return
-	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
-		return
-	var source_point := control_global_center(source, 0.5)
-	if source_point == Vector2.ZERO:
-		return
-	if orb_id == OrbType.Id.ARMOR or orb_id == OrbType.Id.HEART:
-		return
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_mastery_beam(orb_id, source_point, target_global, beam_lifetime):
-		return
-	if _visual_registry == null:
-		return
-	var beam_texture: Texture2D = _visual_registry.mastery_beam_texture(orb_id)
-	if beam_texture == null:
-		return
-	var source_local := _global_to_vfx_local(source_point)
-	var target_local := _global_to_vfx_local(target_global)
-	var delta := target_local - source_local
-	var distance := delta.length()
-	if distance <= 1.0:
-		return
-	_mastery_cast_vfx_presenter.spawn_source_pulse(source_local, orb_id, beam_lifetime)
-
-	var beam_angle := delta.angle()
-	var accent := OrbType.color(orb_id)
-	var core_color := accent.lightened(0.42)
-	_spawn_low_quality_beam_rect(
-		"MasteryBeamLowQualitySolidBand",
-		source_local,
-		distance,
-		MASTERY_BEAM_SOLID_THICKNESS,
-		beam_angle,
-		Color(accent.r, accent.g, accent.b, MASTERY_BEAM_SOLID_ALPHA),
-		92,
-		beam_lifetime * 1.14
+	_mastery_beam_presenter.spawn_mastery_beam(
+		source_orb_or_node, target_or_start, orb_or_target, lifetime, _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.MASTERY_FILL_STREAMS), _use_max_combat_vfx()
 	)
-	_spawn_low_quality_beam_rect(
-		"MasteryBeamLowQualityWhiteBand",
-		source_local,
-		distance,
-		MASTERY_BEAM_HOT_CORE_THICKNESS,
-		beam_angle,
-		Color(1.0, 1.0, 1.0, 0.58),
-		97,
-		beam_lifetime * 0.84
-	)
-	_runtime_sprite_presenter.spawn_sprite_local(
-		"MasteryBeamLowQualityAura",
-		"soft_glow",
-		source_local + delta * 0.5,
-		Vector2(distance * 1.04, MASTERY_BEAM_AURA_THICKNESS),
-		Color(accent.r, accent.g, accent.b, 0.48),
-		beam_lifetime * 1.20,
-		Vector2(1.08, 1.14),
-		0.0,
-		Vector2.ZERO,
-		0.0,
-		90,
-		beam_angle
-	)
-	_runtime_sprite_presenter.spawn_sprite_local(
-		"MasteryBeamLowQualityTargetBloom",
-		"soft_glow",
-		target_local,
-		Vector2(528, 528),
-		Color(core_color.r, core_color.g, core_color.b, 0.86),
-		beam_lifetime * 0.78,
-		Vector2(1.28, 1.28),
-		0.0,
-		Vector2.ZERO,
-		0.0,
-		94
-	)
-	_runtime_sprite_presenter.spawn_sprite_local(
-		"MasteryBeamLowQualityBolt",
-		"ray",
-		source_local + delta * 0.08,
-		Vector2(672, 224),
-		Color(1.0, 1.0, 1.0, 0.94),
-		beam_lifetime * 0.82,
-		Vector2(0.86, 1.06),
-		0.0,
-		delta * 0.84,
-		0.0,
-		95,
-		beam_angle,
-		Tween.EASE_IN_OUT as Tween.EaseType
-	)
-	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityGlow", source_local, distance, MASTERY_BEAM_GLOW_THICKNESS, beam_angle, Color(1.0, 1.0, 1.0, MASTERY_BEAM_GLOW_ALPHA), 91, beam_lifetime * 1.12)
-	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityCore", source_local, distance, MASTERY_BEAM_CORE_THICKNESS, beam_angle, Color.WHITE, 93, beam_lifetime * 1.08)
-	_spawn_low_quality_beam_texture(beam_texture, "MasteryBeamLowQualityHotCore", source_local, distance, MASTERY_BEAM_HOT_CORE_THICKNESS, beam_angle, Color.WHITE, 96, beam_lifetime * 0.92)
-
-
-func _spawn_low_quality_beam_rect(effect_name: String, source_local: Vector2, distance: float, thickness: float, angle: float, color: Color, z_index: int, lifetime: float) -> void:
-	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
-		return
-	var band := ColorRect.new()
-	band.name = effect_name
-	band.set_meta("effect_name", effect_name)
-	band.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	band.color = color
-	band.size = Vector2(distance, thickness)
-	band.pivot_offset = Vector2(0.0, thickness * 0.5)
-	band.position = source_local - Vector2(0.0, thickness * 0.5)
-	band.rotation = angle
-	band.z_index = z_index
-	_vfx_layer.add_child(band)
-	_tween_fade_cleanup(band, lifetime)
-
-
-func _spawn_low_quality_beam_texture(texture: Texture2D, effect_name: String, source_local: Vector2, distance: float, thickness: float, angle: float, color: Color, z_index: int, lifetime: float) -> void:
-	var beam := TextureRect.new()
-	beam.name = effect_name
-	beam.set_meta("effect_name", effect_name)
-	beam.texture = texture
-	beam.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	beam.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	beam.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-	beam.size = Vector2(distance, thickness)
-	beam.pivot_offset = Vector2(0.0, thickness * 0.5)
-	beam.position = source_local - Vector2(0.0, thickness * 0.5)
-	beam.rotation = angle
-	beam.modulate = color
-	beam.z_index = z_index
-	_vfx_layer.add_child(beam)
-	_tween_fade_cleanup(beam, lifetime)
 
 
 func _vfx_layer_size() -> Vector2:
@@ -759,7 +560,8 @@ func _tween_fade_cleanup(control: Control, lifetime: float) -> void:
 		return
 	var tween := _timer_owner.create_tween()
 	tween.tween_property(control, "modulate:a", 0.0, duration)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(control):
-			control.queue_free()
+	tween.finished.connect(
+		func() -> void:
+			if is_instance_valid(control):
+				control.queue_free()
 	)
