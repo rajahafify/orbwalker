@@ -144,17 +144,17 @@
 
 <h2 class="section" id="wave7-closeout">Wave 7 Closeout Progress</h2>
 <div class="callout green">
-  <b>2026-06-12 status:</b> the five original god-object files have all crossed the requested half-size target after Wave 7. The remaining architecture risk is no longer the facade line count itself; it is the transitional ownership still concentrated in new collaborators such as <code>VisualRegistryBackend</code>, the combat controller lifecycle/binding coordinators, and the loadout HUD panel helpers.
+  <b>2026-06-12 status:</b> the five original god-object files have all crossed the requested half-size target, and <code>RunState</code>, <code>PlayerLoadoutHud</code>, <code>VisualRegistry</code>/<code>VisualRegistryBackend</code>, and <code>CombatMaxVfxOverlay</code> are now below the normal script budget. The remaining architecture risk is concentrated in <code>CombatController</code>, combat view/layout/chrome surfaces, board view, debug VFX gallery, and transitional owner-bound collaborators.
 </div>
 <table class="grid">
   <tr><th>Original god object</th><th>Start</th><th>Current</th><th>Half-size target</th><th>Status</th><th>Next pressure point</th></tr>
   <tr><td><code>scripts/core/run_state.gd</code></td><td class="n">1,538</td><td class="n">641</td><td class="n">&lt;= 769</td><td>Done, 58.3% smaller</td><td>Retired from the script-size exception list; future work should delete stale facade methods instead of growing the autoload again.</td></tr>
   <tr><td><code>scripts/combat/combat_controller.gd</code></td><td class="n">1,962</td><td class="n">968</td><td class="n">&lt;= 981</td><td>Done, 50.7% smaller</td><td>Convert lifecycle/binding collaborators from owner-bound shards into cleaner seams that return values or receive narrow dependencies.</td></tr>
-  <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td class="n">1,924</td><td class="n">952</td><td class="n">&lt;= 962</td><td>Done, 50.5% smaller</td><td>Give panel, popover, and intent-preview collaborators their own node/state ownership so the facade can shrink below the budget instead of hovering near the target.</td></tr>
-  <tr><td><code>scripts/ui/visual_registry.gd</code></td><td class="n">1,722</td><td class="n">132</td><td class="n">&lt;= 861</td><td>Facade done, 92.3% smaller</td><td><code>scripts/ui/visual_registry_backend.gd</code> is now the real Track C debt counter at 877 measured lines after the Wave 8 runtime-loading cleanup.</td></tr>
+  <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td class="n">1,924</td><td class="n">646</td><td class="n">&lt;= 962</td><td>Budget retired, 66.4% smaller</td><td>Delete remaining owner-bound panel/popover/intent-preview seams by giving those collaborators their own node/state ownership.</td></tr>
+  <tr><td><code>scripts/ui/visual_registry.gd</code></td><td class="n">1,722</td><td class="n">132</td><td class="n">&lt;= 861</td><td>Facade done, 92.3% smaller</td><td><code>scripts/ui/visual_registry_backend.gd</code> is now below budget at 522 measured lines after the Wave 10 atlas/VFX store split.</td></tr>
   <tr><td><code>scripts/combat/combat_max_vfx_overlay.gd</code></td><td class="n">1,088</td><td class="n">461</td><td class="n">&lt;= 544</td><td>Done, 57.6% smaller</td><td>Keep new effects in presenters/catalogs; do not re-expand the overlay facade.</td></tr>
 </table>
-<p class="dim">Across the five original files, Wave 1-7 reduced the surface from 8,234 lines to 3,154 lines, a 61.7% reduction. After the Wave 8 registry-backend cleanup, counting the new <code>VisualRegistryBackend</code> concentration puts the redistributed code at 4,032 lines, or about 51.0% smaller than the starting god-object set.</p>
+<p class="dim">Across the five original files, the effort has reduced the surface from 8,234 lines to 2,848 lines, a 65.4% reduction. Counting the current <code>VisualRegistryBackend</code> plus the new HUD layout/chrome collaborators puts the redistributed concentration at 3,637 lines, or about 55.8% smaller than the starting god-object set.</p>
 
 <h2 class="section" id="solid">SOLID → How Each Principle Applies Here</h2>
 <div class="legend">
