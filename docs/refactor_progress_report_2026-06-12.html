@@ -121,10 +121,10 @@
     <td><span class="status partial">PARTLY RELOCATED</span></td>
   </tr>
   <tr>
-    <td><code>ui/visual_registry.gd</code> <span class="dim">(+ backend)</span></td><td class="n">1,723</td><td class="n">132 + 877</td>
-    <td><div class="bar"><div class="fill" style="width:41%"></div><span class="lbl">−41% real</span></div></td>
+    <td><code>ui/visual_registry.gd</code> <span class="dim">(+ backend)</span></td><td class="n">1,723</td><td class="n">132 + 522</td>
+    <td><div class="bar"><div class="fill" style="width:62%"></div><span class="lbl">−62% real</span></div></td>
     <td class="dim">thin lookup API, data in resources</td>
-    <td><span class="status partial">BACKEND RATCHETING</span></td>
+    <td><span class="status done">UNDER BUDGET</span></td>
   </tr>
   <tr>
     <td><code>combat/combat_max_vfx_overlay.gd</code></td><td class="n">1,088</td><td class="n">461</td>
@@ -135,7 +135,7 @@
 </table>
 
 <div class="callout green">
-  <b>Real milestones:</b> <code>run_state.gd</code> is under the 650 default budget and its ratchet exception was <em>deleted</em> in PR #27 — the program's first finished god object by the budget's own rules. PR #30 proved the backend can shrink for real (−456 measured lines: a clean <code>VisualRegistryTextureStore</code> extraction plus ~470 raw lines of verified-dead image-processing code).
+  <b>Real milestones:</b> <code>run_state.gd</code> is under the 650 default budget and its ratchet exception was <em>deleted</em> in PR #27 — the program's first finished god object by the budget's own rules. PR #30 proved the backend can shrink for real (−456 measured lines: a clean <code>VisualRegistryTextureStore</code> extraction plus ~470 raw lines of verified-dead image-processing code). Wave 10 continues that pattern: atlas and VFX stores drop <code>visual_registry_backend.gd</code> to 522 measured lines, so the Track C exception is deleted.
 </div>
 
 <h2 class="section">Strategy Plan vs. Delivered</h2>
@@ -199,12 +199,12 @@
 <table class="grid">
   <tr><th>Criterion (from strategy doc)</th><th>Status</th><th>Evidence</th></tr>
   <tr><td>Size budget ratchet exists and is enforced</td><td><span class="status done">MET</span></td><td><code>tools/quality/script_size_budget.gd</code> reports <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code> on <code>main@6b8c165</code>. Ten documented exceptions remain.</td></tr>
-  <tr><td>New/extracted classes stay <= 400 lines and <= 30 functions</td><td><span class="status partial">PARTIAL</span></td><td>Most new collaborators are small, but several extracted presenters/coordinators exceed the intended class budget or remain owner-bound. The newest Track C helper, <code>visual_registry_texture_store.gd</code>, is the good counterexample at 78 measured lines and zero owner reach-ins.</td></tr>
+  <tr><td>New/extracted classes stay <= 400 lines and <= 30 functions</td><td><span class="status partial">PARTIAL</span></td><td>Most new collaborators are small, but several extracted presenters/coordinators exceed the intended class budget or remain owner-bound. The newest Track C helpers meet the rule: <code>visual_registry_atlas_store.gd</code> is 364 measured lines / 30 functions and <code>visual_registry_vfx_store.gd</code> is 123 measured lines / 11 functions.</td></tr>
   <tr><td>One extraction per PR; behavior-preserving only</td><td><span class="status partial">PARTIAL</span></td><td>Waves 1-6 mostly followed the rule. Wave 7 bulk PRs mixed several moves per PR, and PR #30 mixed one clean extraction with verified dead-code deletion; low risk, but not the strict playbook shape.</td></tr>
   <tr><td>Tests before moves</td><td><span class="status partial">PARTIAL</span></td><td>87 suites now exist and focused characterization was strong in Waves 1-6. Wave 7's HUD popover and intent-preview helpers still lack direct tests, and <code>combat_model_test.gd</code> was not split alongside the controller work.</td></tr>
   <tr><td>No new autoload/root reach-ins</td><td><span class="status partial">PARTIAL</span></td><td>The literal <code>get_node("/root/</code> grep gate is not present, but the larger problem is owner-private reach-ins: ten extracted satellites still read/write owner internals. A reach-in ratchet is recommended below.</td></tr>
   <tr><td>Facade deletion is part of done</td><td><span class="status partial">PARTIAL</span></td><td><code>run_state.gd</code>'s private log-wrapper cluster was deleted, but <code>VisualRegistry</code> remains a permanent compatibility facade and RunState still keeps many public wrappers.</td></tr>
-  <tr><td>No non-test script over 800 measured lines</td><td><span class="status notdone">NOT MET</span></td><td>4 remain: <code>main_menu_view</code> 1,007 (now the largest — never in any track), <code>combat_controller</code> 968, <code>player_loadout_hud</code> 952, <code>visual_registry_backend</code> 877.</td></tr>
+  <tr><td>No non-test script over 800 measured lines</td><td><span class="status notdone">NOT MET</span></td><td>4 remain: <code>main_menu_view</code> 1,007 (now the largest — never in any track), <code>combat_controller</code> 968, <code>player_loadout_hud</code> 952, and <code>content_registry</code> 807.</td></tr>
   <tr><td><code>RunState</code> contains wiring only</td><td><span class="status partial">CLOSE</span></td><td>641 lines: composition root + public facade wrappers + run-flow state. Wrapper deletion (playbook step 5) not started.</td></tr>
   <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>Wiring itself was exiled to reach-in satellites; game-flow logic remains in controller.</td></tr>
   <tr><td>New VFX effect = no edits to listed files</td><td><span class="status done">MET</span></td><td>Route policy + presenter contract: new effect is a presenter file + one policy route entry.</td></tr>
@@ -226,8 +226,8 @@
   <p>Popover and intent preview first (zero direct coverage today). Bind node references once at construction instead of reading <code>_hud._*</code> per call.</p>
 </div>
 <div class="card warn">
-  <h4>4 · Backend cache/atlas split <span class="dim">(Track C — continue #30's pattern)</span></h4>
-  <p>Two more store-style slices (~200 lines each) put the backend under 650 and delete Track C's exception. Also land the pending <code>.tres</code> setter fix on <code>VisualRegistryOrbCatalog</code> and ship the first actual <code>.tres</code> catalog file.</p>
+  <h4>4 · Registry resources <span class="dim">(Track C follow-up)</span></h4>
+  <p>The backend cache/atlas split is complete enough to delete the Track C size exception. The next Track C work should land the pending <code>.tres</code> setter fix on <code>VisualRegistryOrbCatalog</code> and ship the first actual <code>.tres</code> catalog file.</p>
 </div>
 <div class="card">
   <h4>5 · New entrants <span class="dim">(watch list graduation)</span></h4>

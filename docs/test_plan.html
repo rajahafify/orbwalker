@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 10 Track C VisualRegistry atlas/VFX stores):</p>
+<ul>
+<li><code>VisualRegistryAtlasStore</code> now owns atlas-derived orb, intent, rarity, mastery, icon, and relic texture caches/builders. <code>VisualRegistryVfxStore</code> owns mastery beam/shell/impact and generic VFX texture caches/builders. <code>VisualRegistryBackend</code> keeps the public compatibility lookup API and delegates the moved responsibilities to those stores.</li>
+<li><code>scripts/ui/visual_registry_backend.gd</code> dropped from <code>877</code> to <code>522</code> measured lines, putting it under the normal <code>650</code> budget and deleting the Track C script-size exception. The extracted stores meet the strategy budget: <code>visual_registry_atlas_store.gd</code> is <code>364</code> measured lines / <code>30</code> functions, and <code>visual_registry_vfx_store.gd</code> is <code>123</code> measured lines / <code>11</code> functions.</li>
+<li>Validation passed: <code>res://tools/quality/script_load_validation.gd</code> reported <code>293</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=198</code>, <code>over_budget=9</code>, <code>documented_exceptions=9</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>94</code> suites, <code>437</code> cases, and <code>0</code> failures. The full runner still emits existing script-error/shutdown noise after passing reports, so the exit code and reported failure count are the validation source of truth for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 7 Track A RunState storage/facade extraction):</p>
 <ul>
 <li><code>RunUserSettingsStore</code> now owns <code>user://matchatro_settings.cfg</code> persistence for run-log export generation, combat VFX speed/quality, reduced motion, game-juice master toggle, and individual game-juice flags. <code>RunState</code> keeps the existing public settings APIs as facade wrappers.</li>
