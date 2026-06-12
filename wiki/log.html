@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-10-main-menu-settings-overlay-split">2026-06-12 - Wave 10 main-menu settings overlay split</h2>
+<ul>
+<li>Moved main-menu settings overlay node creation, layout, styling, focus controls, settings-state rendering, and settings action signals into <code>MainMenuSettingsOverlay</code>. <code>MainMenuView</code> keeps its public settings signals and delegates overlay ownership without the new collaborator reaching into view privates. (source: <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_settings_overlay.gd</code>)</li>
+<li>Reduced <code>scripts/main_menu/main_menu_view.gd</code> from <code>1007</code> to <code>704</code> measured lines, bringing it under the whole-effort <code>800</code>-line DoD ceiling and lowering its script-size ratchet baseline. The new settings overlay stays within the extracted-class budget at <code>367</code> measured lines / <code>24</code> functions. (source: <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
 <h2 id="2026-06-12-wave-10-track-c-registry-atlas-vfx-stores">2026-06-12 - Wave 10 Track C registry atlas/VFX stores</h2>
 <ul>
 <li>Moved atlas-derived orb, intent, rarity, mastery, icon, relic, and VFX texture ownership out of <code>scripts/ui/visual_registry_backend.gd</code> into <code>VisualRegistryAtlasStore</code> and <code>VisualRegistryVfxStore</code>. The backend now keeps the public compatibility API while delegating moved cache/build responsibilities to real stores with no owner reach-ins. (source: <code>scripts/ui/visual_registry_backend.gd</code>, <code>scripts/ui/visual_registry_atlas_store.gd</code>, <code>scripts/ui/visual_registry_vfx_store.gd</code>)</li>

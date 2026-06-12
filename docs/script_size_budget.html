@@ -131,9 +131,9 @@
         <tr>
           <td><code>scripts/main_menu/main_menu_view.gd</code></td>
           <td><code>500</code></td>
-          <td><code>1007</code></td>
-          <td>The main menu view combines layout, profile/log controls, debug affordances, and button wiring.</td>
-          <td>Split focused presenters and accessibility focus setup out of the view.</td>
+          <td><code>704</code></td>
+          <td>The main menu view still owns primary menu/profile layout and chrome after settings overlay ownership moved out.</td>
+          <td>Split profile/status/layout surfaces next, then remove the view exception once the script falls under budget.</td>
         </tr>
         <tr>
           <td><code>scripts/debug/vfx_gallery_show.gd</code></td>
@@ -161,7 +161,7 @@
       <tbody>
         <tr><td><code>scripts/combat/combat_controller.gd</code></td><td><code>968</code></td></tr>
         <tr><td><code>scripts/ui/player_loadout_hud.gd</code></td><td><code>952</code></td></tr>
-        <tr><td><code>scripts/main_menu/main_menu_view.gd</code></td><td><code>1007</code></td></tr>
+        <tr><td><code>scripts/main_menu/main_menu_view.gd</code></td><td><code>704</code></td></tr>
         <tr><td><code>scripts/debug/vfx_gallery_show.gd</code></td><td><code>761</code></td></tr>
         <tr><td><code>scripts/combat/combat_layout_presenter.gd</code></td><td><code>732</code></td></tr>
         <tr><td><code>scripts/combat/combat_chrome_styler.gd</code></td><td><code>701</code></td></tr>
