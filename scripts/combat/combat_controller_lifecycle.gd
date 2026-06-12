@@ -35,6 +35,11 @@ func _audio_router_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_audio_router"), method_name)
 
 
+func _hud_update_callback(method_name: String) -> Callable:
+	_owner.call("_bind_hud_update_router")
+	return Callable(_owner.get("_hud_update_router"), method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
@@ -295,8 +300,8 @@ func _bind_state_initializer() -> void:
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_APPLY_STATE: Callable(self, "_apply_initialized_combat_state"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_HUD_STAGE: _owner_callback("_bind_hud_stage_coordinator"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS: _owner_callback("_refresh_character_portraits"),
-				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: _owner_callback("_refresh_build_icon_rows"),
-				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: _hud_update_callback("refresh_build_icon_rows"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_DEBUG_STATE_PROVIDER: _owner_callback("_bind_debug_state_provider"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_ROUTE_ID: _owner_callback("_flow_trace_route_id_value"),
 				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_SCENE_ROLLBACK: _owner_callback("_on_combat_scene_post_ready_rollback"),
@@ -419,7 +424,7 @@ func _bind_turn_preview_coordinator() -> void:
 			},
 			{
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
-				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: _owner_callback("_clear_combat_mastery_hover_state"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: _owner_callback("_format_intent"),

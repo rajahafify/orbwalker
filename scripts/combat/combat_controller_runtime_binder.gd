@@ -137,8 +137,10 @@ static func bind_tutorial_end_command_handler(
 	var handler: Variant = current if current != null else script.new()
 	Callable(owner, "_bind_audio_router").call()
 	Callable(owner, "_bind_view_actions").call()
+	Callable(owner, "_bind_hud_update_router").call()
 	var audio_router: Variant = owner.get("_audio_router")
 	var view_actions: Variant = owner.get("_view_actions")
+	var hud_update_router: Variant = owner.get("_hud_update_router")
 	var current_turn_index := func() -> int:
 		var combat: Variant = owner.get("_combat")
 		return int(combat.turn_index if combat != null else 1)
@@ -152,7 +154,7 @@ static func bind_tutorial_end_command_handler(
 		script.CALLBACK_PLAY_SFX: Callable(audio_router, "play_sfx"),
 		script.CALLBACK_SET_STATUS_TEXT: Callable(view_actions, "set_status_text"),
 		script.CALLBACK_SET_STATUS_COLOR: Callable(view_actions, "set_status_color"),
-		script.CALLBACK_UPDATE_HUD: Callable(owner, "_update_hud"),
+		script.CALLBACK_UPDATE_HUD: Callable(hud_update_router, "update_hud"),
 		script.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(owner, "_trace_and_change_scene_to_target"),
 	}
 	handler.bind({"run_state": run_state, "tutorial_director": tutorial_director, "view": view}, callbacks, {"neutral_status_color": neutral_color})

@@ -23,6 +23,7 @@ class FakeOwner:
 
 	const CONTRACT := CombatControllerLifecycleTest.CONTRACT
 
+	var _hud_update_router := FakeHudUpdateRouter.new()
 	var _view_actions := RefCounted.new()
 	var _state_initializer := FakeStateInitializer.new()
 	var _model: Variant = "model"
@@ -38,6 +39,9 @@ class FakeOwner:
 
 	func _bind_hud_stage_coordinator() -> void:
 		bind_hud_stage_calls += 1
+
+	func _bind_hud_update_router() -> void:
+		pass
 
 	func _refresh_character_portraits() -> void:
 		pass
@@ -59,6 +63,19 @@ class FakeOwner:
 
 	func _handle_combat_scene_change_failure() -> void:
 		pass
+
+
+class FakeHudUpdateRouter:
+	extends RefCounted
+
+	var update_calls := 0
+	var refresh_calls: Array[Dictionary] = []
+
+	func update_hud() -> void:
+		update_calls += 1
+
+	func refresh_build_icon_rows(snapshot: Dictionary) -> void:
+		refresh_calls.append(snapshot)
 
 
 func run_all() -> Dictionary:

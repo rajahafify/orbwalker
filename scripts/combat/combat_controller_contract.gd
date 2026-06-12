@@ -58,6 +58,7 @@ const COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT := preload("res://scripts/com
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
 const COMBAT_CONTROLLER_AUDIO_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_audio_router.gd")
+const COMBAT_CONTROLLER_HUD_UPDATE_ROUTER_SCRIPT := preload("res://scripts/combat/combat_controller_hud_update_router.gd")
 const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
 const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_board_debug_command_handler.gd")
 const COMBAT_INPUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_input_command_handler.gd")
