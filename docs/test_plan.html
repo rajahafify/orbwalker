@@ -262,6 +262,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 14 BoardView geometry/motion split):</p>
+<ul>
+<li><code>BoardViewGeometry</code> now owns board rect sizing, cell rects, hit projection, center calculation, validation, and row-major indexing. <code>BoardViewOverlayMotion</code> owns refill/drop overshoot positioning and stretch easing, and <code>BoardViewTutorialPathSampler</code> owns deterministic tutorial arrow path sampling.</li>
+<li><code>scripts/board/board_view.gd</code> dropped from <code>598</code> to <code>487</code> measured lines, putting it under the normal <code>500</code> view budget and deleting its script-size exception. The extracted helpers stay within the strategy budget: geometry <code>48</code> measured lines / <code>9</code> functions, overlay motion <code>34</code> measured lines / <code>4</code> functions, and tutorial sampler <code>24</code> measured lines / <code>1</code> function.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 12 CombatLayoutPresenter geometry split):</p>
 <ul>
 <li><code>CombatLayoutGeometry</code> now owns deterministic layout constants, layout-probe geometry, readability zones, overlap filtering, board sizing, and player-HUD override geometry. <code>CombatLayoutPresenter</code> keeps node binding and runtime application.</li>

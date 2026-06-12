@@ -24,6 +24,9 @@ class_name BoardView
 
 const OVERLAY_MOTION_LINEAR := "linear"
 const OVERLAY_MOTION_DROP_OVERSHOOT := "drop_overshoot"
+const BOARD_VIEW_GEOMETRY := preload("res://scripts/board/board_view_geometry.gd")
+const BOARD_VIEW_OVERLAY_MOTION := preload("res://scripts/board/board_view_overlay_motion.gd")
+const BOARD_VIEW_TUTORIAL_PATH_SAMPLER := preload("res://scripts/board/board_view_tutorial_path_sampler.gd")
 
 var selected_cell: Vector2i = Vector2i(-1, -1):
 	set(value):
@@ -56,7 +59,7 @@ var orb_texture_map: Dictionary = {}:
 		queue_redraw()
 
 var _flash_cells: Dictionary = {}
-var _glow_cells: Dictionary = {} # cell index -> true
+var _glow_cells: Dictionary = {}  # cell index -> true
 var _tutorial_hint_cells: Array[Vector2i] = []
 var _tutorial_hint_from: Vector2i = Vector2i(-1, -1)
 var _tutorial_hint_to: Vector2i = Vector2i(-1, -1)
@@ -108,34 +111,26 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var board_rect := _calculate_board_rect()
+	var board_rect := BOARD_VIEW_GEOMETRY.board_rect(size, board_padding, cell_spacing)
 	draw_rect(board_rect.grow(board_padding), board_background)
 
 	if board_model == null:
 		return
 
-	var cell_size := _cell_size_for_rect(board_rect)
+	var cell_size := BOARD_VIEW_GEOMETRY.cell_size_for_rect(board_rect, cell_spacing)
 	var cell_radius := cell_size * 0.5 * clampf(orb_scale_in_cell, 0.35, 1.0)
 	for row in BoardModel.ROW_COUNT:
 		for column in BoardModel.COLUMN_COUNT:
-			var pos := board_rect.position + Vector2(
-				column * (cell_size + cell_spacing),
-				row * (cell_size + cell_spacing)
-			)
-			var rect := Rect2(pos, Vector2(cell_size, cell_size))
+			var rect := BOARD_VIEW_GEOMETRY.cell_rect(column, row, board_rect, cell_size, cell_spacing)
 			draw_rect(rect, cell_background)
 			if cell_frame_texture != null:
 				draw_texture_rect(cell_frame_texture, rect, false, cell_frame_tint)
 
 	for row in BoardModel.ROW_COUNT:
 		for column in BoardModel.COLUMN_COUNT:
-			var pos := board_rect.position + Vector2(
-				column * (cell_size + cell_spacing),
-				row * (cell_size + cell_spacing)
-			)
-			var rect := Rect2(pos, Vector2(cell_size, cell_size))
+			var rect := BOARD_VIEW_GEOMETRY.cell_rect(column, row, board_rect, cell_size, cell_spacing)
 			var orb_id := board_model.get_cell(column, row)
-			var cell_index: int = _cell_index(column, row)
+			var cell_index: int = BOARD_VIEW_GEOMETRY.cell_index(column, row)
 			var is_selected_cell := selected_cell == Vector2i(column, row) and drag_orb_id >= 0
 			var is_suppressed: bool = _suppressed_cells.has(cell_index)
 			var is_glowing := _glow_cells.has(cell_index)
@@ -157,14 +152,14 @@ func _draw() -> void:
 		var from_pos: Vector2 = overlay.from_pos
 		var to_pos: Vector2 = overlay.to_pos
 		var motion: String = String(overlay.get("motion", OVERLAY_MOTION_LINEAR))
-		var orb_pos: Vector2 = _overlay_orb_position(from_pos, to_pos, t, motion)
+		var orb_pos: Vector2 = BOARD_VIEW_OVERLAY_MOTION.overlay_position(from_pos, to_pos, t, motion, falling_orb_overshoot_pixels)
 		var start_alpha: float = float(overlay.start_alpha)
 		var end_alpha: float = float(overlay.end_alpha)
 		var alpha: float = lerpf(start_alpha, end_alpha, t)
 		var start_scale: float = float(overlay.start_scale)
 		var end_scale: float = float(overlay.end_scale)
 		var orb_scale: float = lerpf(start_scale, end_scale, t)
-		var stretch := _overlay_orb_stretch(t, motion)
+		var stretch := BOARD_VIEW_OVERLAY_MOTION.overlay_stretch(t, motion, falling_orb_stretch)
 		var orb_id: int = int(overlay.orb_id)
 		if not OrbType.is_valid_id(orb_id):
 			continue
@@ -261,9 +256,9 @@ func set_live_match_glow(groups: Array) -> void:
 	_glow_cells.clear()
 	for group in groups:
 		for cell in group.cells:
-			if not _is_cell_index_valid(cell.x, cell.y):
+			if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(cell.x, cell.y):
 				continue
-			var cell_index: int = _cell_index(cell.x, cell.y)
+			var cell_index: int = BOARD_VIEW_GEOMETRY.cell_index(cell.x, cell.y)
 			_glow_cells[cell_index] = true
 	queue_redraw()
 
@@ -275,7 +270,7 @@ func clear_match_glow() -> void:
 
 
 func animate_swap(from_cell: Vector2i, to_cell: Vector2i, from_orb_id: int, to_orb_id: int, duration: float = 0.08) -> void:
-	if not _is_cell_index_valid(from_cell.x, from_cell.y) or not _is_cell_index_valid(to_cell.x, to_cell.y):
+	if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(from_cell.x, from_cell.y) or not BOARD_VIEW_GEOMETRY.is_cell_index_valid(to_cell.x, to_cell.y):
 		return
 	if OrbType.is_valid_id(from_orb_id):
 		_add_overlay_orb(
@@ -287,7 +282,7 @@ func animate_swap(from_cell: Vector2i, to_cell: Vector2i, from_orb_id: int, to_o
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(from_cell.x, from_cell.y), _cell_index(to_cell.x, to_cell.y)]),
+			PackedInt32Array([BOARD_VIEW_GEOMETRY.cell_index(from_cell.x, from_cell.y), BOARD_VIEW_GEOMETRY.cell_index(to_cell.x, to_cell.y)]),
 			OVERLAY_MOTION_DROP_OVERSHOOT
 		)
 	if OrbType.is_valid_id(to_orb_id):
@@ -300,16 +295,16 @@ func animate_swap(from_cell: Vector2i, to_cell: Vector2i, from_orb_id: int, to_o
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(from_cell.x, from_cell.y), _cell_index(to_cell.x, to_cell.y)])
+			PackedInt32Array([BOARD_VIEW_GEOMETRY.cell_index(from_cell.x, from_cell.y), BOARD_VIEW_GEOMETRY.cell_index(to_cell.x, to_cell.y)])
 		)
 
 
 func flash_match_groups(groups: Array, duration: float = 0.12) -> void:
 	for group in groups:
 		for cell in group.cells:
-			if not _is_cell_index_valid(cell.x, cell.y):
+			if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(cell.x, cell.y):
 				continue
-			var cell_index: int = _cell_index(cell.x, cell.y)
+			var cell_index: int = BOARD_VIEW_GEOMETRY.cell_index(cell.x, cell.y)
 			var previous: float = float(_flash_cells.get(cell_index, 0.0))
 			_flash_cells[cell_index] = maxf(previous, duration)
 	queue_redraw()
@@ -321,20 +316,10 @@ func animate_clear_groups(groups: Array, duration: float = 0.12) -> void:
 		if not OrbType.is_valid_id(orb_id):
 			continue
 		for cell in group.cells:
-			if not _is_cell_index_valid(cell.x, cell.y):
+			if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(cell.x, cell.y):
 				continue
 			var center: Vector2 = get_cell_center(cell)
-			_add_overlay_orb(
-				orb_id,
-				center,
-				center,
-				duration,
-				1.0,
-				0.0,
-				1.0,
-				0.25,
-				PackedInt32Array([_cell_index(cell.x, cell.y)])
-			)
+			_add_overlay_orb(orb_id, center, center, duration, 1.0, 0.0, 1.0, 0.25, PackedInt32Array([BOARD_VIEW_GEOMETRY.cell_index(cell.x, cell.y)]))
 
 
 func animate_fall_moves(fall_moves: Array, duration: float = 0.14) -> void:
@@ -344,7 +329,7 @@ func animate_fall_moves(fall_moves: Array, duration: float = 0.14) -> void:
 			continue
 		var from_cell: Vector2i = move.from
 		var to_cell: Vector2i = move.to
-		if not _is_cell_index_valid(from_cell.x, from_cell.y) or not _is_cell_index_valid(to_cell.x, to_cell.y):
+		if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(from_cell.x, from_cell.y) or not BOARD_VIEW_GEOMETRY.is_cell_index_valid(to_cell.x, to_cell.y):
 			continue
 		_add_overlay_orb(
 			orb_id,
@@ -355,7 +340,7 @@ func animate_fall_moves(fall_moves: Array, duration: float = 0.14) -> void:
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(from_cell.x, from_cell.y), _cell_index(to_cell.x, to_cell.y)])
+			PackedInt32Array([BOARD_VIEW_GEOMETRY.cell_index(from_cell.x, from_cell.y), BOARD_VIEW_GEOMETRY.cell_index(to_cell.x, to_cell.y)])
 		)
 
 
@@ -365,42 +350,24 @@ func animate_refill_spawns(refill_spawns: Array, duration: float = 0.14) -> void
 		if not OrbType.is_valid_id(orb_id):
 			continue
 		var to_cell: Vector2i = spawn.to
-		if not _is_cell_index_valid(to_cell.x, to_cell.y):
+		if not BOARD_VIEW_GEOMETRY.is_cell_index_valid(to_cell.x, to_cell.y):
 			continue
 		_add_overlay_orb(
 			orb_id,
-			_cell_center_from_float_row(to_cell.x, -1.0),
+			BOARD_VIEW_GEOMETRY.float_row_cell_center(to_cell.x, -1.0, size, board_padding, cell_spacing),
 			get_cell_center(to_cell),
 			duration,
 			1.0,
 			1.0,
 			1.0,
 			1.0,
-			PackedInt32Array([_cell_index(to_cell.x, to_cell.y)]),
+			PackedInt32Array([BOARD_VIEW_GEOMETRY.cell_index(to_cell.x, to_cell.y)]),
 			OVERLAY_MOTION_DROP_OVERSHOOT if _refill_overshoot_enabled else OVERLAY_MOTION_LINEAR
 		)
 
 
 func board_position_to_cell(board_local_position: Vector2) -> Vector2i:
-	var board_rect := _calculate_board_rect()
-	if not board_rect.has_point(board_local_position):
-		return Vector2i(-1, -1)
-
-	var cell_size := _cell_size_for_rect(board_rect)
-	var stride := cell_size + cell_spacing
-	var local := board_local_position - board_rect.position
-	var column := int(floor(local.x / stride))
-	var row := int(floor(local.y / stride))
-
-	if not _is_cell_index_valid(column, row):
-		return Vector2i(-1, -1)
-
-	var cell_origin := board_rect.position + Vector2(column * stride, row * stride)
-	var within_cell := Rect2(cell_origin, Vector2(cell_size, cell_size))
-	if not within_cell.has_point(board_local_position):
-		return Vector2i(-1, -1)
-
-	return Vector2i(column, row)
+	return BOARD_VIEW_GEOMETRY.position_to_cell(board_local_position, size, board_padding, cell_spacing)
 
 
 func get_orb_id_at_position(board_local_position: Vector2) -> int:
@@ -417,55 +384,11 @@ func get_orb_id_at_cell(cell: Vector2i) -> int:
 
 
 func is_cell_valid(cell: Vector2i) -> bool:
-	return _is_cell_index_valid(cell.x, cell.y)
+	return BOARD_VIEW_GEOMETRY.is_cell_index_valid(cell.x, cell.y)
 
 
 func get_cell_center(cell: Vector2i) -> Vector2:
-	var board_rect := _calculate_board_rect()
-	var cell_size := _cell_size_for_rect(board_rect)
-	var stride := cell_size + cell_spacing
-	return board_rect.position + Vector2(
-		cell.x * stride + cell_size * 0.5,
-		cell.y * stride + cell_size * 0.5
-	)
-
-
-func _calculate_board_rect() -> Rect2:
-	var available := Rect2(
-		Vector2(board_padding, board_padding),
-		size - Vector2(board_padding * 2.0, board_padding * 2.0)
-	)
-	var cell_size := _cell_size_for_rect(available)
-	var board_size := Vector2(
-		BoardModel.COLUMN_COUNT * cell_size + (BoardModel.COLUMN_COUNT - 1) * cell_spacing,
-		BoardModel.ROW_COUNT * cell_size + (BoardModel.ROW_COUNT - 1) * cell_spacing
-	)
-	var board_pos := available.position + (available.size - board_size) * 0.5
-	return Rect2(board_pos, board_size)
-
-
-func _cell_size_for_rect(rect: Rect2) -> float:
-	var width_cell_size := (rect.size.x - (BoardModel.COLUMN_COUNT - 1) * cell_spacing) / BoardModel.COLUMN_COUNT
-	var height_cell_size := (rect.size.y - (BoardModel.ROW_COUNT - 1) * cell_spacing) / BoardModel.ROW_COUNT
-	return maxf(8.0, minf(width_cell_size, height_cell_size))
-
-
-func _is_cell_index_valid(column: int, row: int) -> bool:
-	return column >= 0 and column < BoardModel.COLUMN_COUNT and row >= 0 and row < BoardModel.ROW_COUNT
-
-
-func _cell_center_from_float_row(column: int, row: float) -> Vector2:
-	var board_rect := _calculate_board_rect()
-	var cell_size := _cell_size_for_rect(board_rect)
-	var stride := cell_size + cell_spacing
-	return board_rect.position + Vector2(
-		column * stride + cell_size * 0.5,
-		row * stride + cell_size * 0.5
-	)
-
-
-func _cell_index(column: int, row: int) -> int:
-	return row * BoardModel.COLUMN_COUNT + column
+	return BOARD_VIEW_GEOMETRY.cell_center(cell, size, board_padding, cell_spacing)
 
 
 func set_orb_texture_map(texture_map: Dictionary) -> void:
@@ -517,8 +440,8 @@ func _draw_tutorial_hint() -> void:
 		return
 	var pulse_period := 1.1
 	var pulse := 0.5 + 0.5 * sin((_glow_pulse_time / pulse_period) * TAU)
-	var board_rect := _calculate_board_rect()
-	var cell_size := _cell_size_for_rect(board_rect)
+	var board_rect := BOARD_VIEW_GEOMETRY.board_rect(size, board_padding, cell_spacing)
+	var cell_size := BOARD_VIEW_GEOMETRY.cell_size_for_rect(board_rect, cell_spacing)
 	for cell in _tutorial_hint_cells:
 		if not is_cell_valid(cell):
 			continue
@@ -555,20 +478,24 @@ func _draw_tutorial_arrow_head(tip: Vector2, direction: Vector2, color: Color, a
 	var normal := Vector2(-direction.y, direction.x)
 	var arrow_back := tip - direction * 28.0 * arrow_scale
 	draw_colored_polygon(
-		PackedVector2Array([
-			tip,
-			arrow_back + normal * 18.0 * arrow_scale,
-			arrow_back - normal * 18.0 * arrow_scale,
-		]),
+		PackedVector2Array(
+			[
+				tip,
+				arrow_back + normal * 18.0 * arrow_scale,
+				arrow_back - normal * 18.0 * arrow_scale,
+			]
+		),
 		color
 	)
 	draw_polyline(
-		PackedVector2Array([
-			tip,
-			arrow_back + normal * 18.0 * arrow_scale,
-			arrow_back - normal * 18.0 * arrow_scale,
-			tip,
-		]),
+		PackedVector2Array(
+			[
+				tip,
+				arrow_back + normal * 18.0 * arrow_scale,
+				arrow_back - normal * 18.0 * arrow_scale,
+				tip,
+			]
+		),
 		Color(1.0, 0.96, 0.36, color.a),
 		3.0 * arrow_scale,
 		true
@@ -583,7 +510,7 @@ func _draw_tutorial_moving_arrow(path_points: Array[Vector2]) -> void:
 		return
 	var travel_period := 1.45
 	var travel_ratio := fmod(_glow_pulse_time, travel_period) / travel_period
-	var sample := _sample_tutorial_path(path_points, total_length * travel_ratio)
+	var sample := BOARD_VIEW_TUTORIAL_PATH_SAMPLER.sample_path(path_points, total_length * travel_ratio)
 	var arrow_position: Vector2 = sample.get("position", path_points[0])
 	var direction: Vector2 = sample.get("direction", Vector2.DOWN)
 	var glow_origin := arrow_position - direction * 12.0
@@ -592,46 +519,18 @@ func _draw_tutorial_moving_arrow(path_points: Array[Vector2]) -> void:
 	_draw_tutorial_arrow_head(arrow_position + direction * 20.0, direction, Color(1.0, 0.97, 0.05, 1.0), 1.25)
 
 
-func _sample_tutorial_path(path_points: Array[Vector2], distance: float) -> Dictionary:
-	var remaining_distance := distance
-	for index in range(path_points.size() - 1):
-		var segment_start: Vector2 = path_points[index]
-		var segment_end: Vector2 = path_points[index + 1]
-		var segment := segment_end - segment_start
-		var segment_length := segment.length()
-		if segment_length <= 0.01:
-			continue
-		var segment_direction := segment / segment_length
-		if remaining_distance <= segment_length:
-			return {
-				"position": segment_start + segment_direction * remaining_distance,
-				"direction": segment_direction,
-			}
-		remaining_distance -= segment_length
-	var final_start: Vector2 = path_points[path_points.size() - 2]
-	var final_end: Vector2 = path_points[path_points.size() - 1]
-	return {
-		"position": final_end,
-		"direction": (final_end - final_start).normalized(),
-	}
-
-
 func _draw_tutorial_focus_mask(board_rect: Rect2, cell_size: float) -> void:
 	if _tutorial_hint_cells.is_empty():
 		return
 	var focus_cells := {}
 	for cell in _tutorial_hint_cells:
 		if is_cell_valid(cell):
-			focus_cells[_cell_index(cell.x, cell.y)] = true
+			focus_cells[BOARD_VIEW_GEOMETRY.cell_index(cell.x, cell.y)] = true
 	for row in BoardModel.ROW_COUNT:
 		for column in BoardModel.COLUMN_COUNT:
-			if focus_cells.has(_cell_index(column, row)):
+			if focus_cells.has(BOARD_VIEW_GEOMETRY.cell_index(column, row)):
 				continue
-			var pos := board_rect.position + Vector2(
-				column * (cell_size + cell_spacing),
-				row * (cell_size + cell_spacing)
-			)
-			var rect := Rect2(pos, Vector2(cell_size, cell_size))
+			var rect := BOARD_VIEW_GEOMETRY.cell_rect(column, row, board_rect, cell_size, cell_spacing)
 			draw_rect(rect.grow(-2.0), Color(0.0, 0.0, 0.0, 0.58), true)
 			draw_rect(rect.grow(-2.0), Color(0.05, 0.08, 0.11, 0.82), false, 2.0)
 
@@ -660,59 +559,25 @@ func _add_overlay_orb(
 		var previous_count: int = int(_suppressed_cells.get(cell_index, 0))
 		_suppressed_cells[cell_index] = previous_count + 1
 
-	_overlay_orbs.append({
-		"orb_id": orb_id,
-		"from_pos": from_pos,
-		"to_pos": to_pos,
-		"duration": maxf(0.01, duration),
-		"elapsed": 0.0,
-		"start_alpha": start_alpha,
-		"end_alpha": end_alpha,
-		"start_scale": start_scale,
-		"end_scale": end_scale,
-		"suppress_indices": suppress_indices,
-		"motion": motion,
-	})
+	(
+		_overlay_orbs
+		. append(
+			{
+				"orb_id": orb_id,
+				"from_pos": from_pos,
+				"to_pos": to_pos,
+				"duration": maxf(0.01, duration),
+				"elapsed": 0.0,
+				"start_alpha": start_alpha,
+				"end_alpha": end_alpha,
+				"start_scale": start_scale,
+				"end_scale": end_scale,
+				"suppress_indices": suppress_indices,
+				"motion": motion,
+			}
+		)
+	)
 	queue_redraw()
-
-
-func _overlay_orb_position(from_pos: Vector2, to_pos: Vector2, t: float, motion: String) -> Vector2:
-	if motion != OVERLAY_MOTION_DROP_OVERSHOOT:
-		return from_pos.lerp(to_pos, clampf(t, 0.0, 1.0))
-	var delta := to_pos - from_pos
-	if delta.length_squared() <= 0.01:
-		return to_pos
-	var direction := delta.normalized()
-	var overshoot_distance := minf(maxf(0.0, falling_orb_overshoot_pixels), delta.length() * 0.28 + 10.0)
-	var overshoot_pos := to_pos + direction * overshoot_distance
-	if t < 0.76:
-		var drop_t := _ease_out_cubic(t / 0.76)
-		return from_pos.lerp(overshoot_pos, drop_t)
-	var settle_t := _ease_out_back((t - 0.76) / 0.24)
-	return overshoot_pos.lerp(to_pos, settle_t)
-
-
-func _overlay_orb_stretch(t: float, motion: String) -> Vector2:
-	if motion != OVERLAY_MOTION_DROP_OVERSHOOT:
-		return Vector2.ONE
-	var stretch_amount := clampf(falling_orb_stretch, 0.0, 0.30)
-	if t < 0.76:
-		var pulse := sin(clampf(t / 0.76, 0.0, 1.0) * PI)
-		return Vector2(1.0 - stretch_amount * 0.42 * pulse, 1.0 + stretch_amount * pulse)
-	var settle := sin(clampf((t - 0.76) / 0.24, 0.0, 1.0) * PI)
-	return Vector2(1.0 + stretch_amount * 0.72 * settle, 1.0 - stretch_amount * 0.52 * settle)
-
-
-func _ease_out_cubic(t: float) -> float:
-	var clamped := clampf(t, 0.0, 1.0)
-	return 1.0 - pow(1.0 - clamped, 3.0)
-
-
-func _ease_out_back(t: float) -> float:
-	var clamped := clampf(t, 0.0, 1.0)
-	var c1 := 1.70158
-	var c3 := c1 + 1.0
-	return 1.0 + c3 * pow(clamped - 1.0, 3.0) + c1 * pow(clamped - 1.0, 2.0)
 
 
 func _release_suppressed_cells(suppress_indices: PackedInt32Array) -> void:

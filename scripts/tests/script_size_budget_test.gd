@@ -7,7 +7,6 @@ const EXPECTED_RATCHET_BASELINES := {
 	"res://scripts/combat/combat_controller.gd": 797,
 	"res://scripts/main_menu/main_menu_view.gd": 704,
 	"res://scripts/debug/vfx_gallery_show.gd": 761,
-	"res://scripts/board/board_view.gd": 598,
 	"res://scripts/combat/combat_view.gd": 549,
 }
 
@@ -44,8 +43,8 @@ func _test_budget_report_has_no_undocumented_exceptions(report: Dictionary) -> S
 		return "Expected documented script-size exceptions only: %s" % [", ".join(Array(report.get("failures", [])))]
 	if int(report.get("undocumented", -1)) != 0:
 		return "Expected no undocumented over-budget scripts."
-	if int(report.get("documented_exceptions", 0)) < 5:
-		return "Expected current combat exceptions to be visible in the report."
+	if int(report.get("documented_exceptions", 0)) != EXPECTED_RATCHET_BASELINES.size():
+		return "Expected current documented exceptions to match the ratchet inventory."
 	return ""
 
 
