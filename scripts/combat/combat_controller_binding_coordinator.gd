@@ -34,6 +34,11 @@ func _audio_router_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_audio_router"), method_name)
 
 
+func _hud_update_callback(method_name: String) -> Callable:
+	_owner.call("_bind_hud_update_router")
+	return Callable(_owner.get("_hud_update_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -172,40 +177,11 @@ func bind_input_command_handler() -> void:
 	)
 
 
-func bind_hud_snapshot_provider() -> void:
-	var contract: Variant = _contract()
-	if _owner_value("_hud_snapshot_provider") == null:
-		_set_owner_value("_hud_snapshot_provider", contract.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new())
-	(
-		_owner_value("_hud_snapshot_provider")
-		. bind(
-			{
-				"run_state": RunState,
-				"model": _owner_value("_model"),
-				"player_state": _owner_value("_player_state"),
-				"enemy_state": _owner_value("_enemy_state"),
-				"combat": _owner_value("_combat"),
-				"view": _owner_value("_view"),
-				"visuals": _owner_value("_visuals"),
-				"turn_log_presenter": _owner_value("_turn_log_presenter"),
-			},
-			{
-				"input_phase_value": _owner_callback("_input_phase_value"),
-				"drag_active": _owner_callback("_drag_active"),
-				"drag_move_time_left": _owner_callback("_drag_move_time_left"),
-				"timer_ready_seconds": _owner_callback("_timer_ready_seconds"),
-				"show_intent_preview": _owner_callback("_should_show_intent_damage_preview"),
-			},
-			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
-		)
-	)
-
-
 func bind_player_hud_refresh_coordinator() -> void:
 	var contract: Variant = _contract()
 	if _owner_value("_player_hud_refresh_coordinator") == null:
 		_set_owner_value("_player_hud_refresh_coordinator", contract.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new())
-	_owner_callback("_ensure_hud_presenter").call()
+	_hud_update_callback("ensure_hud_presenter").call()
 	Callable(_owner, "_bind_mastery_preview_coordinator").call()
 	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
 	(
@@ -248,7 +224,7 @@ func bind_loadout_command_handler() -> void:
 			{
 				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
-				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				contract.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
@@ -370,7 +346,7 @@ func bind_turn_resolution_coordinator() -> void:
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_REPLAY_TURN_RESOLUTION: _owner_callback("_replay_turn_resolution_from_log"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _owner_callback("_can_continue_after_async_wait"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_SYNC_MASTERY_TOTALS: Callable(mastery_preview_coordinator, "sync_totals"),
-				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: _owner_callback("_flow_trace_route_id_value"),
 			},
 			{contract.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.CONFIG_RESOLVING_INPUT_PHASE_VALUE: int(_owner.InputPhase.RESOLVING)}

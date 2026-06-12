@@ -55,6 +55,7 @@ var _state_initializer = null
 var _lifecycle = null
 var _binding_coordinator = null
 var _view_actions: Variant = null
+var _hud_update_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -151,6 +152,17 @@ func _bind_audio_router() -> void:
 func _audio_router_callback(method_name: String) -> Callable:
 	_bind_audio_router()
 	return Callable(_audio_router, method_name)
+
+
+func _bind_hud_update_router() -> void:
+	if _hud_update_router == null:
+		_hud_update_router = CONTRACT.COMBAT_CONTROLLER_HUD_UPDATE_ROUTER_SCRIPT.new()
+	_hud_update_router.bind(self)
+
+
+func _hud_update_callback(method_name: String) -> Callable:
+	_bind_hud_update_router()
+	return Callable(_hud_update_router, method_name)
 
 
 func _bind_debug_state_provider() -> void:
@@ -257,7 +269,7 @@ func _set_viewport_input_handled() -> void:
 func _toggle_debug_overlay() -> void:
 	if _debug_runtime != null:
 		_debug_runtime.toggle_overlay()
-	_update_hud()
+	_hud_update_callback("update_hud").call()
 
 
 func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
@@ -388,7 +400,7 @@ func _bind_boss_reward_handler() -> void:
 			_visuals,
 			{
 				"set_status_text": Callable(_view_actions, "set_status_text"),
-				"update_hud": Callable(self, "_update_hud"),
+				"update_hud": _hud_update_callback("update_hud"),
 				"play_sfx": _audio_router_callback("play_sfx"),
 				"apply_layout": Callable(self, "_apply_combat_layout"),
 				"trace_and_change_scene": Callable(self, "_boss_reward_trace_and_change_scene"),
@@ -537,27 +549,6 @@ func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
 	return CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.can_continue_after_async_wait(_host, _board_view, require_board_view)
 
 
-func _update_hud() -> void:
-	if _player_state == null or _enemy_state == null or _combat == null:
-		return
-
-	_ensure_hud_presenter()
-	_bind_hud_snapshot_provider()
-	var hud_snapshot: Dictionary = _hud_presenter.build_hud_snapshot(_hud_snapshot_provider.build_snapshot())
-	if _view != null:
-		_view.apply_hud_snapshot(hud_snapshot, {"refresh_build_icon_rows": Callable(self, "_refresh_build_icon_rows")})
-
-
-func _ensure_hud_presenter() -> void:
-	if _hud_presenter == null:
-		_hud_presenter = CONTRACT.COMBAT_HUD_PRESENTER_SCRIPT.new()
-
-
-func _bind_hud_snapshot_provider() -> void:
-	_bind_binding_coordinator()
-	_binding_coordinator.bind_hud_snapshot_provider()
-
-
 func _bind_vfx_target_resolver() -> void:
 	_vfx_target_resolver = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_vfx_target_resolver(
 		_vfx_target_resolver, CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT, _view, _combat_vfx_presenter
@@ -566,7 +557,7 @@ func _bind_vfx_target_resolver() -> void:
 
 func _bind_hud_stage_coordinator() -> void:
 	_hud_stage_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_hud_stage_coordinator(
-		_hud_stage_coordinator, CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT, _model, _player_state, _enemy_state, Callable(self, "_update_hud")
+		_hud_stage_coordinator, CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT, _model, _player_state, _enemy_state, _hud_update_callback("update_hud")
 	)
 
 
@@ -736,11 +727,6 @@ func _append_turn_log(turn_log: Dictionary) -> void:
 func _resolve_trace(start_ticks_usec: int, message: String) -> void:
 	_bind_resolve_trace_logger()
 	_resolve_trace_logger.trace(start_ticks_usec, message)
-
-
-func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
-	_bind_player_hud_refresh_coordinator()
-	_player_hud_refresh_coordinator.refresh_build_icon_rows(progression_snapshot)
 
 
 func _spawn_vfx_texture(
