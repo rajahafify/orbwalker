@@ -3762,6 +3762,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved HP danger/armor-preview nodes, preview payload state, and pulse tween ownership into <code>PlayerLoadoutIntentPreview</code>. <code>PlayerLoadoutHud</code> now binds data providers and hover signal callbacks instead of letting the helper reach into HUD private fields. (source: <code>scripts/ui/player_loadout_intent_preview.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
 <li>Removed <code>player_loadout_intent_preview.gd</code> from the owner-reach ratchet allowlist after its HUD-private reach-ins dropped from <code>129</code> to <code>0</code>, and added direct provider/callback coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/player_loadout_intent_preview_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-player-loadout-slot-detail-popover-ownership">2026-06-13 - Player loadout slot detail popover ownership</h2>
+<ul>
+<li>Moved slot-detail bubble nodes and hover-slot state into <code>PlayerLoadoutSlotDetailPopover</code>. <code>PlayerLoadoutHud</code> now binds data/selection providers, content lookup, rect application, and sell callbacks instead of sharing its private fields. (source: <code>scripts/ui/player_loadout_slot_detail_popover.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Removed <code>player_loadout_slot_detail_popover.gd</code> from the owner-reach ratchet allowlist after its HUD-private reach-ins dropped from <code>98</code> to <code>0</code>, and added direct ownership/sell-routing coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/player_loadout_slot_detail_popover_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
