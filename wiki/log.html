@@ -3742,6 +3742,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved begin-turn preview orchestration out of <code>CombatControllerLifecycle</code> into <code>CombatTurnPreviewCoordinator</code>, covering intent-preview reset, player-input phase setup, pending-scene cleanup, outcome hiding, turn summary/status text, HUD refresh, mastery-hover cleanup, tutorial coachmark sync, and intent log formatting. (source: <code>scripts/combat/combat_turn_preview_coordinator.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
 <li>Lowered the lifecycle owner-reach ratchet from <code>118</code> to <code>110</code>; <code>combat_controller.gd</code> remains at <code>571</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/combat_turn_preview_coordinator_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-signal-connector">2026-06-13 - Signal connector</h2>
+<ul>
+<li>Moved resolver, player-loadout HUD, combat view, settings, and tutorial-end signal wiring out of <code>CombatControllerLifecycle</code> into <code>CombatControllerSignalConnector</code>. The connector takes explicit emitters, command handlers, and callbacks and has no owner-private reach-ins. (source: <code>scripts/combat/combat_controller_signal_connector.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>, <code>scripts/tests/combat_controller_signal_connector_test.gd</code>)</li>
+<li>Lowered the lifecycle owner-reach ratchet from <code>110</code> to <code>98</code> and lowered <code>combat_controller.gd</code> from <code>571</code> to <code>569</code> after deleting the unused <code>_ensure_runtime_helpers()</code> wrapper. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>tools/quality/script_size_budget.gd</code>, <code>docs/script_size_budget.html</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

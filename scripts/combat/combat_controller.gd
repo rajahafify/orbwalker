@@ -132,11 +132,6 @@ func on_next_button_pressed() -> void:
 		_outcome_route_coordinator.handle_next_pressed(_view.next_button_text() if _view != null else "")
 
 
-func _ensure_runtime_helpers() -> void:
-	_bind_lifecycle()
-	_lifecycle.ensure_runtime_helpers()
-
-
 func _bind_audio_cue_player() -> void:
 	_combat_audio_cue_player = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_audio_cue_player(
 		_combat_audio_cue_player, CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT, _host, RunState
@@ -184,11 +179,6 @@ func _bind_debug_console() -> void:
 func _bind_settings_command_handler() -> void:
 	_bind_binding_coordinator()
 	_binding_coordinator.bind_settings_command_handler()
-
-
-func _connect_view_signals() -> void:
-	_bind_lifecycle()
-	_lifecycle.connect_view_signals()
 
 
 func _trace_flow_first_usable_frame() -> void:
@@ -613,20 +603,24 @@ func _bind_hud_stage_coordinator() -> void:
 
 
 func _bind_mastery_preview_coordinator() -> void:
-	_mastery_preview_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_mastery_preview_coordinator(
-		_mastery_preview_coordinator,
-		CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
-		_model,
-		_player_state,
-		_view,
-		CONTRACT.COMBAT_MASTERY_RESOLUTION_ORDER,
-		CONTRACT.COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
-		RunState.current_combat_modifiers(),
-		{
-			"board_view": _board_view,
-			"combat_vfx_presenter": _combat_vfx_presenter,
-			"combat_speed_duration_callback": Callable(self, "_combat_speed_duration"),
-		}
+	_mastery_preview_coordinator = (
+		CONTRACT
+		. COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
+		. bind_mastery_preview_coordinator(
+			_mastery_preview_coordinator,
+			CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
+			_model,
+			_player_state,
+			_view,
+			CONTRACT.COMBAT_MASTERY_RESOLUTION_ORDER,
+			CONTRACT.COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
+			RunState.current_combat_modifiers(),
+			{
+				"board_view": _board_view,
+				"combat_vfx_presenter": _combat_vfx_presenter,
+				"combat_speed_duration_callback": Callable(self, "_combat_speed_duration"),
+			}
+		)
 	)
 
 
