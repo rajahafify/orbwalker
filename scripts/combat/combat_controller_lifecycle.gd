@@ -78,6 +78,7 @@ func ready() -> void:
 	_connect_resolver_signals()
 	_connect_hud_and_view_signals()
 	initialize_combat_state()
+	_owner._bind_loadout_command_handler()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _owner._flow_trace_route_id_value())
 	_owner._create_new_board()
 	RunState.flow_trace_mark("combat_after_board_create", {}, _owner._flow_trace_route_id_value())
@@ -282,31 +283,39 @@ func _connect_resolver_signals() -> void:
 
 
 func _connect_hud_and_view_signals() -> void:
-	_owner._player_loadout_hud.consumable_slot_selected.connect(_owner._try_use_consumable_slot)
-	_owner._player_loadout_hud.sell_slot_requested.connect(_owner._on_player_hud_sell_slot_requested)
-	_owner._player_loadout_hud.intent_preview_hovered.connect(_owner._on_intent_damage_preview_hovered)
-	_owner._player_loadout_hud.intent_block_preview_hovered.connect(_owner._on_intent_block_preview_hovered)
-	_owner._player_loadout_hud.intent_preview_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
+	_owner._bind_loadout_command_handler()
+	var player_loadout_hud: Variant = _owner._player_loadout_hud
+	var loadout_command_handler: Variant = _owner._loadout_command_handler
+	player_loadout_hud.consumable_slot_selected.connect(loadout_command_handler.try_use_consumable_slot)
+	player_loadout_hud.sell_slot_requested.connect(loadout_command_handler.sell_slot_requested)
+	player_loadout_hud.intent_preview_hovered.connect(_owner._on_intent_damage_preview_hovered)
+	player_loadout_hud.intent_block_preview_hovered.connect(_owner._on_intent_block_preview_hovered)
+	player_loadout_hud.intent_preview_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
 	_owner._connect_view_signals()
 
 
 func connect_view_signals() -> void:
 	if _owner._view == null:
 		return
-	_owner._view.enemy_intent_bubble_hovered.connect(_owner._on_enemy_intent_bubble_hovered)
-	_owner._view.enemy_block_preview_hovered.connect(_owner._on_enemy_block_preview_hovered)
-	_owner._view.intent_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
-	_owner._view.tutorial_end_continue_pressed.connect(_owner._on_tutorial_end_continue_pressed)
-	_owner._view.tutorial_end_main_menu_pressed.connect(_owner._on_tutorial_end_main_menu_pressed)
-	_owner._view.settings_continue_pressed.connect(_owner._on_settings_continue_pressed)
-	_owner._view.settings_new_run_pressed.connect(_owner._on_settings_new_run_pressed)
-	_owner._view.settings_main_menu_pressed.connect(_owner._on_settings_main_menu_pressed)
-	_owner._view.settings_speed_selected.connect(_owner._on_settings_speed_selected)
-	_owner._view.settings_quality_selected.connect(_owner._on_settings_quality_selected)
-	_owner._view.settings_reduced_motion_toggled.connect(_owner._on_settings_reduced_motion_toggled)
-	_owner._view.settings_game_juice_toggled.connect(_owner._on_settings_game_juice_toggled)
-	_owner._view.settings_game_juice_flag_toggled.connect(_owner._on_settings_game_juice_flag_toggled)
-	_owner._view.settings_defaults_reset.connect(_owner._on_settings_defaults_reset)
+	_owner._bind_settings_command_handler()
+	_owner._bind_tutorial_end_command_handler()
+	var view: Variant = _owner._view
+	var settings_command_handler: Variant = _owner._settings_command_handler
+	var tutorial_end_command_handler: Variant = _owner._tutorial_end_command_handler
+	view.enemy_intent_bubble_hovered.connect(_owner._on_enemy_intent_bubble_hovered)
+	view.enemy_block_preview_hovered.connect(_owner._on_enemy_block_preview_hovered)
+	view.intent_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
+	view.tutorial_end_continue_pressed.connect(tutorial_end_command_handler.continue_pressed)
+	view.tutorial_end_main_menu_pressed.connect(tutorial_end_command_handler.main_menu_pressed)
+	view.settings_continue_pressed.connect(settings_command_handler.continue_combat)
+	view.settings_new_run_pressed.connect(settings_command_handler.start_new_run)
+	view.settings_main_menu_pressed.connect(settings_command_handler.return_to_main_menu)
+	view.settings_speed_selected.connect(settings_command_handler.select_speed)
+	view.settings_quality_selected.connect(settings_command_handler.select_quality)
+	view.settings_reduced_motion_toggled.connect(settings_command_handler.toggle_reduced_motion)
+	view.settings_game_juice_toggled.connect(settings_command_handler.toggle_game_juice)
+	view.settings_game_juice_flag_toggled.connect(settings_command_handler.toggle_game_juice_flag)
+	view.settings_defaults_reset.connect(settings_command_handler.reset_feedback_settings)
 
 
 func _initialize_boss_reward_state() -> void:

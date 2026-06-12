@@ -11,7 +11,7 @@ const DOC_PATH := "res://docs/script_size_budget.html"
 const DOCUMENTED_EXCEPTIONS := {
 	"res://scripts/combat/combat_controller.gd":
 	{
-		"baseline": 682,
+		"baseline": 641,
 		"owner": "P1-1",
 		"reason":
 		"Combat orchestration is below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while owner-bound lifecycle and binding seams are converted into explicit wiring.",
