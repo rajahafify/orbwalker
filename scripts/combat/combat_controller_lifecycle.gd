@@ -2,10 +2,12 @@ extends RefCounted
 class_name CombatControllerLifecycle
 
 var _owner: Variant = null
+var _view_actions: Variant = null
 
 
 func bind(owner: Variant) -> void:
 	_owner = owner
+	_view_actions = owner.get("_view_actions")
 
 
 func ready() -> void:
@@ -46,8 +48,8 @@ func ready() -> void:
 	if _owner._view != null:
 		_owner._view.bootstrap_background()
 	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _owner._flow_trace_route_id_value())
-	_owner._ensure_boss_reward_controls()
-	_owner._ensure_outcome_overlay_layer()
+	_view_actions.ensure_boss_reward_controls()
+	_view_actions.ensure_outcome_overlay_layer()
 	if _owner._view != null:
 		(
 			_owner
@@ -184,16 +186,16 @@ func begin_turn_preview() -> void:
 	_owner._combat.begin_player_input()
 	_owner._set_input_phase(_owner.InputPhase.PLAYER_INPUT)
 	_owner._model.clear_pending_next_scene_path()
-	_owner._hide_outcome_summary()
-	_owner._set_turn_summary_text(_owner._tutorial_turn_summary_text() if RunState.is_tutorial_run() else "Turn Summary: Awaiting move.")
-	_owner._set_status_text(
+	_view_actions.hide_outcome_summary()
+	_view_actions.set_turn_summary_text(_owner._tutorial_turn_summary_text() if RunState.is_tutorial_run() else "Turn Summary: Awaiting move.")
+	_view_actions.set_status_text(
 		_owner._tutorial_turn_status_text() if RunState.is_tutorial_run() else "%s | Turn %d." % [RunState.level_sequence_label(), _owner._combat.turn_index]
 	)
-	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_NEUTRAL)
+	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_NEUTRAL)
 	_owner._update_hud()
 	_owner._clear_combat_mastery_hover_state()
 	_owner._sync_tutorial_coachmark()
-	_owner._append_combat_log("Turn %d intent: %s." % [_owner._combat.turn_index, _owner._format_intent(_owner._enemy_state.get_current_intent())])
+	_view_actions.append_combat_log("Turn %d intent: %s." % [_owner._combat.turn_index, _owner._format_intent(_owner._enemy_state.get_current_intent())])
 
 
 func end_drag(timed_out: bool) -> void:
@@ -208,8 +210,8 @@ func end_drag(timed_out: bool) -> void:
 	if _owner._view != null:
 		_owner._view.sync_timer_display(0.0, _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 	var move_end_reason := "timer expired" if timed_out else "released"
-	_owner._set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
-	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
+	_view_actions.set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
+	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
 	var resolve_trace_origin_usec := Time.get_ticks_usec()
 	_owner._model.begin_resolve_trace(resolve_trace_origin_usec, true)
 	_owner._resolve_trace(resolve_trace_origin_usec, 'phase=resolve_start move_end_reason="%s" board_seed=%d' % [move_end_reason, _owner._board_model.rng_seed])
@@ -318,12 +320,12 @@ func _initialize_boss_reward_state() -> void:
 	_owner._combat = null
 	_owner._model.clear_outcome_transition_queued()
 	_owner._model.clear_pending_next_scene_path()
-	_owner._hide_outcome_summary()
+	_view_actions.hide_outcome_summary()
 	_owner._refresh_character_portraits()
 	_owner._refresh_build_icon_rows(_owner._progression_state.to_snapshot())
-	_owner._show_boss_reward_summary("Boss defeated.")
-	_owner._set_status_text("Boss defeated. Choose one boss relic before continuing.")
-	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
+	_view_actions.show_boss_reward_summary("Boss defeated.")
+	_view_actions.set_status_text("Boss defeated. Choose one boss relic before continuing.")
+	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
 	_owner._bind_debug_state_provider()
 	RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _owner._flow_trace_route_id_value())
 
@@ -361,19 +363,21 @@ func _initialize_fight_state() -> void:
 	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
 	_owner._model.clear_outcome_transition_queued()
 	_owner._model.clear_pending_next_scene_path()
-	_owner._hide_outcome_summary()
+	_view_actions.hide_outcome_summary()
 	_owner._update_hud()
 	if _owner._debug_runtime != null:
 		_owner._debug_runtime.clear_log()
-	_owner._append_combat_log("Run flow: %s" % RunState.level_sequence_label())
+	_view_actions.append_combat_log("Run flow: %s" % RunState.level_sequence_label())
 	if String(encounter.get("step_key", "")) == "enemy_1":
-		_owner._append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
-	_owner._append_combat_log("Fight started: %s HP %d." % [_owner._enemy_state.display_name, _owner._enemy_state.max_hp])
-	_owner._append_combat_log("Player start: HP %d/%d, Gold %d." % [_owner._player_state.current_hp, _owner._player_state.max_hp, _owner._player_state.gold])
+		_view_actions.append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
+	_view_actions.append_combat_log("Fight started: %s HP %d." % [_owner._enemy_state.display_name, _owner._enemy_state.max_hp])
+	_view_actions.append_combat_log(
+		"Player start: HP %d/%d, Gold %d." % [_owner._player_state.current_hp, _owner._player_state.max_hp, _owner._player_state.gold]
+	)
 	if content_errors.is_empty():
-		_owner._append_combat_log("Milestone 5 content validation: OK.")
+		_view_actions.append_combat_log("Milestone 5 content validation: OK.")
 	else:
-		_owner._append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
+		_view_actions.append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
 		for error in content_errors:
-			_owner._append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
+			_view_actions.append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
 	_owner._bind_debug_state_provider()
