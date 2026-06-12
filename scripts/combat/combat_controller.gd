@@ -76,46 +76,6 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 
 
 func enter_tree() -> void:
-	_enter_tree()
-
-
-func ready() -> void:
-	_ready()
-
-
-func exit_tree() -> void:
-	_exit_tree()
-
-
-func process(delta: float) -> void:
-	_process(delta)
-
-
-func unhandled_input(event: InputEvent) -> void:
-	_unhandled_input(event)
-
-
-func on_viewport_size_changed() -> void:
-	_on_viewport_size_changed()
-
-
-func on_back_button_pressed() -> void:
-	_on_back_button_pressed()
-
-
-func on_debug_toggle_button_pressed() -> void:
-	_on_debug_toggle_button_pressed()
-
-
-func on_settings_button_pressed() -> void:
-	_on_settings_button_pressed()
-
-
-func on_next_button_pressed() -> void:
-	_on_next_button_pressed()
-
-
-func _enter_tree() -> void:
 	if _flow_trace_route_id_value() == "":
 		_set_flow_trace_route_id(RunState.flow_trace_active_route_id())
 	if _flow_trace_route_id_value() == "":
@@ -124,9 +84,51 @@ func _enter_tree() -> void:
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id_value())
 
 
-func _ready() -> void:
+func ready() -> void:
 	_bind_lifecycle()
 	_lifecycle.ready()
+
+
+func exit_tree() -> void:
+	_clear_combat_mastery_hover_state()
+
+
+func process(delta: float) -> void:
+	if _combat_timer_service == null:
+		return
+	var drag_update: Dictionary = _combat_timer_service.process(_board_controller, _view, _player_state, delta, _input_phase_value() == InputPhase.PLAYER_INPUT)
+	_handle_drag_input_result(drag_update)
+
+
+func unhandled_input(event: InputEvent) -> void:
+	_bind_input_command_handler()
+	_input_command_handler.handle_unhandled_input(event)
+
+
+func on_viewport_size_changed() -> void:
+	_apply_combat_layout()
+
+
+func on_back_button_pressed() -> void:
+	on_settings_button_pressed()
+
+
+func on_debug_toggle_button_pressed() -> void:
+	_toggle_debug_overlay()
+
+
+func on_settings_button_pressed() -> void:
+	_bind_settings_command_handler()
+	_settings_command_handler.open()
+
+
+func on_next_button_pressed() -> void:
+	_bind_boss_reward_handler()
+	if _boss_reward_handler != null and _boss_reward_handler.handle_next_pressed():
+		return
+	_bind_outcome_route_coordinator()
+	if _outcome_route_coordinator != null:
+		_outcome_route_coordinator.handle_next_pressed(_view.next_button_text() if _view != null else "")
 
 
 func _ensure_runtime_helpers() -> void:
@@ -186,10 +188,6 @@ func _bind_settings_command_handler() -> void:
 func _connect_view_signals() -> void:
 	_bind_lifecycle()
 	_lifecycle.connect_view_signals()
-
-
-func _exit_tree() -> void:
-	_clear_combat_mastery_hover_state()
 
 
 func _trace_flow_first_usable_frame() -> void:
@@ -254,18 +252,9 @@ func _begin_turn_preview() -> void:
 	_lifecycle.begin_turn_preview()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	_bind_input_command_handler()
-	_input_command_handler.handle_unhandled_input(event)
-
-
 func _set_viewport_input_handled() -> void:
 	if _host != null and is_instance_valid(_host) and _host.get_viewport() != null:
 		_host.get_viewport().set_input_as_handled()
-
-
-func _on_debug_toggle_button_pressed() -> void:
-	_toggle_debug_overlay()
 
 
 func _toggle_debug_overlay() -> void:
@@ -274,64 +263,10 @@ func _toggle_debug_overlay() -> void:
 	_update_hud()
 
 
-func _on_regenerate_button_pressed() -> void:
-	_create_new_board()
-
-
-func _on_print_board_button_pressed() -> void:
-	_print_board_model()
-
-
-func _on_back_button_pressed() -> void:
-	_on_settings_button_pressed()
-
-
-func _on_settings_button_pressed() -> void:
-	_bind_settings_command_handler()
-	_settings_command_handler.open()
-
-
-func _on_run_tests_button_pressed() -> void:
-	_bind_view_actions()
-	var report: Dictionary = CONTRACT.TEST_RUNNER_SCRIPT.run_all()
-	if bool(report.get("passed", false)):
-		_view_actions.set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
-		print(
-			(
-				"[Combat Debug Tests] Passed %d cases across %d suites."
-				% [
-					int(report.get("total", 0)),
-					int(report.get("suite_count", 0)),
-				]
-			)
-		)
-		return
-
-	_view_actions.set_status_text("Tests failed (%d/%d). See output." % [int(report.get("failed", 0)), int(report.get("total", 0))])
-	push_warning("Combat debug tests failed:\n%s" % "\n".join(Array(report.get("failures", []))))
-
-
-func _on_add_test_equipment_button_pressed() -> void:
-	_bind_loadout_command_handler()
-	_loadout_command_handler.add_test_equipment()
-
-
-func _on_add_test_consumable_button_pressed() -> void:
-	_bind_loadout_command_handler()
-	_loadout_command_handler.add_test_consumable()
-
-
 func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
 	if _board_controller == null:
 		return 0
 	return int(_board_controller.convert_random_non_target_orbs(target_orb_id, count, rng))
-
-
-func _process(delta: float) -> void:
-	if _combat_timer_service == null:
-		return
-	var drag_update: Dictionary = _combat_timer_service.process(_board_controller, _view, _player_state, delta, _input_phase_value() == InputPhase.PLAYER_INPUT)
-	_handle_drag_input_result(drag_update)
 
 
 func _on_board_drag_input_result(drag_result: Dictionary) -> void:
@@ -436,15 +371,6 @@ func _debug_set_pending_next_scene_path(scene_path: String) -> void:
 func _end_drag(timed_out: bool) -> void:
 	_bind_lifecycle()
 	await _lifecycle.end_drag(timed_out)
-
-
-func _on_next_button_pressed() -> void:
-	_bind_boss_reward_handler()
-	if _boss_reward_handler != null and _boss_reward_handler.handle_next_pressed():
-		return
-	_bind_outcome_route_coordinator()
-	if _outcome_route_coordinator != null:
-		_outcome_route_coordinator.handle_next_pressed(_view.next_button_text() if _view != null else "")
 
 
 func _play_turn_result_sfx(turn_log: Dictionary) -> void:
@@ -913,10 +839,6 @@ func _on_resolver_match_found(groups: Array) -> void:
 	_audio_play_sfx("match")
 	_view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
 	_view_actions.set_status_color(CONTRACT.STATUS_COLOR_WARNING)
-
-
-func _on_viewport_size_changed() -> void:
-	_apply_combat_layout()
 
 
 func _apply_combat_layout() -> void:

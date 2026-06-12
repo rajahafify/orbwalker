@@ -84,7 +84,7 @@ func ready() -> void:
 	RunState.flow_trace_mark("combat_after_board_create", {}, _owner._flow_trace_route_id_value())
 	if _owner._debug_runtime != null:
 		_owner._debug_runtime.bootstrap_hidden(Callable(_owner, "_on_console_input_text_submitted"))
-	_owner._host.get_viewport().size_changed.connect(_owner._on_viewport_size_changed)
+	_owner._host.get_viewport().size_changed.connect(_owner.on_viewport_size_changed)
 	if _owner._view != null:
 		_owner._view.set_vfx_layer_visible(true)
 	_owner._host.set_process(true)

@@ -262,6 +262,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 19 combat controller wrapper deletion):</p>
+<ul>
+<li><code>CombatController</code> now keeps the scene-host entry methods as the real implementations instead of bouncing through private twins. Dead debug button callbacks for removed regenerate/print/tests/add-item buttons were deleted; the active debug console and keyboard command paths remain intact.</li>
+<li><code>scripts/combat/combat_controller.gd</code> dropped from <code>641</code> to <code>594</code> measured lines and from <code>144</code> to <code>129</code> functions. The stricter <code>400</code>-line controller exception remains active because the controller is still not wiring-only.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 17 combat controller view-action split):</p>
 <ul>
 <li><code>CombatControllerViewActions</code> now owns status text/color updates, turn-summary text/pulse, outcome overlay show/hide/layer calls, boss-reward summary/control forwarding, combat log forwarding, and debug-console log forwarding. Lifecycle and binding callbacks call that action surface instead of private controller UI methods.</li>
