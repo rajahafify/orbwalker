@@ -4,7 +4,7 @@ class_name ScriptSizeBudgetTest
 const SCRIPT_SIZE_BUDGET_PATH := "res://tools/quality/script_size_budget.gd"
 
 const EXPECTED_RATCHET_BASELINES := {
-	"res://scripts/combat/combat_controller.gd": 641,
+	"res://scripts/combat/combat_controller.gd": 594,
 }
 
 
