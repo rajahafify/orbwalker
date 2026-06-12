@@ -138,6 +138,7 @@ func _runtime_helper_values() -> Dictionary:
 		"tutorial_drag_flow": _owner.get("_tutorial_drag_flow"),
 		"resolve_trace_logger": _owner.get("_resolve_trace_logger"),
 		"turn_replay_coordinator": _owner.get("_turn_replay_coordinator"),
+		"state_initializer": _owner.get("_state_initializer"),
 		"combat_consumable_service": _owner.get("_combat_consumable_service"),
 		"board_debug_command_handler": _owner.get("_board_debug_command_handler"),
 		"input_command_handler": _owner.get("_input_command_handler"),
@@ -174,6 +175,7 @@ func _runtime_helper_scripts() -> Dictionary:
 		"COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT": _owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT,
 		"COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT": _owner.CONTRACT.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT,
 		"COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT,
+		"COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT": _owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT,
 		"COMBAT_CONSUMABLE_SERVICE_SCRIPT": _owner.CONTRACT.COMBAT_CONSUMABLE_SERVICE_SCRIPT,
 		"COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT,
 		"COMBAT_INPUT_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT,
@@ -209,6 +211,7 @@ func _apply_runtime_helper_values(helpers: Dictionary) -> void:
 	_owner.set("_tutorial_drag_flow", helpers.get("tutorial_drag_flow"))
 	_owner.set("_resolve_trace_logger", helpers.get("resolve_trace_logger"))
 	_owner.set("_turn_replay_coordinator", helpers.get("turn_replay_coordinator"))
+	_owner.set("_state_initializer", helpers.get("state_initializer"))
 	_owner.set("_combat_consumable_service", helpers.get("combat_consumable_service"))
 	_owner.set("_board_debug_command_handler", helpers.get("board_debug_command_handler"))
 	_owner.set("_input_command_handler", helpers.get("input_command_handler"))
@@ -216,16 +219,8 @@ func _apply_runtime_helper_values(helpers: Dictionary) -> void:
 
 
 func initialize_combat_state() -> void:
-	if not RunState.run_active:
-		RunState.flow_trace_mark("combat_initialize_no_active_run_starting_new", {}, _owner._flow_trace_route_id_value())
-		RunState.start_new_run()
-	if RunState.is_current_step_boss_reward():
-		_initialize_boss_reward_state()
-		return
-	if not RunState.is_current_step_fight():
-		_redirect_non_fight_step()
-		return
-	_initialize_fight_state()
+	_bind_state_initializer()
+	_owner._state_initializer.initialize()
 
 
 func begin_turn_preview() -> void:
@@ -368,75 +363,41 @@ func connect_view_signals() -> void:
 	view.settings_defaults_reset.connect(settings_command_handler.reset_feedback_settings)
 
 
-func _initialize_boss_reward_state() -> void:
-	_owner._player_state = RunState.ensure_player_state()
-	_owner._progression_state = RunState.ensure_player_progression_state()
-	_owner._player_state.set_mastery_level_provider(Callable(_owner._progression_state, "mastery_level"))
-	var preview: Dictionary = RunState.current_level_boss_preview()
-	_owner._enemy_state = _owner.CONTRACT.ENEMY_STATE_SCRIPT.new()
-	_owner._enemy_state.configure_from_blueprint(preview)
-	_owner._bind_hud_stage_coordinator()
-	_owner._combat = null
-	_owner._model.clear_outcome_transition_queued()
-	_owner._model.clear_pending_next_scene_path()
-	_view_actions.hide_outcome_summary()
-	_owner._refresh_character_portraits()
-	_owner._refresh_build_icon_rows(_owner._progression_state.to_snapshot())
-	_view_actions.show_boss_reward_summary("Boss defeated.")
-	_view_actions.set_status_text("Boss defeated. Choose one boss relic before continuing.")
-	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
-	_owner._bind_debug_state_provider()
-	RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _owner._flow_trace_route_id_value())
-
-
-func _redirect_non_fight_step() -> void:
-	var redirect_scene := RunState.next_scene_path()
-	if redirect_scene == "":
-		return
-	RunState.flow_trace_mark(
-		"combat_initialize_redirect_before_change_scene", {"source": "_initialize_combat_state"}, _owner._flow_trace_route_id_value(), redirect_scene
+func _bind_state_initializer() -> void:
+	(
+		_owner
+		. _state_initializer
+		. bind(
+			{
+				"run_state": RunState,
+				"model": _owner._model,
+				"host": _owner._host,
+				"view_actions": _view_actions,
+				"enemy_state_script": _owner.CONTRACT.ENEMY_STATE_SCRIPT,
+				"combat_state_machine_script": _owner.CONTRACT.COMBAT_STATE_MACHINE_SCRIPT,
+				"flow_result_utils": _owner.CONTRACT.FLOW_RESULT_UTILS,
+				"status_color_warning": _owner.CONTRACT.STATUS_COLOR_WARNING,
+			},
+			{
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_APPLY_STATE: Callable(self, "_apply_initialized_combat_state"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_HUD_STAGE: Callable(_owner, "_bind_hud_stage_coordinator"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS:
+				Callable(_owner, "_refresh_character_portraits"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: Callable(_owner, "_refresh_build_icon_rows"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_DEBUG_STATE_PROVIDER: Callable(_owner, "_bind_debug_state_provider"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_ROUTE_ID: Callable(_owner, "_flow_trace_route_id_value"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_SCENE_ROLLBACK: Callable(_owner, "_on_combat_scene_post_ready_rollback"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_HANDLE_SCENE_CHANGE_FAILURE:
+				Callable(_owner, "_handle_combat_scene_change_failure"),
+				"debug_runtime": _owner._debug_runtime,
+			}
+		)
 	)
-	var change_result: Variant = RunState.flow_trace_change_scene(
-		_owner._host.get_tree(),
-		redirect_scene,
-		_owner._flow_trace_route_id_value(),
-		"combat._initialize_combat_state",
-		"",
-		_owner._on_combat_scene_post_ready_rollback
-	)
-	if not _owner.CONTRACT.FLOW_RESULT_UTILS.scene_change_succeeded(change_result):
-		_owner._handle_combat_scene_change_failure(redirect_scene, _owner._flow_trace_route_id_value(), "combat._initialize_combat_state", change_result)
 
 
-func _initialize_fight_state() -> void:
-	_owner._player_state = RunState.ensure_player_state()
-	_owner._progression_state = RunState.ensure_player_progression_state()
-	_owner._player_state.set_mastery_level_provider(Callable(_owner._progression_state, "mastery_level"))
-	var encounter: Dictionary = RunState.current_encounter_snapshot()
-	_owner._enemy_state = _owner.CONTRACT.ENEMY_STATE_SCRIPT.new()
-	_owner._enemy_state.configure_from_blueprint(encounter)
-	_owner._bind_hud_stage_coordinator()
-	_owner._refresh_character_portraits()
-	_owner._combat = _owner.CONTRACT.COMBAT_STATE_MACHINE_SCRIPT.new()
-	_owner._combat.start_fight(_owner._player_state, _owner._enemy_state)
-	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
-	_owner._model.clear_outcome_transition_queued()
-	_owner._model.clear_pending_next_scene_path()
-	_view_actions.hide_outcome_summary()
-	_owner._update_hud()
-	if _owner._debug_runtime != null:
-		_owner._debug_runtime.clear_log()
-	_view_actions.append_combat_log("Run flow: %s" % RunState.level_sequence_label())
-	if String(encounter.get("step_key", "")) == "enemy_1":
-		_view_actions.append_combat_log("Level %d boss preview: %s." % [RunState.dungeon_level, RunState.current_level_boss_name()])
-	_view_actions.append_combat_log("Fight started: %s HP %d." % [_owner._enemy_state.display_name, _owner._enemy_state.max_hp])
-	_view_actions.append_combat_log(
-		"Player start: HP %d/%d, Gold %d." % [_owner._player_state.current_hp, _owner._player_state.max_hp, _owner._player_state.gold]
-	)
-	if content_errors.is_empty():
-		_view_actions.append_combat_log("Milestone 5 content validation: OK.")
-	else:
-		_view_actions.append_combat_log("Milestone 5 content validation: %d issue(s)." % content_errors.size())
-		for error in content_errors:
-			_view_actions.append_combat_log("  - [%s] %s" % [String(error.get("item_id", "?")), String(error.get("reason", "unknown"))])
-	_owner._bind_debug_state_provider()
+func _apply_initialized_combat_state(state: Dictionary) -> void:
+	_owner._player_state = state.get("player_state")
+	_owner._progression_state = state.get("progression_state")
+	_owner._enemy_state = state.get("enemy_state")
+	_owner._combat = state.get("combat")

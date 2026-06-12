@@ -3727,6 +3727,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved the runtime-helper construction table out of <code>CombatControllerLifecycle.ensure_runtime_helpers()</code> into <code>CombatControllerRuntimeHelperFactory</code>. The factory creates missing helpers from an explicit script map and preserves already-injected collaborators. (source: <code>scripts/combat/combat_controller_runtime_helper_factory.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
 <li>Lowered the lifecycle owner-reach ratchet from <code>228</code> to <code>166</code>; <code>combat_controller.gd</code> remains unchanged at <code>572</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-combat-state-initializer">2026-06-13 - Combat state initializer</h2>
+<ul>
+<li>Moved combat startup state routing out of <code>CombatControllerLifecycle</code> into <code>CombatControllerStateInitializer</code>: new-run bootstrap, boss-reward overlay setup, non-fight redirects, and fight-state construction now run through explicit dependencies and callbacks. (source: <code>scripts/combat/combat_controller_state_initializer.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
+<li>Lowered <code>combat_controller.gd</code> from <code>572</code> to <code>571</code> measured lines and lowered the lifecycle owner-reach ratchet from <code>166</code> to <code>138</code>. (source: <code>tools/quality/script_size_budget.gd</code>, <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
