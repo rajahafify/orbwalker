@@ -16,13 +16,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Combat orchestration is now below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while callback and binding seams are converted into wiring-only ownership.",
 	},
-	"res://scripts/main_menu/main_menu_view.gd":
-	{
-		"baseline": 704,
-		"owner": "R-P1-3",
-		"reason":
-		"Main menu view still owns primary menu/profile layout and chrome while settings overlay ownership has moved out; split profile/status/layout surfaces next.",
-	},
 }
 
 

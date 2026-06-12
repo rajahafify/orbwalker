@@ -11,26 +11,13 @@ signal settings_closed
 const UI_UTILS := preload("res://scripts/ui/ui_utils.gd")
 const LOCALIZATION_BOOTSTRAP := preload("res://scripts/ui/localization_bootstrap.gd")
 const SETTINGS_OVERLAY_SCRIPT := preload("res://scripts/main_menu/main_menu_settings_overlay.gd")
+const FOCUS_NAVIGATOR := preload("res://scripts/main_menu/main_menu_focus_navigator.gd")
+const ACCESSIBILITY_CONTRACT := preload("res://scripts/main_menu/main_menu_accessibility_contract.gd")
+const PROFILE_STYLER := preload("res://scripts/main_menu/main_menu_profile_styler.gd")
+const TEXTURE_APPLIER := preload("res://scripts/main_menu/main_menu_texture_applier.gd")
+const TEXT_CATALOG := preload("res://scripts/main_menu/main_menu_text_catalog.gd")
 
 const DESIGN_SIZE := Vector2(1080.0, 1920.0)
-const TEXT_KEYS := {
-	"start_run": "MAIN_MENU_START_RUN",
-	"generate_log": "MAIN_MENU_GENERATE_LOG",
-	"continue": "MAIN_MENU_CONTINUE",
-	"collection": "MAIN_MENU_COLLECTION",
-	"tutorial": "MAIN_MENU_TUTORIAL",
-	"settings": "MAIN_MENU_SETTINGS",
-	"quit": "MAIN_MENU_QUIT",
-	"profile": "MAIN_MENU_PROFILE",
-	"achievements": "MAIN_MENU_ACHIEVEMENTS",
-	"version": "MAIN_MENU_DEMO_VERSION",
-	"runtime_status": "MAIN_MENU_RUNTIME_STATUS",
-	"profile_title": "MAIN_MENU_PROFILE",
-	"profile_default": "MAIN_MENU_DEFAULT_PROFILE",
-	"profile_score_zero": "MAIN_MENU_PROFILE_SCORE_ZERO",
-	"reset_profile": "MAIN_MENU_RESET_PROFILE",
-	"close": "MAIN_MENU_CLOSE",
-}
 const ELEMENT_LABEL_KEYS := [
 	"MAIN_MENU_ELEMENT_FIRE",
 	"MAIN_MENU_ELEMENT_ICE",
@@ -79,9 +66,6 @@ const PROFILE_PANEL_BORDER_COLOR := Color(0.86, 0.63, 0.24, 1.0)
 const PROFILE_LABEL_COLOR := Color(0.95, 0.88, 0.72, 1.0)
 const PROFILE_TITLE_COLOR := Color(1.0, 0.78, 0.30, 1.0)
 const PROFILE_LABEL_OUTLINE_COLOR := Color(0.04, 0.03, 0.02, 0.96)
-const MIN_TEXT_CONTRAST_RATIO := 4.5
-const MIN_NON_TEXT_CONTRAST_RATIO := 3.0
-const MIN_TOUCH_TARGET_PX := 48.0
 
 var _background_texture: TextureRect
 var _overlay_tint: ColorRect
@@ -118,7 +102,6 @@ var _stat_icons: Array = []
 var _stat_titles: Array = []
 var _stat_values: Array = []
 
-var _stats_panel_texture: Texture2D = null
 var _settings_overlay = SETTINGS_OVERLAY_SCRIPT.new()
 
 
@@ -211,27 +194,24 @@ func configure_ui_nodes(host: Control) -> void:
 	_element_row.clip_contents = true
 	_stats_panel.clip_contents = true
 	_footer_actions.clip_contents = true
-	_ensure_settings_overlay(host)
+	_settings_overlay.ensure(host)
 
 
 func apply_textures(paths: Dictionary) -> void:
-	_background_texture.texture = _safe_load_texture(String(paths.get("background", "")), "main_menu_background")
-	_logo_texture.texture = _safe_load_texture(String(paths.get("logo", "")), "main_menu_logo")
-	_outer_border_texture.texture = _safe_load_texture(String(paths.get("outer_border", "")), "main_menu_outer_border")
-	_stats_panel_texture = _safe_load_texture(String(paths.get("stats_panel", "")), "main_menu_stats_panel")
-
-	var element_paths: Array = Array(paths.get("element_icons", []))
-	for i in mini(_element_icons.size(), element_paths.size()):
-		(_element_icons[i] as TextureRect).texture = _safe_load_texture(String(element_paths[i]), "element_%d" % i)
-
-	var stat_paths: Array = Array(paths.get("stat_icons", []))
-	for i in mini(_stat_icons.size(), stat_paths.size()):
-		(_stat_icons[i] as TextureRect).texture = _safe_load_texture(String(stat_paths[i]), "stat_%d" % i)
-
-	var footer_paths: Array = Array(paths.get("footer_icons", []))
-	var footer_buttons := [_profile_button, _achievements_button, _footer_settings_button]
-	for i in mini(footer_buttons.size(), footer_paths.size()):
-		footer_buttons[i].icon = null
+	(
+		TEXTURE_APPLIER
+		. apply(
+			paths,
+			{
+				"background_texture": _background_texture,
+				"logo_texture": _logo_texture,
+				"outer_border_texture": _outer_border_texture,
+				"footer_buttons": [_profile_button, _achievements_button, _footer_settings_button],
+			},
+			_element_icons,
+			_stat_icons
+		)
+	)
 
 
 func apply_static_text() -> void:
@@ -306,7 +286,26 @@ func apply_chrome_styles() -> void:
 	_apply_menu_button_style(_quit_button, false, false)
 	_apply_footer_button_style(_achievements_button)
 	_apply_footer_button_style(_footer_settings_button)
-	_apply_profile_overlay_style()
+	(
+		PROFILE_STYLER
+		. apply(
+			_profile_panel,
+			_profile_title_label,
+			_profile_name_label,
+			_profile_score_label,
+			_reset_profile_button,
+			_close_profile_button,
+			{
+				"panel_fill": PROFILE_PANEL_FILL_COLOR,
+				"panel_border": PROFILE_PANEL_BORDER_COLOR,
+				"label": PROFILE_LABEL_COLOR,
+				"title": PROFILE_TITLE_COLOR,
+				"label_outline": PROFILE_LABEL_OUTLINE_COLOR,
+			},
+			Callable(self, "_set_label_style"),
+			Callable(self, "_apply_menu_button_style")
+		)
+	)
 	_settings_overlay.apply_style()
 
 	_set_label_style(_version_label, SECONDARY_LABEL_COLOR, SECONDARY_LABEL_OUTLINE_COLOR, 2)
@@ -328,20 +327,22 @@ func apply_chrome_styles() -> void:
 func layout_ui(viewport_size: Vector2) -> void:
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
 		return
-	var safe_rect := _inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (34.0 / DESIGN_SIZE.x))
+	var safe_rect := ACCESSIBILITY_CONTRACT.inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (34.0 / DESIGN_SIZE.x))
 
-	_set_control_rect(_background_texture, Rect2(Vector2.ZERO, viewport_size))
-	_set_control_rect(_overlay_tint, Rect2(Vector2.ZERO, viewport_size))
-	_set_control_rect(_outer_frame, Rect2(Vector2.ZERO, viewport_size))
-	_set_control_rect(_outer_border_texture, _inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)))
-	_set_control_rect(_logo_texture, _rect_from_percent_in_rect(safe_rect, 0.06, 0.11, 0.88, 0.20))
-	_set_control_rect(_menu_button_column, _rect_from_percent_in_rect(safe_rect, 0.18, 0.34, 0.64, 0.44))
-	_set_control_rect(_element_row, _rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12))
-	_set_control_rect(_stats_panel, _rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14))
-	_set_control_rect(_footer_actions, _rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077))
-	_set_control_rect(_version_label, _rect_from_percent_in_rect(safe_rect, 0.33, 0.946, 0.34, 0.022))
-	_set_control_rect(_status_label, _rect_from_percent_in_rect(safe_rect, 0.04, 0.973, 0.92, 0.019))
-	_set_control_rect(
+	ACCESSIBILITY_CONTRACT.set_control_rect(_background_texture, Rect2(Vector2.ZERO, viewport_size))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_overlay_tint, Rect2(Vector2.ZERO, viewport_size))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_outer_frame, Rect2(Vector2.ZERO, viewport_size))
+	ACCESSIBILITY_CONTRACT.set_control_rect(
+		_outer_border_texture, ACCESSIBILITY_CONTRACT.inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x))
+	)
+	ACCESSIBILITY_CONTRACT.set_control_rect(_logo_texture, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.06, 0.11, 0.88, 0.20))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_menu_button_column, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.18, 0.34, 0.64, 0.44))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_element_row, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_stats_panel, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_footer_actions, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_version_label, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.33, 0.946, 0.34, 0.022))
+	ACCESSIBILITY_CONTRACT.set_control_rect(_status_label, ACCESSIBILITY_CONTRACT.rect_from_percent_in_rect(safe_rect, 0.04, 0.973, 0.92, 0.019))
+	ACCESSIBILITY_CONTRACT.set_control_rect(
 		_stats_row, Rect2(Vector2(_stats_panel.size.x * 0.055, _stats_panel.size.y * 0.28), Vector2(_stats_panel.size.x * 0.89, _stats_panel.size.y * 0.48))
 	)
 	_menu_button_column.add_theme_constant_override("separation", int(round(clampf(16.0 * (viewport_size.y / DESIGN_SIZE.y), 10.0, 24.0))))
@@ -378,135 +379,26 @@ func layout_ui(viewport_size: Vector2) -> void:
 	_profile_panel.custom_minimum_size = Vector2(clampf(viewport_size.x * 0.78, 520.0, 760.0), clampf(viewport_size.y * 0.22, 330.0, 460.0))
 	_reset_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
 	_close_profile_button.custom_minimum_size = Vector2(0.0, float(menu_button_min_height))
-	_layout_settings_overlay(viewport_size)
+	_settings_overlay.layout(viewport_size)
 	_apply_font_sizes(viewport_size)
 
 
 func configure_focus_navigation() -> void:
-	var main_chain := _focusable_buttons(_main_menu_buttons())
-	_apply_focus_chain(main_chain)
-	_apply_focus_chain(_focusable_buttons([_reset_profile_button, _close_profile_button]))
-	_apply_focus_chain(_focusable_buttons(_settings_focus_controls()))
-	if _can_grab_main_menu_focus() and _start_run_button != null and not _start_run_button.disabled:
-		_start_run_button.grab_focus.call_deferred()
+	FOCUS_NAVIGATOR.configure(
+		_main_menu_buttons(),
+		[_reset_profile_button, _close_profile_button],
+		_settings_overlay.focus_controls(),
+		_settings_overlay.is_visible(),
+		_profile_overlay
+	)
 
 
 static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
-	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
-		return {"applied": false}
-	var safe_rect := _layout_inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (34.0 / DESIGN_SIZE.x))
-	var stats_panel := _layout_rect_from_percent_in_rect(safe_rect, 0.02, 0.71, 0.96, 0.14)
-	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	var element_row := _layout_rect_from_percent_in_rect(safe_rect, 0.03, 0.57, 0.94, 0.12)
-	var element_icon_size := int(round(clampf(118.0 * scale_factor, 58.0, 136.0)))
-	var element_cell_width := element_row.size.x / 6.0
-	if element_icon_size > int(round(element_cell_width * 0.78)):
-		element_icon_size = int(round(element_cell_width * 0.78))
-	return {
-		"applied": true,
-		"design_size": DESIGN_SIZE,
-		"viewport_size": viewport_size,
-		"safe_rect": safe_rect,
-		"background": Rect2(Vector2.ZERO, viewport_size),
-		"outer_border": _layout_inset_rect(Rect2(Vector2.ZERO, viewport_size), viewport_size.x * (12.0 / DESIGN_SIZE.x)),
-		"logo": _layout_rect_from_percent_in_rect(safe_rect, 0.06, 0.11, 0.88, 0.20),
-		"menu_button_column": _layout_rect_from_percent_in_rect(safe_rect, 0.18, 0.34, 0.64, 0.44),
-		"element_row": element_row,
-		"stats_panel": stats_panel,
-		"stats_row": Rect2(Vector2(stats_panel.size.x * 0.055, stats_panel.size.y * 0.28), Vector2(stats_panel.size.x * 0.89, stats_panel.size.y * 0.48)),
-		"footer_actions": _layout_rect_from_percent_in_rect(safe_rect, 0.02, 0.86, 0.96, 0.077),
-		"version_label": _layout_rect_from_percent_in_rect(safe_rect, 0.33, 0.946, 0.34, 0.022),
-		"status_label": _layout_rect_from_percent_in_rect(safe_rect, 0.04, 0.973, 0.92, 0.019),
-		"menu_button_separation": int(round(clampf(16.0 * (viewport_size.y / DESIGN_SIZE.y), 10.0, 24.0))),
-		"footer_action_separation": int(round(clampf(10.0 * (viewport_size.x / DESIGN_SIZE.x), 8.0, 16.0))),
-		"menu_button_min_height": int(round(viewport_size.y * 0.060)),
-		"element_icon_size": element_icon_size,
-		"stat_icon_size": int(round(clampf(88.0 * scale_factor, 48.0, 100.0))),
-		"footer_icon_max_width": int(round(clampf(72.0 * scale_factor, 36.0, 84.0))),
-	}
+	return ACCESSIBILITY_CONTRACT.layout_probe_snapshot(viewport_size)
 
 
 static func accessibility_audit_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
-	var layout_probe := layout_probe_snapshot(viewport_size)
-	var menu_button_column_rect: Rect2 = layout_probe.get("menu_button_column", Rect2())
-	var footer_rect: Rect2 = layout_probe.get("footer_actions", Rect2())
-	var menu_button_height := float(layout_probe.get("menu_button_min_height", 0))
-	return {
-		"min_text_contrast_ratio": MIN_TEXT_CONTRAST_RATIO,
-		"min_non_text_contrast_ratio": MIN_NON_TEXT_CONTRAST_RATIO,
-		"min_touch_target_px": MIN_TOUCH_TARGET_PX,
-		"contrast_pairs":
-		[
-			_contrast_pair("menu.primary.text", MENU_PRIMARY_FONT_COLOR, MENU_PRIMARY_FILL_COLOR, MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("menu.text", MENU_FONT_COLOR, MENU_FILL_COLOR, MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("menu.hover_text", MENU_HOVER_FONT_COLOR, MENU_FILL_COLOR.lightened(0.10), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("menu.pressed_text", MENU_PRESSED_FONT_COLOR, MENU_FILL_COLOR.darkened(0.12), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("menu.disabled_text", MENU_DISABLED_FONT_COLOR, MENU_FILL_COLOR.darkened(0.24), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("menu.focus_border", MENU_FOCUS_BORDER_COLOR, MENU_FILL_COLOR.lightened(0.08), MIN_NON_TEXT_CONTRAST_RATIO),
-			_contrast_pair("footer.text", FOOTER_FONT_COLOR, FOOTER_FILL_COLOR, MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("footer.hover_text", FOOTER_HOVER_FONT_COLOR, FOOTER_FILL_COLOR.lightened(0.08), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("footer.pressed_text", FOOTER_PRESSED_FONT_COLOR, FOOTER_FILL_COLOR.darkened(0.10), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("footer.disabled_text", FOOTER_DISABLED_FONT_COLOR, FOOTER_FILL_COLOR.darkened(0.20), MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair(
-				"settings.panel_border",
-				SETTINGS_OVERLAY_SCRIPT.SETTINGS_PANEL_BORDER_COLOR,
-				SETTINGS_OVERLAY_SCRIPT.SETTINGS_PANEL_FILL_COLOR,
-				MIN_NON_TEXT_CONTRAST_RATIO
-			),
-			_contrast_pair("profile.text", PROFILE_LABEL_COLOR, PROFILE_PANEL_FILL_COLOR, MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("profile.title", PROFILE_TITLE_COLOR, PROFILE_PANEL_FILL_COLOR, MIN_TEXT_CONTRAST_RATIO),
-			_contrast_pair("profile.panel_border", PROFILE_PANEL_BORDER_COLOR, PROFILE_PANEL_FILL_COLOR, MIN_NON_TEXT_CONTRAST_RATIO),
-		],
-		"touch_targets":
-		[
-			_touch_target("main_menu_button", Vector2(menu_button_column_rect.size.x, menu_button_height)),
-			_touch_target("footer_action_button", Vector2(footer_rect.size.x / 3.0, footer_rect.size.y)),
-			_touch_target("profile_action_button", Vector2(0.0, menu_button_height)),
-		],
-		"keyboard_focus_controls":
-		[
-			"start_run_button",
-			"continue_button",
-			"tutorial_button",
-			"settings_button",
-			"profile_button",
-			"quit_button",
-			"settings_speed_buttons",
-			"settings_reduced_motion_button",
-			"settings_game_juice_button",
-			"settings_game_juice_flag_buttons",
-			"settings_reset_button",
-			"settings_close_button",
-			"reset_profile_button",
-			"close_profile_button",
-		],
-		"initial_focus_control": "start_run_button",
-		"main_menu_focus_chain":
-		[
-			"start_run_button",
-			"tutorial_button",
-			"settings_button",
-			"profile_button",
-			"quit_button",
-		],
-	}
-
-
-static func _contrast_pair(label: String, foreground: Color, background: Color, minimum_ratio: float) -> Dictionary:
-	return {
-		"label": label,
-		"foreground": foreground,
-		"background": background,
-		"minimum_ratio": minimum_ratio,
-	}
-
-
-static func _touch_target(label: String, size: Vector2) -> Dictionary:
-	return {
-		"label": label,
-		"size": size,
-		"minimum_size": MIN_TOUCH_TARGET_PX,
-	}
+	return ACCESSIBILITY_CONTRACT.accessibility_audit_snapshot(viewport_size)
 
 
 func set_generate_log_toggle(enabled: bool) -> void:
@@ -531,7 +423,7 @@ func hide_settings() -> void:
 func set_profile_overlay_visible(visible: bool) -> void:
 	_profile_overlay.visible = visible
 	if visible:
-		_focus_first_control([_reset_profile_button, _close_profile_button])
+		FOCUS_NAVIGATOR.focus_first([_reset_profile_button, _close_profile_button])
 	elif _profile_button != null and not _profile_button.disabled:
 		_profile_button.grab_focus.call_deferred()
 
@@ -603,97 +495,16 @@ func _main_menu_buttons() -> Array:
 	return [_start_run_button, _continue_button, _tutorial_button, _settings_button, _profile_button, _quit_button]
 
 
-func _settings_focus_controls() -> Array:
-	return _settings_overlay.focus_controls()
-
-
-func _focusable_buttons(raw_controls: Array) -> Array[Button]:
-	var controls: Array[Button] = []
-	for raw_control in raw_controls:
-		var control := raw_control as Button
-		if control == null:
-			continue
-		control.focus_mode = Control.FOCUS_ALL as Control.FocusMode
-		if not control.disabled and control.visible:
-			controls.append(control)
-	return controls
-
-
-func _apply_focus_chain(controls: Array[Button]) -> void:
-	if controls.is_empty():
-		return
-	for control in controls:
-		control.focus_mode = Control.FOCUS_ALL as Control.FocusMode
-	if controls.size() == 1:
-		return
-	for index in controls.size():
-		var control := controls[index]
-		var previous_control := controls[(index - 1 + controls.size()) % controls.size()]
-		var next_control := controls[(index + 1) % controls.size()]
-		if not _can_link_focus_neighbor(control, previous_control) or not _can_link_focus_neighbor(control, next_control):
-			continue
-		var previous_path := control.get_path_to(previous_control)
-		var next_path := control.get_path_to(next_control)
-		control.set("focus_previous", previous_path)
-		control.set("focus_next", next_path)
-		control.set("focus_neighbor_top", previous_path)
-		control.set("focus_neighbor_left", previous_path)
-		control.set("focus_neighbor_bottom", next_path)
-		control.set("focus_neighbor_right", next_path)
-
-
-func _can_link_focus_neighbor(control: Control, target: Control) -> bool:
-	return (
-		control != null
-		and target != null
-		and (
-			(control.is_inside_tree() and target.is_inside_tree() and control.get_tree() == target.get_tree())
-			or (not control.is_inside_tree() and not target.is_inside_tree() and control.get_parent() != null and control.get_parent() == target.get_parent())
-		)
-	)
-
-
 func _can_grab_main_menu_focus() -> bool:
-	return not _settings_overlay.is_visible() and not _is_overlay_visible(_profile_overlay)
-
-
-func _is_overlay_visible(overlay: Control) -> bool:
-	return overlay != null and overlay.visible
-
-
-func _focus_first_control(raw_controls: Array) -> void:
-	for raw_control in raw_controls:
-		var control := raw_control as Button
-		if control != null and not control.disabled and control.visible:
-			control.grab_focus.call_deferred()
-			return
-
-
-func _layout_settings_overlay(viewport_size: Vector2) -> void:
-	_settings_overlay.layout(viewport_size)
-
-
-func _ensure_settings_overlay(host: Control) -> void:
-	_settings_overlay.ensure(host)
+	return FOCUS_NAVIGATOR.can_grab_main_menu_focus(_settings_overlay.is_visible(), _profile_overlay)
 
 
 func _text(key_name: String) -> String:
-	return tr(String(TEXT_KEYS.get(key_name, key_name)))
+	return TEXT_CATALOG.text(key_name)
 
 
 static func localization_keys() -> Array[String]:
-	var keys: Array[String] = []
-	for value in TEXT_KEYS.values():
-		keys.append(String(value))
-	for value in ELEMENT_LABEL_KEYS:
-		keys.append(String(value))
-	for value in STAT_TITLE_KEYS:
-		keys.append(String(value))
-	for value in STAT_VALUE_KEYS:
-		keys.append(String(value))
-	keys.append_array(SETTINGS_OVERLAY_SCRIPT.localization_keys())
-	keys.sort()
-	return keys
+	return TEXT_CATALOG.localization_keys()
 
 
 func _apply_menu_button_style(button: Button, is_primary: bool, is_disabled: bool) -> void:
@@ -745,88 +556,11 @@ func _apply_footer_button_style(button: Button) -> void:
 	button.add_theme_constant_override("h_separation", 12)
 
 
-func _apply_profile_overlay_style() -> void:
-	_profile_panel.add_theme_stylebox_override(
-		"panel", UI_UTILS.panel_style(PROFILE_PANEL_FILL_COLOR, PROFILE_PANEL_BORDER_COLOR, 3, 18, Vector4(28, 24, 28, 24))
-	)
-	for label_node in [_profile_title_label, _profile_name_label, _profile_score_label]:
-		var label := label_node as Label
-		if label != null:
-			_set_label_style(label, PROFILE_LABEL_COLOR, PROFILE_LABEL_OUTLINE_COLOR, 2)
-	_set_label_style(_profile_title_label, PROFILE_TITLE_COLOR, PROFILE_LABEL_OUTLINE_COLOR, 3)
-	_apply_menu_button_style(_reset_profile_button, false, false)
-	_apply_menu_button_style(_close_profile_button, false, false)
-
-
 func _set_label_style(label: Label, color: Color, outline_color: Color, outline_size: int) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", outline_color)
 	label.add_theme_constant_override("outline_size", outline_size)
 
 
-func _make_texture_style(
-	texture: Texture2D, texture_margin: float, content_margin_horizontal: float, content_margin_vertical: float, expand_margin: float
-) -> StyleBoxTexture:
-	var style := StyleBoxTexture.new()
-	style.texture = texture
-	style.set_texture_margin_all(texture_margin)
-	style.set_expand_margin_all(expand_margin)
-	style.content_margin_left = content_margin_horizontal
-	style.content_margin_right = content_margin_horizontal
-	style.content_margin_top = content_margin_vertical
-	style.content_margin_bottom = content_margin_vertical
-	return style
-
-
 func _make_panel_style(fill: Color, border: Color, border_width: int, corner_radius: int) -> StyleBoxFlat:
 	return UI_UTILS.panel_style(fill, border, border_width, corner_radius, Vector4(8, 6, 8, 6))
-
-
-func _safe_load_texture(path: String, missing_key: String) -> Texture2D:
-	if path == "" or not ResourceLoader.exists(path):
-		push_warning("Main menu missing texture for %s at %s" % [missing_key, path])
-		return null
-	var loaded: Variant = load(path)
-	if loaded is Texture2D:
-		return loaded as Texture2D
-	push_warning("Main menu invalid texture for %s at %s" % [missing_key, path])
-	return null
-
-
-func _scaled_texture(texture: Texture2D, max_side: int) -> Texture2D:
-	var image := texture.get_image()
-	if image == null:
-		return texture
-	var source_size := image.get_size()
-	var largest_source_side := maxi(source_size.x, source_size.y)
-	if largest_source_side <= max_side:
-		return texture
-	var ratio := float(max_side) / float(largest_source_side)
-	var target_size := Vector2i(maxi(1, int(round(source_size.x * ratio))), maxi(1, int(round(source_size.y * ratio))))
-	image.resize(target_size.x, target_size.y, Image.INTERPOLATE_LANCZOS)
-	return ImageTexture.create_from_image(image)
-
-
-func _rect_from_percent_in_rect(base_rect: Rect2, left: float, top: float, width: float, height: float) -> Rect2:
-	return Rect2(base_rect.position + Vector2(base_rect.size.x * left, base_rect.size.y * top), Vector2(base_rect.size.x * width, base_rect.size.y * height))
-
-
-func _inset_rect(rect: Rect2, inset: float) -> Rect2:
-	return Rect2(rect.position + Vector2(inset, inset), Vector2(maxf(0.0, rect.size.x - inset * 2.0), maxf(0.0, rect.size.y - inset * 2.0)))
-
-
-static func _layout_rect_from_percent_in_rect(base_rect: Rect2, left: float, top: float, width: float, height: float) -> Rect2:
-	return Rect2(base_rect.position + Vector2(base_rect.size.x * left, base_rect.size.y * top), Vector2(base_rect.size.x * width, base_rect.size.y * height))
-
-
-static func _layout_inset_rect(rect: Rect2, inset: float) -> Rect2:
-	return Rect2(rect.position + Vector2(inset, inset), Vector2(maxf(0.0, rect.size.x - inset * 2.0), maxf(0.0, rect.size.y - inset * 2.0)))
-
-
-func _set_control_rect(control: Control, rect: Rect2) -> void:
-	control.anchor_left = 0.0
-	control.anchor_top = 0.0
-	control.anchor_right = 0.0
-	control.anchor_bottom = 0.0
-	control.position = rect.position
-	control.size = rect.size
