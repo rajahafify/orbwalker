@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-15-main-menu-contract-helper-split">2026-06-12 - Wave 15 main-menu contract/helper split</h2>
+<ul>
+<li>Moved main-menu focus navigation, static accessibility/layout probe data, profile overlay styling, texture assignment/loading, and localization-key inventory out of <code>MainMenuView</code> into focused helpers. <code>MainMenuView</code> keeps runtime node binding, visible layout application, command state updates, and public view APIs. (source: <code>scripts/main_menu/main_menu_view.gd</code>, <code>scripts/main_menu/main_menu_focus_navigator.gd</code>, <code>scripts/main_menu/main_menu_accessibility_contract.gd</code>, <code>scripts/main_menu/main_menu_profile_styler.gd</code>, <code>scripts/main_menu/main_menu_texture_applier.gd</code>, <code>scripts/main_menu/main_menu_text_catalog.gd</code>)</li>
+<li>Reduced <code>scripts/main_menu/main_menu_view.gd</code> from <code>704</code> to <code>479</code> measured lines and removed its script-size exception. All extracted helpers stay within the strategy budget. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
 <h2 id="2026-06-12-wave-13-combat-view-vfx-binding-split">2026-06-12 - Wave 13 combat view VFX binding split</h2>
 <ul>
 <li>Moved CombatView VFX target resolution, board fullscreen sizing, VFX presenter binding dictionaries, and resolve-presenter binding dictionaries into <code>CombatViewVfxBindings</code>. Public view methods remain stable while target math and dependency assembly live in the helper. (source: <code>scripts/combat/combat_view.gd</code>, <code>scripts/combat/combat_view_vfx_bindings.gd</code>)</li>

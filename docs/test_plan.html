@@ -262,6 +262,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 15 main-menu contract/helper split):</p>
+<ul>
+<li><code>MainMenuFocusNavigator</code> now owns focus-chain linking and initial-focus guards, <code>MainMenuAccessibilityContract</code> owns static accessibility/layout probe data, <code>MainMenuProfileStyler</code> owns profile overlay chrome, <code>MainMenuTextureApplier</code> owns texture assignment/loading, and <code>MainMenuTextCatalog</code> owns localization-key inventory.</li>
+<li><code>scripts/main_menu/main_menu_view.gd</code> dropped from <code>704</code> to <code>479</code> measured lines, putting it under the normal <code>500</code> view budget and deleting its script-size exception. The extracted helpers stay within the strategy budget: focus navigator <code>61</code> measured lines / <code>8</code> functions, accessibility contract <code>149</code> measured lines / <code>9</code> functions, profile styler <code>22</code> measured lines / <code>1</code> function, texture applier <code>26</code> measured lines / <code>2</code> functions, and text catalog <code>54</code> measured lines / <code>2</code> functions.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 13 CombatView VFX binding split):</p>
 <ul>
 <li><code>CombatViewVfxBindings</code> now owns VFX target resolution, board fullscreen sizing, VFX presenter binding dictionaries, and resolve-presenter binding dictionaries. <code>CombatView</code> keeps its public view API while delegating target math and dependency assembly.</li>

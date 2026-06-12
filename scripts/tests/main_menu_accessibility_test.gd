@@ -93,17 +93,22 @@ func _test_main_menu_focus_navigation_links_runtime_controls() -> String:
 		root.add_child(button)
 
 	var view = MAIN_MENU_VIEW.new()
-	view.bind({
-		"start_run_button": start_run_button,
-		"continue_button": continue_button,
-		"tutorial_button": tutorial_button,
-		"settings_button": settings_button,
-		"profile_button": profile_button,
-		"quit_button": quit_button,
-		"profile_overlay": profile_overlay,
-		"reset_profile_button": reset_profile_button,
-		"close_profile_button": close_profile_button,
-	})
+	(
+		view
+		. bind(
+			{
+				"start_run_button": start_run_button,
+				"continue_button": continue_button,
+				"tutorial_button": tutorial_button,
+				"settings_button": settings_button,
+				"profile_button": profile_button,
+				"quit_button": quit_button,
+				"profile_overlay": profile_overlay,
+				"reset_profile_button": reset_profile_button,
+				"close_profile_button": close_profile_button,
+			}
+		)
+	)
 	view.configure_focus_navigation()
 
 	var expected_chain: Array[Button] = [
