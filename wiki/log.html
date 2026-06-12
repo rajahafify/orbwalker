@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-49-enemy-attack-vfx-routing">2026-06-13 - Wave 49 enemy attack VFX routing</h2>
+<ul>
+<li>Added <code>CombatVfxEnemyAttackRouter</code> as the owner for enemy attack cue, travel, block-impact, hit-impact, and gallery impact routing. <code>CombatEnemyAttackReplay</code> and <code>VfxGalleryShow</code> now target the router instead of enemy attack methods on <code>CombatVfxPresenter</code>. (source: <code>scripts/combat/combat_vfx_enemy_attack_router.gd</code>, <code>scripts/combat/combat_enemy_attack_replay.gd</code>, <code>scripts/debug/vfx_gallery_show.gd</code>)</li>
+<li>Reduced <code>combat_vfx_presenter.gd</code> from <code>465</code> to <code>453</code> measured lines and from <code>49</code> to <code>46</code> functions. Added direct router coverage for max-overlay short-circuiting and fallback replay-impact routing; Track D remains open for further function-count reduction. (source: <code>scripts/tests/combat_vfx_enemy_attack_router_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-48-combat-vfx-presenter-split">2026-06-13 - Wave 48 combat VFX presenter split</h2>
 <ul>
 <li>Added <code>CombatVfxReplayResultPolicy</code> as the owner for replay-result tier thresholds, size/lifetime scaling, screen-wide thresholds, impact kind aliases, and result impact color modulation. Added direct policy coverage for tier/speed scaling, alias/screen-wide thresholds, and tier color behavior. (source: <code>scripts/combat/combat_vfx_replay_result_policy.gd</code>, <code>scripts/tests/combat_vfx_replay_result_policy_test.gd</code>)</li>
