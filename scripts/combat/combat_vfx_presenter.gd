@@ -9,6 +9,7 @@ const COMBAT_RUNTIME_VFX_SPRITE_PRESENTER_SCRIPT := preload("res://scripts/comba
 const COMBAT_RUNTIME_VFX_PRIMITIVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_runtime_vfx_primitive_presenter.gd")
 const COMBAT_POST_MATCH_VFX_POLICY_SCRIPT := preload("res://scripts/combat/combat_post_match_vfx_policy.gd")
 const COMBAT_ENEMY_ATTACK_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_enemy_attack_vfx_presenter.gd")
+const COMBAT_VFX_ENEMY_ATTACK_ROUTER_SCRIPT := preload("res://scripts/combat/combat_vfx_enemy_attack_router.gd")
 const COMBAT_RESULT_LABEL_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_result_label_presenter.gd")
 const COMBAT_SCREEN_FEEDBACK_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_screen_feedback_presenter.gd")
 const COMBAT_SPARK_BURST_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_spark_burst_presenter.gd")
@@ -35,6 +36,7 @@ var _runtime_sprite_presenter: Variant = COMBAT_RUNTIME_VFX_SPRITE_PRESENTER_SCR
 var _runtime_texture_factory: Variant = COMBAT_RUNTIME_VFX_TEXTURE_FACTORY_SCRIPT.new()
 var _post_match_policy: Variant = COMBAT_POST_MATCH_VFX_POLICY_SCRIPT.new()
 var _enemy_attack_vfx_presenter: Variant = COMBAT_ENEMY_ATTACK_VFX_PRESENTER_SCRIPT.new()
+var _enemy_attack_router: Variant = COMBAT_VFX_ENEMY_ATTACK_ROUTER_SCRIPT.new()
 var _result_label_presenter: Variant = COMBAT_RESULT_LABEL_PRESENTER_SCRIPT.new()
 var _screen_feedback_presenter: Variant = COMBAT_SCREEN_FEEDBACK_PRESENTER_SCRIPT.new()
 var _spark_burst_presenter: Variant = COMBAT_SPARK_BURST_PRESENTER_SCRIPT.new()
@@ -94,6 +96,10 @@ func bind(dependencies: Dictionary) -> void:
 	var enemy_attack_dependencies := dependencies.duplicate()
 	enemy_attack_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
 	_enemy_attack_vfx_presenter.bind(enemy_attack_dependencies)
+	_enemy_attack_router.bind(
+		{"max_vfx_overlay": _max_vfx_overlay, "enemy_attack_vfx_presenter": _enemy_attack_vfx_presenter},
+		{"use_max_combat_vfx": Callable(self, "_use_max_combat_vfx"), "spawn_replay_impact": Callable(self, "spawn_replay_impact")}
+	)
 	_result_label_presenter.bind(dependencies)
 	_screen_feedback_presenter.bind(dependencies)
 	_spark_burst_presenter.bind(dependencies)
@@ -398,32 +404,8 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 	)
 
 
-func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float = 0.26) -> void:
-	if source_global == Vector2.ZERO:
-		return
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_cue(source_global, lifetime):
-		return
-	_enemy_attack_vfx_presenter.spawn_cue(source_global, lifetime)
-
-
-func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, lifetime: float = 0.28) -> void:
-	if source_global == Vector2.ZERO or target_global == Vector2.ZERO:
-		return
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_travel(source_global, target_global, lifetime):
-		return
-	_enemy_attack_vfx_presenter.spawn_travel(source_global, target_global, lifetime)
-
-
-func spawn_enemy_attack_block_impact(target_global: Vector2, lifetime: float = 0.32, blocked_amount: int = 0) -> void:
-	spawn_replay_impact(target_global, "armor", Vector2(90, 90), lifetime, blocked_amount)
-	_enemy_attack_vfx_presenter.spawn_block_impact(target_global, lifetime)
-
-
-func spawn_enemy_attack_hit_impact(target_global: Vector2, lifetime: float = 0.32, hp_damage: int = 0) -> void:
-	if _use_max_combat_vfx() and _max_vfx_overlay.spawn_enemy_attack_impact(target_global, false, hp_damage, lifetime):
-		return
-	spawn_replay_impact(target_global, "damage", Vector2(90, 90), lifetime, hp_damage)
-	_enemy_attack_vfx_presenter.spawn_hit_impact(target_global, lifetime)
+func enemy_attack_router() -> Variant:
+	return _enemy_attack_router
 
 
 func mastery_impact_kind(orb_id: int) -> String:

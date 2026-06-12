@@ -34,9 +34,10 @@ func replay(turn_log: Dictionary, player_target: Vector2, label_lifetime: float)
 	var cue_lifetime := _combat_speed_duration(0.24)
 	var travel_lifetime := _combat_speed_duration(0.28)
 	var impact_lifetime := _combat_speed_duration(0.34)
-	if _vfx_presenter != null:
-		_vfx_presenter.spawn_enemy_attack_cue(targets.get("enemy_source", Vector2.ZERO), cue_lifetime)
-		_vfx_presenter.spawn_enemy_attack_travel(targets.get("enemy_source", Vector2.ZERO), player_impact_target, travel_lifetime)
+	var enemy_attack_router: Variant = _enemy_attack_router()
+	if enemy_attack_router != null:
+		enemy_attack_router.spawn_enemy_attack_cue(targets.get("enemy_source", Vector2.ZERO), cue_lifetime)
+		enemy_attack_router.spawn_enemy_attack_travel(targets.get("enemy_source", Vector2.ZERO), player_impact_target, travel_lifetime)
 	if blocked_by_armor > 0:
 		await _replay_blocked_damage(blocked_by_armor, hp_damage, player_target, player_impact_target, impact_lifetime, label_lifetime)
 		if hp_damage <= 0:
@@ -49,8 +50,10 @@ func replay(turn_log: Dictionary, player_target: Vector2, label_lifetime: float)
 func _replay_blocked_damage(
 	blocked_by_armor: int, hp_damage: int, player_target: Vector2, player_impact_target: Vector2, impact_lifetime: float, label_lifetime: float
 ) -> void:
+	var enemy_attack_router: Variant = _enemy_attack_router()
 	if _vfx_presenter != null:
-		_vfx_presenter.spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
+		if enemy_attack_router != null:
+			enemy_attack_router.spawn_enemy_attack_block_impact(player_impact_target, impact_lifetime, blocked_by_armor)
 		_vfx_presenter.screen_nudge(blocked_by_armor, player_impact_target)
 		_vfx_presenter.spawn_result_label("-%d Damage Blocked" % blocked_by_armor, player_target, "block", label_lifetime, Vector2(0, 18))
 	_play_enemy_attack_sfx({"blocked_by_armor": blocked_by_armor, "hp_damage": 0})
@@ -66,8 +69,10 @@ func _replay_blocked_damage(
 
 
 func _replay_hp_damage(hp_damage: int, player_target: Vector2, player_impact_target: Vector2, impact_lifetime: float, label_lifetime: float) -> void:
+	var enemy_attack_router: Variant = _enemy_attack_router()
 	if _vfx_presenter != null:
-		_vfx_presenter.spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
+		if enemy_attack_router != null:
+			enemy_attack_router.spawn_enemy_attack_hit_impact(player_impact_target, impact_lifetime, hp_damage)
 		_vfx_presenter.screen_nudge(hp_damage + 2, player_impact_target)
 		_vfx_presenter.spawn_result_label("-%d HP" % hp_damage, player_target, "damage", label_lifetime, Vector2(0, -54))
 	_play_enemy_attack_sfx({"blocked_by_armor": 0, "hp_damage": hp_damage})
@@ -87,6 +92,12 @@ func _attack_targets(player_target: Vector2) -> Dictionary:
 	if player_impact_target == Vector2.ZERO:
 		player_impact_target = player_target
 	return {"enemy_source": enemy_source, "player_impact_target": player_impact_target}
+
+
+func _enemy_attack_router() -> Variant:
+	if _vfx_presenter == null or not _vfx_presenter.has_method("enemy_attack_router"):
+		return null
+	return _vfx_presenter.enemy_attack_router()
 
 
 func _stage_player_final() -> void:

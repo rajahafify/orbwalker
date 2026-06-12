@@ -505,27 +505,28 @@ func _play_armor_linger(entry: Dictionary, phase: String, amount: int, generatio
 func _play_enemy_attack(entry: Dictionary, phase: String, amount: int, generation: int) -> void:
 	var source := _target_global_center(CATALOG_SCRIPT.TARGET_ENEMY)
 	var target := _target_global_center(CATALOG_SCRIPT.TARGET_HP_BAR)
+	var enemy_attack_router: Variant = _presenter.enemy_attack_router()
 	match phase:
 		CATALOG_SCRIPT.PHASE_CAST_TRAVEL:
-			_presenter.spawn_enemy_attack_cue(source, 0.42)
+			enemy_attack_router.spawn_enemy_attack_cue(source, 0.42)
 			var still_current := await _wait_seconds(0.24, generation)
 			if not still_current:
 				return
-			_presenter.spawn_enemy_attack_travel(source, target, 0.76)
+			enemy_attack_router.spawn_enemy_attack_travel(source, target, 0.76)
 		CATALOG_SCRIPT.PHASE_IMPACT:
-			_presenter.spawn_enemy_attack_impact(target, false, amount, 1.05)
+			enemy_attack_router.spawn_enemy_attack_impact(target, false, amount, 1.05)
 		CATALOG_SCRIPT.PHASE_LABEL:
 			_spawn_label(entry, amount)
 		_:
-			_presenter.spawn_enemy_attack_cue(source, 0.42)
+			enemy_attack_router.spawn_enemy_attack_cue(source, 0.42)
 			var current := await _wait_seconds(0.24, generation)
 			if not current:
 				return
-			_presenter.spawn_enemy_attack_travel(source, target, 0.76)
+			enemy_attack_router.spawn_enemy_attack_travel(source, target, 0.76)
 			current = await _wait_seconds(0.68, generation)
 			if not current:
 				return
-			_presenter.spawn_enemy_attack_impact(target, false, amount, 1.05)
+			enemy_attack_router.spawn_enemy_attack_impact(target, false, amount, 1.05)
 			_spawn_label(entry, amount)
 	await _wait_seconds(1.35, generation)
 
