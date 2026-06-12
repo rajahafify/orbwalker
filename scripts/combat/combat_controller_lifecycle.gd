@@ -63,7 +63,7 @@ func ready() -> void:
 	_mark_flow("combat_ready_start")
 	_audio_router_callback("play_music").call("combat")
 	_mark_flow("combat_after_music")
-	ensure_runtime_helpers()
+	_owner.CONTRACT.COMBAT_CONTROLLER_RUNTIME_HELPER_FACTORY_SCRIPT.ensure_owner_helpers(_owner)
 	_owner.call("_bind_outcome_overlay")
 	_owner.call("_bind_boss_reward_handler")
 	_ensure_ready_flow_binder()
@@ -146,133 +146,6 @@ func _ready_flow_callbacks() -> Dictionary:
 
 func _ready_flow_config() -> Dictionary:
 	return {"combat_speed": _owner.call("_combat_speed_value")}
-
-
-func ensure_runtime_helpers() -> void:
-	var helpers: Dictionary = _owner.CONTRACT.COMBAT_CONTROLLER_RUNTIME_HELPER_FACTORY_SCRIPT.ensure_helpers(
-		_runtime_helper_values(), _runtime_helper_scripts()
-	)
-	_apply_runtime_helper_values(helpers)
-	var player_loadout_hud: Variant = _owner_value("_player_loadout_hud")
-	if player_loadout_hud != null:
-		player_loadout_hud.set_visual_registry(_owner_value("_visuals"))
-	var debug_runtime: Variant = _owner_value("_debug_runtime")
-	if debug_runtime != null:
-		_set_owner_value("_debug_console", debug_runtime.console())
-	_owner_callback("_bind_audio_router").call()
-	_owner_callback("_bind_debug_state_provider").call()
-	var combat_consumable_service: Variant = _owner_value("_combat_consumable_service")
-	if combat_consumable_service != null and combat_consumable_service.has_method("bind"):
-		combat_consumable_service.bind({"convert_random_non_target_orbs": _owner_callback("_convert_random_non_target_orbs")})
-
-
-func _runtime_helper_values() -> Dictionary:
-	return {
-		"visuals": _owner.get("_visuals"),
-		"player_loadout_hud": _owner.get("_player_loadout_hud"),
-		"outcome_overlay": _owner.get("_outcome_overlay"),
-		"turn_log_presenter": _owner.get("_turn_log_presenter"),
-		"debug_runtime": _owner.get("_debug_runtime"),
-		"settings_command_handler": _owner.get("_settings_command_handler"),
-		"combat_timer_service": _owner.get("_combat_timer_service"),
-		"boss_reward_handler": _owner.get("_boss_reward_handler"),
-		"combat_vfx_presenter": _owner.get("_combat_vfx_presenter"),
-		"board_controller": _owner.get("_board_controller"),
-		"hud_presenter": _owner.get("_hud_presenter"),
-		"hud_snapshot_provider": _owner.get("_hud_snapshot_provider"),
-		"vfx_target_resolver": _owner.get("_vfx_target_resolver"),
-		"hud_stage_coordinator": _owner.get("_hud_stage_coordinator"),
-		"mastery_preview_coordinator": _owner.get("_mastery_preview_coordinator"),
-		"player_hud_refresh_coordinator": _owner.get("_player_hud_refresh_coordinator"),
-		"loadout_command_handler": _owner.get("_loadout_command_handler"),
-		"intent_hover_handler": _owner.get("_intent_hover_handler"),
-		"scene_transition_handler": _owner.get("_scene_transition_handler"),
-		"outcome_route_coordinator": _owner.get("_outcome_route_coordinator"),
-		"turn_resolution_coordinator": _owner.get("_turn_resolution_coordinator"),
-		"tutorial_prompt_presenter": _owner.get("_tutorial_prompt_presenter"),
-		"tutorial_coachmark_coordinator": _owner.get("_tutorial_coachmark_coordinator"),
-		"tutorial_end_command_handler": _owner.get("_tutorial_end_command_handler"),
-		"tutorial_drag_flow": _owner.get("_tutorial_drag_flow"),
-		"resolve_trace_logger": _owner.get("_resolve_trace_logger"),
-		"turn_replay_coordinator": _owner.get("_turn_replay_coordinator"),
-		"state_initializer": _owner.get("_state_initializer"),
-		"combat_consumable_service": _owner.get("_combat_consumable_service"),
-		"board_debug_command_handler": _owner.get("_board_debug_command_handler"),
-		"input_command_handler": _owner.get("_input_command_handler"),
-		"tutorial_director": _owner.get("_tutorial_director"),
-	}
-
-
-func _runtime_helper_scripts() -> Dictionary:
-	return {
-		"VISUAL_REGISTRY_SCRIPT": _owner.CONTRACT.VISUAL_REGISTRY_SCRIPT,
-		"PLAYER_LOADOUT_HUD_SCRIPT": _owner.CONTRACT.PLAYER_LOADOUT_HUD_SCRIPT,
-		"COMBAT_OUTCOME_OVERLAY_SCRIPT": _owner.CONTRACT.COMBAT_OUTCOME_OVERLAY_SCRIPT,
-		"COMBAT_TURN_LOG_PRESENTER_SCRIPT": _owner.CONTRACT.COMBAT_TURN_LOG_PRESENTER_SCRIPT,
-		"COMBAT_DEBUG_RUNTIME_SCRIPT": _owner.CONTRACT.COMBAT_DEBUG_RUNTIME_SCRIPT,
-		"COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT,
-		"COMBAT_TIMER_SERVICE_SCRIPT": _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT,
-		"COMBAT_BOSS_REWARD_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_BOSS_REWARD_HANDLER_SCRIPT,
-		"COMBAT_VFX_PRESENTER_SCRIPT": _owner.CONTRACT.COMBAT_VFX_PRESENTER_SCRIPT,
-		"BOARD_CONTROLLER_SCRIPT": _owner.CONTRACT.BOARD_CONTROLLER_SCRIPT,
-		"COMBAT_HUD_PRESENTER_SCRIPT": _owner.CONTRACT.COMBAT_HUD_PRESENTER_SCRIPT,
-		"COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT": _owner.CONTRACT.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT,
-		"COMBAT_VFX_TARGET_RESOLVER_SCRIPT": _owner.CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT,
-		"COMBAT_HUD_STAGE_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT,
-		"COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
-		"COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT,
-		"COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT,
-		"COMBAT_INTENT_HOVER_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT,
-		"COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT,
-		"COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT,
-		"COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT,
-		"COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT": _owner.CONTRACT.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT,
-		"COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT,
-		"COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT,
-		"COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT": _owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT,
-		"COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT": _owner.CONTRACT.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT,
-		"COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT": _owner.CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT,
-		"COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT": _owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT,
-		"COMBAT_CONSUMABLE_SERVICE_SCRIPT": _owner.CONTRACT.COMBAT_CONSUMABLE_SERVICE_SCRIPT,
-		"COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT,
-		"COMBAT_INPUT_COMMAND_HANDLER_SCRIPT": _owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT,
-		"COMBAT_GUIDANCE_DIRECTOR_SCRIPT": _owner.CONTRACT.COMBAT_GUIDANCE_DIRECTOR_SCRIPT,
-	}
-
-
-func _apply_runtime_helper_values(helpers: Dictionary) -> void:
-	_owner.set("_visuals", helpers.get("visuals"))
-	_owner.set("_player_loadout_hud", helpers.get("player_loadout_hud"))
-	_owner.set("_outcome_overlay", helpers.get("outcome_overlay"))
-	_owner.set("_turn_log_presenter", helpers.get("turn_log_presenter"))
-	_owner.set("_debug_runtime", helpers.get("debug_runtime"))
-	_owner.set("_settings_command_handler", helpers.get("settings_command_handler"))
-	_owner.set("_combat_timer_service", helpers.get("combat_timer_service"))
-	_owner.set("_boss_reward_handler", helpers.get("boss_reward_handler"))
-	_owner.set("_combat_vfx_presenter", helpers.get("combat_vfx_presenter"))
-	_owner.set("_board_controller", helpers.get("board_controller"))
-	_owner.set("_hud_presenter", helpers.get("hud_presenter"))
-	_owner.set("_hud_snapshot_provider", helpers.get("hud_snapshot_provider"))
-	_owner.set("_vfx_target_resolver", helpers.get("vfx_target_resolver"))
-	_owner.set("_hud_stage_coordinator", helpers.get("hud_stage_coordinator"))
-	_owner.set("_mastery_preview_coordinator", helpers.get("mastery_preview_coordinator"))
-	_owner.set("_player_hud_refresh_coordinator", helpers.get("player_hud_refresh_coordinator"))
-	_owner.set("_loadout_command_handler", helpers.get("loadout_command_handler"))
-	_owner.set("_intent_hover_handler", helpers.get("intent_hover_handler"))
-	_owner.set("_scene_transition_handler", helpers.get("scene_transition_handler"))
-	_owner.set("_outcome_route_coordinator", helpers.get("outcome_route_coordinator"))
-	_owner.set("_turn_resolution_coordinator", helpers.get("turn_resolution_coordinator"))
-	_owner.set("_tutorial_prompt_presenter", helpers.get("tutorial_prompt_presenter"))
-	_owner.set("_tutorial_coachmark_coordinator", helpers.get("tutorial_coachmark_coordinator"))
-	_owner.set("_tutorial_end_command_handler", helpers.get("tutorial_end_command_handler"))
-	_owner.set("_tutorial_drag_flow", helpers.get("tutorial_drag_flow"))
-	_owner.set("_resolve_trace_logger", helpers.get("resolve_trace_logger"))
-	_owner.set("_turn_replay_coordinator", helpers.get("turn_replay_coordinator"))
-	_owner.set("_state_initializer", helpers.get("state_initializer"))
-	_owner.set("_combat_consumable_service", helpers.get("combat_consumable_service"))
-	_owner.set("_board_debug_command_handler", helpers.get("board_debug_command_handler"))
-	_owner.set("_input_command_handler", helpers.get("input_command_handler"))
-	_owner.set("_tutorial_director", helpers.get("tutorial_director"))
 
 
 func initialize_combat_state() -> void:
