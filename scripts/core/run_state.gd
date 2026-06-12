@@ -238,8 +238,25 @@ func _ensure_signal_emitter():
 
 func _ensure_transition_state_store():
 	if _transition_state_store == null:
-		_transition_state_store = RUN_TRANSITION_STATE_STORE_SCRIPT.new(self)
+		_transition_state_store = RUN_TRANSITION_STATE_STORE_SCRIPT.new(self, _transition_state_store_hooks())
 	return _transition_state_store
+
+
+# gdformat: off
+func _transition_state_store_hooks() -> Dictionary:
+	return {
+		"run_score_banked": func() -> bool: return _run_score_banked, "set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
+		"step_index": func() -> int: return _step_index, "set_step_index": func(value: int) -> void: _step_index = value,
+		"current_encounter": func() -> Dictionary: return _current_encounter, "set_current_encounter": func(value: Dictionary) -> void: _current_encounter = value,
+		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options, "set_boss_relic_reward_options": func(value: Array) -> void: _boss_relic_reward_options = value,
+		"boss_reward_claimed_relic_id": func() -> String: return _boss_reward_claimed_relic_id, "set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
+		"relic_offer_ids_by_level": func() -> Dictionary: return _relic_offer_ids_by_level, "set_relic_offer_ids_by_level": func(value: Dictionary) -> void: _relic_offer_ids_by_level = value,
+		"run_summary": func() -> Dictionary: return _run_summary, "set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
+		"run_logger_transition_snapshot": func() -> Dictionary: return _ensure_run_logger().transition_snapshot(), "restore_run_logger_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_run_logger().restore_transition_snapshot(snapshot),
+		"scene_router_transition_snapshot": func() -> Dictionary: return _ensure_scene_router().transition_snapshot(), "restore_scene_router_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_scene_router().restore_transition_snapshot(snapshot),
+		"capture_run_signal_state": _capture_run_signal_state, "sync_player_gold_from_run": _sync_player_gold_from_run, "emit_run_state_signals": _emit_run_state_signals,
+	}
+# gdformat: on
 
 
 func _ensure_profile_facade():
@@ -302,31 +319,12 @@ func validate_player_state_content() -> Array[Dictionary]:
 	return _player_state_content_errors.duplicate(true)
 
 
-func player_state_content_errors() -> Array[Dictionary]:
-	return _player_state_content_errors.duplicate(true)
-
-
-func run_contract_snapshot() -> Dictionary:
-	return _ensure_contract_reporter().run_contract_snapshot()
-
-
 func prototype_balance_levers_snapshot() -> Dictionary:
 	return _ensure_balance_manager().levers_snapshot()
 
 
-func prototype_balance_defaults_snapshot() -> Dictionary:
-	return _ensure_balance_manager().defaults_snapshot()
-
-
 func set_prototype_balance_levers(levers: Dictionary) -> Dictionary:
 	var snapshot: Dictionary = _ensure_balance_manager().set_levers(levers)
-	if content_registry != null:
-		_ensure_balance_manager().sync_content_registry(content_registry)
-	return snapshot
-
-
-func reset_prototype_balance_levers() -> Dictionary:
-	var snapshot: Dictionary = _ensure_balance_manager().reset_levers()
 	if content_registry != null:
 		_ensure_balance_manager().sync_content_registry(content_registry)
 	return snapshot
@@ -673,14 +671,6 @@ func run_log_export_html() -> String:
 	return _ensure_run_logger().run_log_export_html()
 
 
-func run_log_last_export_snapshot() -> Dictionary:
-	return _ensure_run_logger().run_log_last_export_snapshot()
-
-
-func run_log_last_export_paths() -> Dictionary:
-	return _ensure_run_logger().run_log_last_export_paths()
-
-
 func generate_run_log_files_enabled() -> bool:
 	return _ensure_user_settings_store().generate_run_log_files
 
@@ -784,7 +774,7 @@ func _advance_sequence(reason: String = "advance_sequence") -> void:
 
 	if dungeon_level >= MAX_DUNGEON_LEVELS:
 		_emit_run_state_signals(signal_before, reason, "")
-		_finalize_run(true, "Final boss defeated.")
+		_ensure_outcome_service().finalize_run(true, "Final boss defeated.")
 		return
 
 	dungeon_level += 1
@@ -820,14 +810,6 @@ func _assign_current_fight() -> void:
 	encounter["boss_preview_name"] = current_level_boss_name()
 	_current_encounter = encounter
 	_ensure_run_log_core_event_recorder().record_fight_start(_current_encounter)
-
-
-func _prepare_boss_relic_reward_options() -> void:
-	_ensure_outcome_service().prepare_boss_relic_reward_options()
-
-
-func _finalize_run(victory: bool, cause: String) -> void:
-	_ensure_outcome_service().finalize_run(victory, cause)
 
 
 func _run_log_reset() -> void:
