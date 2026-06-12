@@ -4,90 +4,8 @@ class_name CombatController
 var _board: Control
 var _board_view: BoardView
 
-const SWAP_ANIMATION_SECONDS := 0.08
-const MATCH_FLASH_SECONDS := 0.12
-const CLEAR_ANIMATION_SECONDS := 0.12
-const GRAVITY_ANIMATION_SECONDS := 0.14
-const REFILL_ANIMATION_SECONDS := 0.14
-const BOARD_MATCH_RESOLVER_SCRIPT := preload("res://scripts/board/board_match_resolver_service.gd")
-const TEST_RUNNER_SCRIPT := preload("res://scripts/tests/run_all_tests.gd")
-const COMBAT_STATE_MACHINE_SCRIPT := preload("res://scripts/combat/combat_state_machine.gd")
-const ENEMY_STATE_SCRIPT := preload("res://scripts/combat/enemy_state.gd")
-const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
-const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
-const COMBAT_OUTCOME_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_outcome_overlay.gd")
-const COMBAT_RESOLVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_resolve_presenter.gd")
-const COMBAT_DEBUG_RUNTIME_SCRIPT := preload("res://scripts/combat/combat_debug_runtime.gd")
-const COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_settings_command_handler.gd")
-const COMBAT_TIMER_SERVICE_SCRIPT := preload("res://scripts/combat/combat_timer_service.gd")
-const COMBAT_BOSS_REWARD_HANDLER_SCRIPT := preload("res://scripts/combat/combat_boss_reward_handler.gd")
-const COMBAT_TURN_LOG_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_turn_log_presenter.gd")
-const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
-const BOARD_CONTROLLER_SCRIPT := preload("res://scripts/board/board_controller.gd")
-const COMBAT_HUD_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_hud_presenter.gd")
-const COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_hud_snapshot_provider.gd")
-const COMBAT_VFX_TARGET_RESOLVER_SCRIPT := preload("res://scripts/combat/combat_vfx_target_resolver.gd")
-const COMBAT_HUD_STAGE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_hud_stage_coordinator.gd")
-const COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_mastery_preview_coordinator.gd")
-const COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_player_hud_refresh_coordinator.gd")
-const COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_loadout_command_handler.gd")
-const COMBAT_INTENT_HOVER_HANDLER_SCRIPT := preload("res://scripts/combat/combat_intent_hover_handler.gd")
-const COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/combat/combat_scene_transition_handler.gd")
-const COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_outcome_route_coordinator.gd")
-const COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_resolution_coordinator.gd")
-const COMBAT_INPUT_PHASE_ROUTER_SCRIPT := preload("res://scripts/combat/combat_input_phase_router.gd")
-const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
-const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")
-const COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_tutorial_end_command_handler.gd")
-const COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT := preload("res://scripts/combat/combat_tutorial_drag_flow.gd")
-const COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT := preload("res://scripts/combat/combat_resolve_trace_logger.gd")
-const COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_replay_coordinator.gd")
-const COMBAT_TURN_LOG_WRITER_SCRIPT := preload("res://scripts/combat/combat_turn_log_writer.gd")
-const COMBAT_MASTERY_FILL_STREAMER_SCRIPT := preload("res://scripts/combat/combat_mastery_fill_streamer.gd")
-const COMBAT_CONTROLLER_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_controller_lifecycle.gd")
-const COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_controller_binding_coordinator.gd")
-const COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_runtime_binder.gd")
-const COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT := preload("res://scripts/combat/combat_controller_presentation_driver.gd")
-const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
-const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")
-const COMBAT_DEBUG_STATE_PROVIDER_SCRIPT := preload("res://scripts/combat/combat_debug_state_provider.gd")
-const COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_board_debug_command_handler.gd")
-const COMBAT_INPUT_COMMAND_HANDLER_SCRIPT := preload("res://scripts/combat/combat_input_command_handler.gd")
-const COMBAT_GUIDANCE_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
-const FLOW_RESULT_UTILS := preload("res://scripts/core/flow_result_utils.gd")
-const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+const CONTRACT := preload("res://scripts/combat/combat_controller_contract.gd")
 
-const COMBAT_PHASE_INTENT_PREVIEW := 0
-const COMBAT_PHASE_VICTORY := 6
-const COMBAT_PHASE_DEFEAT := 7
-const MAX_COMBAT_LOG_LINES := 120
-const COMMAND_OUTPUT_LOG_COLOR := Color(0.45, 0.95, 0.45, 1.0)
-const LOG_LEVEL_NORMAL := "normal"
-const LOG_LEVEL_DETAILED := "detailed"
-const STATUS_COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
-const STATUS_COLOR_POSITIVE := Color(0.65, 1.0, 0.72, 1.0)
-const STATUS_COLOR_WARNING := Color(1.0, 0.86, 0.54, 1.0)
-const STATUS_COLOR_NEGATIVE := Color(1.0, 0.62, 0.62, 1.0)
-const COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS := 0.08
-const COMBAT_SPEED_SLOW := "slow"
-const COMBAT_SPEED_NORMAL := "normal"
-const COMBAT_SPEED_FAST := "fast"
-const COMBAT_SPEED_INSTANT := "instant"
-const COMBO_COUNT_STEP_SECONDS := 0.22
-const CASCADE_PASS_HOLD_SECONDS := 0.16
-const TURN_REPLAY_STEP_SECONDS := 0.34
-const TURN_REPLAY_FINAL_HOLD_SECONDS := 0.22
-const ELEMENTAL_CAST_SPOOL_SECONDS := 0.86
-const ELEMENTAL_CAST_LAUNCH_SECONDS := 0.82
-const ELEMENTAL_CAST_IMPACT_HOLD_SECONDS := 0.50
-const COMBAT_MASTERY_RESOLUTION_ORDER: Array[int] = [
-	OrbType.Id.HEART,
-	OrbType.Id.ARMOR,
-	OrbType.Id.GOLD,
-	OrbType.Id.FIRE,
-	OrbType.Id.ICE,
-	OrbType.Id.EARTH,
-]
 enum InputPhase {
 	PLAYER_INPUT,
 	RESOLVING,
@@ -96,7 +14,7 @@ enum InputPhase {
 
 var _settings := BoardGenerationSettings.new()
 var _board_model := BoardModel.new()
-var _resolver: BoardMatchResolverService = BOARD_MATCH_RESOLVER_SCRIPT.new()
+var _resolver: BoardMatchResolverService = CONTRACT.BOARD_MATCH_RESOLVER_SCRIPT.new()
 var _combat: CombatStateMachine = null
 var _player_state: PlayerState
 var _enemy_state: EnemyState
@@ -240,17 +158,18 @@ func _ensure_runtime_helpers() -> void:
 
 
 func _bind_audio_cue_player() -> void:
-	_combat_audio_cue_player = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_audio_cue_player(
-		_combat_audio_cue_player, COMBAT_AUDIO_CUE_PLAYER_SCRIPT, _host, RunState
+	_combat_audio_cue_player = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_audio_cue_player(
+		_combat_audio_cue_player, CONTRACT.COMBAT_AUDIO_CUE_PLAYER_SCRIPT, _host, RunState
 	)
 
 
 func _bind_debug_state_provider() -> void:
 	_debug_state_provider = (
-		COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
+		CONTRACT
+		. COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
 		. bind_debug_state_provider(
 			_debug_state_provider,
-			COMBAT_DEBUG_STATE_PROVIDER_SCRIPT,
+			CONTRACT.COMBAT_DEBUG_STATE_PROVIDER_SCRIPT,
 			{
 				"combat": _combat,
 				"enemy_state": _enemy_state,
@@ -298,7 +217,7 @@ func _trace_flow_first_usable_frame() -> void:
 
 
 func _apply_orb_texture_map_deferred() -> void:
-	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_orb_texture_map(_board_view, _visuals, RunState, Callable(self, "_flow_trace_route_id_value"))
+	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_orb_texture_map(_board_view, _visuals, RunState, Callable(self, "_flow_trace_route_id_value"))
 
 
 func _bind_combat_vfx_presenter() -> void:
@@ -342,7 +261,7 @@ func _drag_move_time_left() -> float:
 
 
 func _apply_visual_chrome() -> void:
-	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_visual_chrome(_view, RunState)
+	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_visual_chrome(_view, RunState)
 
 
 func _initialize_combat_state() -> void:
@@ -448,7 +367,7 @@ func _on_tutorial_end_main_menu_pressed() -> void:
 
 
 func _on_run_tests_button_pressed() -> void:
-	var report: Dictionary = TEST_RUNNER_SCRIPT.run_all()
+	var report: Dictionary = CONTRACT.TEST_RUNNER_SCRIPT.run_all()
 	if bool(report.get("passed", false)):
 		_set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
 		print(
@@ -528,9 +447,9 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		_tutorial_drag_flow.handle_start()
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		if _view != null:
-			_view.sync_timer_display(_drag_move_time_left(), COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
+			_view.sync_timer_display(_drag_move_time_left(), CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
 		_set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
-		_set_status_color(STATUS_COLOR_NEUTRAL)
+		_set_status_color(CONTRACT.STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
 		_bind_tutorial_drag_flow()
@@ -677,15 +596,16 @@ func _audio_play_sfx(key: String) -> void:
 
 
 func _bind_outcome_overlay() -> void:
-	COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_outcome_overlay(_view, _outcome_overlay)
+	CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_outcome_overlay(_view, _outcome_overlay)
 
 
 func _bind_boss_reward_handler() -> void:
 	_boss_reward_handler = (
-		COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
+		CONTRACT
+		. COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
 		. bind_boss_reward_handler(
 			_boss_reward_handler,
-			COMBAT_BOSS_REWARD_HANDLER_SCRIPT,
+			CONTRACT.COMBAT_BOSS_REWARD_HANDLER_SCRIPT,
 			_outcome_overlay,
 			_view,
 			_model,
@@ -809,11 +729,11 @@ func _apply_vfx_speed_setting() -> void:
 	if _combat_vfx_presenter == null or not _combat_vfx_presenter.has_method("set_post_match_vfx_speed_scale"):
 		return
 	match _combat_speed_value():
-		COMBAT_SPEED_SLOW:
+		CONTRACT.COMBAT_SPEED_SLOW:
 			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.35)
-		COMBAT_SPEED_FAST:
+		CONTRACT.COMBAT_SPEED_FAST:
 			_combat_vfx_presenter.set_post_match_vfx_speed_scale(1.0)
-		COMBAT_SPEED_INSTANT:
+		CONTRACT.COMBAT_SPEED_INSTANT:
 			_combat_vfx_presenter.set_post_match_vfx_speed_scale(2.0)
 		_:
 			_combat_vfx_presenter.set_post_match_vfx_speed_scale(0.55)
@@ -826,7 +746,7 @@ func _apply_feedback_settings() -> void:
 
 func _timer_ready_seconds() -> float:
 	if _combat_timer_service == null:
-		return COMBAT_TIMER_SERVICE_SCRIPT.MOVE_TIMER_MAX_SECONDS
+		return CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.MOVE_TIMER_MAX_SECONDS
 	return _combat_timer_service.ready_seconds(_player_state)
 
 
@@ -834,12 +754,13 @@ func _abort_active_drag() -> void:
 	if _board_controller != null:
 		_board_controller.abort()
 	if _view != null:
-		_view.sync_timer_display(0.0, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
+		_view.sync_timer_display(0.0, CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
 func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0) -> void:
 	await (
-		COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT
+		CONTRACT
+		. COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT
 		. play_resolve_animations(
 			_resolve_presenter,
 			result,
@@ -885,14 +806,14 @@ func _combat_speed_duration(base_seconds: float) -> float:
 
 
 func _wait_combat_speed(base_seconds: float) -> void:
-	await COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.wait_combat_speed(_resolve_presenter, _host, base_seconds)
+	await CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.wait_combat_speed(_resolve_presenter, _host, base_seconds)
 
 
 func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
 	_bind_mastery_preview_coordinator()
 	var preview_amount := _preview_match_feedback_value(group, combo_value)
 	_mastery_preview_coordinator.show_match_feedback(group, combo_value)
-	COMBAT_MASTERY_FILL_STREAMER_SCRIPT.spawn(group, preview_amount, _board_view, _combat_vfx_presenter, _combat_speed_duration(0.46))
+	CONTRACT.COMBAT_MASTERY_FILL_STREAMER_SCRIPT.spawn(group, preview_amount, _board_view, _combat_vfx_presenter, _combat_speed_duration(0.46))
 
 
 func _reset_combat_mastery_preview() -> void:
@@ -921,7 +842,7 @@ func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
-	return COMBAT_TURN_LOG_WRITER_SCRIPT.build_run_outcome_summary(_turn_log_presenter, RunState, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
+	return CONTRACT.COMBAT_TURN_LOG_WRITER_SCRIPT.build_run_outcome_summary(_turn_log_presenter, RunState, RunState.MAX_DUNGEON_LEVELS, fallback_cause)
 
 
 func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
@@ -930,7 +851,7 @@ func _replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 
 
 func _can_continue_after_async_wait(require_board_view: bool = false) -> bool:
-	return COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.can_continue_after_async_wait(_host, _board_view, require_board_view)
+	return CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.can_continue_after_async_wait(_host, _board_view, require_board_view)
 
 
 func _update_hud() -> void:
@@ -946,7 +867,7 @@ func _update_hud() -> void:
 
 func _ensure_hud_presenter() -> void:
 	if _hud_presenter == null:
-		_hud_presenter = COMBAT_HUD_PRESENTER_SCRIPT.new()
+		_hud_presenter = CONTRACT.COMBAT_HUD_PRESENTER_SCRIPT.new()
 
 
 func _bind_hud_snapshot_provider() -> void:
@@ -955,26 +876,26 @@ func _bind_hud_snapshot_provider() -> void:
 
 
 func _bind_vfx_target_resolver() -> void:
-	_vfx_target_resolver = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_vfx_target_resolver(
-		_vfx_target_resolver, COMBAT_VFX_TARGET_RESOLVER_SCRIPT, _view, _combat_vfx_presenter
+	_vfx_target_resolver = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_vfx_target_resolver(
+		_vfx_target_resolver, CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT, _view, _combat_vfx_presenter
 	)
 
 
 func _bind_hud_stage_coordinator() -> void:
-	_hud_stage_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_hud_stage_coordinator(
-		_hud_stage_coordinator, COMBAT_HUD_STAGE_COORDINATOR_SCRIPT, _model, _player_state, _enemy_state, Callable(self, "_update_hud")
+	_hud_stage_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_hud_stage_coordinator(
+		_hud_stage_coordinator, CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT, _model, _player_state, _enemy_state, Callable(self, "_update_hud")
 	)
 
 
 func _bind_mastery_preview_coordinator() -> void:
-	_mastery_preview_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_mastery_preview_coordinator(
+	_mastery_preview_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_mastery_preview_coordinator(
 		_mastery_preview_coordinator,
-		COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
+		CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT,
 		_model,
 		_player_state,
 		_view,
-		COMBAT_MASTERY_RESOLUTION_ORDER,
-		COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
+		CONTRACT.COMBAT_MASTERY_RESOLUTION_ORDER,
+		CONTRACT.COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
 		RunState.current_combat_modifiers()
 	)
 
@@ -1015,8 +936,8 @@ func _bind_turn_resolution_coordinator() -> void:
 
 
 func _bind_tutorial_prompt_presenter() -> void:
-	_tutorial_prompt_presenter = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_prompt_presenter(
-		_tutorial_prompt_presenter, COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT, _host
+	_tutorial_prompt_presenter = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_prompt_presenter(
+		_tutorial_prompt_presenter, CONTRACT.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT, _host
 	)
 
 
@@ -1035,28 +956,36 @@ func _set_board_model_from_tutorial_drag_flow(board_model: BoardModel) -> void:
 
 
 func _bind_resolve_trace_logger() -> void:
-	_resolve_trace_logger = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_resolve_trace_logger(_resolve_trace_logger, COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT, _model)
+	_resolve_trace_logger = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_resolve_trace_logger(
+		_resolve_trace_logger, CONTRACT.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT, _model
+	)
 
 
 func _bind_lifecycle() -> void:
-	_lifecycle = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_lifecycle(_lifecycle, COMBAT_CONTROLLER_LIFECYCLE_SCRIPT, self)
+	_lifecycle = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_lifecycle(_lifecycle, CONTRACT.COMBAT_CONTROLLER_LIFECYCLE_SCRIPT, self)
 
 
 func _bind_binding_coordinator() -> void:
 	if _binding_coordinator == null:
-		_binding_coordinator = COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT.new()
+		_binding_coordinator = CONTRACT.COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT.new()
 	_binding_coordinator.bind(self)
 
 
 func _bind_turn_replay_coordinator() -> void:
-	_turn_replay_coordinator = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_turn_replay_coordinator(
-		_turn_replay_coordinator, COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT, self
+	_turn_replay_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_turn_replay_coordinator(
+		_turn_replay_coordinator, CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT, self
 	)
 
 
 func _bind_tutorial_end_command_handler() -> void:
-	_tutorial_end_command_handler = COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_end_command_handler(
-		_tutorial_end_command_handler, COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT, RunState, _tutorial_director, _view, self, STATUS_COLOR_NEUTRAL
+	_tutorial_end_command_handler = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_tutorial_end_command_handler(
+		_tutorial_end_command_handler,
+		CONTRACT.COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT,
+		RunState,
+		_tutorial_director,
+		_view,
+		self,
+		CONTRACT.STATUS_COLOR_NEUTRAL
 	)
 
 
@@ -1091,8 +1020,8 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
-	COMBAT_TURN_LOG_WRITER_SCRIPT.append_turn_log(
-		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(self, "_append_combat_log"), LOG_LEVEL_NORMAL
+	CONTRACT.COMBAT_TURN_LOG_WRITER_SCRIPT.append_turn_log(
+		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(self, "_append_combat_log"), CONTRACT.LOG_LEVEL_NORMAL
 	)
 
 
@@ -1126,7 +1055,7 @@ func _spawn_vfx_texture(
 func _on_resolver_match_found(groups: Array) -> void:
 	_audio_play_sfx("match")
 	_set_status_text("Matches found: %d group(s)." % groups.size())
-	_set_status_color(STATUS_COLOR_WARNING)
+	_set_status_color(CONTRACT.STATUS_COLOR_WARNING)
 
 
 func _on_viewport_size_changed() -> void:
@@ -1134,8 +1063,14 @@ func _on_viewport_size_changed() -> void:
 
 
 func _apply_combat_layout() -> void:
-	COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_combat_layout(
-		_view, _host, _combat_timer_service, _board_controller, _player_state, _tutorial_prompt_presenter, COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
+	CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.apply_combat_layout(
+		_view,
+		_host,
+		_combat_timer_service,
+		_board_controller,
+		_player_state,
+		_tutorial_prompt_presenter,
+		CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_READY
 	)
 
 

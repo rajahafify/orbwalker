@@ -23,7 +23,7 @@ func ready() -> void:
 	_owner._bind_outcome_overlay()
 	_owner._bind_boss_reward_handler()
 	if _owner._resolve_presenter == null:
-		_owner._resolve_presenter = _owner.COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
+		_owner._resolve_presenter = _owner.CONTRACT.COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
 	var spawn_vfx_texture_callback: Callable = Callable(_owner, "_spawn_vfx_texture")
 	var resolve_presenter_bindings := {
 		"board": _owner._board,
@@ -95,71 +95,71 @@ func ready() -> void:
 
 func ensure_runtime_helpers() -> void:
 	if _owner._visuals == null:
-		_owner._visuals = _owner.VISUAL_REGISTRY_SCRIPT.new()
+		_owner._visuals = _owner.CONTRACT.VISUAL_REGISTRY_SCRIPT.new()
 	if _owner._player_loadout_hud == null:
-		_owner._player_loadout_hud = _owner.PLAYER_LOADOUT_HUD_SCRIPT.new()
+		_owner._player_loadout_hud = _owner.CONTRACT.PLAYER_LOADOUT_HUD_SCRIPT.new()
 	_owner._player_loadout_hud.set_visual_registry(_owner._visuals)
 	if _owner._outcome_overlay == null:
-		_owner._outcome_overlay = _owner.COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
+		_owner._outcome_overlay = _owner.CONTRACT.COMBAT_OUTCOME_OVERLAY_SCRIPT.new()
 	if _owner._turn_log_presenter == null:
-		_owner._turn_log_presenter = _owner.COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
+		_owner._turn_log_presenter = _owner.CONTRACT.COMBAT_TURN_LOG_PRESENTER_SCRIPT.new()
 	if _owner._debug_runtime == null:
-		_owner._debug_runtime = _owner.COMBAT_DEBUG_RUNTIME_SCRIPT.new()
+		_owner._debug_runtime = _owner.CONTRACT.COMBAT_DEBUG_RUNTIME_SCRIPT.new()
 	_owner._debug_console = _owner._debug_runtime.console()
 	if _owner._settings_command_handler == null:
-		_owner._settings_command_handler = _owner.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
+		_owner._settings_command_handler = _owner.CONTRACT.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
 	if _owner._combat_timer_service == null:
-		_owner._combat_timer_service = _owner.COMBAT_TIMER_SERVICE_SCRIPT.new()
+		_owner._combat_timer_service = _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.new()
 	if _owner._boss_reward_handler == null:
-		_owner._boss_reward_handler = _owner.COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
+		_owner._boss_reward_handler = _owner.CONTRACT.COMBAT_BOSS_REWARD_HANDLER_SCRIPT.new()
 	if _owner._combat_vfx_presenter == null:
-		_owner._combat_vfx_presenter = _owner.COMBAT_VFX_PRESENTER_SCRIPT.new()
+		_owner._combat_vfx_presenter = _owner.CONTRACT.COMBAT_VFX_PRESENTER_SCRIPT.new()
 	if _owner._board_controller == null:
-		_owner._board_controller = _owner.BOARD_CONTROLLER_SCRIPT.new()
+		_owner._board_controller = _owner.CONTRACT.BOARD_CONTROLLER_SCRIPT.new()
 	if _owner._hud_presenter == null:
-		_owner._hud_presenter = _owner.COMBAT_HUD_PRESENTER_SCRIPT.new()
+		_owner._hud_presenter = _owner.CONTRACT.COMBAT_HUD_PRESENTER_SCRIPT.new()
 	if _owner._hud_snapshot_provider == null:
-		_owner._hud_snapshot_provider = _owner.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
+		_owner._hud_snapshot_provider = _owner.CONTRACT.COMBAT_HUD_SNAPSHOT_PROVIDER_SCRIPT.new()
 	if _owner._vfx_target_resolver == null:
-		_owner._vfx_target_resolver = _owner.COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
+		_owner._vfx_target_resolver = _owner.CONTRACT.COMBAT_VFX_TARGET_RESOLVER_SCRIPT.new()
 	if _owner._hud_stage_coordinator == null:
-		_owner._hud_stage_coordinator = _owner.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
+		_owner._hud_stage_coordinator = _owner.CONTRACT.COMBAT_HUD_STAGE_COORDINATOR_SCRIPT.new()
 	if _owner._mastery_preview_coordinator == null:
-		_owner._mastery_preview_coordinator = _owner.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
+		_owner._mastery_preview_coordinator = _owner.CONTRACT.COMBAT_MASTERY_PREVIEW_COORDINATOR_SCRIPT.new()
 	if _owner._player_hud_refresh_coordinator == null:
-		_owner._player_hud_refresh_coordinator = _owner.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
+		_owner._player_hud_refresh_coordinator = _owner.CONTRACT.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.new()
 	if _owner._loadout_command_handler == null:
-		_owner._loadout_command_handler = _owner.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
+		_owner._loadout_command_handler = _owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.new()
 	if _owner._intent_hover_handler == null:
-		_owner._intent_hover_handler = _owner.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
+		_owner._intent_hover_handler = _owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.new()
 	if _owner._scene_transition_handler == null:
-		_owner._scene_transition_handler = _owner.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
+		_owner._scene_transition_handler = _owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.new()
 	if _owner._outcome_route_coordinator == null:
-		_owner._outcome_route_coordinator = _owner.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
+		_owner._outcome_route_coordinator = _owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.new()
 	if _owner._turn_resolution_coordinator == null:
-		_owner._turn_resolution_coordinator = _owner.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
+		_owner._turn_resolution_coordinator = _owner.CONTRACT.COMBAT_TURN_RESOLUTION_COORDINATOR_SCRIPT.new()
 	if _owner._tutorial_prompt_presenter == null:
-		_owner._tutorial_prompt_presenter = _owner.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
+		_owner._tutorial_prompt_presenter = _owner.CONTRACT.COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT.new()
 	if _owner._tutorial_coachmark_coordinator == null:
-		_owner._tutorial_coachmark_coordinator = _owner.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
+		_owner._tutorial_coachmark_coordinator = _owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.new()
 	if _owner._tutorial_end_command_handler == null:
-		_owner._tutorial_end_command_handler = _owner.COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
+		_owner._tutorial_end_command_handler = _owner.CONTRACT.COMBAT_TUTORIAL_END_COMMAND_HANDLER_SCRIPT.new()
 	if _owner._tutorial_drag_flow == null:
-		_owner._tutorial_drag_flow = _owner.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.new()
+		_owner._tutorial_drag_flow = _owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.new()
 	if _owner._resolve_trace_logger == null:
-		_owner._resolve_trace_logger = _owner.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT.new()
+		_owner._resolve_trace_logger = _owner.CONTRACT.COMBAT_RESOLVE_TRACE_LOGGER_SCRIPT.new()
 	if _owner._turn_replay_coordinator == null:
-		_owner._turn_replay_coordinator = _owner.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT.new()
+		_owner._turn_replay_coordinator = _owner.CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT.new()
 	if _owner._combat_consumable_service == null:
-		_owner._combat_consumable_service = _owner.COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
+		_owner._combat_consumable_service = _owner.CONTRACT.COMBAT_CONSUMABLE_SERVICE_SCRIPT.new()
 	if _owner._board_debug_command_handler == null:
-		_owner._board_debug_command_handler = _owner.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
+		_owner._board_debug_command_handler = _owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.new()
 	if _owner._input_command_handler == null:
-		_owner._input_command_handler = _owner.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
+		_owner._input_command_handler = _owner.CONTRACT.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.new()
 	_owner._bind_audio_cue_player()
 	_owner._bind_debug_state_provider()
 	if _owner._tutorial_director == null:
-		_owner._tutorial_director = _owner.COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
+		_owner._tutorial_director = _owner.CONTRACT.COMBAT_GUIDANCE_DIRECTOR_SCRIPT.new()
 	if _owner._combat_consumable_service != null and _owner._combat_consumable_service.has_method("bind"):
 		_owner._combat_consumable_service.bind({"convert_random_non_target_orbs": Callable(_owner, "_convert_random_non_target_orbs")})
 
@@ -189,7 +189,7 @@ func begin_turn_preview() -> void:
 	_owner._set_status_text(
 		_owner._tutorial_turn_status_text() if RunState.is_tutorial_run() else "%s | Turn %d." % [RunState.level_sequence_label(), _owner._combat.turn_index]
 	)
-	_owner._set_status_color(_owner.STATUS_COLOR_NEUTRAL)
+	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_NEUTRAL)
 	_owner._update_hud()
 	_owner._clear_combat_mastery_hover_state()
 	_owner._sync_tutorial_coachmark()
@@ -206,10 +206,10 @@ func end_drag(timed_out: bool) -> void:
 		return
 	_owner._audio_play_sfx("drop")
 	if _owner._view != null:
-		_owner._view.sync_timer_display(0.0, _owner.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
+		_owner._view.sync_timer_display(0.0, _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 	var move_end_reason := "timer expired" if timed_out else "released"
 	_owner._set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
-	_owner._set_status_color(_owner.STATUS_COLOR_WARNING)
+	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
 	var resolve_trace_origin_usec := Time.get_ticks_usec()
 	_owner._model.begin_resolve_trace(resolve_trace_origin_usec, true)
 	_owner._resolve_trace(resolve_trace_origin_usec, 'phase=resolve_start move_end_reason="%s" board_seed=%d' % [move_end_reason, _owner._board_model.rng_seed])
@@ -312,7 +312,7 @@ func _initialize_boss_reward_state() -> void:
 	_owner._progression_state = RunState.ensure_player_progression_state()
 	_owner._player_state.set_mastery_level_provider(Callable(_owner._progression_state, "mastery_level"))
 	var preview: Dictionary = RunState.current_level_boss_preview()
-	_owner._enemy_state = _owner.ENEMY_STATE_SCRIPT.new()
+	_owner._enemy_state = _owner.CONTRACT.ENEMY_STATE_SCRIPT.new()
 	_owner._enemy_state.configure_from_blueprint(preview)
 	_owner._bind_hud_stage_coordinator()
 	_owner._combat = null
@@ -323,7 +323,7 @@ func _initialize_boss_reward_state() -> void:
 	_owner._refresh_build_icon_rows(_owner._progression_state.to_snapshot())
 	_owner._show_boss_reward_summary("Boss defeated.")
 	_owner._set_status_text("Boss defeated. Choose one boss relic before continuing.")
-	_owner._set_status_color(_owner.STATUS_COLOR_WARNING)
+	_owner._set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
 	_owner._bind_debug_state_provider()
 	RunState.flow_trace_mark("combat_initialize_boss_reward_overlay", {}, _owner._flow_trace_route_id_value())
 
@@ -343,7 +343,7 @@ func _redirect_non_fight_step() -> void:
 		"",
 		_owner._on_combat_scene_post_ready_rollback
 	)
-	if not _owner.FLOW_RESULT_UTILS.scene_change_succeeded(change_result):
+	if not _owner.CONTRACT.FLOW_RESULT_UTILS.scene_change_succeeded(change_result):
 		_owner._handle_combat_scene_change_failure(redirect_scene, _owner._flow_trace_route_id_value(), "combat._initialize_combat_state", change_result)
 
 
@@ -352,11 +352,11 @@ func _initialize_fight_state() -> void:
 	_owner._progression_state = RunState.ensure_player_progression_state()
 	_owner._player_state.set_mastery_level_provider(Callable(_owner._progression_state, "mastery_level"))
 	var encounter: Dictionary = RunState.current_encounter_snapshot()
-	_owner._enemy_state = _owner.ENEMY_STATE_SCRIPT.new()
+	_owner._enemy_state = _owner.CONTRACT.ENEMY_STATE_SCRIPT.new()
 	_owner._enemy_state.configure_from_blueprint(encounter)
 	_owner._bind_hud_stage_coordinator()
 	_owner._refresh_character_portraits()
-	_owner._combat = _owner.COMBAT_STATE_MACHINE_SCRIPT.new()
+	_owner._combat = _owner.CONTRACT.COMBAT_STATE_MACHINE_SCRIPT.new()
 	_owner._combat.start_fight(_owner._player_state, _owner._enemy_state)
 	var content_errors: Array[Dictionary] = RunState.validate_player_state_content()
 	_owner._model.clear_outcome_transition_queued()
