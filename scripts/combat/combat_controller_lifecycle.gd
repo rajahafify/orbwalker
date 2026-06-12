@@ -219,7 +219,9 @@ func end_drag(timed_out: bool) -> void:
 	_owner._board_controller.reset_visuals()
 	_owner._board_controller.clear_board_presentation()
 	_owner._set_input_phase(_owner.InputPhase.RESOLVING)
-	_owner._reset_combat_mastery_preview()
+	Callable(_owner, "_bind_mastery_preview_coordinator").call()
+	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
+	mastery_preview_coordinator.reset(RunState.current_combat_modifiers())
 	var resolve_models: Dictionary = _owner._board_controller.prepare_visual_model_for_resolve()
 	var visual_board_model: BoardModel = resolve_models.get("visual_board_model") as BoardModel
 	var simulation_board_model: BoardModel = resolve_models.get("simulation_board_model") as BoardModel

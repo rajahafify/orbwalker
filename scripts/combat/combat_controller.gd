@@ -533,6 +533,7 @@ func _abort_active_drag() -> void:
 
 
 func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0) -> void:
+	_bind_mastery_preview_coordinator()
 	await (
 		CONTRACT
 		. COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT
@@ -543,28 +544,12 @@ func _play_resolve_animations(result: Dictionary, visual_board_model: BoardModel
 			resolve_trace_origin_usec,
 			{
 				"trace_callback": _resolve_trace,
-				"combo_preview_callback": _on_resolve_presenter_combo_preview,
-				"combo_feedback_callback": _on_resolve_presenter_combo_feedback,
-				"set_pass_index_callback": _on_resolve_presenter_pass_index,
+				"combo_preview_callback": Callable(_mastery_preview_coordinator, "preview_match_feedback_value"),
+				"combo_feedback_callback": Callable(_mastery_preview_coordinator, "show_match_feedback"),
+				"set_pass_index_callback": Callable(_model, "set_resolve_trace_pass_index"),
 			}
 		)
 	)
-
-
-func _trigger_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
-	_show_match_mastery_feedback(group, combo_value)
-
-
-func _on_resolve_presenter_combo_preview(group: Dictionary, combo_value: int) -> int:
-	return _preview_match_feedback_value(group, combo_value)
-
-
-func _on_resolve_presenter_combo_feedback(group: Dictionary, combo_value: int) -> void:
-	_trigger_match_mastery_feedback(group, combo_value)
-
-
-func _on_resolve_presenter_pass_index(pass_index: int) -> void:
-	_model.set_resolve_trace_pass_index(pass_index)
 
 
 func _on_presenter_combo_sound(combo_value: int = 1) -> void:
@@ -582,38 +567,6 @@ func _combat_speed_duration(base_seconds: float) -> float:
 
 func _wait_combat_speed(base_seconds: float) -> void:
 	await CONTRACT.COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT.wait_combat_speed(_resolve_presenter, _host, base_seconds)
-
-
-func _show_match_mastery_feedback(group: Dictionary, combo_value: int) -> void:
-	_bind_mastery_preview_coordinator()
-	var preview_amount := _preview_match_feedback_value(group, combo_value)
-	_mastery_preview_coordinator.show_match_feedback(group, combo_value)
-	CONTRACT.COMBAT_MASTERY_FILL_STREAMER_SCRIPT.spawn(group, preview_amount, _board_view, _combat_vfx_presenter, _combat_speed_duration(0.46))
-
-
-func _reset_combat_mastery_preview() -> void:
-	_bind_mastery_preview_coordinator()
-	_mastery_preview_coordinator.reset(RunState.current_combat_modifiers())
-
-
-func _sync_combat_mastery_preview_totals() -> void:
-	_bind_mastery_preview_coordinator()
-	_mastery_preview_coordinator.sync_totals()
-
-
-func _release_combat_mastery_feedback(orb_id: int) -> void:
-	_bind_mastery_preview_coordinator()
-	_mastery_preview_coordinator.release_feedback(orb_id)
-
-
-func _release_remaining_combat_mastery_feedback() -> void:
-	_bind_mastery_preview_coordinator()
-	await _mastery_preview_coordinator.release_remaining(Callable(self, "_wait_combat_speed"), Callable(self, "_can_continue_after_async_wait"))
-
-
-func _preview_match_feedback_value(group: Dictionary, combo_value: int) -> int:
-	_bind_mastery_preview_coordinator()
-	return int(_mastery_preview_coordinator.preview_match_feedback_value(group, combo_value))
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:
@@ -671,7 +624,12 @@ func _bind_mastery_preview_coordinator() -> void:
 		_view,
 		CONTRACT.COMBAT_MASTERY_RESOLUTION_ORDER,
 		CONTRACT.COMBAT_MASTERY_FEEDBACK_STAGGER_SECONDS,
-		RunState.current_combat_modifiers()
+		RunState.current_combat_modifiers(),
+		{
+			"board_view": _board_view,
+			"combat_vfx_presenter": _combat_vfx_presenter,
+			"combat_speed_duration_callback": Callable(self, "_combat_speed_duration"),
+		}
 	)
 
 
