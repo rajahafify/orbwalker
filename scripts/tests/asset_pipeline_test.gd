@@ -167,6 +167,8 @@ func _test_visual_registry_lookup_tables_alias_data_script() -> String:
 	var backend_alias_contract := VISUAL_REGISTRY_BACKEND_SCRIPT.lookup_table_alias_contract()
 	if not bool(backend_alias_contract.get("intent_index_by_type", false)):
 		return "VisualRegistryBackend must keep existing data alias ownership."
+	if not bool(backend_alias_contract.get("texture_store_is_refcounted", false)):
+		return "VisualRegistryBackend must delegate runtime texture loading to VisualRegistryTextureStore."
 	var texture_factory_contract := VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().post_match_vfx_contract()
 	if not bool(texture_factory_contract.get("factory_is_resource", false)):
 		return "VisualRegistryTextureFactory default instance must be a Resource."
