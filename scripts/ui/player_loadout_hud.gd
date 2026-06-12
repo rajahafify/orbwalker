@@ -40,14 +40,6 @@ var _empty_silhouette_cache: Dictionary = {}
 var _hud_nodes: Dictionary = {}
 var _player_data: Dictionary = {}
 var _layout_override: Dictionary = {}
-var _hovered_mastery_orb_id := -1
-var _mastery_hover_payload: Dictionary = {}
-var _mastery_detail_bubble: Panel
-var _mastery_detail_title: Label
-var _mastery_detail_effect: Label
-var _mastery_detail_value: Label
-var _mastery_detail_modifiers: Label
-var _mastery_detail_hovered_orb_id := -1
 var _mastery_source_highlighter: Variant
 var _mastery_panel_presenter: Variant
 var _intent_preview_presenter: Variant
@@ -804,15 +796,27 @@ func _mastery_highlighter() -> Variant:
 	if _mastery_source_highlighter == null:
 		_mastery_source_highlighter = MASTERY_SOURCE_HIGHLIGHTER_SCRIPT.new()
 		_mastery_source_highlighter.bind_hud_nodes(_hud_nodes)
-		_mastery_source_highlighter.set_hover_payload(_mastery_hover_payload)
+		_mastery_source_highlighter.set_hover_payload({})
 	return _mastery_source_highlighter
 
 
 func _mastery_panel() -> Variant:
 	if _mastery_panel_presenter == null:
 		_mastery_panel_presenter = MASTERY_PANEL_SCRIPT.new()
-		_mastery_panel_presenter.bind(self)
+		_mastery_panel_presenter.bind(_mastery_panel_hooks())
 	return _mastery_panel_presenter
+
+
+func _mastery_panel_hooks() -> Dictionary:
+	return {
+		"clear_children": Callable(self, "_clear_children"),
+		"slot_stylebox": Callable(self, "_slot_stylebox"),
+		"visual_registry_provider": Callable(self, "_visual_registry"),
+		"mastery_highlighter_provider": Callable(self, "_mastery_highlighter"),
+		"hud_nodes_provider": func() -> Dictionary: return _hud_nodes,
+		"to_parent_rect": Callable(self, "_to_parent_rect"),
+		"apply_rect": Callable(self, "_apply_rect"),
+	}
 
 
 func _intent_preview() -> Variant:

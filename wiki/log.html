@@ -3787,6 +3787,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Changed <code>RunOutcomeService</code> to use injected hooks for RunState-private boss reward state, encounter state, run summary, score banking, RNG, logging, transition, signal, and export behavior. The service keeps public owner API access for run flags, progression/profile snapshots, shop, and wallet behavior. (source: <code>scripts/core/run_outcome_service.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
 <li>Removed <code>run_outcome_service.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>35</code> to <code>0</code>, and added direct hook-table coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/run_outcome_service_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-player-loadout-mastery-panel-ownership">2026-06-13 - Player loadout mastery panel ownership</h2>
+<ul>
+<li>Moved combat mastery hover state and detail-bubble node ownership into <code>PlayerLoadoutMasteryPanel</code>. <code>PlayerLoadoutHud</code> now binds clear/style/visual-registry/highlighter/node/layout hooks instead of letting the panel read or write HUD-private fields. (source: <code>scripts/ui/player_loadout_mastery_panel.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Removed <code>player_loadout_mastery_panel.gd</code> from the owner-reach ratchet allowlist after its HUD-private reach-ins dropped from <code>84</code> to <code>0</code>, and added direct fake-hook coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/player_loadout_mastery_panel_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

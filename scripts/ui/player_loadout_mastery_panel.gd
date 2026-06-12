@@ -25,15 +25,35 @@ const COMBAT_MASTERY_ORDER: Array[int] = [3, 4, 5, 0, 1, 2]
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
 const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(960.0, 468.0)
 
-var _hud: Variant
+var _clear_children_callback: Callable
+var _slot_stylebox_callback: Callable
+var _visual_registry_provider: Callable
+var _mastery_highlighter_provider: Callable
+var _hud_nodes_provider: Callable
+var _to_parent_rect_callback: Callable
+var _apply_rect_callback: Callable
+var _hovered_mastery_orb_id := -1
+var _mastery_hover_payload: Dictionary = {}
+var _mastery_detail_bubble: Panel
+var _mastery_detail_title: Label
+var _mastery_detail_effect: Label
+var _mastery_detail_value: Label
+var _mastery_detail_modifiers: Label
+var _mastery_detail_hovered_orb_id := -1
 
 
-func bind(hud: Variant) -> void:
-	_hud = hud
+func bind(hooks: Dictionary) -> void:
+	_clear_children_callback = hooks.get("clear_children", Callable())
+	_slot_stylebox_callback = hooks.get("slot_stylebox", Callable())
+	_visual_registry_provider = hooks.get("visual_registry_provider", Callable())
+	_mastery_highlighter_provider = hooks.get("mastery_highlighter_provider", Callable())
+	_hud_nodes_provider = hooks.get("hud_nodes_provider", Callable())
+	_to_parent_rect_callback = hooks.get("to_parent_rect", Callable())
+	_apply_rect_callback = hooks.get("apply_rect", Callable())
 
 
 func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
-	_hud._clear_children(row)
+	_clear_children(row)
 	for index in range(COMBAT_MASTERY_ORDER.size()):
 		var orb_id: int = COMBAT_MASTERY_ORDER[index]
 		var cell := Control.new()
@@ -46,7 +66,7 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		slot.custom_minimum_size = MASTERY_SLOT_SIZE
 		slot.size = MASTERY_SLOT_SIZE
 		slot.position = Vector2.ZERO
-		slot.add_theme_stylebox_override("panel", _hud._slot_stylebox())
+		slot.add_theme_stylebox_override("panel", _slot_stylebox())
 
 		var icon := TextureRect.new()
 		icon.name = "MasteryIcon"
@@ -56,7 +76,7 @@ func populate_mastery_row(row: Control, mastery_levels: Dictionary) -> void:
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-		icon.texture = _hud._visual_registry().mastery_icon(orb_id)
+		icon.texture = _visual_registry().mastery_icon(orb_id)
 		var level := int(mastery_levels.get(orb_id, 0))
 		icon.tooltip_text = "%s Mastery %d" % [ORB_TYPE.display_name(orb_id), level]
 		if level <= 0:
@@ -92,7 +112,7 @@ func get_combat_mastery_card(row: Control, orb_id: int) -> Control:
 
 
 func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, feedback_totals: Dictionary = {}) -> void:
-	_hud._clear_children(row)
+	_clear_children(row)
 	var compact_mode := row.size.y > 0.0 and row.size.y <= 90.0
 	var card_size := COMBAT_MASTERY_COMPACT_CARD_SIZE if compact_mode else COMBAT_MASTERY_CARD_SIZE
 	var card_gap := COMBAT_MASTERY_COMPACT_CARD_GAP if compact_mode else COMBAT_MASTERY_CARD_GAP
@@ -126,7 +146,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		card_background.size = card_size
 		card_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		card_background.stretch_mode = TextureRect.STRETCH_SCALE as TextureRect.StretchMode
-		card_background.texture = _hud._visual_registry().mastery_card_texture(orb_id)
+		card_background.texture = _visual_registry().mastery_card_texture(orb_id)
 		card_background.modulate = Color(1.0, 1.0, 1.0, 0.18)
 
 		var activation_glow := ColorRect.new()
@@ -146,7 +166,7 @@ func populate_combat_mastery_panel(row: Control, _mastery_levels: Dictionary, fe
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS as CanvasItem.TextureFilter
-		icon.texture = _hud._visual_registry().menu_mastery_icon(orb_id)
+		icon.texture = _visual_registry().menu_mastery_icon(orb_id)
 
 		var feedback_label := Label.new()
 		feedback_label.name = "MasteryFeedback"
@@ -234,27 +254,27 @@ func set_combat_mastery_hover_payload(payload: Dictionary) -> void:
 
 
 func set_hovered_combat_mastery(row: Control, orb_id: int) -> void:
-	_hud._hovered_mastery_orb_id = orb_id if ORB_TYPE.is_valid_id(orb_id) else -1
+	_hovered_mastery_orb_id = orb_id if ORB_TYPE.is_valid_id(orb_id) else -1
 	_apply_hovered_combat_mastery(row)
 
 
 func clear_hovered_combat_mastery(row: Control) -> void:
-	_hud._hovered_mastery_orb_id = -1
+	_hovered_mastery_orb_id = -1
 	_apply_hovered_combat_mastery(row)
-	if _hud._mastery_detail_hovered_orb_id < 0:
+	if _mastery_detail_hovered_orb_id < 0:
 		_hide_mastery_detail()
 
 
 func clear_combat_mastery_hover_ui(row: Control) -> void:
-	_hud._hovered_mastery_orb_id = -1
-	_hud._mastery_detail_hovered_orb_id = -1
+	_hovered_mastery_orb_id = -1
+	_mastery_detail_hovered_orb_id = -1
 	_apply_hovered_combat_mastery(row)
 	_hide_mastery_detail()
 	_clear_mastery_source_highlights()
 
 
 func pulse_modifier_sources(sources: Array) -> void:
-	_hud._mastery_highlighter().pulse_sources(sources)
+	_mastery_highlighter().pulse_sources(sources)
 
 
 func _combat_mastery_feedback_number_text(value: int) -> String:
@@ -385,12 +405,12 @@ func _combat_mastery_card_name(orb_id: int) -> String:
 
 
 func _sync_combat_mastery_hover_payload(payload: Dictionary) -> void:
-	_hud._mastery_hover_payload = payload.duplicate(true)
-	_hud._mastery_highlighter().set_hover_payload(payload)
-	if _hud._mastery_detail_hovered_orb_id >= 0:
-		_show_mastery_detail(_hud._mastery_detail_hovered_orb_id)
+	_mastery_hover_payload = payload.duplicate(true)
+	_mastery_highlighter().set_hover_payload(payload)
+	if _mastery_detail_hovered_orb_id >= 0:
+		_show_mastery_detail(_mastery_detail_hovered_orb_id)
 	else:
-		_hud._mastery_highlighter().apply_highlights()
+		_mastery_highlighter().apply_highlights()
 
 
 func _apply_hovered_combat_mastery(row: Control) -> void:
@@ -405,7 +425,7 @@ func _apply_hovered_combat_mastery(row: Control) -> void:
 			continue
 		var hover_highlight := panel.get_node_or_null("HoverHighlight") as ColorRect
 		var hover_frame := panel.get_node_or_null("HoverFrame") as Panel
-		var active: bool = int(orb_id) == int(_hud._hovered_mastery_orb_id)
+		var active: bool = int(orb_id) == int(_hovered_mastery_orb_id)
 		if hover_highlight != null:
 			var accent := ORB_TYPE.color(int(orb_id))
 			hover_highlight.color = Color(accent.r, accent.g, accent.b, COMBAT_MASTERY_HOVER_ALPHA if active else 0.0)
@@ -428,76 +448,77 @@ func _combat_mastery_hover_frame_stylebox(orb_id: int) -> StyleBoxFlat:
 func _on_combat_mastery_card_mouse_entered(row: Control, orb_id: int, card: Control) -> void:
 	if not ORB_TYPE.is_valid_id(orb_id):
 		return
-	_hud._mastery_detail_hovered_orb_id = orb_id
+	_mastery_detail_hovered_orb_id = orb_id
 	set_hovered_combat_mastery(row, orb_id)
 	_show_mastery_detail(orb_id, card)
 
 
 func _on_combat_mastery_card_mouse_exited(row: Control, orb_id: int) -> void:
-	if _hud._mastery_detail_hovered_orb_id == orb_id:
-		_hud._mastery_detail_hovered_orb_id = -1
+	if _mastery_detail_hovered_orb_id == orb_id:
+		_mastery_detail_hovered_orb_id = -1
 		_hide_mastery_detail()
-	_hud._mastery_highlighter().clear_highlights()
-	if _hud._hovered_mastery_orb_id == orb_id:
-		_hud._hovered_mastery_orb_id = -1
+	_mastery_highlighter().clear_highlights()
+	if _hovered_mastery_orb_id == orb_id:
+		_hovered_mastery_orb_id = -1
 	_apply_hovered_combat_mastery(row)
 
 
 func _ensure_mastery_detail_bubble() -> void:
-	if _hud._mastery_detail_bubble != null:
+	if _mastery_detail_bubble != null:
 		return
-	var parent := _hud._hud_nodes.get("popover_parent", null) as Control
+	var hud_nodes := _hud_nodes()
+	var parent := hud_nodes.get("popover_parent", null) as Control
 	if parent == null:
-		parent = _hud._hud_nodes.get("section", null) as Control
+		parent = hud_nodes.get("section", null) as Control
 	if parent == null:
 		return
 
-	_hud._mastery_detail_bubble = Panel.new()
-	_hud._mastery_detail_bubble.name = "MasteryDetailBubble"
-	_hud._mastery_detail_bubble.visible = false
-	_hud._mastery_detail_bubble.z_index = int(_hud._hud_nodes.get("popover_z_index", 210))
-	_hud._mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	parent.add_child(_hud._mastery_detail_bubble)
+	_mastery_detail_bubble = Panel.new()
+	_mastery_detail_bubble.name = "MasteryDetailBubble"
+	_mastery_detail_bubble.visible = false
+	_mastery_detail_bubble.z_index = int(hud_nodes.get("popover_z_index", 210))
+	_mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	parent.add_child(_mastery_detail_bubble)
 
-	_hud._mastery_detail_title = Label.new()
-	_hud._mastery_detail_title.name = "MasteryDetailTitle"
-	_hud._mastery_detail_bubble.add_child(_hud._mastery_detail_title)
+	_mastery_detail_title = Label.new()
+	_mastery_detail_title.name = "MasteryDetailTitle"
+	_mastery_detail_bubble.add_child(_mastery_detail_title)
 
-	_hud._mastery_detail_effect = Label.new()
-	_hud._mastery_detail_effect.name = "MasteryDetailEffect"
-	_hud._mastery_detail_bubble.add_child(_hud._mastery_detail_effect)
+	_mastery_detail_effect = Label.new()
+	_mastery_detail_effect.name = "MasteryDetailEffect"
+	_mastery_detail_bubble.add_child(_mastery_detail_effect)
 
-	_hud._mastery_detail_value = Label.new()
-	_hud._mastery_detail_value.name = "MasteryDetailValue"
-	_hud._mastery_detail_bubble.add_child(_hud._mastery_detail_value)
+	_mastery_detail_value = Label.new()
+	_mastery_detail_value.name = "MasteryDetailValue"
+	_mastery_detail_bubble.add_child(_mastery_detail_value)
 
-	_hud._mastery_detail_modifiers = Label.new()
-	_hud._mastery_detail_modifiers.name = "MasteryDetailModifiers"
-	_hud._mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	_hud._mastery_detail_bubble.add_child(_hud._mastery_detail_modifiers)
+	_mastery_detail_modifiers = Label.new()
+	_mastery_detail_modifiers.name = "MasteryDetailModifiers"
+	_mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	_mastery_detail_bubble.add_child(_mastery_detail_modifiers)
 
 	_apply_mastery_detail_popover_chrome()
 
 
 func _apply_mastery_detail_popover_chrome() -> void:
-	if _hud._mastery_detail_bubble == null:
+	if _mastery_detail_bubble == null:
 		return
 	var bubble_style := StyleBoxFlat.new()
 	bubble_style.bg_color = Color(0.03, 0.04, 0.05, 0.98)
 	bubble_style.border_color = Color(0.52, 0.60, 0.72, 0.94)
 	bubble_style.set_border_width_all(2)
 	bubble_style.set_corner_radius_all(8)
-	_hud._mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
+	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
-	_hud._mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
-	_hud._mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
-	_hud._mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_hud._mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
-	_hud._mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	_hud._mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
+	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
+	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
+	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
+	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
+	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 
 
 func _show_mastery_detail(orb_id: int, anchor_card: Control = null) -> void:
@@ -505,60 +526,60 @@ func _show_mastery_detail(orb_id: int, anchor_card: Control = null) -> void:
 		_hide_mastery_detail()
 		return
 	_ensure_mastery_detail_bubble()
-	if _hud._mastery_detail_bubble == null:
+	if _mastery_detail_bubble == null:
 		return
 	var detail := _combat_mastery_detail_data(orb_id)
-	_hud._mastery_detail_title.text = String(detail.get("title", ""))
-	_hud._mastery_detail_effect.text = String(detail.get("effect", ""))
-	_hud._mastery_detail_value.text = String(detail.get("value", ""))
-	_hud._mastery_detail_modifiers.text = String(detail.get("modifiers", ""))
-	_hud._mastery_detail_bubble.size = MASTERY_DETAIL_BUBBLE_SIZE
-	_hud._mastery_detail_bubble.visible = true
+	_mastery_detail_title.text = String(detail.get("title", ""))
+	_mastery_detail_effect.text = String(detail.get("effect", ""))
+	_mastery_detail_value.text = String(detail.get("value", ""))
+	_mastery_detail_modifiers.text = String(detail.get("modifiers", ""))
+	_mastery_detail_bubble.size = MASTERY_DETAIL_BUBBLE_SIZE
+	_mastery_detail_bubble.visible = true
 	_set_mastery_source_highlights_for_orb(orb_id)
 	_layout_mastery_detail_bubble(anchor_card)
 
 
 func _hide_mastery_detail() -> void:
-	if _hud._mastery_detail_bubble == null:
+	if _mastery_detail_bubble == null:
 		return
-	_hud._mastery_detail_bubble.visible = false
+	_mastery_detail_bubble.visible = false
 
 
 func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
-	if _hud._mastery_detail_bubble == null:
+	if _mastery_detail_bubble == null:
 		return
-	var parent := _hud._mastery_detail_bubble.get_parent() as Control
+	var parent := _mastery_detail_bubble.get_parent() as Control
 	if parent == null:
 		return
 	var anchor_rect := Rect2(Vector2.ZERO, Vector2.ZERO)
 	if anchor_card != null and is_instance_valid(anchor_card):
-		anchor_rect = _hud._to_parent_rect(anchor_card.get_global_rect(), parent)
-	elif _hud._mastery_detail_hovered_orb_id >= 0:
-		var row := _hud._hud_nodes.get("mastery_cards") as Control
-		var fallback_card := get_combat_mastery_card(row, _hud._mastery_detail_hovered_orb_id)
+		anchor_rect = _to_parent_rect(anchor_card.get_global_rect(), parent)
+	elif _mastery_detail_hovered_orb_id >= 0:
+		var row := _hud_nodes().get("mastery_cards") as Control
+		var fallback_card := get_combat_mastery_card(row, _mastery_detail_hovered_orb_id)
 		if fallback_card != null:
-			anchor_rect = _hud._to_parent_rect(fallback_card.get_global_rect(), parent)
+			anchor_rect = _to_parent_rect(fallback_card.get_global_rect(), parent)
 	if anchor_rect.size == Vector2.ZERO:
 		return
 
-	var bubble_size: Vector2 = _hud._mastery_detail_bubble.size
+	var bubble_size: Vector2 = _mastery_detail_bubble.size
 	var local_x: float = anchor_rect.position.x + (anchor_rect.size.x - bubble_size.x) * 0.5
 	local_x = clampf(local_x, 0.0, maxf(0.0, parent.size.x - bubble_size.x))
 	var local_y: float = anchor_rect.position.y - bubble_size.y - 10.0
 	if local_y < 0.0:
 		local_y = anchor_rect.end.y + 10.0
-	_hud._mastery_detail_bubble.position = Vector2(local_x, local_y)
+	_mastery_detail_bubble.position = Vector2(local_x, local_y)
 
-	_hud._apply_rect(_hud._mastery_detail_title, Rect2(Vector2(24.0, 20.0), Vector2(bubble_size.x - 48.0, 52.0)))
-	_hud._apply_rect(_hud._mastery_detail_effect, Rect2(Vector2(24.0, 88.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_hud._apply_rect(_hud._mastery_detail_value, Rect2(Vector2(24.0, 146.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_hud._apply_rect(_hud._mastery_detail_modifiers, Rect2(Vector2(24.0, 208.0), Vector2(bubble_size.x - 48.0, bubble_size.y - 232.0)))
+	_apply_rect(_mastery_detail_title, Rect2(Vector2(24.0, 20.0), Vector2(bubble_size.x - 48.0, 52.0)))
+	_apply_rect(_mastery_detail_effect, Rect2(Vector2(24.0, 88.0), Vector2(bubble_size.x - 48.0, 46.0)))
+	_apply_rect(_mastery_detail_value, Rect2(Vector2(24.0, 146.0), Vector2(bubble_size.x - 48.0, 46.0)))
+	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(24.0, 208.0), Vector2(bubble_size.x - 48.0, bubble_size.y - 232.0)))
 
 
 func _combat_mastery_detail_data(orb_id: int) -> Dictionary:
-	var mastery_levels: Dictionary = _hud._mastery_hover_payload.get("mastery_levels", {})
+	var mastery_levels: Dictionary = _mastery_hover_payload.get("mastery_levels", {})
 	var level := int(mastery_levels.get(orb_id, 0))
-	var orb_values: Dictionary = _hud._mastery_hover_payload.get("orb_values_by_id", {})
+	var orb_values: Dictionary = _mastery_hover_payload.get("orb_values_by_id", {})
 	var orb_value := int(orb_values.get(orb_id, 0))
 	var effect_text := _mastery_base_effect_text(orb_id, level)
 	var value_text := _mastery_value_text(orb_id, orb_value)
@@ -601,12 +622,52 @@ func _mastery_value_text(orb_id: int, orb_value: int) -> String:
 
 
 func _mastery_modifier_source_lines(orb_id: int) -> Array[String]:
-	return _hud._mastery_highlighter().source_lines(orb_id)
+	return _mastery_highlighter().source_lines(orb_id)
 
 
 func _set_mastery_source_highlights_for_orb(orb_id: int) -> void:
-	_hud._mastery_highlighter().set_highlights_for_orb(orb_id)
+	_mastery_highlighter().set_highlights_for_orb(orb_id)
 
 
 func _clear_mastery_source_highlights() -> void:
-	_hud._mastery_highlighter().clear_highlights()
+	_mastery_highlighter().clear_highlights()
+
+
+func _clear_children(node: Node) -> void:
+	if _clear_children_callback.is_valid():
+		_clear_children_callback.call(node)
+
+
+func _slot_stylebox() -> StyleBox:
+	if _slot_stylebox_callback.is_valid():
+		return _slot_stylebox_callback.call() as StyleBox
+	return StyleBoxFlat.new()
+
+
+func _visual_registry() -> Variant:
+	if _visual_registry_provider.is_valid():
+		return _visual_registry_provider.call()
+	return null
+
+
+func _mastery_highlighter() -> Variant:
+	if _mastery_highlighter_provider.is_valid():
+		return _mastery_highlighter_provider.call()
+	return null
+
+
+func _hud_nodes() -> Dictionary:
+	if _hud_nodes_provider.is_valid():
+		return _hud_nodes_provider.call()
+	return {}
+
+
+func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
+	if _to_parent_rect_callback.is_valid():
+		return _to_parent_rect_callback.call(global_rect, parent)
+	return global_rect
+
+
+func _apply_rect(control: Control, rect: Rect2) -> void:
+	if _apply_rect_callback.is_valid():
+		_apply_rect_callback.call(control, rect)
