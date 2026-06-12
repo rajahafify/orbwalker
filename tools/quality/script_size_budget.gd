@@ -51,13 +51,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Main menu view combines layout, profile/log controls, debug affordances, and button wiring; split focused presenters and accessibility focus setup.",
 	},
-	"res://scripts/content/content_registry.gd":
-	{
-		"baseline": 807,
-		"owner": "R-P1-3",
-		"reason":
-		"Content registry remains a large code-backed catalog; move static records into resources or generated data while preserving typed lookup methods.",
-	},
 	"res://scripts/debug/vfx_gallery_show.gd":
 	{
 		"baseline": 761,
