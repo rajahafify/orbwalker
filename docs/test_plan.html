@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 12 CombatChromeStyler helper split):</p>
+<ul>
+<li><code>CombatChromeStyler</code> now keeps the public chrome node-map contract and <code>apply_visual_chrome()</code> orchestration, while <code>CombatChromeThemeHelpers</code> owns reusable stylebox, progress-bar, button, timer, loadout, outcome, debug, stat-chip, decorative-overlay, and zone-guide styling helpers.</li>
+<li><code>scripts/combat/combat_chrome_styler.gd</code> dropped from <code>701</code> to <code>363</code> measured lines, putting it under the normal <code>650</code> budget and deleting its script-size exception. The extracted helper stays within the strategy budget at <code>361</code> measured lines / <code>21</code> functions.</li>
+<li>Validation passed so far: changed-file <code>pre_commit</code> hooks for touched GDScript; <code>res://tools/quality/script_load_validation.gd</code> reported <code>304</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=209</code>, <code>over_budget=6</code>, <code>documented_exceptions=6</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 12 shop offer handler registry):</p>
 <ul>
 <li><code>ShopOfferApplicator</code> now owns per-offer-type application and treasure-chest replacement dispatch. <code>ShopOfferTypeHandlers</code> contains the default equipment, consumable, mastery-card, treasure-chest, and relic handlers, including the existing replacement sell-refund behavior.</li>
