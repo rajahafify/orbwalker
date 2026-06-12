@@ -3732,6 +3732,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved combat startup state routing out of <code>CombatControllerLifecycle</code> into <code>CombatControllerStateInitializer</code>: new-run bootstrap, boss-reward overlay setup, non-fight redirects, and fight-state construction now run through explicit dependencies and callbacks. (source: <code>scripts/combat/combat_controller_state_initializer.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
 <li>Lowered <code>combat_controller.gd</code> from <code>572</code> to <code>571</code> measured lines and lowered the lifecycle owner-reach ratchet from <code>166</code> to <code>138</code>. (source: <code>tools/quality/script_size_budget.gd</code>, <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-resolve-flow-coordinator">2026-06-13 - Resolve flow coordinator</h2>
+<ul>
+<li>Moved drag-end resolve orchestration out of <code>CombatControllerLifecycle</code> into <code>CombatResolveFlowCoordinator</code>, covering handled drag completion, resolve tracing, visual/simulation board model prep, resolver execution, resolve animation, final board commit, and turn-resolution routing. (source: <code>scripts/combat/combat_resolve_flow_coordinator.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
+<li>Lowered the lifecycle owner-reach ratchet from <code>138</code> to <code>118</code>; <code>combat_controller.gd</code> remains at <code>571</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>

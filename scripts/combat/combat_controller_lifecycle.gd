@@ -3,6 +3,7 @@ class_name CombatControllerLifecycle
 
 var _owner: Variant = null
 var _view_actions: Variant = null
+var _resolve_flow_coordinator: Variant = null
 
 
 func bind(owner: Variant) -> void:
@@ -243,79 +244,8 @@ func begin_turn_preview() -> void:
 
 
 func end_drag(timed_out: bool) -> void:
-	if _owner._input_phase_value() != _owner.InputPhase.PLAYER_INPUT:
-		return
-	if _owner._board_controller == null:
-		return
-	var drag_result: Dictionary = _owner._board_controller.end_drag(timed_out)
-	if not bool(drag_result.get("handled", false)):
-		return
-	_owner._audio_play_sfx("drop")
-	if _owner._view != null:
-		_owner._view.sync_timer_display(0.0, _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
-	var move_end_reason := "timer expired" if timed_out else "released"
-	_view_actions.set_status_text("Move ended: %s. Locking input for resolve phase." % move_end_reason)
-	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_WARNING)
-	var resolve_trace_origin_usec := Time.get_ticks_usec()
-	_owner._model.begin_resolve_trace(resolve_trace_origin_usec, true)
-	_owner._resolve_trace(resolve_trace_origin_usec, 'phase=resolve_start move_end_reason="%s" board_seed=%d' % [move_end_reason, _owner._board_model.rng_seed])
-	_owner._board_controller.reset_visuals()
-	_owner._board_controller.clear_board_presentation()
-	_owner._set_input_phase(_owner.InputPhase.RESOLVING)
-	Callable(_owner, "_bind_mastery_preview_coordinator").call()
-	var mastery_preview_coordinator: Variant = _owner.get("_mastery_preview_coordinator")
-	mastery_preview_coordinator.reset(RunState.current_combat_modifiers())
-	var resolve_models: Dictionary = _owner._board_controller.prepare_visual_model_for_resolve()
-	var visual_board_model: BoardModel = resolve_models.get("visual_board_model") as BoardModel
-	var simulation_board_model: BoardModel = resolve_models.get("simulation_board_model") as BoardModel
-	if visual_board_model == null or simulation_board_model == null:
-		visual_board_model = _owner._board_model.clone()
-		simulation_board_model = _owner._board_model.clone()
-		_owner._board_view.set_board_presentation_model(visual_board_model)
-	_owner._resolve_trace(resolve_trace_origin_usec, "phase=visual_state_ready board_seed=%d" % visual_board_model.rng_seed)
-	_owner._resolve_trace(resolve_trace_origin_usec, "phase=simulation_resolve_start board_seed=%d" % simulation_board_model.rng_seed)
-	_owner._last_resolve_result = _owner._resolver.resolve_all(simulation_board_model)
-	(
-		_owner
-		. _resolve_trace(
-			resolve_trace_origin_usec,
-			(
-				"phase=simulation_resolve_complete total_combos=%d passes=%d"
-				% [
-					int(_owner._last_resolve_result.get("total_combos", 0)),
-					Array(_owner._last_resolve_result.get("passes", [])).size(),
-				]
-			)
-		)
-	)
-	await _owner._play_resolve_animations(_owner._last_resolve_result, visual_board_model, resolve_trace_origin_usec)
-	if not _owner._can_continue_after_async_wait(true):
-		_owner._model.end_resolve_trace()
-		return
-	(
-		_owner
-		. _resolve_trace(
-			resolve_trace_origin_usec,
-			(
-				"phase=resolve_presentation_complete total_combos=%d passes=%d"
-				% [
-					int(_owner._last_resolve_result.get("total_combos", 0)),
-					Array(_owner._last_resolve_result.get("passes", [])).size(),
-				]
-			)
-		)
-	)
-	_owner._board_controller.commit_model_after_resolve(simulation_board_model)
-	_owner._board_model = _owner._board_controller.current_board_model()
-	_owner._resolve_trace(resolve_trace_origin_usec, "phase=final_board_commit board_seed=%d" % _owner._board_model.rng_seed)
-	_owner._bind_turn_resolution_coordinator()
-	var turn_route_result: Dictionary = await _owner._turn_resolution_coordinator.handle_resolved_board_turn(
-		int(_owner._input_phase_value()), _owner._last_resolve_result
-	)
-	if bool(turn_route_result.get("stop", false)):
-		_owner._model.end_resolve_trace()
-		return
-	_owner._model.end_resolve_trace()
+	_bind_resolve_flow_coordinator()
+	await _resolve_flow_coordinator.end_drag(timed_out)
 
 
 func _connect_resolver_signals() -> void:
@@ -401,3 +331,59 @@ func _apply_initialized_combat_state(state: Dictionary) -> void:
 	_owner._progression_state = state.get("progression_state")
 	_owner._enemy_state = state.get("enemy_state")
 	_owner._combat = state.get("combat")
+
+
+func _bind_resolve_flow_coordinator() -> void:
+	if _resolve_flow_coordinator == null:
+		_resolve_flow_coordinator = _owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.new()
+	_owner._bind_mastery_preview_coordinator()
+	_owner._bind_turn_resolution_coordinator()
+	(
+		_resolve_flow_coordinator
+		. bind(
+			{
+				"model": _owner._model,
+				"board_controller": _owner._board_controller,
+				"board_view": _owner._board_view,
+				"board_model": _owner._board_model,
+				"resolver": _owner._resolver,
+				"mastery_preview_coordinator": _owner._mastery_preview_coordinator,
+				"turn_resolution_coordinator": _owner._turn_resolution_coordinator,
+				"combat_modifiers": RunState.current_combat_modifiers(),
+			},
+			{
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(_owner, "_audio_play_sfx"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TIMER_DISPLAY: Callable(self, "_sync_timer_display"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_set_input_phase"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_MASTERY_PREVIEW: Callable(_owner, "_bind_mastery_preview_coordinator"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_RESOLVE_ANIMATIONS: Callable(_owner, "_play_resolve_animations"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(_owner, "_can_continue_after_async_wait"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_TURN_RESOLUTION: Callable(_owner, "_bind_turn_resolution_coordinator"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_APPLY_BOARD_MODEL: Callable(self, "_apply_committed_board_model"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: Callable(_owner, "_resolve_trace"),
+				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_STORE_LAST_RESOLVE_RESULT: Callable(self, "_store_last_resolve_result"),
+			},
+			{
+				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
+				"resolving_input_phase_value": int(_owner.InputPhase.RESOLVING),
+				"timer_state_locked": _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED,
+				"status_color_warning": _owner.CONTRACT.STATUS_COLOR_WARNING,
+			}
+		)
+	)
+
+
+func _sync_timer_display(seconds_left: float, timer_state: int) -> void:
+	if _owner._view != null:
+		_owner._view.sync_timer_display(seconds_left, timer_state)
+
+
+func _apply_committed_board_model(board_model: BoardModel) -> void:
+	_owner._board_model = board_model
+
+
+func _store_last_resolve_result(resolve_result: Dictionary) -> void:
+	_owner._last_resolve_result = resolve_result
