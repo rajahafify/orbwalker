@@ -3,6 +3,7 @@ class_name VfxGalleryShow
 
 const CATALOG_SCRIPT := preload("res://scripts/debug/vfx_debug_catalog.gd")
 const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_presenter.gd")
+const CONTROLS_SCRIPT := preload("res://scripts/debug/vfx_gallery_show_controls.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const INDEX_SCENE_PATH := "res://scenes/debug/vfx_gallery_index.tscn"
 
@@ -70,213 +71,38 @@ func _notification(what: int) -> void:
 
 
 func _build_ui() -> void:
-	anchor_right = 1.0
-	anchor_bottom = 1.0
-
-	var background := ColorRect.new()
-	background.name = "Background"
-	background.color = Color(0.012, 0.016, 0.024, 1.0)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	background.anchor_right = 1.0
-	background.anchor_bottom = 1.0
-	add_child(background)
-
-	var margin := MarginContainer.new()
-	margin.name = "PageMargin"
-	margin.anchor_right = 1.0
-	margin.anchor_bottom = 1.0
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_bottom", 18)
-	add_child(margin)
-
-	var page := VBoxContainer.new()
-	page.name = "PageRoot"
-	page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	page.add_theme_constant_override("separation", 12)
-	margin.add_child(page)
-
-	page.add_child(_make_header())
-	page.add_child(_make_control_panel())
-	page.add_child(_make_preview_panel())
-
-
-func _make_header() -> Control:
-	var row := HBoxContainer.new()
-	row.name = "Header"
-	row.custom_minimum_size = Vector2(0, 58)
-	row.add_theme_constant_override("separation", 12)
-
-	var back := Button.new()
-	back.name = "BackButton"
-	back.text = "< Index"
-	back.custom_minimum_size = Vector2(132, 52)
-	back.pressed.connect(_on_back_pressed)
-	row.add_child(back)
-
-	var title := Label.new()
-	title.name = "TitleLabel"
-	title.text = "VFX Show Page"
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	title.add_theme_font_size_override("font_size", 34)
-	title.add_theme_color_override("font_color", Color(0.96, 0.90, 0.72, 1.0))
-	row.add_child(title)
-
-	_status_label = Label.new()
-	_status_label.name = "StatusLabel"
-	_status_label.text = "Ready"
-	_status_label.custom_minimum_size = Vector2(270, 52)
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
-	_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	_status_label.add_theme_font_size_override("font_size", 18)
-	_status_label.add_theme_color_override("font_color", Color(0.68, 0.78, 0.92, 1.0))
-	row.add_child(_status_label)
-
-	return row
-
-
-func _make_control_panel() -> Control:
-	var panel := PanelContainer.new()
-	panel.name = "ControlPanel"
-	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.047, 0.067, 0.95), Color(0.33, 0.43, 0.56, 0.9), 2))
-
-	var box := VBoxContainer.new()
-	box.name = "ControlBox"
-	box.add_theme_constant_override("separation", 10)
-	panel.add_child(box)
-
-	var first_row := HBoxContainer.new()
-	first_row.name = "SelectorRow"
-	first_row.add_theme_constant_override("separation", 10)
-	box.add_child(first_row)
-
-	_entry_select = OptionButton.new()
-	_entry_select.name = "EntrySelect"
-	_entry_select.custom_minimum_size = Vector2(330, 48)
-	_entry_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_entry_select.item_selected.connect(_on_entry_selected)
-	first_row.add_child(_entry_select)
-
-	_phase_select = OptionButton.new()
-	_phase_select.name = "PhaseSelect"
-	_phase_select.custom_minimum_size = Vector2(210, 48)
-	_phase_select.item_selected.connect(_on_phase_selected)
-	first_row.add_child(_phase_select)
-
-	_quality_select = OptionButton.new()
-	_quality_select.name = "QualitySelect"
-	_quality_select.custom_minimum_size = Vector2(150, 48)
-	_quality_select.add_item("Low")
-	_quality_select.set_item_metadata(0, "low")
-	_quality_select.add_item("High")
-	_quality_select.set_item_metadata(1, "high")
-	_quality_select.select(0)
-	_quality_select.item_selected.connect(_on_quality_selected)
-	first_row.add_child(_quality_select)
-
-	_play_button = Button.new()
-	_play_button.name = "PlayButton"
-	_play_button.text = "Play"
-	_play_button.custom_minimum_size = Vector2(112, 48)
-	_play_button.pressed.connect(_restart_playback)
-	first_row.add_child(_play_button)
-
-	var second_row := HBoxContainer.new()
-	second_row.name = "AmountRow"
-	second_row.add_theme_constant_override("separation", 10)
-	box.add_child(second_row)
-
-	second_row.add_child(_make_small_label("Amount"))
-	_amount_slider = HSlider.new()
-	_amount_slider.name = "AmountSlider"
-	_amount_slider.min_value = 1.0
-	_amount_slider.max_value = 60.0
-	_amount_slider.step = 1.0
-	_amount_slider.value = 12.0
-	_amount_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_amount_slider.value_changed.connect(_on_amount_slider_changed)
-	second_row.add_child(_amount_slider)
-
-	_amount_spin = SpinBox.new()
-	_amount_spin.name = "AmountSpin"
-	_amount_spin.min_value = 1.0
-	_amount_spin.max_value = 60.0
-	_amount_spin.step = 1.0
-	_amount_spin.value = 12.0
-	_amount_spin.custom_minimum_size = Vector2(104, 48)
-	_amount_spin.value_changed.connect(_on_amount_spin_changed)
-	second_row.add_child(_amount_spin)
-
-	second_row.add_child(_make_small_label("Speed"))
-	_speed_slider = HSlider.new()
-	_speed_slider.name = "SpeedSlider"
-	_speed_slider.min_value = 0.35
-	_speed_slider.max_value = 1.25
-	_speed_slider.step = 0.05
-	_speed_slider.value = 0.55
-	_speed_slider.custom_minimum_size = Vector2(170, 40)
-	_speed_slider.value_changed.connect(_on_speed_changed)
-	second_row.add_child(_speed_slider)
-
-	var third_row := HBoxContainer.new()
-	third_row.name = "PresetRow"
-	third_row.add_theme_constant_override("separation", 10)
-	box.add_child(third_row)
-
-	_preset_row = HBoxContainer.new()
-	_preset_row.name = "AmountPresets"
-	_preset_row.add_theme_constant_override("separation", 8)
-	_preset_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	third_row.add_child(_preset_row)
-
-	_loop_toggle = CheckBox.new()
-	_loop_toggle.name = "LoopToggle"
-	_loop_toggle.text = "Loop"
-	_loop_toggle.toggled.connect(_on_loop_toggled)
-	third_row.add_child(_loop_toggle)
-
-	_anchors_toggle = CheckBox.new()
-	_anchors_toggle.name = "AnchorsToggle"
-	_anchors_toggle.text = "Anchors"
-	_anchors_toggle.button_pressed = true
-	_anchors_toggle.toggled.connect(_on_anchor_toggle_changed)
-	third_row.add_child(_anchors_toggle)
-
-	_clean_toggle = CheckBox.new()
-	_clean_toggle.name = "CleanToggle"
-	_clean_toggle.text = "Clean"
-	_clean_toggle.toggled.connect(_on_clean_toggle_changed)
-	third_row.add_child(_clean_toggle)
-
-	_description_label = Label.new()
-	_description_label.name = "DescriptionLabel"
-	_description_label.text = ""
-	_description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	_description_label.add_theme_font_size_override("font_size", 17)
-	_description_label.add_theme_color_override("font_color", Color(0.68, 0.74, 0.82, 1.0))
-	box.add_child(_description_label)
-
-	return panel
-
-
-func _make_preview_panel() -> Control:
-	var frame := PanelContainer.new()
-	frame.name = "PreviewFrame"
-	frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	frame.add_theme_stylebox_override("panel", _panel_style(Color(0.0, 0.0, 0.0, 0.96), Color(0.78, 0.60, 0.24, 0.95), 2))
-
-	_preview_root = Control.new()
-	_preview_root.name = "PreviewRoot"
-	_preview_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_preview_root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_preview_root.clip_contents = true
-	frame.add_child(_preview_root)
-
+	var nodes := CONTROLS_SCRIPT.build(self, _control_callbacks())
+	_entry_select = nodes["entry_select"]
+	_phase_select = nodes["phase_select"]
+	_quality_select = nodes["quality_select"]
+	_amount_slider = nodes["amount_slider"]
+	_amount_spin = nodes["amount_spin"]
+	_speed_slider = nodes["speed_slider"]
+	_loop_toggle = nodes["loop_toggle"]
+	_anchors_toggle = nodes["anchors_toggle"]
+	_clean_toggle = nodes["clean_toggle"]
+	_play_button = nodes["play_button"]
+	_preset_row = nodes["preset_row"]
+	_status_label = nodes["status_label"]
+	_description_label = nodes["description_label"]
+	_preview_root = nodes["preview_root"]
 	_build_preview_contents()
-	return frame
+
+
+func _control_callbacks() -> Dictionary:
+	return {
+		"back_pressed": _on_back_pressed,
+		"entry_selected": _on_entry_selected,
+		"phase_selected": _on_phase_selected,
+		"quality_selected": _on_quality_selected,
+		"restart_playback": _restart_playback,
+		"amount_slider_changed": _on_amount_slider_changed,
+		"amount_spin_changed": _on_amount_spin_changed,
+		"speed_changed": _on_speed_changed,
+		"loop_toggled": _on_loop_toggled,
+		"anchor_toggle_changed": _on_anchor_toggle_changed,
+		"clean_toggle_changed": _on_clean_toggle_changed,
+	}
 
 
 func _build_preview_contents() -> void:
@@ -290,13 +116,13 @@ func _build_preview_contents() -> void:
 
 	_enemy_target = Panel.new()
 	_enemy_target.name = "EnemyTarget"
-	_enemy_target.add_theme_stylebox_override("panel", _panel_style(Color(0.08, 0.065, 0.05, 0.95), Color(0.86, 0.54, 0.28, 0.7), 2))
+	_enemy_target.add_theme_stylebox_override("panel", CONTROLS_SCRIPT.panel_style(Color(0.08, 0.065, 0.05, 0.95), Color(0.86, 0.54, 0.28, 0.7), 2))
 	_preview_root.add_child(_enemy_target)
-	_enemy_target.add_child(_make_anchor_caption("ENEMY TARGET"))
+	_enemy_target.add_child(CONTROLS_SCRIPT.make_anchor_caption("ENEMY TARGET"))
 
 	_board_target = Panel.new()
 	_board_target.name = "BoardTarget"
-	_board_target.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.03, 0.04, 0.95), Color(0.82, 0.63, 0.26, 0.9), 3))
+	_board_target.add_theme_stylebox_override("panel", CONTROLS_SCRIPT.panel_style(Color(0.025, 0.03, 0.04, 0.95), Color(0.82, 0.63, 0.26, 0.9), 3))
 	_preview_root.add_child(_board_target)
 	_build_board_cells()
 
@@ -307,7 +133,7 @@ func _build_preview_contents() -> void:
 
 	var hp_panel := Panel.new()
 	hp_panel.name = "HpBarTargetPanel"
-	hp_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.045, 0.06, 0.92), Color(0.45, 0.58, 0.76, 0.75), 2))
+	hp_panel.add_theme_stylebox_override("panel", CONTROLS_SCRIPT.panel_style(Color(0.035, 0.045, 0.06, 0.92), Color(0.45, 0.58, 0.76, 0.75), 2))
 	_preview_root.add_child(hp_panel)
 
 	_hp_bar_target = ProgressBar.new()
@@ -328,9 +154,9 @@ func _build_preview_contents() -> void:
 
 	_gold_target = Panel.new()
 	_gold_target.name = "GoldTarget"
-	_gold_target.add_theme_stylebox_override("panel", _panel_style(Color(0.12, 0.08, 0.02, 0.92), Color(1.0, 0.72, 0.18, 0.8), 2))
+	_gold_target.add_theme_stylebox_override("panel", CONTROLS_SCRIPT.panel_style(Color(0.12, 0.08, 0.02, 0.92), Color(1.0, 0.72, 0.18, 0.8), 2))
 	_preview_root.add_child(_gold_target)
-	_gold_target.add_child(_make_anchor_caption("GOLD TARGET"))
+	_gold_target.add_child(CONTROLS_SCRIPT.make_anchor_caption("GOLD TARGET"))
 
 	_anchor_layer = Control.new()
 	_anchor_layer.name = "AnchorLayer"
@@ -370,7 +196,7 @@ func _build_mastery_cards() -> void:
 
 		var panel := Panel.new()
 		panel.name = "CardPanel"
-		panel.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.035, 0.045, 0.92), OrbType.color(orb_id), 2, 4))
+		panel.add_theme_stylebox_override("panel", CONTROLS_SCRIPT.panel_style(Color(0.025, 0.035, 0.045, 0.92), OrbType.color(orb_id), 2, 4))
 		card.add_child(panel)
 
 		var icon := TextureRect.new()
@@ -434,10 +260,7 @@ func _layout_board_cells() -> void:
 	var columns := 5
 	var rows := 6
 	var gap := 4.0
-	var cell_size := Vector2(
-		(_board_target.size.x - gap * float(columns + 1)) / float(columns),
-		(_board_target.size.y - gap * float(rows + 1)) / float(rows)
-	)
+	var cell_size := Vector2((_board_target.size.x - gap * float(columns + 1)) / float(columns), (_board_target.size.y - gap * float(rows + 1)) / float(rows))
 	for index in range(_board_target.get_child_count()):
 		var child := _board_target.get_child(index) as Control
 		if child == null:
@@ -498,10 +321,13 @@ func _sync_entry_controls() -> void:
 	var entry := _selected_entry()
 	if entry.is_empty():
 		return
-	_description_label.text = "%s Target: %s." % [
-		String(entry.get("description", "")),
-		CATALOG_SCRIPT.target_name(String(entry.get("target", ""))),
-	]
+	_description_label.text = (
+		"%s Target: %s."
+		% [
+			String(entry.get("description", "")),
+			CATALOG_SCRIPT.target_name(String(entry.get("target", ""))),
+		]
+	)
 	_populate_phase_dropdown(entry)
 	_populate_amount_presets(entry)
 	_set_amount(float(entry.get("default_amount", 12)))
@@ -523,8 +349,8 @@ func _populate_phase_dropdown(entry: Dictionary) -> void:
 
 
 func _populate_amount_presets(entry: Dictionary) -> void:
-	_clear_children(_preset_row)
-	_preset_row.add_child(_make_small_label("Presets"))
+	CONTROLS_SCRIPT.clear_children(_preset_row)
+	_preset_row.add_child(CONTROLS_SCRIPT.make_small_label("Presets"))
 	var presets: Array = entry.get("amount_presets", [])
 	for raw_amount in presets:
 		var amount := int(raw_amount)
@@ -730,25 +556,23 @@ func _spawn_label(entry: Dictionary, amount: int) -> void:
 		offset = Vector2(0, -42)
 	elif target_id == CATALOG_SCRIPT.TARGET_BOARD:
 		offset = Vector2(0, 0)
-	_presenter.spawn_result_label(
-		CATALOG_SCRIPT.result_label_text(entry, amount),
-		target,
-		CATALOG_SCRIPT.label_kind(entry),
-		1.15,
-		offset,
-		amount
-	)
+	_presenter.spawn_result_label(CATALOG_SCRIPT.result_label_text(entry, amount), target, CATALOG_SCRIPT.label_kind(entry), 1.15, offset, amount)
 
 
 func _bind_presenter() -> void:
 	_presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	_presenter.bind({
-		"vfx_layer": _vfx_layer,
-		"visual_registry": _visual_registry,
-		"player_loadout_hud": _loadout_adapter,
-		"elemental_mastery_cards": _mastery_cards,
-		"timer_owner": self,
-	})
+	(
+		_presenter
+		. bind(
+			{
+				"vfx_layer": _vfx_layer,
+				"visual_registry": _visual_registry,
+				"player_loadout_hud": _loadout_adapter,
+				"elemental_mastery_cards": _mastery_cards,
+				"timer_owner": self,
+			}
+		)
+	)
 	_presenter.set_post_match_vfx_quality(_selected_quality())
 	_presenter.set_post_match_vfx_speed_scale(float(_speed_slider.value))
 
@@ -795,10 +619,7 @@ func _draw_size_for_entry(entry: Dictionary, amount: int) -> Vector2:
 		if enemy_size.x > 1.0 and enemy_size.y > 1.0:
 			var scale := 1.0
 			scale = maxf(1.0, _presenter.result_vfx_size_scale(kind, amount))
-			return Vector2(
-				maxf(104.0, enemy_size.x / scale),
-				maxf(104.0, enemy_size.y / scale)
-			)
+			return Vector2(maxf(104.0, enemy_size.x / scale), maxf(104.0, enemy_size.y / scale))
 	return _draw_size_for_target(target_id)
 
 
@@ -882,40 +703,3 @@ func _initial_entry_id() -> String:
 		if not CATALOG_SCRIPT.entry_by_id(entry_id).is_empty():
 			return entry_id
 	return CATALOG_SCRIPT.default_entry_id()
-
-
-func _make_small_label(text: String) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.custom_minimum_size = Vector2(0, 42)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.add_theme_font_size_override("font_size", 17)
-	label.add_theme_color_override("font_color", Color(0.72, 0.78, 0.86, 1.0))
-	return label
-
-
-func _make_anchor_caption(text: String) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.add_theme_font_size_override("font_size", 20)
-	label.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96, 0.92))
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.88))
-	label.add_theme_constant_override("outline_size", 4)
-	return label
-
-
-func _panel_style(bg: Color, border: Color, border_width: int = 2, radius: int = 8) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = border
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(radius)
-	return style
-
-
-func _clear_children(node: Node) -> void:
-	for child in node.get_children():
-		child.queue_free()

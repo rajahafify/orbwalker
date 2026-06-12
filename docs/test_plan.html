@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 13 VFX gallery control split):</p>
+<ul>
+<li><code>VfxGalleryShowControls</code> now owns the VFX gallery header, control panel, preview frame, shared labels, panel styling, and child-clearing helper. <code>VfxGalleryShow</code> keeps preview targets, playback sequencing, presenter binding, and target geometry.</li>
+<li><code>scripts/debug/vfx_gallery_show.gd</code> dropped from <code>761</code> to <code>584</code> measured lines, putting it under the normal <code>650</code> budget and deleting its script-size exception. The extracted control builder stays within the strategy budget at <code>226</code> measured lines / <code>9</code> functions.</li>
+<li>Validation passed: <code>git diff --check</code>; changed-file <code>pre_commit</code> hooks for touched GDScript; <code>res://tools/quality/script_load_validation.gd</code> reported <code>308</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=212</code>, <code>over_budget=5</code>, <code>documented_exceptions=5</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>95</code> suites, <code>444</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this slice.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 14 BoardView geometry/motion split):</p>
 <ul>
 <li><code>BoardViewGeometry</code> now owns board rect sizing, cell rects, hit projection, center calculation, validation, and row-major indexing. <code>BoardViewOverlayMotion</code> owns refill/drop overshoot positioning and stretch easing, and <code>BoardViewTutorialPathSampler</code> owns deterministic tutorial arrow path sampling.</li>

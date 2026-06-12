@@ -30,13 +30,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Main menu view still owns primary menu/profile layout and chrome while settings overlay ownership has moved out; split profile/status/layout surfaces next.",
 	},
-	"res://scripts/debug/vfx_gallery_show.gd":
-	{
-		"baseline": 761,
-		"owner": "R-P4-2",
-		"reason":
-		"Developer VFX gallery script owns catalog loading, preview construction, controls, and presentation; split gallery UI presenters as the tool stabilizes.",
-	},
 }
 
 

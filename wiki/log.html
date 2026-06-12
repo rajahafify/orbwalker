@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-12-wave-13-vfx-gallery-control-split">2026-06-12 - Wave 13 VFX gallery control split</h2>
+<ul>
+<li>Moved the VFX gallery header, control panel, preview frame, shared labels, panel styling, and child-clearing helper from <code>VfxGalleryShow</code> into <code>VfxGalleryShowControls</code>. <code>VfxGalleryShow</code> now keeps preview target construction, playback sequencing, presenter binding, and target geometry. (source: <code>scripts/debug/vfx_gallery_show.gd</code>, <code>scripts/debug/vfx_gallery_show_controls.gd</code>)</li>
+<li>Reduced <code>scripts/debug/vfx_gallery_show.gd</code> from <code>761</code> to <code>584</code> measured lines and removed its script-size exception. The extracted control builder stays within the strategy budget at <code>226</code> measured lines / <code>9</code> functions. (source: <code>tools/quality/script_size_budget.gd</code>, <code>scripts/tests/script_size_budget_test.gd</code>, <code>docs/script_size_budget.html</code>)</li>
+</ul>
 <h2 id="2026-06-12-wave-14-board-view-geometry-motion-split">2026-06-12 - Wave 14 board view geometry/motion split</h2>
 <ul>
 <li>Moved deterministic board sizing, cell rects, hit projection, center calculation, validation, row-major indexing, overlay drop-motion easing, and tutorial arrow path sampling out of <code>BoardView</code> into focused helpers. <code>BoardView</code> keeps drawing, animation state, tutorial visuals, and public presentation APIs. (source: <code>scripts/board/board_view.gd</code>, <code>scripts/board/board_view_geometry.gd</code>, <code>scripts/board/board_view_overlay_motion.gd</code>, <code>scripts/board/board_view_tutorial_path_sampler.gd</code>)</li>
