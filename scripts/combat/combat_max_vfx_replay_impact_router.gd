@@ -36,6 +36,12 @@ func spawn_replay_impact(
 	return false
 
 
+func spawn_armor_linger(center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> bool:
+	if _fallback_presenter == null or not _fallback_presenter.has_method("spawn_armor_linger"):
+		return false
+	return bool(_fallback_presenter.spawn_armor_linger(center, draw_size, lifetime, intensity))
+
+
 func _spawn_route(
 	route: Dictionary, center: Vector2, kind: String, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
 ) -> bool:

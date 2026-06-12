@@ -13,15 +13,19 @@ class FakePresenter:
 		bindings.append(dependencies)
 
 
-class FakeOwner:
+class FakeCallbacks:
 	var _vfx_layer := Control.new()
-	var _visual_registry: Variant = null
 	var _timer_owner := Node.new()
-	var _container: SubViewportContainer
-	var _sub_viewport: SubViewport
-	var _root_3d: Node3D
-	var _camera: Camera3D
-	var _ambient_light: DirectionalLight3D
+
+	func _init() -> void:
+		_vfx_layer.size = Vector2(640, 360)
+
+	func vfx_layer_size() -> Vector2:
+		return _vfx_layer.size
+
+
+class FakeLifecycleHarness:
+	var callbacks := FakeCallbacks.new()
 	var _flipbook_presenter := FakePresenter.new()
 	var _imported_scene_presenter := FakePresenter.new()
 	var _sheet_flipbook_presenter := FakePresenter.new()
@@ -49,11 +53,44 @@ class FakeOwner:
 	var _replay_impact_router := FakePresenter.new()
 	var _effect_key_catalog: Variant = CATALOG_SCRIPT.new()
 
-	func _init() -> void:
-		_vfx_layer.size = Vector2(640, 360)
-
-	func _vfx_layer_size() -> Vector2:
-		return _vfx_layer.size
+	func dependencies() -> Dictionary:
+		return {
+			"vfx_layer": callbacks._vfx_layer,
+			"timer_owner": callbacks._timer_owner,
+			"effect_key_catalog": _effect_key_catalog,
+			"presenters":
+			{
+				"flipbook": _flipbook_presenter,
+				"imported_scene": _imported_scene_presenter,
+				"sheet_flipbook": _sheet_flipbook_presenter,
+				"pack_scene": _pack_scene_presenter,
+				"elemental_scene": _elemental_scene_presenter,
+				"fire_ambient": _fire_ambient_presenter,
+				"fire_impact": _fire_impact_presenter,
+				"fire_attack": _fire_attack_presenter,
+				"fire_recipe": _fire_recipe_presenter,
+				"ice_recipe": _ice_recipe_presenter,
+				"earth_recipe": _earth_recipe_presenter,
+				"pack_recipe": _pack_recipe_presenter,
+				"elemental_recipe": _elemental_recipe_presenter,
+				"atmospheric_recipe": _atmospheric_recipe_presenter,
+				"coin_rain": _coin_rain_presenter,
+				"status_recipe": _status_recipe_presenter,
+				"mastery_recipe": _mastery_recipe_presenter,
+				"burst_particles": _burst_particles_presenter,
+				"screen_wide": _screen_wide_presenter,
+				"gpu_particles": _gpu_particles_presenter,
+				"light": _light_presenter,
+				"cleanup": _cleanup_presenter,
+				"camera_kick": _camera_kick_presenter,
+				"projector": _projector,
+				"replay_impact_router": _replay_impact_router,
+			},
+			"callbacks":
+			{
+				"vfx_layer_size": callbacks.vfx_layer_size,
+			},
+		}
 
 
 func run_all() -> Dictionary:
@@ -78,28 +115,37 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 
 
 func _test_overlay_lifecycle_creates_viewport_and_binds_presenters() -> String:
-	var owner := FakeOwner.new()
+	var harness := FakeLifecycleHarness.new()
 	var lifecycle = LIFECYCLE_SCRIPT.new()
-	if not lifecycle.ensure_overlay(owner):
+	lifecycle.bind(harness.dependencies())
+	if not lifecycle.ensure_overlay():
 		return "Expected lifecycle to create an overlay for a valid layer."
-	if owner._vfx_layer.get_node_or_null("CombatMaxVfx3DOverlay") == null:
+	var container := harness.callbacks._vfx_layer.get_node_or_null("CombatMaxVfx3DOverlay") as SubViewportContainer
+	if container == null:
 		return "Expected lifecycle to add the SubViewportContainer to the VFX layer."
-	if owner._sub_viewport == null or owner._root_3d == null or owner._camera == null:
+	var sub_viewport := container.get_node_or_null("CombatMaxVfxViewport") as SubViewport
+	if sub_viewport == null:
+		return "Expected lifecycle to create a viewport node."
+	var root_3d := sub_viewport.get_node_or_null("CombatMaxVfxRoot3D") as Node3D
+	if root_3d == null:
+		return "Expected lifecycle to create a root node."
+	var camera := root_3d.get_node_or_null("CombatMaxVfxCamera") as Camera3D
+	if camera == null:
 		return "Expected lifecycle to create viewport, root, and camera nodes."
-	if owner._camera.size != 360.0:
+	if camera.size != 360.0:
 		return "Expected camera size to match layer height."
-	if owner._mastery_recipe_presenter.bindings.is_empty():
+	if harness._mastery_recipe_presenter.bindings.is_empty():
 		return "Expected mastery presenter to be rebound."
-	var mastery_bind: Dictionary = owner._mastery_recipe_presenter.bindings.back()
+	var mastery_bind: Dictionary = harness._mastery_recipe_presenter.bindings.back()
 	if not mastery_bind.has("kind_for_orb_provider"):
 		return "Expected mastery presenter to receive the orb-kind provider."
 	if mastery_bind.get("kind_for_orb_provider").call(ORB_TYPE_SCRIPT.Id.FIRE) != "fire":
 		return "Expected orb-kind provider to preserve fire routing."
-	var replay_bind: Dictionary = owner._replay_impact_router.bindings.back()
-	if replay_bind.get("status_presenter") != owner._status_recipe_presenter:
+	var replay_bind: Dictionary = harness._replay_impact_router.bindings.back()
+	if replay_bind.get("status_presenter") != harness._status_recipe_presenter:
 		return "Expected replay router to bind the current status presenter."
-	if not replay_bind.has("armor_grid_snap_spawner"):
-		return "Expected replay router to keep the armor fallback spawner."
-	owner._vfx_layer.queue_free()
-	owner._timer_owner.queue_free()
+	if not replay_bind.has("flipbook_spawner") or not replay_bind.has("light_spawner"):
+		return "Expected replay router to keep the armor fallback render spawners."
+	harness.callbacks._vfx_layer.queue_free()
+	harness.callbacks._timer_owner.queue_free()
 	return ""
