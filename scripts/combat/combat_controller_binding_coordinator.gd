@@ -39,6 +39,11 @@ func _hud_update_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_hud_update_router"), method_name)
 
 
+func _board_debug_callback(method_name: String) -> Callable:
+	_owner.call("_bind_board_debug_router")
+	return Callable(_owner.get("_board_debug_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -168,8 +173,8 @@ func bind_input_command_handler() -> void:
 			{"view": _owner_value("_view")},
 			{
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TOGGLE_DEBUG_OVERLAY: _owner_callback("_toggle_debug_overlay"),
-				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: _owner_callback("_create_new_board"),
-				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: _owner_callback("_print_board_model"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_CREATE_NEW_BOARD: _board_debug_callback("create_new_board"),
+				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_PRINT_BOARD_MODEL: _board_debug_callback("print_board_model"),
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_TRY_USE_FIRST_CONSUMABLE: Callable(loadout_command_handler, "try_use_first_consumable"),
 				contract.COMBAT_INPUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_HANDLED: _owner_callback("_set_viewport_input_handled"),
 			}
@@ -468,7 +473,7 @@ func bind_tutorial_drag_flow() -> void:
 			},
 			{
 				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_END_DRAG: _owner_callback("_end_drag"),
-				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_BOARD_SEED: _owner_callback("_set_board_seed"),
+				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_BOARD_SEED: _board_debug_callback("set_board_seed"),
 				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
 				contract.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_BOARD_MODEL_CHANGED: _owner_callback("_set_board_model_from_tutorial_drag_flow"),
