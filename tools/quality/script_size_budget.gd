@@ -14,7 +14,7 @@ const DOCUMENTED_EXCEPTIONS := {
 		"baseline": 569,
 		"owner": "P1-1",
 		"reason":
-		"Combat orchestration is below the whole-effort 800-line ceiling, but the controller remains over its stricter controller budget while owner-bound lifecycle and binding seams are converted into explicit wiring.",
+		"Combat orchestration is below the whole-effort 800-line ceiling, but the controller remains over its stricter wiring-only controller budget pending a final composition-root audit.",
 	},
 }
 

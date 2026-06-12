@@ -14,6 +14,22 @@ func bind(owner: Variant) -> void:
 	_view_actions = owner.get("_view_actions")
 
 
+func _owner_value(property_name: String) -> Variant:
+	return _owner.get(property_name)
+
+
+func _set_owner_value(property_name: String, value: Variant) -> void:
+	_owner.set(property_name, value)
+
+
+func _contract() -> Variant:
+	return _owner.CONTRACT
+
+
+func _owner_callback(method_name: String) -> Callable:
+	return Callable(_owner, method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
@@ -55,7 +71,7 @@ func ready() -> void:
 
 func _ensure_ready_flow_binder() -> void:
 	if _ready_flow_binder == null:
-		_ready_flow_binder = _owner.CONTRACT.COMBAT_CONTROLLER_READY_FLOW_BINDER_SCRIPT.new()
+		_ready_flow_binder = _contract().COMBAT_CONTROLLER_READY_FLOW_BINDER_SCRIPT.new()
 
 
 func _ensure_combat_route_id() -> void:
@@ -111,12 +127,17 @@ func ensure_runtime_helpers() -> void:
 		_runtime_helper_values(), _runtime_helper_scripts()
 	)
 	_apply_runtime_helper_values(helpers)
-	_owner._player_loadout_hud.set_visual_registry(_owner._visuals)
-	_owner._debug_console = _owner._debug_runtime.console()
-	_owner._bind_audio_cue_player()
-	_owner._bind_debug_state_provider()
-	if _owner._combat_consumable_service != null and _owner._combat_consumable_service.has_method("bind"):
-		_owner._combat_consumable_service.bind({"convert_random_non_target_orbs": Callable(_owner, "_convert_random_non_target_orbs")})
+	var player_loadout_hud: Variant = _owner_value("_player_loadout_hud")
+	if player_loadout_hud != null:
+		player_loadout_hud.set_visual_registry(_owner_value("_visuals"))
+	var debug_runtime: Variant = _owner_value("_debug_runtime")
+	if debug_runtime != null:
+		_set_owner_value("_debug_console", debug_runtime.console())
+	_owner_callback("_bind_audio_cue_player").call()
+	_owner_callback("_bind_debug_state_provider").call()
+	var combat_consumable_service: Variant = _owner_value("_combat_consumable_service")
+	if combat_consumable_service != null and combat_consumable_service.has_method("bind"):
+		combat_consumable_service.bind({"convert_random_non_target_orbs": _owner_callback("_convert_random_non_target_orbs")})
 
 
 func _runtime_helper_values() -> Dictionary:
@@ -230,7 +251,7 @@ func _apply_runtime_helper_values(helpers: Dictionary) -> void:
 
 func initialize_combat_state() -> void:
 	_bind_state_initializer()
-	_owner._state_initializer.initialize()
+	_owner_value("_state_initializer").initialize()
 
 
 func begin_turn_preview() -> void:
@@ -244,136 +265,135 @@ func end_drag(timed_out: bool) -> void:
 
 
 func connect_signals() -> void:
-	_owner._bind_loadout_command_handler()
-	_owner._bind_settings_command_handler()
-	_owner._bind_tutorial_end_command_handler()
+	_owner_callback("_bind_loadout_command_handler").call()
+	_owner_callback("_bind_settings_command_handler").call()
+	_owner_callback("_bind_tutorial_end_command_handler").call()
 	_bind_signal_connector()
 	_signal_connector.connect_all()
 
 
 func _bind_state_initializer() -> void:
 	(
-		_owner
-		. _state_initializer
+		_owner_value("_state_initializer")
 		. bind(
 			{
 				"run_state": RunState,
-				"model": _owner._model,
-				"host": _owner._host,
+				"model": _owner_value("_model"),
+				"host": _owner_value("_host"),
 				"view_actions": _view_actions,
-				"enemy_state_script": _owner.CONTRACT.ENEMY_STATE_SCRIPT,
-				"combat_state_machine_script": _owner.CONTRACT.COMBAT_STATE_MACHINE_SCRIPT,
-				"flow_result_utils": _owner.CONTRACT.FLOW_RESULT_UTILS,
-				"status_color_warning": _owner.CONTRACT.STATUS_COLOR_WARNING,
+				"enemy_state_script": _contract().ENEMY_STATE_SCRIPT,
+				"combat_state_machine_script": _contract().COMBAT_STATE_MACHINE_SCRIPT,
+				"flow_result_utils": _contract().FLOW_RESULT_UTILS,
+				"status_color_warning": _contract().STATUS_COLOR_WARNING,
 			},
 			{
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_APPLY_STATE: Callable(self, "_apply_initialized_combat_state"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_HUD_STAGE: Callable(_owner, "_bind_hud_stage_coordinator"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS:
-				Callable(_owner, "_refresh_character_portraits"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: Callable(_owner, "_refresh_build_icon_rows"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_DEBUG_STATE_PROVIDER: Callable(_owner, "_bind_debug_state_provider"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_ROUTE_ID: Callable(_owner, "_flow_trace_route_id_value"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_SCENE_ROLLBACK: Callable(_owner, "_on_combat_scene_post_ready_rollback"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_HANDLE_SCENE_CHANGE_FAILURE:
-				Callable(_owner, "_handle_combat_scene_change_failure"),
-				"debug_runtime": _owner._debug_runtime,
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_APPLY_STATE: Callable(self, "_apply_initialized_combat_state"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_HUD_STAGE: _owner_callback("_bind_hud_stage_coordinator"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_CHARACTER_PORTRAITS: _owner_callback("_refresh_character_portraits"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_REFRESH_BUILD_ICON_ROWS: _owner_callback("_refresh_build_icon_rows"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_BIND_DEBUG_STATE_PROVIDER: _owner_callback("_bind_debug_state_provider"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_ROUTE_ID: _owner_callback("_flow_trace_route_id_value"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_SCENE_ROLLBACK: _owner_callback("_on_combat_scene_post_ready_rollback"),
+				_contract().COMBAT_CONTROLLER_STATE_INITIALIZER_SCRIPT.CALLBACK_HANDLE_SCENE_CHANGE_FAILURE:
+				_owner_callback("_handle_combat_scene_change_failure"),
+				"debug_runtime": _owner_value("_debug_runtime"),
 			}
 		)
 	)
 
 
 func _apply_initialized_combat_state(state: Dictionary) -> void:
-	_owner._player_state = state.get("player_state")
-	_owner._progression_state = state.get("progression_state")
-	_owner._enemy_state = state.get("enemy_state")
-	_owner._combat = state.get("combat")
+	_set_owner_value("_player_state", state.get("player_state"))
+	_set_owner_value("_progression_state", state.get("progression_state"))
+	_set_owner_value("_enemy_state", state.get("enemy_state"))
+	_set_owner_value("_combat", state.get("combat"))
 
 
 func _bind_resolve_flow_coordinator() -> void:
 	if _resolve_flow_coordinator == null:
-		_resolve_flow_coordinator = _owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.new()
-	_owner._bind_mastery_preview_coordinator()
-	_owner._bind_turn_resolution_coordinator()
+		_resolve_flow_coordinator = _contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.new()
+	_owner_callback("_bind_mastery_preview_coordinator").call()
+	_owner_callback("_bind_turn_resolution_coordinator").call()
 	(
 		_resolve_flow_coordinator
 		. bind(
 			{
-				"model": _owner._model,
-				"board_controller": _owner._board_controller,
-				"board_view": _owner._board_view,
-				"board_model": _owner._board_model,
-				"resolver": _owner._resolver,
-				"mastery_preview_coordinator": _owner._mastery_preview_coordinator,
-				"turn_resolution_coordinator": _owner._turn_resolution_coordinator,
+				"model": _owner_value("_model"),
+				"board_controller": _owner_value("_board_controller"),
+				"board_view": _owner_value("_board_view"),
+				"board_model": _owner_value("_board_model"),
+				"resolver": _owner_value("_resolver"),
+				"mastery_preview_coordinator": _owner_value("_mastery_preview_coordinator"),
+				"turn_resolution_coordinator": _owner_value("_turn_resolution_coordinator"),
 				"combat_modifiers": RunState.current_combat_modifiers(),
 			},
 			{
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(_owner, "_audio_play_sfx"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TIMER_DISPLAY: Callable(self, "_sync_timer_display"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_set_input_phase"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_MASTERY_PREVIEW: Callable(_owner, "_bind_mastery_preview_coordinator"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_RESOLVE_ANIMATIONS: Callable(_owner, "_play_resolve_animations"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(_owner, "_can_continue_after_async_wait"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_TURN_RESOLUTION: Callable(_owner, "_bind_turn_resolution_coordinator"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_APPLY_BOARD_MODEL: Callable(self, "_apply_committed_board_model"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: Callable(_owner, "_resolve_trace"),
-				_owner.CONTRACT.COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_STORE_LAST_RESOLVE_RESULT: Callable(self, "_store_last_resolve_result"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: _owner_callback("_audio_play_sfx"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TIMER_DISPLAY: Callable(self, "_sync_timer_display"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_MASTERY_PREVIEW: _owner_callback("_bind_mastery_preview_coordinator"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_PLAY_RESOLVE_ANIMATIONS: _owner_callback("_play_resolve_animations"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_CAN_CONTINUE: _owner_callback("_can_continue_after_async_wait"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_TURN_RESOLUTION: _owner_callback("_bind_turn_resolution_coordinator"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_APPLY_BOARD_MODEL: Callable(self, "_apply_committed_board_model"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: _owner_callback("_resolve_trace"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_STORE_LAST_RESOLVE_RESULT: Callable(self, "_store_last_resolve_result"),
 			},
 			{
 				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
 				"resolving_input_phase_value": int(_owner.InputPhase.RESOLVING),
-				"timer_state_locked": _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED,
-				"status_color_warning": _owner.CONTRACT.STATUS_COLOR_WARNING,
+				"timer_state_locked": _contract().COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED,
+				"status_color_warning": _contract().STATUS_COLOR_WARNING,
 			}
 		)
 	)
 
 
 func _sync_timer_display(seconds_left: float, timer_state: int) -> void:
-	if _owner._view != null:
-		_owner._view.sync_timer_display(seconds_left, timer_state)
+	var view: Variant = _owner_value("_view")
+	if view != null:
+		view.sync_timer_display(seconds_left, timer_state)
 
 
 func _apply_committed_board_model(board_model: BoardModel) -> void:
-	_owner._board_model = board_model
+	_set_owner_value("_board_model", board_model)
 
 
 func _store_last_resolve_result(resolve_result: Dictionary) -> void:
-	_owner._last_resolve_result = resolve_result
+	_set_owner_value("_last_resolve_result", resolve_result)
 
 
 func _bind_signal_connector() -> void:
 	if _signal_connector == null:
-		_signal_connector = _owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.new()
+		_signal_connector = _contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.new()
 	(
 		_signal_connector
 		. bind(
 			{
-				"resolver": _owner._resolver,
-				"resolve_trace_logger": _owner._resolve_trace_logger,
-				"player_loadout_hud": _owner._player_loadout_hud,
-				"loadout_command_handler": _owner._loadout_command_handler,
-				"view": _owner._view,
-				"settings_command_handler": _owner._settings_command_handler,
-				"tutorial_end_command_handler": _owner._tutorial_end_command_handler,
+				"resolver": _owner_value("_resolver"),
+				"resolve_trace_logger": _owner_value("_resolve_trace_logger"),
+				"player_loadout_hud": _owner_value("_player_loadout_hud"),
+				"loadout_command_handler": _owner_value("_loadout_command_handler"),
+				"view": _owner_value("_view"),
+				"settings_command_handler": _owner_value("_settings_command_handler"),
+				"tutorial_end_command_handler": _owner_value("_tutorial_end_command_handler"),
 			},
 			{
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_RESOLVER_MATCH_FOUND: Callable(_owner, "_on_resolver_match_found"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVERED:
-				Callable(_owner, "_on_intent_damage_preview_hovered"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_BLOCK_PREVIEW_HOVERED:
-				Callable(_owner, "_on_intent_block_preview_hovered"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVER_ENDED:
-				Callable(_owner, "_on_intent_damage_preview_hover_ended"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_INTENT_BUBBLE_HOVERED:
-				Callable(_owner, "_on_enemy_intent_bubble_hovered"),
-				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_BLOCK_PREVIEW_HOVERED:
-				Callable(_owner, "_on_enemy_block_preview_hovered"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_RESOLVER_MATCH_FOUND: _owner_callback("_on_resolver_match_found"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVERED:
+				_owner_callback("_on_intent_damage_preview_hovered"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_BLOCK_PREVIEW_HOVERED:
+				_owner_callback("_on_intent_block_preview_hovered"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVER_ENDED:
+				_owner_callback("_on_intent_damage_preview_hover_ended"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_INTENT_BUBBLE_HOVERED:
+				_owner_callback("_on_enemy_intent_bubble_hovered"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_BLOCK_PREVIEW_HOVERED:
+				_owner_callback("_on_enemy_block_preview_hovered"),
 			}
 		)
 	)
@@ -381,29 +401,29 @@ func _bind_signal_connector() -> void:
 
 func _bind_turn_preview_coordinator() -> void:
 	if _turn_preview_coordinator == null:
-		_turn_preview_coordinator = _owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.new()
+		_turn_preview_coordinator = _contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.new()
 	(
 		_turn_preview_coordinator
 		. bind(
 			{
-				"combat": _owner._combat,
-				"enemy_state": _owner._enemy_state,
-				"model": _owner._model,
+				"combat": _owner_value("_combat"),
+				"enemy_state": _owner_value("_enemy_state"),
+				"model": _owner_value("_model"),
 				"view_actions": _view_actions,
 				"run_state": RunState,
 			},
 			{
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_set_input_phase"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: Callable(_owner, "_clear_combat_mastery_hover_state"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(_owner, "_sync_tutorial_coachmark"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(_owner, "_format_intent"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_SUMMARY_TEXT: Callable(_owner, "_tutorial_turn_summary_text"),
-				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_STATUS_TEXT: Callable(_owner, "_tutorial_turn_status_text"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_set_input_phase"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _owner_callback("_update_hud"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: _owner_callback("_clear_combat_mastery_hover_state"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: _owner_callback("_format_intent"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_SUMMARY_TEXT: _owner_callback("_tutorial_turn_summary_text"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_STATUS_TEXT: _owner_callback("_tutorial_turn_status_text"),
 			},
 			{
 				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
-				"status_color_neutral": _owner.CONTRACT.STATUS_COLOR_NEUTRAL,
+				"status_color_neutral": _contract().STATUS_COLOR_NEUTRAL,
 			}
 		)
 	)

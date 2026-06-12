@@ -3,9 +3,7 @@ class_name OwnerReachInBudgetTest
 
 const OWNER_REACH_IN_BUDGET_PATH := "res://tools/quality/owner_reach_in_budget.gd"
 
-const EXPECTED_REACH_IN_BASELINES := {
-	"res://scripts/combat/combat_controller_lifecycle.gd": 40,
-}
+const EXPECTED_REACH_IN_BASELINES := {}
 
 
 func run_all() -> Dictionary:
