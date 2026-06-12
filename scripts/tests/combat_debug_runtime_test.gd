@@ -2,6 +2,7 @@ extends RefCounted
 class_name CombatDebugRuntimeTest
 
 const RUNTIME_SCRIPT := preload("res://scripts/combat/combat_debug_runtime.gd")
+const CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
 
 
 class FakeView:
@@ -119,7 +120,9 @@ func _fixture() -> Dictionary:
 		. bind_for_combat_controller(
 			view,
 			null,
-			controller,
+			{
+				CALLBACK_KEYS.SET_STATUS_TEXT: Callable(controller, "_console_set_status_text"),
+			},
 			2,
 			{
 				"max_combat_log_lines": 10,

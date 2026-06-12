@@ -12,11 +12,16 @@ var _command_adapter: Variant = null
 
 
 func bind_for_combat_controller(
-	view: Variant, turn_log_presenter: Variant, controller: Object, locked_input_phase_value: int, config: Dictionary = {}, state_callbacks: Dictionary = {}
+	view: Variant,
+	turn_log_presenter: Variant,
+	action_callbacks: Dictionary,
+	locked_input_phase_value: int,
+	config: Dictionary = {},
+	state_callbacks: Dictionary = {}
 ) -> void:
 	var merged_config := config.duplicate()
 	merged_config["locked_input_phase_value"] = locked_input_phase_value
-	var callbacks: Dictionary = COMBAT_DEBUG_COMMAND_ADAPTER_SCRIPT.controller_callbacks(controller)
+	var callbacks: Dictionary = action_callbacks.duplicate()
 	for key in state_callbacks.keys():
 		callbacks[key] = state_callbacks[key]
 	bind(view, turn_log_presenter, callbacks, merged_config)
