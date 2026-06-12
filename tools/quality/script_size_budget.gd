@@ -46,10 +46,10 @@ const DOCUMENTED_EXCEPTIONS := {
 	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
-		"baseline": 1007,
+		"baseline": 704,
 		"owner": "R-P1-3",
 		"reason":
-		"Main menu view combines layout, profile/log controls, debug affordances, and button wiring; split focused presenters and accessibility focus setup.",
+		"Main menu view still owns primary menu/profile layout and chrome while settings overlay ownership has moved out; split profile/status/layout surfaces next.",
 	},
 	"res://scripts/debug/vfx_gallery_show.gd":
 	{
