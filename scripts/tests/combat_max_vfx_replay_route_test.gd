@@ -683,15 +683,39 @@ func _test_combat_max_vfx_replay_router_armor_fallback_uses_status_availability_
 
 
 func _test_combat_max_vfx_replay_fallback_presenter_armor_contract() -> String:
-	var armor_calls: Array[Dictionary] = []
+	var flipbook_calls: Array[Dictionary] = []
 	var light_calls: Array[Dictionary] = []
 	var presenter = COMBAT_MAX_VFX_REPLAY_FALLBACK_PRESENTER_SCRIPT.new()
 	presenter.bind(
 		{
 			"kind_colors": func(_kind: String) -> Dictionary: return {"core": Color(0.2, 0.4, 0.8, 1.0)},
-			"armor_grid_snap_spawner":
-			func(center: Vector2, radius: float, duration: float, intensity: int) -> void:
-				armor_calls.append({"center": center, "radius": radius, "duration": duration, "intensity": intensity}),
+			"flipbook_spawner":
+			func(
+				key: String,
+				center: Vector2,
+				draw_size: Vector2,
+				lifetime: float,
+				color: Color,
+				delay: float,
+				move_offset: Vector2,
+				target_scale: float,
+				z: float,
+				rotation: float
+			) -> void:
+				flipbook_calls.append(
+					{
+						"key": key,
+						"center": center,
+						"draw_size": draw_size,
+						"lifetime": lifetime,
+						"color": color,
+						"delay": delay,
+						"move_offset": move_offset,
+						"target_scale": target_scale,
+						"z": z,
+						"rotation": rotation
+					}
+				),
 			"light_spawner":
 			func(center: Vector2, color: Color, energy: float, radius: float, lifetime: float) -> void:
 				light_calls.append({"center": center, "color": color, "energy": energy, "radius": radius, "lifetime": lifetime}),
@@ -699,10 +723,12 @@ func _test_combat_max_vfx_replay_fallback_presenter_armor_contract() -> String:
 	)
 	if not presenter.spawn_armor_replay_fallback(Vector2(5, 6), "armor", Vector2(20, 20), 80.0, 100.0, 0.9, 4, false):
 		return "Expected armor replay fallback presenter to spawn when required callbacks are bound."
-	if armor_calls.size() != 1 or light_calls.size() != 1:
-		return "Expected armor replay fallback to emit grid snap and light."
-	if not is_equal_approx(float(armor_calls[0]["radius"]), 74.0):
-		return "Expected armor grid snap radius to preserve base-size scaling."
+	if flipbook_calls.size() != 14 or light_calls.size() != 1:
+		return "Expected armor replay fallback to emit grid snap flipbooks and light."
+	if String(flipbook_calls[0]["key"]) != "armor_impact":
+		return "Expected armor grid snap to start with the armor impact shell."
+	if not is_equal_approx((flipbook_calls[0]["draw_size"] as Vector2).x, 92.16):
+		return "Expected armor grid snap shell to preserve its minimum shell sizing."
 	if not is_equal_approx(float(light_calls[0]["energy"]), 3.7):
 		return "Expected armor light energy to preserve intensity scaling."
 	return ""
