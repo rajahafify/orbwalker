@@ -5,6 +5,7 @@ var _owner: Variant = null
 var _view_actions: Variant = null
 var _resolve_flow_coordinator: Variant = null
 var _turn_preview_coordinator: Variant = null
+var _signal_connector: Variant = null
 
 
 func bind(owner: Variant) -> void:
@@ -77,8 +78,7 @@ func ready() -> void:
 	_owner._apply_visual_chrome()
 	RunState.flow_trace_mark("combat_after_chrome", {}, _owner._flow_trace_route_id_value())
 	_owner._bind_resolve_trace_logger()
-	_connect_resolver_signals()
-	_connect_hud_and_view_signals()
+	connect_signals()
 	initialize_combat_state()
 	_owner._bind_loadout_command_handler()
 	RunState.flow_trace_mark("combat_after_initialize_state", {}, _owner._flow_trace_route_id_value())
@@ -235,49 +235,12 @@ func end_drag(timed_out: bool) -> void:
 	await _resolve_flow_coordinator.end_drag(timed_out)
 
 
-func _connect_resolver_signals() -> void:
-	_owner._resolver.match_found.connect(_owner._on_resolver_match_found)
-	_owner._resolver.cells_cleared.connect(_owner._resolve_trace_logger.on_resolver_cells_cleared)
-	_owner._resolver.gravity_applied.connect(_owner._resolve_trace_logger.on_resolver_gravity_applied)
-	_owner._resolver.refill_applied.connect(_owner._resolve_trace_logger.on_resolver_refill_applied)
-	_owner._resolver.cascade_step_complete.connect(_owner._resolve_trace_logger.on_resolver_cascade_step_complete)
-	_owner._resolver.resolve_complete.connect(_owner._resolve_trace_logger.on_resolver_complete)
-
-
-func _connect_hud_and_view_signals() -> void:
+func connect_signals() -> void:
 	_owner._bind_loadout_command_handler()
-	var player_loadout_hud: Variant = _owner._player_loadout_hud
-	var loadout_command_handler: Variant = _owner._loadout_command_handler
-	player_loadout_hud.consumable_slot_selected.connect(loadout_command_handler.try_use_consumable_slot)
-	player_loadout_hud.sell_slot_requested.connect(loadout_command_handler.sell_slot_requested)
-	player_loadout_hud.intent_preview_hovered.connect(_owner._on_intent_damage_preview_hovered)
-	player_loadout_hud.intent_block_preview_hovered.connect(_owner._on_intent_block_preview_hovered)
-	player_loadout_hud.intent_preview_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
-	_owner._connect_view_signals()
-
-
-func connect_view_signals() -> void:
-	if _owner._view == null:
-		return
 	_owner._bind_settings_command_handler()
 	_owner._bind_tutorial_end_command_handler()
-	var view: Variant = _owner._view
-	var settings_command_handler: Variant = _owner._settings_command_handler
-	var tutorial_end_command_handler: Variant = _owner._tutorial_end_command_handler
-	view.enemy_intent_bubble_hovered.connect(_owner._on_enemy_intent_bubble_hovered)
-	view.enemy_block_preview_hovered.connect(_owner._on_enemy_block_preview_hovered)
-	view.intent_hover_ended.connect(_owner._on_intent_damage_preview_hover_ended)
-	view.tutorial_end_continue_pressed.connect(tutorial_end_command_handler.continue_pressed)
-	view.tutorial_end_main_menu_pressed.connect(tutorial_end_command_handler.main_menu_pressed)
-	view.settings_continue_pressed.connect(settings_command_handler.continue_combat)
-	view.settings_new_run_pressed.connect(settings_command_handler.start_new_run)
-	view.settings_main_menu_pressed.connect(settings_command_handler.return_to_main_menu)
-	view.settings_speed_selected.connect(settings_command_handler.select_speed)
-	view.settings_quality_selected.connect(settings_command_handler.select_quality)
-	view.settings_reduced_motion_toggled.connect(settings_command_handler.toggle_reduced_motion)
-	view.settings_game_juice_toggled.connect(settings_command_handler.toggle_game_juice)
-	view.settings_game_juice_flag_toggled.connect(settings_command_handler.toggle_game_juice_flag)
-	view.settings_defaults_reset.connect(settings_command_handler.reset_feedback_settings)
+	_bind_signal_connector()
+	_signal_connector.connect_all()
 
 
 func _bind_state_initializer() -> void:
@@ -374,6 +337,38 @@ func _apply_committed_board_model(board_model: BoardModel) -> void:
 
 func _store_last_resolve_result(resolve_result: Dictionary) -> void:
 	_owner._last_resolve_result = resolve_result
+
+
+func _bind_signal_connector() -> void:
+	if _signal_connector == null:
+		_signal_connector = _owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.new()
+	(
+		_signal_connector
+		. bind(
+			{
+				"resolver": _owner._resolver,
+				"resolve_trace_logger": _owner._resolve_trace_logger,
+				"player_loadout_hud": _owner._player_loadout_hud,
+				"loadout_command_handler": _owner._loadout_command_handler,
+				"view": _owner._view,
+				"settings_command_handler": _owner._settings_command_handler,
+				"tutorial_end_command_handler": _owner._tutorial_end_command_handler,
+			},
+			{
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_RESOLVER_MATCH_FOUND: Callable(_owner, "_on_resolver_match_found"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVERED:
+				Callable(_owner, "_on_intent_damage_preview_hovered"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_BLOCK_PREVIEW_HOVERED:
+				Callable(_owner, "_on_intent_block_preview_hovered"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVER_ENDED:
+				Callable(_owner, "_on_intent_damage_preview_hover_ended"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_INTENT_BUBBLE_HOVERED:
+				Callable(_owner, "_on_enemy_intent_bubble_hovered"),
+				_owner.CONTRACT.COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_BLOCK_PREVIEW_HOVERED:
+				Callable(_owner, "_on_enemy_block_preview_hovered"),
+			}
+		)
+	)
 
 
 func _bind_turn_preview_coordinator() -> void:
