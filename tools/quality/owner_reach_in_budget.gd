@@ -10,9 +10,7 @@ const REACH_IN_PATTERNS := [
 	"_hud._",
 ]
 
-const DOCUMENTED_REACH_INS := {
-	"res://scripts/combat/combat_controller_lifecycle.gd": 40,
-}
+const DOCUMENTED_REACH_INS := {}
 
 
 func _initialize() -> void:

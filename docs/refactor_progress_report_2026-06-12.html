@@ -153,7 +153,7 @@
   <tr><td>Phase 4 · Overlay → dispatcher over presenters</td><td><span class="status done">DONE</span></td><td>Waves 2–6 + #29: presenter contract, replay router, route policy with stable ids, fallback presenter, effect-key catalog. The route table is the program's cleanest OCP result — adding a route is one policy entry.</td></tr>
   <tr><td>Guardrail · baseline ratchet in CI</td><td><span class="status done">DONE</span></td><td>Pre-existed as <code>script_size_budget.gd</code>; enforced exact-match both directions all 30 PRs; one documented raise (Wave 4, repaid in Wave 5).</td></tr>
   <tr><td>Guardrail · tests before moves</td><td><span class="status partial">PARTIAL</span></td><td>Strong in Waves 1–6 and the follow-up ownership passes now include direct tests for intent preview, slot detail popover, and mastery panel. Wave 7's original bulk moves still violated the strict sequencing rule, and <code>combat_model_test.gd</code> was not split alongside the controller work.</td></tr>
-  <tr><td>Guardrail · no reach-ins in extracted classes</td><td><span class="status partial">PARTIAL</span></td><td>The owner-reach ratchet now mechanically blocks new or grown owner-private reach-ins. All RunState, VFX, HUD, and binding-coordinator satellites have been cleaned up; only the combat controller lifecycle satellite remains on the shrinking allowlist.</td></tr>
+  <tr><td>Guardrail · no reach-ins in extracted classes</td><td><span class="status done">MET</span></td><td>The owner-reach ratchet now mechanically blocks new owner-private reach-ins, and the checked allowlist is empty after the lifecycle cleanup. RunState, VFX, HUD, binding-coordinator, and lifecycle satellites all have zero documented owner-reach debt.</td></tr>
   <tr><td>Guardrail · facades get deleted</td><td><span class="status partial">PARTIAL</span></td><td>RunState's private log-wrapper cluster was deleted (#20); but <code>VisualRegistry</code> is now a permanent 132-line pass-through facade, and RunState keeps ~40 public compatibility wrappers.</td></tr>
 </table>
 
@@ -162,15 +162,15 @@
 <table class="grid">
   <caption class="dim">Count method note: this table uses review-counted reach-in lines; raw token grep for <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> is higher, so the table is a conservative debt signal rather than an upper bound.</caption>
   <tr><th>Satellite</th><th>Reach-ins</th><th>Owner</th><th>Priority</th></tr>
-  <tr><td><code>combat_controller_lifecycle.gd</code></td><td class="warn">40</td><td>CombatController</td><td class="warn">P2 — ready-flow binding/bootstrap moved out; remaining lifecycle paths still compose owner dependencies and apply initialized state</td></tr>
+  <tr><td colspan="4"><span class="status done">0 documented owner-private reach-in files remain.</span></td></tr>
 </table>
 
 <div class="callout red">
-  <b>Honest accounting:</b> the five tracked files shrank by a combined ~4,200 measured lines, but Wave 7 initially relocated too much behavior into owner-coupled satellites. The owner-reach ratchet has since burned that debt down to one combat controller lifecycle satellite. PR #30 is still the template for doing it best: its store has <b>zero</b> reach-ins and ~470 lines were deleted outright.
+  <b>Honest accounting:</b> the five tracked files shrank by a combined ~4,200 measured lines, but Wave 7 initially relocated too much behavior into owner-coupled satellites. The owner-reach ratchet has since burned that debt down to zero documented files. PR #30 is still the template for doing it best: its store has <b>zero</b> reach-ins and ~470 lines were deleted outright.
 </div>
 
 <div class="callout">
-  <b>Wave 9+ guardrail:</b> <code>tools/quality/owner_reach_in_budget.gd</code> now ratchets the reach-in table above in CI. A PR fails if it adds a new owner-private reach-in file, increases any baseline, or lowers a count without lowering the checked-in baseline in the same change. This makes relocation visible mechanically instead of relying on review memory.
+  <b>Wave 9+ guardrail:</b> <code>tools/quality/owner_reach_in_budget.gd</code> now fails CI if a production script adds <code>_owner._</code>, <code>owner._</code>, or <code>_hud._</code> reach-ins. The documented baseline table is empty, so future relocation debt has to be introduced explicitly instead of slipping through review memory.
 </div>
 
 <h2 class="section">Review Program Stats</h2>
@@ -192,12 +192,12 @@
   <tr><td>Size budget ratchet exists and is enforced</td><td><span class="status done">MET</span></td><td><code>tools/quality/script_size_budget.gd</code> reports <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>. One documented exception remains after the layout-presenter, VFX-gallery, board-view, combat-view, and main-menu exceptions retired.</td></tr>
   <tr><td>New/extracted classes stay <= 400 lines and <= 30 functions</td><td><span class="status partial">PARTIAL</span></td><td>Most new collaborators are small, but several extracted presenters/coordinators still exceed the intended class budget or remain owner-bound. The newest main-menu helpers all meet the rule: focus navigator 61 / 8 functions, accessibility contract 149 / 9 functions, profile styler 22 / 1 function, texture applier 26 / 2 functions, and text catalog 54 / 2 functions.</td></tr>
   <tr><td>One extraction per PR; behavior-preserving only</td><td><span class="status partial">PARTIAL</span></td><td>Waves 1-6 mostly followed the rule. Wave 7 bulk PRs mixed several moves per PR, and PR #30 mixed one clean extraction with verified dead-code deletion; low risk, but not the strict playbook shape.</td></tr>
-  <tr><td>Tests before moves</td><td><span class="status partial">PARTIAL</span></td><td>108 suites now exist, and follow-up ownership tests cover the HUD helpers directly. Wave 7's original bulk moves still missed the strict tests-before-move bar, and <code>combat_model_test.gd</code> was not split alongside the controller work.</td></tr>
-  <tr><td>No new autoload/root reach-ins</td><td><span class="status partial">PARTIAL</span></td><td>The literal <code>get_node("/root/</code> grep gate is not present, but the larger problem is owner-private reach-ins: one extracted combat lifecycle satellite still reads/writes owner internals. The owner-reach ratchet now makes that debt mechanical.</td></tr>
+  <tr><td>Tests before moves</td><td><span class="status partial">PARTIAL</span></td><td>110 suites now exist, and follow-up ownership tests cover the HUD helpers plus the binding/lifecycle cleanup directly. Wave 7's original bulk moves still missed the strict tests-before-move bar, and <code>combat_model_test.gd</code> was not split alongside the controller work.</td></tr>
+  <tr><td>No new autoload/root reach-ins</td><td><span class="status partial">PARTIAL</span></td><td>The literal <code>get_node("/root/</code> grep gate is not present, but the owner-private reach-in gate is now strict: the checked allowlist is empty and future <code>_owner._</code>, <code>owner._</code>, or <code>_hud._</code> usage fails the ratchet.</td></tr>
   <tr><td>Facade deletion is part of done</td><td><span class="status partial">PARTIAL</span></td><td><code>run_state.gd</code>'s private log-wrapper cluster was deleted, but <code>VisualRegistry</code> remains a permanent compatibility facade and RunState still keeps many public wrappers.</td></tr>
   <tr><td>No non-test script over 800 measured lines</td><td><span class="status done">MET</span></td><td><code>script_size_budget.gd</code> reports the only remaining documented script is <code>combat_controller.gd</code> at <code>569</code>.</td></tr>
   <tr><td><code>RunState</code> contains wiring only</td><td><span class="status partial">CLOSE</span></td><td>641 lines: composition root + public facade wrappers + run-flow state. Wrapper deletion (playbook step 5) not started.</td></tr>
-  <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>569 measured lines remain after state initialization, resolve flow, turn preview, and signal wiring moved into explicit collaborators. Owner-bound lifecycle/binding satellites still need explicit dependency seams before the controller can be treated as wiring-only.</td></tr>
+  <tr><td><code>CombatController</code> contains wiring only</td><td><span class="status notdone">NOT MET</span></td><td>569 measured lines remain after state initialization, resolve flow, turn preview, and signal wiring moved into explicit collaborators. The owner-private reach-in cleanup is complete, but the controller and lifecycle/binding satellites still need a final composition-root audit before the controller can be treated as wiring-only.</td></tr>
   <tr><td>New VFX effect = no edits to listed files</td><td><span class="status done">MET</span></td><td>Route policy + presenter contract: new effect is a presenter file + one policy route entry.</td></tr>
   <tr><td>New shop offer type = no edits to listed files</td><td><span class="status done">MET</span></td><td><code>ShopService</code> delegates offer application to <code>ShopOfferApplicator</code> and exposes <code>register_offer_type_handler()</code>. <code>ShopOfferPolicy.register_content_lookup()</code> lets new types join shop generation without editing the listed god-object files; <code>shop_offer_applicator_test.gd</code> and <code>shop_offer_policy_test.gd</code> characterize the custom-type path.</td></tr>
   <tr><td>New settings row = no edits to listed files</td><td><span class="status done">MET</span></td><td>Settings command handler + overlay coordinator own the full path since Wave 2.</td></tr>
@@ -205,12 +205,12 @@
 
 <h2 class="section">Recommended Wave 9+ Queue</h2>
 <div class="card bad">
-  <h4>1 · De-shard the controller satellites <span class="dim">(Track B, P2 — oldest open debt)</span></h4>
-  <p>The binding coordinator no longer has direct owner-private reads, so the remaining Track B debt is lifecycle. Either fold lifecycle back into the controller with honest sizing, or make it real by injecting scripts/constants and returning initialized state for the controller to assign.</p>
+  <h4>1 · Finish the controller composition-root audit <span class="dim">(Track B, P2)</span></h4>
+  <p>The binding coordinator and lifecycle no longer have direct owner-private reads. The remaining Track B debt is semantic: decide which lifecycle/binding responsibilities are real collaborators and which should return to the controller as honest composition-root wiring.</p>
 </div>
 <div class="card warn">
-  <h4>2 · Add the reach-in grep gate <span class="dim">(program guardrail)</span></h4>
-  <p><code>tools/quality/owner_reach_in_budget.gd</code> now fails on <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> in production scripts, with the remaining lifecycle offender allowlisted as a shrinking ratchet.</p>
+  <h4>2 · Keep the reach-in grep gate at zero <span class="dim">(program guardrail)</span></h4>
+  <p><code>tools/quality/owner_reach_in_budget.gd</code> now fails on <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> in production scripts, with no remaining documented exceptions.</p>
 </div>
 <div class="card warn">
   <h4>3 · HUD components get their own state + tests <span class="dim">(Track E)</span></h4>
