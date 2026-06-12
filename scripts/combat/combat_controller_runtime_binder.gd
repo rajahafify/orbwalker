@@ -95,9 +95,37 @@ static func bind_lifecycle(current: Variant, script: Variant, owner: Variant) ->
 	return lifecycle
 
 
-static func bind_turn_replay_coordinator(current: Variant, script: Variant, owner: Variant) -> Variant:
+static func bind_turn_replay_coordinator(current: Variant, script: Variant, owner: Variant, run_state: Variant) -> Variant:
 	var coordinator: Variant = current if current != null else script.new()
-	coordinator.bind(owner)
+	Callable(owner, "_bind_hud_stage_coordinator").call()
+	Callable(owner, "_bind_vfx_target_resolver").call()
+	Callable(owner, "_bind_mastery_preview_coordinator").call()
+	var contract: Variant = owner.CONTRACT
+	var dependencies := {
+		"model": owner.get("_model"),
+		"player_state": owner.get("_player_state"),
+		"view": owner.get("_view"),
+		"vfx_presenter": owner.get("_combat_vfx_presenter"),
+		"hud_stage_coordinator": owner.get("_hud_stage_coordinator"),
+		"vfx_target_resolver": owner.get("_vfx_target_resolver"),
+		"mastery_preview_coordinator": owner.get("_mastery_preview_coordinator"),
+		"combat_modifiers": run_state.current_combat_modifiers(),
+	}
+	var callbacks := {
+		script.CALLBACK_COMBAT_SPEED_DURATION: Callable(owner, "_combat_speed_duration"),
+		script.CALLBACK_WAIT_COMBAT_SPEED: Callable(owner, "_wait_combat_speed"),
+		script.CALLBACK_CAN_CONTINUE: Callable(owner, "_can_continue_after_async_wait"),
+		script.CALLBACK_PLAY_IMPACT_SFX: Callable(owner, "_play_impact_sfx"),
+		script.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(owner, "_play_enemy_attack_result_sfx"),
+	}
+	var config := {
+		script.CONFIG_TURN_REPLAY_STEP_SECONDS: contract.TURN_REPLAY_STEP_SECONDS,
+		script.CONFIG_TURN_REPLAY_FINAL_HOLD_SECONDS: contract.TURN_REPLAY_FINAL_HOLD_SECONDS,
+		script.CONFIG_ELEMENTAL_CAST_SPOOL_SECONDS: contract.ELEMENTAL_CAST_SPOOL_SECONDS,
+		script.CONFIG_ELEMENTAL_CAST_LAUNCH_SECONDS: contract.ELEMENTAL_CAST_LAUNCH_SECONDS,
+		script.CONFIG_ELEMENTAL_CAST_IMPACT_HOLD_SECONDS: contract.ELEMENTAL_CAST_IMPACT_HOLD_SECONDS,
+	}
+	coordinator.bind(dependencies, callbacks, config)
 	return coordinator
 
 

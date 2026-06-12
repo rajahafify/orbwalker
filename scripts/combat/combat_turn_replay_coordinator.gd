@@ -4,16 +4,53 @@ class_name CombatTurnReplayCoordinator
 const COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT := preload("res://scripts/combat/combat_enemy_attack_replay.gd")
 const CONTRACT := preload("res://scripts/combat/combat_controller_contract.gd")
 
-var _owner: Variant = null
+const CALLBACK_COMBAT_SPEED_DURATION := "combat_speed_duration"
+const CALLBACK_WAIT_COMBAT_SPEED := "wait_combat_speed"
+const CALLBACK_CAN_CONTINUE := "can_continue"
+const CALLBACK_PLAY_IMPACT_SFX := "play_impact_sfx"
+const CALLBACK_PLAY_ENEMY_ATTACK_SFX := "play_enemy_attack_sfx"
+
+const CONFIG_TURN_REPLAY_STEP_SECONDS := "turn_replay_step_seconds"
+const CONFIG_TURN_REPLAY_FINAL_HOLD_SECONDS := "turn_replay_final_hold_seconds"
+const CONFIG_ELEMENTAL_CAST_SPOOL_SECONDS := "elemental_cast_spool_seconds"
+const CONFIG_ELEMENTAL_CAST_LAUNCH_SECONDS := "elemental_cast_launch_seconds"
+const CONFIG_ELEMENTAL_CAST_IMPACT_HOLD_SECONDS := "elemental_cast_impact_hold_seconds"
+
+var _model: Variant = null
+var _player_state: Variant = null
+var _view: Variant = null
+var _vfx_presenter: Variant = null
+var _hud_stage_coordinator: Variant = null
+var _vfx_target_resolver: Variant = null
+var _mastery_preview_coordinator: Variant = null
+var _combat_modifiers: Dictionary = {}
+var _callbacks: Dictionary = {}
+var _turn_replay_step_seconds := 0.22
+var _turn_replay_final_hold_seconds := 0.28
+var _elemental_cast_spool_seconds := 0.14
+var _elemental_cast_launch_seconds := 0.16
+var _elemental_cast_impact_hold_seconds := 0.12
 
 
-func bind(owner: Variant) -> void:
-	_owner = owner
+func bind(dependencies: Dictionary, callbacks: Dictionary, config: Dictionary = {}) -> void:
+	_model = dependencies.get("model")
+	_player_state = dependencies.get("player_state")
+	_view = dependencies.get("view")
+	_vfx_presenter = dependencies.get("vfx_presenter")
+	_hud_stage_coordinator = dependencies.get("hud_stage_coordinator")
+	_vfx_target_resolver = dependencies.get("vfx_target_resolver")
+	_mastery_preview_coordinator = dependencies.get("mastery_preview_coordinator")
+	_combat_modifiers = Dictionary(dependencies.get("combat_modifiers", {})).duplicate(true)
+	_callbacks = callbacks.duplicate()
+	_turn_replay_step_seconds = float(config.get(CONFIG_TURN_REPLAY_STEP_SECONDS, _turn_replay_step_seconds))
+	_turn_replay_final_hold_seconds = float(config.get(CONFIG_TURN_REPLAY_FINAL_HOLD_SECONDS, _turn_replay_final_hold_seconds))
+	_elemental_cast_spool_seconds = float(config.get(CONFIG_ELEMENTAL_CAST_SPOOL_SECONDS, _elemental_cast_spool_seconds))
+	_elemental_cast_launch_seconds = float(config.get(CONFIG_ELEMENTAL_CAST_LAUNCH_SECONDS, _elemental_cast_launch_seconds))
+	_elemental_cast_impact_hold_seconds = float(config.get(CONFIG_ELEMENTAL_CAST_IMPACT_HOLD_SECONDS, _elemental_cast_impact_hold_seconds))
 
 
 func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
-	_owner._bind_hud_stage_coordinator()
-	var vfx_presenter: Variant = _owner._combat_vfx_presenter
+	var vfx_presenter: Variant = _vfx_presenter
 	var enemy_damage := int(turn_log.get("enemy_damage_taken", 0))
 	var enemy_blocked := int(turn_log.get("enemy_blocked", 0))
 	var fire_damage := int(turn_log.get("fire_damage", 0))
@@ -26,8 +63,7 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var prep_armor_added := int(turn_log.get("prep_armor_added", 0))
 	var applied_flat_heal_bonus := maxi(0, heart_heal - int(turn_log.get("heart_base", 0)))
 	var applied_flat_gold_bonus := maxi(0, gold_gain - int(turn_log.get("gold_base", 0)))
-	_owner._bind_vfx_target_resolver()
-	var replay_targets: Dictionary = _owner._vfx_target_resolver.replay_targets()
+	var replay_targets: Dictionary = _vfx_target_resolver.replay_targets() if _vfx_target_resolver != null else {}
 	var enemy_target: Vector2 = replay_targets.get("enemy_target", Vector2.ZERO)
 	var player_target: Vector2 = replay_targets.get("player_target", Vector2.ZERO)
 	var player_hp_target: Vector2 = replay_targets.get("player_hp_target", Vector2.ZERO)
@@ -36,62 +72,62 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 	var player_hp_impact_size: Vector2 = replay_targets.get("player_hp_impact_size", Vector2(180, 76))
 	var armor_mastery_impact_size: Vector2 = replay_targets.get("armor_impact_size", Vector2(360, 360))
 	var gold_impact_size: Vector2 = replay_targets.get("gold_impact_size", Vector2(70, 70))
-	var damage_lifetime: float = _owner._combat_speed_duration(0.42)
-	var player_lifetime: float = _owner._combat_speed_duration(0.45)
-	var gold_lifetime: float = _owner._combat_speed_duration(0.55)
-	var label_lifetime: float = _owner._combat_speed_duration(0.72)
+	var damage_lifetime: float = _combat_speed_duration(0.42)
+	var player_lifetime: float = _combat_speed_duration(0.45)
+	var gold_lifetime: float = _combat_speed_duration(0.55)
+	var label_lifetime: float = _combat_speed_duration(0.72)
 
 	if heart_heal > 0:
 		if applied_flat_heal_bonus > 0:
 			await _apply_end_modifier_feedback(OrbType.Id.HEART, applied_flat_heal_bonus, _modifier_sources_for_key("flat_heal_bonus"))
-			if not _owner._can_continue_after_async_wait():
+			if not _can_continue():
 				return
-		var staged_hp_before_heal: int = _owner._model.staged_hud_value("player_hp", int(_owner._player_state.current_hp))
+		var staged_hp_before_heal: int = _model.staged_hud_value("player_hp", int(_player_state.current_hp))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(player_hp_target, "heart", player_hp_impact_size, player_lifetime, heart_heal)
 			vfx_presenter.spawn_result_label("+%d" % heart_heal, player_hp_target, "heal", label_lifetime, Vector2(0, -22), heart_heal)
-		_owner._play_impact_sfx("heal", "player")
-		await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_STEP_SECONDS)
-		if not _owner._can_continue_after_async_wait():
+		_play_impact_sfx("heal", "player")
+		await _wait_combat_speed(_turn_replay_step_seconds)
+		if not _can_continue():
 			return
-		_owner._hud_stage_coordinator.stage_player_hp(staged_hp_before_heal + heart_heal)
-		_mastery_preview_coordinator().release_feedback(OrbType.Id.HEART)
+		_hud_stage_coordinator.stage_player_hp(staged_hp_before_heal + heart_heal)
+		_mastery_preview_coordinator.release_feedback(OrbType.Id.HEART)
 
 	if armor_gain > 0:
-		var staged_armor_before_gain: int = _owner._model.staged_hud_value("player_armor", int(_owner._player_state.armor))
+		var staged_armor_before_gain: int = _model.staged_hud_value("player_armor", int(_player_state.armor))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(armor_mastery_target, "armor", armor_mastery_impact_size, player_lifetime, armor_gain)
 			vfx_presenter.spawn_armor_bar_linger(armor_mastery_target, armor_mastery_impact_size, player_lifetime, armor_gain)
 			vfx_presenter.spawn_mastery_beam(OrbType.Id.ARMOR, armor_mastery_target, player_lifetime)
 			vfx_presenter.spawn_result_label("+%d Armor" % armor_gain, armor_mastery_target, "armor", label_lifetime, Vector2(0, -54), armor_gain)
-		_owner._play_impact_sfx("armor", "player")
-		await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_STEP_SECONDS)
-		if not _owner._can_continue_after_async_wait():
+		_play_impact_sfx("armor", "player")
+		await _wait_combat_speed(_turn_replay_step_seconds)
+		if not _can_continue():
 			return
-		_owner._hud_stage_coordinator.stage_player_armor(staged_armor_before_gain + armor_gain)
-		_mastery_preview_coordinator().release_feedback(OrbType.Id.ARMOR)
+		_hud_stage_coordinator.stage_player_armor(staged_armor_before_gain + armor_gain)
+		_mastery_preview_coordinator.release_feedback(OrbType.Id.ARMOR)
 
 	if gold_gain > 0:
 		if applied_flat_gold_bonus > 0:
 			await _apply_end_modifier_feedback(OrbType.Id.GOLD, applied_flat_gold_bonus, _modifier_sources_for_key("flat_gold_bonus"))
-			if not _owner._can_continue_after_async_wait():
+			if not _can_continue():
 				return
-		var staged_gold_before_gain: int = _owner._model.staged_hud_value("player_gold", int(_owner._player_state.gold))
+		var staged_gold_before_gain: int = _model.staged_hud_value("player_gold", int(_player_state.gold))
 		if vfx_presenter != null:
 			vfx_presenter.spawn_replay_impact(player_target, "gold", gold_impact_size, gold_lifetime, gold_gain)
 			vfx_presenter.spawn_mastery_beam(OrbType.Id.GOLD, player_target, gold_lifetime)
 			vfx_presenter.spawn_result_label("+%d Gold" % gold_gain, player_target, "gold", label_lifetime, Vector2(0, -46), gold_gain)
-		_owner._play_impact_sfx("gold", "player")
-		await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_STEP_SECONDS)
-		if not _owner._can_continue_after_async_wait():
+		_play_impact_sfx("gold", "player")
+		await _wait_combat_speed(_turn_replay_step_seconds)
+		if not _can_continue():
 			return
-		_owner._hud_stage_coordinator.stage_gold(staged_gold_before_gain + gold_gain)
-		_mastery_preview_coordinator().release_feedback(OrbType.Id.GOLD)
+		_hud_stage_coordinator.stage_gold(staged_gold_before_gain + gold_gain)
+		_mastery_preview_coordinator.release_feedback(OrbType.Id.GOLD)
 
 	if flat_damage_bonus > 0 and int(turn_log.get("total_elemental_damage_before_flat", 0)) > 0:
 		var flat_damage_orb := _dominant_damage_orb_for_turn(turn_log)
 		await _apply_end_modifier_feedback(flat_damage_orb, flat_damage_bonus, _modifier_sources_for_key("flat_damage_bonus"))
-		if not _owner._can_continue_after_async_wait():
+		if not _can_continue():
 			return
 
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
@@ -100,36 +136,36 @@ func replay_turn_resolution_from_log(turn_log: Dictionary) -> void:
 			and not await _replay_elemental_damage_result(OrbType.Id.FIRE, fire_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime)
 		):
 			return
-		if ice_damage > 0 and not _owner._hud_stage_coordinator.staged_enemy_defeated():
+		if ice_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
 			if not await _replay_elemental_damage_result(OrbType.Id.ICE, ice_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime):
 				return
-		if earth_damage > 0 and not _owner._hud_stage_coordinator.staged_enemy_defeated():
+		if earth_damage > 0 and not _hud_stage_coordinator.staged_enemy_defeated():
 			if not await _replay_elemental_damage_result(OrbType.Id.EARTH, earth_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime):
 				return
 	elif enemy_damage > 0:
 		if not await _replay_dominant_enemy_damage(turn_log, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime, vfx_presenter):
 			return
 	if fire_damage > 0 or ice_damage > 0 or earth_damage > 0:
-		_owner._hud_stage_coordinator.stage_enemy_result()
+		_hud_stage_coordinator.stage_enemy_result()
 	if enemy_blocked > 0:
 		if vfx_presenter != null:
 			vfx_presenter.spawn_result_label("-%d Damage Blocked" % enemy_blocked, enemy_target, "block", label_lifetime, Vector2(0, 16))
-		_owner._hud_stage_coordinator.stage_enemy_result()
-	await _mastery_preview_coordinator().release_remaining(Callable(_owner, "_wait_combat_speed"), Callable(_owner, "_can_continue_after_async_wait"))
-	if not _owner._can_continue_after_async_wait():
+		_hud_stage_coordinator.stage_enemy_result()
+	await _mastery_preview_coordinator.release_remaining(_callback(CALLBACK_WAIT_COMBAT_SPEED), _callback(CALLBACK_CAN_CONTINUE))
+	if not _can_continue():
 		return
 	var enemy_attack_resolution: Dictionary = turn_log.get("enemy_attack_resolution", {})
 	if prep_armor_added > 0 and int(enemy_attack_resolution.get("incoming", 0)) > 0:
 		await _apply_end_modifier_feedback(OrbType.Id.ARMOR, prep_armor_added, _modifier_sources_for_key("start_turn_armor"))
-		if not _owner._can_continue_after_async_wait():
+		if not _can_continue():
 			return
 	await _replay_enemy_attack_result_labels(turn_log, player_target, label_lifetime)
-	if not _owner._can_continue_after_async_wait():
+	if not _can_continue():
 		return
-	await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_FINAL_HOLD_SECONDS)
-	if not _owner._can_continue_after_async_wait():
+	await _wait_combat_speed(_turn_replay_final_hold_seconds)
+	if not _can_continue():
 		return
-	_mastery_preview_coordinator().reset(RunState.current_combat_modifiers())
+	_mastery_preview_coordinator.reset(_combat_modifiers)
 
 
 func _replay_dominant_enemy_damage(
@@ -145,7 +181,7 @@ func _replay_dominant_enemy_damage(
 	if impact_orb in [OrbType.Id.FIRE, OrbType.Id.ICE, OrbType.Id.EARTH]:
 		if not await _replay_elemental_damage_result(impact_orb, enemy_damage, enemy_target, enemy_impact_size, damage_lifetime, label_lifetime):
 			return false
-		_owner._hud_stage_coordinator.stage_enemy_result()
+		_hud_stage_coordinator.stage_enemy_result()
 		return true
 	if vfx_presenter != null:
 		vfx_presenter.spawn_replay_impact(enemy_target, _mastery_impact_kind(impact_orb), enemy_impact_size, damage_lifetime, enemy_damage)
@@ -153,35 +189,30 @@ func _replay_dominant_enemy_damage(
 		vfx_presenter.spawn_result_label(
 			"%d" % enemy_damage, enemy_target, _result_label_kind_for_orb(impact_orb), label_lifetime, Vector2(0, -52), enemy_damage
 		)
-	if _owner._view != null and _owner._view.has_method("play_enemy_hit_reaction"):
-		_owner._view.play_enemy_hit_reaction(enemy_damage)
-	_owner._play_impact_sfx(_mastery_impact_kind(impact_orb), "enemy")
-	await _owner._wait_combat_speed(_owner.CONTRACT.TURN_REPLAY_STEP_SECONDS)
-	if not _owner._can_continue_after_async_wait():
+	if _view != null and _view.has_method("play_enemy_hit_reaction"):
+		_view.play_enemy_hit_reaction(enemy_damage)
+	_play_impact_sfx(_mastery_impact_kind(impact_orb), "enemy")
+	await _wait_combat_speed(_turn_replay_step_seconds)
+	if not _can_continue():
 		return false
-	_owner._hud_stage_coordinator.stage_enemy_result()
-	_mastery_preview_coordinator().release_feedback(impact_orb)
+	_hud_stage_coordinator.stage_enemy_result()
+	_mastery_preview_coordinator.release_feedback(impact_orb)
 	return true
 
 
 func _replay_elemental_damage_result(
 	orb_id: int, damage_amount: int, enemy_target: Vector2, enemy_impact_size: Vector2, damage_lifetime: float, label_lifetime: float
 ) -> bool:
-	_owner._bind_hud_stage_coordinator()
-	var vfx_presenter: Variant = _owner._combat_vfx_presenter
+	var vfx_presenter: Variant = _vfx_presenter
 	if vfx_presenter != null:
 		vfx_presenter.spawn_mastery_cast_sequence(
-			orb_id,
-			enemy_target,
-			_owner._combat_speed_duration(_owner.CONTRACT.ELEMENTAL_CAST_SPOOL_SECONDS),
-			_owner._combat_speed_duration(_owner.CONTRACT.ELEMENTAL_CAST_LAUNCH_SECONDS),
-			damage_amount
+			orb_id, enemy_target, _combat_speed_duration(_elemental_cast_spool_seconds), _combat_speed_duration(_elemental_cast_launch_seconds), damage_amount
 		)
-		await _owner._wait_combat_speed(_owner.CONTRACT.ELEMENTAL_CAST_SPOOL_SECONDS)
-		if not _owner._can_continue_after_async_wait():
+		await _wait_combat_speed(_elemental_cast_spool_seconds)
+		if not _can_continue():
 			return false
-		await _owner._wait_combat_speed(_owner.CONTRACT.ELEMENTAL_CAST_LAUNCH_SECONDS)
-		if not _owner._can_continue_after_async_wait():
+		await _wait_combat_speed(_elemental_cast_launch_seconds)
+		if not _can_continue():
 			return false
 	if vfx_presenter != null:
 		var impact_kind := _mastery_impact_kind(orb_id)
@@ -189,59 +220,54 @@ func _replay_elemental_damage_result(
 		vfx_presenter.spawn_replay_impact(enemy_target, impact_kind, resolved_impact_size, damage_lifetime, damage_amount)
 		vfx_presenter.screen_nudge(damage_amount, enemy_target)
 		vfx_presenter.spawn_result_label("%d" % damage_amount, enemy_target, _result_label_kind_for_orb(orb_id), label_lifetime, Vector2(0, -52), damage_amount)
-	if _owner._view != null and _owner._view.has_method("play_enemy_hit_reaction"):
-		_owner._view.play_enemy_hit_reaction(damage_amount)
-	_owner._play_impact_sfx(_mastery_impact_kind(orb_id), "enemy")
+	if _view != null and _view.has_method("play_enemy_hit_reaction"):
+		_view.play_enemy_hit_reaction(damage_amount)
+	_play_impact_sfx(_mastery_impact_kind(orb_id), "enemy")
 	if vfx_presenter != null:
 		await vfx_presenter.hit_stop(0.04)
-	await _owner._wait_combat_speed(_owner.CONTRACT.ELEMENTAL_CAST_IMPACT_HOLD_SECONDS)
-	if not _owner._can_continue_after_async_wait():
+	await _wait_combat_speed(_elemental_cast_impact_hold_seconds)
+	if not _can_continue():
 		return false
-	_owner._hud_stage_coordinator.stage_enemy_damage_step(damage_amount)
-	_mastery_preview_coordinator().release_feedback(orb_id)
+	_hud_stage_coordinator.stage_enemy_damage_step(damage_amount)
+	_mastery_preview_coordinator.release_feedback(orb_id)
 	return true
 
 
 func _enemy_result_impact_size(orb_id: int, fallback_size: Vector2, amount: int, vfx_presenter: Variant) -> Vector2:
-	_owner._bind_vfx_target_resolver()
-	_owner._vfx_target_resolver.bind({"view": _owner._view, "vfx_presenter": vfx_presenter})
-	return _owner._vfx_target_resolver.enemy_result_impact_size(orb_id, fallback_size, amount)
+	if _vfx_target_resolver == null:
+		return fallback_size
+	_vfx_target_resolver.bind({"view": _view, "vfx_presenter": vfx_presenter})
+	return _vfx_target_resolver.enemy_result_impact_size(orb_id, fallback_size, amount)
 
 
 func _apply_end_modifier_feedback(orb_id: int, amount: int, sources: Array[Dictionary]) -> void:
-	await _mastery_preview_coordinator().apply_end_modifier_feedback(orb_id, amount, sources, Callable(_owner, "_wait_combat_speed"))
+	await _mastery_preview_coordinator.apply_end_modifier_feedback(orb_id, amount, sources, _callback(CALLBACK_WAIT_COMBAT_SPEED))
 
 
 func _modifier_sources_for_key(key: String) -> Array[Dictionary]:
-	return _mastery_preview_coordinator().modifier_sources_for_key(key)
-
-
-func _mastery_preview_coordinator() -> Variant:
-	_owner._bind_mastery_preview_coordinator()
-	return _owner._mastery_preview_coordinator
+	return _mastery_preview_coordinator.modifier_sources_for_key(key) if _mastery_preview_coordinator != null else []
 
 
 func _replay_enemy_attack_result_labels(turn_log: Dictionary, player_target: Vector2, label_lifetime: float) -> void:
-	_owner._bind_hud_stage_coordinator()
 	var replay = COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.new()
 	var replay_dependencies := {
-		"view": _owner._view,
-		"vfx_presenter": _owner._combat_vfx_presenter,
-		"hud_stage_coordinator": _owner._hud_stage_coordinator,
+		"view": _view,
+		"vfx_presenter": _vfx_presenter,
+		"hud_stage_coordinator": _hud_stage_coordinator,
 	}
 	var replay_callbacks := {
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: Callable(_owner, "_combat_speed_duration"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_WAIT_COMBAT_SPEED: Callable(_owner, "_wait_combat_speed"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_CAN_CONTINUE: Callable(_owner, "_can_continue_after_async_wait"),
-		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_PLAY_ENEMY_ATTACK_SFX: Callable(_owner, "_play_enemy_attack_result_sfx"),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_COMBAT_SPEED_DURATION: _callback(CALLBACK_COMBAT_SPEED_DURATION),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_WAIT_COMBAT_SPEED: _callback(CALLBACK_WAIT_COMBAT_SPEED),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_CAN_CONTINUE: _callback(CALLBACK_CAN_CONTINUE),
+		COMBAT_ENEMY_ATTACK_REPLAY_SCRIPT.CALLBACK_PLAY_ENEMY_ATTACK_SFX: _callback(CALLBACK_PLAY_ENEMY_ATTACK_SFX),
 	}
-	replay.bind(replay_dependencies, replay_callbacks, {"turn_replay_step_seconds": _owner.CONTRACT.TURN_REPLAY_STEP_SECONDS})
+	replay.bind(replay_dependencies, replay_callbacks, {"turn_replay_step_seconds": _turn_replay_step_seconds})
 	await replay.replay(turn_log, player_target, label_lifetime)
 
 
 func _mastery_impact_kind(orb_id: int) -> String:
-	if _owner._combat_vfx_presenter != null:
-		return String(_owner._combat_vfx_presenter.mastery_impact_kind(orb_id))
+	if _vfx_presenter != null:
+		return String(_vfx_presenter.mastery_impact_kind(orb_id))
 	match orb_id:
 		OrbType.Id.FIRE:
 			return "fire"
@@ -267,6 +293,35 @@ func _result_label_kind_for_orb(orb_id: int) -> String:
 			return "earth"
 		_:
 			return "fire"
+
+
+func _combat_speed_duration(base_seconds: float) -> float:
+	var callback := _callback(CALLBACK_COMBAT_SPEED_DURATION)
+	if callback.is_valid():
+		return float(callback.call(base_seconds))
+	return base_seconds
+
+
+func _wait_combat_speed(base_seconds: float) -> void:
+	var callback := _callback(CALLBACK_WAIT_COMBAT_SPEED)
+	if callback.is_valid():
+		await callback.call(base_seconds)
+
+
+func _can_continue() -> bool:
+	var callback := _callback(CALLBACK_CAN_CONTINUE)
+	return bool(callback.call()) if callback.is_valid() else true
+
+
+func _play_impact_sfx(impact_kind: String, target_kind: String) -> void:
+	var callback := _callback(CALLBACK_PLAY_IMPACT_SFX)
+	if callback.is_valid():
+		callback.call(impact_kind, target_kind)
+
+
+func _callback(callback_name: String) -> Callable:
+	var callback: Callable = _callbacks.get(callback_name, Callable())
+	return callback if callback.is_valid() else Callable()
 
 
 func _dominant_orb_for_matches(matched_counts: Dictionary) -> int:

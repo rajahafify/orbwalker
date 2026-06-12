@@ -167,7 +167,6 @@
   <tr><td><code>combat_controller_binding_coordinator.gd</code></td><td class="bad">118</td><td>CombatController</td><td class="bad">P2 — composition root in exile; consider folding back</td></tr>
   <tr><td><code>player_loadout_slot_detail_popover.gd</code></td><td class="bad">98</td><td>PlayerLoadoutHud</td><td class="warn">P2 — no direct tests either</td></tr>
   <tr><td><code>player_loadout_mastery_panel.gd</code></td><td class="warn">84</td><td>PlayerLoadoutHud</td><td class="warn">P3 — has contract test</td></tr>
-  <tr><td><code>combat_turn_replay_coordinator.gd</code></td><td class="warn">67</td><td>CombatController</td><td class="warn">P3 — has focused test</td></tr>
   <tr><td><code>combat_max_vfx_overlay_lifecycle.gd</code></td><td class="warn">65</td><td>CombatMaxVfxOverlay</td><td class="warn">P3 — node construction; return-don't-write fix</td></tr>
   <tr><td><code>run_outcome_service.gd</code></td><td class="warn">35</td><td>RunState</td><td>P3</td></tr>
   <tr><td><code>run_transition_state_store.gd</code></td><td class="warn">26</td><td>RunState</td><td>P3</td></tr>
@@ -215,7 +214,7 @@
 <h2 class="section">Recommended Wave 9+ Queue</h2>
 <div class="card bad">
   <h4>1 · De-shard the controller satellites <span class="dim">(Track B, P2 — oldest open debt)</span></h4>
-  <p>Either fold <code>binding_coordinator</code> + <code>lifecycle</code> back into the controller (accepting an honest ~1,600 number), or make them real: inject scripts/constants, have bind methods <em>return</em> constructed handlers for the controller to assign. <code>turn_replay_coordinator</code> (67 reach-ins) gets the ShopSession-style hook treatment.</p>
+  <p>Either fold <code>binding_coordinator</code> + <code>lifecycle</code> back into the controller (accepting an honest ~1,600 number), or make them real: inject scripts/constants and have bind methods <em>return</em> constructed handlers for the controller to assign. <code>turn_replay_coordinator</code> has completed the ShopSession-style hook treatment and is no longer on the owner-reach allowlist.</p>
 </div>
 <div class="card warn">
   <h4>2 · Add the reach-in grep gate <span class="dim">(program guardrail)</span></h4>

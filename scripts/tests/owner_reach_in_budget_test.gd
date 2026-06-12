@@ -9,7 +9,6 @@ const EXPECTED_REACH_IN_BASELINES := {
 	"res://scripts/combat/combat_controller_binding_coordinator.gd": 118,
 	"res://scripts/ui/player_loadout_slot_detail_popover.gd": 98,
 	"res://scripts/ui/player_loadout_mastery_panel.gd": 84,
-	"res://scripts/combat/combat_turn_replay_coordinator.gd": 67,
 	"res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd": 65,
 	"res://scripts/core/run_outcome_service.gd": 35,
 	"res://scripts/core/run_transition_state_store.gd": 26,
