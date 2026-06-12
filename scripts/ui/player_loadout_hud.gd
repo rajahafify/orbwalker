@@ -32,9 +32,6 @@ const SLOT_DETAIL_BUBBLE_MIN_HEIGHT := 144.0
 const SLOT_DETAIL_BUBBLE_VIEWPORT_MARGIN := 10.0
 const SLOT_DETAIL_BUBBLE_INTERNAL_PADDING := 16.0
 const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(960.0, 468.0)
-const INTENT_PREVIEW_MIN_SEGMENT_WIDTH := 6.0
-const INTENT_PREVIEW_PULSE_SECONDS := 0.52
-const ARMOR_PREVIEW_PULSE_SECONDS := 0.84
 
 var _visuals = null
 var _selected_equipment_slot := -1
@@ -52,14 +49,6 @@ var _hover_slot_index := -1
 var _hover_slot_title := ""
 var _hover_slot_description := ""
 var _layout_override: Dictionary = {}
-var _intent_damage_preview: Dictionary = {}
-var _player_armor_overshield_rect: ColorRect
-var _intent_hp_danger_button: Button
-var _intent_hp_danger_empty: ColorRect
-var _intent_hp_danger_fill: ColorRect
-var _intent_armor_risk_rect: ColorRect
-var _intent_hp_danger_pulse_tween: Tween
-var _intent_armor_risk_tween: Tween
 var _hovered_mastery_orb_id := -1
 var _mastery_hover_payload: Dictionary = {}
 var _mastery_detail_bubble: Panel
@@ -122,21 +111,7 @@ func _on_hud_section_tree_exiting() -> void:
 
 
 func _cleanup_intent_preview_tweens() -> void:
-	_stop_intent_hp_danger_pulse()
-	if _intent_armor_risk_tween != null and is_instance_valid(_intent_armor_risk_tween):
-		_intent_armor_risk_tween.kill()
-	_intent_armor_risk_tween = null
-	if _intent_hp_danger_button != null and is_instance_valid(_intent_hp_danger_button):
-		_intent_hp_danger_button.visible = false
-	if _intent_hp_danger_empty != null and is_instance_valid(_intent_hp_danger_empty):
-		_intent_hp_danger_empty.visible = false
-	if _intent_hp_danger_fill != null and is_instance_valid(_intent_hp_danger_fill):
-		_intent_hp_danger_fill.visible = false
-	if _intent_armor_risk_rect != null and is_instance_valid(_intent_armor_risk_rect):
-		_intent_armor_risk_rect.visible = false
-		_intent_armor_risk_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-		_intent_armor_risk_rect.modulate = Color(1.0, 1.0, 1.0, 0.68)
-	_intent_damage_preview.clear()
+	_intent_preview().cleanup()
 
 
 func set_player_hud_layout_override(layout_override: Dictionary) -> void:
@@ -852,7 +827,14 @@ func _mastery_panel() -> Variant:
 func _intent_preview() -> Variant:
 	if _intent_preview_presenter == null:
 		_intent_preview_presenter = INTENT_PREVIEW_SCRIPT.new()
-		_intent_preview_presenter.bind(self)
+		_intent_preview_presenter.bind(
+			{"hud_nodes_provider": func() -> Dictionary: return _hud_nodes, "player_data_provider": func() -> Dictionary: return _player_data},
+			{
+				INTENT_PREVIEW_SCRIPT.CALLBACK_INTENT_PREVIEW_HOVERED: func(preview: Dictionary) -> void: intent_preview_hovered.emit(preview),
+				INTENT_PREVIEW_SCRIPT.CALLBACK_INTENT_BLOCK_PREVIEW_HOVERED: func(preview: Dictionary) -> void: intent_block_preview_hovered.emit(preview),
+				INTENT_PREVIEW_SCRIPT.CALLBACK_INTENT_PREVIEW_HOVER_ENDED: func() -> void: intent_preview_hover_ended.emit(),
+			}
+		)
 	return _intent_preview_presenter
 
 
