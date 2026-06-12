@@ -721,7 +721,7 @@ func _bind_view_actions() -> void:
 
 func _bind_turn_replay_coordinator() -> void:
 	_turn_replay_coordinator = CONTRACT.COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT.bind_turn_replay_coordinator(
-		_turn_replay_coordinator, CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT, self
+		_turn_replay_coordinator, CONTRACT.COMBAT_TURN_REPLAY_COORDINATOR_SCRIPT, self, RunState
 	)
 
 
