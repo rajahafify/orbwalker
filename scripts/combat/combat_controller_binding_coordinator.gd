@@ -5,6 +5,7 @@ const DEBUG_CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback
 
 var _owner: Variant = null
 var _view_actions: Variant = null
+var _setup_binder: Variant = null
 
 
 func bind(owner: Variant) -> void:
@@ -26,6 +27,11 @@ func _contract() -> Variant:
 
 func _owner_callback(method_name: String) -> Callable:
 	return Callable(_owner, method_name)
+
+
+func _ensure_setup_binder() -> void:
+	if _setup_binder == null:
+		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
 
 
 func bind_board_debug_command_handler() -> void:
@@ -55,70 +61,89 @@ func bind_board_debug_command_handler() -> void:
 
 
 func bind_debug_console() -> void:
-	if _owner._debug_runtime == null:
-		_owner._debug_runtime = _owner.CONTRACT.COMBAT_DEBUG_RUNTIME_SCRIPT.new()
-	_owner._bind_debug_state_provider()
+	var contract: Variant = _contract()
+	_ensure_setup_binder()
+	_owner_callback("_bind_debug_state_provider").call()
+	var debug_state_provider: Variant = _owner_value("_debug_state_provider")
+	var debug_state_callbacks: Dictionary = debug_state_provider.callbacks() if debug_state_provider != null else {}
 	var action_callbacks := DEBUG_CALLBACK_KEYS.controller_action_callbacks(_owner)
-	(
-		_owner
-		. _debug_runtime
-		. bind_for_combat_controller(
-			_owner._view,
-			_owner._turn_log_presenter,
-			action_callbacks,
-			int(_owner.InputPhase.LOCKED_EXTERNAL),
+	var result: Variant = (
+		_setup_binder
+		. bind_debug_console(
 			{
-				"command_output_log_color": _owner.CONTRACT.COMMAND_OUTPUT_LOG_COLOR,
-				"max_combat_log_lines": _owner.CONTRACT.MAX_COMBAT_LOG_LINES,
-				"initial_log_level": _owner.CONTRACT.LOG_LEVEL_NORMAL,
+				"debug_runtime": _owner_value("_debug_runtime"),
+				"debug_runtime_script": contract.COMBAT_DEBUG_RUNTIME_SCRIPT,
+				"view": _owner_value("_view"),
+				"turn_log_presenter": _owner_value("_turn_log_presenter"),
+				"action_callbacks": action_callbacks,
+				"debug_state_callbacks": debug_state_callbacks,
 			},
-			_owner._debug_state_provider.callbacks()
-		)
-	)
-	_owner._debug_console = _owner._debug_runtime.console()
-
-
-func bind_settings_command_handler() -> void:
-	if _owner._settings_command_handler == null:
-		_owner._settings_command_handler = _owner.CONTRACT.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT.new()
-	var current_turn_index_provider := func() -> int: return int(_owner._combat.turn_index if _owner._combat != null else 1)
-	var trace_and_change_scene := func(scene_path: String, trace_source: String, trace_mark: String) -> void:
-		_owner._trace_and_change_scene_to_target(scene_path, _owner._flow_trace_route_id_value(), trace_source, trace_mark)
-	_owner._settings_command_handler.bind_for_combat_controller(
-		_owner._view,
-		_owner._model,
-		_owner._resolve_presenter,
-		_owner,
-		current_turn_index_provider,
-		trace_and_change_scene,
-		int(_owner.InputPhase.PLAYER_INPUT),
-		int(_owner.InputPhase.LOCKED_EXTERNAL),
-		_owner.CONTRACT.STATUS_COLOR_NEUTRAL
-	)
-
-
-func bind_board_controller() -> void:
-	if _owner._board_controller == null:
-		return
-	(
-		_owner
-		. _board_controller
-		. bind(
+			{},
 			{
-				"board_view": _owner._board_view,
-				"board_model": _owner._board_model,
-			},
-			{
-				"swap_animation_seconds": _owner.CONTRACT.SWAP_ANIMATION_SECONDS,
-				"swap_sound_callback": Callable(_owner, "_on_drag_swap_success"),
-				"match_groups_callback": Callable(_owner, "_drag_match_groups"),
-				"move_timer_seconds_callback": Callable(_owner, "_drag_move_timer_seconds"),
-				"drag_input_result_callback": Callable(_owner, "_on_board_drag_input_result"),
-				"hovered_orb_changed_callback": Callable(_owner, "_on_board_hovered_orb_changed"),
+				"locked_external_phase_value": int(_owner.InputPhase.LOCKED_EXTERNAL),
+				"command_output_log_color": contract.COMMAND_OUTPUT_LOG_COLOR,
+				"max_combat_log_lines": contract.MAX_COMBAT_LOG_LINES,
+				"initial_log_level": contract.LOG_LEVEL_NORMAL,
 			}
 		)
 	)
-	_owner._apply_feedback_settings()
+	if result is Dictionary:
+		_set_owner_value("_debug_runtime", result.get("debug_runtime"))
+		_set_owner_value("_debug_console", result.get("debug_console"))
+
+
+func bind_settings_command_handler() -> void:
+	var contract: Variant = _contract()
+	_ensure_setup_binder()
+	var current_turn_index_provider := func() -> int:
+		var combat: Variant = _owner_value("_combat")
+		return int(combat.turn_index if combat != null else 1)
+	var trace_and_change_scene := func(scene_path: String, trace_source: String, trace_mark: String) -> void:
+		_owner_callback("_trace_and_change_scene_to_target").call(scene_path, _owner_callback("_flow_trace_route_id_value").call(), trace_source, trace_mark)
+	var handler: Variant = (
+		_setup_binder
+		. bind_settings_command_handler(
+			{
+				"settings_command_handler": _owner_value("_settings_command_handler"),
+				"settings_command_handler_script": contract.COMBAT_SETTINGS_COMMAND_HANDLER_SCRIPT,
+				"view": _owner_value("_view"),
+				"model": _owner_value("_model"),
+				"resolve_presenter": _owner_value("_resolve_presenter"),
+				"settings_owner": _owner,
+			},
+			{"current_turn_index_provider": current_turn_index_provider, "trace_and_change_scene": trace_and_change_scene},
+			{
+				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
+				"locked_external_phase_value": int(_owner.InputPhase.LOCKED_EXTERNAL),
+				"status_color_neutral": contract.STATUS_COLOR_NEUTRAL,
+			}
+		)
+	)
+	_set_owner_value("_settings_command_handler", handler)
+
+
+func bind_board_controller() -> void:
+	var contract: Variant = _contract()
+	_ensure_setup_binder()
+	(
+		_setup_binder
+		. bind_board_controller(
+			{
+				"board_controller": _owner_value("_board_controller"),
+				"board_view": _owner_value("_board_view"),
+				"board_model": _owner_value("_board_model"),
+			},
+			{
+				"swap_sound": _owner_callback("_on_drag_swap_success"),
+				"match_groups": _owner_callback("_drag_match_groups"),
+				"move_timer_seconds": _owner_callback("_drag_move_timer_seconds"),
+				"drag_input_result": _owner_callback("_on_board_drag_input_result"),
+				"hovered_orb_changed": _owner_callback("_on_board_hovered_orb_changed"),
+				"apply_feedback_settings": _owner_callback("_apply_feedback_settings"),
+			},
+			{"swap_animation_seconds": contract.SWAP_ANIMATION_SECONDS}
+		)
+	)
 
 
 func bind_input_command_handler() -> void:

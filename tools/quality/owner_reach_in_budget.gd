@@ -13,7 +13,7 @@ const REACH_IN_PATTERNS := [
 const DOCUMENTED_REACH_INS := {
 	"res://scripts/combat/combat_controller_lifecycle.gd": 98,
 	"res://scripts/ui/player_loadout_intent_preview.gd": 129,
-	"res://scripts/combat/combat_controller_binding_coordinator.gd": 82,
+	"res://scripts/combat/combat_controller_binding_coordinator.gd": 63,
 	"res://scripts/ui/player_loadout_slot_detail_popover.gd": 98,
 	"res://scripts/ui/player_loadout_mastery_panel.gd": 84,
 	"res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd": 65,
