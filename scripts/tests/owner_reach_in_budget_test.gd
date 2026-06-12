@@ -4,7 +4,7 @@ class_name OwnerReachInBudgetTest
 const OWNER_REACH_IN_BUDGET_PATH := "res://tools/quality/owner_reach_in_budget.gd"
 
 const EXPECTED_REACH_IN_BASELINES := {
-	"res://scripts/combat/combat_controller_lifecycle.gd": 138,
+	"res://scripts/combat/combat_controller_lifecycle.gd": 118,
 	"res://scripts/ui/player_loadout_intent_preview.gd": 129,
 	"res://scripts/combat/combat_controller_binding_coordinator.gd": 82,
 	"res://scripts/ui/player_loadout_slot_detail_popover.gd": 98,

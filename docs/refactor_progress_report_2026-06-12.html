@@ -162,7 +162,7 @@
 <table class="grid">
   <caption class="dim">Count method note: this table uses review-counted reach-in lines; raw token grep for <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> is higher, so the table is a conservative debt signal rather than an upper bound.</caption>
   <tr><th>Satellite</th><th>Reach-ins</th><th>Owner</th><th>Priority</th></tr>
-  <tr><td><code>combat_controller_lifecycle.gd</code></td><td class="bad">138</td><td>CombatController</td><td class="bad">P2 — runtime-helper and combat-state initialization moved out; drag/ready flow still writes owner fields</td></tr>
+  <tr><td><code>combat_controller_lifecycle.gd</code></td><td class="bad">118</td><td>CombatController</td><td class="bad">P2 — runtime-helper, state initialization, and resolve flow moved out; ready/signal flow still writes owner fields</td></tr>
   <tr><td><code>player_loadout_intent_preview.gd</code></td><td class="bad">129</td><td>PlayerLoadoutHud</td><td class="warn">P2 — no direct tests either</td></tr>
   <tr><td><code>combat_controller_binding_coordinator.gd</code></td><td class="warn">82</td><td>CombatController</td><td class="bad">P2 — composition root in exile; continue explicit dependency binding</td></tr>
   <tr><td><code>player_loadout_slot_detail_popover.gd</code></td><td class="bad">98</td><td>PlayerLoadoutHud</td><td class="warn">P2 — no direct tests either</td></tr>
