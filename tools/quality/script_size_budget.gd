@@ -44,13 +44,6 @@ const DOCUMENTED_EXCEPTIONS := {
 		"reason":
 		"Player loadout HUD facade is at the half-size target, but Wave 7 panel/popover/preview components still depend on HUD private state; Wave 8 must bind component-owned nodes/state and add popover/intent characterization.",
 	},
-	"res://scripts/ui/visual_registry_backend.gd":
-	{
-		"baseline": 877,
-		"owner": "R-P1-3",
-		"reason":
-		"VisualRegistry facade is frozen as a thin compatibility layer; VisualRegistryBackend is the real Track C debt counter and still owns enemy lookup, atlas slicing, chrome, and combat UI lookup families to split next.",
-	},
 	"res://scripts/main_menu/main_menu_view.gd":
 	{
 		"baseline": 1007,

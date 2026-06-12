@@ -4,35 +4,24 @@ class_name VisualRegistryBackend
 const VISUAL_REGISTRY_DATA_SCRIPT := preload("res://scripts/ui/visual_registry_data.gd")
 const VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/ui/visual_registry_texture_factory.gd")
 const VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT := preload("res://scripts/ui/visual_registry_texture_store.gd")
-const ORB_TYPE_SCRIPT := preload("res://scripts/board/orb_type.gd")
+const VISUAL_REGISTRY_ATLAS_STORE_SCRIPT := preload("res://scripts/ui/visual_registry_atlas_store.gd")
+const VISUAL_REGISTRY_VFX_STORE_SCRIPT := preload("res://scripts/ui/visual_registry_vfx_store.gd")
 const PATH_COMBAT_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_BACKGROUND
 const PATH_COMBAT_ENEMY_STAGE_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_COMBAT_ENEMY_STAGE_SHEET
 const PATH_SHOP_BACKGROUND := VISUAL_REGISTRY_DATA_SCRIPT.PATH_SHOP_BACKGROUND
 const SHOP_MERCHANT_HEADER_CANDIDATE_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.SHOP_MERCHANT_HEADER_CANDIDATE_PATHS
-const PATH_ORB_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_ORB_SHEET
-const PATH_INTENT_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_INTENT_SHEET
-const PATH_RARITY_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RARITY_SHEET
-const PATH_MASTERY_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_MASTERY_SHEET
-const PATH_ITEM_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_ITEM_SHEET
-const PATH_RELIC_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RELIC_SHEET
-const PATH_DERIVED_ICON_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_ICON_DIR
-const PATH_DERIVED_ORB_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_ORB_DIR
 const PATH_DERIVED_HUD_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_HUD_DIR
 const PATH_DERIVED_CHROME_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_CHROME_DIR
 const PATH_DERIVED_COMBAT_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_COMBAT_UI_DIR
 const PATH_DERIVED_COMBAT_LAYERS_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_COMBAT_LAYERS_DIR
-const PATH_DERIVED_VFX_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_DERIVED_VFX_DIR
 const PATH_UI_FRAME_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_FRAME_SHEET
 const PATH_UI_BAR_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_BAR_SHEET
 const PATH_UI_SHOP_CARD_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_UI_SHOP_CARD_SHEET
-const PATH_VFX_SHEET := VISUAL_REGISTRY_DATA_SCRIPT.PATH_VFX_SHEET
 const PATH_HERO_PORTRAIT := VISUAL_REGISTRY_DATA_SCRIPT.PATH_HERO_PORTRAIT
 const PATH_FALLBACK_HERO_PORTRAIT := VISUAL_REGISTRY_DATA_SCRIPT.PATH_FALLBACK_HERO_PORTRAIT
 const PATH_RUNTIME_MANIFEST := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_MANIFEST
 const PATH_RUNTIME_COLLECTION_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_COLLECTION_UI_DIR
 const PATH_RUNTIME_SHOP_UI_DIR := VISUAL_REGISTRY_DATA_SCRIPT.PATH_RUNTIME_SHOP_UI_DIR
-const _INTENT_INDEX_BY_TYPE := VISUAL_REGISTRY_DATA_SCRIPT.INTENT_INDEX_BY_TYPE
-const _RARITY_INDEX := VISUAL_REGISTRY_DATA_SCRIPT.RARITY_INDEX
 
 const _ENEMY_PORTRAIT_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS
 
@@ -46,36 +35,17 @@ const _ENEMY_STAGE_BACKGROUND_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_B
 
 const _ENEMY_SPRITE_PATHS := VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS
 
-const _ICON_INDEX_BY_KEY := VISUAL_REGISTRY_DATA_SCRIPT.ICON_INDEX_BY_KEY
-const _RELIC_INDEX_BY_KEY := VISUAL_REGISTRY_DATA_SCRIPT.RELIC_INDEX_BY_KEY
-const _MASTERY_ORB_BY_ICON_KEY := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ORB_BY_ICON_KEY
-const _MASTERY_BEAM_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_BEAM_BY_ORB_ID
-const _MASTERY_CARD_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID
-const _MASTERY_ICON_BY_ORB_ID := VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID
-const _STABLE_PLACEHOLDER_ICON_COLORS := VISUAL_REGISTRY_DATA_SCRIPT.STABLE_PLACEHOLDER_ICON_COLORS
-
-static var _derived_orb_filename_by_id: Dictionary = VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id()
-static var _runtime_orb_key_by_id: Dictionary = VISUAL_REGISTRY_DATA_SCRIPT.runtime_orb_key_by_id()
-
 var _warned_keys: Dictionary = {}
-var _placeholder_cache: Dictionary = {}
 var _enemy_portrait_textures: Dictionary = {}
 var _enemy_stage_background_textures: Dictionary = {}
 var _enemy_sprite_textures: Dictionary = {}
 var _combat_enemy_stage_textures: Dictionary = {}
-var _orb_textures: Dictionary = {}
-var _intent_textures: Dictionary = {}
-var _rarity_textures: Dictionary = {}
-var _mastery_textures: Dictionary = {}
-var _icon_textures: Dictionary = {}
-var _relic_textures: Dictionary = {}
-var _derived_icon_textures: Dictionary = {}
 var _derived_hud_textures: Dictionary = {}
 var _derived_chrome_textures: Dictionary = {}
 var _derived_combat_ui_textures: Dictionary = {}
-var _vfx_textures: Dictionary = {}
-var _texture_factory: Resource = VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new()
 var _texture_store = VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new()
+var _atlas_store = VISUAL_REGISTRY_ATLAS_STORE_SCRIPT.new()
+var _vfx_store = VISUAL_REGISTRY_VFX_STORE_SCRIPT.new()
 
 var _combat_background: Texture2D
 var _combat_enemy_stage_sheet: Texture2D
@@ -89,13 +59,6 @@ var _backgrounds_loaded := false
 var _shop_merchant_header_loaded := false
 var _hero_portrait_loaded := false
 var _ui_sheets_loaded := false
-var _orb_textures_built := false
-var _intent_textures_built := false
-var _rarity_textures_built := false
-var _mastery_textures_built := false
-var _icon_textures_built := false
-var _relic_textures_built := false
-var _vfx_textures_built := false
 
 
 func _init() -> void:
@@ -107,32 +70,30 @@ static func asset_contract_paths() -> Dictionary:
 
 
 static func lookup_table_alias_contract() -> Dictionary:
-	return {
-		"intent_index_by_type": is_same(_INTENT_INDEX_BY_TYPE, VISUAL_REGISTRY_DATA_SCRIPT.INTENT_INDEX_BY_TYPE),
-		"rarity_index": is_same(_RARITY_INDEX, VISUAL_REGISTRY_DATA_SCRIPT.RARITY_INDEX),
+	var contract := {
 		"enemy_portrait_paths": is_same(_ENEMY_PORTRAIT_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_PORTRAIT_PATHS),
 		"enemy_stage_background_paths": is_same(_ENEMY_STAGE_BACKGROUND_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_STAGE_BACKGROUND_PATHS),
 		"enemy_sprite_paths": is_same(_ENEMY_SPRITE_PATHS, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_SPRITE_PATHS),
-		"derived_orb_filename_by_id": is_same(_derived_orb_filename_by_id, VISUAL_REGISTRY_DATA_SCRIPT.derived_orb_filename_by_id()),
-		"runtime_orb_key_by_id": is_same(_runtime_orb_key_by_id, VISUAL_REGISTRY_DATA_SCRIPT.runtime_orb_key_by_id()),
 		"combat_stage_alias_by_enemy_id": is_same(_COMBAT_STAGE_ALIAS_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_ALIAS_BY_ENEMY_ID),
 		"runtime_enemy_alias_by_id": is_same(_RUNTIME_ENEMY_ALIAS_BY_ID, VISUAL_REGISTRY_DATA_SCRIPT.RUNTIME_ENEMY_ALIAS_BY_ID),
 		"placeholder_runtime_enemy_keys": is_same(_PLACEHOLDER_RUNTIME_ENEMY_KEYS, VISUAL_REGISTRY_DATA_SCRIPT.PLACEHOLDER_RUNTIME_ENEMY_KEYS),
 		"combat_stage_sheet_index_by_enemy_id":
 		is_same(_COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID, VISUAL_REGISTRY_DATA_SCRIPT.COMBAT_STAGE_SHEET_INDEX_BY_ENEMY_ID),
 		"enemy_visual_profiles": is_same(_ENEMY_VISUAL_PROFILES, VISUAL_REGISTRY_DATA_SCRIPT.ENEMY_VISUAL_PROFILES),
-		"icon_index_by_key": is_same(_ICON_INDEX_BY_KEY, VISUAL_REGISTRY_DATA_SCRIPT.ICON_INDEX_BY_KEY),
-		"relic_index_by_key": is_same(_RELIC_INDEX_BY_KEY, VISUAL_REGISTRY_DATA_SCRIPT.RELIC_INDEX_BY_KEY),
-		"mastery_orb_by_icon_key": is_same(_MASTERY_ORB_BY_ICON_KEY, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ORB_BY_ICON_KEY),
-		"mastery_beam_by_orb_id": is_same(_MASTERY_BEAM_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_BEAM_BY_ORB_ID),
-		"mastery_card_by_orb_id": is_same(_MASTERY_CARD_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_CARD_BY_ORB_ID),
-		"mastery_icon_by_orb_id": is_same(_MASTERY_ICON_BY_ORB_ID, VISUAL_REGISTRY_DATA_SCRIPT.MASTERY_ICON_BY_ORB_ID),
-		"stable_placeholder_icon_colors": is_same(_STABLE_PLACEHOLDER_ICON_COLORS, VISUAL_REGISTRY_DATA_SCRIPT.STABLE_PLACEHOLDER_ICON_COLORS),
 		"texture_factory_is_resource":
 		VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new() is Resource and VISUAL_REGISTRY_TEXTURE_FACTORY_SCRIPT.new().has_method("post_match_vfx_textures"),
 		"texture_store_is_refcounted":
 		VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new() is RefCounted and VISUAL_REGISTRY_TEXTURE_STORE_SCRIPT.new().has_method("runtime_texture"),
+		"atlas_store_is_refcounted":
+		VISUAL_REGISTRY_ATLAS_STORE_SCRIPT.new() is RefCounted and VISUAL_REGISTRY_ATLAS_STORE_SCRIPT.new().has_method("clean_icon_for_key"),
+		"vfx_store_is_refcounted":
+		VISUAL_REGISTRY_VFX_STORE_SCRIPT.new() is RefCounted and VISUAL_REGISTRY_VFX_STORE_SCRIPT.new().has_method("mastery_impact_texture"),
 	}
+	for key in VISUAL_REGISTRY_ATLAS_STORE_SCRIPT.lookup_table_alias_contract().keys():
+		contract[key] = VISUAL_REGISTRY_ATLAS_STORE_SCRIPT.lookup_table_alias_contract()[key]
+	for key in VISUAL_REGISTRY_VFX_STORE_SCRIPT.lookup_table_alias_contract().keys():
+		contract[key] = VISUAL_REGISTRY_VFX_STORE_SCRIPT.lookup_table_alias_contract()[key]
+	return contract
 
 
 func combat_background() -> Texture2D:
@@ -259,189 +220,51 @@ func hero_portrait() -> Texture2D:
 
 
 func orb_texture(orb_id: int) -> Texture2D:
-	_ensure_orb_textures()
-	return _orb_textures.get(orb_id, placeholder_texture("orb_missing"))
+	return _atlas_store.orb_texture(orb_id)
 
 
 func intent_badge(intent_type: int) -> Texture2D:
-	var hud_key := ""
-	match intent_type:
-		0:
-			hud_key = "intent_attack"
-		1:
-			hud_key = "intent_block"
-		2:
-			hud_key = "intent_attack_block"
-	if hud_key != "":
-		var hud_badge := clean_hud_texture(hud_key)
-		if hud_badge != null:
-			return hud_badge
-	_ensure_intent_textures()
-	var index := int(_INTENT_INDEX_BY_TYPE.get(intent_type, -1))
-	if index < 0:
-		_warn_missing("intent_type:%d" % intent_type)
-		return placeholder_texture("intent_missing")
-	var texture: Texture2D = _intent_textures.get(index, null)
-	if texture != null:
-		return texture
-	return null
+	return _atlas_store.intent_badge(intent_type, Callable(self, "clean_hud_texture"))
 
 
 func rarity_badge(rarity: String) -> Texture2D:
-	var key := rarity.to_lower()
-	var hud_badge := hud_texture("rarity_%s" % key, false)
-	if hud_badge != null:
-		return hud_badge
-	var index := int(_RARITY_INDEX.get(key, -1))
-	if index < 0:
-		_warn_missing("rarity:%s" % rarity)
-		return placeholder_texture("rarity_missing")
-	_ensure_rarity_textures()
-	return _rarity_textures.get(index, placeholder_texture("rarity_missing"))
+	return _atlas_store.rarity_badge(rarity, Callable(self, "hud_texture"))
 
 
 func mastery_icon(orb_id: int) -> Texture2D:
-	var runtime_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
-	if runtime_key != "":
-		var runtime_texture := _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "mastery", runtime_key)
-		if runtime_texture != null:
-			return runtime_texture
-	_ensure_mastery_textures()
-	return _mastery_textures.get(orb_id, placeholder_texture("mastery_missing"))
+	return _atlas_store.mastery_icon(orb_id)
 
 
 func menu_mastery_icon(orb_id: int) -> Texture2D:
-	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
-		return placeholder_texture("mastery_missing")
-	var icon_key := String(_MASTERY_ICON_BY_ORB_ID.get(orb_id, ""))
-	if icon_key == "":
-		return placeholder_texture("mastery_missing")
-	var runtime_icon := _runtime_icon_texture(icon_key)
-	if runtime_icon != null:
-		return runtime_icon
-	var menu_icon := _load_derived_icon(icon_key)
-	if menu_icon != null:
-		return menu_icon
-	var fallback := mastery_icon(orb_id)
-	return fallback if fallback != null else placeholder_texture("mastery_missing")
+	return _atlas_store.menu_mastery_icon(orb_id)
 
 
 func icon_for_key(icon_key: String) -> Texture2D:
-	var clean_icon := clean_icon_for_key(icon_key, false)
-	if clean_icon != null:
-		return clean_icon
-	_warn_missing("icon_key:%s" % icon_key)
-	return placeholder_texture("icon_missing")
+	return _atlas_store.icon_for_key(icon_key)
 
 
 func mastery_beam_texture(orb_id: int) -> Texture2D:
-	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
-		return null
-	var beam_suffix := String(_MASTERY_BEAM_BY_ORB_ID.get(orb_id, ""))
-	if beam_suffix == "":
-		return null
-	return _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_beam_%s" % beam_suffix, _vfx_textures)
+	return _vfx_store.mastery_beam_texture(orb_id)
 
 
 func mastery_panel_frame_texture() -> Texture2D:
-	var frame_texture := chrome_texture("mastery_panel_frame", false)
-	if frame_texture != null:
-		return frame_texture
-	return placeholder_texture("mastery_panel_frame_missing", Color(0.10, 0.10, 0.14, 0.94), Vector2i(8, 8))
+	return _atlas_store.mastery_panel_frame_texture(Callable(self, "chrome_texture"))
 
 
 func mastery_card_texture(orb_id: int) -> Texture2D:
-	if not ORB_TYPE_SCRIPT.is_valid_id(orb_id):
-		return _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_missing", _derived_chrome_textures)
-	var card_suffix := String(_MASTERY_CARD_BY_ORB_ID.get(orb_id, ""))
-	if card_suffix == "":
-		return _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_missing", _derived_chrome_textures)
-	var card_texture := _load_derived_texture(PATH_DERIVED_CHROME_DIR, "mastery_card_%s" % card_suffix, _derived_chrome_textures)
-	if card_texture != null:
-		return card_texture
-	card_texture = _load_derived_texture(PATH_DERIVED_HUD_DIR, "mastery_card_%s" % card_suffix, _derived_hud_textures)
-	if card_texture != null:
-		return card_texture
-	return mastery_icon(orb_id)
+	return _atlas_store.mastery_card_texture(orb_id)
 
 
 func mastery_shell_texture() -> Texture2D:
-	var shell_texture := _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_shell_armor", _vfx_textures)
-	if shell_texture != null:
-		return shell_texture
-	shell_texture = _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_shell", _vfx_textures)
-	if shell_texture != null:
-		return shell_texture
-	return placeholder_texture("mastery_shell_missing", Color(0.25, 0.34, 0.52, 0.90), Vector2i(120, 120))
+	return _vfx_store.mastery_shell_texture()
 
 
 func mastery_impact_texture(kind: String) -> Texture2D:
-	var clean_kind := kind.strip_edges().to_lower()
-	if clean_kind == "":
-		return null
-	_ensure_vfx_textures()
-	var post_match_key := "post_match_%s" % clean_kind
-	if _vfx_textures.has(post_match_key):
-		return _vfx_textures[post_match_key]
-	if clean_kind == "heal":
-		return _vfx_textures.get("post_match_heart", null)
-	if clean_kind == "block":
-		return _vfx_textures.get("post_match_armor", null)
-	if clean_kind == "damage":
-		return _vfx_textures.get("post_match_damage", null)
-	if clean_kind == "armor":
-		var armor_texture: Texture2D = _vfx_textures.get("post_match_armor", null)
-		if armor_texture != null:
-			return armor_texture
-		return mastery_shell_texture()
-	var impact_lookup := {
-		"fire": "hit",
-		"ice": "hit",
-		"earth": "hit",
-		"heart": "heal",
-		"gold": "gold",
-	}
-	var impact_suffix := String(impact_lookup.get(clean_kind, ""))
-	if impact_suffix != "":
-		var impact_texture := _load_derived_texture(PATH_DERIVED_VFX_DIR, "mastery_%s_impact" % impact_suffix, _vfx_textures)
-		if impact_texture != null:
-			return impact_texture
-	return null
+	return _vfx_store.mastery_impact_texture(kind)
 
 
 func clean_icon_for_key(icon_key: String, use_placeholder: bool = true) -> Texture2D:
-	var normalized_key := icon_key.strip_edges().to_lower()
-	var runtime_icon := _runtime_icon_texture(normalized_key)
-	if runtime_icon != null:
-		return runtime_icon
-	if _MASTERY_ORB_BY_ICON_KEY.has(normalized_key):
-		return mastery_icon(int(_MASTERY_ORB_BY_ICON_KEY[normalized_key]))
-	var relic_index := int(_RELIC_INDEX_BY_KEY.get(normalized_key, -1))
-	if relic_index >= 0:
-		_ensure_relic_textures()
-		var relic_texture: Texture2D = _relic_textures.get(relic_index, null)
-		if relic_texture != null:
-			return relic_texture
-	var concrete_icon := _load_derived_icon(normalized_key)
-	if concrete_icon != null:
-		return concrete_icon
-	var index := int(_ICON_INDEX_BY_KEY.get(normalized_key, -1))
-	if index >= 0:
-		_ensure_icon_textures()
-		var atlas_texture: Texture2D = _icon_textures.get(index, null)
-		if atlas_texture != null:
-			return atlas_texture
-	if _STABLE_PLACEHOLDER_ICON_COLORS.has(normalized_key):
-		var placeholder_color: Color = _STABLE_PLACEHOLDER_ICON_COLORS[normalized_key]
-		return placeholder_texture("stable_icon_%s" % normalized_key, placeholder_color)
-	if index < 0:
-		if use_placeholder:
-			_warn_missing("icon_key:%s" % icon_key)
-			return placeholder_texture("icon_missing")
-		return null
-	if use_placeholder:
-		return placeholder_texture("icon_missing")
-	return null
+	return _atlas_store.clean_icon_for_key(icon_key, use_placeholder)
 
 
 func ui_frame_sheet() -> Texture2D:
@@ -735,17 +558,11 @@ func clean_chrome_texture(key: String) -> Texture2D:
 
 
 func vfx_texture(effect_name: String) -> Texture2D:
-	_ensure_vfx_textures()
-	var key := effect_name.to_lower()
-	return _vfx_textures.get(key, placeholder_texture("vfx_missing"))
+	return _vfx_store.vfx_texture(effect_name)
 
 
 func placeholder_texture(key: String, color: Color = Color(0.32, 0.32, 0.36, 1.0), size: Vector2i = Vector2i(96, 96)) -> Texture2D:
-	if _placeholder_cache.has(key):
-		return _placeholder_cache[key]
-	var texture: Texture2D = _texture_factory.placeholder_texture(color, size)
-	_placeholder_cache[key] = texture
-	return texture
+	return _atlas_store.placeholder_texture(key, color, size)
 
 
 func _ensure_background_textures() -> void:
@@ -789,214 +606,6 @@ func _ensure_ui_sheets() -> void:
 	_ui_shop_cards = _texture_store.safe_load_texture(PATH_UI_SHOP_CARD_SHEET, "ui_shop_card_sheet")
 
 
-func _ensure_orb_textures() -> void:
-	if _orb_textures_built:
-		return
-	_orb_textures_built = true
-	_build_orb_textures()
-
-
-func _ensure_intent_textures() -> void:
-	if _intent_textures_built:
-		return
-	_intent_textures_built = true
-	_build_intent_textures()
-
-
-func _ensure_rarity_textures() -> void:
-	if _rarity_textures_built:
-		return
-	_rarity_textures_built = true
-	_build_rarity_textures()
-
-
-func _ensure_mastery_textures() -> void:
-	if _mastery_textures_built:
-		return
-	_mastery_textures_built = true
-	_build_mastery_textures()
-
-
-func _ensure_icon_textures() -> void:
-	if _icon_textures_built:
-		return
-	_icon_textures_built = true
-	_build_icon_textures()
-
-
-func _ensure_relic_textures() -> void:
-	if _relic_textures_built:
-		return
-	_relic_textures_built = true
-	_build_relic_textures()
-
-
-func _ensure_vfx_textures() -> void:
-	if _vfx_textures_built:
-		return
-	_vfx_textures_built = true
-	_build_vfx_textures()
-
-
-func _build_orb_textures() -> void:
-	if _try_build_runtime_orb_textures():
-		return
-	if _try_build_derived_orb_textures():
-		return
-	var sheet := _texture_store.safe_load_texture(PATH_ORB_SHEET, "orb_sheet")
-	if sheet == null:
-		return
-	var columns := 3
-	var cell_width := float(sheet.get_width()) / float(columns)
-	var cell_height := float(sheet.get_height()) / 2.0
-	var orb_ids: Array[int] = [
-		ORB_TYPE_SCRIPT.Id.FIRE,
-		ORB_TYPE_SCRIPT.Id.ICE,
-		ORB_TYPE_SCRIPT.Id.EARTH,
-		ORB_TYPE_SCRIPT.Id.HEART,
-		ORB_TYPE_SCRIPT.Id.ARMOR,
-		ORB_TYPE_SCRIPT.Id.GOLD,
-	]
-	for index in orb_ids.size():
-		var column := index % columns
-		var row := int(floor(float(index) / float(columns)))
-		var region := Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
-		var orb_id := int(orb_ids[index])
-		_orb_textures[orb_id] = _atlas_region(sheet, region)
-	if _orb_textures.size() < orb_ids.size():
-		_try_build_derived_orb_textures()
-
-
-func _try_build_runtime_orb_textures() -> bool:
-	var loaded_orbs: Dictionary = {}
-	for orb_id in _runtime_orb_key_by_id.keys():
-		var runtime_key := String(_runtime_orb_key_by_id[orb_id])
-		var texture := _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "orbs", runtime_key)
-		if texture == null:
-			return false
-		loaded_orbs[orb_id] = texture
-	if loaded_orbs.size() != _runtime_orb_key_by_id.size():
-		return false
-	for orb_id in loaded_orbs.keys():
-		_orb_textures[orb_id] = loaded_orbs[orb_id]
-	return true
-
-
-func _try_build_derived_orb_textures() -> bool:
-	var loaded_orbs: Dictionary = {}
-	for orb_id in _derived_orb_filename_by_id.keys():
-		var file_name := String(_derived_orb_filename_by_id[orb_id])
-		if file_name == "":
-			return false
-		var path := "%s/%s" % [PATH_DERIVED_ORB_DIR, file_name]
-		var texture := _texture_store.safe_load_texture(path, "derived_orb:%s" % file_name)
-		if texture == null:
-			return false
-		loaded_orbs[orb_id] = texture
-	if loaded_orbs.size() != _derived_orb_filename_by_id.size():
-		return false
-	for orb_id in loaded_orbs.keys():
-		_orb_textures[orb_id] = loaded_orbs[orb_id]
-	return true
-
-
-func _build_intent_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_INTENT_SHEET, "intent_sheet")
-	if sheet == null:
-		return
-	var count := 3
-	var slice_width := float(sheet.get_width()) / float(count)
-	for index in count:
-		_intent_textures[index] = _atlas_region(sheet, Rect2(slice_width * index, 0.0, slice_width, float(sheet.get_height())))
-
-
-func _build_rarity_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_RARITY_SHEET, "rarity_sheet")
-	if sheet == null:
-		return
-	var count := 3
-	var slice_width := float(sheet.get_width()) / float(count)
-	for index in count:
-		_rarity_textures[index] = _atlas_region(sheet, Rect2(slice_width * index, 0.0, slice_width, float(sheet.get_height())))
-
-
-func _build_mastery_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_MASTERY_SHEET, "mastery_sheet")
-	if sheet == null:
-		return
-	var columns := 3
-	var cell_width := float(sheet.get_width()) / float(columns)
-	var cell_height := float(sheet.get_height()) / 2.0
-	var orb_ids: Array[int] = [
-		ORB_TYPE_SCRIPT.Id.FIRE,
-		ORB_TYPE_SCRIPT.Id.ICE,
-		ORB_TYPE_SCRIPT.Id.EARTH,
-		ORB_TYPE_SCRIPT.Id.HEART,
-		ORB_TYPE_SCRIPT.Id.ARMOR,
-		ORB_TYPE_SCRIPT.Id.GOLD,
-	]
-	for index in orb_ids.size():
-		var column := index % columns
-		var row := int(floor(float(index) / float(columns)))
-		var orb_id := int(orb_ids[index])
-		_mastery_textures[orb_id] = _atlas_region(sheet, Rect2(cell_width * column, cell_height * row, cell_width, cell_height))
-
-
-func _build_icon_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_ITEM_SHEET, "item_sheet")
-	if sheet == null:
-		return
-	var columns := 5
-	var rows := 3
-	var cell_width := float(sheet.get_width()) / float(columns)
-	var cell_height := float(sheet.get_height()) / float(rows)
-	var atlas_index := 0
-	for row in rows:
-		for column in columns:
-			var region := Rect2(cell_width * column, cell_height * row, cell_width, cell_height)
-			_icon_textures[atlas_index] = _atlas_region(sheet, region)
-			atlas_index += 1
-
-
-func _build_relic_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_RELIC_SHEET, "relic_sheet")
-	if sheet == null:
-		return
-	var columns := 5
-	var cell_width := float(sheet.get_width()) / float(columns)
-	for index in columns:
-		_relic_textures[index] = _atlas_region(sheet, Rect2(cell_width * index, 0.0, cell_width, float(sheet.get_height())))
-
-
-func _build_vfx_textures() -> void:
-	var sheet := _texture_store.safe_load_texture(PATH_VFX_SHEET, "vfx_sheet")
-	if sheet == null:
-		_build_post_match_vfx_textures()
-		return
-	var columns := 4
-	var rows := 3
-	var cell_width := float(sheet.get_width()) / float(columns)
-	var cell_height := float(sheet.get_height()) / float(rows)
-	_vfx_textures["hit_flash"] = _atlas_region(sheet, Rect2(0.0, 0.0, cell_width, cell_height))
-	_vfx_textures["orb_clear"] = _atlas_region(sheet, Rect2(cell_width, 0.0, cell_width, cell_height))
-	_vfx_textures["gold_gain"] = _atlas_region(sheet, Rect2(cell_width * 2.0, 0.0, cell_width, cell_height))
-	_build_post_match_vfx_textures()
-
-
-func _build_post_match_vfx_textures() -> void:
-	var textures: Dictionary = _texture_factory.post_match_vfx_textures()
-	for key in textures.keys():
-		_vfx_textures[key] = textures[key]
-
-
-func _load_derived_icon(icon_key: String) -> Texture2D:
-	if icon_key == "":
-		return null
-	if _derived_icon_textures.has(icon_key):
-		return _derived_icon_textures[icon_key]
-	return _load_derived_texture(PATH_DERIVED_ICON_DIR, icon_key, _derived_icon_textures)
-
-
 func _derived_texture_path(base_path: String, key: String) -> String:
 	if base_path == "" or key == "":
 		return ""
@@ -1037,10 +646,6 @@ func _atlas_region(sheet: Texture2D, region: Rect2) -> AtlasTexture:
 	atlas.atlas = sheet
 	atlas.region = region
 	return atlas
-
-
-func _runtime_icon_texture(icon_key: String) -> Texture2D:
-	return _texture_store.runtime_texture(PATH_RUNTIME_MANIFEST, "icons", icon_key.strip_edges().to_lower())
 
 
 func _collection_ui_texture(key: String) -> Texture2D:
