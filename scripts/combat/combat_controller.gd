@@ -66,20 +66,11 @@ var _view: CombatView = null
 
 
 func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
-	_host = host
-	_model = model
-	if _model == null:
-		_model = CombatModel.new()
-	_view = view
-	if _model != null:
-		_model.set_combat_speed(_model.combat_speed())
-	if _view != null:
-		_view.bind(root_nodes)
-	for node_name in root_nodes.keys():
-		if node_name in self:
-			set(node_name, root_nodes[node_name])
-	if _board_view == null:
-		_board_view = _resolve_board_view()
+	var bindings: Dictionary = CONTRACT.COMBAT_CONTROLLER_SCENE_BINDER_SCRIPT.bind_scene(self, host, root_nodes, model, view)
+	_host = bindings.get("host") as Control
+	_model = bindings.get("model") as CombatModel
+	_view = bindings.get("view") as CombatView
+	_board_view = bindings.get("board_view") as BoardView
 	_sync_model_state()
 
 
@@ -130,21 +121,6 @@ func _enter_tree() -> void:
 		_set_flow_trace_route_id(RunState.flow_trace_begin("combat_scene_load", "res://scenes/combat.tscn", {"source": "combat._enter_tree"}))
 	_sync_model_state()
 	RunState.flow_trace_mark("combat_enter_tree", {}, _flow_trace_route_id_value())
-
-
-func _resolve_board_view() -> BoardView:
-	if _board != null and is_instance_valid(_board):
-		var board_scene_unique: Node = _board.get_node_or_null("%BoardView")
-		if board_scene_unique is BoardView:
-			return board_scene_unique as BoardView
-		var board_scene_path: Node = _board.get_node_or_null("BoardFrame/BoardAspect/BoardView")
-		if board_scene_path is BoardView:
-			return board_scene_path as BoardView
-	var absolute_path: Node = _host.get_node_or_null("CombatLayoutRoot/BoardPanel/Board/BoardFrame/BoardAspect/BoardView")
-	if absolute_path is BoardView:
-		return absolute_path as BoardView
-	push_error("CombatPlayerController: unable to resolve BoardView under CombatLayoutRoot/BoardPanel/Board.")
-	return null
 
 
 func _ready() -> void:
@@ -676,14 +652,8 @@ func _ensure_outcome_overlay_layer() -> void:
 
 
 func set_external_input_locked(locked: bool, reason: String = "") -> void:
-	_ensure_model().set_external_lock_reason(reason)
-	if locked:
-		if _drag_active():
-			_abort_active_drag()
-		_set_input_phase(InputPhase.LOCKED_EXTERNAL)
-	else:
-		_set_input_phase(InputPhase.PLAYER_INPUT)
-	_sync_model_state()
+	_bind_input_phase_router()
+	_input_phase_router.set_external_locked(locked, reason)
 
 
 func _set_input_phase(phase: InputPhase) -> void:

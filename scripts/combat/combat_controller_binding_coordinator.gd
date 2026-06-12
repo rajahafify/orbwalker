@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CombatControllerBindingCoordinator
 
+const DEBUG_CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
+
 var _owner: Variant = null
 
 
@@ -37,13 +39,14 @@ func bind_debug_console() -> void:
 	if _owner._debug_runtime == null:
 		_owner._debug_runtime = _owner.CONTRACT.COMBAT_DEBUG_RUNTIME_SCRIPT.new()
 	_owner._bind_debug_state_provider()
+	var action_callbacks := DEBUG_CALLBACK_KEYS.controller_action_callbacks(_owner)
 	(
 		_owner
 		. _debug_runtime
 		. bind_for_combat_controller(
 			_owner._view,
 			_owner._turn_log_presenter,
-			_owner,
+			action_callbacks,
 			int(_owner.InputPhase.LOCKED_EXTERNAL),
 			{
 				"command_output_log_color": _owner.CONTRACT.COMMAND_OUTPUT_LOG_COLOR,
@@ -321,6 +324,8 @@ func bind_input_phase_router() -> void:
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(_owner, "_clear_combat_mastery_hover_state"),
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(_owner, "_sync_model_state"),
+				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_DRAG_ACTIVE: Callable(_owner, "_drag_active"),
+				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_ABORT_ACTIVE_DRAG: Callable(_owner, "_abort_active_drag"),
 			}
 		)
 	)

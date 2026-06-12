@@ -4,18 +4,10 @@ extends RefCounted
 class_name CombatDebugCommandAdapter
 
 const CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
-const CONTROLLER_CALLBACK_METHODS := CALLBACK_KEYS.CONTROLLER_ACTION_METHODS
 
 var _callbacks: Dictionary = {}
 var _locked_input_phase_value := 2
 var _default_victory_scene := "res://scenes/main_menu.tscn"
-
-
-static func controller_callbacks(controller: Object) -> Dictionary:
-	var callbacks := {}
-	for key in CONTROLLER_CALLBACK_METHODS.keys():
-		callbacks[key] = Callable(controller, String(CONTROLLER_CALLBACK_METHODS[key]))
-	return callbacks
 
 
 func bind(config: Dictionary) -> void:

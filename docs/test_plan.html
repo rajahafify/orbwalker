@@ -262,10 +262,10 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
-<p>Verification notes (2026-06-12, Wave 16 combat controller contract split):</p>
+<p>Verification notes (2026-06-12, Wave 16 combat controller wiring splits):</p>
 <ul>
 <li><code>CombatControllerContract</code> now owns the controller's script preload, timing, status-color, log-level, phase, and combat-speed constants. <code>CombatController</code>, <code>CombatControllerLifecycle</code>, <code>CombatControllerBindingCoordinator</code>, and <code>CombatTurnReplayCoordinator</code> read the same catalog instead of duplicating contract ownership in the god object.</li>
-<li><code>scripts/combat/combat_controller.gd</code> dropped from <code>797</code> to <code>732</code> measured lines. The stricter <code>400</code>-line controller exception remains active because lifecycle/binding seams are still owner-bound and the controller is not yet wiring-only.</li>
+<li><code>CombatControllerSceneBinder</code> now owns scene binding and BoardView resolution, and <code>CombatInputPhaseRouter</code> owns external input lock/unlock branching. <code>scripts/combat/combat_controller.gd</code> dropped from <code>797</code> to <code>704</code> measured lines. The stricter <code>400</code>-line controller exception remains active because lifecycle/binding seams are still owner-bound and the controller is not yet wiring-only.</li>
 </ul>
 <p>Verification notes (2026-06-12, Wave 15 main-menu contract/helper split):</p>
 <ul>
