@@ -56,6 +56,7 @@ var _lifecycle = null
 var _binding_coordinator = null
 var _view_actions: Variant = null
 var _hud_update_router: Variant = null
+var _board_debug_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -163,6 +164,17 @@ func _bind_hud_update_router() -> void:
 func _hud_update_callback(method_name: String) -> Callable:
 	_bind_hud_update_router()
 	return Callable(_hud_update_router, method_name)
+
+
+func _bind_board_debug_router() -> void:
+	if _board_debug_router == null:
+		_board_debug_router = CONTRACT.COMBAT_CONTROLLER_BOARD_DEBUG_ROUTER_SCRIPT.new()
+	_board_debug_router.bind(self)
+
+
+func _board_debug_callback(method_name: String) -> Callable:
+	_bind_board_debug_router()
+	return Callable(_board_debug_router, method_name)
 
 
 func _bind_debug_state_provider() -> void:
@@ -312,11 +324,6 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		_tutorial_drag_flow.handle_end(result)
 
 
-func _create_new_board() -> void:
-	_bind_board_debug_command_handler()
-	_sync_board_debug_command_result(_board_debug_command_handler.create_new_board())
-
-
 func _tutorial_turn_summary_text() -> String:
 	if _tutorial_director == null:
 		return ""
@@ -334,22 +341,6 @@ func _sync_tutorial_coachmark() -> void:
 	_tutorial_coachmark_coordinator.sync()
 
 
-func _print_board_model() -> void:
-	_bind_board_debug_command_handler()
-	_board_debug_command_handler.print_board_model()
-
-
-func _set_board_seed(board_seed: int) -> void:
-	_bind_board_debug_command_handler()
-	_sync_board_debug_command_result(_board_debug_command_handler.set_board_seed(board_seed))
-
-
-func _sync_board_debug_command_result(result: Dictionary) -> void:
-	if result.has("board_model") and result.get("board_model") != null:
-		_board_model = result["board_model"]
-	_bind_debug_state_provider()
-
-
 func _on_console_input_text_submitted(text: String) -> void:
 	if _debug_runtime != null:
 		_debug_runtime.handle_submitted_text(text)
@@ -361,7 +352,7 @@ func _console_on_skip_success() -> void:
 	_last_resolve_result.clear()
 	_bind_lifecycle()
 	_lifecycle.initialize_combat_state()
-	_create_new_board()
+	_board_debug_callback("create_new_board").call()
 	_begin_turn_preview()
 
 
