@@ -8,15 +8,7 @@ const VIEW_BUDGET := 500
 const DEFAULT_BUDGET := 650
 const DOC_PATH := "res://docs/script_size_budget.html"
 
-const DOCUMENTED_EXCEPTIONS := {
-	"res://scripts/combat/combat_controller.gd":
-	{
-		"baseline": 431,
-		"owner": "P1-1",
-		"reason":
-		"Combat orchestration is below the whole-effort 800-line ceiling, but the controller remains over its stricter wiring-only controller budget pending a final composition-root audit.",
-	},
-}
+const DOCUMENTED_EXCEPTIONS := {}
 
 
 func _initialize() -> void:

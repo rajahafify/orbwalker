@@ -121,5 +121,13 @@ func abort_active_drag() -> void:
 		view.sync_timer_display(0.0, _owner.CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
+func debug_set_input_phase(raw_phase: int) -> void:
+	_owner.call("_set_input_phase", raw_phase)
+
+
+func debug_set_pending_next_scene_path(scene_path: String) -> void:
+	_owner.get("_model").set_pending_next_scene_path(scene_path)
+
+
 func _owner_value(property_name: String) -> Variant:
 	return _owner.get(property_name)

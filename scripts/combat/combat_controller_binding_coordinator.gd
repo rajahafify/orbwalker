@@ -54,6 +54,11 @@ func _input_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_input_router"), method_name)
 
 
+func _intent_callback(method_name: String) -> Callable:
+	_owner.call("_bind_intent_router")
+	return Callable(_owner.get("_intent_router"), method_name)
+
+
 func _ensure_setup_binder() -> void:
 	if _setup_binder == null:
 		_setup_binder = _contract().COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT.new()
@@ -76,7 +81,7 @@ func bind_board_debug_command_handler() -> void:
 				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
 			},
 			{
-				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: _owner_callback("_debug_set_input_phase"),
+				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: _input_callback("debug_set_input_phase"),
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
 				contract.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
@@ -213,7 +218,7 @@ func bind_player_hud_refresh_coordinator() -> void:
 			},
 			{
 				contract.COMBAT_PLAYER_HUD_REFRESH_COORDINATOR_SCRIPT.CALLBACK_SHOULD_SHOW_INTENT_DAMAGE_PREVIEW:
-				_owner_callback("_should_show_intent_damage_preview"),
+				_intent_callback("should_show_intent_damage_preview"),
 			}
 		)
 	)
