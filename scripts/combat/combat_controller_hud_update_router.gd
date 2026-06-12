@@ -55,7 +55,7 @@ func _bind_hud_snapshot_provider() -> void:
 				"drag_active": _input_callback("drag_active"),
 				"drag_move_time_left": _input_callback("drag_move_time_left"),
 				"timer_ready_seconds": _input_callback("timer_ready_seconds"),
-				"show_intent_preview": _owner_callback("_should_show_intent_damage_preview"),
+				"show_intent_preview": _intent_callback("should_show_intent_damage_preview"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT)}
 		)
@@ -81,3 +81,8 @@ func _owner_callback(method_name: String) -> Callable:
 func _input_callback(method_name: String) -> Callable:
 	_owner.call("_bind_input_router")
 	return Callable(_owner.get("_input_router"), method_name)
+
+
+func _intent_callback(method_name: String) -> Callable:
+	_owner.call("_bind_intent_router")
+	return Callable(_owner.get("_intent_router"), method_name)

@@ -42,7 +42,7 @@ func play_resolve_animations(result: Dictionary, visual_board_model: BoardModel 
 			visual_board_model,
 			resolve_trace_origin_usec,
 			{
-				"trace_callback": _owner_callback("_resolve_trace"),
+				"trace_callback": Callable(self, "resolve_trace"),
 				"combo_preview_callback": Callable(mastery_preview_coordinator, "preview_match_feedback_value"),
 				"combo_feedback_callback": Callable(mastery_preview_coordinator, "show_match_feedback"),
 				"set_pass_index_callback": Callable(_owner_value("_model"), "set_resolve_trace_pass_index"),
@@ -100,6 +100,19 @@ func refresh_character_portraits() -> void:
 	if view != null:
 		var enemy_state: Variant = _owner_value("_enemy_state")
 		view.refresh_character_portraits(String(enemy_state.enemy_id if enemy_state != null else ""))
+
+
+func resolve_trace(start_ticks_usec: int, message: String) -> void:
+	_owner.call("_bind_resolve_trace_logger")
+	_owner.get("_resolve_trace_logger").trace(start_ticks_usec, message)
+
+
+func resolver_match_found(groups: Array) -> void:
+	_owner.call("_bind_view_actions")
+	_owner.call("_audio_router_callback", "play_sfx").call("match")
+	var view_actions: Variant = _owner_value("_view_actions")
+	view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
+	view_actions.set_status_color(_contract().STATUS_COLOR_WARNING)
 
 
 func _owner_value(property_name: String) -> Variant:

@@ -50,6 +50,11 @@ func _input_callback(method_name: String) -> Callable:
 	return Callable(_owner.get("_input_router"), method_name)
 
 
+func _intent_callback(method_name: String) -> Callable:
+	_owner.call("_bind_intent_router")
+	return Callable(_owner.get("_intent_router"), method_name)
+
+
 func ready() -> void:
 	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
@@ -362,7 +367,7 @@ func _bind_resolve_flow_coordinator() -> void:
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_BIND_TURN_RESOLUTION: _owner_callback("_bind_turn_resolution_coordinator"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: _owner_callback("_input_phase_value"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_APPLY_BOARD_MODEL: Callable(self, "_apply_committed_board_model"),
-				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: _owner_callback("_resolve_trace"),
+				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: _presentation_callback("resolve_trace"),
 				_contract().COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT.CALLBACK_STORE_LAST_RESOLVE_RESULT: Callable(self, "_store_last_resolve_result"),
 			},
 			{
@@ -405,17 +410,15 @@ func _bind_signal_connector() -> void:
 				"tutorial_end_command_handler": _owner_value("_tutorial_end_command_handler"),
 			},
 			{
-				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_RESOLVER_MATCH_FOUND: _owner_callback("_on_resolver_match_found"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_RESOLVER_MATCH_FOUND: _presentation_callback("resolver_match_found"),
 				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVERED:
-				_owner_callback("_on_intent_damage_preview_hovered"),
+				_intent_callback("intent_damage_preview_hovered"),
 				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_BLOCK_PREVIEW_HOVERED:
-				_owner_callback("_on_intent_block_preview_hovered"),
+				_intent_callback("intent_block_preview_hovered"),
 				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_INTENT_DAMAGE_PREVIEW_HOVER_ENDED:
-				_owner_callback("_on_intent_damage_preview_hover_ended"),
-				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_INTENT_BUBBLE_HOVERED:
-				_owner_callback("_on_enemy_intent_bubble_hovered"),
-				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_BLOCK_PREVIEW_HOVERED:
-				_owner_callback("_on_enemy_block_preview_hovered"),
+				_intent_callback("intent_damage_preview_hover_ended"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_INTENT_BUBBLE_HOVERED: _intent_callback("enemy_intent_bubble_hovered"),
+				_contract().COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT.CALLBACK_ON_ENEMY_BLOCK_PREVIEW_HOVERED: _intent_callback("enemy_block_preview_hovered"),
 			}
 		)
 	)
@@ -439,7 +442,7 @@ func _bind_turn_preview_coordinator() -> void:
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: _hud_update_callback("update_hud"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: _input_callback("clear_combat_mastery_hover_state"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: _owner_callback("_sync_tutorial_coachmark"),
-				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: _owner_callback("_format_intent"),
+				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: _intent_callback("format_intent"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_SUMMARY_TEXT: _owner_callback("_tutorial_turn_summary_text"),
 				_contract().COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_STATUS_TEXT: _owner_callback("_tutorial_turn_status_text"),
 			},

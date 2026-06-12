@@ -61,6 +61,13 @@ class FakeInputRouter:
 		return 12.0
 
 
+class FakeIntentRouter:
+	extends RefCounted
+
+	func should_show_intent_damage_preview() -> bool:
+		return true
+
+
 class FakeOwner:
 	extends RefCounted
 
@@ -72,6 +79,7 @@ class FakeOwner:
 	var _hud_snapshot_provider: Variant = FakeSnapshotProvider.new()
 	var _player_hud_refresh_coordinator: Variant = FakeRefreshCoordinator.new()
 	var _input_router: Variant = FakeInputRouter.new()
+	var _intent_router: Variant = FakeIntentRouter.new()
 	var _player_state: Variant = "player"
 	var _enemy_state: Variant = "enemy"
 	var _combat: Variant = "combat"
@@ -84,10 +92,10 @@ class FakeOwner:
 	func _input_phase_value() -> int:
 		return InputPhase.PLAYER_INPUT
 
-	func _should_show_intent_damage_preview() -> bool:
-		return true
-
 	func _bind_input_router() -> void:
+		pass
+
+	func _bind_intent_router() -> void:
 		pass
 
 	func _bind_player_hud_refresh_coordinator() -> void:

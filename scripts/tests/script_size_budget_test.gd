@@ -3,9 +3,7 @@ class_name ScriptSizeBudgetTest
 
 const SCRIPT_SIZE_BUDGET_PATH := "res://tools/quality/script_size_budget.gd"
 
-const EXPECTED_RATCHET_BASELINES := {
-	"res://scripts/combat/combat_controller.gd": 431,
-}
+const EXPECTED_RATCHET_BASELINES := {}
 
 
 func run_all() -> Dictionary:
@@ -49,10 +47,10 @@ func _test_combat_scripts_are_scanned(report: Dictionary) -> String:
 	var controller_entry := _entry_for_path(report, "res://scripts/combat/combat_controller.gd")
 	if controller_entry.is_empty():
 		return "Expected combat_controller.gd to be scanned by the size budget."
-	if not bool(controller_entry.get("over_budget", false)):
-		return "Expected combat_controller.gd to remain visible as over budget."
-	if not bool(controller_entry.get("documented_exception", false)):
-		return "Expected combat_controller.gd to have a documented exception."
+	if bool(controller_entry.get("over_budget", false)):
+		return "Expected combat_controller.gd to stay under its controller budget."
+	if bool(controller_entry.get("documented_exception", false)):
+		return "Expected combat_controller.gd to have no documented exception after reaching budget."
 	var view_entry := _entry_for_path(report, "res://scripts/combat/combat_view.gd")
 	if view_entry.is_empty():
 		return "Expected combat_view.gd to be scanned by the size budget."

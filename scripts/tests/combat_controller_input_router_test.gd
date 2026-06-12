@@ -102,6 +102,15 @@ class FakeHudUpdateRouter:
 		update_calls += 1
 
 
+class FakeModel:
+	extends RefCounted
+
+	var pending_paths: Array[String] = []
+
+	func set_pending_next_scene_path(scene_path: String) -> void:
+		pending_paths.append(scene_path)
+
+
 class FakeOwner:
 	extends RefCounted
 
@@ -118,10 +127,12 @@ class FakeOwner:
 	var _tutorial_drag_flow: Variant = FakeTutorialDragFlow.new()
 	var _debug_runtime: Variant = FakeDebugRuntime.new()
 	var _hud_update_router: Variant = FakeHudUpdateRouter.new()
+	var _model: Variant = FakeModel.new()
 	var bind_view_actions_calls := 0
 	var bind_mastery_calls := 0
 	var bind_tutorial_calls := 0
 	var bind_hud_calls := 0
+	var set_input_phase_calls: Array[int] = []
 	var input_phase := InputPhase.PLAYER_INPUT
 
 	func _input_phase_value() -> int:
@@ -139,13 +150,17 @@ class FakeOwner:
 	func _bind_hud_update_router() -> void:
 		bind_hud_calls += 1
 
+	func _set_input_phase(raw_phase: int) -> void:
+		set_input_phase_calls.append(raw_phase)
+
 
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("process_forwards_timer_updates", _test_process_forwards_timer_updates, failures)
 	_run_case("start_and_end_drag_routes_to_tutorial_flow", _test_start_and_end_drag_routes_to_tutorial_flow, failures)
 	_run_case("toggle_debug_overlay_refreshes_hud", _test_toggle_debug_overlay_refreshes_hud, failures)
-	return {"passed": failures.is_empty(), "total": 3, "failed": failures.size(), "failures": failures}
+	_run_case("debug_callbacks_forward_to_model_and_phase_router", _test_debug_callbacks_forward_to_model_and_phase_router, failures)
+	return {"passed": failures.is_empty(), "total": 4, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -206,4 +221,20 @@ func _test_toggle_debug_overlay_refreshes_hud() -> String:
 		return "Expected toggle_debug_overlay to toggle debug runtime overlay state."
 	if owner._hud_update_router.update_calls != 1:
 		return "Expected toggle_debug_overlay to refresh HUD through the HUD update router."
+	return ""
+
+
+func _test_debug_callbacks_forward_to_model_and_phase_router() -> String:
+	var owner := FakeOwner.new()
+	var router: Variant = ROUTER_SCRIPT.new()
+	router.bind(owner)
+
+	router.debug_set_input_phase(FakeOwner.InputPhase.LOCKED_EXTERNAL)
+	router.debug_set_pending_next_scene_path("res://scenes/main_menu.tscn")
+
+	var model: FakeModel = owner._model
+	if owner.set_input_phase_calls != [FakeOwner.InputPhase.LOCKED_EXTERNAL]:
+		return "Expected debug_set_input_phase to forward the raw phase to the owner phase setter."
+	if model.pending_paths != ["res://scenes/main_menu.tscn"]:
+		return "Expected debug_set_pending_next_scene_path to update the combat model."
 	return ""

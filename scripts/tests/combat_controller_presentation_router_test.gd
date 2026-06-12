@@ -51,6 +51,28 @@ class FakeView:
 		refreshed_ids.append(enemy_id)
 
 
+class FakeViewActions:
+	extends RefCounted
+
+	var status_texts: Array[String] = []
+	var status_colors: Array[Color] = []
+
+	func set_status_text(text: String) -> void:
+		status_texts.append(text)
+
+	func set_status_color(color: Color) -> void:
+		status_colors.append(color)
+
+
+class FakeResolveTraceLogger:
+	extends RefCounted
+
+	var traces: Array[Dictionary] = []
+
+	func trace(start_ticks_usec: int, message: String) -> void:
+		traces.append({"start": start_ticks_usec, "message": message})
+
+
 class FakeOwner:
 	extends RefCounted
 
@@ -59,12 +81,31 @@ class FakeOwner:
 	var _combat_vfx_presenter: Variant = FakeVfxPresenter.new()
 	var _resolve_presenter: Variant = FakeResolvePresenter.new()
 	var _view: Variant = FakeView.new()
+	var _view_actions: Variant = FakeViewActions.new()
+	var _resolve_trace_logger: Variant = FakeResolveTraceLogger.new()
 	var _enemy_state: Variant = FakeEnemyState.new()
 	var _vfx_target_resolver: Variant = null
+	var sfx_calls: Array[String] = []
+	var bind_view_actions_calls := 0
+	var bind_resolve_trace_logger_calls := 0
 	var combat_speed := "normal"
 
 	func _combat_speed_value() -> String:
 		return combat_speed
+
+	func _bind_view_actions() -> void:
+		bind_view_actions_calls += 1
+
+	func _bind_resolve_trace_logger() -> void:
+		bind_resolve_trace_logger_calls += 1
+
+	func _audio_router_callback(method_name: String) -> Callable:
+		if method_name == "play_sfx":
+			return Callable(self, "_record_sfx")
+		return Callable()
+
+	func _record_sfx(key: String) -> void:
+		sfx_calls.append(key)
 
 
 func run_all() -> Dictionary:
@@ -72,7 +113,8 @@ func run_all() -> Dictionary:
 	_run_case("applies_vfx_speed_scale_from_combat_speed", _test_applies_vfx_speed_scale_from_combat_speed, failures)
 	_run_case("forwards_spawn_and_portrait_refresh", _test_forwards_spawn_and_portrait_refresh, failures)
 	_run_case("binds_vfx_target_resolver_and_preserves_speed_duration", _test_binds_vfx_target_resolver_and_preserves_speed_duration, failures)
-	return {"passed": failures.is_empty(), "total": 3, "failed": failures.size(), "failures": failures}
+	_run_case("routes_resolve_trace_and_match_found_presentation", _test_routes_resolve_trace_and_match_found_presentation, failures)
+	return {"passed": failures.is_empty(), "total": 4, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -136,4 +178,27 @@ func _test_binds_vfx_target_resolver_and_preserves_speed_duration() -> String:
 		return "Expected bind_vfx_target_resolver to write the resolver back to the owner."
 	if not is_equal_approx(router.combat_speed_duration(0.4), 0.8):
 		return "Expected combat_speed_duration to use the resolve presenter when available."
+	return ""
+
+
+func _test_routes_resolve_trace_and_match_found_presentation() -> String:
+	var owner := FakeOwner.new()
+	var router: Variant = ROUTER_SCRIPT.new()
+	router.bind(owner)
+
+	router.resolve_trace(123, "phase=test")
+	router.resolver_match_found([["a"], ["b"]])
+
+	var logger: FakeResolveTraceLogger = owner._resolve_trace_logger
+	var view_actions: FakeViewActions = owner._view_actions
+	if logger.traces != [{"start": 123, "message": "phase=test"}]:
+		return "Expected resolve_trace to forward to the resolve trace logger."
+	if owner.bind_resolve_trace_logger_calls != 1:
+		return "Expected resolve_trace to bind the trace logger."
+	if owner.sfx_calls != ["match"]:
+		return "Expected resolver_match_found to play the match SFX."
+	if view_actions.status_texts != ["Matches found: 2 group(s)."]:
+		return "Expected resolver_match_found to update the match status text."
+	if view_actions.status_colors != [CONTRACT.STATUS_COLOR_WARNING]:
+		return "Expected resolver_match_found to use warning status color."
 	return ""

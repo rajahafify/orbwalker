@@ -59,6 +59,7 @@ var _hud_update_router: Variant = null
 var _board_debug_router: Variant = null
 var _presentation_router: Variant = null
 var _input_router: Variant = null
+var _intent_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -200,6 +201,17 @@ func _input_callback(method_name: String) -> Callable:
 	return Callable(_input_router, method_name)
 
 
+func _bind_intent_router() -> void:
+	if _intent_router == null:
+		_intent_router = CONTRACT.COMBAT_CONTROLLER_INTENT_ROUTER_SCRIPT.new()
+	_intent_router.bind(self)
+
+
+func _intent_callback(method_name: String) -> Callable:
+	_bind_intent_router()
+	return Callable(_intent_router, method_name)
+
+
 func _bind_debug_state_provider() -> void:
 	_bind_view_actions()
 	_debug_state_provider = (
@@ -292,29 +304,6 @@ func _sync_tutorial_coachmark() -> void:
 func _on_console_input_text_submitted(text: String) -> void:
 	if _debug_runtime != null:
 		_debug_runtime.handle_submitted_text(text)
-
-
-func _console_on_skip_success() -> void:
-	if _board_controller != null:
-		_board_controller.abort()
-	_last_resolve_result.clear()
-	_bind_lifecycle()
-	_lifecycle.initialize_combat_state()
-	_board_debug_callback("create_new_board").call()
-	_begin_turn_preview()
-
-
-func _format_intent(intent: Dictionary) -> String:
-	_bind_debug_state_provider()
-	return String(_debug_state_provider.format_intent(intent))
-
-
-func _debug_set_input_phase(raw_phase: int) -> void:
-	_set_input_phase(raw_phase as InputPhase)
-
-
-func _debug_set_pending_next_scene_path(scene_path: String) -> void:
-	_model.set_pending_next_scene_path(scene_path)
 
 
 func _end_drag(timed_out: bool) -> void:
@@ -559,50 +548,8 @@ func _bind_tutorial_end_command_handler() -> void:
 	)
 
 
-func _should_show_intent_damage_preview() -> bool:
-	_bind_intent_hover_handler()
-	return bool(_intent_hover_handler.should_show_preview())
-
-
-func _on_intent_damage_preview_hovered(preview: Dictionary) -> void:
-	_bind_intent_hover_handler()
-	_intent_hover_handler.intent_damage_preview_hovered(preview)
-
-
-func _on_intent_block_preview_hovered(preview: Dictionary) -> void:
-	_bind_intent_hover_handler()
-	_intent_hover_handler.intent_block_preview_hovered(preview)
-
-
-func _on_enemy_block_preview_hovered(preview: Dictionary) -> void:
-	_bind_intent_hover_handler()
-	_intent_hover_handler.enemy_block_preview_hovered(preview)
-
-
-func _on_intent_damage_preview_hover_ended() -> void:
-	_bind_intent_hover_handler()
-	_intent_hover_handler.intent_damage_preview_hover_ended()
-
-
-func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
-	_bind_intent_hover_handler()
-	_intent_hover_handler.enemy_intent_bubble_hovered(kind, entry)
-
-
 func _append_turn_log(turn_log: Dictionary) -> void:
 	_bind_view_actions()
 	CONTRACT.COMBAT_TURN_LOG_WRITER_SCRIPT.append_turn_log(
 		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(_view_actions, "append_combat_log"), CONTRACT.LOG_LEVEL_NORMAL
 	)
-
-
-func _resolve_trace(start_ticks_usec: int, message: String) -> void:
-	_bind_resolve_trace_logger()
-	_resolve_trace_logger.trace(start_ticks_usec, message)
-
-
-func _on_resolver_match_found(groups: Array) -> void:
-	_bind_view_actions()
-	_audio_router_callback("play_sfx").call("match")
-	_view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
-	_view_actions.set_status_color(CONTRACT.STATUS_COLOR_WARNING)
