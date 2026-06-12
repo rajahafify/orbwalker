@@ -4,6 +4,7 @@ class_name CombatControllerLifecycle
 var _owner: Variant = null
 var _view_actions: Variant = null
 var _resolve_flow_coordinator: Variant = null
+var _turn_preview_coordinator: Variant = null
 
 
 func bind(owner: Variant) -> void:
@@ -225,22 +226,8 @@ func initialize_combat_state() -> void:
 
 
 func begin_turn_preview() -> void:
-	if _owner._combat == null or _owner._combat.is_fight_over():
-		return
-	_owner._combat.reset_to_intent_preview()
-	_owner._combat.begin_player_input()
-	_owner._set_input_phase(_owner.InputPhase.PLAYER_INPUT)
-	_owner._model.clear_pending_next_scene_path()
-	_view_actions.hide_outcome_summary()
-	_view_actions.set_turn_summary_text(_owner._tutorial_turn_summary_text() if RunState.is_tutorial_run() else "Turn Summary: Awaiting move.")
-	_view_actions.set_status_text(
-		_owner._tutorial_turn_status_text() if RunState.is_tutorial_run() else "%s | Turn %d." % [RunState.level_sequence_label(), _owner._combat.turn_index]
-	)
-	_view_actions.set_status_color(_owner.CONTRACT.STATUS_COLOR_NEUTRAL)
-	_owner._update_hud()
-	_owner._clear_combat_mastery_hover_state()
-	_owner._sync_tutorial_coachmark()
-	_view_actions.append_combat_log("Turn %d intent: %s." % [_owner._combat.turn_index, _owner._format_intent(_owner._enemy_state.get_current_intent())])
+	_bind_turn_preview_coordinator()
+	_turn_preview_coordinator.begin_turn_preview()
 
 
 func end_drag(timed_out: bool) -> void:
@@ -387,3 +374,33 @@ func _apply_committed_board_model(board_model: BoardModel) -> void:
 
 func _store_last_resolve_result(resolve_result: Dictionary) -> void:
 	_owner._last_resolve_result = resolve_result
+
+
+func _bind_turn_preview_coordinator() -> void:
+	if _turn_preview_coordinator == null:
+		_turn_preview_coordinator = _owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.new()
+	(
+		_turn_preview_coordinator
+		. bind(
+			{
+				"combat": _owner._combat,
+				"enemy_state": _owner._enemy_state,
+				"model": _owner._model,
+				"view_actions": _view_actions,
+				"run_state": RunState,
+			},
+			{
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_set_input_phase"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_CLEAR_MASTERY_HOVER: Callable(_owner, "_clear_combat_mastery_hover_state"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(_owner, "_sync_tutorial_coachmark"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(_owner, "_format_intent"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_SUMMARY_TEXT: Callable(_owner, "_tutorial_turn_summary_text"),
+				_owner.CONTRACT.COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT.CALLBACK_TUTORIAL_TURN_STATUS_TEXT: Callable(_owner, "_tutorial_turn_status_text"),
+			},
+			{
+				"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT),
+				"status_color_neutral": _owner.CONTRACT.STATUS_COLOR_NEUTRAL,
+			}
+		)
+	)
