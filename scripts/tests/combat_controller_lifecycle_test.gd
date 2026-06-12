@@ -25,6 +25,13 @@ class FakePresentationRouter:
 		pass
 
 
+class FakeInputRouter:
+	extends RefCounted
+
+	func clear_combat_mastery_hover_state() -> void:
+		pass
+
+
 class FakeOwner:
 	extends RefCounted
 
@@ -32,6 +39,7 @@ class FakeOwner:
 
 	var _hud_update_router := FakeHudUpdateRouter.new()
 	var _presentation_router := FakePresentationRouter.new()
+	var _input_router := FakeInputRouter.new()
 	var _view_actions := RefCounted.new()
 	var _state_initializer := FakeStateInitializer.new()
 	var _model: Variant = "model"
@@ -52,6 +60,9 @@ class FakeOwner:
 		pass
 
 	func _bind_presentation_router() -> void:
+		pass
+
+	func _bind_input_router() -> void:
 		pass
 
 	func _refresh_build_icon_rows() -> void:

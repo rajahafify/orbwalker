@@ -58,6 +58,7 @@ var _view_actions: Variant = null
 var _hud_update_router: Variant = null
 var _board_debug_router: Variant = null
 var _presentation_router: Variant = null
+var _input_router: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _audio_router: Variant = null
@@ -95,19 +96,15 @@ func ready() -> void:
 
 
 func exit_tree() -> void:
-	_clear_combat_mastery_hover_state()
+	_input_callback("clear_combat_mastery_hover_state").call()
 
 
 func process(delta: float) -> void:
-	if _combat_timer_service == null:
-		return
-	var drag_update: Dictionary = _combat_timer_service.process(_board_controller, _view, _player_state, delta, _input_phase_value() == InputPhase.PLAYER_INPUT)
-	_handle_drag_input_result(drag_update)
+	_input_callback("process").call(delta)
 
 
 func unhandled_input(event: InputEvent) -> void:
-	_bind_input_command_handler()
-	_input_command_handler.handle_unhandled_input(event)
+	_input_callback("unhandled_input").call(event)
 
 
 func on_viewport_size_changed() -> void:
@@ -119,7 +116,7 @@ func on_back_button_pressed() -> void:
 
 
 func on_debug_toggle_button_pressed() -> void:
-	_toggle_debug_overlay()
+	_input_callback("toggle_debug_overlay").call()
 
 
 func on_settings_button_pressed() -> void:
@@ -192,6 +189,17 @@ func _presentation_callback(method_name: String) -> Callable:
 	return Callable(_presentation_router, method_name)
 
 
+func _bind_input_router() -> void:
+	if _input_router == null:
+		_input_router = CONTRACT.COMBAT_CONTROLLER_INPUT_ROUTER_SCRIPT.new()
+	_input_router.bind(self)
+
+
+func _input_callback(method_name: String) -> Callable:
+	_bind_input_router()
+	return Callable(_input_router, method_name)
+
+
 func _bind_debug_state_provider() -> void:
 	_bind_view_actions()
 	_debug_state_provider = (
@@ -253,82 +261,15 @@ func _bind_board_controller() -> void:
 	_binding_coordinator.bind_board_controller()
 
 
-func _drag_match_groups() -> Array:
-	if _resolver == null or _board_model == null:
-		return []
-	return _resolver.get_match_groups(_board_model)
-
-
-func _drag_move_timer_seconds() -> float:
-	return _timer_ready_seconds()
-
-
-func _drag_active() -> bool:
-	if _combat_timer_service == null:
-		return false
-	return _combat_timer_service.drag_active(_board_controller)
-
-
-func _drag_move_time_left() -> float:
-	if _combat_timer_service == null:
-		return 0.0
-	return _combat_timer_service.move_time_left(_board_controller)
-
-
 func _begin_turn_preview() -> void:
 	_bind_lifecycle()
 	_lifecycle.begin_turn_preview()
-
-
-func _set_viewport_input_handled() -> void:
-	if _host != null and is_instance_valid(_host) and _host.get_viewport() != null:
-		_host.get_viewport().set_input_as_handled()
-
-
-func _toggle_debug_overlay() -> void:
-	if _debug_runtime != null:
-		_debug_runtime.toggle_overlay()
-	_hud_update_callback("update_hud").call()
 
 
 func _convert_random_non_target_orbs(target_orb_id: int, count: int, rng: RandomNumberGenerator) -> int:
 	if _board_controller == null:
 		return 0
 	return int(_board_controller.convert_random_non_target_orbs(target_orb_id, count, rng))
-
-
-func _on_board_drag_input_result(drag_result: Dictionary) -> void:
-	_handle_drag_input_result(drag_result)
-
-
-func _on_board_hovered_orb_changed(orb_id: int) -> void:
-	_bind_mastery_preview_coordinator()
-	_mastery_preview_coordinator.set_hovered_board_orb_id(orb_id)
-
-
-func _clear_combat_mastery_hover_state() -> void:
-	_bind_mastery_preview_coordinator()
-	_mastery_preview_coordinator.clear_hover_state()
-
-
-func _handle_drag_input_result(result: Dictionary) -> void:
-	if result.is_empty():
-		return
-	_bind_view_actions()
-	var action := String(result.get("action", ""))
-	if action == "start":
-		_clear_combat_mastery_hover_state()
-		_bind_tutorial_drag_flow()
-		_tutorial_drag_flow.handle_start()
-		var selected_orb_id := int(result.get("selected_orb_id", -1))
-		if _view != null:
-			_view.sync_timer_display(_drag_move_time_left(), CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
-		_view_actions.set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
-		_view_actions.set_status_color(CONTRACT.STATUS_COLOR_NEUTRAL)
-		return
-	if action == "end":
-		_bind_tutorial_drag_flow()
-		_tutorial_drag_flow.handle_end(result)
 
 
 func _tutorial_turn_summary_text() -> String:
@@ -475,19 +416,6 @@ func _combat_speed_value() -> String:
 func _apply_feedback_settings() -> void:
 	_bind_binding_coordinator()
 	_binding_coordinator.apply_feedback_settings()
-
-
-func _timer_ready_seconds() -> float:
-	if _combat_timer_service == null:
-		return CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.MOVE_TIMER_MAX_SECONDS
-	return _combat_timer_service.ready_seconds(_player_state)
-
-
-func _abort_active_drag() -> void:
-	if _board_controller != null:
-		_board_controller.abort()
-	if _view != null:
-		_view.sync_timer_display(0.0, CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_LOCKED)
 
 
 func _build_run_outcome_summary(fallback_cause: String = "") -> String:

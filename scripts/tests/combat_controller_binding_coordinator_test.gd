@@ -30,6 +30,19 @@ class FakePresentationRouter:
 		applied_vfx_speed_calls += 1
 
 
+class FakeInputRouter:
+	extends RefCounted
+
+	func clear_combat_mastery_hover_state() -> void:
+		pass
+
+	func drag_active() -> bool:
+		return false
+
+	func abort_active_drag() -> void:
+		pass
+
+
 class FakeSettingsTarget:
 	extends RefCounted
 
@@ -64,6 +77,7 @@ class FakeOwner:
 	var _view_actions := FakeViewActions.new()
 	var _input_phase_router: Variant = FakeInputPhaseRouter.new()
 	var _presentation_router: Variant = FakePresentationRouter.new()
+	var _input_router: Variant = FakeInputRouter.new()
 	var _model: Variant = "model"
 	var _board_controller: Variant = FakeSettingsTarget.new()
 	var _combat_vfx_presenter: Variant = FakeSettingsTarget.new()
@@ -76,19 +90,13 @@ class FakeOwner:
 		ensured_model_calls += 1
 		return _model
 
-	func _clear_combat_mastery_hover_state() -> void:
-		pass
-
 	func _sync_model_state() -> void:
 		pass
 
-	func _drag_active() -> bool:
-		return false
-
-	func _abort_active_drag() -> void:
+	func _bind_presentation_router() -> void:
 		pass
 
-	func _bind_presentation_router() -> void:
+	func _bind_input_router() -> void:
 		pass
 
 

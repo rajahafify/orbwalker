@@ -48,6 +48,19 @@ class FakeRefreshCoordinator:
 		snapshots.append(progression_snapshot)
 
 
+class FakeInputRouter:
+	extends RefCounted
+
+	func drag_active() -> bool:
+		return false
+
+	func drag_move_time_left() -> float:
+		return 0.0
+
+	func timer_ready_seconds() -> float:
+		return 12.0
+
+
 class FakeOwner:
 	extends RefCounted
 
@@ -58,6 +71,7 @@ class FakeOwner:
 	var _hud_presenter: Variant = FakeHudPresenter.new()
 	var _hud_snapshot_provider: Variant = FakeSnapshotProvider.new()
 	var _player_hud_refresh_coordinator: Variant = FakeRefreshCoordinator.new()
+	var _input_router: Variant = FakeInputRouter.new()
 	var _player_state: Variant = "player"
 	var _enemy_state: Variant = "enemy"
 	var _combat: Variant = "combat"
@@ -70,17 +84,11 @@ class FakeOwner:
 	func _input_phase_value() -> int:
 		return InputPhase.PLAYER_INPUT
 
-	func _drag_active() -> bool:
-		return false
-
-	func _drag_move_time_left() -> float:
-		return 0.0
-
-	func _timer_ready_seconds() -> float:
-		return 12.0
-
 	func _should_show_intent_damage_preview() -> bool:
 		return true
+
+	func _bind_input_router() -> void:
+		pass
 
 	func _bind_player_hud_refresh_coordinator() -> void:
 		bind_refresh_calls += 1
