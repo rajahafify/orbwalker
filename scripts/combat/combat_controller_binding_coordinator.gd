@@ -4,10 +4,12 @@ class_name CombatControllerBindingCoordinator
 const DEBUG_CALLBACK_KEYS := preload("res://scripts/combat/combat_debug_callback_keys.gd")
 
 var _owner: Variant = null
+var _view_actions: Variant = null
 
 
 func bind(owner: Variant) -> void:
 	_owner = owner
+	_view_actions = owner.get("_view_actions")
 
 
 func bind_board_debug_command_handler() -> void:
@@ -27,8 +29,8 @@ func bind_board_debug_command_handler() -> void:
 			},
 			{
 				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_debug_set_input_phase"),
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_owner, "_append_combat_log"),
+				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
 				_owner.CONTRACT.COMBAT_BOARD_DEBUG_COMMAND_HANDLER_SCRIPT.CALLBACK_SYNC_TUTORIAL_COACHMARK: Callable(_owner, "_sync_tutorial_coachmark"),
 			}
 		)
@@ -194,8 +196,8 @@ func bind_loadout_command_handler() -> void:
 				"consumable_rng": _owner._consumable_rng,
 			},
 			{
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_owner, "_append_combat_log"),
+				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
 				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_UPDATE_HUD: Callable(_owner, "_update_hud"),
 				_owner.CONTRACT.COMBAT_LOADOUT_COMMAND_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
 			},
@@ -215,9 +217,9 @@ func bind_intent_hover_handler() -> void:
 			{"run_state": RunState, "combat": _owner._combat, "enemy_state": _owner._enemy_state, "model": _owner._model, "view": _owner._view},
 			{
 				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
-				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_owner, "_set_status_color"),
-				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(_owner, "_set_turn_summary_text"),
+				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
+				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(_view_actions, "set_turn_summary_text"),
 				_owner.CONTRACT.COMBAT_INTENT_HOVER_HANDLER_SCRIPT.CALLBACK_FORMAT_INTENT: Callable(_owner._debug_state_provider, "format_intent"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT), "warning_color": _owner.CONTRACT.STATUS_COLOR_WARNING}
@@ -236,10 +238,10 @@ func bind_scene_transition_handler() -> void:
 			{
 				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(_owner, "_flow_trace_route_id_value"),
 				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_LOCK_EXTERNAL_INPUT: Callable(_owner, "_lock_scene_transition_input"),
-				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(_owner, "_show_outcome_summary"),
-				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_owner, "_set_status_color"),
-				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_owner, "_append_combat_log"),
+				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(_view_actions, "show_outcome_summary"),
+				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
+				_owner.CONTRACT.COMBAT_SCENE_TRANSITION_HANDLER_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
 			},
 			{"negative_color": _owner.CONTRACT.STATUS_COLOR_NEGATIVE, "run_summary_scene": RunState.SCENE_RUN_SUMMARY}
 		)
@@ -258,16 +260,16 @@ func bind_outcome_route_coordinator() -> void:
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PLAY_SFX: Callable(_owner, "_audio_play_sfx"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_INPUT_PHASE: Callable(_owner, "_set_input_phase"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_TURN_LOG: Callable(_owner, "_append_turn_log"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_owner, "_set_status_color"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_owner, "_append_combat_log"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(_owner, "_show_boss_reward_summary"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(_owner, "_set_turn_summary_text"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_APPEND_COMBAT_LOG: Callable(_view_actions, "append_combat_log"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_BOSS_REWARD_SUMMARY: Callable(_view_actions, "show_boss_reward_summary"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SET_TURN_SUMMARY_TEXT: Callable(_view_actions, "set_turn_summary_text"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_CURRENT_ROUTE_ID: Callable(_owner, "_flow_trace_route_id_value"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(_owner, "_hide_outcome_summary"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_HIDE_OUTCOME_SUMMARY: Callable(_view_actions, "hide_outcome_summary"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_TRACE_AND_CHANGE_SCENE: Callable(_owner, "_trace_and_change_scene_to_target"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(_owner, "_show_outcome_summary"),
-				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(_owner, "_pulse_turn_summary"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_SHOW_OUTCOME_SUMMARY: Callable(_view_actions, "show_outcome_summary"),
+				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_PULSE_TURN_SUMMARY: Callable(_view_actions, "pulse_turn_summary"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BEGIN_TURN_PREVIEW: Callable(_owner, "_begin_turn_preview"),
 				_owner.CONTRACT.COMBAT_OUTCOME_ROUTE_COORDINATOR_SCRIPT.CALLBACK_BUILD_RUN_OUTCOME_SUMMARY: Callable(_owner, "_build_run_outcome_summary"),
 			},
@@ -322,7 +324,7 @@ func bind_input_phase_router() -> void:
 			{"model": _owner._ensure_model(), "board_controller": _owner._board_controller},
 			{
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_CLEAR_HOVER_STATE: Callable(_owner, "_clear_combat_mastery_hover_state"),
-				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
+				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_SYNC_MODEL_STATE: Callable(_owner, "_sync_model_state"),
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_DRAG_ACTIVE: Callable(_owner, "_drag_active"),
 				_owner.CONTRACT.COMBAT_INPUT_PHASE_ROUTER_SCRIPT.CALLBACK_ABORT_ACTIVE_DRAG: Callable(_owner, "_abort_active_drag"),
@@ -395,8 +397,8 @@ func bind_tutorial_coachmark_coordinator() -> void:
 			},
 			{
 				_owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_INPUT_PHASE_VALUE: Callable(_owner, "_input_phase_value"),
-				_owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_owner, "_set_status_color"),
+				_owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
 			},
 			{"player_input_phase_value": int(_owner.InputPhase.PLAYER_INPUT), "warning_status_color": _owner.CONTRACT.STATUS_COLOR_WARNING}
 		)
@@ -420,8 +422,8 @@ func bind_tutorial_drag_flow() -> void:
 			{
 				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_END_DRAG: Callable(_owner, "_end_drag"),
 				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_BOARD_SEED: Callable(_owner, "_set_board_seed"),
-				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_owner, "_set_status_text"),
-				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_owner, "_set_status_color"),
+				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_TEXT: Callable(_view_actions, "set_status_text"),
+				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_SET_STATUS_COLOR: Callable(_view_actions, "set_status_color"),
 				_owner.CONTRACT.COMBAT_TUTORIAL_DRAG_FLOW_SCRIPT.CALLBACK_BOARD_MODEL_CHANGED: Callable(_owner, "_set_board_model_from_tutorial_drag_flow"),
 			},
 			{"warning_status_color": _owner.CONTRACT.STATUS_COLOR_WARNING}

@@ -98,13 +98,13 @@ const STATE_CALLBACK_KEYS := [
 
 static func controller_action_callbacks(controller: Object) -> Dictionary:
 	return {
-		SET_STATUS_TEXT: Callable(controller, "_console_set_status_text"),
+		SET_STATUS_TEXT: Callable(controller.get("_view_actions"), "console_set_status_text"),
 		ON_SKIP_SUCCESS: Callable(controller, "_console_on_skip_success"),
 		CREATE_NEW_BOARD: Callable(controller, "_create_new_board"),
 		SET_BOARD_SEED: Callable(controller, "_set_board_seed"),
 		UPDATE_HUD: Callable(controller, "_update_hud"),
 		SET_INPUT_PHASE: Callable(controller, "_debug_set_input_phase"),
 		SET_PENDING_NEXT_SCENE_PATH: Callable(controller, "_debug_set_pending_next_scene_path"),
-		SHOW_OUTCOME_SUMMARY: Callable(controller, "_show_outcome_summary"),
+		SHOW_OUTCOME_SUMMARY: Callable(controller.get("_view_actions"), "show_outcome_summary"),
 		BUILD_RUN_OUTCOME_SUMMARY: Callable(controller, "_build_run_outcome_summary"),
 	}

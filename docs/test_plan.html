@@ -262,6 +262,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-12, Wave 17 combat controller view-action split):</p>
+<ul>
+<li><code>CombatControllerViewActions</code> now owns status text/color updates, turn-summary text/pulse, outcome overlay show/hide/layer calls, boss-reward summary/control forwarding, combat log forwarding, and debug-console log forwarding. Lifecycle and binding callbacks call that action surface instead of private controller UI methods.</li>
+<li><code>scripts/combat/combat_controller.gd</code> dropped from <code>704</code> to <code>682</code> measured lines, and <code>combat_controller_lifecycle.gd</code> owner-private reach-ins dropped from <code>250</code> to <code>233</code>. The stricter <code>400</code>-line controller exception remains active because lifecycle/binding seams are still owner-bound and the controller is not yet wiring-only.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 16 combat controller wiring splits):</p>
 <ul>
 <li><code>CombatControllerContract</code> now owns the controller's script preload, timing, status-color, log-level, phase, and combat-speed constants. <code>CombatController</code>, <code>CombatControllerLifecycle</code>, <code>CombatControllerBindingCoordinator</code>, and <code>CombatTurnReplayCoordinator</code> read the same catalog instead of duplicating contract ownership in the god object.</li>

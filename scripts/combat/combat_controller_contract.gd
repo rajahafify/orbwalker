@@ -46,6 +46,7 @@ const COMBAT_CONTROLLER_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat
 const COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_controller_binding_coordinator.gd")
 const COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_runtime_binder.gd")
 const COMBAT_CONTROLLER_SCENE_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_scene_binder.gd")
+const COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT := preload("res://scripts/combat/combat_controller_view_actions.gd")
 const COMBAT_CONTROLLER_PRESENTATION_DRIVER_SCRIPT := preload("res://scripts/combat/combat_controller_presentation_driver.gd")
 const COMBAT_CONSUMABLE_SERVICE_SCRIPT := preload("res://scripts/combat/combat_consumable_service.gd")
 const COMBAT_AUDIO_CUE_PLAYER_SCRIPT := preload("res://scripts/combat/combat_audio_cue_player.gd")

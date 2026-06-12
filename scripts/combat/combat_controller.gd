@@ -53,6 +53,7 @@ var _resolve_trace_logger = null
 var _turn_replay_coordinator = null
 var _lifecycle = null
 var _binding_coordinator = null
+var _view_actions: Variant = null
 var _combat_consumable_service: CombatConsumableService = null
 var _combat_audio_cue_player: CombatAudioCuePlayer = null
 var _debug_state_provider: CombatDebugStateProvider = null
@@ -140,6 +141,7 @@ func _bind_audio_cue_player() -> void:
 
 
 func _bind_debug_state_provider() -> void:
+	_bind_view_actions()
 	_debug_state_provider = (
 		CONTRACT
 		. COMBAT_CONTROLLER_RUNTIME_BINDER_SCRIPT
@@ -160,6 +162,7 @@ func _bind_debug_state_provider() -> void:
 
 
 func _bind_board_debug_command_handler() -> void:
+	_bind_view_actions()
 	_bind_binding_coordinator()
 	_binding_coordinator.bind_board_debug_command_handler()
 
@@ -170,6 +173,7 @@ func _bind_input_command_handler() -> void:
 
 
 func _bind_debug_console() -> void:
+	_bind_view_actions()
 	_bind_binding_coordinator()
 	_binding_coordinator.bind_debug_console()
 
@@ -343,9 +347,10 @@ func _on_tutorial_end_main_menu_pressed() -> void:
 
 
 func _on_run_tests_button_pressed() -> void:
+	_bind_view_actions()
 	var report: Dictionary = CONTRACT.TEST_RUNNER_SCRIPT.run_all()
 	if bool(report.get("passed", false)):
-		_set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
+		_view_actions.set_status_text("Tests passed (%d cases)." % int(report.get("total", 0)))
 		print(
 			(
 				"[Combat Debug Tests] Passed %d cases across %d suites."
@@ -357,7 +362,7 @@ func _on_run_tests_button_pressed() -> void:
 		)
 		return
 
-	_set_status_text("Tests failed (%d/%d). See output." % [int(report.get("failed", 0)), int(report.get("total", 0))])
+	_view_actions.set_status_text("Tests failed (%d/%d). See output." % [int(report.get("failed", 0)), int(report.get("total", 0))])
 	push_warning("Combat debug tests failed:\n%s" % "\n".join(Array(report.get("failures", []))))
 
 
@@ -416,6 +421,7 @@ func _clear_combat_mastery_hover_state() -> void:
 func _handle_drag_input_result(result: Dictionary) -> void:
 	if result.is_empty():
 		return
+	_bind_view_actions()
 	var action := String(result.get("action", ""))
 	if action == "start":
 		_clear_combat_mastery_hover_state()
@@ -424,8 +430,8 @@ func _handle_drag_input_result(result: Dictionary) -> void:
 		var selected_orb_id := int(result.get("selected_orb_id", -1))
 		if _view != null:
 			_view.sync_timer_display(_drag_move_time_left(), CONTRACT.COMBAT_TIMER_SERVICE_SCRIPT.TIMER_STATE_ACTIVE)
-		_set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
-		_set_status_color(CONTRACT.STATUS_COLOR_NEUTRAL)
+		_view_actions.set_status_text("Dragging %s orb. Move timer running." % OrbType.display_name(selected_orb_id))
+		_view_actions.set_status_color(CONTRACT.STATUS_COLOR_NEUTRAL)
 		return
 	if action == "end":
 		_bind_tutorial_drag_flow()
@@ -473,30 +479,6 @@ func _sync_board_debug_command_result(result: Dictionary) -> void:
 func _on_console_input_text_submitted(text: String) -> void:
 	if _debug_runtime != null:
 		_debug_runtime.handle_submitted_text(text)
-
-
-func _console_set_status_text(message: String) -> void:
-	_set_status_text(message)
-
-
-func _set_status_text(message: String) -> void:
-	if _view != null:
-		_view.set_status_text(message)
-
-
-func _set_status_color(color: Color) -> void:
-	if _view != null:
-		_view.set_status_color(color)
-
-
-func _set_turn_summary_text(text: String) -> void:
-	if _view != null:
-		_view.set_turn_summary_text(text)
-
-
-func _pulse_turn_summary(tint: Color) -> void:
-	if _view != null:
-		_view.pulse_turn_summary(tint)
 
 
 func _console_on_skip_success() -> void:
@@ -587,7 +569,7 @@ func _bind_boss_reward_handler() -> void:
 			_model,
 			_visuals,
 			{
-				"set_status_text": Callable(self, "_set_status_text"),
+				"set_status_text": Callable(_view_actions, "set_status_text"),
 				"update_hud": Callable(self, "_update_hud"),
 				"play_sfx": Callable(self, "_audio_play_sfx"),
 				"apply_layout": Callable(self, "_apply_combat_layout"),
@@ -599,33 +581,6 @@ func _bind_boss_reward_handler() -> void:
 
 func _boss_reward_trace_and_change_scene(scene_path: String, source: String, trace_mark: String, payload: Dictionary = {}) -> void:
 	_trace_and_change_scene_to_target(scene_path, _flow_trace_route_id_value(), source, trace_mark, payload)
-
-
-func _show_outcome_summary(title: String, body: String, show_next: bool, button_text: String = "Continue") -> void:
-	if _outcome_overlay == null:
-		return
-	_outcome_overlay.show_summary(title, body, show_next, button_text)
-	_apply_combat_layout()
-
-
-func _hide_outcome_summary() -> void:
-	if _outcome_overlay == null:
-		return
-	_outcome_overlay.hide()
-
-
-func _ensure_boss_reward_controls() -> void:
-	_bind_boss_reward_handler()
-	if _boss_reward_handler == null:
-		return
-	_boss_reward_handler.ensure_controls()
-
-
-func _show_boss_reward_summary(body: String) -> void:
-	_bind_boss_reward_handler()
-	if _boss_reward_handler == null:
-		return
-	_boss_reward_handler.show_summary(body)
 
 
 func _trace_and_change_scene_to_target(
@@ -643,12 +598,6 @@ func _on_combat_scene_post_ready_rollback(result: Dictionary) -> void:
 func _handle_combat_scene_change_failure(target_scene: String, route_id: String, source: String, result: Variant) -> void:
 	_bind_scene_transition_handler()
 	_scene_transition_handler.handle_scene_change_failure(target_scene, route_id, source, result)
-
-
-func _ensure_outcome_overlay_layer() -> void:
-	if _outcome_overlay == null:
-		return
-	_outcome_overlay.ensure_overlay_layer()
 
 
 func set_external_input_locked(locked: bool, reason: String = "") -> void:
@@ -936,9 +885,23 @@ func _bind_lifecycle() -> void:
 
 
 func _bind_binding_coordinator() -> void:
+	_bind_view_actions()
 	if _binding_coordinator == null:
 		_binding_coordinator = CONTRACT.COMBAT_CONTROLLER_BINDING_COORDINATOR_SCRIPT.new()
 	_binding_coordinator.bind(self)
+
+
+func _bind_view_actions() -> void:
+	if _view_actions == null:
+		_view_actions = CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.new()
+	_view_actions.bind(
+		{"view": _view, "outcome_overlay": _outcome_overlay, "debug_runtime": _debug_runtime},
+		{
+			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_APPLY_LAYOUT: Callable(self, "_apply_combat_layout"),
+			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_BIND_BOSS_REWARD_HANDLER: Callable(self, "_bind_boss_reward_handler"),
+			CONTRACT.COMBAT_CONTROLLER_VIEW_ACTIONS_SCRIPT.CALLBACK_BOSS_REWARD_HANDLER: func() -> Variant: return _boss_reward_handler,
+		}
+	)
 
 
 func _bind_turn_replay_coordinator() -> void:
@@ -990,23 +953,15 @@ func _on_enemy_intent_bubble_hovered(kind: String, entry: Dictionary) -> void:
 
 
 func _append_turn_log(turn_log: Dictionary) -> void:
+	_bind_view_actions()
 	CONTRACT.COMBAT_TURN_LOG_WRITER_SCRIPT.append_turn_log(
-		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(self, "_append_combat_log"), CONTRACT.LOG_LEVEL_NORMAL
+		turn_log, _turn_log_presenter, _debug_runtime, _player_state, _enemy_state, Callable(_view_actions, "append_combat_log"), CONTRACT.LOG_LEVEL_NORMAL
 	)
 
 
 func _resolve_trace(start_ticks_usec: int, message: String) -> void:
 	_bind_resolve_trace_logger()
 	_resolve_trace_logger.trace(start_ticks_usec, message)
-
-
-func _append_combat_log(message: String, is_command_output: bool = false) -> void:
-	if _debug_runtime != null:
-		_debug_runtime.append_log(message, is_command_output)
-
-
-func debug_console_log(message: String) -> void:
-	_append_combat_log(message)
 
 
 func _refresh_build_icon_rows(progression_snapshot: Dictionary) -> void:
@@ -1023,9 +978,10 @@ func _spawn_vfx_texture(
 
 
 func _on_resolver_match_found(groups: Array) -> void:
+	_bind_view_actions()
 	_audio_play_sfx("match")
-	_set_status_text("Matches found: %d group(s)." % groups.size())
-	_set_status_color(CONTRACT.STATUS_COLOR_WARNING)
+	_view_actions.set_status_text("Matches found: %d group(s)." % groups.size())
+	_view_actions.set_status_color(CONTRACT.STATUS_COLOR_WARNING)
 
 
 func _on_viewport_size_changed() -> void:
