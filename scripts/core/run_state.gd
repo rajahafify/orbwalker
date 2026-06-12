@@ -245,17 +245,30 @@ func _ensure_transition_state_store():
 # gdformat: off
 func _transition_state_store_hooks() -> Dictionary:
 	return {
-		"run_score_banked": func() -> bool: return _run_score_banked, "set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
-		"step_index": func() -> int: return _step_index, "set_step_index": func(value: int) -> void: _step_index = value,
-		"current_encounter": func() -> Dictionary: return _current_encounter, "set_current_encounter": func(value: Dictionary) -> void: _current_encounter = value,
-		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options, "set_boss_relic_reward_options": func(value: Array) -> void: _boss_relic_reward_options = value,
-		"boss_reward_claimed_relic_id": func() -> String: return _boss_reward_claimed_relic_id, "set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
-		"relic_offer_ids_by_level": func() -> Dictionary: return _relic_offer_ids_by_level, "set_relic_offer_ids_by_level": func(value: Dictionary) -> void: _relic_offer_ids_by_level = value,
-		"run_summary": func() -> Dictionary: return _run_summary, "set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
-		"run_logger_transition_snapshot": func() -> Dictionary: return _ensure_run_logger().transition_snapshot(), "restore_run_logger_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_run_logger().restore_transition_snapshot(snapshot),
-		"scene_router_transition_snapshot": func() -> Dictionary: return _ensure_scene_router().transition_snapshot(), "restore_scene_router_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_scene_router().restore_transition_snapshot(snapshot),
-		"capture_run_signal_state": _capture_run_signal_state, "sync_player_gold_from_run": _sync_player_gold_from_run, "emit_run_state_signals": _emit_run_state_signals,
+		"run_score_banked": func() -> bool: return _run_score_banked,
+		"set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
+		"step_index": func() -> int: return _step_index,
+		"set_step_index": func(value: int) -> void: _step_index = value,
+		"current_encounter": func() -> Dictionary: return _current_encounter,
+		"set_current_encounter": func(value: Dictionary) -> void: _current_encounter = value,
+		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options,
+		"set_boss_relic_reward_options": func(value: Array) -> void: _boss_relic_reward_options = value,
+		"boss_reward_claimed_relic_id": func() -> String: return _boss_reward_claimed_relic_id,
+		"set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
+		"relic_offer_ids_by_level": func() -> Dictionary: return _relic_offer_ids_by_level,
+		"set_relic_offer_ids_by_level": func(value: Dictionary) -> void: _relic_offer_ids_by_level = value,
+		"run_summary": func() -> Dictionary: return _run_summary,
+		"set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
+		"run_logger_transition_snapshot": func() -> Dictionary: return _ensure_run_logger().transition_snapshot(),
+		"restore_run_logger_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_run_logger().restore_transition_snapshot(snapshot),
+		"scene_router_transition_snapshot": func() -> Dictionary: return _ensure_scene_router().transition_snapshot(),
+		"restore_scene_router_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_scene_router().restore_transition_snapshot(snapshot),
+		"capture_run_signal_state": _capture_run_signal_state,
+		"sync_player_gold_from_run": _sync_player_gold_from_run,
+		"emit_run_state_signals": _emit_run_state_signals,
 	}
+
+
 # gdformat: on
 
 
@@ -297,8 +310,25 @@ func _ensure_encounter_catalog():
 
 func _ensure_outcome_service():
 	if _outcome_service == null:
-		_outcome_service = RUN_OUTCOME_SERVICE_SCRIPT.new(self)
+		_outcome_service = RUN_OUTCOME_SERVICE_SCRIPT.new(self, _outcome_service_hooks())
 	return _outcome_service
+
+
+# gdformat: off
+func _outcome_service_hooks() -> Dictionary:
+	return {
+		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options, "set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
+		"current_encounter": func() -> Dictionary: return _current_encounter, "reward_rng": func() -> RandomNumberGenerator: return _reward_rng,
+		"run_score_banked": func() -> bool: return _run_score_banked, "set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
+		"run_summary": func() -> Dictionary: return _run_summary, "set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
+		"run_log_core_event_recorder": _ensure_run_log_core_event_recorder, "run_log_shop_event_recorder": _ensure_run_log_shop_event_recorder,
+		"profile_unlock_service": _ensure_profile_unlock_service, "run_log_append": _run_log_append, "advance_sequence": _advance_sequence,
+		"transition_result": _transition_result, "capture_run_signal_state": _capture_run_signal_state, "should_export_run_log_files": func() -> bool: return _ensure_run_logger().should_export_run_log_files(),
+		"run_log_export_to_disk": _run_log_export_to_disk, "emit_run_state_signals": _emit_run_state_signals,
+	}
+
+
+# gdformat: on
 
 
 func ensure_player_profile_state() -> PlayerProfileState:
@@ -323,27 +353,15 @@ func prototype_balance_levers_snapshot() -> Dictionary:
 	return _ensure_balance_manager().levers_snapshot()
 
 
-func set_prototype_balance_levers(levers: Dictionary) -> Dictionary:
-	var snapshot: Dictionary = _ensure_balance_manager().set_levers(levers)
-	if content_registry != null:
-		_ensure_balance_manager().sync_content_registry(content_registry)
-	return snapshot
-
-
 func prototype_fight_gold_reward_for(level: int, _step_key: String = "") -> int:
 	return _ensure_balance_manager().fight_gold_reward_for(level, MAX_DUNGEON_LEVELS)
 
 
-func progression_snapshot() -> Dictionary:
-	return _ensure_profile_facade().progression_snapshot()
-
-
-func profile_snapshot() -> Dictionary:
-	return _ensure_profile_facade().profile_snapshot()
-
-
-func meta_profile_snapshot() -> Dictionary:
-	return _ensure_profile_facade().meta_profile_snapshot()
+# gdformat: off
+func progression_snapshot() -> Dictionary: return _ensure_profile_facade().progression_snapshot()
+func profile_snapshot() -> Dictionary: return _ensure_profile_facade().profile_snapshot()
+func meta_profile_snapshot() -> Dictionary: return _ensure_profile_facade().meta_profile_snapshot()
+# gdformat: on
 
 
 func reset_profile() -> Dictionary:
@@ -360,10 +378,6 @@ func unlock_equipment(item_id: String, source: String, emit_profile_signal: bool
 
 func claim_equipment_unlock(item_id: String) -> Dictionary:
 	return _ensure_profile_facade().claim_equipment_unlock(item_id)
-
-
-func consume_recent_equipment_unlocks() -> Array[Dictionary]:
-	return _ensure_profile_facade().consume_recent_equipment_unlocks()
 
 
 func add_total_score(amount: int) -> int:
@@ -657,18 +671,6 @@ func run_summary_snapshot() -> Dictionary:
 
 func run_log_snapshot() -> Dictionary:
 	return _ensure_run_logger().run_log_snapshot()
-
-
-func run_log_export_json(pretty: bool = true) -> String:
-	return _ensure_run_logger().run_log_export_json(pretty)
-
-
-func run_log_export_text() -> String:
-	return _ensure_run_logger().run_log_export_text()
-
-
-func run_log_export_html() -> String:
-	return _ensure_run_logger().run_log_export_html()
 
 
 func generate_run_log_files_enabled() -> bool:

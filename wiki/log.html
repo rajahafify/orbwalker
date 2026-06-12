@@ -3782,6 +3782,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Changed <code>RunTransitionStateStore</code> to use injected hooks for RunState-private transition state, run logger/router transition snapshots, signal emission, and player-gold sync. The store keeps public owner API access for player, progression, shop, and wallet state restoration. (source: <code>scripts/core/run_transition_state_store.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
 <li>Removed <code>run_transition_state_store.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>26</code> to <code>0</code>, and added direct hook-table coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/run_transition_state_store_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-run-outcome-service-hook-ownership">2026-06-13 - Run outcome service hook ownership</h2>
+<ul>
+<li>Changed <code>RunOutcomeService</code> to use injected hooks for RunState-private boss reward state, encounter state, run summary, score banking, RNG, logging, transition, signal, and export behavior. The service keeps public owner API access for run flags, progression/profile snapshots, shop, and wallet behavior. (source: <code>scripts/core/run_outcome_service.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Removed <code>run_outcome_service.gd</code> from the owner-reach ratchet allowlist after its owner-private reach-ins dropped from <code>35</code> to <code>0</code>, and added direct hook-table coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/run_outcome_service_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
