@@ -3757,6 +3757,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved ready-time resolve-presenter binding, view bootstrap/dependency wiring, debug-console bootstrap, viewport/process activation, layout application, and deferred first-frame/texture-map callbacks into <code>CombatControllerReadyFlowBinder</code>. The binder takes explicit dependencies/callbacks and has no owner-private reach-ins. (source: <code>scripts/combat/combat_controller_ready_flow_binder.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>, <code>scripts/tests/combat_controller_ready_flow_binder_test.gd</code>)</li>
 <li>Lowered the lifecycle owner-reach ratchet from <code>98</code> to <code>40</code>; <code>combat_controller.gd</code> remains unchanged at <code>569</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-player-loadout-intent-preview-ownership">2026-06-13 - Player loadout intent preview ownership</h2>
+<ul>
+<li>Moved HP danger/armor-preview nodes, preview payload state, and pulse tween ownership into <code>PlayerLoadoutIntentPreview</code>. <code>PlayerLoadoutHud</code> now binds data providers and hover signal callbacks instead of letting the helper reach into HUD private fields. (source: <code>scripts/ui/player_loadout_intent_preview.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Removed <code>player_loadout_intent_preview.gd</code> from the owner-reach ratchet allowlist after its HUD-private reach-ins dropped from <code>129</code> to <code>0</code>, and added direct provider/callback coverage. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>, <code>scripts/tests/player_loadout_intent_preview_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
