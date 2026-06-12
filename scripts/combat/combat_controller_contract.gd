@@ -37,6 +37,7 @@ const COMBAT_RESOLVE_FLOW_COORDINATOR_SCRIPT := preload("res://scripts/combat/co
 const COMBAT_TURN_PREVIEW_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_turn_preview_coordinator.gd")
 const COMBAT_CONTROLLER_SIGNAL_CONNECTOR_SCRIPT := preload("res://scripts/combat/combat_controller_signal_connector.gd")
 const COMBAT_CONTROLLER_SETUP_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_setup_binder.gd")
+const COMBAT_CONTROLLER_READY_FLOW_BINDER_SCRIPT := preload("res://scripts/combat/combat_controller_ready_flow_binder.gd")
 const COMBAT_INPUT_PHASE_ROUTER_SCRIPT := preload("res://scripts/combat/combat_input_phase_router.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
 const COMBAT_TUTORIAL_COACHMARK_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_tutorial_coachmark_coordinator.gd")

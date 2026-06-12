@@ -6,6 +6,7 @@ var _view_actions: Variant = null
 var _resolve_flow_coordinator: Variant = null
 var _turn_preview_coordinator: Variant = null
 var _signal_connector: Variant = null
+var _ready_flow_binder: Variant = null
 
 
 func bind(owner: Variant) -> void:
@@ -14,88 +15,95 @@ func bind(owner: Variant) -> void:
 
 
 func ready() -> void:
-	if _owner._board_view == null:
+	if _owner.get("_board_view") == null:
 		push_error("CombatPlayerController._ready aborted because BoardView failed to resolve.")
 		return
-	if _owner._flow_trace_route_id_value() == "":
-		_owner._set_flow_trace_route_id(RunState.flow_trace_active_route_id())
-	if _owner._flow_trace_route_id_value() == "":
-		_owner._set_flow_trace_route_id(RunState.flow_trace_begin("combat_scene_load", "res://scenes/combat.tscn", {"source": "combat._ready"}))
-	RunState.flow_trace_mark("combat_ready_start", {}, _owner._flow_trace_route_id_value())
-	_owner._audio_play_music("combat")
-	RunState.flow_trace_mark("combat_after_music", {}, _owner._flow_trace_route_id_value())
+	_ensure_combat_route_id()
+	_mark_flow("combat_ready_start")
+	Callable(_owner, "_audio_play_music").call("combat")
+	_mark_flow("combat_after_music")
 	ensure_runtime_helpers()
-	_owner._bind_outcome_overlay()
-	_owner._bind_boss_reward_handler()
-	if _owner._resolve_presenter == null:
-		_owner._resolve_presenter = _owner.CONTRACT.COMBAT_RESOLVE_PRESENTER_SCRIPT.new()
-	var spawn_vfx_texture_callback: Callable = Callable(_owner, "_spawn_vfx_texture")
-	var resolve_presenter_bindings := {
-		"board": _owner._board,
-		"board_view": _owner._board_view,
-		"board_panel": null,
-		"board_controller": _owner._board_controller,
-		"timer_owner": _owner._host,
-		"spawn_vfx_texture_callback": spawn_vfx_texture_callback,
-		"combo_sound_callback": _owner._on_presenter_combo_sound,
-	}
-	if _owner._view != null:
-		resolve_presenter_bindings = _owner._view.resolve_presenter_bindings(
-			_owner._board_controller, _owner._host, spawn_vfx_texture_callback, _owner._on_presenter_combo_sound
-		)
-	_owner._resolve_presenter.bind(resolve_presenter_bindings)
-	_owner._resolve_presenter.set_combat_speed(_owner._combat_speed_value())
-	_owner._bind_debug_console()
-	_owner._bind_settings_command_handler()
-	_owner._consumable_rng.randomize()
-	if _owner._view != null:
-		_owner._view.bootstrap_background()
-	RunState.flow_trace_mark("combat_texture_map_deferred", {}, _owner._flow_trace_route_id_value())
-	_view_actions.ensure_boss_reward_controls()
-	_view_actions.ensure_outcome_overlay_layer()
-	if _owner._view != null:
-		(
-			_owner
-			. _view
-			. set_dependencies(
-				{
-					"visual_registry": _owner._visuals,
-					"player_loadout_hud": _owner._player_loadout_hud,
-					"debug_console": _owner._debug_console,
-					"outcome_overlay": _owner._outcome_overlay,
-				}
-			)
-		)
-		_owner._view.setup_rendering_helpers()
-	RunState.flow_trace_mark("combat_after_boss_outcome_controls", {}, _owner._flow_trace_route_id_value())
-	if _owner._view != null:
-		_owner._view.bind_player_hud()
-	_owner._bind_combat_vfx_presenter()
-	if _owner._view != null:
-		_owner._view.bind_layout_presenter()
-	_owner._bind_board_controller()
-	RunState.flow_trace_mark("combat_after_hud_bind", {}, _owner._flow_trace_route_id_value())
-	_owner._apply_visual_chrome()
-	RunState.flow_trace_mark("combat_after_chrome", {}, _owner._flow_trace_route_id_value())
-	_owner._bind_resolve_trace_logger()
+	_owner.call("_bind_outcome_overlay")
+	_owner.call("_bind_boss_reward_handler")
+	_ensure_ready_flow_binder()
+	_owner.set("_resolve_presenter", _ready_flow_binder.bind_resolve_presenter(_ready_flow_dependencies(), _ready_flow_callbacks(), _ready_flow_config()))
+	_owner.call("_bind_debug_console")
+	_owner.call("_bind_settings_command_handler")
+	var consumable_rng: Variant = _owner.get("_consumable_rng")
+	if consumable_rng != null:
+		consumable_rng.randomize()
+	_ready_flow_binder.bootstrap_view(_ready_flow_dependencies(), _view_actions)
+	_mark_flow("combat_texture_map_deferred")
+	_mark_flow("combat_after_boss_outcome_controls")
+	_owner.call("_bind_combat_vfx_presenter")
+	_owner.call("_bind_board_controller")
+	_mark_flow("combat_after_hud_bind")
+	_owner.call("_apply_visual_chrome")
+	_mark_flow("combat_after_chrome")
+	_owner.call("_bind_resolve_trace_logger")
 	connect_signals()
 	initialize_combat_state()
-	_owner._bind_loadout_command_handler()
-	RunState.flow_trace_mark("combat_after_initialize_state", {}, _owner._flow_trace_route_id_value())
-	_owner._create_new_board()
-	RunState.flow_trace_mark("combat_after_board_create", {}, _owner._flow_trace_route_id_value())
-	if _owner._debug_runtime != null:
-		_owner._debug_runtime.bootstrap_hidden(Callable(_owner, "_on_console_input_text_submitted"))
-	_owner._host.get_viewport().size_changed.connect(_owner.on_viewport_size_changed)
-	if _owner._view != null:
-		_owner._view.set_vfx_layer_visible(true)
-	_owner._host.set_process(true)
-	_owner._apply_combat_layout()
-	RunState.flow_trace_mark("combat_after_layout", {}, _owner._flow_trace_route_id_value())
+	_owner.call("_bind_loadout_command_handler")
+	_mark_flow("combat_after_initialize_state")
+	_owner.call("_create_new_board")
+	_mark_flow("combat_after_board_create")
+	_ready_flow_binder.activate_scene(_ready_flow_dependencies(), _ready_flow_callbacks())
+	_mark_flow("combat_after_layout")
 	begin_turn_preview()
-	RunState.flow_trace_mark("combat_after_begin_turn_preview", {}, _owner._flow_trace_route_id_value())
-	_owner.call_deferred("_trace_flow_first_usable_frame")
-	_owner.call_deferred("_apply_orb_texture_map_deferred")
+	_mark_flow("combat_after_begin_turn_preview")
+
+
+func _ensure_ready_flow_binder() -> void:
+	if _ready_flow_binder == null:
+		_ready_flow_binder = _owner.CONTRACT.COMBAT_CONTROLLER_READY_FLOW_BINDER_SCRIPT.new()
+
+
+func _ensure_combat_route_id() -> void:
+	if _route_id() == "":
+		_owner.call("_set_flow_trace_route_id", RunState.flow_trace_active_route_id())
+	if _route_id() == "":
+		_owner.call("_set_flow_trace_route_id", RunState.flow_trace_begin("combat_scene_load", "res://scenes/combat.tscn", {"source": "combat._ready"}))
+
+
+func _route_id() -> String:
+	return String(_owner.call("_flow_trace_route_id_value"))
+
+
+func _mark_flow(step: String) -> void:
+	RunState.flow_trace_mark(step, {}, _route_id())
+
+
+func _ready_flow_dependencies() -> Dictionary:
+	return {
+		"resolve_presenter": _owner.get("_resolve_presenter"),
+		"resolve_presenter_script": _owner.CONTRACT.COMBAT_RESOLVE_PRESENTER_SCRIPT,
+		"board": _owner.get("_board"),
+		"board_view": _owner.get("_board_view"),
+		"board_controller": _owner.get("_board_controller"),
+		"host": _owner.get("_host"),
+		"view": _owner.get("_view"),
+		"visuals": _owner.get("_visuals"),
+		"player_loadout_hud": _owner.get("_player_loadout_hud"),
+		"debug_console": _owner.get("_debug_console"),
+		"outcome_overlay": _owner.get("_outcome_overlay"),
+		"debug_runtime": _owner.get("_debug_runtime"),
+	}
+
+
+func _ready_flow_callbacks() -> Dictionary:
+	return {
+		"spawn_vfx_texture": Callable(_owner, "_spawn_vfx_texture"),
+		"combo_sound": Callable(_owner, "_on_presenter_combo_sound"),
+		"console_input_submitted": Callable(_owner, "_on_console_input_text_submitted"),
+		"viewport_size_changed": Callable(_owner, "on_viewport_size_changed"),
+		"apply_combat_layout": Callable(_owner, "_apply_combat_layout"),
+		"trace_first_usable_frame": Callable(_owner, "_trace_flow_first_usable_frame"),
+		"apply_orb_texture_map_deferred": Callable(_owner, "_apply_orb_texture_map_deferred"),
+	}
+
+
+func _ready_flow_config() -> Dictionary:
+	return {"combat_speed": _owner.call("_combat_speed_value")}
 
 
 func ensure_runtime_helpers() -> void:

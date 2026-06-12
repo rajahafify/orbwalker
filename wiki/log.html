@@ -3752,6 +3752,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <ul>
 <li>Moved debug runtime setup, settings command-handler setup, and board-controller setup out of <code>CombatControllerBindingCoordinator</code> into <code>CombatControllerSetupBinder</code>. The binder accepts explicit dependencies/callbacks/config and has no owner-private reach-ins. (source: <code>scripts/combat/combat_controller_setup_binder.gd</code>, <code>scripts/combat/combat_controller_binding_coordinator.gd</code>, <code>scripts/tests/combat_controller_setup_binder_test.gd</code>)</li>
 <li>Lowered the binding coordinator owner-reach ratchet from <code>82</code> to <code>63</code>; <code>combat_controller.gd</code> remains at <code>569</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+</ul>
+      <h2 id="2026-06-13-lifecycle-ready-flow-binder">2026-06-13 - Lifecycle ready-flow binder</h2>
+<ul>
+<li>Moved ready-time resolve-presenter binding, view bootstrap/dependency wiring, debug-console bootstrap, viewport/process activation, layout application, and deferred first-frame/texture-map callbacks into <code>CombatControllerReadyFlowBinder</code>. The binder takes explicit dependencies/callbacks and has no owner-private reach-ins. (source: <code>scripts/combat/combat_controller_ready_flow_binder.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>, <code>scripts/tests/combat_controller_ready_flow_binder_test.gd</code>)</li>
+<li>Lowered the lifecycle owner-reach ratchet from <code>98</code> to <code>40</code>; <code>combat_controller.gd</code> remains unchanged at <code>569</code>. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
 </ul>      <section class="footer">
         <p><span class="badge">Converted</span> Source file: <a href="../wiki/log.html"><code>wiki/log.html</code></a></p>
       </section>
