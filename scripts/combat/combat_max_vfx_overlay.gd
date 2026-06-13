@@ -31,16 +31,11 @@ const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/comba
 const COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT := preload("res://scripts/combat/combat_max_vfx_effect_key_catalog.gd")
 const COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd")
 const COMBAT_MAX_VFX_ASSET_STORE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_asset_store.gd")
-const OVERLAY_Z_INDEX := 122
+const COMBAT_MAX_VFX_SPAWN_GATEWAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_spawn_gateway.gd")
 
 var _vfx_layer: Control
 var _visual_registry: Variant
 var _timer_owner: Node
-var _container: SubViewportContainer
-var _sub_viewport: SubViewport
-var _root_3d: Node3D
-var _camera: Camera3D
-var _ambient_light: DirectionalLight3D
 var _asset_catalog: Variant = COMBAT_MAX_VFX_ASSET_CATALOG_SCRIPT.new()
 var _asset_store: Variant = COMBAT_MAX_VFX_ASSET_STORE_SCRIPT.new()
 var _flipbook_presenter: Variant = COMBAT_MAX_VFX_FLIPBOOK_PRESENTER_SCRIPT.new()
@@ -71,6 +66,7 @@ var _projector: Variant = COMBAT_MAX_VFX_PROJECTOR_SCRIPT.new()
 var _replay_impact_router: Variant = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.new()
 var _effect_key_catalog: Variant = COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT.new()
 var _lifecycle: Variant = COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT.new()
+var _spawn_gateway: Variant = COMBAT_MAX_VFX_SPAWN_GATEWAY_SCRIPT.new()
 
 
 func _init() -> void:
@@ -167,11 +163,11 @@ func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float) -> bool:
 		return false
 	var source := _global_to_overlay_local(source_global)
 	if _asset_store.pack_vfx_available():
-		_spawn_pack_effect("hit_02", source, "damage", Vector2(150, 150), lifetime * 1.10, 3, 0.0, Vector2.ZERO, -0.12, 1.0, 0.80)
-		_spawn_light(source, Color(1.0, 0.34, 0.48, 1.0), 1.5, 160.0, lifetime)
+		_spawn_gateway.spawn_pack_effect("hit_02", source, "damage", Vector2(150, 150), lifetime * 1.10, 3, 0.0, Vector2.ZERO, -0.12, 1.0, 0.80)
+		_spawn_gateway.spawn_light(source, Color(1.0, 0.34, 0.48, 1.0), 1.5, 160.0, lifetime)
 		return true
-	_spawn_light(source, Color(1.0, 0.34, 0.48, 1.0), 1.5, 160.0, lifetime)
-	_spawn_flipbook("enemy_attack", source, Vector2(180, 180), lifetime * 1.15, Color(1, 1, 1, 0.88), 0.0, Vector2.ZERO, 1.04, 1.0, -0.12)
+	_spawn_gateway.spawn_light(source, Color(1.0, 0.34, 0.48, 1.0), 1.5, 160.0, lifetime)
+	_spawn_gateway.spawn_flipbook("enemy_attack", source, Vector2(180, 180), lifetime * 1.15, Color(1, 1, 1, 0.88), 0.0, Vector2.ZERO, 1.04, 1.0, -0.12)
 	return true
 
 
@@ -186,10 +182,12 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
 	var angle := delta.angle()
 	if _asset_store.pack_vfx_available():
 		var intensity := clampi(int(round(delta.length() / 120.0)), 2, 8)
-		_spawn_pack_effect("hit_01", source, "damage", Vector2(112 + intensity * 7, 68 + intensity * 5), lifetime, intensity, 0.0, delta, angle, 1.3, 0.66)
+		_spawn_gateway.spawn_pack_effect(
+			"hit_01", source, "damage", Vector2(112 + intensity * 7, 68 + intensity * 5), lifetime, intensity, 0.0, delta, angle, 1.3, 0.66
+		)
 		return true
-	_spawn_flipbook("enemy_attack", source, Vector2(150, 88), lifetime, Color(1, 1, 1, 0.94), 0.0, delta, 0.78, 1.5, angle)
-	_spawn_flipbook(
+	_spawn_gateway.spawn_flipbook("enemy_attack", source, Vector2(150, 88), lifetime, Color(1, 1, 1, 0.94), 0.0, delta, 0.78, 1.5, angle)
+	_spawn_gateway.spawn_flipbook(
 		"light_rays", source + delta * 0.5, Vector2(delta.length(), 34.0), lifetime * 0.74, Color(1.0, 0.35, 0.52, 0.56), 0.0, Vector2.ZERO, 0.50, 0.3, angle
 	)
 	return true
@@ -207,15 +205,38 @@ func spawn_generic(global_center: Vector2, draw_size: Vector2, lifetime: float, 
 	var center := _global_to_overlay_local(global_center)
 	var size := Vector2(maxf(draw_size.x, draw_size.y), maxf(draw_size.x, draw_size.y)) * 1.8
 	if _asset_store.pack_vfx_available():
-		_spawn_pack_effect("hit_01", center, "generic", size, lifetime * 1.10, 3, 0.0, Vector2.ZERO, 0.0, 0.0, color.a)
+		_spawn_gateway.spawn_pack_effect("hit_01", center, "generic", size, lifetime * 1.10, 3, 0.0, Vector2.ZERO, 0.0, 0.0, color.a)
 		return true
-	_spawn_flipbook("orb_clear", center, size, lifetime * 1.15, color, 0.0, Vector2.ZERO, 1.12, 0.0, 0.0)
+	_spawn_gateway.spawn_flipbook("orb_clear", center, size, lifetime * 1.15, color, 0.0, Vector2.ZERO, 1.12, 0.0, 0.0)
 	return true
 
 
 func _ensure_overlay() -> bool:
+	_bind_spawn_gateway()
 	_lifecycle.bind({"overlay": self})
 	return _lifecycle.ensure_overlay()
+
+
+func _bind_spawn_gateway() -> void:
+	_spawn_gateway.bind(_presenter_map(), Callable(self, "_ensure_overlay"), Callable(_asset_store, "pack_vfx_available"))
+
+
+func _presenter_map() -> Dictionary:
+	return {
+		"flipbook": _flipbook_presenter,
+		"imported_scene": _imported_scene_presenter,
+		"sheet_flipbook": _sheet_flipbook_presenter,
+		"pack_scene": _pack_scene_presenter,
+		"elemental_scene": _elemental_scene_presenter,
+		"burst_particles": _burst_particles_presenter,
+		"screen_wide": _screen_wide_presenter,
+		"coin_rain": _coin_rain_presenter,
+		"gpu_particles": _gpu_particles_presenter,
+		"light": _light_presenter,
+		"camera_kick": _camera_kick_presenter,
+		"cleanup": _cleanup_presenter,
+		"projector": _projector,
+	}
 
 
 func _spawn_status_replay_recipe(
@@ -428,93 +449,6 @@ func _spawn_atmospheric_travel(
 	_atmospheric_recipe_presenter.spawn_travel(kind, source, delta, launch_delay, travel_duration, intensity, angle)
 
 
-func _spawn_atmospheric_flipbook(
-	sheet_key: String,
-	center_local: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	color: Color,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	target_scale: float = 1.0,
-	z: float = 0.0,
-	rotation: float = 0.0,
-	loops: int = 1
-) -> Sprite3D:
-	if not _ensure_overlay():
-		return null
-	return _sheet_flipbook_presenter.spawn_atmospheric_flipbook(
-		sheet_key, center_local, draw_size, lifetime, color, delay, move_offset, target_scale, z, rotation, loops
-	)
-
-
-func _spawn_status_flipbook(
-	sheet_key: String,
-	center_local: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	color: Color,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	target_scale: float = 1.0,
-	z: float = 0.0,
-	rotation: float = 0.0,
-	loops: int = 1,
-	spin: float = 0.0
-) -> Sprite3D:
-	if not _ensure_overlay():
-		return null
-	return _sheet_flipbook_presenter.spawn_status_flipbook(
-		sheet_key, center_local, draw_size, lifetime, color, delay, move_offset, target_scale, z, rotation, loops, spin
-	)
-
-
-func _spawn_flame_scene(
-	center_local: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	intensity: int,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	z: float = 0.0,
-	alpha: float = 1.0
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _imported_scene_presenter.spawn_flame_scene(center_local, draw_size, lifetime, intensity, delay, move_offset, z, alpha)
-
-
-func _spawn_beam_effect(
-	source_local: Vector2, delta: Vector2, kind: String, lifetime: float, intensity: int, delay: float = 0.0, radius_scale: float = 1.0
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _imported_scene_presenter.spawn_beam_effect(source_local, delta, kind, lifetime, intensity, delay, radius_scale)
-
-
-func _spawn_shield_scene(
-	center_local: Vector2, draw_size: Vector2, lifetime: float, intensity: int, delay: float = 0.0, move_offset: Vector2 = Vector2.ZERO, z: float = 0.0
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _imported_scene_presenter.spawn_shield_scene(center_local, draw_size, lifetime, intensity, delay, move_offset, z)
-
-
-func _spawn_tornado_scene(
-	center_local: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	intensity: int,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	z: float = 0.0,
-	keep_child_name: String = ""
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _imported_scene_presenter.spawn_tornado_scene(center_local, draw_size, lifetime, intensity, delay, move_offset, z, keep_child_name)
-
-
 func _spawn_elemental_replay_recipe(
 	kind: String, center: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
 ) -> void:
@@ -539,26 +473,6 @@ func _spawn_elemental_beam_recipe(kind: String, source: Vector2, delta: Vector2,
 	_elemental_recipe_presenter.spawn_beam_layers(kind, source, delta, lifetime, intensity, angle)
 
 
-func _spawn_elemental_effect(
-	scene_key: String,
-	center_local: Vector2,
-	kind: String,
-	draw_size: Vector2,
-	lifetime: float,
-	intensity: int,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	rotation: float = 0.0,
-	z: float = 0.0,
-	alpha: float = 1.0
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _elemental_scene_presenter.spawn_elemental_effect(
-		scene_key, center_local, kind, draw_size, lifetime, intensity, delay, move_offset, rotation, z, alpha
-	)
-
-
 func _spawn_elemental_path_afterimage(
 	kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float
 ) -> void:
@@ -567,45 +481,6 @@ func _spawn_elemental_path_afterimage(
 
 func _spawn_elemental_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
 	_elemental_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _spawn_pack_effect(
-	scene_key: String,
-	center_local: Vector2,
-	kind: String,
-	draw_size: Vector2,
-	lifetime: float,
-	intensity: int,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	rotation: float = 0.0,
-	z: float = 0.0,
-	alpha: float = 1.0
-) -> Node3D:
-	if not _ensure_overlay():
-		return null
-	return _pack_scene_presenter.spawn_pack_effect(scene_key, center_local, kind, draw_size, lifetime, intensity, delay, move_offset, rotation, z, alpha)
-
-
-func _spawn_pack_layer(
-	scene_key: String,
-	center_local: Vector2,
-	kind: String,
-	draw_size: Vector2,
-	lifetime: float,
-	intensity: int,
-	delay: float,
-	rotation: float,
-	z: float,
-	alpha: float
-) -> Node3D:
-	if not _asset_store.pack_vfx_available():
-		return null
-	return _spawn_pack_effect(scene_key, center_local, kind, draw_size, lifetime, intensity, delay, Vector2.ZERO, rotation, z, alpha)
-
-
-func _stretch_effect(effect: Node3D, stretch: Vector3) -> void:
-	_pack_scene_presenter.stretch_effect(effect, stretch)
 
 
 func _pack_impact_scene_key(kind: String, intensity: int, screen_wide: bool) -> String:
@@ -618,64 +493,6 @@ func _pack_hit_scene_key(kind: String) -> String:
 
 func _spawn_pack_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
 	_pack_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _spawn_flipbook(
-	key: String,
-	center_local: Vector2,
-	draw_size: Vector2,
-	lifetime: float,
-	color: Color,
-	delay: float = 0.0,
-	move_offset: Vector2 = Vector2.ZERO,
-	target_scale: float = 1.0,
-	z: float = 0.0,
-	rotation: float = 0.0,
-	spin: float = 0.0
-) -> Sprite3D:
-	if not _ensure_overlay():
-		return null
-	return _flipbook_presenter.spawn_flipbook(key, center_local, draw_size, lifetime, color, delay, move_offset, target_scale, z, rotation, spin)
-
-
-func _spawn_burst_particles(kind: String, center: Vector2, base_size: float, lifetime: float, intensity: int) -> void:
-	_burst_particles_presenter.spawn_burst_particles(kind, center, base_size, lifetime, intensity)
-
-
-func _spawn_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
-	_screen_wide_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _spawn_coin_rain(center: Vector2, base_size: float, lifetime: float, intensity: int, screen_wide: bool) -> void:
-	_coin_rain_presenter.spawn_coin_rain(center, base_size, lifetime, intensity, screen_wide)
-
-
-func _spawn_gpu_particles(texture_key: String, center: Vector2, amount: int, color: Color, radius: float, lifetime: float, kind: String) -> void:
-	_gpu_particles_presenter.spawn_gpu_particles(texture_key, center, amount, color, radius, lifetime, kind)
-
-
-func _spawn_light(center: Vector2, color: Color, energy: float, radius: float, lifetime: float, delay: float = 0.0) -> void:
-	_light_presenter.spawn_light(center, color, energy, radius, lifetime, delay)
-
-
-func _spawn_camera_kick(direction: Vector2, delay: float) -> void:
-	_camera_kick_presenter.spawn_camera_kick(direction, delay)
-
-
-func _queue_free_after(node: Node, delay: float) -> void:
-	_cleanup_presenter.queue_free_after(node, delay)
-
-
-func _screen_to_world_position(screen_position: Vector2, z: float) -> Vector3:
-	return _projector.screen_to_world_position(screen_position, z)
-
-
-func _screen_to_world_offset(screen_offset: Vector2) -> Vector3:
-	return _projector.screen_to_world_offset(screen_offset)
-
-
-func _screen_to_world_rotation(screen_rotation: float) -> float:
-	return _projector.screen_to_world_rotation(screen_rotation)
 
 
 func _vfx_layer_size() -> Vector2:
