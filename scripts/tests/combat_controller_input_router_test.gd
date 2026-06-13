@@ -10,6 +10,7 @@ class FakeTimerService:
 
 	var process_calls: Array[Dictionary] = []
 	var drag_is_active := false
+	var process_result: Dictionary = {}
 
 	func process(board_controller: Variant, view: Variant, player_state: Variant, delta: float, player_input: bool) -> Dictionary:
 		(
@@ -24,7 +25,7 @@ class FakeTimerService:
 				}
 			)
 		)
-		return {}
+		return process_result.duplicate(true)
 
 	func drag_active(_board_controller: Variant) -> bool:
 		return drag_is_active
@@ -167,10 +168,11 @@ class FakeOwner:
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("process_forwards_timer_updates", _test_process_forwards_timer_updates, failures)
+	_run_case("process_routes_timer_expiry_end_drag", _test_process_routes_timer_expiry_end_drag, failures)
 	_run_case("start_and_end_drag_routes_to_tutorial_flow", _test_start_and_end_drag_routes_to_tutorial_flow, failures)
 	_run_case("toggle_debug_overlay_refreshes_hud", _test_toggle_debug_overlay_refreshes_hud, failures)
 	_run_case("debug_callbacks_forward_to_model_and_phase_router", _test_debug_callbacks_forward_to_model_and_phase_router, failures)
-	return {"passed": failures.is_empty(), "total": 4, "failed": failures.size(), "failures": failures}
+	return {"passed": failures.is_empty(), "total": 5, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -195,6 +197,20 @@ func _test_process_forwards_timer_updates() -> String:
 		return "Expected process to call the combat timer service."
 	if not bool(timer.process_calls[0].get("player_input")):
 		return "Expected process to mark player input phase as active."
+	return ""
+
+
+func _test_process_routes_timer_expiry_end_drag() -> String:
+	var owner := FakeOwner.new()
+	owner._combat_timer_service.process_result = {"handled": true, "action": "end", "timed_out": true, "path": [Vector2i(2, 2)]}
+	var router: Variant = ROUTER_SCRIPT.new()
+	router.bind(owner)
+
+	router.process(0.25)
+
+	var tutorial: FakeTutorialDragFlow = owner._tutorial_drag_flow
+	if tutorial.end_results != [{"handled": true, "action": "end", "timed_out": true, "path": [Vector2i(2, 2)]}]:
+		return "Expected timer-expiry end result to route through tutorial drag flow."
 	return ""
 
 
