@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-62-screen-wide-replay-event-context">2026-06-13 - Wave 62 screen-wide replay event context</h2>
+<ul>
+<li>Added <code>CombatScreenWideReplayEventContext</code> as the owner for kind-specific screen-wide replay event bodies for fire, ice, earth, heart, armor, gold, and damage. <code>CombatScreenWideReplayPresenter</code> now keeps the public replay event API and common flash/ray/sweep setup while delegating kind-specific event construction. (source: <code>scripts/combat/combat_screen_wide_replay_event_context.gd</code>, <code>scripts/combat/combat_screen_wide_replay_presenter.gd</code>)</li>
+<li>Reduced <code>combat_screen_wide_replay_presenter.gd</code> from <code>455</code> to <code>172</code> measured lines and from <code>18</code> to <code>11</code> functions, closing both DoD gates for the class. The new context stays under extracted-class caps at <code>343</code> measured lines / <code>11</code> functions. Existing screen-wide replay tests continue to cover offensive, support, and armor event paths. (source: <code>scripts/tests/combat_model_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-61-max-vfx-presenter-binder">2026-06-13 - Wave 61 max VFX presenter binder</h2>
 <ul>
 <li>Added <code>CombatMaxVfxOverlayPresenterBinder</code> as the owner for the max-VFX presenter binding table: root/timer/camera dependencies, asset callbacks, recipe callbacks, catalog callables, and replay-router wiring. <code>CombatMaxVfxOverlayLifecycle</code> now delegates presenter binding and keeps overlay creation/size sync responsibilities. (source: <code>scripts/combat/combat_max_vfx_overlay_presenter_binder.gd</code>, <code>scripts/combat/combat_max_vfx_overlay_lifecycle.gd</code>)</li>
