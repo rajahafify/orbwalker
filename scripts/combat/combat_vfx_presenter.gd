@@ -5,6 +5,7 @@ const COMBAT_MAX_VFX_OVERLAY_SCRIPT := preload("res://scripts/combat/combat_max_
 const COMBAT_VFX_PROFILE_SCRIPT := preload("res://scripts/combat/combat_vfx_profile.gd")
 const COMBAT_SCREEN_WIDE_REPLAY_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_screen_wide_replay_presenter.gd")
 const COMBAT_RUNTIME_VFX_TEXTURE_FACTORY_SCRIPT := preload("res://scripts/combat/combat_runtime_vfx_texture_factory.gd")
+const COMBAT_VFX_RUNTIME_SPAWNER_SCRIPT := preload("res://scripts/combat/combat_vfx_runtime_spawner.gd")
 const COMBAT_RUNTIME_VFX_SPRITE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_runtime_vfx_sprite_presenter.gd")
 const COMBAT_RUNTIME_VFX_PRIMITIVE_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_runtime_vfx_primitive_presenter.gd")
 const COMBAT_POST_MATCH_VFX_POLICY_SCRIPT := preload("res://scripts/combat/combat_post_match_vfx_policy.gd")
@@ -35,6 +36,7 @@ var _screen_wide_replay_presenter: Variant = COMBAT_SCREEN_WIDE_REPLAY_PRESENTER
 var _runtime_primitive_presenter: Variant = COMBAT_RUNTIME_VFX_PRIMITIVE_PRESENTER_SCRIPT.new()
 var _runtime_sprite_presenter: Variant = COMBAT_RUNTIME_VFX_SPRITE_PRESENTER_SCRIPT.new()
 var _runtime_texture_factory: Variant = COMBAT_RUNTIME_VFX_TEXTURE_FACTORY_SCRIPT.new()
+var _runtime_spawner: Variant = COMBAT_VFX_RUNTIME_SPAWNER_SCRIPT.new()
 var _post_match_policy: Variant = COMBAT_POST_MATCH_VFX_POLICY_SCRIPT.new()
 var _enemy_attack_vfx_presenter: Variant = COMBAT_ENEMY_ATTACK_VFX_PRESENTER_SCRIPT.new()
 var _enemy_attack_router: Variant = COMBAT_VFX_ENEMY_ATTACK_ROUTER_SCRIPT.new()
@@ -56,7 +58,6 @@ var _game_juice_enabled := false
 var _game_juice_flags: Dictionary = GAME_JUICE_FLAGS_SCRIPT.default_flags()
 
 const DEFAULT_POST_MATCH_VFX_SPEED_SCALE := 0.55
-const POST_MATCH_EFFECT_Z_INDEX := 124
 const FORCE_MAX_COMBAT_VFX := true
 const POST_MATCH_VFX_QUALITY_HIGH := "high"
 const POST_MATCH_VFX_QUALITY_LOW := "low"
@@ -66,20 +67,6 @@ const POST_MATCH_VFX_QUALITY_OPTIONS: Array[String] = [
 ]
 const DEFAULT_POST_MATCH_VFX_QUALITY := POST_MATCH_VFX_QUALITY_LOW
 const POST_MATCH_VFX_QUALITY_SETTING_PATH := "matchatro/combat/post_match_vfx_quality"
-const POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST := 72
-const POST_MATCH_MAX_SCREEN_RAYS := 18
-const POST_MATCH_MAX_SIMULTANEOUS_RUNTIME_EMITTERS := 10
-const POST_MATCH_RUNTIME_TEXTURE_KEYS: Array[String] = [
-	"soft_glow",
-	"ray",
-	"spark",
-	"smoke",
-	"coin",
-	"ripple",
-	"shard",
-	"shield",
-	"hex_cell",
-]
 const MASTERY_FILL_STREAM_SECONDS := 0.46
 
 
@@ -105,6 +92,20 @@ func bind(dependencies: Dictionary) -> void:
 	_result_label_presenter.bind(dependencies)
 	_screen_feedback_presenter.bind(dependencies)
 	_spark_burst_presenter.bind(dependencies)
+	var runtime_spawner_dependencies := dependencies.duplicate()
+	runtime_spawner_dependencies["max_vfx_overlay"] = _max_vfx_overlay
+	runtime_spawner_dependencies["runtime_texture_factory"] = _runtime_texture_factory
+	runtime_spawner_dependencies["spark_burst_presenter"] = _spark_burst_presenter
+	(
+		_runtime_spawner
+		. bind(
+			runtime_spawner_dependencies,
+			{
+				"use_max_combat_vfx": Callable(self, "_use_max_combat_vfx"),
+				"juice_enabled": Callable(self, "_juice_enabled"),
+			}
+		)
+	)
 	var mastery_fill_dependencies := dependencies.duplicate()
 	mastery_fill_dependencies["runtime_sprite_presenter"] = _runtime_sprite_presenter
 	mastery_fill_dependencies["vfx_profile"] = _vfx_profile
@@ -215,39 +216,13 @@ func post_match_vfx_quality_uses_max_overlay() -> bool:
 
 
 func spawn_vfx(effect_name: String, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
-	if _visual_registry == null:
-		return
-	var texture: Texture2D = _visual_registry.vfx_texture(effect_name)
-	if texture == null:
-		return
-	spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
+	_runtime_spawner.spawn_vfx(effect_name, global_center, draw_size, lifetime, modulate_color)
 
 
 func spawn_vfx_texture(
 	texture: Texture2D, global_center: Vector2, draw_size: Vector2, lifetime: float, modulate_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 ) -> void:
-	if texture == null or _vfx_layer == null or not is_instance_valid(_vfx_layer):
-		return
-	if (
-		_use_max_combat_vfx()
-		and _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
-		and _max_vfx_overlay.spawn_generic(global_center, draw_size, lifetime, modulate_color)
-	):
-		return
-	var sprite := TextureRect.new()
-	sprite.texture = texture
-	sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
-	sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE as TextureRect.ExpandMode
-	sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED as TextureRect.StretchMode
-	sprite.custom_minimum_size = draw_size
-	sprite.size = draw_size
-	sprite.modulate = modulate_color
-	sprite.z_index = POST_MATCH_EFFECT_Z_INDEX
-	_vfx_layer.add_child(sprite)
-	var local_center := _global_to_vfx_local(global_center)
-	sprite.position = local_center - draw_size * 0.5
-	_tween_fade_cleanup(sprite, lifetime)
-	_spawn_visible_spark_burst(global_center, draw_size, modulate_color, lifetime)
+	_runtime_spawner.spawn_vfx_texture(texture, global_center, draw_size, lifetime, modulate_color)
 
 
 func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size: Vector2, lifetime: float, result_amount: int = 0) -> void:
@@ -329,16 +304,11 @@ func replay_result_is_screen_wide(impact_kind: String, result_amount: int) -> bo
 
 
 func post_match_runtime_vfx_caps() -> Dictionary:
-	return {
-		"max_particles_per_burst": POST_MATCH_MAX_RUNTIME_PARTICLES_PER_BURST,
-		"max_screen_rays": POST_MATCH_MAX_SCREEN_RAYS,
-		"max_simultaneous_emitters": POST_MATCH_MAX_SIMULTANEOUS_RUNTIME_EMITTERS,
-		"texture_keys": POST_MATCH_RUNTIME_TEXTURE_KEYS.duplicate(),
-	}
+	return _runtime_spawner.post_match_runtime_vfx_caps()
 
 
 func post_match_runtime_texture(key: String) -> Texture2D:
-	return _runtime_texture_factory.texture(key)
+	return _runtime_spawner.post_match_runtime_texture(key)
 
 
 func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> void:
@@ -347,10 +317,6 @@ func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> 
 
 func hit_stop(seconds: float = 0.04) -> void:
 	await _screen_feedback_presenter.hit_stop(seconds)
-
-
-func _spawn_visible_spark_burst(global_center: Vector2, draw_size: Vector2, color: Color, lifetime: float) -> void:
-	_spark_burst_presenter.spawn_visible_spark_burst(global_center, draw_size, color, lifetime)
 
 
 func max_combat_vfx_forced() -> bool:
@@ -457,23 +423,4 @@ func spawn_mastery_beam(source_orb_or_node: Variant, target_or_start: Vector2, o
 
 
 func _global_to_vfx_local(global_position: Vector2) -> Vector2:
-	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
-		return global_position
-	var inverse_canvas := _vfx_layer.get_global_transform_with_canvas().affine_inverse()
-	return inverse_canvas * global_position
-
-
-func _tween_fade_cleanup(control: Control, lifetime: float) -> void:
-	if control == null:
-		return
-	var duration := maxf(0.08, lifetime)
-	if _timer_owner == null or not is_instance_valid(_timer_owner) or not _timer_owner.is_inside_tree():
-		control.queue_free()
-		return
-	var tween := _timer_owner.create_tween()
-	tween.tween_property(control, "modulate:a", 0.0, duration)
-	tween.finished.connect(
-		func() -> void:
-			if is_instance_valid(control):
-				control.queue_free()
-	)
+	return _runtime_spawner.global_to_vfx_local(global_position)
