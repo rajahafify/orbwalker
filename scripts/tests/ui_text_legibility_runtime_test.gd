@@ -30,11 +30,16 @@ func run_all() -> Dictionary:
 	_run_case(
 		"initialized_player_hud_mastery_tooltip_keeps_visible_text_readable", _test_initialized_player_hud_mastery_tooltip_keeps_visible_text_readable, failures
 	)
+	_run_case(
+		"initialized_player_hud_slot_detail_popover_keeps_visible_text_readable",
+		_test_initialized_player_hud_slot_detail_popover_keeps_visible_text_readable,
+		failures
+	)
 	_run_case("app_scenes_keep_visible_text_readable", _test_app_scenes_keep_visible_text_readable, failures)
 	_run_case("stateful_gameplay_scenes_keep_visible_text_readable", _test_stateful_gameplay_scenes_keep_visible_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -79,6 +84,17 @@ func _test_initialized_player_hud_mastery_tooltip_keeps_visible_text_readable() 
 		return "Expected SceneTree for initialized Player HUD mastery tooltip audit."
 	for viewport_size in TEST_VIEWPORTS:
 		var result := _audit_initialized_player_hud_mastery_tooltip_for_viewport(tree, viewport_size)
+		if result != "":
+			return result
+	return ""
+
+
+func _test_initialized_player_hud_slot_detail_popover_keeps_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for initialized Player HUD slot detail popover audit."
+	for viewport_size in TEST_VIEWPORTS:
+		var result := _audit_initialized_player_hud_slot_detail_popover_for_viewport(tree, viewport_size)
 		if result != "":
 			return result
 	return ""
@@ -188,26 +204,22 @@ func _audit_initialized_player_hud_mastery_tooltip_for_viewport(tree: SceneTree,
 	hud.bind_player_hud(nodes)
 	hud.update_player_hud_layout()
 	var mastery_levels := {3: 2, 4: 1, 5: 1, 0: 3, 1: 1, 2: 1}
-	(
-		hud
-		. update_player_data(
-			{
-				"progression":
-				{
-					"equipment_slots": ["shortsword"],
-					"consumable_slots": [],
-					"relic_ids": [],
-					"mastery_levels": mastery_levels,
-				},
-				"combat_mastery_feedback_totals": {3: 4},
-				"combat_mastery_hover_payload":
-				{
-					"mastery_levels": mastery_levels,
-					"orb_values_by_id": {3: 9, 4: 7, 5: 7, 0: 11, 1: 8, 2: 8},
-				},
-			}
-		)
-	)
+	var mastery_player_data := {
+		"progression":
+		{
+			"equipment_slots": ["shortsword"],
+			"consumable_slots": [],
+			"relic_ids": [],
+			"mastery_levels": mastery_levels,
+		},
+		"combat_mastery_feedback_totals": {3: 4},
+		"combat_mastery_hover_payload":
+		{
+			"mastery_levels": mastery_levels,
+			"orb_values_by_id": {3: 9, 4: 7, 5: 7, 0: 11, 1: 8, 2: 8},
+		},
+	}
+	hud.call("update_player_data", mastery_player_data)
 	var row := nodes.get("mastery_cards") as Control
 	var card: Control = hud.get_combat_mastery_card(row, 3)
 	if card == null:
@@ -217,6 +229,47 @@ func _audit_initialized_player_hud_mastery_tooltip_for_viewport(tree: SceneTree,
 	hud._on_combat_mastery_card_mouse_entered(row, 3, card)
 
 	var failures := _visible_text_failures(instance, _scene_label("res://scenes/ui/player_hud_mastery_tooltip", viewport_size))
+	instance.free()
+	tree.root.size = previous_size
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
+
+
+func _audit_initialized_player_hud_slot_detail_popover_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var instance := _instantiate_scene("res://scenes/ui/player_hud.tscn")
+	if instance == null:
+		tree.root.size = previous_size
+		return "Expected Player HUD scene to instantiate for slot detail popover audit."
+	_prepare_root_control(instance, viewport_size)
+	tree.root.add_child(instance)
+
+	var hud: Variant = PLAYER_HUD_SCRIPT.new()
+	var nodes: Dictionary = SHOP_PLAYER_HUD_PRESENTER.hud_nodes_from_section(instance)
+	nodes["popover_parent"] = instance
+	nodes["popover_z_index"] = 210
+	hud.bind_player_hud(nodes)
+	hud.update_player_hud_layout()
+	hud.set_selected_equipment_slot(0)
+	var slot_player_data := {
+		"progression":
+		{
+			"equipment_slots": ["shortsword"],
+			"consumable_slots": [],
+			"relic_ids": [],
+			"mastery_levels": {},
+		},
+	}
+	hud.call("update_player_data", slot_player_data)
+	var bubble := instance.get_node_or_null("SlotDetailBubble") as Control
+	if bubble == null or not bubble.visible:
+		instance.free()
+		tree.root.size = previous_size
+		return "Expected slot detail popover audit to show the selected equipment popover."
+
+	var failures := _visible_text_failures(instance, _scene_label("res://scenes/ui/player_hud_slot_detail_popover", viewport_size))
 	instance.free()
 	tree.root.size = previous_size
 	if not failures.is_empty():
