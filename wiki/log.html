@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-65-player-loadout-inventory-renderer">2026-06-13 - Wave 65 PlayerLoadoutHud inventory renderer</h2>
+<ul>
+<li>Added <code>PlayerLoadoutInventoryRenderer</code> as the owner for equipment/consumable slot rows, relic rows, slot frame styleboxes, icon silhouettes, badges, and tooltip formatting. <code>PlayerLoadoutHud</code> now delegates inventory rendering through callbacks while keeping selection state, popover behavior, and signal emission. (source: <code>scripts/ui/player_loadout_inventory_renderer.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>
+<li>Reduced <code>player_loadout_hud.gd</code> from <code>632</code> to <code>415</code> measured lines and from <code>100</code> to <code>89</code> functions, closing the HUD line-count DoD. The new renderer stays under extracted-class caps at <code>268</code> measured lines / <code>21</code> functions; HUD function-count cleanup remains open. (source: <code>docs/test_plan.html</code>, <code>scripts/tests/player_loadout_hud_collaborators_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-64-runstate-dependency-registry">2026-06-13 - Wave 64 RunState dependency registry</h2>
 <ul>
 <li>Added <code>RunStateDependencyRegistry</code> as the owner for collaborator construction and caching previously embedded in <code>RunState</code>: state objects, profile/content/shop services, wallet, run loggers, scene router, settings store, profile unlocks, signal emitter, transition store, facades, encounter catalog, and outcome service. The run-flow fake repository seam remains explicit for integration tests. (source: <code>scripts/core/run_state_dependency_registry.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
