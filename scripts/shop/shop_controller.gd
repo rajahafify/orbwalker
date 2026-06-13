@@ -3,9 +3,8 @@ class_name ShopController
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
-const AUDIO_MANAGER_RESOLVER_SCRIPT := preload("res://scripts/core/audio_manager_resolver.gd")
 const SHOP_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/shop/shop_transition_handler.gd")
-const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+const SHOP_AUDIO_ROUTER_SCRIPT := preload("res://scripts/shop/shop_audio_router.gd")
 
 var _host: Control
 var _model
@@ -14,6 +13,7 @@ var _flow_trace_route_id := ""
 var _signals_connected := false
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
 var _player_loadout_hud = PLAYER_LOADOUT_HUD_SCRIPT.new()
+var _audio_router: Variant = SHOP_AUDIO_ROUTER_SCRIPT.new()
 var _transition_handler: Variant = null
 
 
@@ -21,6 +21,7 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 	_host = host
 	_model = model
 	_view = view
+	_audio_router.bind(host)
 	_view.bind(root_nodes, _visuals, _player_loadout_hud)
 	if not _signals_connected:
 		_connect_view_signals()
@@ -32,11 +33,7 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 func enter_tree() -> void:
 	_flow_trace_route_id = RunState.flow_trace_active_route_id()
 	if _flow_trace_route_id == "":
-		_flow_trace_route_id = RunState.flow_trace_begin(
-			"shop_scene_load",
-			"res://scenes/shop.tscn",
-			{"source": "shop._enter_tree"}
-		)
+		_flow_trace_route_id = RunState.flow_trace_begin("shop_scene_load", "res://scenes/shop.tscn", {"source": "shop._enter_tree"})
 	RunState.flow_trace_mark("shop_enter_tree", {}, _flow_trace_route_id)
 
 
@@ -46,13 +43,9 @@ func ready() -> void:
 	if _flow_trace_route_id == "":
 		_flow_trace_route_id = RunState.flow_trace_active_route_id()
 	if _flow_trace_route_id == "":
-		_flow_trace_route_id = RunState.flow_trace_begin(
-			"shop_scene_load",
-			"res://scenes/shop.tscn",
-			{"source": "shop._ready"}
-		)
+		_flow_trace_route_id = RunState.flow_trace_begin("shop_scene_load", "res://scenes/shop.tscn", {"source": "shop._ready"})
 	RunState.flow_trace_mark("shop_ready_start", {}, _flow_trace_route_id)
-	_audio_play_music("shop")
+	_audio_router.play_music("shop")
 	RunState.flow_trace_mark("shop_after_music", {}, _flow_trace_route_id)
 	RunState.flow_trace_mark("shop_after_background", {}, _flow_trace_route_id)
 	RunState.flow_trace_mark("shop_after_create_ui", {}, _flow_trace_route_id)
@@ -72,11 +65,7 @@ func ready() -> void:
 
 	RunState.flow_trace_mark("shop_before_open_shop", {}, _flow_trace_route_id)
 	var open_result: Dictionary = RunState.open_shop_for_current_level()
-	RunState.flow_trace_mark(
-		"shop_after_open_shop",
-		{"ok": bool(open_result.get("ok", false))},
-		_flow_trace_route_id
-	)
+	RunState.flow_trace_mark("shop_after_open_shop", {"ok": bool(open_result.get("ok", false))}, _flow_trace_route_id)
 	var shop_open_ok := bool(open_result.get("ok", false))
 	var status_message := "Failed to open shop: %s" % String(open_result.get("reason", "unknown"))
 	if shop_open_ok:
@@ -102,11 +91,7 @@ func on_viewport_size_changed() -> void:
 
 func _trace_flow_first_usable_frame() -> void:
 	await _host.get_tree().process_frame
-	RunState.flow_trace_mark(
-		"shop_first_usable_frame",
-		{"source": "shop._ready_deferred"},
-		_flow_trace_route_id
-	)
+	RunState.flow_trace_mark("shop_first_usable_frame", {"source": "shop._ready_deferred"}, _flow_trace_route_id)
 
 
 func _queue_ready_redirect(target_scene: String, source: String) -> void:
@@ -150,13 +135,13 @@ func _buy_offer_at(index: int) -> void:
 			_refresh_ui()
 			return
 	var result: Dictionary = RunState.buy_shop_offer(String(offer.get("offer_id", "")))
-	_play_shop_result_sfx(result, "purchase")
+	_audio_router.play_shop_result_sfx(result, "purchase")
 	if bool(result.get("ok", false)) and RunState.is_tutorial_run():
 		_set_status(_tutorial_shop_status(), true)
 	else:
 		_set_status(_result_message("Buy %s" % String(offer.get("display_name", "offer")), result), bool(result.get("ok", false)))
 	_refresh_ui()
-	if bool(result.get("ok", false)) and _shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
+	if bool(result.get("ok", false)) and _audio_router.shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
 		_view.play_purchase_feedback("offer", index)
 
 
@@ -172,10 +157,10 @@ func _buy_relic_offer() -> void:
 	if relic_offer.is_empty():
 		return
 	var result: Dictionary = RunState.buy_shop_offer(String(relic_offer.get("offer_id", "")))
-	_play_shop_result_sfx(result, "purchase")
+	_audio_router.play_shop_result_sfx(result, "purchase")
 	_set_status(_result_message("Buy %s" % String(relic_offer.get("display_name", "relic")), result), bool(result.get("ok", false)))
 	_refresh_ui()
-	if bool(result.get("ok", false)) and _shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
+	if bool(result.get("ok", false)) and _audio_router.shop_feedback_motion_enabled() and _view.has_method("play_purchase_feedback"):
 		_view.play_purchase_feedback("relic", -1)
 
 
@@ -188,7 +173,7 @@ func _on_reroll_pressed() -> void:
 		_refresh_ui()
 		return
 	var result: Dictionary = RunState.reroll_shop_items()
-	_play_shop_result_sfx(result, "ui_accept")
+	_audio_router.play_shop_result_sfx(result, "ui_accept")
 	if bool(result.get("ok", false)) and RunState.is_tutorial_run():
 		_set_status(_tutorial_shop_status(), true)
 	else:
@@ -210,7 +195,7 @@ func _on_sell_pressed() -> void:
 		return
 	var slot_index: int = _model.selected_equipment_slot if selected_kind == "equipment" else _model.selected_consumable_slot
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if selected_kind == "equipment" else RunState.sell_consumable_item(slot_index)
-	_play_shop_result_sfx(result, "gold")
+	_audio_router.play_shop_result_sfx(result, "gold")
 	var action := "Sell equipment slot %d" % slot_index if selected_kind == "equipment" else "Sell consumable slot %d" % slot_index
 	_set_status(_result_message(action, result), bool(result.get("ok", false)))
 	if bool(result.get("ok", false)):
@@ -229,7 +214,7 @@ func _on_player_hud_sell_slot_requested(slot_type: String, slot_index: int) -> v
 		_refresh_ui()
 		return
 	var result: Dictionary = RunState.sell_equipped_item(slot_index) if slot_type == "equipment" else RunState.sell_consumable_item(slot_index)
-	_play_shop_result_sfx(result, "gold")
+	_audio_router.play_shop_result_sfx(result, "gold")
 	var action := "Sell equipment slot %d" % slot_index if slot_type == "equipment" else "Sell consumable slot %d" % slot_index
 	_set_status(_result_message(action, result), bool(result.get("ok", false)))
 	if bool(result.get("ok", false)):
@@ -243,7 +228,7 @@ func _choose_treasure_chest_option(index: int) -> void:
 		return
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.choose_treasure_chest_option(index)
-	_play_shop_result_sfx(result, "purchase")
+	_audio_router.play_shop_result_sfx(result, "purchase")
 	if not bool(result.get("ok", false)) and _is_full_slot_reason(String(result.get("reason", ""))):
 		_set_status("No free slot for this reward. Sell from the loadout HUD, then pick again, or press Skip.", false)
 	else:
@@ -256,7 +241,7 @@ func _skip_pending_treasure_chest() -> void:
 		return
 	_clear_inventory_focus()
 	var result: Dictionary = RunState.discard_pending_treasure_chest_options()
-	_play_shop_result_sfx(result, "ui_cancel")
+	_audio_router.play_shop_result_sfx(result, "ui_cancel")
 	var message := _result_message("Skip chest reward", result)
 	if bool(result.get("ok", false)):
 		message = "Skipped chest reward. Gold %d." % RunState.run_gold
@@ -348,21 +333,24 @@ func _clear_inventory_focus() -> void:
 func _bind_transition_handler() -> void:
 	if _transition_handler == null:
 		_transition_handler = SHOP_TRANSITION_HANDLER_SCRIPT.new()
-	_transition_handler.bind(
-		{
-			"run_state": RunState,
-			"host": _host,
-			"model": _model,
-			"view": _view,
-		},
-		{
-			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS: Callable(self, "_set_status"),
-			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_CLEAR_INVENTORY_FOCUS: Callable(self, "_clear_inventory_focus"),
-			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_PHASE: Callable(self, "_tutorial_shop_phase"),
-			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_STATUS: Callable(self, "_tutorial_shop_status"),
-			SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_REFRESH_UI: Callable(self, "_refresh_ui"),
-		},
-		{"route_id": _flow_trace_route_id}
+	(
+		_transition_handler
+		. bind(
+			{
+				"run_state": RunState,
+				"host": _host,
+				"model": _model,
+				"view": _view,
+			},
+			{
+				SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_SET_STATUS: Callable(self, "_set_status"),
+				SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_CLEAR_INVENTORY_FOCUS: Callable(self, "_clear_inventory_focus"),
+				SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_PHASE: Callable(self, "_tutorial_shop_phase"),
+				SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_STATUS: Callable(self, "_tutorial_shop_status"),
+				SHOP_TRANSITION_HANDLER_SCRIPT.CALLBACK_REFRESH_UI: Callable(self, "_refresh_ui"),
+			},
+			{"route_id": _flow_trace_route_id}
+		)
 	)
 
 
@@ -370,42 +358,6 @@ func _result_message(action: String, result: Dictionary) -> String:
 	if bool(result.get("ok", false)):
 		return "%s: OK. Gold %d." % [action, RunState.run_gold]
 	return "%s: failed (%s)." % [action, String(result.get("reason", "unknown"))]
-
-
-func _play_shop_result_sfx(result: Dictionary, success_key: String) -> void:
-	if not bool(result.get("ok", false)):
-		_audio_play_sfx("error")
-		return
-	if success_key == "purchase" and _shop_feedback_enabled():
-		_audio_play_sfx("purchase_juice")
-		return
-	_audio_play_sfx(success_key)
-
-
-func _shop_feedback_enabled() -> bool:
-	return RunState.game_juice_flag_enabled(GAME_JUICE_FLAGS_SCRIPT.SHOP_CHOICE_FEEDBACK)
-
-
-func _shop_feedback_motion_enabled() -> bool:
-	return _shop_feedback_enabled() and not RunState.reduced_motion_enabled()
-
-
-func _audio_play_music(key: String) -> void:
-	var audio := _audio_manager_node()
-	if audio != null and audio.has_method("play_music"):
-		audio.call("play_music", key)
-
-
-func _audio_play_sfx(key: String) -> void:
-	var audio := _audio_manager_node()
-	if audio != null and audio.has_method("play_sfx"):
-		audio.call("play_sfx", key)
-
-
-func _audio_manager_node() -> Node:
-	if _host == null:
-		return null
-	return AUDIO_MANAGER_RESOLVER_SCRIPT.audio_manager_node(_host.get_tree())
 
 
 func _lookup_content_definition(content_id: String) -> Dictionary:
