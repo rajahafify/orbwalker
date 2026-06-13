@@ -30,6 +30,7 @@ const COMBAT_MAX_VFX_PROJECTOR_SCRIPT := preload("res://scripts/combat/combat_ma
 const COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT := preload("res://scripts/combat/combat_max_vfx_replay_impact_router.gd")
 const COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT := preload("res://scripts/combat/combat_max_vfx_effect_key_catalog.gd")
 const COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd")
+const COMBAT_MAX_VFX_ASSET_STORE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_asset_store.gd")
 const OVERLAY_Z_INDEX := 122
 
 var _vfx_layer: Control
@@ -40,13 +41,8 @@ var _sub_viewport: SubViewport
 var _root_3d: Node3D
 var _camera: Camera3D
 var _ambient_light: DirectionalLight3D
-var _texture_cache: Dictionary = {}
-var _pack_scene_cache: Dictionary = {}
-var _elemental_scene_cache: Dictionary = {}
-var _status_texture_cache: Dictionary = {}
-var _atmospheric_texture_cache: Dictionary = {}
-var _external_scene_cache: Dictionary = {}
 var _asset_catalog: Variant = COMBAT_MAX_VFX_ASSET_CATALOG_SCRIPT.new()
+var _asset_store: Variant = COMBAT_MAX_VFX_ASSET_STORE_SCRIPT.new()
 var _flipbook_presenter: Variant = COMBAT_MAX_VFX_FLIPBOOK_PRESENTER_SCRIPT.new()
 var _imported_scene_presenter: Variant = COMBAT_MAX_VFX_IMPORTED_SCENE_PRESENTER_SCRIPT.new()
 var _sheet_flipbook_presenter: Variant = COMBAT_MAX_VFX_SHEET_FLIPBOOK_PRESENTER_SCRIPT.new()
@@ -77,10 +73,15 @@ var _effect_key_catalog: Variant = COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT.new(
 var _lifecycle: Variant = COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT.new()
 
 
+func _init() -> void:
+	_asset_store.bind(_asset_catalog, _visual_registry)
+
+
 func bind(dependencies: Dictionary) -> void:
 	_vfx_layer = dependencies.get("vfx_layer") as Control
 	_visual_registry = dependencies.get("visual_registry")
 	_timer_owner = dependencies.get("timer_owner") as Node
+	_asset_store.bind(_asset_catalog, _visual_registry)
 	_ensure_overlay()
 
 
@@ -89,32 +90,32 @@ func is_available() -> bool:
 		return false
 	if not _ensure_overlay():
 		return false
-	if _status_vfx_available():
+	if _asset_store.status_vfx_available():
 		return true
-	if _elemental_magic_available() or _pack_vfx_available():
+	if _asset_store.elemental_magic_available() or _asset_store.pack_vfx_available():
 		return true
 	if _visual_registry == null:
 		return false
 	for key in _asset_catalog.required_texture_keys():
-		if _max_texture(key) == null:
+		if _asset_store.max_texture(key) == null:
 			return false
 	return true
 
 
 func required_texture_keys() -> Array[String]:
-	return _asset_catalog.required_texture_keys()
+	return _asset_store.required_texture_keys()
 
 
 func required_status_sheet_paths() -> Dictionary:
-	return _asset_catalog.status_sheet_paths()
+	return _asset_store.required_status_sheet_paths()
 
 
 func required_atmospheric_sheet_paths() -> Dictionary:
-	return _asset_catalog.atmospheric_sheet_paths()
+	return _asset_store.required_atmospheric_sheet_paths()
 
 
 func external_scene_paths() -> Dictionary:
-	return _asset_catalog.external_scene_paths()
+	return _asset_store.external_scene_paths()
 
 
 func spawn_replay_impact(
@@ -137,7 +138,7 @@ func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: fl
 	var center := _global_to_overlay_local(global_center)
 	var width := maxf(draw_size.x * 1.34, 260.0)
 	var height := maxf(draw_size.y * 3.1, 150.0)
-	if _status_vfx_available():
+	if _asset_store.status_vfx_available():
 		_spawn_status_armor_linger(center, Vector2(width, height), lifetime, intensity)
 		return true
 	return _replay_impact_router.spawn_armor_linger(center, Vector2(width, height), lifetime, intensity)
@@ -165,7 +166,7 @@ func spawn_enemy_attack_cue(source_global: Vector2, lifetime: float) -> bool:
 	if not is_available() or source_global == Vector2.ZERO:
 		return false
 	var source := _global_to_overlay_local(source_global)
-	if _pack_vfx_available():
+	if _asset_store.pack_vfx_available():
 		_spawn_pack_effect("hit_02", source, "damage", Vector2(150, 150), lifetime * 1.10, 3, 0.0, Vector2.ZERO, -0.12, 1.0, 0.80)
 		_spawn_light(source, Color(1.0, 0.34, 0.48, 1.0), 1.5, 160.0, lifetime)
 		return true
@@ -183,7 +184,7 @@ func spawn_enemy_attack_travel(source_global: Vector2, target_global: Vector2, l
 	if delta.length() <= 1.0:
 		return false
 	var angle := delta.angle()
-	if _pack_vfx_available():
+	if _asset_store.pack_vfx_available():
 		var intensity := clampi(int(round(delta.length() / 120.0)), 2, 8)
 		_spawn_pack_effect("hit_01", source, "damage", Vector2(112 + intensity * 7, 68 + intensity * 5), lifetime, intensity, 0.0, delta, angle, 1.3, 0.66)
 		return true
@@ -205,7 +206,7 @@ func spawn_generic(global_center: Vector2, draw_size: Vector2, lifetime: float, 
 		return false
 	var center := _global_to_overlay_local(global_center)
 	var size := Vector2(maxf(draw_size.x, draw_size.y), maxf(draw_size.x, draw_size.y)) * 1.8
-	if _pack_vfx_available():
+	if _asset_store.pack_vfx_available():
 		_spawn_pack_effect("hit_01", center, "generic", size, lifetime * 1.10, 3, 0.0, Vector2.ZERO, 0.0, 0.0, color.a)
 		return true
 	_spawn_flipbook("orb_clear", center, size, lifetime * 1.15, color, 0.0, Vector2.ZERO, 1.12, 0.0, 0.0)
@@ -215,83 +216,6 @@ func spawn_generic(global_center: Vector2, draw_size: Vector2, lifetime: float, 
 func _ensure_overlay() -> bool:
 	_lifecycle.bind({"overlay": self})
 	return _lifecycle.ensure_overlay()
-
-
-func _status_vfx_available() -> bool:
-	for key in ["burn", "freeze", "poison", "heal", "shield", "blessed"]:
-		if _status_texture(key) == null:
-			return false
-	return true
-
-
-func _atmospheric_vfx_available() -> bool:
-	for key in ["embers", "snow", "wind", "magic_wind", "godrays"]:
-		if _atmospheric_texture(key) == null:
-			return false
-	return true
-
-
-func _status_texture(key: String) -> Texture2D:
-	if _status_texture_cache.has(key):
-		return _status_texture_cache[key]
-	var path: String = _asset_catalog.status_sheet_path(key)
-	if path == "":
-		return null
-	var imported_texture := load(path) as Texture2D
-	if imported_texture != null:
-		_status_texture_cache[key] = imported_texture
-		return imported_texture
-	var image := Image.new()
-	if image.load(path) != OK:
-		return null
-	var texture := ImageTexture.create_from_image(image)
-	if texture != null:
-		_status_texture_cache[key] = texture
-	return texture
-
-
-func _atmospheric_texture(key: String) -> Texture2D:
-	if _atmospheric_texture_cache.has(key):
-		return _atmospheric_texture_cache[key]
-	var path: String = _asset_catalog.atmospheric_sheet_path(key)
-	if path == "":
-		return null
-	var imported_texture := load(path) as Texture2D
-	if imported_texture != null:
-		_atmospheric_texture_cache[key] = imported_texture
-		return imported_texture
-	var image := Image.new()
-	if image.load(path) != OK:
-		return null
-	var texture := ImageTexture.create_from_image(image)
-	if texture != null:
-		_atmospheric_texture_cache[key] = texture
-	return texture
-
-
-func _external_scene(key: String, path: String) -> PackedScene:
-	if _external_scene_cache.has(key):
-		return _external_scene_cache[key]
-	var scene := load(path) as PackedScene
-	if scene != null:
-		_external_scene_cache[key] = scene
-	return scene
-
-
-func _flame_scene() -> PackedScene:
-	return _external_scene("flame", _asset_catalog.external_scene_path("flame"))
-
-
-func _beam_scene() -> PackedScene:
-	return _external_scene("beam", _asset_catalog.external_scene_path("beam"))
-
-
-func _shield_scene() -> PackedScene:
-	return _external_scene("shield", _asset_catalog.external_scene_path("shield"))
-
-
-func _tornado_scene() -> PackedScene:
-	return _external_scene("tornado", _asset_catalog.external_scene_path("tornado"))
 
 
 func _spawn_status_replay_recipe(
@@ -615,22 +539,6 @@ func _spawn_elemental_beam_recipe(kind: String, source: Vector2, delta: Vector2,
 	_elemental_recipe_presenter.spawn_beam_layers(kind, source, delta, lifetime, intensity, angle)
 
 
-func _elemental_magic_available() -> bool:
-	return _elemental_scene("cast") != null and _elemental_scene("projectile") != null and _elemental_scene("area") != null
-
-
-func _elemental_scene(key: String) -> PackedScene:
-	if _elemental_scene_cache.has(key):
-		return _elemental_scene_cache[key]
-	var path: String = _asset_catalog.elemental_magic_scene_path(key)
-	if path == "":
-		return null
-	var scene := load(path) as PackedScene
-	if scene != null:
-		_elemental_scene_cache[key] = scene
-	return scene
-
-
 func _spawn_elemental_effect(
 	scene_key: String,
 	center_local: Vector2,
@@ -659,22 +567,6 @@ func _spawn_elemental_path_afterimage(
 
 func _spawn_elemental_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
 	_elemental_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _pack_vfx_available() -> bool:
-	return _pack_scene("hit_01") != null and _pack_scene("impact_01") != null and _pack_scene("big_impact_01") != null
-
-
-func _pack_scene(key: String) -> PackedScene:
-	if _pack_scene_cache.has(key):
-		return _pack_scene_cache[key]
-	var path: String = _asset_catalog.pack_scene_path(key)
-	if path == "":
-		return null
-	var scene := load(path) as PackedScene
-	if scene != null:
-		_pack_scene_cache[key] = scene
-	return scene
 
 
 func _spawn_pack_effect(
@@ -707,7 +599,7 @@ func _spawn_pack_layer(
 	z: float,
 	alpha: float
 ) -> Node3D:
-	if not _pack_vfx_available():
+	if not _asset_store.pack_vfx_available():
 		return null
 	return _spawn_pack_effect(scene_key, center_local, kind, draw_size, lifetime, intensity, delay, Vector2.ZERO, rotation, z, alpha)
 
@@ -784,17 +676,6 @@ func _screen_to_world_offset(screen_offset: Vector2) -> Vector3:
 
 func _screen_to_world_rotation(screen_rotation: float) -> float:
 	return _projector.screen_to_world_rotation(screen_rotation)
-
-
-func _max_texture(key: String) -> Texture2D:
-	if _texture_cache.has(key):
-		return _texture_cache[key]
-	if _visual_registry == null or not _visual_registry.has_method("max_combat_vfx_texture"):
-		return null
-	var texture: Texture2D = _visual_registry.max_combat_vfx_texture(key)
-	if texture != null:
-		_texture_cache[key] = texture
-	return texture
 
 
 func _vfx_layer_size() -> Vector2:

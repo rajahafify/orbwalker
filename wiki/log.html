@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-57-max-vfx-asset-store">2026-06-13 - Wave 57 max VFX asset store</h2>
+<ul>
+<li>Added <code>CombatMaxVfxAssetStore</code> as the owner for max-VFX texture lookup, status and atmospheric sheet loading, external scene loading, elemental/pack scene loading, availability checks, and the cache dictionaries. <code>CombatMaxVfxOverlayLifecycle</code> now binds texture/scene/availability callbacks directly to the asset store. (source: <code>scripts/combat/combat_max_vfx_asset_store.gd</code>, <code>scripts/combat/combat_max_vfx_overlay_lifecycle.gd</code>)</li>
+<li>Reduced <code>combat_max_vfx_overlay.gd</code> from <code>633</code> to <code>540</code> measured lines and from <code>90</code> to <code>77</code> functions. The new asset store remains under the extracted-class cap at <code>107</code> measured lines / <code>20</code> functions; Track D still needs further overlay splits. (source: <code>scripts/combat/combat_max_vfx_overlay.gd</code>, <code>scripts/tests/combat_model_test.gd</code>, <code>scripts/tests/combat_max_vfx_overlay_lifecycle_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-56-status-vfx-recipe-context">2026-06-13 - Wave 56 status VFX recipe context</h2>
 <ul>
 <li>Added <code>CombatMaxVfxStatusRecipeContext</code> as the owner for the status recipe callback catalog, kind/key lookup helpers, low-level status flipbook/light/coin/pack/atmospheric/beam/camera dispatch, elemental handoff dispatch, and armor grid-snap helper. <code>CombatMaxVfxStatusRecipePresenter</code> now keeps public recipe orchestration and delegates low-level spawning through the context. (source: <code>scripts/combat/combat_max_vfx_status_recipe_context.gd</code>, <code>scripts/combat/combat_max_vfx_status_recipe_presenter.gd</code>)</li>
