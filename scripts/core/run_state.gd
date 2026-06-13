@@ -6,31 +6,8 @@ signal run_state_changed(payload: Dictionary)
 signal profile_changed(payload: Dictionary)
 signal run_summary_changed(payload: Dictionary)
 
-const PLAYER_STATE_SCRIPT := preload("res://scripts/combat/player_state.gd")
-const PLAYER_PROGRESSION_STATE_SCRIPT := preload("res://scripts/run/player_progression_state.gd")
-const PLAYER_PROGRESSION_SERVICE_SCRIPT := preload("res://scripts/run/player_progression_service.gd")
-const PLAYER_PROFILE_STATE_SCRIPT := preload("res://scripts/run/player_profile_state.gd")
-const META_PROFILE_STATE_SCRIPT := preload("res://scripts/run/meta_profile_state.gd")
-const CONTENT_REGISTRY_SCRIPT := preload("res://scripts/content/content_registry.gd")
-const SHOP_STATE_SCRIPT := preload("res://scripts/shop/shop_state.gd")
-const SHOP_SERVICE_SCRIPT := preload("res://scripts/shop/shop_service.gd")
+const RUN_STATE_DEPENDENCY_REGISTRY_SCRIPT := preload("res://scripts/core/run_state_dependency_registry.gd")
 const SHOP_SESSION_SCRIPT := preload("res://scripts/shop/shop_session.gd")
-const WALLET_SERVICE_SCRIPT := preload("res://scripts/run/wallet_service.gd")
-const RUN_LOGGER_SCRIPT := preload("res://scripts/core/run_logger.gd")
-const RUN_LOG_CORE_EVENT_RECORDER_SCRIPT := preload("res://scripts/core/run_log_core_event_recorder.gd")
-const RUN_LOG_SHOP_EVENT_RECORDER_SCRIPT := preload("res://scripts/core/run_log_shop_event_recorder.gd")
-const SCENE_ROUTER_SCRIPT := preload("res://scripts/core/scene_router.gd")
-const PROFILE_REPOSITORY_SCRIPT := preload("res://scripts/core/profile_repository.gd")
-const BALANCE_MANAGER_SCRIPT := preload("res://scripts/core/balance_manager.gd")
-const RUN_USER_SETTINGS_STORE_SCRIPT := preload("res://scripts/core/run_user_settings_store.gd")
-const RUN_PROFILE_UNLOCK_SERVICE_SCRIPT := preload("res://scripts/core/run_profile_unlock_service.gd")
-const RUN_STATE_SIGNAL_EMITTER_SCRIPT := preload("res://scripts/core/run_state_signal_emitter.gd")
-const RUN_TRANSITION_STATE_STORE_SCRIPT := preload("res://scripts/core/run_transition_state_store.gd")
-const RUN_PROFILE_FACADE_SCRIPT := preload("res://scripts/core/run_profile_facade.gd")
-const RUN_SHOP_FACADE_SCRIPT := preload("res://scripts/core/run_shop_facade.gd")
-const RUN_STATE_CONTRACT_REPORTER_SCRIPT := preload("res://scripts/core/run_state_contract_reporter.gd")
-const RUN_ENCOUNTER_CATALOG_SCRIPT := preload("res://scripts/core/run_encounter_catalog.gd")
-const RUN_OUTCOME_SERVICE_SCRIPT := preload("res://scripts/core/run_outcome_service.gd")
 const RUN_LOG_EXPORT_DIR := "res://logs"
 const VFX_SPEED_SLOW := "slow"
 const VFX_SPEED_NORMAL := "normal"
@@ -87,26 +64,12 @@ var _boss_relic_reward_options: Array[Dictionary] = []
 var _boss_reward_claimed_relic_id: String = ""
 var _run_summary: Dictionary = {}
 var _reward_rng := RandomNumberGenerator.new()
-var _run_logger: RunLogger
-var _run_log_core_event_recorder: RunLogCoreEventRecorder
-var _run_log_shop_event_recorder: RunLogShopEventRecorder
-var _scene_router: SceneRouter
-var _profile_repository: ProfileRepository
-var _balance_manager: BalanceManager
-var _user_settings_store
-var _profile_unlock_service
-var _signal_emitter
-var _transition_state_store
-var _profile_facade
-var _shop_facade
-var _contract_reporter
-var _encounter_catalog
-var _outcome_service
+var _dependencies: RefCounted
+var _profile_repository: Variant = null
 
 
 func _ready() -> void:
-	if player_state == null:
-		player_state = PLAYER_STATE_SCRIPT.new()
+	ensure_player_state()
 	ensure_player_progression_state()
 	ensure_player_progression_service()
 	ensure_shop_state()
@@ -120,52 +83,42 @@ func _ready() -> void:
 	reset_run()
 
 
+func _ensure_dependencies() -> RefCounted:
+	if _dependencies == null:
+		_dependencies = RUN_STATE_DEPENDENCY_REGISTRY_SCRIPT.new(self)
+	return _dependencies
+
+
 func ensure_player_state():
-	if player_state == null:
-		player_state = PLAYER_STATE_SCRIPT.new()
-	return player_state
+	return _ensure_dependencies().ensure_player_state()
 
 
 func ensure_player_progression_state():
-	if player_progression_state == null:
-		player_progression_state = PLAYER_PROGRESSION_STATE_SCRIPT.new()
-	return player_progression_state
+	return _ensure_dependencies().ensure_player_progression_state()
 
 
 func ensure_player_progression_service():
-	if player_progression_service == null:
-		player_progression_service = PLAYER_PROGRESSION_SERVICE_SCRIPT.new()
-	return player_progression_service
+	return _ensure_dependencies().ensure_player_progression_service()
 
 
 func ensure_content_registry():
-	if content_registry == null:
-		content_registry = CONTENT_REGISTRY_SCRIPT.new()
-	_ensure_balance_manager().sync_content_registry(content_registry)
-	return content_registry
+	return _ensure_dependencies().ensure_content_registry()
 
 
 func ensure_shop_state():
-	if shop_state == null:
-		shop_state = SHOP_STATE_SCRIPT.new()
-	return shop_state
+	return _ensure_dependencies().ensure_shop_state()
 
 
 func ensure_shop_service():
-	if shop_service == null:
-		shop_service = SHOP_SERVICE_SCRIPT.new()
-	return shop_service
+	return _ensure_dependencies().ensure_shop_service()
 
 
 func ensure_shop_session():
-	if shop_session == null:
-		shop_session = SHOP_SESSION_SCRIPT.new()
-		shop_session.configure_hooks(_shop_session_hooks())
-	return shop_session
+	return _ensure_dependencies().ensure_shop_session(_shop_session_hooks())
 
 
 func _shop_session_hooks() -> Dictionary:
-	var shop_log_recorder: RunLogShopEventRecorder = _ensure_run_log_shop_event_recorder()
+	var shop_log_recorder: RunLogShopEventRecorder = _ensure_dependencies().ensure_run_log_shop_event_recorder()
 	return {
 		SHOP_SESSION_SCRIPT.HOOK_APPLY_TUTORIAL_SHOP_SEED: _apply_tutorial_shop_seed,
 		SHOP_SESSION_SCRIPT.HOOK_APPEND_RUN_LOG: shop_log_recorder.append_run_log,
@@ -177,69 +130,7 @@ func _shop_session_hooks() -> Dictionary:
 
 
 func ensure_wallet_service():
-	if wallet_service == null:
-		wallet_service = WALLET_SERVICE_SCRIPT.new()
-	return wallet_service
-
-
-func _ensure_run_logger():
-	if _run_logger == null:
-		_run_logger = RUN_LOGGER_SCRIPT.new(self)
-	return _run_logger
-
-
-func _ensure_run_log_core_event_recorder():
-	if _run_log_core_event_recorder == null:
-		_run_log_core_event_recorder = RUN_LOG_CORE_EVENT_RECORDER_SCRIPT.new(_ensure_run_logger)
-	return _run_log_core_event_recorder
-
-
-func _ensure_run_log_shop_event_recorder() -> RunLogShopEventRecorder:
-	if _run_log_shop_event_recorder == null:
-		_run_log_shop_event_recorder = RUN_LOG_SHOP_EVENT_RECORDER_SCRIPT.new(_ensure_run_logger)
-	return _run_log_shop_event_recorder
-
-
-func _ensure_scene_router():
-	if _scene_router == null:
-		_scene_router = SCENE_ROUTER_SCRIPT.new(self, FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX)
-	return _scene_router
-
-
-func _ensure_profile_repository():
-	if _profile_repository == null:
-		_profile_repository = PROFILE_REPOSITORY_SCRIPT.new()
-	return _profile_repository
-
-
-func _ensure_balance_manager():
-	if _balance_manager == null:
-		_balance_manager = BALANCE_MANAGER_SCRIPT.new()
-	return _balance_manager
-
-
-func _ensure_user_settings_store():
-	if _user_settings_store == null:
-		_user_settings_store = RUN_USER_SETTINGS_STORE_SCRIPT.new()
-	return _user_settings_store
-
-
-func _ensure_profile_unlock_service():
-	if _profile_unlock_service == null:
-		_profile_unlock_service = RUN_PROFILE_UNLOCK_SERVICE_SCRIPT.new(self, Callable(self, "_save_meta_profile"))
-	return _profile_unlock_service
-
-
-func _ensure_signal_emitter():
-	if _signal_emitter == null:
-		_signal_emitter = RUN_STATE_SIGNAL_EMITTER_SCRIPT.new(self, func() -> int: return _step_index, func() -> Dictionary: return _run_summary)
-	return _signal_emitter
-
-
-func _ensure_transition_state_store():
-	if _transition_state_store == null:
-		_transition_state_store = RUN_TRANSITION_STATE_STORE_SCRIPT.new(self, _transition_state_store_hooks())
-	return _transition_state_store
+	return _ensure_dependencies().ensure_wallet_service()
 
 
 # gdformat: off
@@ -259,10 +150,11 @@ func _transition_state_store_hooks() -> Dictionary:
 		"set_relic_offer_ids_by_level": func(value: Dictionary) -> void: _relic_offer_ids_by_level = value,
 		"run_summary": func() -> Dictionary: return _run_summary,
 		"set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
-		"run_logger_transition_snapshot": func() -> Dictionary: return _ensure_run_logger().transition_snapshot(),
-		"restore_run_logger_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_run_logger().restore_transition_snapshot(snapshot),
-		"scene_router_transition_snapshot": func() -> Dictionary: return _ensure_scene_router().transition_snapshot(),
-		"restore_scene_router_transition_snapshot": func(snapshot: Dictionary) -> void: _ensure_scene_router().restore_transition_snapshot(snapshot),
+		"run_logger_transition_snapshot": func() -> Dictionary: return _ensure_dependencies().ensure_run_logger().transition_snapshot(),
+		"restore_run_logger_transition_snapshot":
+		func(snapshot: Dictionary) -> void: _ensure_dependencies().ensure_run_logger().restore_transition_snapshot(snapshot),
+		"scene_router_transition_snapshot": _scene_router_transition_snapshot,
+		"restore_scene_router_transition_snapshot": _restore_scene_router_transition_snapshot,
 		"capture_run_signal_state": _capture_run_signal_state,
 		"sync_player_gold_from_run": _sync_player_gold_from_run,
 		"emit_run_state_signals": _emit_run_state_signals,
@@ -272,10 +164,12 @@ func _transition_state_store_hooks() -> Dictionary:
 # gdformat: on
 
 
-func _ensure_profile_facade():
-	if _profile_facade == null:
-		_profile_facade = RUN_PROFILE_FACADE_SCRIPT.new(self, _profile_facade_hooks())
-	return _profile_facade
+func _scene_router_transition_snapshot() -> Dictionary:
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).transition_snapshot()
+
+
+func _restore_scene_router_transition_snapshot(snapshot: Dictionary) -> void:
+	_ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).restore_transition_snapshot(snapshot)
 
 
 func _profile_facade_hooks() -> Dictionary:
@@ -286,45 +180,31 @@ func _profile_facade_hooks() -> Dictionary:
 		"save_meta_profile": _save_meta_profile,
 		"emit_run_state_signals": _emit_run_state_signals,
 		"emit_profile_changed": _emit_profile_changed,
-		"profile_unlock_service": _ensure_profile_unlock_service,
+		"profile_unlock_service": func(): return _ensure_dependencies().ensure_profile_unlock_service(Callable(self, "_save_meta_profile")),
 	}
-
-
-func _ensure_shop_facade():
-	if _shop_facade == null:
-		_shop_facade = RUN_SHOP_FACADE_SCRIPT.new(self, _relic_offer_ids_by_level, func() -> int: return _step_index)
-	return _shop_facade
-
-
-func _ensure_contract_reporter():
-	if _contract_reporter == null:
-		_contract_reporter = RUN_STATE_CONTRACT_REPORTER_SCRIPT.new(self)
-	return _contract_reporter
-
-
-func _ensure_encounter_catalog():
-	if _encounter_catalog == null:
-		_encounter_catalog = RUN_ENCOUNTER_CATALOG_SCRIPT.new()
-	return _encounter_catalog
-
-
-func _ensure_outcome_service():
-	if _outcome_service == null:
-		_outcome_service = RUN_OUTCOME_SERVICE_SCRIPT.new(self, _outcome_service_hooks())
-	return _outcome_service
 
 
 # gdformat: off
 func _outcome_service_hooks() -> Dictionary:
 	return {
-		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options, "set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
-		"current_encounter": func() -> Dictionary: return _current_encounter, "reward_rng": func() -> RandomNumberGenerator: return _reward_rng,
-		"run_score_banked": func() -> bool: return _run_score_banked, "set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
-		"run_summary": func() -> Dictionary: return _run_summary, "set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
-		"run_log_core_event_recorder": _ensure_run_log_core_event_recorder, "run_log_shop_event_recorder": _ensure_run_log_shop_event_recorder,
-		"profile_unlock_service": _ensure_profile_unlock_service, "run_log_append": _run_log_append, "advance_sequence": _advance_sequence,
-		"transition_result": _transition_result, "capture_run_signal_state": _capture_run_signal_state, "should_export_run_log_files": func() -> bool: return _ensure_run_logger().should_export_run_log_files(),
-		"run_log_export_to_disk": _run_log_export_to_disk, "emit_run_state_signals": _emit_run_state_signals,
+		"boss_relic_reward_options": func() -> Array[Dictionary]: return _boss_relic_reward_options,
+		"set_boss_reward_claimed_relic_id": func(value: String) -> void: _boss_reward_claimed_relic_id = value,
+		"current_encounter": func() -> Dictionary: return _current_encounter,
+		"reward_rng": func() -> RandomNumberGenerator: return _reward_rng,
+		"run_score_banked": func() -> bool: return _run_score_banked,
+		"set_run_score_banked": func(value: bool) -> void: _run_score_banked = value,
+		"run_summary": func() -> Dictionary: return _run_summary,
+		"set_run_summary": func(value: Dictionary) -> void: _run_summary = value,
+		"run_log_core_event_recorder": func(): return _ensure_dependencies().ensure_run_log_core_event_recorder(),
+		"run_log_shop_event_recorder": func(): return _ensure_dependencies().ensure_run_log_shop_event_recorder(),
+		"profile_unlock_service": func(): return _ensure_dependencies().ensure_profile_unlock_service(Callable(self, "_save_meta_profile")),
+		"run_log_append": _run_log_append,
+		"advance_sequence": _advance_sequence,
+		"transition_result": _transition_result,
+		"capture_run_signal_state": _capture_run_signal_state,
+		"should_export_run_log_files": func() -> bool: return _ensure_dependencies().ensure_run_logger().should_export_run_log_files(),
+		"run_log_export_to_disk": _run_log_export_to_disk,
+		"emit_run_state_signals": _emit_run_state_signals,
 	}
 
 
@@ -332,16 +212,11 @@ func _outcome_service_hooks() -> Dictionary:
 
 
 func ensure_player_profile_state() -> PlayerProfileState:
-	if player_profile_state == null:
-		player_profile_state = PLAYER_PROFILE_STATE_SCRIPT.new()
-		meta_profile_state = player_profile_state.meta_profile
-	return player_profile_state
+	return _ensure_dependencies().ensure_player_profile_state()
 
 
 func ensure_meta_profile_state() -> MetaProfileState:
-	var profile: PlayerProfileState = ensure_player_profile_state()
-	meta_profile_state = profile.meta_profile
-	return profile.meta_profile
+	return _ensure_dependencies().ensure_meta_profile_state()
 
 
 func validate_player_state_content() -> Array[Dictionary]:
@@ -350,42 +225,51 @@ func validate_player_state_content() -> Array[Dictionary]:
 
 
 func prototype_balance_levers_snapshot() -> Dictionary:
-	return _ensure_balance_manager().levers_snapshot()
+	return _ensure_dependencies().ensure_balance_manager().levers_snapshot()
 
 
 func prototype_fight_gold_reward_for(level: int, _step_key: String = "") -> int:
-	return _ensure_balance_manager().fight_gold_reward_for(level, MAX_DUNGEON_LEVELS)
+	return _ensure_dependencies().ensure_balance_manager().fight_gold_reward_for(level, MAX_DUNGEON_LEVELS)
 
 
 # gdformat: off
-func progression_snapshot() -> Dictionary: return _ensure_profile_facade().progression_snapshot()
-func profile_snapshot() -> Dictionary: return _ensure_profile_facade().profile_snapshot()
-func meta_profile_snapshot() -> Dictionary: return _ensure_profile_facade().meta_profile_snapshot()
+func progression_snapshot() -> Dictionary:
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).progression_snapshot()
+
+
+func profile_snapshot() -> Dictionary:
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).profile_snapshot()
+
+
+func meta_profile_snapshot() -> Dictionary:
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).meta_profile_snapshot()
+
+
 # gdformat: on
 
 
 func reset_profile() -> Dictionary:
-	return _ensure_profile_facade().reset_profile()
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).reset_profile()
 
 
 func is_equipment_unlocked(item_id: String) -> bool:
-	return _ensure_profile_facade().is_equipment_unlocked(item_id)
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).is_equipment_unlocked(item_id)
 
 
 func unlock_equipment(item_id: String, source: String, emit_profile_signal: bool = true) -> Dictionary:
-	return _ensure_profile_facade().unlock_equipment(item_id, source, emit_profile_signal)
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).unlock_equipment(item_id, source, emit_profile_signal)
 
 
 func claim_equipment_unlock(item_id: String) -> Dictionary:
-	return _ensure_profile_facade().claim_equipment_unlock(item_id)
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).claim_equipment_unlock(item_id)
 
 
 func add_total_score(amount: int) -> int:
-	return _ensure_profile_facade().add_total_score(amount)
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).add_total_score(amount)
 
 
 func current_combat_modifiers() -> Dictionary:
-	return _ensure_profile_facade().current_combat_modifiers()
+	return _ensure_dependencies().ensure_profile_facade(_profile_facade_hooks()).current_combat_modifiers()
 
 
 func set_gold(amount: int) -> void:
@@ -419,51 +303,55 @@ func can_afford(amount: int) -> bool:
 
 
 func open_shop_for_current_level() -> Dictionary:
-	return _ensure_shop_facade().open_shop_for_current_level()
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).open_shop_for_current_level()
 
 
 func reroll_shop_items() -> Dictionary:
-	return _ensure_shop_facade().reroll_shop_items()
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).reroll_shop_items()
 
 
 func buy_shop_offer(offer_id: String) -> Dictionary:
-	return _ensure_shop_facade().buy_shop_offer(offer_id)
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).buy_shop_offer(offer_id)
 
 
 func sell_equipped_item(slot_index: int) -> Dictionary:
-	return _ensure_shop_facade().sell_equipped_item(slot_index)
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).sell_equipped_item(slot_index)
 
 
 func sell_consumable_item(slot_index: int) -> Dictionary:
-	return _ensure_shop_facade().sell_consumable_item(slot_index)
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).sell_consumable_item(slot_index)
 
 
 func choose_treasure_chest_option(option_index: int) -> Dictionary:
-	return _ensure_shop_facade().choose_treasure_chest_option(option_index)
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).choose_treasure_chest_option(option_index)
 
 
 func replace_pending_treasure_chest_option(option_index: int, slot_index: int, sell_replaced: bool = false) -> Dictionary:
-	return _ensure_shop_facade().replace_pending_treasure_chest_option(option_index, slot_index, sell_replaced)
+	return (
+		_ensure_dependencies()
+		. ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index)
+		. replace_pending_treasure_chest_option(option_index, slot_index, sell_replaced)
+	)
 
 
 func discard_pending_treasure_chest_options() -> Dictionary:
-	return _ensure_shop_facade().discard_pending_treasure_chest_options()
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).discard_pending_treasure_chest_options()
 
 
 func close_shop(mark_skipped: bool = false) -> void:
-	_ensure_shop_facade().close_shop(mark_skipped)
+	_ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).close_shop(mark_skipped)
 
 
 func relic_offer_id_for_level(level: int) -> String:
-	return _ensure_shop_facade().relic_offer_id_for_level(level)
+	return _ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).relic_offer_id_for_level(level)
 
 
 func set_relic_offer_id_for_level(level: int, relic_id: String) -> void:
-	_ensure_shop_facade().set_relic_offer_id_for_level(level, relic_id)
+	_ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).set_relic_offer_id_for_level(level, relic_id)
 
 
 func _apply_tutorial_shop_seed(action_offset: int) -> void:
-	_ensure_shop_facade().apply_tutorial_shop_seed(action_offset)
+	_ensure_dependencies().ensure_shop_facade(_relic_offer_ids_by_level, func() -> int: return _step_index).apply_tutorial_shop_seed(action_offset)
 
 
 func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
@@ -471,7 +359,7 @@ func reset_run(reason: String = "reset_run", emit_signals: bool = true) -> void:
 	_flow_trace_bump_transition_generation()
 	ensure_player_state().reset_for_new_run()
 	_sync_meta_profile_default_unlocks()
-	ensure_wallet_service().reset_for_new_run(self, _ensure_balance_manager().starting_gold())
+	ensure_wallet_service().reset_for_new_run(self, _ensure_dependencies().ensure_balance_manager().starting_gold())
 	_run_score_banked = false
 	ensure_player_state().gold = run_gold
 	dungeon_level = 1
@@ -504,7 +392,7 @@ func start_new_run() -> void:
 	_reward_rng.randomize()
 	ensure_shop_service().randomize_rng()
 	run_active = true
-	_ensure_run_log_core_event_recorder().record_run_start(dungeon_level, current_step_key)
+	_ensure_dependencies().ensure_run_log_core_event_recorder().record_run_start(dungeon_level, current_step_key)
 	_assign_current_fight()
 	_emit_run_state_signals(signal_before, "start_new_run", "start_new_run")
 
@@ -518,7 +406,8 @@ func start_tutorial_run(seed_value: int = TUTORIAL_SEED) -> void:
 	run_active = true
 	_reward_rng.seed = tutorial_seed + 9000
 	(
-		_ensure_run_log_core_event_recorder()
+		_ensure_dependencies()
+		. ensure_run_log_core_event_recorder()
 		. record_run_start(
 			dungeon_level,
 			current_step_key,
@@ -534,11 +423,11 @@ func start_tutorial_run(seed_value: int = TUTORIAL_SEED) -> void:
 
 
 func snapshot_run_transition_state() -> Dictionary:
-	return _ensure_transition_state_store().snapshot()
+	return _ensure_dependencies().ensure_transition_state_store(_transition_state_store_hooks()).snapshot()
 
 
 func restore_run_transition_state(snapshot: Dictionary) -> bool:
-	return _ensure_transition_state_store().restore(snapshot)
+	return _ensure_dependencies().ensure_transition_state_store(_transition_state_store_hooks()).restore(snapshot)
 
 
 func is_current_step_fight() -> bool:
@@ -597,7 +486,9 @@ func level_sequence_label() -> String:
 
 
 func current_level_boss_preview() -> Dictionary:
-	return _ensure_balance_manager().apply_to_encounter(_ensure_encounter_catalog().boss_encounter(dungeon_level), dungeon_level, MAX_DUNGEON_LEVELS)
+	return _ensure_dependencies().ensure_balance_manager().apply_to_encounter(
+		_ensure_dependencies().ensure_encounter_catalog().boss_encounter(dungeon_level), dungeon_level, MAX_DUNGEON_LEVELS
+	)
 
 
 func current_level_boss_name() -> String:
@@ -627,7 +518,7 @@ func skip_to_fight(level: int, fight: int) -> Dictionary:
 		3:
 			_step_index = 4
 	current_step_key = LEVEL_SEQUENCE[_step_index]
-	_ensure_run_log_core_event_recorder().record_run_start(dungeon_level, current_step_key, {"source": "skip_to_fight"})
+	_ensure_dependencies().ensure_run_log_core_event_recorder().record_run_start(dungeon_level, current_step_key, {"source": "skip_to_fight"})
 	_assign_current_fight()
 	_emit_run_state_signals(signal_before, "skip_to_fight", "skip_to_fight")
 	return _transition_result()
@@ -638,103 +529,103 @@ func current_encounter_snapshot() -> Dictionary:
 
 
 func boss_relic_reward_options_snapshot() -> Array[Dictionary]:
-	return _ensure_outcome_service().boss_relic_reward_options_snapshot()
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).boss_relic_reward_options_snapshot()
 
 
 func claim_boss_relic_reward(option_index: int) -> Dictionary:
-	return _ensure_outcome_service().claim_boss_relic_reward(option_index)
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).claim_boss_relic_reward(option_index)
 
 
 func skip_boss_relic_reward() -> Dictionary:
-	return _ensure_outcome_service().skip_boss_relic_reward()
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).skip_boss_relic_reward()
 
 
 func advance_after_boss_reward() -> Dictionary:
-	return _ensure_outcome_service().advance_after_boss_reward()
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).advance_after_boss_reward()
 
 
 func mark_fight_victory() -> Dictionary:
-	return _ensure_outcome_service().mark_fight_victory()
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).mark_fight_victory()
 
 
 func mark_player_defeated(cause: String) -> Dictionary:
-	return _ensure_outcome_service().mark_player_defeated(cause)
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).mark_player_defeated(cause)
 
 
 func advance_after_shop(mark_skipped: bool) -> Dictionary:
-	return _ensure_outcome_service().advance_after_shop(mark_skipped)
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).advance_after_shop(mark_skipped)
 
 
 func run_summary_snapshot() -> Dictionary:
-	return _ensure_outcome_service().run_summary_snapshot()
+	return _ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).run_summary_snapshot()
 
 
 func run_log_snapshot() -> Dictionary:
-	return _ensure_run_logger().run_log_snapshot()
+	return _ensure_dependencies().ensure_run_logger().run_log_snapshot()
 
 
 func generate_run_log_files_enabled() -> bool:
-	return _ensure_user_settings_store().generate_run_log_files
+	return _ensure_dependencies().ensure_user_settings_store().generate_run_log_files
 
 
 func set_generate_run_log_files_enabled(enabled: bool) -> void:
-	_ensure_user_settings_store().set_generate_run_log_files(enabled)
+	_ensure_dependencies().ensure_user_settings_store().set_generate_run_log_files(enabled)
 
 
 func load_user_settings() -> void:
-	_ensure_user_settings_store().load()
+	_ensure_dependencies().ensure_user_settings_store().load()
 
 
 func vfx_speed() -> String:
-	return _ensure_user_settings_store().vfx_speed
+	return _ensure_dependencies().ensure_user_settings_store().vfx_speed
 
 
 func set_vfx_speed(speed: String) -> void:
-	_ensure_user_settings_store().set_vfx_speed(speed)
+	_ensure_dependencies().ensure_user_settings_store().set_vfx_speed(speed)
 
 
 func combat_vfx_quality() -> String:
-	return _ensure_user_settings_store().combat_vfx_quality
+	return _ensure_dependencies().ensure_user_settings_store().combat_vfx_quality
 
 
 func set_combat_vfx_quality(quality: String) -> void:
-	_ensure_user_settings_store().set_combat_vfx_quality(quality)
+	_ensure_dependencies().ensure_user_settings_store().set_combat_vfx_quality(quality)
 
 
 func reduced_motion_enabled() -> bool:
-	return _ensure_user_settings_store().reduced_motion
+	return _ensure_dependencies().ensure_user_settings_store().reduced_motion
 
 
 func set_reduced_motion_enabled(enabled: bool) -> void:
-	_ensure_user_settings_store().set_reduced_motion_enabled(enabled)
+	_ensure_dependencies().ensure_user_settings_store().set_reduced_motion_enabled(enabled)
 
 
 func game_juice_enabled() -> bool:
-	return _ensure_user_settings_store().game_juice_enabled
+	return _ensure_dependencies().ensure_user_settings_store().game_juice_enabled
 
 
 func set_game_juice_enabled(enabled: bool) -> void:
-	_ensure_user_settings_store().set_game_juice_enabled(enabled)
+	_ensure_dependencies().ensure_user_settings_store().set_game_juice_enabled(enabled)
 
 
 func game_juice_flags() -> Dictionary:
-	return _ensure_user_settings_store().game_juice_flags.duplicate()
+	return _ensure_dependencies().ensure_user_settings_store().game_juice_flags.duplicate()
 
 
 func game_juice_flag_enabled(flag_key: String) -> bool:
-	return _ensure_user_settings_store().game_juice_flag_enabled(flag_key)
+	return _ensure_dependencies().ensure_user_settings_store().game_juice_flag_enabled(flag_key)
 
 
 func set_game_juice_flag_enabled(flag_key: String, enabled: bool) -> void:
-	_ensure_user_settings_store().set_game_juice_flag_enabled(flag_key, enabled)
+	_ensure_dependencies().ensure_user_settings_store().set_game_juice_flag_enabled(flag_key, enabled)
 
 
 func reset_combat_feedback_settings() -> void:
-	_ensure_user_settings_store().reset_to_defaults()
+	_ensure_dependencies().ensure_user_settings_store().reset_to_defaults()
 
 
 func combat_feedback_settings() -> Dictionary:
-	return _ensure_user_settings_store().combat_feedback_settings()
+	return _ensure_dependencies().ensure_user_settings_store().combat_feedback_settings()
 
 
 func _load_meta_profile() -> void:
@@ -743,7 +634,7 @@ func _load_meta_profile() -> void:
 
 func _load_profile() -> void:
 	var profile: PlayerProfileState = ensure_player_profile_state()
-	_ensure_profile_repository().load_profile(profile)
+	_ensure_dependencies().ensure_profile_repository(_profile_repository).load_profile(profile)
 	meta_profile_state = profile.meta_profile
 
 
@@ -753,12 +644,12 @@ func _save_meta_profile() -> void:
 
 func _save_profile() -> void:
 	var profile: PlayerProfileState = ensure_player_profile_state()
-	_ensure_profile_repository().save_profile(profile)
+	_ensure_dependencies().ensure_profile_repository(_profile_repository).save_profile(profile)
 	meta_profile_state = profile.meta_profile
 
 
 func log_turn_result(turn_log: Dictionary, context: Dictionary = {}) -> void:
-	_ensure_run_log_core_event_recorder().record_turn_result(turn_log, context)
+	_ensure_dependencies().ensure_run_log_core_event_recorder().record_turn_result(turn_log, context)
 
 
 func _advance_sequence(reason: String = "advance_sequence") -> void:
@@ -776,7 +667,7 @@ func _advance_sequence(reason: String = "advance_sequence") -> void:
 
 	if dungeon_level >= MAX_DUNGEON_LEVELS:
 		_emit_run_state_signals(signal_before, reason, "")
-		_ensure_outcome_service().finalize_run(true, "Final boss defeated.")
+		_ensure_dependencies().ensure_outcome_service(_outcome_service_hooks()).finalize_run(true, "Final boss defeated.")
 		return
 
 	dungeon_level += 1
@@ -794,36 +685,36 @@ func _assign_current_fight() -> void:
 	var encounter: Dictionary = {}
 	var uses_tutorial_encounter := false
 	if tutorial_run_active:
-		encounter = _ensure_encounter_catalog().tutorial_encounter_for(dungeon_level, current_step_key)
+		encounter = _ensure_dependencies().ensure_encounter_catalog().tutorial_encounter_for(dungeon_level, current_step_key)
 		uses_tutorial_encounter = not encounter.is_empty()
 	if encounter.is_empty():
 		if current_step_key == "boss":
-			encounter = _ensure_encounter_catalog().boss_encounter(dungeon_level)
+			encounter = _ensure_dependencies().ensure_encounter_catalog().boss_encounter(dungeon_level)
 		else:
-			encounter = _ensure_encounter_catalog().normal_encounter(dungeon_level, current_step_key)
+			encounter = _ensure_dependencies().ensure_encounter_catalog().normal_encounter(dungeon_level, current_step_key)
 
 	if encounter.is_empty():
-		encounter = _ensure_encounter_catalog().fallback_encounter(current_step_key)
+		encounter = _ensure_dependencies().ensure_encounter_catalog().fallback_encounter(current_step_key)
 
 	if not uses_tutorial_encounter:
-		encounter = _ensure_balance_manager().apply_to_encounter(encounter, dungeon_level, MAX_DUNGEON_LEVELS)
+		encounter = _ensure_dependencies().ensure_balance_manager().apply_to_encounter(encounter, dungeon_level, MAX_DUNGEON_LEVELS)
 	encounter["dungeon_level"] = dungeon_level
 	encounter["step_key"] = current_step_key
 	encounter["boss_preview_name"] = current_level_boss_name()
 	_current_encounter = encounter
-	_ensure_run_log_core_event_recorder().record_fight_start(_current_encounter)
+	_ensure_dependencies().ensure_run_log_core_event_recorder().record_fight_start(_current_encounter)
 
 
 func _run_log_reset() -> void:
-	_ensure_run_log_core_event_recorder().reset_run_log()
+	_ensure_dependencies().ensure_run_log_core_event_recorder().reset_run_log()
 
 
 func _run_log_append(event_type: String, payload: Dictionary) -> void:
-	_ensure_run_log_core_event_recorder().append_event(event_type, payload)
+	_ensure_dependencies().ensure_run_log_core_event_recorder().append_event(event_type, payload)
 
 
 func _run_log_export_to_disk() -> void:
-	_ensure_run_logger().run_log_export_to_disk(RUN_LOG_EXPORT_DIR)
+	_ensure_dependencies().ensure_run_logger().run_log_export_to_disk(RUN_LOG_EXPORT_DIR)
 
 
 func _transition_result(extra: Dictionary = {}) -> Dictionary:
@@ -854,15 +745,17 @@ func next_scene_path() -> String:
 
 
 func _sync_meta_profile_default_unlocks() -> void:
-	_ensure_profile_unlock_service().sync_default_unlocks()
+	_ensure_dependencies().ensure_profile_unlock_service(Callable(self, "_save_meta_profile")).sync_default_unlocks()
 
 
 func flow_trace_begin(route_name: String, target_scene: String, details: Dictionary = {}) -> String:
-	return _ensure_scene_router().flow_trace_begin(route_name, target_scene, details)
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_begin(route_name, target_scene, details)
 
 
 func flow_trace_mark(step: String, details: Dictionary = {}, route_id: String = "", target_scene_override: String = "") -> void:
-	_ensure_scene_router().flow_trace_mark(step, details, route_id, target_scene_override)
+	_ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_mark(
+		step, details, route_id, target_scene_override
+	)
 
 
 func flow_trace_change_scene(
@@ -874,31 +767,37 @@ func flow_trace_change_scene(
 	post_ready_failure_callback: Callable = Callable(),
 	rollback_snapshot: Dictionary = {}
 ) -> int:
-	return _ensure_scene_router().flow_trace_change_scene(tree, target_scene, route_id, source, before_step, post_ready_failure_callback, rollback_snapshot)
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_change_scene(
+		tree, target_scene, route_id, source, before_step, post_ready_failure_callback, rollback_snapshot
+	)
 
 
 func flow_trace_prepare_scene(target_scene: String, route_id: String = "", source: String = "") -> Dictionary:
-	return _ensure_scene_router().flow_trace_prepare_scene(target_scene, route_id, source)
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_prepare_scene(
+		target_scene, route_id, source
+	)
 
 
 func flow_trace_attach_prepared_scene(tree: SceneTree, prepared: Dictionary, target_scene: String, route_id: String = "", source: String = "") -> int:
-	return _ensure_scene_router().flow_trace_attach_prepared_scene(tree, prepared, target_scene, route_id, source)
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_attach_prepared_scene(
+		tree, prepared, target_scene, route_id, source
+	)
 
 
 func flow_trace_active_route_id() -> String:
-	return _ensure_scene_router().flow_trace_active_route_id()
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_active_route_id()
 
 
 func flow_trace_debug_snapshot() -> Dictionary:
-	return _ensure_scene_router().flow_trace_debug_snapshot()
+	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_debug_snapshot()
 
 
 func _flow_trace_bump_transition_generation() -> void:
-	_ensure_scene_router().flow_trace_bump_transition_generation()
+	_ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_bump_transition_generation()
 
 
 func _step_display_name(step: String) -> String:
-	return _ensure_encounter_catalog().step_display_name(step)
+	return _ensure_dependencies().ensure_encounter_catalog().step_display_name(step)
 
 
 func _sync_player_gold_from_run() -> void:
@@ -906,12 +805,20 @@ func _sync_player_gold_from_run() -> void:
 
 
 func _capture_run_signal_state() -> Dictionary:
-	return _ensure_signal_emitter().capture()
+	return _ensure_dependencies().ensure_signal_emitter(func() -> int: return _step_index, func() -> Dictionary: return _run_summary).capture()
 
 
 func _emit_run_state_signals(previous: Dictionary, reason: String, gold_source: String) -> void:
-	_ensure_signal_emitter().emit_run_state_signals(previous, reason, gold_source)
+	(
+		_ensure_dependencies()
+		. ensure_signal_emitter(func() -> int: return _step_index, func() -> Dictionary: return _run_summary)
+		. emit_run_state_signals(previous, reason, gold_source)
+	)
 
 
 func _emit_profile_changed(reason: String, score_delta: int = 0, unlock: Dictionary = {}) -> void:
-	_ensure_signal_emitter().emit_profile_changed(reason, score_delta, unlock)
+	(
+		_ensure_dependencies()
+		. ensure_signal_emitter(func() -> int: return _step_index, func() -> Dictionary: return _run_summary)
+		. emit_profile_changed(reason, score_delta, unlock)
+	)
