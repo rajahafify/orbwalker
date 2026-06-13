@@ -518,13 +518,13 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 24)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 26)
 	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 18)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 22)
 	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 18)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 22)
 	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 17)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 20)
 	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 
@@ -581,11 +581,11 @@ func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
 	_mastery_detail_bubble.position = Vector2(local_x, local_y)
 
 	var content_width := maxf(1.0, bubble_size.x - MASTERY_DETAIL_BUBBLE_PADDING * 2.0)
-	_apply_mastery_detail_label_rect(_mastery_detail_title, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 14.0), Vector2(content_width, 28.0)))
-	_apply_mastery_detail_label_rect(_mastery_detail_effect, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 48.0), Vector2(content_width, 44.0)), true)
-	_apply_mastery_detail_label_rect(_mastery_detail_value, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 96.0), Vector2(content_width, 24.0)))
+	_apply_mastery_detail_label_rect(_mastery_detail_title, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 14.0), Vector2(content_width, 32.0)))
+	_apply_mastery_detail_label_rect(_mastery_detail_effect, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 52.0), Vector2(content_width, 56.0)), true)
+	_apply_mastery_detail_label_rect(_mastery_detail_value, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 112.0), Vector2(content_width, 30.0)))
 	_apply_mastery_detail_label_rect(
-		_mastery_detail_modifiers, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 130.0), Vector2(content_width, maxf(1.0, bubble_size.y - 146.0))), true
+		_mastery_detail_modifiers, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 150.0), Vector2(content_width, maxf(1.0, bubble_size.y - 166.0))), true
 	)
 
 
