@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-63-content-registry-default-data">2026-06-13 - Wave 63 content registry default data</h2>
+<ul>
+<li>Added <code>ContentRegistryDefaultContent</code> and <code>ContentRegistryDefaultEquipment</code> as data owners for the registry's default content construction. <code>ContentRegistry</code> now delegates default data construction and keeps public lookup, listing, shop pool, validation, pricing, and indexing responsibilities. (source: <code>scripts/content/content_registry_default_content.gd</code>, <code>scripts/content/content_registry_default_equipment.gd</code>, <code>scripts/content/content_registry.gd</code>)</li>
+<li>Reduced <code>content_registry.gd</code> from <code>597</code> to <code>173</code> measured lines. The new extracted classes stay under the DoD caps at <code>221</code> measured lines / <code>2</code> functions and <code>225</code> measured lines / <code>1</code> function. Existing content registry terminology and full regression suites continue to pass. (source: <code>docs/test_plan.html</code>, <code>scripts/tests/content_registry_terminology_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-62-screen-wide-replay-event-context">2026-06-13 - Wave 62 screen-wide replay event context</h2>
 <ul>
 <li>Added <code>CombatScreenWideReplayEventContext</code> as the owner for kind-specific screen-wide replay event bodies for fire, ice, earth, heart, armor, gold, and damage. <code>CombatScreenWideReplayPresenter</code> now keeps the public replay event API and common flash/ray/sweep setup while delegating kind-specific event construction. (source: <code>scripts/combat/combat_screen_wide_replay_event_context.gd</code>, <code>scripts/combat/combat_screen_wide_replay_presenter.gd</code>)</li>
