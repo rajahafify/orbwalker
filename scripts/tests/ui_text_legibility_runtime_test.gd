@@ -360,6 +360,7 @@ func _audit_interactive_overlays_for_viewport(tree: SceneTree, viewport_size: Ve
 		Callable(self, "_audit_main_menu_settings_overlay_for_viewport"),
 		Callable(self, "_audit_combat_settings_overlay_for_viewport"),
 		Callable(self, "_audit_combat_outcome_overlay_for_viewport"),
+		Callable(self, "_audit_combat_debug_overlay_for_viewport"),
 		Callable(self, "_audit_shop_help_modal_for_viewport"),
 		Callable(self, "_audit_shop_tutorial_overlay_for_viewport"),
 		Callable(self, "_audit_combat_tutorial_prompt_for_viewport"),
@@ -480,6 +481,40 @@ func _audit_combat_outcome_overlay_for_viewport(tree: SceneTree, viewport_size: 
 	root.free()
 	tree.root.size = previous_size
 	return result
+
+
+func _audit_combat_debug_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var saved_snapshot: Dictionary = RunState.snapshot_run_transition_state()
+	RunState.start_new_run()
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var instance := _instantiate_scene("res://scenes/combat.tscn")
+	if instance == null:
+		tree.root.size = previous_size
+		RunState.restore_run_transition_state(saved_snapshot)
+		return "Expected combat scene to instantiate for debug overlay audit."
+	_prepare_root_control(instance, viewport_size)
+	tree.root.add_child(instance)
+	var debug_overlay := instance.get_node_or_null("%DebugOverlay") as Control
+	if debug_overlay == null:
+		instance.free()
+		tree.root.size = previous_size
+		RunState.restore_run_transition_state(saved_snapshot)
+		return "Expected combat debug overlay audit to resolve DebugOverlay."
+	debug_overlay.visible = true
+	var combat_log := instance.get_node_or_null("%CombatLogText") as RichTextLabel
+	if combat_log != null:
+		combat_log.text = "Combat log\nSeed ready"
+	var console_input := instance.get_node_or_null("%ConsoleInput") as LineEdit
+	if console_input != null:
+		console_input.placeholder_text = "Type /help"
+	var failures := _visible_text_failures(debug_overlay, _scene_label("res://runtime/combat_debug_overlay", viewport_size))
+	instance.free()
+	tree.root.size = previous_size
+	RunState.restore_run_transition_state(saved_snapshot)
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
 
 
 func _audit_shop_help_modal_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
