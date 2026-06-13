@@ -183,10 +183,6 @@ func set_reduced_motion_enabled(enabled: bool) -> void:
 	_spark_burst_presenter.set_reduced_motion_enabled(enabled)
 
 
-func reduced_motion_enabled() -> bool:
-	return _reduced_motion
-
-
 func set_game_juice_enabled(enabled: bool) -> void:
 	_game_juice_enabled = enabled
 	_screen_feedback_presenter.set_game_juice_enabled(enabled)
@@ -197,18 +193,6 @@ func set_game_juice_flags(flags: Dictionary) -> void:
 	_game_juice_flags = GAME_JUICE_FLAGS_SCRIPT.normalized_flags(flags)
 	_screen_feedback_presenter.set_game_juice_flags(_game_juice_flags)
 	_spark_burst_presenter.set_game_juice_flags(_game_juice_flags)
-
-
-func game_juice_enabled() -> bool:
-	return _game_juice_enabled
-
-
-func post_match_vfx_quality() -> String:
-	return _post_match_vfx_quality
-
-
-func post_match_vfx_quality_options() -> Array[String]:
-	return POST_MATCH_VFX_QUALITY_OPTIONS.duplicate()
 
 
 func post_match_vfx_quality_uses_max_overlay() -> bool:
@@ -232,8 +216,8 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 	if _visual_registry == null and not ["armor", "heart"].has(clean_kind):
 		return
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
-	var profile := (
-		replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime)
+	var profile: Dictionary = (
+		_replay_result_policy.replay_result_impact_profile(impact_kind, result_amount, draw_size, lifetime, _post_match_vfx_speed_scale)
 		if impact_juice_enabled
 		else {
 			"draw_size": draw_size,
@@ -262,7 +246,13 @@ func spawn_replay_impact(global_center: Vector2, impact_kind: String, draw_size:
 		_use_max_combat_vfx()
 		and impact_juice_enabled
 		and _max_vfx_overlay.spawn_replay_impact(
-			global_center, clean_kind, profile_size, profile_lifetime, result_amount, intensity, replay_result_is_screen_wide(clean_kind, result_amount)
+			global_center,
+			clean_kind,
+			profile_size,
+			profile_lifetime,
+			result_amount,
+			intensity,
+			_replay_result_policy.replay_result_is_screen_wide(clean_kind, result_amount)
 		)
 	):
 		return
@@ -281,18 +271,10 @@ func spawn_armor_bar_linger(global_center: Vector2, draw_size: Vector2, lifetime
 		return
 	if _vfx_layer == null or not is_instance_valid(_vfx_layer):
 		return
-	var tier_index: int = _replay_result_policy.result_vfx_tier_index(replay_result_vfx_tier("armor", result_amount))
+	var tier_index: int = _replay_result_policy.result_vfx_tier_index(_replay_result_policy.replay_result_vfx_tier("armor", result_amount))
 	var intensity: int = _stylized_replay_vfx_presenter.replay_effect_intensity(result_amount, tier_index)
 	var duration := _post_match_vfx_lifetime(maxf(0.60, lifetime) * (1.70 + float(tier_index) * 0.16))
 	_spawn_armor_bar_linger_effect(global_center, draw_size, duration, intensity)
-
-
-func replay_result_impact_profile(impact_kind: String, result_amount: int, base_draw_size: Vector2, base_lifetime: float) -> Dictionary:
-	return _replay_result_policy.replay_result_impact_profile(impact_kind, result_amount, base_draw_size, base_lifetime, _post_match_vfx_speed_scale)
-
-
-func replay_result_vfx_tier(impact_kind: String, result_amount: int) -> int:
-	return _replay_result_policy.replay_result_vfx_tier(impact_kind, result_amount)
 
 
 func result_vfx_size_scale(impact_kind: String, result_amount: int) -> float:
@@ -303,28 +285,12 @@ func replay_result_is_screen_wide(impact_kind: String, result_amount: int) -> bo
 	return _replay_result_policy.replay_result_is_screen_wide(impact_kind, result_amount)
 
 
-func post_match_runtime_vfx_caps() -> Dictionary:
-	return _runtime_spawner.post_match_runtime_vfx_caps()
-
-
-func post_match_runtime_texture(key: String) -> Texture2D:
-	return _runtime_spawner.post_match_runtime_texture(key)
-
-
 func screen_nudge(intensity: int = 1, source_global: Vector2 = Vector2.ZERO) -> void:
 	_screen_feedback_presenter.screen_nudge(intensity, source_global)
 
 
 func hit_stop(seconds: float = 0.04) -> void:
 	await _screen_feedback_presenter.hit_stop(seconds)
-
-
-func max_combat_vfx_forced() -> bool:
-	return _game_juice_enabled and FORCE_MAX_COMBAT_VFX and post_match_vfx_quality_uses_max_overlay() and _any_max_overlay_flag_enabled()
-
-
-func max_combat_vfx_available() -> bool:
-	return _use_max_combat_vfx()
 
 
 func _use_max_combat_vfx() -> bool:
@@ -361,10 +327,6 @@ func _normalized_post_match_vfx_quality(quality: String) -> String:
 	return DEFAULT_POST_MATCH_VFX_QUALITY
 
 
-func post_match_runtime_particle_count(intensity: int, multiplier: float = 1.0) -> int:
-	return _stylized_replay_vfx_presenter.runtime_particle_count(intensity, multiplier)
-
-
 func _post_match_vfx_lifetime(lifetime: float) -> float:
 	return _replay_result_policy.post_match_vfx_lifetime(lifetime, _post_match_vfx_speed_scale)
 
@@ -376,7 +338,7 @@ func spawn_result_label(text: String, global_center: Vector2, kind: String, life
 		return null
 	var impact_juice_enabled := _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.IMPACT_RINGS_RESULT_LABELS)
 	var clean_kind := kind.strip_edges().to_lower()
-	var label_scale := result_vfx_size_scale(kind, result_amount) if impact_juice_enabled else 1.0
+	var label_scale: float = _replay_result_policy.result_vfx_size_scale(kind, result_amount) if impact_juice_enabled else 1.0
 	if clean_kind == "heal":
 		label_scale = 1.16
 	return _result_label_presenter.spawn_result_label(
@@ -401,7 +363,7 @@ func mastery_impact_kind(orb_id: int) -> String:
 func _spawn_stylized_replay_effect(
 	global_center: Vector2, clean_kind: String, draw_size: Vector2, lifetime: float, result_amount: int, tier_index: int
 ) -> void:
-	var screen_wide := replay_result_is_screen_wide(clean_kind, result_amount)
+	var screen_wide: bool = _replay_result_policy.replay_result_is_screen_wide(clean_kind, result_amount)
 	_stylized_replay_vfx_presenter.spawn_stylized_replay_effect(global_center, clean_kind, draw_size, lifetime, result_amount, tier_index, screen_wide)
 
 

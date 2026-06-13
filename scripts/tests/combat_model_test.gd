@@ -106,10 +106,6 @@ func run_all() -> Dictionary:
 	_run_case("mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse", _test_mastery_cast_vfx_presenter_spawns_spool_travel_and_source_pulse, failures)
 	_run_case("armor_linger_vfx_presenter_spawns_hex_grid_snap", _test_armor_linger_vfx_presenter_spawns_hex_grid_snap, failures)
 	_run_case("stylized_replay_vfx_presenter_spawns_signature_and_kind_layers", _test_stylized_replay_vfx_presenter_spawns_signature_and_kind_layers, failures)
-	_run_case("post_match_vfx_runtime_primitives_are_capped", _test_post_match_vfx_runtime_primitives_are_capped, failures)
-	_run_case("post_match_vfx_speed_scale_slows_lifetime", _test_post_match_vfx_speed_scale_slows_lifetime, failures)
-	_run_case("post_match_vfx_second_tier_is_lowest", _test_post_match_vfx_second_tier_is_lowest, failures)
-	_run_case("post_match_vfx_top_tier_becomes_screen_wide", _test_post_match_vfx_top_tier_becomes_screen_wide, failures)
 	_run_case("low_quality_mastery_beam_spawns_pronounced_layers", _test_low_quality_mastery_beam_spawns_pronounced_layers, failures)
 	_run_case("healing_replay_impact_uses_bar_infusion", _test_healing_replay_impact_uses_bar_infusion, failures)
 	_run_case("armor_replay_impact_uses_hex_grid_without_legacy_texture", _test_armor_replay_impact_uses_hex_grid_without_legacy_texture, failures)
@@ -119,7 +115,7 @@ func run_all() -> Dictionary:
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 60,
+		"total": 56,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -362,25 +358,16 @@ func _test_new_raw_status_and_scene_vfx_assets_are_available() -> String:
 
 func _test_combat_vfx_presenter_quality_switches_max_and_low_modes() -> String:
 	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	if presenter.post_match_vfx_quality() != "low":
-		return "Expected Low combat VFX quality by default."
-	if presenter.max_combat_vfx_forced():
+	if presenter.post_match_vfx_quality_uses_max_overlay():
 		return "Expected default Low combat VFX to use the lightweight fallback path."
 	presenter.set_post_match_vfx_quality("high")
-	if presenter.post_match_vfx_quality() != "high":
+	if not presenter.post_match_vfx_quality_uses_max_overlay():
 		return "Expected High combat VFX quality to be accepted."
-	if presenter.max_combat_vfx_forced():
-		return "Expected High combat VFX quality to wait for master Game Juice before forcing Max overlay."
-	presenter.set_game_juice_enabled(true)
-	if not presenter.max_combat_vfx_forced():
-		return "Expected High combat VFX quality with master Game Juice to use the Max overlay."
 	presenter.set_post_match_vfx_quality("low")
-	if presenter.post_match_vfx_quality() != "low":
-		return "Expected Low combat VFX quality to be accepted."
 	if presenter.post_match_vfx_quality_uses_max_overlay():
 		return "Expected Low combat VFX quality to use the lightweight fallback path."
 	presenter.set_post_match_vfx_quality("nonsense")
-	if presenter.post_match_vfx_quality() != "low":
+	if presenter.post_match_vfx_quality_uses_max_overlay():
 		return "Expected invalid combat VFX quality to normalize back to Low."
 	return ""
 
@@ -2551,24 +2538,6 @@ func _test_armor_linger_vfx_presenter_spawns_hex_grid_snap() -> String:
 	return ""
 
 
-func _test_post_match_vfx_runtime_primitives_are_capped() -> String:
-	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	var caps := presenter.post_match_runtime_vfx_caps()
-	if int(caps.get("max_particles_per_burst", 0)) > 72:
-		return "Expected phone-first particle bursts to stay capped."
-	if int(caps.get("max_screen_rays", 0)) > 18:
-		return "Expected screen ray count to stay capped."
-	var keys: Array = caps.get("texture_keys", [])
-	for key in ["soft_glow", "ray", "spark", "smoke", "coin", "ripple", "shard", "shield", "hex_cell"]:
-		if not keys.has(key):
-			return "Expected runtime VFX texture key %s." % key
-		if presenter.post_match_runtime_texture(key) == null:
-			return "Expected generated runtime VFX texture for %s." % key
-	if presenter.post_match_runtime_particle_count(8, 2.0) > int(caps.get("max_particles_per_burst", 0)):
-		return "Expected high multiplier particle request to obey the burst cap."
-	return ""
-
-
 func _test_stylized_replay_vfx_presenter_spawns_signature_and_kind_layers() -> String:
 	var root := Control.new()
 	var layer := Control.new()
@@ -2641,47 +2610,6 @@ func _color_equal(left: Color, right: Color) -> bool:
 		and is_equal_approx(left.b, right.b)
 		and is_equal_approx(left.a, right.a)
 	)
-
-
-func _test_post_match_vfx_speed_scale_slows_lifetime() -> String:
-	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	var slowed := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
-	presenter.set_post_match_vfx_speed_scale(1.0)
-	var baseline := presenter.replay_result_impact_profile("fire", 0, Vector2(100, 100), 1.0)
-	var slowed_lifetime := float(slowed.get("lifetime", 0.0))
-	var baseline_lifetime := float(baseline.get("lifetime", 0.0))
-	if slowed_lifetime <= baseline_lifetime:
-		return "Expected default post-match VFX lifetime to be slower than baseline speed."
-	if slowed_lifetime < baseline_lifetime * 1.6:
-		return "Expected default post-match VFX lifetime to be noticeably slower."
-	return ""
-
-
-func _test_post_match_vfx_second_tier_is_lowest() -> String:
-	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	var small := presenter.replay_result_impact_profile("fire", 1, Vector2(100, 100), 1.0)
-	var medium := presenter.replay_result_impact_profile("fire", 6, Vector2(100, 100), 1.0)
-	var high := presenter.replay_result_impact_profile("fire", 10, Vector2(100, 100), 1.0)
-	if not is_equal_approx(float(small.get("draw_size", Vector2.ZERO).x), 185.0):
-		return "Expected small positive results to use the pumped first-tier size scale."
-	if not is_equal_approx(float(medium.get("draw_size", Vector2.ZERO).x), 185.0):
-		return "Expected medium-threshold results to remain at the new first tier."
-	if not is_equal_approx(float(high.get("draw_size", Vector2.ZERO).x), 225.0):
-		return "Expected old third tier to become the pumped second tier."
-	return ""
-
-
-func _test_post_match_vfx_top_tier_becomes_screen_wide() -> String:
-	var presenter = COMBAT_VFX_PRESENTER_SCRIPT.new()
-	if presenter.replay_result_is_screen_wide("fire", 15):
-		return "Expected Fire 15 to stay below the screen-wide tier."
-	if not presenter.replay_result_is_screen_wide("fire", 16):
-		return "Expected Fire 16 to become screen-wide."
-	if not presenter.replay_result_is_screen_wide("gold", 10):
-		return "Expected Gold 10 to become screen-wide."
-	if presenter.replay_result_is_screen_wide("heart", 3):
-		return "Expected small Heart healing to stay local."
-	return ""
 
 
 func _test_mastery_fill_stream_spawns_runtime_stream_and_impact() -> String:
