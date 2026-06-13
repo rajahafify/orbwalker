@@ -115,7 +115,7 @@ class FakeOwner:
 	func _input_phase_value() -> int:
 		return _input_phase
 
-	func _end_drag(_timed_out: bool) -> void:
+	func _end_drag(_drag_result: Dictionary) -> void:
 		pass
 
 	func _board_debug_callback(method_name: String) -> Callable:

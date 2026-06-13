@@ -20,8 +20,6 @@ class FakeModel:
 class FakeBoardController:
 	extends RefCounted
 
-	var handled := true
-	var end_drag_calls := 0
 	var reset_calls := 0
 	var clear_calls := 0
 	var commit_calls := 0
@@ -32,10 +30,6 @@ class FakeBoardController:
 	func _init() -> void:
 		visual_model.initialize(10)
 		simulation_model.initialize(20)
-
-	func end_drag(_timed_out: bool) -> Dictionary:
-		end_drag_calls += 1
-		return {"handled": handled}
 
 	func reset_visuals() -> void:
 		reset_calls += 1
@@ -161,7 +155,7 @@ func _run_case(case_name: String, callable: Callable, failures: Array[String]) -
 func _test_handled_drag_runs_resolve_flow() -> String:
 	var fixture := _fixture()
 	fixture.recorder.input_phase = 10
-	await fixture.coordinator.end_drag(false)
+	await fixture.coordinator.end_drag({"handled": true, "action": "end", "timed_out": false, "path": []})
 	if fixture.board_controller.commit_calls != 1:
 		return "Expected handled drag to commit the resolved board model."
 	if fixture.resolver.calls != 1 or fixture.turn_resolution.calls != 1:
@@ -178,8 +172,7 @@ func _test_handled_drag_runs_resolve_flow() -> String:
 func _test_unhandled_drag_skips_resolve_flow() -> String:
 	var fixture := _fixture()
 	fixture.recorder.input_phase = 10
-	fixture.board_controller.handled = false
-	await fixture.coordinator.end_drag(false)
+	await fixture.coordinator.end_drag({"handled": false, "action": "end", "timed_out": false, "path": []})
 	if fixture.resolver.calls != 0 or fixture.board_controller.commit_calls != 0:
 		return "Expected unhandled drag to skip resolve and commit."
 	if fixture.model.begin_trace_calls != 0:

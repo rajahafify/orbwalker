@@ -301,9 +301,9 @@ func _on_console_input_text_submitted(text: String) -> void:
 		_debug_runtime.handle_submitted_text(text)
 
 
-func _end_drag(timed_out: bool) -> void:
+func _end_drag(drag_result: Dictionary) -> void:
 	_bind_lifecycle()
-	await _lifecycle.end_drag(timed_out)
+	await _lifecycle.end_drag(drag_result)
 
 
 func _bind_outcome_overlay() -> void:

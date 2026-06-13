@@ -162,9 +162,9 @@ func begin_turn_preview() -> void:
 	_turn_preview_coordinator.begin_turn_preview()
 
 
-func end_drag(timed_out: bool) -> void:
+func end_drag(drag_result: Dictionary) -> void:
 	_bind_resolve_flow_coordinator()
-	await _resolve_flow_coordinator.end_drag(timed_out)
+	await _resolve_flow_coordinator.end_drag(drag_result)
 
 
 func connect_signals() -> void:

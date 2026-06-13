@@ -73,14 +73,14 @@ class FakeCoachmarkCoordinator:
 class CallbackRecorder:
 	extends RefCounted
 
-	var ended_drags: Array[bool] = []
+	var ended_drags: Array[Dictionary] = []
 	var board_seeds: Array[int] = []
 	var status_texts: Array[String] = []
 	var status_colors: Array[Color] = []
 	var changed_models: Array[Variant] = []
 
-	func end_drag(timed_out: bool) -> void:
-		ended_drags.append(timed_out)
+	func end_drag(result: Dictionary) -> void:
+		ended_drags.append(result)
 
 	func set_board_seed(board_seed: int) -> void:
 		board_seeds.append(board_seed)
@@ -152,11 +152,12 @@ func _test_successful_tutorial_drag_hides_hint_and_ends_drag() -> String:
 	var recorder: CallbackRecorder = fixture["recorder"]
 	var coachmark: FakeCoachmarkCoordinator = fixture["coachmark"]
 	flow.handle_start()
-	flow.handle_end({"path": expected_path, "timed_out": true})
+	var result := {"path": expected_path, "timed_out": true, "handled": true}
+	flow.handle_end(result)
 	if coachmark.hide_count != 1:
 		return "Expected successful tutorial drag to hide coachmark."
-	if recorder.ended_drags != [true]:
-		return "Expected successful tutorial drag to forward timed_out to end drag."
+	if recorder.ended_drags != [result]:
+		return "Expected successful tutorial drag to forward the drag result to end drag."
 	if not recorder.status_texts.is_empty():
 		return "Expected no retry status on success."
 	return ""
@@ -180,9 +181,10 @@ func _test_non_tutorial_drag_ends_directly() -> String:
 	var fixture := _fixture([])
 	var flow: Variant = fixture["flow"]
 	var recorder: CallbackRecorder = fixture["recorder"]
-	flow.handle_end({"path": [], "timed_out": false})
-	if recorder.ended_drags != [false]:
-		return "Expected non-tutorial drag to end directly."
+	var result := {"path": [], "timed_out": false, "handled": true}
+	flow.handle_end(result)
+	if recorder.ended_drags != [result]:
+		return "Expected non-tutorial drag to end directly with the drag result."
 	return ""
 
 

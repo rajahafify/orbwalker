@@ -46,14 +46,14 @@ func bind(dependencies: Dictionary, callbacks: Dictionary, config: Dictionary = 
 	_status_color_warning = config.get("status_color_warning", _status_color_warning)
 
 
-func end_drag(timed_out: bool) -> void:
+func end_drag(drag_result: Dictionary) -> void:
 	if _input_phase_value() != _player_input_phase_value:
 		return
 	if _board_controller == null:
 		return
-	var drag_result: Dictionary = _board_controller.end_drag(timed_out)
 	if not bool(drag_result.get("handled", false)):
 		return
+	var timed_out := bool(drag_result.get("timed_out", false))
 	_call(CALLBACK_PLAY_SFX, ["drop"])
 	_call(CALLBACK_SYNC_TIMER_DISPLAY, [0.0, _timer_state_locked])
 	var move_end_reason := "timer expired" if timed_out else "released"
