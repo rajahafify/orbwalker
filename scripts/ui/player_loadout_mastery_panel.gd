@@ -27,6 +27,7 @@ const MASTERY_DETAIL_BUBBLE_MAX_SIZE := Vector2(580.0, 252.0)
 const MASTERY_DETAIL_BUBBLE_MIN_WIDTH := 320.0
 const MASTERY_DETAIL_BUBBLE_MARGIN := 12.0
 const MASTERY_DETAIL_BUBBLE_PADDING := 16.0
+const MASTERY_DETAIL_LABEL_WRAP_MIN_WIDTH := 220.0
 
 var _clear_children_callback: Callable
 var _slot_stylebox_callback: Callable
@@ -481,6 +482,7 @@ func _ensure_mastery_detail_bubble() -> void:
 	_mastery_detail_bubble.visible = false
 	_mastery_detail_bubble.z_index = int(hud_nodes.get("popover_z_index", 210))
 	_mastery_detail_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	_mastery_detail_bubble.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
 	parent.add_child(_mastery_detail_bubble)
 
 	_mastery_detail_title = Label.new()
@@ -568,6 +570,7 @@ func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
 		return
 
 	var bubble_size := _mastery_detail_bubble_size(parent.size)
+	_mastery_detail_bubble.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
 	_mastery_detail_bubble.size = bubble_size
 	var local_x: float = anchor_rect.position.x + (anchor_rect.size.x - bubble_size.x) * 0.5
 	local_x = clampf(local_x, MASTERY_DETAIL_BUBBLE_MARGIN, maxf(MASTERY_DETAIL_BUBBLE_MARGIN, parent.size.x - bubble_size.x - MASTERY_DETAIL_BUBBLE_MARGIN))
@@ -578,14 +581,27 @@ func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
 	_mastery_detail_bubble.position = Vector2(local_x, local_y)
 
 	var content_width := maxf(1.0, bubble_size.x - MASTERY_DETAIL_BUBBLE_PADDING * 2.0)
-	_apply_rect(_mastery_detail_title, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 14.0), Vector2(content_width, 28.0)))
-	_apply_rect(_mastery_detail_effect, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 48.0), Vector2(content_width, 44.0)))
-	_apply_rect(_mastery_detail_value, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 96.0), Vector2(content_width, 24.0)))
-	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 130.0), Vector2(content_width, maxf(1.0, bubble_size.y - 146.0))))
+	_apply_mastery_detail_label_rect(_mastery_detail_title, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 14.0), Vector2(content_width, 28.0)))
+	_apply_mastery_detail_label_rect(_mastery_detail_effect, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 48.0), Vector2(content_width, 44.0)), true)
+	_apply_mastery_detail_label_rect(_mastery_detail_value, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 96.0), Vector2(content_width, 24.0)))
+	_apply_mastery_detail_label_rect(
+		_mastery_detail_modifiers, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 130.0), Vector2(content_width, maxf(1.0, bubble_size.y - 146.0))), true
+	)
+
+
+func _apply_mastery_detail_label_rect(label: Label, rect: Rect2, wrap: bool = false) -> void:
+	if label == null:
+		return
+	_apply_rect(label, rect)
+	if wrap and rect.size.x >= MASTERY_DETAIL_LABEL_WRAP_MIN_WIDTH:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	else:
+		label.autowrap_mode = TextServer.AUTOWRAP_OFF as TextServer.AutowrapMode
 
 
 func _configure_mastery_detail_label(label: Label, wrap: bool = false) -> void:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	label.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS as TextServer.OverrunBehavior
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
@@ -700,10 +716,11 @@ func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
 
 
 func _apply_rect(control: Control, rect: Rect2) -> void:
+	if control == null:
+		return
+	control.set_anchors_preset(Control.PRESET_TOP_LEFT as Control.LayoutPreset)
 	if _apply_rect_callback.is_valid():
 		_apply_rect_callback.call(control, rect)
-		return
-	if control == null:
 		return
 	control.position = rect.position
 	control.size = rect.size

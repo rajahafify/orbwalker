@@ -57,7 +57,8 @@ func run_all() -> Dictionary:
 	_run_case("populate_row_uses_injected_hooks", _test_populate_row_uses_injected_hooks, failures)
 	_run_case("hover_detail_state_lives_in_panel", _test_hover_detail_state_lives_in_panel, failures)
 	_run_case("hover_detail_popover_fits_narrow_parent", _test_hover_detail_popover_fits_narrow_parent, failures)
-	return {"passed": failures.is_empty(), "total": 3, "failed": failures.size(), "failures": failures}
+	_run_case("hover_detail_popover_avoids_letter_stack_when_constrained", _test_hover_detail_popover_avoids_letter_stack_when_constrained, failures)
+	return {"passed": failures.is_empty(), "total": 4, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -154,6 +155,40 @@ func _test_hover_detail_popover_fits_narrow_parent() -> String:
 		return "Expected effect label to receive a usable content rect."
 	if effect.autowrap_mode == TextServer.AUTOWRAP_OFF:
 		return "Expected effect label to wrap instead of collapsing into stacked letters."
+
+	popover_parent.free()
+	return ""
+
+
+func _test_hover_detail_popover_avoids_letter_stack_when_constrained() -> String:
+	var fixture := _make_fixture(false)
+	var popover_parent := Control.new()
+	popover_parent.size = Vector2(260.0, 620.0)
+	var row := Control.new()
+	row.position = Vector2(10.0, 320.0)
+	row.size = Vector2(240.0, 76.0)
+	popover_parent.add_child(row)
+	fixture["hud_nodes"]["popover_parent"] = popover_parent
+	fixture["hud_nodes"]["mastery_cards"] = row
+
+	fixture["panel"].set_combat_mastery_hover_payload({"mastery_levels": {3: 2}, "orb_values_by_id": {3: 9}})
+	fixture["panel"].populate_combat_mastery_panel(row, {}, {3: 4})
+	var card: Control = fixture["panel"].get_combat_mastery_card(row, 3)
+	if card == null:
+		return "Expected combat mastery card in constrained parent fixture."
+
+	fixture["panel"]._on_combat_mastery_card_mouse_entered(row, 3, card)
+	var bubble := popover_parent.get_node_or_null("MasteryDetailBubble") as Panel
+	if bubble == null or not bubble.visible:
+		return "Expected detail bubble to be visible in constrained parent fixture."
+	var effect := bubble.get_node_or_null("MasteryDetailEffect") as Label
+	var modifiers := bubble.get_node_or_null("MasteryDetailModifiers") as Label
+	if effect == null or modifiers == null:
+		return "Expected wrapped detail labels to exist."
+	if effect.size.x >= MASTERY_PANEL_SCRIPT.MASTERY_DETAIL_LABEL_WRAP_MIN_WIDTH:
+		return "Expected constrained fixture to exercise the no-wrap fallback."
+	if effect.autowrap_mode != TextServer.AUTOWRAP_OFF or modifiers.autowrap_mode != TextServer.AUTOWRAP_OFF:
+		return "Expected constrained detail labels to disable wrapping instead of stacking letters."
 
 	popover_parent.free()
 	return ""

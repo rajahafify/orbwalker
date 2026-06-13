@@ -28,9 +28,10 @@ func run_all() -> Dictionary:
 	_run_case("standalone_scenes_keep_visible_text_readable", _test_standalone_scenes_keep_visible_text_readable, failures)
 	_run_case("initialized_player_hud_keeps_visible_text_readable", _test_initialized_player_hud_keeps_visible_text_readable, failures)
 	_run_case("app_scenes_keep_visible_text_readable", _test_app_scenes_keep_visible_text_readable, failures)
+	_run_case("stateful_gameplay_scenes_keep_visible_text_readable", _test_stateful_gameplay_scenes_keep_visible_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -79,6 +80,38 @@ func _test_app_scenes_keep_visible_text_readable() -> String:
 			if result != "":
 				return result
 	return ""
+
+
+func _test_stateful_gameplay_scenes_keep_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for gameplay UI text audit."
+	for viewport_size in TEST_VIEWPORTS:
+		var combat_result := _audit_combat_scene_for_viewport(tree, viewport_size)
+		if combat_result != "":
+			return combat_result
+		var shop_result := _audit_shop_scene_for_viewport(tree, viewport_size)
+		if shop_result != "":
+			return shop_result
+	return ""
+
+
+func _audit_combat_scene_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var saved_snapshot: Dictionary = RunState.snapshot_run_transition_state()
+	RunState.start_new_run()
+	var result := _audit_scene_for_viewport(tree, "res://scenes/combat.tscn", viewport_size)
+	RunState.restore_run_transition_state(saved_snapshot)
+	return result
+
+
+func _audit_shop_scene_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var saved_snapshot: Dictionary = RunState.snapshot_run_transition_state()
+	RunState.start_tutorial_run()
+	RunState.mark_fight_victory()
+	RunState.set_gold(200)
+	var result := _audit_scene_for_viewport(tree, "res://scenes/shop.tscn", viewport_size)
+	RunState.restore_run_transition_state(saved_snapshot)
+	return result
 
 
 func _audit_scene_for_viewport(tree: SceneTree, scene_path: String, viewport_size: Vector2) -> String:
