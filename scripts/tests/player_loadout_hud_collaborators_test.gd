@@ -11,9 +11,10 @@ func run_all() -> Dictionary:
 	_run_case("slot_detail_probe_stays_public", _test_slot_detail_probe_stays_public, failures)
 	_run_case("intent_preview_reads_visible_armor", _test_intent_preview_reads_visible_armor, failures)
 	_run_case("compact_footer_keeps_readable_label_floors", _test_compact_footer_keeps_readable_label_floors, failures)
+	_run_case("facade_layout_helpers_convert_parent_space", _test_facade_layout_helpers_convert_parent_space, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -83,7 +84,37 @@ func _test_compact_footer_keeps_readable_label_floors() -> String:
 	return ""
 
 
+func _test_facade_layout_helpers_convert_parent_space() -> String:
+	var hud: Variant = HUD_SCRIPT.new()
+	var root := Control.new()
+	root.position = Vector2(70.0, 90.0)
+	root.size = Vector2(640.0, 480.0)
+	var parent := Control.new()
+	parent.position = Vector2(50.0, 60.0)
+	parent.size = Vector2(400.0, 300.0)
+	root.add_child(parent)
+
+	var local_rect: Rect2 = hud._to_parent_rect(Rect2(Vector2(130.0, 170.0), Vector2(80.0, 40.0)), parent)
+	if not _rect_equal(local_rect, Rect2(Vector2(10.0, 20.0), Vector2(80.0, 40.0))):
+		root.free()
+		return "Expected HUD facade to convert global popover anchors into parent-local coordinates."
+
+	var target := Control.new()
+	hud._apply_rect(target, Rect2(Vector2(12.0, 14.0), Vector2(160.0, 36.0)))
+	if target.position != Vector2(12.0, 14.0) or target.size != Vector2(160.0, 36.0) or target.custom_minimum_size != Vector2(160.0, 36.0):
+		root.free()
+		target.free()
+		return "Expected HUD facade to apply popover child rects through the layout helper."
+	root.free()
+	target.free()
+	return ""
+
+
 func _free_nodes(nodes: Dictionary) -> void:
 	for value in nodes.values():
 		if value is Node:
 			(value as Node).free()
+
+
+func _rect_equal(left: Rect2, right: Rect2) -> bool:
+	return left.position.is_equal_approx(right.position) and left.size.is_equal_approx(right.size)

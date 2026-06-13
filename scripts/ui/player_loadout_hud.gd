@@ -568,7 +568,7 @@ func _mastery_panel_hooks() -> Dictionary:
 		"mastery_highlighter_provider": Callable(self, "_mastery_highlighter"),
 		"hud_nodes_provider": func() -> Dictionary: return _hud_nodes,
 		"to_parent_rect": Callable(self, "_to_parent_rect"),
-		"apply_rect": func(control: Control, rect: Rect2) -> void: HUD_LAYOUT_SCRIPT._apply_rect(control, rect),
+		"apply_rect": Callable(self, "_apply_rect"),
 	}
 
 
@@ -604,3 +604,16 @@ func _slot_detail_popover() -> Variant:
 			}
 		)
 	return _slot_detail_popover_presenter
+
+
+func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
+	if parent == null:
+		return global_rect
+	var parent_inverse := parent.get_global_transform_with_canvas().affine_inverse()
+	var local_position: Vector2 = parent_inverse * global_rect.position
+	var local_end: Vector2 = parent_inverse * (global_rect.position + global_rect.size)
+	return Rect2(local_position, local_end - local_position)
+
+
+func _apply_rect(control: Control, rect: Rect2) -> void:
+	HUD_LAYOUT_SCRIPT._apply_rect(control, rect)
