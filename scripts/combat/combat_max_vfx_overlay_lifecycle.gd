@@ -34,8 +34,10 @@ func _bind_overlay(overlay: Object) -> void:
 	_timer_owner = overlay.get("_timer_owner") as Node
 	_effect_key_catalog = overlay.get("_effect_key_catalog")
 	var asset_store: Variant = overlay.get("_asset_store")
+	var spawn_gateway: Variant = overlay.get("_spawn_gateway")
 	_callback_owner = overlay
 	_callbacks = _asset_store_callbacks(asset_store)
+	_callbacks.merge(_spawn_gateway_callbacks(spawn_gateway), true)
 	_presenters = {
 		"flipbook": overlay.get("_flipbook_presenter"),
 		"imported_scene": overlay.get("_imported_scene_presenter"),
@@ -83,6 +85,12 @@ func _asset_store_callbacks(asset_store: Variant) -> Dictionary:
 		"elemental_magic_available": Callable(asset_store, "elemental_magic_available"),
 		"pack_vfx_available": Callable(asset_store, "pack_vfx_available"),
 	}
+
+
+func _spawn_gateway_callbacks(spawn_gateway: Variant) -> Dictionary:
+	if spawn_gateway == null:
+		return {}
+	return spawn_gateway.callbacks()
 
 
 func ensure_overlay() -> bool:

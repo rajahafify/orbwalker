@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-58-max-vfx-spawn-gateway">2026-06-13 - Wave 58 max VFX spawn gateway</h2>
+<ul>
+<li>Added <code>CombatMaxVfxSpawnGateway</code> as the owner for low-level max-VFX render dispatch: flipbooks, imported scenes, elemental and pack scene spawns, particle/light/camera/cleanup calls, and screen-to-world projection. <code>CombatMaxVfxOverlayLifecycle</code> now binds those render callbacks from the gateway. (source: <code>scripts/combat/combat_max_vfx_spawn_gateway.gd</code>, <code>scripts/combat/combat_max_vfx_overlay_lifecycle.gd</code>)</li>
+<li>Reduced <code>combat_max_vfx_overlay.gd</code> from <code>540</code> to <code>395</code> measured lines and from <code>77</code> to <code>58</code> functions, closing the overlay line-count DoD while leaving function-count cleanup open. The new gateway stays under the extracted-class cap at <code>199</code> measured lines / <code>25</code> functions. (source: <code>scripts/combat/combat_max_vfx_overlay.gd</code>, <code>scripts/tests/combat_max_vfx_replay_route_test.gd</code>, <code>scripts/tests/combat_model_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-57-max-vfx-asset-store">2026-06-13 - Wave 57 max VFX asset store</h2>
 <ul>
 <li>Added <code>CombatMaxVfxAssetStore</code> as the owner for max-VFX texture lookup, status and atmospheric sheet loading, external scene loading, elemental/pack scene loading, availability checks, and the cache dictionaries. <code>CombatMaxVfxOverlayLifecycle</code> now binds texture/scene/availability callbacks directly to the asset store. (source: <code>scripts/combat/combat_max_vfx_asset_store.gd</code>, <code>scripts/combat/combat_max_vfx_overlay_lifecycle.gd</code>)</li>
