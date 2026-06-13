@@ -5,12 +5,21 @@ const PLAYER_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_PLAYER_HUD_PRESENTER := preload("res://scripts/shop/shop_player_hud_presenter.gd")
 
 const MIN_VISIBLE_TEXT_FONT_SIZE := 20
-const DEFAULT_VIEWPORT_SIZE := Vector2(1080.0, 1920.0)
+const TEST_VIEWPORTS := [
+	Vector2(720.0, 1280.0),
+	Vector2(1080.0, 1920.0),
+	Vector2(1080.0, 2400.0),
+]
 const STANDALONE_SCENES := [
 	"res://scenes/debug/vfx_gallery_index.tscn",
 	"res://scenes/debug/vfx_gallery_show.tscn",
 	"res://scenes/ui/elemental_mastery_hud_variants.tscn",
 	"res://scenes/ui/top_header.tscn",
+]
+const SAFE_APP_SCENES := [
+	"res://scenes/main_menu.tscn",
+	"res://scenes/collection.tscn",
+	"res://scenes/run_summary.tscn",
 ]
 
 
@@ -18,9 +27,10 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("standalone_scenes_keep_visible_text_readable", _test_standalone_scenes_keep_visible_text_readable, failures)
 	_run_case("initialized_player_hud_keeps_visible_text_readable", _test_initialized_player_hud_keeps_visible_text_readable, failures)
+	_run_case("app_scenes_keep_visible_text_readable", _test_app_scenes_keep_visible_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 2,
+		"total": 3,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -41,15 +51,10 @@ func _test_standalone_scenes_keep_visible_text_readable() -> String:
 	if tree == null:
 		return "Expected SceneTree for runtime UI text audit."
 	for scene_path in STANDALONE_SCENES:
-		var instance := _instantiate_scene(scene_path)
-		if instance == null:
-			return "Expected UI scene to instantiate: %s." % scene_path
-		_prepare_root_control(instance, DEFAULT_VIEWPORT_SIZE)
-		tree.root.add_child(instance)
-		var failures := _visible_text_failures(instance, scene_path)
-		instance.free()
-		if not failures.is_empty():
-			return _summarize_failures(failures)
+		for viewport_size in TEST_VIEWPORTS:
+			var result := _audit_scene_for_viewport(tree, scene_path, viewport_size)
+			if result != "":
+				return result
 	return ""
 
 
@@ -57,10 +62,50 @@ func _test_initialized_player_hud_keeps_visible_text_readable() -> String:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null:
 		return "Expected SceneTree for initialized Player HUD audit."
+	for viewport_size in TEST_VIEWPORTS:
+		var result := _audit_initialized_player_hud_for_viewport(tree, viewport_size)
+		if result != "":
+			return result
+	return ""
+
+
+func _test_app_scenes_keep_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for app-scene UI text audit."
+	for scene_path in SAFE_APP_SCENES:
+		for viewport_size in TEST_VIEWPORTS:
+			var result := _audit_scene_for_viewport(tree, scene_path, viewport_size)
+			if result != "":
+				return result
+	return ""
+
+
+func _audit_scene_for_viewport(tree: SceneTree, scene_path: String, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var instance := _instantiate_scene(scene_path)
+	if instance == null:
+		tree.root.size = previous_size
+		return "Expected UI scene to instantiate: %s." % scene_path
+	_prepare_root_control(instance, viewport_size)
+	tree.root.add_child(instance)
+	var failures := _visible_text_failures(instance, _scene_label(scene_path, viewport_size))
+	instance.free()
+	tree.root.size = previous_size
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
+
+
+func _audit_initialized_player_hud_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
 	var instance := _instantiate_scene("res://scenes/ui/player_hud.tscn")
 	if instance == null:
+		tree.root.size = previous_size
 		return "Expected Player HUD scene to instantiate."
-	_prepare_root_control(instance, DEFAULT_VIEWPORT_SIZE)
+	_prepare_root_control(instance, viewport_size)
 	tree.root.add_child(instance)
 
 	var hud: Variant = PLAYER_HUD_SCRIPT.new()
@@ -71,8 +116,9 @@ func _test_initialized_player_hud_keeps_visible_text_readable() -> String:
 	hud.update_player_hud_layout()
 	hud.update_player_data({"progression": {"equipment_slots": [], "consumable_slots": [], "relic_ids": [], "mastery_levels": {}}})
 
-	var failures := _visible_text_failures(instance, "res://scenes/ui/player_hud.tscn")
+	var failures := _visible_text_failures(instance, _scene_label("res://scenes/ui/player_hud.tscn", viewport_size))
 	instance.free()
+	tree.root.size = previous_size
 	if not failures.is_empty():
 		return _summarize_failures(failures)
 	return ""
@@ -141,3 +187,7 @@ func _summarize_failures(failures: Array[String]) -> String:
 		summary.resize(5)
 		summary.append("...and %d more." % (failures.size() - 5))
 	return "; ".join(summary)
+
+
+func _scene_label(scene_path: String, viewport_size: Vector2) -> String:
+	return "%s@%dx%d" % [scene_path, int(viewport_size.x), int(viewport_size.y)]
