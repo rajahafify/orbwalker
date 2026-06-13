@@ -4,6 +4,8 @@ class_name UiTextLegibilityRuntimeTest
 const PLAYER_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const MAIN_MENU_SETTINGS_OVERLAY := preload("res://scripts/main_menu/main_menu_settings_overlay.gd")
 const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+const COMBAT_CHROME_THEME_HELPERS := preload("res://scripts/combat/combat_chrome_theme_helpers.gd")
+const COMBAT_OUTCOME_OVERLAY := preload("res://scripts/combat/combat_outcome_overlay.gd")
 const COMBAT_SETTINGS_OVERLAY_PRESENTER := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
 const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
 const COMBAT_TUTORIAL_PROMPT_PRESENTER := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
@@ -14,6 +16,7 @@ const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_
 const SHOP_TUTORIAL_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_tutorial_overlay_presenter.gd")
 
 const MIN_VISIBLE_TEXT_FONT_SIZE := 20
+const COMBAT_DESIGN_SIZE := Vector2(1080.0, 1920.0)
 const TEST_VIEWPORTS := [
 	Vector2(720.0, 1280.0),
 	Vector2(1080.0, 1920.0),
@@ -356,6 +359,7 @@ func _audit_interactive_overlays_for_viewport(tree: SceneTree, viewport_size: Ve
 	for audit_callable in [
 		Callable(self, "_audit_main_menu_settings_overlay_for_viewport"),
 		Callable(self, "_audit_combat_settings_overlay_for_viewport"),
+		Callable(self, "_audit_combat_outcome_overlay_for_viewport"),
 		Callable(self, "_audit_shop_help_modal_for_viewport"),
 		Callable(self, "_audit_shop_tutorial_overlay_for_viewport"),
 		Callable(self, "_audit_combat_tutorial_prompt_for_viewport"),
@@ -397,6 +401,82 @@ func _audit_combat_settings_overlay_for_viewport(tree: SceneTree, viewport_size:
 	presenter.bind(root, {}, {"design_size": viewport_size})
 	presenter.show(_settings_payload())
 	var result := _visible_text_result(root, _scene_label("res://runtime/combat_settings_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_combat_outcome_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "CombatOutcomeOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+
+	var scale_factor := minf(viewport_size.x / COMBAT_DESIGN_SIZE.x, viewport_size.y / COMBAT_DESIGN_SIZE.y)
+	var layout_root := Control.new()
+	layout_root.name = "CombatOutcomeOverlayLayoutRoot"
+	layout_root.position = (viewport_size - (COMBAT_DESIGN_SIZE * scale_factor)) * 0.5
+	layout_root.size = COMBAT_DESIGN_SIZE
+	layout_root.custom_minimum_size = COMBAT_DESIGN_SIZE
+	layout_root.scale = Vector2(scale_factor, scale_factor)
+	root.add_child(layout_root)
+
+	var summary_panel := Panel.new()
+	summary_panel.name = "OutcomeSummaryPanel"
+	layout_root.add_child(summary_panel)
+	var summary_root := Control.new()
+	summary_root.name = "OutcomeSummaryRoot"
+	summary_panel.add_child(summary_root)
+	var text_column := Control.new()
+	text_column.name = "OutcomeTextColumn"
+	summary_root.add_child(text_column)
+	var title_label := Label.new()
+	title_label.name = "OutcomeTitleLabel"
+	text_column.add_child(title_label)
+	var body_label := Label.new()
+	body_label.name = "OutcomeBodyLabel"
+	text_column.add_child(body_label)
+	var next_button := Button.new()
+	next_button.name = "NextButton"
+	next_button.text = "Continue"
+	summary_root.add_child(next_button)
+
+	COMBAT_CHROME_THEME_HELPERS.apply_board_focus_theme(null, summary_panel, title_label, body_label, next_button)
+	var overlay: Variant = COMBAT_OUTCOME_OVERLAY.new()
+	(
+		overlay
+		. bind(
+			{
+				"layout_root": layout_root,
+				"summary_panel": summary_panel,
+				"summary_root": summary_root,
+				"text_column": text_column,
+				"title_label": title_label,
+				"body_label": body_label,
+				"next_button": next_button,
+			}
+		)
+	)
+	overlay.ensure_boss_reward_controls(Callable(self, "_ignore_boss_reward_claim"), Callable(self, "_ignore_boss_reward_skip"))
+	overlay.ensure_overlay_layer()
+	overlay.show_summary("Victory", "Gold gained +25\nNext fight unlocked.", true)
+	overlay.sync_layout(Rect2(Vector2(0.0, 320.0), Vector2(1080.0, 820.0)))
+	var result := _visible_text_result(root, _scene_label("res://runtime/combat_outcome_summary", viewport_size))
+	if result == "":
+		overlay.show_boss_reward("The boss is defeated.")
+		var reward_buttons: Array[Button] = overlay.boss_reward_buttons()
+		for index in reward_buttons.size():
+			overlay.set_boss_reward_card_content(
+				reward_buttons[index],
+				ImageTexture.new(),
+				["Iron Crown", "Lucky Coin", "Storm Idol"][index],
+				["Rare", "Uncommon", "Epic"][index],
+				["Gain 3 Armor after every match.", "Start each shop with extra Gold.", "Fire orbs deal more damage."][index]
+			)
+		overlay.sync_layout(Rect2(Vector2.ZERO, COMBAT_DESIGN_SIZE))
+		result = _visible_text_result(root, _scene_label("res://runtime/combat_boss_reward_overlay", viewport_size))
 	root.free()
 	tree.root.size = previous_size
 	return result
@@ -487,6 +567,14 @@ func _settings_payload() -> Dictionary:
 		"game_juice": true,
 		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
 	}
+
+
+func _ignore_boss_reward_claim(_index: int) -> void:
+	pass
+
+
+func _ignore_boss_reward_skip() -> void:
+	pass
 
 
 func _visible_text_result(root: Node, scene_path: String) -> String:

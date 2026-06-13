@@ -12,10 +12,10 @@ const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(420, 72)
 const OUTCOME_MODAL_Z_INDEX := 180
 const OUTCOME_SCRIM_Z_INDEX := 170
 const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
-const OUTCOME_BUTTON_FONT_SIZE := 24
+const OUTCOME_BUTTON_FONT_SIZE := 30
 const BOSS_REWARD_NAME_FONT_SIZE := 30
-const BOSS_REWARD_RARITY_FONT_SIZE := 20
-const BOSS_REWARD_DESCRIPTION_FONT_SIZE := 22
+const BOSS_REWARD_RARITY_FONT_SIZE := 30
+const BOSS_REWARD_DESCRIPTION_FONT_SIZE := 30
 
 var _layout_root: Control
 var _outcome_summary_panel: Panel
@@ -308,20 +308,20 @@ func layout_boss_reward_card_children(button: Button) -> void:
 	var content_width := maxf(0.0, button.size.x - content_left - 18.0)
 	var name_label := button.get_node_or_null("RelicName") as Label
 	if name_label != null:
-		name_label.position = Vector2(content_left, 16.0)
+		name_label.position = Vector2(content_left, 14.0)
 		name_label.size = Vector2(content_width, 38.0)
 	var rarity_label := button.get_node_or_null("RelicRarity") as Label
 	if rarity_label != null:
-		rarity_label.position = Vector2(content_left, 55.0)
-		rarity_label.size = Vector2(content_width, 26.0)
+		rarity_label.position = Vector2(content_left, 54.0)
+		rarity_label.size = Vector2(content_width, 32.0)
 	var icon := button.get_node_or_null("RelicIcon") as TextureRect
 	if icon != null:
 		icon.position = Vector2(18.0, (button.size.y - boss_reward_icon_size.y) * 0.5)
 		icon.size = boss_reward_icon_size
 	var description_label := button.get_node_or_null("RelicDescription") as Label
 	if description_label != null:
-		description_label.position = Vector2(content_left, 84.0)
-		description_label.size = Vector2(content_width, button.size.y - 92.0)
+		description_label.position = Vector2(content_left, 88.0)
+		description_label.size = Vector2(content_width, button.size.y - 96.0)
 	var accent := button.get_node_or_null("SelectedAccent") as ColorRect
 	if accent != null:
 		accent.position = Vector2(8.0, 8.0)
