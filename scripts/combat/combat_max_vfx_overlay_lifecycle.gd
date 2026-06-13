@@ -33,8 +33,9 @@ func _bind_overlay(overlay: Object) -> void:
 	_vfx_layer = overlay.get("_vfx_layer") as Control
 	_timer_owner = overlay.get("_timer_owner") as Node
 	_effect_key_catalog = overlay.get("_effect_key_catalog")
+	var asset_store: Variant = overlay.get("_asset_store")
 	_callback_owner = overlay
-	_callbacks = {}
+	_callbacks = _asset_store_callbacks(asset_store)
 	_presenters = {
 		"flipbook": overlay.get("_flipbook_presenter"),
 		"imported_scene": overlay.get("_imported_scene_presenter"),
@@ -61,6 +62,26 @@ func _bind_overlay(overlay: Object) -> void:
 		"camera_kick": overlay.get("_camera_kick_presenter"),
 		"projector": overlay.get("_projector"),
 		"replay_impact_router": overlay.get("_replay_impact_router"),
+	}
+
+
+func _asset_store_callbacks(asset_store: Variant) -> Dictionary:
+	if asset_store == null:
+		return {}
+	return {
+		"max_texture": Callable(asset_store, "max_texture"),
+		"flame_scene": Callable(asset_store, "flame_scene"),
+		"beam_scene": Callable(asset_store, "beam_scene"),
+		"shield_scene": Callable(asset_store, "shield_scene"),
+		"tornado_scene": Callable(asset_store, "tornado_scene"),
+		"status_texture": Callable(asset_store, "status_texture"),
+		"atmospheric_texture": Callable(asset_store, "atmospheric_texture"),
+		"pack_scene": Callable(asset_store, "pack_scene"),
+		"elemental_scene": Callable(asset_store, "elemental_scene"),
+		"atmospheric_vfx_available": Callable(asset_store, "atmospheric_vfx_available"),
+		"status_vfx_available": Callable(asset_store, "status_vfx_available"),
+		"elemental_magic_available": Callable(asset_store, "elemental_magic_available"),
+		"pack_vfx_available": Callable(asset_store, "pack_vfx_available"),
 	}
 
 
