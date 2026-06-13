@@ -3,7 +3,26 @@ class_name OwnerReachInBudgetTest
 
 const OWNER_REACH_IN_BUDGET_PATH := "res://tools/quality/owner_reach_in_budget.gd"
 
-const EXPECTED_REACH_IN_BASELINES := {}
+const EXPECTED_REACH_IN_BASELINES := {
+	"res://scripts/combat/combat_controller_binding_coordinator.gd": 13,
+	"res://scripts/combat/combat_controller_board_debug_router.gd": 7,
+	"res://scripts/combat/combat_controller_feedback_settings_router.gd": 5,
+	"res://scripts/combat/combat_controller_hud_update_router.gd": 2,
+	"res://scripts/combat/combat_controller_input_router.gd": 8,
+	"res://scripts/combat/combat_controller_intent_router.gd": 2,
+	"res://scripts/combat/combat_controller_lifecycle.gd": 23,
+	"res://scripts/combat/combat_controller_presentation_router.gd": 1,
+	"res://scripts/combat/combat_controller_runtime_binder.gd": 22,
+	"res://scripts/combat/combat_controller_runtime_helper_factory.gd": 8,
+	"res://scripts/combat/combat_controller_scene_binder.gd": 1,
+	"res://scripts/combat/combat_controller_tutorial_router.gd": 26,
+	"res://scripts/combat/combat_debug_callback_keys.gd": 5,
+	"res://scripts/combat/combat_enemy_intent_presenter.gd": 6,
+	"res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd": 32,
+	"res://scripts/combat/combat_player_hud_presenter.gd": 10,
+	"res://scripts/combat/combat_settings_command_handler.gd": 2,
+	"res://scripts/scenes/combat.gd": 5,
+}
 
 
 func run_all() -> Dictionary:
@@ -13,7 +32,8 @@ func run_all() -> Dictionary:
 	_run_case("reach_in_report_has_no_new_or_grown_offenders", _test_reach_in_report_has_no_new_or_grown_offenders.bind(report), failures)
 	_run_case("documented_reach_ins_have_ratchet_baselines", _test_documented_reach_ins_have_ratchet_baselines.bind(reach_in_budget, report), failures)
 	_run_case("reach_in_baselines_match_current_counts", _test_reach_in_baselines_match_current_counts.bind(report), failures)
-	return {"passed": failures.is_empty(), "total": 3, "failed": failures.size(), "failures": failures}
+	_run_case("reflection_patterns_count_as_reach_ins", _test_reflection_patterns_count_as_reach_ins.bind(reach_in_budget), failures)
+	return {"passed": failures.is_empty(), "total": 4, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -62,6 +82,20 @@ func _test_reach_in_baselines_match_current_counts(report: Dictionary) -> String
 		var reach_in_lines := int(entry.get("reach_in_lines", -1))
 		if reach_in_lines != expected_baseline:
 			return "%s measured %d reach-in lines; update the baseline from %d in the same PR." % [path, reach_in_lines, expected_baseline]
+	return ""
+
+
+func _test_reflection_patterns_count_as_reach_ins(reach_in_budget: Variant) -> String:
+	var covered_lines := [
+		'var model = _owner.get("_model")',
+		'_owner.set("_board_model", board_model)',
+		'Callable(_owner, "_bind_runtime_helpers").call()',
+	]
+	for line in covered_lines:
+		if not bool(reach_in_budget._line_has_reach_in(line)):
+			return "Expected reflection owner-private access to count as a reach-in: %s" % line
+	if bool(reach_in_budget._line_has_reach_in("var public_model = _owner.model")):
+		return "Expected public owner access to remain outside the private reach-in budget."
 	return ""
 
 

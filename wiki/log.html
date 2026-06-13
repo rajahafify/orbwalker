@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-owner-reflection-reach-in-gate">2026-06-13 - Owner reflection reach-in gate</h2>
+<ul>
+<li>Expanded <code>owner_reach_in_budget.gd</code> so private string-reflection access now counts as owner reach-in debt: <code>.get("_...")</code>, <code>.set("_...")</code>, and private-owner <code>Callable(..., "_...")</code> patterns are tracked alongside direct <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> access. (source: <code>tools/quality/owner_reach_in_budget.gd</code>, <code>scripts/tests/owner_reach_in_budget_test.gd</code>)</li>
+<li>Baselined the real current inventory at <code>178</code> reach-in lines across <code>18</code> production scripts and updated the refactor progress report to stop claiming the allowlist is empty. Future consolidation PRs must lower the affected file baseline in the same change. (source: <code>docs/refactor_progress_report_2026-06-12.html</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-65-player-loadout-inventory-renderer">2026-06-13 - Wave 65 PlayerLoadoutHud inventory renderer</h2>
 <ul>
 <li>Added <code>PlayerLoadoutInventoryRenderer</code> as the owner for equipment/consumable slot rows, relic rows, slot frame styleboxes, icon silhouettes, badges, and tooltip formatting. <code>PlayerLoadoutHud</code> now delegates inventory rendering through callbacks while keeping selection state, popover behavior, and signal emission. (source: <code>scripts/ui/player_loadout_inventory_renderer.gd</code>, <code>scripts/ui/player_loadout_hud.gd</code>)</li>

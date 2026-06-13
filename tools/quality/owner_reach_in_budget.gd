@@ -8,9 +8,33 @@ const REACH_IN_PATTERNS := [
 	"_owner._",
 	"owner._",
 	"_hud._",
+	'.get("_',
+	'.set("_',
+	'Callable(_owner, "_',
+	'Callable(owner, "_',
+	'Callable(_hud, "_',
 ]
 
-const DOCUMENTED_REACH_INS := {}
+const DOCUMENTED_REACH_INS := {
+	"res://scripts/combat/combat_controller_binding_coordinator.gd": 13,
+	"res://scripts/combat/combat_controller_board_debug_router.gd": 7,
+	"res://scripts/combat/combat_controller_feedback_settings_router.gd": 5,
+	"res://scripts/combat/combat_controller_hud_update_router.gd": 2,
+	"res://scripts/combat/combat_controller_input_router.gd": 8,
+	"res://scripts/combat/combat_controller_intent_router.gd": 2,
+	"res://scripts/combat/combat_controller_lifecycle.gd": 23,
+	"res://scripts/combat/combat_controller_presentation_router.gd": 1,
+	"res://scripts/combat/combat_controller_runtime_binder.gd": 22,
+	"res://scripts/combat/combat_controller_runtime_helper_factory.gd": 8,
+	"res://scripts/combat/combat_controller_scene_binder.gd": 1,
+	"res://scripts/combat/combat_controller_tutorial_router.gd": 26,
+	"res://scripts/combat/combat_debug_callback_keys.gd": 5,
+	"res://scripts/combat/combat_enemy_intent_presenter.gd": 6,
+	"res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd": 32,
+	"res://scripts/combat/combat_player_hud_presenter.gd": 10,
+	"res://scripts/combat/combat_settings_command_handler.gd": 2,
+	"res://scripts/scenes/combat.gd": 5,
+}
 
 
 func _initialize() -> void:

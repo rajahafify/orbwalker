@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-13, owner reflection reach-in gate consolidation):</p>
+<ul>
+<li><code>tools/quality/owner_reach_in_budget.gd</code> now counts private string-reflection owner access as reach-in debt: <code>.get("_...")</code>, <code>.set("_...")</code>, and private-owner <code>Callable(..., "_...")</code> patterns are ratcheted alongside direct <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> access.</li>
+<li>The checked owner-reach baseline is now the current measured inventory: <code>178</code> lines across <code>18</code> production scripts. Future cleanup must lower the affected file baseline in the same PR, and future growth fails as a ratchet violation.</li>
+<li>Validation passed: <code>gdformat --check</code> and <code>gdlint</code> for the touched GDScript files; <code>git diff --check</code>; <code>res://tools/quality/owner_reach_in_budget.gd</code> reported all <code>18</code> documented files at exact baseline; <code>res://tools/quality/script_load_validation.gd</code> reported <code>383</code> scripts loaded and <code>0</code> failures; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=259</code>, <code>over_budget=0</code>, <code>documented_exceptions=0</code>, <code>undocumented=0</code>, <code>stale_exceptions=0</code>, and <code>ratchet_failures=0</code>; full Godot console <code>res://scripts/tests/run_all_tests.gd</code> reported <code>123</code> suites, <code>513</code> cases, and <code>0</code> failures. The full runner still emits existing replay/coordinator script-error and shutdown noise after passing reports, so the reported failure count and exit code are the validation source for this consolidation.</li>
+</ul>
 <p>Verification notes (2026-06-12, Wave 19 combat controller wrapper deletion):</p>
 <ul>
 <li><code>CombatController</code> now keeps the scene-host entry methods as the real implementations instead of bouncing through private twins. Dead debug button callbacks for removed regenerate/print/tests/add-item buttons were deleted; the active debug console and keyboard command paths remain intact.</li>
