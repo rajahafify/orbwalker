@@ -43,7 +43,7 @@ func handle_end(result: Dictionary) -> void:
 			return
 		clear_snapshot()
 		_hide_tutorial_coachmark()
-	_end_drag(bool(result.get("timed_out", false)))
+	_end_drag(result)
 
 
 func reset_incomplete_drag() -> void:
@@ -89,10 +89,10 @@ func _hide_tutorial_coachmark() -> void:
 		_coachmark_coordinator.hide_coachmark()
 
 
-func _end_drag(timed_out: bool) -> void:
+func _end_drag(result: Dictionary) -> void:
 	var callback: Callable = _callbacks.get(CALLBACK_END_DRAG, Callable())
 	if callback.is_valid():
-		callback.call(timed_out)
+		callback.call(result)
 
 
 func _set_board_seed(board_seed: int) -> void:

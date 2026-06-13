@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-13, combat drag resolve handoff fix):</p>
+<ul>
+<li>Fixed the live combat drag-release path so the <code>BoardController</code> drag result dictionary flows through <code>CombatTutorialDragFlow</code>, <code>CombatController</code>, <code>CombatControllerLifecycle</code>, and <code>CombatResolveFlowCoordinator</code>. The resolve coordinator no longer calls the removed <code>BoardController.end_drag()</code> API, avoiding the runtime error seen after releasing a board drag.</li>
+<li>Updated the tutorial and resolve-flow tests to model the production handoff shape: callbacks now receive the full drag result dictionary, and the resolve-flow fake board controller no longer exposes the removed <code>end_drag()</code> method.</li>
+<li>Validation passed with the installed Godot <code>4.6.2</code> console: <code>gdformat --check</code> and <code>gdlint</code> for touched GDScript; full <code>res://scripts/tests/run_all_tests.gd</code> reported <code>123</code> suites, <code>513</code> cases, and <code>0</code> failures. The attached user log used Godot <code>4.6.3</code>, which is not installed in this workspace.</li>
+</ul>
 <p>Verification notes (2026-06-13, owner reflection reach-in gate consolidation):</p>
 <ul>
 <li><code>tools/quality/owner_reach_in_budget.gd</code> now counts private string-reflection owner access as reach-in debt: <code>.get("_...")</code>, <code>.set("_...")</code>, and private-owner <code>Callable(..., "_...")</code> patterns are ratcheted alongside direct <code>_owner._</code>, <code>owner._</code>, and <code>_hud._</code> access.</li>
