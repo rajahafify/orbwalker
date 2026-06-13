@@ -90,12 +90,7 @@ func wait_combat_speed(base_seconds: float) -> void:
 	await _wait_duration(wait_seconds)
 
 
-func play_resolve_animations(
-	result: Dictionary,
-	visual_board_model: BoardModel = null,
-	resolve_trace_origin_usec: int = 0,
-	callbacks: Dictionary = {}
-) -> void:
+func play_resolve_animations(result: Dictionary, visual_board_model: BoardModel = null, resolve_trace_origin_usec: int = 0, callbacks: Dictionary = {}) -> void:
 	if not _can_continue_after_wait() or result.get("total_combos", 0) <= 0:
 		return
 
@@ -118,22 +113,19 @@ func play_resolve_animations(
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=pass_start step_index=%d groups=%d fall=%d refill=%d" % [
-				pass_index,
-				step_index,
-				group_count,
-				fall_count,
-				refill_count,
-			]
+			(
+				"pass=%d phase=pass_start step_index=%d groups=%d fall=%d refill=%d"
+				% [
+					pass_index,
+					step_index,
+					group_count,
+					fall_count,
+					refill_count,
+				]
+			)
 		)
 		await _play_match_groups_for_pass(
-			presented_groups,
-			visual_board_model,
-			resolve_trace_origin_usec,
-			pass_index,
-			trace_callback,
-			combo_preview_callback,
-			combo_feedback_callback
+			presented_groups, visual_board_model, resolve_trace_origin_usec, pass_index, trace_callback, combo_preview_callback, combo_feedback_callback
 		)
 		if not _can_continue_after_wait():
 			return
@@ -144,11 +136,14 @@ func play_resolve_animations(
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=gravity_start moves=%d gravity_ms=%d" % [
-				pass_index,
-				fall_count,
-				int(round(combat_speed_duration(GRAVITY_ANIMATION_SECONDS) * 1000.0)),
-			]
+			(
+				"pass=%d phase=gravity_start moves=%d gravity_ms=%d"
+				% [
+					pass_index,
+					fall_count,
+					int(round(combat_speed_duration(GRAVITY_ANIMATION_SECONDS) * 1000.0)),
+				]
+			)
 		)
 		if not _can_continue_after_wait():
 			return
@@ -158,20 +153,19 @@ func play_resolve_animations(
 		if not _can_continue_after_wait():
 			return
 		_apply_visual_fall_moves(visual_board_model, pass_result.fall_moves)
-		_call_trace(
-			trace_callback,
-			resolve_trace_origin_usec,
-			"pass=%d phase=gravity_visual_commit moves=%d" % [pass_index, fall_count]
-		)
+		_call_trace(trace_callback, resolve_trace_origin_usec, "pass=%d phase=gravity_visual_commit moves=%d" % [pass_index, fall_count])
 
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=refill_start spawns=%d refill_ms=%d" % [
-				pass_index,
-				refill_count,
-				int(round(combat_speed_duration(REFILL_ANIMATION_SECONDS) * 1000.0)),
-			]
+			(
+				"pass=%d phase=refill_start spawns=%d refill_ms=%d"
+				% [
+					pass_index,
+					refill_count,
+					int(round(combat_speed_duration(REFILL_ANIMATION_SECONDS) * 1000.0)),
+				]
+			)
 		)
 		if not _can_continue_after_wait():
 			return
@@ -181,11 +175,7 @@ func play_resolve_animations(
 		if not _can_continue_after_wait():
 			return
 		_apply_visual_refill_spawns(visual_board_model, pass_result.refill_spawns)
-		_call_trace(
-			trace_callback,
-			resolve_trace_origin_usec,
-			"pass=%d phase=refill_visual_commit spawns=%d" % [pass_index, refill_count]
-		)
+		_call_trace(trace_callback, resolve_trace_origin_usec, "pass=%d phase=refill_visual_commit spawns=%d" % [pass_index, refill_count])
 		await wait_combat_speed(CASCADE_PASS_HOLD_SECONDS)
 		if not _can_continue_after_wait():
 			return
@@ -203,10 +193,13 @@ func play_resolve_animations(
 			_call_trace(
 				trace_callback,
 				resolve_trace_origin_usec,
-				"phase=animations_drain_timeout iterations=%d elapsed_ms=%d" % [
-					drain_iterations,
-					int(round(elapsed_seconds * 1000.0)),
-				]
+				(
+					"phase=animations_drain_timeout iterations=%d elapsed_ms=%d"
+					% [
+						drain_iterations,
+						int(round(elapsed_seconds * 1000.0)),
+					]
+				)
 			)
 			break
 		await _wait_duration(0.02)
@@ -234,29 +227,31 @@ func _play_match_groups_for_pass(
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_start group_index=%d flash_ms=%d" % [
-				pass_index,
-				group_index,
-				int(round(match_flash_seconds * 1000.0)),
-			]
+			(
+				"pass=%d phase=match_flash_start group_index=%d flash_ms=%d"
+				% [
+					pass_index,
+					group_index,
+					int(round(match_flash_seconds * 1000.0)),
+				]
+			)
 		)
 		await _trigger_match_feedback(one_group, match_flash_seconds)
 		if not _can_continue_after_wait():
 			return
-		_call_trace(
-			trace_callback,
-			resolve_trace_origin_usec,
-			"pass=%d phase=match_flash_end group_index=%d" % [pass_index, group_index]
-		)
+		_call_trace(trace_callback, resolve_trace_origin_usec, "pass=%d phase=match_flash_end group_index=%d" % [pass_index, group_index])
 
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=clear_start group_index=%d clear_ms=%d" % [
-				pass_index,
-				group_index,
-				int(round(combat_speed_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
-			]
+			(
+				"pass=%d phase=clear_start group_index=%d clear_ms=%d"
+				% [
+					pass_index,
+					group_index,
+					int(round(combat_speed_duration(CLEAR_ANIMATION_SECONDS) * 1000.0)),
+				]
+			)
 		)
 		_spawn_match_clear_bursts(one_group)
 		var clear_animation_seconds := combat_speed_duration(CLEAR_ANIMATION_SECONDS)
@@ -265,11 +260,7 @@ func _play_match_groups_for_pass(
 		if not _can_continue_after_wait():
 			return
 		_apply_visual_clear_groups(visual_board_model, one_group)
-		_call_trace(
-			trace_callback,
-			resolve_trace_origin_usec,
-			"pass=%d phase=clear_visual_commit group_index=%d" % [pass_index, group_index]
-		)
+		_call_trace(trace_callback, resolve_trace_origin_usec, "pass=%d phase=clear_visual_commit group_index=%d" % [pass_index, group_index])
 
 		_resolve_combo_running += 1
 		var orb_id := int(typed_group.get("orb_id", -1))
@@ -285,15 +276,18 @@ func _play_match_groups_for_pass(
 		_call_trace(
 			trace_callback,
 			resolve_trace_origin_usec,
-			"pass=%d phase=combo_tick group_index=%d combo_value=%d orb=%s orb_name=\"%s\" cells=%d preview=%d" % [
-				pass_index,
-				group_index,
-				_resolve_combo_running,
-				orb_symbol,
-				orb_name,
-				cell_count,
-				preview_amount,
-			]
+			(
+				'pass=%d phase=combo_tick group_index=%d combo_value=%d orb=%s orb_name="%s" cells=%d preview=%d'
+				% [
+					pass_index,
+					group_index,
+					_resolve_combo_running,
+					orb_symbol,
+					orb_name,
+					cell_count,
+					preview_amount,
+				]
+			)
 		)
 		_spawn_combo_floating_text(typed_group, _resolve_combo_running)
 		if combo_feedback_callback.is_valid():
@@ -452,8 +446,12 @@ func _spawn_combo_floating_text(group: Dictionary, combo_value: int) -> void:
 	var pulse_scale := 1.0 if not _juice_enabled(GAME_JUICE_FLAGS_SCRIPT.COMBO_RHYTHM_PULSE) else 1.0 + minf(0.22, float(combo_value) * 0.018)
 	if _timer_owner != null and is_instance_valid(_timer_owner):
 		var pop_tween := _timer_owner.create_tween()
-		pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
-		pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+		pop_tween.tween_property(combo_panel, "scale", Vector2(pulse_scale, pulse_scale), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(
+			Tween.EASE_OUT as Tween.EaseType
+		)
+		pop_tween.tween_property(combo_panel, "scale", Vector2(1.0, 1.0), 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(
+			Tween.EASE_OUT as Tween.EaseType
+		)
 
 
 func _ensure_combo_popup_panel() -> Control:
@@ -510,12 +508,13 @@ func _finish_combo_popup() -> void:
 	_combo_popup_fade_tween = _timer_owner.create_tween()
 	_combo_popup_fade_tween.tween_interval(0.18)
 	_combo_popup_fade_tween.tween_property(combo_panel, "modulate:a", 0.0, 0.36)
-	_combo_popup_fade_tween.finished.connect(func() -> void:
-		if is_instance_valid(combo_panel):
-			combo_panel.queue_free()
-		_combo_popup_panel = null
-		_combo_popup_word_label = null
-		_combo_popup_label = null
+	_combo_popup_fade_tween.finished.connect(
+		func() -> void:
+			if is_instance_valid(combo_panel):
+				combo_panel.queue_free()
+			_combo_popup_panel = null
+			_combo_popup_word_label = null
+			_combo_popup_label = null
 	)
 
 
@@ -542,8 +541,9 @@ func _layout_combo_popup_labels(combo_value: int, popup_size: Vector2) -> void:
 		mini(COMBO_POPUP_VALUE_MAX_FONT_SIZE, COMBO_POPUP_VALUE_BASE_FONT_SIZE + maxi(0, combo_value - 1) * 12),
 		64
 	)
-	var word_height := _combo_line_height(word_font_size)
-	var value_height := _combo_line_height(value_font_size)
+	var popup_font := _combo_popup_font()
+	var word_height := maxf(float(word_font_size), popup_font.get_height(word_font_size)) if popup_font != null else float(word_font_size) * 1.2
+	var value_height := maxf(float(value_font_size), popup_font.get_height(value_font_size)) if popup_font != null else float(value_font_size) * 1.2
 	var label_overlap := minf(value_height * 0.34, maxf(24.0, safe_size.y * 0.12))
 	var stack_height := word_height + value_height - label_overlap
 	var stack_top := safe_size.y * 0.52 - stack_height * 0.5
@@ -573,13 +573,6 @@ func _fit_combo_font_size(text: String, target_size: Vector2, desired_size: int,
 
 func _juice_enabled(flag_key: String) -> bool:
 	return _game_juice_enabled and not _reduced_motion and bool(_game_juice_flags.get(flag_key, true))
-
-
-func _combo_line_height(font_size: int) -> float:
-	var font := _combo_popup_font()
-	if font == null:
-		return float(font_size) * 1.2
-	return maxf(float(font_size), font.get_height(font_size))
 
 
 func _combo_popup_font() -> Font:
