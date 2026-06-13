@@ -72,7 +72,10 @@ func ready() -> void:
 	_owner.call("_bind_outcome_overlay")
 	_owner.call("_bind_boss_reward_handler")
 	_ensure_ready_flow_binder()
-	_owner.set("_resolve_presenter", _ready_flow_binder.bind_resolve_presenter(_ready_flow_dependencies(), _ready_flow_callbacks(), _ready_flow_config()))
+	_owner.set(
+		"_resolve_presenter",
+		_ready_flow_binder.bind_resolve_presenter(_ready_flow_dependencies(), _ready_flow_callbacks(), {"combat_speed": _owner.call("_combat_speed_value")})
+	)
 	_owner.call("_bind_debug_console")
 	_owner.call("_bind_settings_command_handler")
 	var consumable_rng: Variant = _owner.get("_consumable_rng")
@@ -147,10 +150,6 @@ func _ready_flow_callbacks() -> Dictionary:
 		"trace_first_usable_frame": Callable(_owner, "_trace_flow_first_usable_frame"),
 		"apply_orb_texture_map_deferred": _presentation_callback("apply_orb_texture_map_deferred"),
 	}
-
-
-func _ready_flow_config() -> Dictionary:
-	return {"combat_speed": _owner.call("_combat_speed_value")}
 
 
 func initialize_combat_state() -> void:
