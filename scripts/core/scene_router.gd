@@ -9,6 +9,8 @@ var _route_order: Array[String] = []
 var _route_serial: int = 0
 var _active_route_id: String = ""
 var _transition_generation: int = 0
+var _packed_scene_cache: Dictionary = {}
+var _threaded_scene_requests: Dictionary = {}
 
 
 func _init(owner, enabled: bool = true, route_retention_max: int = 50) -> void:
@@ -125,8 +127,15 @@ func flow_trace_prepare_scene(target_scene: String, route_id: String = "", sourc
 			"route_id": resolved_route_id,
 		}
 
+	var packed_scene := _cached_packed_scene(target_scene)
+	var cache_hit := packed_scene != null
 	var load_start_usec := Time.get_ticks_usec()
-	var loaded_resource: Resource = ResourceLoader.load(target_scene)
+	var loaded_resource: Resource = packed_scene
+	if loaded_resource == null:
+		loaded_resource = _threaded_packed_scene(target_scene)
+		cache_hit = loaded_resource != null
+	if loaded_resource == null:
+		loaded_resource = ResourceLoader.load(target_scene)
 	var load_ms := int((Time.get_ticks_usec() - load_start_usec) / 1000.0)
 	if loaded_resource == null:
 		flow_trace_mark(
@@ -164,13 +173,15 @@ func flow_trace_prepare_scene(target_scene: String, route_id: String = "", sourc
 			"route_id": resolved_route_id,
 		}
 
-	var packed_scene := loaded_resource as PackedScene
+	packed_scene = loaded_resource as PackedScene
+	_packed_scene_cache[target_scene] = packed_scene
 	flow_trace_mark(
 		"after_resource_load",
 		{
 			"ok": true,
 			"load_ms": load_ms,
 			"resource_type": packed_scene.get_class(),
+			"cache_hit": cache_hit,
 		},
 		resolved_route_id,
 		target_scene
@@ -210,10 +221,7 @@ func flow_trace_prepare_scene(target_scene: String, route_id: String = "", sourc
 			resolved_route_id,
 			target_scene
 		)
-		push_error(
-			"[FlowTrace] flow_trace_change_scene instantiate returned non-Node for %s: %s"
-			% [target_scene, instantiated_scene.get_class()]
-		)
+		push_error("[FlowTrace] flow_trace_change_scene instantiate returned non-Node for %s: %s" % [target_scene, instantiated_scene.get_class()])
 		return {
 			"ok": false,
 			"error_code": ERR_CANT_CREATE,
@@ -241,13 +249,52 @@ func flow_trace_prepare_scene(target_scene: String, route_id: String = "", sourc
 	}
 
 
-func flow_trace_attach_prepared_scene(
-	tree: SceneTree,
-	prepared: Dictionary,
-	target_scene: String,
-	route_id: String = "",
-	source: String = ""
-) -> int:
+func warm_packed_scene(target_scene: String) -> bool:
+	if _cached_packed_scene(target_scene) != null:
+		return true
+	if target_scene.strip_edges() == "":
+		return false
+	if _threaded_scene_requests.has(target_scene):
+		return true
+	var error := ResourceLoader.load_threaded_request(target_scene, "PackedScene", true)
+	if error == OK or error == ERR_BUSY:
+		_threaded_scene_requests[target_scene] = true
+		return true
+	return false
+
+
+func cached_packed_scene_paths() -> Array[String]:
+	var paths: Array[String] = []
+	for raw_path in _packed_scene_cache.keys():
+		paths.append(String(raw_path))
+	paths.sort()
+	return paths
+
+
+func _cached_packed_scene(target_scene: String) -> PackedScene:
+	var cached := _packed_scene_cache.get(target_scene, null) as PackedScene
+	if cached == null:
+		_packed_scene_cache.erase(target_scene)
+	return cached
+
+
+func _threaded_packed_scene(target_scene: String) -> PackedScene:
+	if not _threaded_scene_requests.has(target_scene):
+		return null
+	var status := ResourceLoader.load_threaded_get_status(target_scene)
+	if status == ResourceLoader.THREAD_LOAD_FAILED or status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
+		_threaded_scene_requests.erase(target_scene)
+		return null
+	var loaded_resource := ResourceLoader.load_threaded_get(target_scene)
+	_threaded_scene_requests.erase(target_scene)
+	if not (loaded_resource is PackedScene):
+		return null
+	var packed_scene := loaded_resource as PackedScene
+	_packed_scene_cache[target_scene] = packed_scene
+	return packed_scene
+
+
+func flow_trace_attach_prepared_scene(tree: SceneTree, prepared: Dictionary, target_scene: String, route_id: String = "", source: String = "") -> int:
 	var resolved_route_id := route_id
 	if resolved_route_id == "":
 		resolved_route_id = String(prepared.get("route_id", ""))
@@ -435,12 +482,7 @@ func _deferred_finish_prepared_scene_attach(
 			if tree == null or tree.current_scene != new_scene:
 				new_scene.queue_free()
 		return
-	var new_scene_healthy := (
-		tree != null
-		and is_instance_valid(new_scene)
-		and new_scene.is_inside_tree()
-		and tree.current_scene == new_scene
-	)
+	var new_scene_healthy := tree != null and is_instance_valid(new_scene) and new_scene.is_inside_tree() and tree.current_scene == new_scene
 	if new_scene_healthy:
 		flow_trace_mark(
 			"before_old_scene_free",
@@ -477,15 +519,20 @@ func _deferred_finish_prepared_scene_attach(
 	if is_instance_valid(new_scene):
 		new_scene.queue_free()
 	if post_ready_failure_callback.is_valid():
-		post_ready_failure_callback.call({
-			"ok": false,
-			"reason": "prepared_scene_post_ready_check_failed",
-			"target_scene": target_scene,
-			"route_id": route_id,
-			"source": source,
-			"old_scene_name": old_scene_name,
-			"old_scene_path": old_scene_path,
-		})
+		(
+			post_ready_failure_callback
+			. call(
+				{
+					"ok": false,
+					"reason": "prepared_scene_post_ready_check_failed",
+					"target_scene": target_scene,
+					"route_id": route_id,
+					"source": source,
+					"old_scene_name": old_scene_name,
+					"old_scene_path": old_scene_path,
+				}
+			)
+		)
 	push_error("[FlowTrace] prepared scene post-ready check failed for %s; restored previous scene when available" % target_scene)
 
 
@@ -569,17 +616,19 @@ func _flow_trace_mark_internal(route_id: String, step: String, details: Dictiona
 	if not details.is_empty():
 		details_text = " details=%s" % str(details)
 	print(
-		"[FlowTrace] route_id=%s route=%s target_scene=%s elapsed_ms=%d delta_ms=%d step=%s dungeon_level=%d run_active=%s current_step=%s%s"
-		% [
-			route_id,
-			String(route_data.get("route_name", "unknown")),
-			target_scene,
-			elapsed_ms,
-			delta_ms,
-			step,
-			_owner.dungeon_level,
-			str(_owner.run_active),
-			_owner.current_step_key,
-			details_text,
-		]
+		(
+			"[FlowTrace] route_id=%s route=%s target_scene=%s elapsed_ms=%d delta_ms=%d step=%s dungeon_level=%d run_active=%s current_step=%s%s"
+			% [
+				route_id,
+				String(route_data.get("route_name", "unknown")),
+				target_scene,
+				elapsed_ms,
+				delta_ms,
+				step,
+				_owner.dungeon_level,
+				str(_owner.run_active),
+				_owner.current_step_key,
+				details_text,
+			]
+		)
 	)

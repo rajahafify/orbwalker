@@ -54,6 +54,7 @@ func ready() -> void:
 	_view.layout_ui(_host.get_viewport_rect().size)
 	_view.configure_focus_navigation()
 	_start_menu_music.call_deferred()
+	_warm_start_run_scene.call_deferred()
 	_host.set_process(true)
 
 	var viewport := _host.get_viewport()
@@ -76,6 +77,10 @@ func process(delta: float) -> void:
 		_menu_music_player.play()
 		if _menu_music_player.playing:
 			_host.set_process(false)
+
+
+func _warm_start_run_scene() -> void:
+	RunState.warm_packed_scene(COMBAT_SCENE_PATH)
 
 
 func _on_viewport_size_changed() -> void:
@@ -142,12 +147,7 @@ func _on_collection_button_pressed() -> void:
 	var route_id := RunState.flow_trace_begin("main_menu_to_collection", COLLECTION_SCENE_PATH, {"source": "main_menu.collection_button"})
 	RunState.flow_trace_mark("before_change_scene_to_file", {"source": "main_menu.collection_button"}, route_id, COLLECTION_SCENE_PATH)
 	var transition_result: Variant = RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		COLLECTION_SCENE_PATH,
-		route_id,
-		"main_menu.collection_button",
-		"",
-		_on_collection_post_ready_rollback
+		_host.get_tree(), COLLECTION_SCENE_PATH, route_id, "main_menu.collection_button", "", _on_collection_post_ready_rollback
 	)
 	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return
@@ -170,12 +170,7 @@ func _on_continue_button_pressed() -> void:
 	var route_id := RunState.flow_trace_begin("main_menu_continue_run", next_scene, {"source": "main_menu.continue_button"})
 	RunState.flow_trace_mark("before_change_scene_to_file", {"source": "main_menu.continue_button"}, route_id, next_scene)
 	var transition_result: Variant = RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		next_scene,
-		route_id,
-		"main_menu.continue_button",
-		"",
-		_on_continue_post_ready_rollback
+		_host.get_tree(), next_scene, route_id, "main_menu.continue_button", "", _on_continue_post_ready_rollback
 	)
 	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return
@@ -195,13 +190,7 @@ func _on_tutorial_button_pressed() -> void:
 	RunState.start_tutorial_run()
 	RunState.flow_trace_mark("before_change_scene_to_file", {"source": "main_menu.tutorial_button"}, route_id, COMBAT_SCENE_PATH)
 	var transition_result: Variant = RunState.flow_trace_change_scene(
-		_host.get_tree(),
-		COMBAT_SCENE_PATH,
-		route_id,
-		"main_menu.tutorial_button",
-		"",
-		_on_tutorial_post_ready_rollback,
-		pre_run_state
+		_host.get_tree(), COMBAT_SCENE_PATH, route_id, "main_menu.tutorial_button", "", _on_tutorial_post_ready_rollback, pre_run_state
 	)
 	if FLOW_RESULT_UTILS.scene_change_succeeded(transition_result):
 		return

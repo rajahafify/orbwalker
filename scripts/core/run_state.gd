@@ -778,6 +778,10 @@ func flow_trace_prepare_scene(target_scene: String, route_id: String = "", sourc
 	)
 
 
+func warm_packed_scene(target_scene: String) -> bool:
+	return bool(_ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).warm_packed_scene(target_scene))
+
+
 func flow_trace_attach_prepared_scene(tree: SceneTree, prepared: Dictionary, target_scene: String, route_id: String = "", source: String = "") -> int:
 	return _ensure_dependencies().ensure_scene_router(FLOW_TRACE_ENABLED, FLOW_TRACE_ROUTE_RETENTION_MAX).flow_trace_attach_prepared_scene(
 		tree, prepared, target_scene, route_id, source
