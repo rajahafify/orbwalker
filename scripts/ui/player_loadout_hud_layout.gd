@@ -179,6 +179,7 @@ static func _adopt_player_hud_relic_nodes(nodes: Dictionary) -> void:
 		var existing_parent := node.get_parent()
 		if existing_parent != null:
 			existing_parent.remove_child(node)
+		node.owner = null
 		vitals_panel.add_child(node)
 
 

@@ -1,0 +1,143 @@
+extends RefCounted
+class_name UiTextLegibilityRuntimeTest
+
+const PLAYER_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const SHOP_PLAYER_HUD_PRESENTER := preload("res://scripts/shop/shop_player_hud_presenter.gd")
+
+const MIN_VISIBLE_TEXT_FONT_SIZE := 20
+const DEFAULT_VIEWPORT_SIZE := Vector2(1080.0, 1920.0)
+const STANDALONE_SCENES := [
+	"res://scenes/debug/vfx_gallery_index.tscn",
+	"res://scenes/debug/vfx_gallery_show.tscn",
+	"res://scenes/ui/elemental_mastery_hud_variants.tscn",
+	"res://scenes/ui/top_header.tscn",
+]
+
+
+func run_all() -> Dictionary:
+	var failures: Array[String] = []
+	_run_case("standalone_scenes_keep_visible_text_readable", _test_standalone_scenes_keep_visible_text_readable, failures)
+	_run_case("initialized_player_hud_keeps_visible_text_readable", _test_initialized_player_hud_keeps_visible_text_readable, failures)
+	return {
+		"passed": failures.is_empty(),
+		"total": 2,
+		"failed": failures.size(),
+		"failures": failures,
+	}
+
+
+func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
+	var result: Variant = callable.call()
+	if not (result is String):
+		failures.append("%s: Test case aborted or returned %s instead of String." % [case_name, type_string(typeof(result))])
+		return
+	var error_text := String(result)
+	if error_text != "":
+		failures.append("%s: %s" % [case_name, error_text])
+
+
+func _test_standalone_scenes_keep_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for runtime UI text audit."
+	for scene_path in STANDALONE_SCENES:
+		var instance := _instantiate_scene(scene_path)
+		if instance == null:
+			return "Expected UI scene to instantiate: %s." % scene_path
+		_prepare_root_control(instance, DEFAULT_VIEWPORT_SIZE)
+		tree.root.add_child(instance)
+		var failures := _visible_text_failures(instance, scene_path)
+		instance.free()
+		if not failures.is_empty():
+			return _summarize_failures(failures)
+	return ""
+
+
+func _test_initialized_player_hud_keeps_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for initialized Player HUD audit."
+	var instance := _instantiate_scene("res://scenes/ui/player_hud.tscn")
+	if instance == null:
+		return "Expected Player HUD scene to instantiate."
+	_prepare_root_control(instance, DEFAULT_VIEWPORT_SIZE)
+	tree.root.add_child(instance)
+
+	var hud: Variant = PLAYER_HUD_SCRIPT.new()
+	var nodes: Dictionary = SHOP_PLAYER_HUD_PRESENTER.hud_nodes_from_section(instance)
+	nodes["popover_parent"] = instance
+	nodes["popover_z_index"] = 210
+	hud.bind_player_hud(nodes)
+	hud.update_player_hud_layout()
+	hud.update_player_data({"progression": {"equipment_slots": [], "consumable_slots": [], "relic_ids": [], "mastery_levels": {}}})
+
+	var failures := _visible_text_failures(instance, "res://scenes/ui/player_hud.tscn")
+	instance.free()
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
+
+
+func _instantiate_scene(scene_path: String) -> Node:
+	var packed_scene := ResourceLoader.load(scene_path, "", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
+	if packed_scene == null:
+		return null
+	return packed_scene.instantiate()
+
+
+func _prepare_root_control(node: Node, target_size: Vector2) -> void:
+	var control := node as Control
+	if control == null:
+		return
+	control.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	control.position = Vector2.ZERO
+	control.size = target_size
+	control.custom_minimum_size = target_size
+
+
+func _visible_text_failures(root: Node, scene_path: String) -> Array[String]:
+	var failures: Array[String] = []
+	_collect_visible_text_failures(root, scene_path, failures)
+	return failures
+
+
+func _collect_visible_text_failures(node: Node, scene_path: String, failures: Array[String]) -> void:
+	var control := node as Control
+	if control != null and _has_audited_visible_text(control):
+		var font_size := control.get_theme_font_size("font_size")
+		if font_size < MIN_VISIBLE_TEXT_FONT_SIZE:
+			failures.append("%s %s text='%s' font_size=%d" % [scene_path, String(control.get_path()), _audited_text(control).left(32), font_size])
+	for child in node.get_children():
+		_collect_visible_text_failures(child, scene_path, failures)
+
+
+func _has_audited_visible_text(control: Control) -> bool:
+	if not control.is_visible_in_tree():
+		return false
+	if control.modulate.a <= 0.05:
+		return false
+	return _audited_text(control).strip_edges() != ""
+
+
+func _audited_text(control: Control) -> String:
+	if control is OptionButton:
+		var option_button := control as OptionButton
+		if option_button.item_count <= 0:
+			return ""
+		var selected := option_button.selected
+		if selected < 0:
+			selected = 0
+		return option_button.get_item_text(selected)
+	if control is Button:
+		return (control as Button).text
+	if control is Label:
+		return (control as Label).text
+	return ""
+
+
+func _summarize_failures(failures: Array[String]) -> String:
+	var summary := failures.duplicate()
+	if summary.size() > 5:
+		summary.resize(5)
+		summary.append("...and %d more." % (failures.size() - 5))
+	return "; ".join(summary)
