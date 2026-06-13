@@ -2,8 +2,16 @@ extends RefCounted
 class_name UiTextLegibilityRuntimeTest
 
 const PLAYER_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const MAIN_MENU_SETTINGS_OVERLAY := preload("res://scripts/main_menu/main_menu_settings_overlay.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
+const COMBAT_SETTINGS_OVERLAY_PRESENTER := preload("res://scripts/combat/combat_settings_overlay_presenter.gd")
+const COMBAT_TUTORIAL_END_OVERLAY_PRESENTER := preload("res://scripts/combat/combat_tutorial_end_overlay_presenter.gd")
+const COMBAT_TUTORIAL_PROMPT_PRESENTER := preload("res://scripts/combat/combat_tutorial_prompt_presenter.gd")
+const TUTORIAL_DIRECTOR_SCRIPT := preload("res://scripts/combat/tutorial_director.gd")
 const SHOP_PLAYER_HUD_PRESENTER := preload("res://scripts/shop/shop_player_hud_presenter.gd")
+const SHOP_HELP_MODAL_PRESENTER := preload("res://scripts/shop/shop_help_modal_presenter.gd")
 const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_treasure_chest_overlay_presenter.gd")
+const SHOP_TUTORIAL_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_tutorial_overlay_presenter.gd")
 
 const MIN_VISIBLE_TEXT_FONT_SIZE := 20
 const TEST_VIEWPORTS := [
@@ -44,11 +52,12 @@ func run_all() -> Dictionary:
 		failures
 	)
 	_run_case("shop_treasure_chest_overlay_keeps_visible_text_readable", _test_shop_treasure_chest_overlay_keeps_visible_text_readable, failures)
+	_run_case("interactive_overlays_keep_visible_text_readable", _test_interactive_overlays_keep_visible_text_readable, failures)
 	_run_case("app_scenes_keep_visible_text_readable", _test_app_scenes_keep_visible_text_readable, failures)
 	_run_case("stateful_gameplay_scenes_keep_visible_text_readable", _test_stateful_gameplay_scenes_keep_visible_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 7,
+		"total": 8,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -115,6 +124,17 @@ func _test_shop_treasure_chest_overlay_keeps_visible_text_readable() -> String:
 		return "Expected SceneTree for shop treasure chest overlay audit."
 	for viewport_size in TEST_VIEWPORTS:
 		var result := _audit_shop_treasure_chest_overlay_for_viewport(tree, viewport_size)
+		if result != "":
+			return result
+	return ""
+
+
+func _test_interactive_overlays_keep_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for interactive overlay text audit."
+	for viewport_size in TEST_VIEWPORTS:
+		var result := _audit_interactive_overlays_for_viewport(tree, viewport_size)
 		if result != "":
 			return result
 	return ""
@@ -330,6 +350,187 @@ func _audit_shop_treasure_chest_overlay_for_viewport(tree: SceneTree, viewport_s
 
 func _lookup_treasure_chest_content_definition(content_id: String) -> Dictionary:
 	return {"icon_key": "icon/%s" % content_id}
+
+
+func _audit_interactive_overlays_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	for audit_callable in [
+		Callable(self, "_audit_main_menu_settings_overlay_for_viewport"),
+		Callable(self, "_audit_combat_settings_overlay_for_viewport"),
+		Callable(self, "_audit_shop_help_modal_for_viewport"),
+		Callable(self, "_audit_shop_tutorial_overlay_for_viewport"),
+		Callable(self, "_audit_combat_tutorial_prompt_for_viewport"),
+		Callable(self, "_audit_combat_tutorial_end_overlay_for_viewport"),
+	]:
+		var result: String = audit_callable.call(tree, viewport_size)
+		if result != "":
+			return result
+	return ""
+
+
+func _audit_main_menu_settings_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "MainMenuSettingsOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+
+	var overlay: Variant = MAIN_MENU_SETTINGS_OVERLAY.new()
+	overlay.ensure(root)
+	overlay.layout(viewport_size)
+	overlay.show(_settings_payload())
+	var result := _visible_text_result(root, _scene_label("res://runtime/main_menu_settings_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_combat_settings_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "CombatSettingsOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+
+	var presenter: Variant = COMBAT_SETTINGS_OVERLAY_PRESENTER.new()
+	presenter.bind(root, {}, {"design_size": viewport_size})
+	presenter.show(_settings_payload())
+	var result := _visible_text_result(root, _scene_label("res://runtime/combat_settings_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_shop_help_modal_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "ShopHelpModalAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+
+	var presenter: Variant = SHOP_HELP_MODAL_PRESENTER.new()
+	presenter.bind(root)
+	presenter.show()
+	presenter.apply_chrome()
+	presenter.layout(viewport_size)
+	var result := _visible_text_result(root, _scene_label("res://runtime/shop_help_modal", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_shop_tutorial_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "ShopTutorialOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+	var offer_card := _audit_target_control(root, "OfferCard1", Rect2(Vector2(96.0, 220.0), Vector2(320.0, 450.0)))
+	var reroll_button := _audit_target_button(root, "RerollButton", Rect2(Vector2(120.0, viewport_size.y - 520.0), Vector2(280.0, 100.0)), "REROLL")
+	var continue_button := _audit_target_button(
+		root, "ContinueButton", Rect2(Vector2(viewport_size.x - 400.0, viewport_size.y - 520.0), Vector2(280.0, 100.0)), "CONTINUE"
+	)
+
+	var presenter: Variant = SHOP_TUTORIAL_OVERLAY_PRESENTER.new()
+	presenter.bind(root, {"offer_cards": [offer_card], "reroll_button": reroll_button, "continue_button": continue_button})
+	presenter.render("buy_shortsword")
+	presenter.layout(viewport_size)
+	var result := _visible_text_result(root, _scene_label("res://runtime/shop_tutorial_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_combat_tutorial_prompt_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := _combat_prompt_host(viewport_size)
+	tree.root.add_child(root)
+
+	var presenter: Variant = COMBAT_TUTORIAL_PROMPT_PRESENTER.new()
+	presenter.bind(root)
+	presenter.show("Swap these two orbs.", TUTORIAL_DIRECTOR_SCRIPT.PROMPT_ANCHOR_ABOVE_BOARD)
+	var result := _visible_text_result(root, _scene_label("res://runtime/combat_tutorial_prompt", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _audit_combat_tutorial_end_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "CombatTutorialEndOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+	var equipment_icons := _audit_target_control(root, "EquipmentIcons", Rect2(Vector2(24.0, viewport_size.y - 430.0), Vector2(260.0, 90.0)))
+	_audit_target_control(equipment_icons, "IronShortswordIcon", Rect2(Vector2(6.0, 6.0), Vector2(64.0, 64.0)))
+	var mastery_panel := _audit_target_control(root, "ElementalMasteryPanel", Rect2(Vector2(100.0, viewport_size.y - 650.0), Vector2(300.0, 120.0)))
+
+	var presenter: Variant = COMBAT_TUTORIAL_END_OVERLAY_PRESENTER.new()
+	presenter.bind(root, {"equipment_icons": equipment_icons, "elemental_mastery_panel": mastery_panel})
+	presenter.show("end", {"board_panel_rect": Rect2(Vector2(16.0, viewport_size.y * 0.34), Vector2(viewport_size.x - 32.0, viewport_size.y * 0.36))})
+	var result := _visible_text_result(root, _scene_label("res://runtime/combat_tutorial_end_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	return result
+
+
+func _settings_payload() -> Dictionary:
+	return {
+		"vfx_speed": "normal",
+		"combat_vfx_quality": "high",
+		"reduced_motion": false,
+		"game_juice": true,
+		"game_juice_flags": GAME_JUICE_FLAGS_SCRIPT.default_flags(),
+	}
+
+
+func _visible_text_result(root: Node, scene_path: String) -> String:
+	var failures := _visible_text_failures(root, scene_path)
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
+
+
+func _audit_target_control(parent: Node, node_name: String, rect: Rect2) -> Control:
+	var control := Control.new()
+	control.name = node_name
+	control.position = rect.position
+	control.size = rect.size
+	control.custom_minimum_size = rect.size
+	parent.add_child(control)
+	return control
+
+
+func _audit_target_button(parent: Node, node_name: String, rect: Rect2, text: String) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = text
+	button.position = rect.position
+	button.size = rect.size
+	button.custom_minimum_size = rect.size
+	button.add_theme_font_size_override("font_size", 24)
+	parent.add_child(button)
+	return button
+
+
+func _combat_prompt_host(viewport_size: Vector2) -> Control:
+	var host := Control.new()
+	host.name = "CombatPromptAuditHost"
+	_prepare_root_control(host, viewport_size)
+	var layout_root := _audit_target_control(host, "CombatLayoutRoot", Rect2(Vector2.ZERO, viewport_size))
+	_audit_target_control(
+		layout_root, "BoardPanel", Rect2(Vector2(viewport_size.x * 0.24, viewport_size.y * 0.34), Vector2(viewport_size.x * 0.52, viewport_size.x * 0.52))
+	)
+	var enemy_panel := _audit_target_control(layout_root, "EnemyPanel", Rect2(Vector2.ZERO, Vector2(viewport_size.x, viewport_size.y * 0.30)))
+	var enemy_panel_root := _audit_target_control(enemy_panel, "EnemyPanelRoot", Rect2(Vector2.ZERO, enemy_panel.size))
+	_audit_target_control(enemy_panel_root, "IntentRow", Rect2(Vector2(viewport_size.x * 0.20, viewport_size.y * 0.18), Vector2(viewport_size.x * 0.60, 72.0)))
+	_audit_target_control(layout_root, "PlayerHudSection", Rect2(Vector2(0.0, viewport_size.y * 0.78), Vector2(viewport_size.x, viewport_size.y * 0.18)))
+	return host
 
 
 func _instantiate_scene(scene_path: String) -> Node:
