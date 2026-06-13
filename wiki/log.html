@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-13-wave-64-runstate-dependency-registry">2026-06-13 - Wave 64 RunState dependency registry</h2>
+<ul>
+<li>Added <code>RunStateDependencyRegistry</code> as the owner for collaborator construction and caching previously embedded in <code>RunState</code>: state objects, profile/content/shop services, wallet, run loggers, scene router, settings store, profile unlocks, signal emitter, transition store, facades, encounter catalog, and outcome service. The run-flow fake repository seam remains explicit for integration tests. (source: <code>scripts/core/run_state_dependency_registry.gd</code>, <code>scripts/core/run_state.gd</code>)</li>
+<li>Reduced <code>run_state.gd</code> from <code>649</code> to <code>574</code> measured lines and from <code>126</code> to <code>114</code> functions. The new registry stays under extracted-class caps at <code>150</code> measured lines / <code>26</code> functions; Track A still needs additional caller migration to retire compatibility facades and close the function-count DoD. (source: <code>docs/test_plan.html</code>, <code>scripts/tests/integrations/run_flow_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-13-wave-63-content-registry-default-data">2026-06-13 - Wave 63 content registry default data</h2>
 <ul>
 <li>Added <code>ContentRegistryDefaultContent</code> and <code>ContentRegistryDefaultEquipment</code> as data owners for the registry's default content construction. <code>ContentRegistry</code> now delegates default data construction and keeps public lookup, listing, shop pool, validation, pricing, and indexing responsibilities. (source: <code>scripts/content/content_registry_default_content.gd</code>, <code>scripts/content/content_registry_default_equipment.gd</code>, <code>scripts/content/content_registry.gd</code>)</li>
