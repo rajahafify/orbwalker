@@ -262,6 +262,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-13, combat resolve timer-state type fix):</p>
+<ul>
+<li>Fixed the follow-up live combat drag-release error where <code>CombatResolveFlowCoordinator</code> and <code>CombatControllerLifecycle</code> treated the locked timer state as an <code>int</code>. The resolve flow now keeps timer state as the string values expected by <code>CombatView.sync_timer_display()</code>.</li>
+<li>Updated <code>combat_resolve_flow_coordinator_test.gd</code> so the fake sync callback requires and records a string timer state, catching the same type mismatch that Godot <code>4.6.3</code> surfaced in live play.</li>
+</ul>
 <p>Verification notes (2026-06-13, combat drag resolve handoff fix):</p>
 <ul>
 <li>Fixed the live combat drag-release path so the <code>BoardController</code> drag result dictionary flows through <code>CombatTutorialDragFlow</code>, <code>CombatController</code>, <code>CombatControllerLifecycle</code>, and <code>CombatResolveFlowCoordinator</code>. The resolve coordinator no longer calls the removed <code>BoardController.end_drag()</code> API, avoiding the runtime error seen after releasing a board drag.</li>

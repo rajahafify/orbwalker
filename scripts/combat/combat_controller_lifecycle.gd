@@ -257,7 +257,7 @@ func _bind_resolve_flow_coordinator() -> void:
 	)
 
 
-func _sync_timer_display(seconds_left: float, timer_state: int) -> void:
+func _sync_timer_display(seconds_left: float, timer_state: String) -> void:
 	var view: Variant = _owner_value("_view")
 	if view != null:
 		view.sync_timer_display(seconds_left, timer_state)

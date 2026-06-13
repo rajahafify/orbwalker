@@ -91,13 +91,14 @@ class Recorder:
 	var bound_turn_resolution := 0
 	var committed_model: BoardModel = null
 	var stored_result: Dictionary = {}
+	var timer_states: Array[String] = []
 	var traces: Array[String] = []
 
 	func play_sfx(key: String) -> void:
 		sfx.append(key)
 
-	func sync_timer_display(_seconds_left: float, _state: int) -> void:
-		pass
+	func sync_timer_display(_seconds_left: float, state: String) -> void:
+		timer_states.append(state)
 
 	func set_status_text(text: String) -> void:
 		status_text = text
@@ -162,6 +163,8 @@ func _test_handled_drag_runs_resolve_flow() -> String:
 		return "Expected handled drag to resolve board and route turn resolution."
 	if fixture.recorder.stored_result.get("total_combos") != 2:
 		return "Expected resolve result to be stored through callback."
+	if fixture.recorder.timer_states != ["locked"]:
+		return "Expected resolve flow to sync the timer display with the locked string state."
 	if fixture.recorder.committed_model != fixture.board_controller.simulation_model:
 		return "Expected committed board model callback to receive controller model."
 	if not fixture.recorder.traces.has("phase=final_board_commit board_seed=20"):
@@ -219,7 +222,7 @@ func _fixture() -> Dictionary:
 				COORDINATOR_SCRIPT.CALLBACK_RESOLVE_TRACE: Callable(recorder, "resolve_trace"),
 				COORDINATOR_SCRIPT.CALLBACK_STORE_LAST_RESOLVE_RESULT: Callable(recorder, "store_last_resolve_result"),
 			},
-			{"player_input_phase_value": 10, "resolving_input_phase_value": 11, "timer_state_locked": 4, "status_color_warning": Color.YELLOW}
+			{"player_input_phase_value": 10, "resolving_input_phase_value": 11, "timer_state_locked": "locked", "status_color_warning": Color.YELLOW}
 		)
 	)
 	return {
