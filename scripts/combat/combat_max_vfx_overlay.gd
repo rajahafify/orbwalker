@@ -32,6 +32,8 @@ const COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT := preload("res://scripts/combat/
 const COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_overlay_lifecycle.gd")
 const COMBAT_MAX_VFX_ASSET_STORE_SCRIPT := preload("res://scripts/combat/combat_max_vfx_asset_store.gd")
 const COMBAT_MAX_VFX_SPAWN_GATEWAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_spawn_gateway.gd")
+const COMBAT_MAX_VFX_RECIPE_GATEWAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_recipe_gateway.gd")
+const COMBAT_MAX_VFX_ELEMENTAL_RECIPE_GATEWAY_SCRIPT := preload("res://scripts/combat/combat_max_vfx_elemental_recipe_gateway.gd")
 
 var _vfx_layer: Control
 var _visual_registry: Variant
@@ -67,6 +69,8 @@ var _replay_impact_router: Variant = COMBAT_MAX_VFX_REPLAY_IMPACT_ROUTER_SCRIPT.
 var _effect_key_catalog: Variant = COMBAT_MAX_VFX_EFFECT_KEY_CATALOG_SCRIPT.new()
 var _lifecycle: Variant = COMBAT_MAX_VFX_OVERLAY_LIFECYCLE_SCRIPT.new()
 var _spawn_gateway: Variant = COMBAT_MAX_VFX_SPAWN_GATEWAY_SCRIPT.new()
+var _recipe_gateway: Variant = COMBAT_MAX_VFX_RECIPE_GATEWAY_SCRIPT.new()
+var _elemental_recipe_gateway: Variant = COMBAT_MAX_VFX_ELEMENTAL_RECIPE_GATEWAY_SCRIPT.new()
 
 
 func _init() -> void:
@@ -122,8 +126,8 @@ func spawn_replay_impact(
 	var kind: String = _effect_key_catalog.clean_kind(clean_kind)
 	var center := _global_to_overlay_local(global_center)
 	var max_size := maxf(draw_size.x, draw_size.y)
-	var basis_size := _replay_impact_basis_size(kind, draw_size, max_size)
-	var base_size := basis_size * (2.25 + float(intensity) * 0.22)
+	var basis_size: float = _elemental_recipe_gateway.replay_impact_basis_size(kind, draw_size, max_size)
+	var base_size: float = basis_size * (2.25 + float(intensity) * 0.22)
 	var duration := maxf(0.32, lifetime * 1.10)
 	return _replay_impact_router.spawn_replay_impact(center, kind, draw_size, max_size, base_size, duration, intensity, screen_wide)
 
@@ -135,7 +139,7 @@ func spawn_armor_linger(global_center: Vector2, draw_size: Vector2, lifetime: fl
 	var width := maxf(draw_size.x * 1.34, 260.0)
 	var height := maxf(draw_size.y * 3.1, 150.0)
 	if _asset_store.status_vfx_available():
-		_spawn_status_armor_linger(center, Vector2(width, height), lifetime, intensity)
+		_recipe_gateway.spawn_status_armor_linger(center, Vector2(width, height), lifetime, intensity)
 		return true
 	return _replay_impact_router.spawn_armor_linger(center, Vector2(width, height), lifetime, intensity)
 
@@ -212,9 +216,19 @@ func spawn_generic(global_center: Vector2, draw_size: Vector2, lifetime: float, 
 
 
 func _ensure_overlay() -> bool:
+	_bind_elemental_recipe_gateway()
+	_bind_recipe_gateway()
 	_bind_spawn_gateway()
 	_lifecycle.bind({"overlay": self})
 	return _lifecycle.ensure_overlay()
+
+
+func _bind_recipe_gateway() -> void:
+	_recipe_gateway.bind(_presenter_map())
+
+
+func _bind_elemental_recipe_gateway() -> void:
+	_elemental_recipe_gateway.bind(_presenter_map(), _elemental_recipe_policy)
 
 
 func _bind_spawn_gateway() -> void:
@@ -237,262 +251,6 @@ func _presenter_map() -> Dictionary:
 		"cleanup": _cleanup_presenter,
 		"projector": _projector,
 	}
-
-
-func _spawn_status_replay_recipe(
-	kind: String, center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
-) -> void:
-	_status_recipe_presenter.spawn_replay_recipe(kind, center, draw_size, max_size, base_size, duration, intensity, screen_wide)
-
-
-func _fire_vfx_tier(intensity: int, screen_wide: bool = false) -> int:
-	return _elemental_recipe_policy.fire_tier(intensity, screen_wide)
-
-
-func _ice_vfx_tier(intensity: int, screen_wide: bool = false) -> int:
-	return _elemental_recipe_policy.ice_tier(intensity, screen_wide)
-
-
-func _earth_vfx_tier(intensity: int, screen_wide: bool = false) -> int:
-	return _elemental_recipe_policy.earth_tier(intensity, screen_wide)
-
-
-func _replay_impact_basis_size(kind: String, draw_size: Vector2, fallback_size: float) -> float:
-	return _elemental_recipe_policy.replay_impact_basis_size(kind, draw_size, fallback_size)
-
-
-func _spawn_fire_replay_layers(
-	center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
-) -> void:
-	_fire_recipe_presenter.spawn_replay_layers(center, draw_size, max_size, base_size, duration, intensity, screen_wide)
-
-
-func _spawn_fire_cast_layers(
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	spool_size: Vector2,
-	spool_duration: float,
-	travel_duration: float,
-	launch_delay: float,
-	intensity: int,
-	core: Color
-) -> void:
-	_fire_recipe_presenter.spawn_cast_layers(source, target, delta, spool_size, spool_duration, travel_duration, launch_delay, intensity, core)
-
-
-func _spawn_fire_beam_layers(source: Vector2, delta: Vector2, duration: float, intensity: int, angle: float) -> void:
-	_fire_recipe_presenter.spawn_beam_layers(source, delta, duration, intensity, angle)
-
-
-func _spawn_fire_ember_lane(source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float, tier: int) -> void:
-	_fire_ambient_presenter.spawn_ember_lane(source, delta, launch_delay, travel_duration, intensity, angle, tier)
-
-
-func _spawn_fireball_spell_layers(
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	source_size: Vector2,
-	impact_size: Vector2,
-	launch_delay: float,
-	travel_duration: float,
-	intensity: int,
-	angle: float
-) -> void:
-	_fire_attack_presenter.spawn_fireball_spell_layers(source, target, delta, source_size, impact_size, launch_delay, travel_duration, intensity, angle)
-
-
-func _spawn_fireball_impact_layers(center: Vector2, impact_size: Vector2, duration: float, intensity: int, max_size: float) -> void:
-	_fire_impact_presenter.spawn_fireball_impact_layers(center, impact_size, duration, intensity, max_size)
-
-
-func _spawn_fire_meteor_attack_layers(target: Vector2, launch_delay: float, travel_duration: float, intensity: int, impact_size: Vector2) -> void:
-	_fire_attack_presenter.spawn_meteor_attack_layers(target, launch_delay, travel_duration, intensity, impact_size)
-
-
-func _spawn_fire_meteor_impact_layers(
-	center: Vector2, impact_size: Vector2, duration: float, intensity: int, delay: float, fragmented_wide: bool = false
-) -> void:
-	_fire_impact_presenter.spawn_meteor_impact_layers(center, impact_size, duration, intensity, delay, fragmented_wide)
-
-
-func _spawn_fire_fragmented_impact_cluster(
-	center: Vector2, draw_size: Vector2, duration: float, intensity: int, delay: float, alpha_scale: float = 1.0, rotation: float = 0.0
-) -> void:
-	_fire_impact_presenter.spawn_fragmented_impact_cluster(center, draw_size, duration, intensity, delay, alpha_scale, rotation)
-
-
-func _spawn_fire_screen_ember_field(center: Vector2, lifetime: float, intensity: int, delay: float, alpha_scale: float) -> void:
-	_fire_ambient_presenter.spawn_screen_ember_field(center, lifetime, intensity, delay, alpha_scale)
-
-
-func _spawn_fire_spark_spray(center: Vector2, radius: float, lifetime: float, intensity: int, delay: float, tier: int) -> void:
-	_fire_ambient_presenter.spawn_spark_spray(center, radius, lifetime, intensity, delay, tier)
-
-
-func _spawn_fire_aurora_layer(center: Vector2, lifetime: float, intensity: int, delay: float, alpha_scale: float) -> void:
-	_fire_ambient_presenter.spawn_aurora_layer(center, lifetime, intensity, delay, alpha_scale)
-
-
-func _spawn_ice_replay_layers(
-	center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
-) -> void:
-	_ice_recipe_presenter.spawn_replay_layers(center, draw_size, max_size, base_size, duration, intensity, screen_wide)
-
-
-func _spawn_ice_cast_layers(
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	spool_size: Vector2,
-	spool_duration: float,
-	travel_duration: float,
-	launch_delay: float,
-	intensity: int,
-	core: Color
-) -> void:
-	_ice_recipe_presenter.spawn_cast_layers(source, target, delta, spool_size, spool_duration, travel_duration, launch_delay, intensity, core)
-
-
-func _spawn_windy_ice_block_travel_layers(
-	source: Vector2,
-	_target: Vector2,
-	delta: Vector2,
-	normal: Vector2,
-	source_size: Vector2,
-	travel_duration: float,
-	launch_delay: float,
-	intensity: int,
-	angle: float
-) -> void:
-	_ice_recipe_presenter.spawn_windy_block_travel_layers(source, _target, delta, normal, source_size, travel_duration, launch_delay, intensity, angle)
-
-
-func _spawn_earth_replay_layers(
-	center: Vector2, draw_size: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
-) -> void:
-	_earth_recipe_presenter.spawn_replay_layers(center, draw_size, max_size, base_size, duration, intensity, screen_wide)
-
-
-func _spawn_earth_cast_layers(
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	spool_size: Vector2,
-	spool_duration: float,
-	travel_duration: float,
-	launch_delay: float,
-	intensity: int,
-	core: Color
-) -> void:
-	_earth_recipe_presenter.spawn_cast_layers(source, target, delta, spool_size, spool_duration, travel_duration, launch_delay, intensity, core)
-
-
-func _spawn_earth_fracture_travel_layers(
-	source: Vector2,
-	_target: Vector2,
-	delta: Vector2,
-	normal: Vector2,
-	source_size: Vector2,
-	travel_duration: float,
-	launch_delay: float,
-	intensity: int,
-	angle: float,
-	tier: int
-) -> void:
-	_earth_recipe_presenter.spawn_fracture_travel_layers(source, _target, delta, normal, source_size, travel_duration, launch_delay, intensity, angle, tier)
-
-
-func _spawn_status_armor_linger(center: Vector2, draw_size: Vector2, lifetime: float, intensity: int) -> void:
-	_status_recipe_presenter.spawn_armor_linger(center, draw_size, lifetime, intensity)
-
-
-func _spawn_status_cast_recipe(
-	kind: String,
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	spool_size: Vector2,
-	spool_lifetime: float,
-	travel_lifetime: float,
-	intensity: int,
-	core: Color,
-	accent: Color
-) -> void:
-	_status_recipe_presenter.spawn_cast_recipe(kind, source, target, delta, spool_size, spool_lifetime, travel_lifetime, intensity, core, accent)
-
-
-func _spawn_status_beam_recipe(kind: String, source: Vector2, delta: Vector2, lifetime: float, intensity: int, angle: float) -> void:
-	_status_recipe_presenter.spawn_beam_recipe(kind, source, delta, lifetime, intensity, angle)
-
-
-func _spawn_status_path_afterimage(
-	kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float
-) -> void:
-	_status_recipe_presenter.spawn_path_afterimage(kind, source, delta, launch_delay, travel_duration, intensity, angle)
-
-
-func _spawn_status_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
-	_status_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _spawn_atmospheric_replay_layer(
-	kind: String, center: Vector2, max_size: float, base_size: float, lifetime: float, intensity: int, screen_wide: bool
-) -> void:
-	_atmospheric_recipe_presenter.spawn_replay_layer(kind, center, max_size, base_size, lifetime, intensity, screen_wide)
-
-
-func _spawn_atmospheric_travel(
-	kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float
-) -> void:
-	_atmospheric_recipe_presenter.spawn_travel(kind, source, delta, launch_delay, travel_duration, intensity, angle)
-
-
-func _spawn_elemental_replay_recipe(
-	kind: String, center: Vector2, max_size: float, base_size: float, duration: float, intensity: int, screen_wide: bool
-) -> void:
-	_elemental_recipe_presenter.spawn_replay_recipe(kind, center, max_size, base_size, duration, intensity, screen_wide)
-
-
-func _spawn_elemental_cast_recipe(
-	kind: String,
-	source: Vector2,
-	target: Vector2,
-	delta: Vector2,
-	spool_size: Vector2,
-	spool_lifetime: float,
-	travel_lifetime: float,
-	intensity: int,
-	core: Color
-) -> void:
-	_elemental_recipe_presenter.spawn_cast_recipe(kind, source, target, delta, spool_size, spool_lifetime, travel_lifetime, intensity, core)
-
-
-func _spawn_elemental_beam_recipe(kind: String, source: Vector2, delta: Vector2, lifetime: float, intensity: int, angle: float) -> void:
-	_elemental_recipe_presenter.spawn_beam_layers(kind, source, delta, lifetime, intensity, angle)
-
-
-func _spawn_elemental_path_afterimage(
-	kind: String, source: Vector2, delta: Vector2, launch_delay: float, travel_duration: float, intensity: int, angle: float
-) -> void:
-	_elemental_recipe_presenter.spawn_path_afterimage(kind, source, delta, launch_delay, travel_duration, intensity, angle)
-
-
-func _spawn_elemental_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
-	_elemental_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
-
-
-func _pack_impact_scene_key(kind: String, intensity: int, screen_wide: bool) -> String:
-	return _pack_recipe_presenter.impact_scene_key(kind, intensity, screen_wide)
-
-
-func _pack_hit_scene_key(kind: String) -> String:
-	return _pack_recipe_presenter.hit_scene_key(kind)
-
-
-func _spawn_pack_screen_wide(kind: String, center: Vector2, lifetime: float, intensity: int) -> void:
-	_pack_recipe_presenter.spawn_screen_wide(kind, center, lifetime, intensity)
 
 
 func _vfx_layer_size() -> Vector2:
