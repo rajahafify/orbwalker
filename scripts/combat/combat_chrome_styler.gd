@@ -2,6 +2,18 @@ extends RefCounted
 
 const THEME_HELPERS := preload("res://scripts/combat/combat_chrome_theme_helpers.gd")
 
+const MIN_TITLE_FONT_SIZE := 30
+const MIN_VALUE_FONT_SIZE := 24
+const MIN_META_FONT_SIZE := 20
+const MIN_ROW_LABEL_FONT_SIZE := 20
+const ENEMY_NAME_FONT_SIZE := 40
+const ENEMY_HP_FONT_SIZE := 30
+const PRIMARY_INTENT_TITLE_FONT_SIZE := 24
+const PRIMARY_INTENT_AMOUNT_FONT_SIZE := 42
+const PRIMARY_INTENT_DETAIL_FONT_SIZE := 20
+const TIMER_FONT_SIZE := 36
+const PLAYER_LABEL_FONT_SIZE := 28
+
 const CHROME_NODE_BINDINGS := {
 	"board_view": "_board_view",
 	"background": "_background",
@@ -80,6 +92,27 @@ static func nodes_from_root_nodes(root_nodes: Dictionary, extras: Dictionary = {
 	for key in extras.keys():
 		nodes[key] = extras[key]
 	return nodes
+
+
+static func readability_font_probe() -> Dictionary:
+	return {
+		"timer_label": TIMER_FONT_SIZE,
+		"enemy_name_label": ENEMY_NAME_FONT_SIZE,
+		"enemy_hp_text_label": ENEMY_HP_FONT_SIZE,
+		"primary_intent_title_label": PRIMARY_INTENT_TITLE_FONT_SIZE,
+		"primary_intent_amount_label": PRIMARY_INTENT_AMOUNT_FONT_SIZE,
+		"primary_intent_detail_label": PRIMARY_INTENT_DETAIL_FONT_SIZE,
+		"run_progress_label": MIN_META_FONT_SIZE,
+		"phase_label": MIN_META_FONT_SIZE,
+		"turn_summary_label": MIN_META_FONT_SIZE,
+		"equipment_row_label": MIN_ROW_LABEL_FONT_SIZE,
+		"consumable_row_label": MIN_ROW_LABEL_FONT_SIZE,
+		"relic_row_label": MIN_ROW_LABEL_FONT_SIZE,
+		"mastery_row_label": MIN_ROW_LABEL_FONT_SIZE,
+		"player_label": PLAYER_LABEL_FONT_SIZE,
+		"player_armor_label": MIN_VALUE_FONT_SIZE,
+		"intent_label": MIN_VALUE_FONT_SIZE,
+	}
 
 
 static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
@@ -233,10 +266,10 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		if label is Label:
 			(label as Label).add_theme_color_override("font_color", ui_text_color)
 
-	var font_size_title := maxi(int(config.get("font_size_title", 20)), 30)
-	var font_size_value := maxi(int(config.get("font_size_value", 18)), 22)
-	var font_size_meta := maxi(int(config.get("font_size_meta", 15)), 18)
-	var font_size_row_label := int(config.get("font_size_row_label", 16))
+	var font_size_title := maxi(int(config.get("font_size_title", 20)), MIN_TITLE_FONT_SIZE)
+	var font_size_value := maxi(int(config.get("font_size_value", 18)), MIN_VALUE_FONT_SIZE)
+	var font_size_meta := maxi(int(config.get("font_size_meta", 15)), MIN_META_FONT_SIZE)
+	var font_size_row_label := maxi(int(config.get("font_size_row_label", 16)), MIN_ROW_LABEL_FONT_SIZE)
 	var debug_text_font_size := int(config.get("debug_text_font_size", 24))
 	var debug_input_font_size := int(config.get("debug_input_font_size", 24))
 	var debug_input_height := float(config.get("debug_input_height", 72.0))
@@ -248,14 +281,14 @@ static func apply_visual_chrome(nodes: Dictionary, config: Dictionary) -> void:
 		THEME_HELPERS.set_label_font_size(nodes.get("hint_label", null), font_size_value)
 		THEME_HELPERS.apply_top_header_label_theme(nodes.get("title_label", null), nodes.get("hint_label", null))
 	THEME_HELPERS.set_label_font_size(nodes.get("intent_label", null), font_size_value)
-	THEME_HELPERS.set_label_font_size(nodes.get("enemy_name_label", null), 38)
-	THEME_HELPERS.set_label_font_size(nodes.get("enemy_hp_text_label", null), 28)
+	THEME_HELPERS.set_label_font_size(nodes.get("enemy_name_label", null), ENEMY_NAME_FONT_SIZE)
+	THEME_HELPERS.set_label_font_size(nodes.get("enemy_hp_text_label", null), ENEMY_HP_FONT_SIZE)
 	THEME_HELPERS.set_label_font_size(nodes.get("enemy_label", null), font_size_value)
-	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_title_label", null), 22)
-	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_amount_label", null), 40)
-	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_detail_label", null), 16)
-	THEME_HELPERS.set_label_font_size(nodes.get("timer_label", null), 34)
-	THEME_HELPERS.set_label_font_size(nodes.get("player_label", null), 26)
+	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_title_label", null), PRIMARY_INTENT_TITLE_FONT_SIZE)
+	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_amount_label", null), PRIMARY_INTENT_AMOUNT_FONT_SIZE)
+	THEME_HELPERS.set_label_font_size(nodes.get("primary_intent_detail_label", null), PRIMARY_INTENT_DETAIL_FONT_SIZE)
+	THEME_HELPERS.set_label_font_size(nodes.get("timer_label", null), TIMER_FONT_SIZE)
+	THEME_HELPERS.set_label_font_size(nodes.get("player_label", null), PLAYER_LABEL_FONT_SIZE)
 	THEME_HELPERS.set_label_font_size(nodes.get("player_armor_label", null), font_size_value)
 
 	for stat_label in [

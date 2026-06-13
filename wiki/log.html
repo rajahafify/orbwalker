@@ -303,6 +303,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Changed timeout handling in <code>BoardController.update()</code> so an expired active drag emits a handled <code>"end"</code> result, letting the existing combat resolve coordinator process matches and enemy actions instead of dropping the timeout as an unhandled no-op. (source: <code>scripts/board/board_controller.gd</code>)</li>
 <li>Added direct board-controller timeout coverage and updated the combat input router test so timer-service end results are forwarded through the normal tutorial drag-end path. (source: <code>scripts/tests/board_controller_test.gd</code>, <code>scripts/tests/combat_controller_input_router_test.gd</code>, <code>docs/test_plan.html</code>)</li>
 </ul>
+<h2 id="2026-06-14-ui-legibility-floor-pass-1">2026-06-14 - UI legibility floor pass 1</h2>
+<ul>
+<li>Raised font floors across the primary combat HUD, player HUD footer, inventory badges, mastery/slot popovers, combat settings rows, and main-menu settings toggle rows so the mobile UI no longer relies on 16-18px text for core status and hover content. (source: <code>scripts/combat/combat_chrome_styler.gd</code>, <code>scripts/ui/player_loadout_hud_layout.gd</code>, <code>scripts/ui/player_loadout_hud_chrome_styler.gd</code>, <code>scripts/ui/player_loadout_inventory_renderer.gd</code>)</li>
+<li>Added measurable font-floor gates to the combat chrome tests, compact player HUD tests, and mobile combat layout readability report. The existing mobile probe now checks both zone sizes/overlaps and critical font floors. (source: <code>scripts/combat/combat_layout_geometry.gd</code>, <code>scripts/debug/mobile_combat_layout_probe.gd</code>, <code>scripts/tests/combat_chrome_styler_test.gd</code>, <code>scripts/tests/player_loadout_hud_collaborators_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-14-mastery-tooltip-layout-fix">2026-06-14 - Mastery tooltip layout fix</h2>
 <ul>
 <li>Fixed the combat mastery tooltip layout by replacing the stale <code>PlayerLoadoutHud._apply_rect</code> callback with the extracted HUD layout helper and adding a local rect fallback inside <code>PlayerLoadoutMasteryPanel</code>. (source: <code>scripts/ui/player_loadout_hud.gd</code>, <code>scripts/ui/player_loadout_mastery_panel.gd</code>)</li>

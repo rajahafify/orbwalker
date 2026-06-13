@@ -125,7 +125,7 @@ func populate_relic_row(row: Control, relic_ids: Array, max_visible: int = 4) ->
 		overflow.text = "+%d" % (visible_ids.size() - show_count)
 		overflow.position = Vector2(float(show_count) * (RELIC_SLOT_SIZE.x + RELIC_SLOT_GAP) + 4.0, 15.0)
 		overflow.size = Vector2(50.0, 28.0)
-		overflow.add_theme_font_size_override("font_size", 20)
+		overflow.add_theme_font_size_override("font_size", 22)
 		overflow.add_theme_color_override("font_color", Color(0.95, 0.84, 0.42, 1.0))
 		overflow.add_theme_constant_override("outline_size", 2)
 		overflow.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))
@@ -200,7 +200,7 @@ func _make_badge_label(text: String, slot_size: Vector2) -> Label:
 	amount_label.text = text
 	amount_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 	amount_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM as VerticalAlignment
-	amount_label.add_theme_font_size_override("font_size", 21)
+	amount_label.add_theme_font_size_override("font_size", 24)
 	amount_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.34, 1.0))
 	amount_label.add_theme_constant_override("outline_size", 3)
 	amount_label.add_theme_color_override("font_outline_color", Color(0.02, 0.01, 0.00, 0.95))

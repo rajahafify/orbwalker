@@ -11,9 +11,10 @@ func run_all() -> Dictionary:
 	_run_case("nodes_from_root_nodes_overlays_runtime_extras", _test_nodes_from_root_nodes_overlays_runtime_extras, failures)
 	_run_case("theme_helpers_apply_progressbar_flat_style", _test_theme_helpers_apply_progressbar_flat_style, failures)
 	_run_case("theme_helpers_apply_board_focus_theme", _test_theme_helpers_apply_board_focus_theme, failures)
+	_run_case("visual_chrome_keeps_combat_text_readable", _test_visual_chrome_keeps_combat_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -131,3 +132,42 @@ func _test_theme_helpers_apply_board_focus_theme() -> String:
 	panel.free()
 	title.free()
 	return ""
+
+
+func _test_visual_chrome_keeps_combat_text_readable() -> String:
+	var nodes := {
+		"timer_label": Label.new(),
+		"enemy_name_label": Label.new(),
+		"enemy_hp_text_label": Label.new(),
+		"primary_intent_title_label": Label.new(),
+		"primary_intent_amount_label": Label.new(),
+		"primary_intent_detail_label": Label.new(),
+		"run_progress_label": Label.new(),
+		"phase_label": Label.new(),
+		"turn_summary_label": Label.new(),
+		"equipment_row_label": Label.new(),
+		"consumable_row_label": Label.new(),
+		"relic_row_label": Label.new(),
+		"mastery_row_label": Label.new(),
+		"player_label": Label.new(),
+		"player_armor_label": Label.new(),
+		"intent_label": Label.new(),
+	}
+
+	STYLER_SCRIPT.apply_visual_chrome(nodes, {})
+
+	var expected_minimums: Dictionary = STYLER_SCRIPT.readability_font_probe()
+	for key in expected_minimums.keys():
+		var label := nodes.get(key) as Label
+		var font_size := label.get_theme_font_size("font_size")
+		if font_size < int(expected_minimums[key]):
+			_free_nodes(nodes)
+			return "Expected %s to stay at readable font size, got %d." % [key, font_size]
+	_free_nodes(nodes)
+	return ""
+
+
+func _free_nodes(nodes: Dictionary) -> void:
+	for value in nodes.values():
+		if value is Node:
+			(value as Node).free()

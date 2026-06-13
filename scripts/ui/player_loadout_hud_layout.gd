@@ -48,6 +48,14 @@ const COMPACT_PLAYER_MASTERY_RECT := Rect2(Vector2(16, 286), Vector2(1048, 44))
 const COMPACT_MASTERY_ROOT_RECT := Rect2(Vector2(0, 0), Vector2(1048, 44))
 const COMPACT_MASTERY_LABEL_RECT := Rect2(Vector2.ZERO, Vector2(100, 44))
 const COMPACT_MASTERY_ICONS_RECT := Rect2(Vector2(116, 0), Vector2(724, MASTERY_SLOT_SIZE.y))
+const COMBAT_EQUIPMENT_LABEL_FONT_SIZE := 23
+const COMBAT_CONSUMABLE_LABEL_FONT_SIZE := 23
+const COMBAT_RELIC_LABEL_FONT_SIZE := 21
+const COMBAT_HP_LABEL_FONT_SIZE := 36
+const COMPACT_EQUIPMENT_LABEL_FONT_SIZE := 22
+const COMPACT_CONSUMABLE_LABEL_FONT_SIZE := 22
+const COMPACT_RELIC_LABEL_FONT_SIZE := 20
+const COMPACT_HP_LABEL_FONT_SIZE := 34
 
 
 static func shop_player_hud_layout_preset() -> Dictionary:
@@ -135,16 +143,25 @@ static func apply_player_footer_layout(nodes: Dictionary) -> void:
 	_set_node_visible(nodes, "turn_summary_label", false)
 	var equipment_label := nodes.get("equipment_label") as Label
 	if equipment_label != null:
-		equipment_label.add_theme_font_size_override("font_size", 17 if compact_mode else 19)
+		equipment_label.add_theme_font_size_override("font_size", COMPACT_EQUIPMENT_LABEL_FONT_SIZE if compact_mode else COMBAT_EQUIPMENT_LABEL_FONT_SIZE)
 	var consumable_label := nodes.get("consumable_label") as Label
 	if consumable_label != null:
-		consumable_label.add_theme_font_size_override("font_size", 17 if compact_mode else 19)
+		consumable_label.add_theme_font_size_override("font_size", COMPACT_CONSUMABLE_LABEL_FONT_SIZE if compact_mode else COMBAT_CONSUMABLE_LABEL_FONT_SIZE)
 	var relic_label := nodes.get("relic_label") as Label
 	if relic_label != null:
-		relic_label.add_theme_font_size_override("font_size", 16 if compact_mode else 18)
+		relic_label.add_theme_font_size_override("font_size", COMPACT_RELIC_LABEL_FONT_SIZE if compact_mode else COMBAT_RELIC_LABEL_FONT_SIZE)
 	var hp_label := nodes.get("hp_label") as Label
 	if hp_label != null:
-		hp_label.add_theme_font_size_override("font_size", 30 if compact_mode else 33)
+		hp_label.add_theme_font_size_override("font_size", COMPACT_HP_LABEL_FONT_SIZE if compact_mode else COMBAT_HP_LABEL_FONT_SIZE)
+
+
+static func player_footer_font_probe(compact_mode: bool) -> Dictionary:
+	return {
+		"equipment_label": COMPACT_EQUIPMENT_LABEL_FONT_SIZE if compact_mode else COMBAT_EQUIPMENT_LABEL_FONT_SIZE,
+		"consumable_label": COMPACT_CONSUMABLE_LABEL_FONT_SIZE if compact_mode else COMBAT_CONSUMABLE_LABEL_FONT_SIZE,
+		"relic_label": COMPACT_RELIC_LABEL_FONT_SIZE if compact_mode else COMBAT_RELIC_LABEL_FONT_SIZE,
+		"hp_label": COMPACT_HP_LABEL_FONT_SIZE if compact_mode else COMBAT_HP_LABEL_FONT_SIZE,
+	}
 
 
 static func apply_combat_player_panel_layout(nodes: Dictionary) -> void:

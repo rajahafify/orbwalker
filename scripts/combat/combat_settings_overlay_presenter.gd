@@ -272,7 +272,7 @@ func _settings_toggle_row(button: Button, title: String, description: String) ->
 	var title_label := Label.new()
 	title_label.text = title
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	title_label.add_theme_font_size_override("font_size", 24)
+	title_label.add_theme_font_size_override("font_size", 30)
 	title_label.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
 	title_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 1.0))
 	title_label.add_theme_constant_override("outline_size", 1)
@@ -281,7 +281,7 @@ func _settings_toggle_row(button: Button, title: String, description: String) ->
 		var description_label := Label.new()
 		description_label.text = description
 		description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-		description_label.add_theme_font_size_override("font_size", 16)
+		description_label.add_theme_font_size_override("font_size", 20)
 		description_label.add_theme_color_override("font_color", Color(0.74, 0.80, 0.86, 0.94))
 		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 1.0))
 		description_label.add_theme_constant_override("outline_size", 1)
@@ -314,7 +314,7 @@ func _make_settings_toggle_button() -> CheckButton:
 	button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	button.add_theme_color_override("font_color", Color(0.95, 0.92, 0.84, 1.0))
 	button.add_theme_color_override("font_hover_color", Color(1.0, 0.98, 0.92, 1.0))
-	button.add_theme_font_size_override("font_size", 24)
+	button.add_theme_font_size_override("font_size", 26)
 	return button
 
 

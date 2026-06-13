@@ -310,7 +310,7 @@ func _toggle_row(button: Button, title: String, description: String) -> HBoxCont
 	title_label.name = "%sTitleLabel" % button.name.trim_suffix("Button")
 	title_label.text = title
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	title_label.add_theme_font_size_override("font_size", 21)
+	title_label.add_theme_font_size_override("font_size", 24)
 	title_label.add_theme_color_override("font_color", MENU_FONT_COLOR)
 	title_label.add_theme_color_override("font_outline_color", MENU_FONT_OUTLINE_COLOR)
 	title_label.add_theme_constant_override("outline_size", 1)
@@ -319,7 +319,7 @@ func _toggle_row(button: Button, title: String, description: String) -> HBoxCont
 		var description_label := Label.new()
 		description_label.text = description
 		description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-		description_label.add_theme_font_size_override("font_size", 16)
+		description_label.add_theme_font_size_override("font_size", 19)
 		description_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.88, 0.94))
 		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 0.92))
 		description_label.add_theme_constant_override("outline_size", 1)

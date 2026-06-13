@@ -84,12 +84,12 @@ func _apply_slot_detail_popover_chrome() -> void:
 	bubble_style.set_border_width_all(2)
 	bubble_style.set_corner_radius_all(8)
 	_slot_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 26)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_slot_detail_title, Color(0.96, 0.90, 0.78, 1.0), 28)
 	_slot_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 18)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_slot_detail_description, Color(0.72, 0.62, 0.45, 1.0), 20)
 	_slot_detail_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_slot_detail_description.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
-	_slot_detail_sell_button.add_theme_font_size_override("font_size", 26)
+	_slot_detail_sell_button.add_theme_font_size_override("font_size", 28)
 	_slot_detail_sell_button.add_theme_color_override("font_color", Color(0.96, 0.90, 0.78, 1.0))
 	var normal := _button_stylebox(Color(0.20, 0.13, 0.07, 0.96), Color(0.66, 0.49, 0.24, 1.0))
 	var hover := _button_stylebox(Color(0.28, 0.18, 0.09, 0.98), Color(0.76, 0.59, 0.34, 1.0))
@@ -184,7 +184,7 @@ func _update_slot_detail_bubble() -> void:
 	var title_height := 38.0
 	var row_gap := 10.0
 	var sell_button_height := 72.0 if show_sell_action else 0.0
-	var description_target_height := _slot_detail_description_height(_slot_detail_description.text, content_width, 18) if has_description else 0.0
+	var description_target_height := _slot_detail_description_height(_slot_detail_description.text, content_width, 20) if has_description else 0.0
 	var non_description_height := SLOT_DETAIL_BUBBLE_INTERNAL_PADDING + title_height + SLOT_DETAIL_BUBBLE_INTERNAL_PADDING
 	if has_description:
 		non_description_height += row_gap

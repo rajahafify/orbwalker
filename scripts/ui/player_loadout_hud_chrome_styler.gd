@@ -29,7 +29,7 @@ static func apply_player_hud_chrome(nodes: Dictionary, visuals: Variant) -> void
 	if mastery_title != null:
 		mastery_title.text = "MASTERY"
 	_apply_hud_label_style(mastery_title, Color(0.94, 0.90, 0.78, 1.0), mastery_title_font_size)
-	_apply_hud_label_style(nodes.get("hp_label") as Label, Color(0.98, 0.98, 0.99, 1.0), 32)
+	_apply_hud_label_style(nodes.get("hp_label") as Label, Color(0.98, 0.98, 0.99, 1.0), 36)
 	var equipment_label := nodes.get("equipment_label") as Label
 	if equipment_label != null:
 		equipment_label.text = "EQUIPMENT"
@@ -39,9 +39,9 @@ static func apply_player_hud_chrome(nodes: Dictionary, visuals: Variant) -> void
 	var relic_label := nodes.get("relic_label") as Label
 	if relic_label != null:
 		relic_label.text = "RELICS"
-	_apply_hud_label_style(equipment_label, Color(0.96, 0.88, 0.66, 1.0), 21)
-	_apply_hud_label_style(consumable_label, Color(0.90, 0.93, 0.99, 1.0), 21)
-	_apply_hud_label_style(relic_label, Color(0.88, 0.94, 0.99, 1.0), 18)
+	_apply_hud_label_style(equipment_label, Color(0.96, 0.88, 0.66, 1.0), 23)
+	_apply_hud_label_style(consumable_label, Color(0.90, 0.93, 0.99, 1.0), 23)
+	_apply_hud_label_style(relic_label, Color(0.88, 0.94, 0.99, 1.0), 21)
 
 
 static func _hud_section_stylebox() -> StyleBoxFlat:

@@ -23,7 +23,7 @@ const COMBAT_MASTERY_HOVER_ALPHA := 0.20
 const COMBAT_MASTERY_HOVER_BORDER_ALPHA := 0.90
 const COMBAT_MASTERY_ORDER: Array[int] = [3, 4, 5, 0, 1, 2]
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
-const MASTERY_DETAIL_BUBBLE_MAX_SIZE := Vector2(560.0, 232.0)
+const MASTERY_DETAIL_BUBBLE_MAX_SIZE := Vector2(580.0, 252.0)
 const MASTERY_DETAIL_BUBBLE_MIN_WIDTH := 320.0
 const MASTERY_DETAIL_BUBBLE_MARGIN := 12.0
 const MASTERY_DETAIL_BUBBLE_PADDING := 16.0
@@ -516,13 +516,13 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 22)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 24)
 	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 16)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 18)
 	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 16)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 18)
 	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 15)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 17)
 	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 

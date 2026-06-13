@@ -2,6 +2,7 @@ extends RefCounted
 class_name PlayerLoadoutHudCollaboratorsTest
 
 const HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
+const HUD_LAYOUT_SCRIPT := preload("res://scripts/ui/player_loadout_hud_layout.gd")
 
 
 func run_all() -> Dictionary:
@@ -9,9 +10,10 @@ func run_all() -> Dictionary:
 	_run_case("facade_lazily_binds_typed_collaborators", _test_facade_lazily_binds_typed_collaborators, failures)
 	_run_case("slot_detail_probe_stays_public", _test_slot_detail_probe_stays_public, failures)
 	_run_case("intent_preview_reads_visible_armor", _test_intent_preview_reads_visible_armor, failures)
+	_run_case("compact_footer_keeps_readable_label_floors", _test_compact_footer_keeps_readable_label_floors, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -53,3 +55,35 @@ func _test_intent_preview_reads_visible_armor() -> String:
 	if hud._current_visible_armor() != 7:
 		return "Expected intent collaborator to read display armor through the facade."
 	return ""
+
+
+func _test_compact_footer_keeps_readable_label_floors() -> String:
+	var nodes := {
+		"footer_panel": Control.new(),
+		"equipment_label": Label.new(),
+		"consumable_label": Label.new(),
+		"relic_label": Label.new(),
+		"hp_label": Label.new(),
+	}
+	(nodes["footer_panel"] as Control).size = HUD_LAYOUT_SCRIPT.COMPACT_COMBAT_PLAYER_PANEL_SIZE
+
+	HUD_LAYOUT_SCRIPT.apply_player_footer_layout(nodes)
+
+	var expected: Dictionary = HUD_LAYOUT_SCRIPT.player_footer_font_probe(true)
+	for key in expected.keys():
+		var label := nodes.get(key) as Label
+		if label == null:
+			_free_nodes(nodes)
+			return "Expected label fixture for %s." % key
+		var font_size := label.get_theme_font_size("font_size")
+		if font_size < int(expected.get(key, 0)):
+			_free_nodes(nodes)
+			return "Expected %s font size to stay readable, got %d." % [key, font_size]
+	_free_nodes(nodes)
+	return ""
+
+
+func _free_nodes(nodes: Dictionary) -> void:
+	for value in nodes.values():
+		if value is Node:
+			(value as Node).free()

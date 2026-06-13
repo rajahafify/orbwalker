@@ -2,6 +2,8 @@ extends RefCounted
 class_name CombatLayoutGeometry
 
 const TOP_HEADER_SCRIPT := preload("res://scripts/ui/top_header.gd")
+const COMBAT_CHROME_STYLER_SCRIPT := preload("res://scripts/combat/combat_chrome_styler.gd")
+const PLAYER_HUD_LAYOUT_SCRIPT := preload("res://scripts/ui/player_loadout_hud_layout.gd")
 
 const DESIGN_SIZE = Vector2(1080, 1920)
 const TOP_BAR_RECT = Rect2(Vector2(16, 8), Vector2(1048, 116))
@@ -47,6 +49,28 @@ const MIN_READABLE_BOARD = Vector2(470, 560)
 const MIN_READABLE_MASTERY = Vector2(1000, 96)
 const MIN_READABLE_HP = Vector2(760, 56)
 const MIN_READABLE_LOADOUT = Vector2(860, 120)
+const MIN_READABLE_FONT_SIZES := {
+	"timer_label": 36,
+	"enemy_name_label": 40,
+	"enemy_hp_text_label": 30,
+	"primary_intent_title_label": 24,
+	"primary_intent_amount_label": 42,
+	"primary_intent_detail_label": 20,
+	"run_progress_label": 20,
+	"phase_label": 20,
+	"turn_summary_label": 20,
+	"equipment_row_label": 20,
+	"consumable_row_label": 20,
+	"relic_row_label": 20,
+	"mastery_row_label": 20,
+	"player_label": 28,
+	"player_armor_label": 24,
+	"intent_label": 24,
+	"hp_label": 34,
+	"equipment_label": 22,
+	"consumable_label": 22,
+	"relic_label": 20,
+}
 
 
 static func build_layout_probe(viewport_size: Vector2) -> Dictionary:
@@ -313,12 +337,46 @@ static func _build_readability_report(zone_rects: Dictionary) -> Dictionary:
 			"min_size": min_size,
 			"passes_minimum": pass_size,
 		}
+	var font_sizes := _readability_font_sizes()
+	var font_checks := _build_font_readability_checks(font_sizes)
+	var font_passing_count := 0
+	for font_check in font_checks.values():
+		if font_check is Dictionary and bool(font_check.get("passes_minimum", false)):
+			font_passing_count += 1
 	return {
 		"checks": checks,
+		"font_sizes": font_sizes,
+		"font_checks": font_checks,
 		"passing_count": passing_count,
 		"required_count": thresholds.size(),
-		"all_pass": passing_count == thresholds.size(),
+		"font_passing_count": font_passing_count,
+		"font_required_count": font_checks.size(),
+		"font_all_pass": font_passing_count == font_checks.size(),
+		"all_pass": passing_count == thresholds.size() and font_passing_count == font_checks.size(),
 	}
+
+
+static func _readability_font_sizes() -> Dictionary:
+	var font_sizes: Dictionary = COMBAT_CHROME_STYLER_SCRIPT.readability_font_probe()
+	var footer_fonts: Dictionary = PLAYER_HUD_LAYOUT_SCRIPT.player_footer_font_probe(true)
+	font_sizes["hp_label"] = footer_fonts.get("hp_label", 0)
+	font_sizes["equipment_label"] = footer_fonts.get("equipment_label", 0)
+	font_sizes["consumable_label"] = footer_fonts.get("consumable_label", 0)
+	font_sizes["relic_label"] = footer_fonts.get("relic_label", 0)
+	return font_sizes
+
+
+static func _build_font_readability_checks(font_sizes: Dictionary) -> Dictionary:
+	var checks := {}
+	for key in MIN_READABLE_FONT_SIZES.keys():
+		var font_size := int(font_sizes.get(key, 0))
+		var min_size := int(MIN_READABLE_FONT_SIZES.get(key, 0))
+		checks[key] = {
+			"font_size": font_size,
+			"min_size": min_size,
+			"passes_minimum": font_size >= min_size,
+		}
+	return checks
 
 
 static func _collect_zone_overlaps(zone_rects: Dictionary) -> Array:
