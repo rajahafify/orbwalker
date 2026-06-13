@@ -20,10 +20,11 @@ func run_all() -> Dictionary:
 	_run_case("action_button_chrome_uses_texture_styleboxes", _test_action_button_chrome_uses_texture_styleboxes, failures)
 	_run_case("standard_button_chrome_sets_disabled_color", _test_standard_button_chrome_sets_disabled_color, failures)
 	_run_case("price_badge_builds_frame_and_label", _test_price_badge_builds_frame_and_label, failures)
+	_run_case("price_badge_status_text_stays_readable", _test_price_badge_status_text_stays_readable, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 4,
+		"total": 5,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -95,5 +96,21 @@ func _test_price_badge_builds_frame_and_label() -> String:
 			result = "Expected price badge label text to match price."
 		elif label.get_theme_font_size("font_size") != STYLER.RELIC_PRICE_FONT_SIZE:
 			result = "Expected price badge font size to match relic price font."
+	root.free()
+	return result
+
+
+func _test_price_badge_status_text_stays_readable() -> String:
+	var root := Control.new()
+	STYLER.make_price_badge(root, FakeVisuals.new(), Rect2(Vector2(10, 20), Vector2(160, 50)), "SOLD OUT", true)
+	var result := ""
+	if root.get_child_count() != 2:
+		result = "Expected status badge to add a frame texture and label."
+	else:
+		var label := root.get_child(1) as Label
+		if label == null:
+			result = "Expected status badge label to exist."
+		elif label.get_theme_font_size("font_size") != STYLER.PRICE_BADGE_STATUS_FONT_SIZE:
+			result = "Expected status badge font to use the readable status floor."
 	root.free()
 	return result

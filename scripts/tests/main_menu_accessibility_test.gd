@@ -9,11 +9,12 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("main_menu_accessibility_audit_passes", _test_main_menu_accessibility_audit_passes, failures)
 	_run_case("main_menu_accessibility_snapshot_has_contracts", _test_main_menu_accessibility_snapshot_has_contracts, failures)
+	_run_case("main_menu_scaled_text_keeps_readable_floors", _test_main_menu_scaled_text_keeps_readable_floors, failures)
 	_run_case("main_menu_focus_navigation_links_runtime_controls", _test_main_menu_focus_navigation_links_runtime_controls, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -55,6 +56,24 @@ func _test_main_menu_accessibility_snapshot_has_contracts() -> String:
 		return "Expected main-menu focus chain to include Tutorial and Quit."
 	if float(snapshot.get("min_text_contrast_ratio", 0.0)) < 4.5:
 		return "Expected text contrast floor to stay at least 4.5."
+	return ""
+
+
+func _test_main_menu_scaled_text_keeps_readable_floors() -> String:
+	var probe: Dictionary = MAIN_MENU_VIEW.font_probe_snapshot(Vector2(540.0, 960.0))
+	var minimums := {
+		"menu": 22,
+		"element": 18,
+		"stat_title": 16,
+		"stat_value": 20,
+		"footer": 18,
+		"profile_action": 22,
+		"version": 16,
+		"status": 16,
+	}
+	for key in minimums.keys():
+		if int(probe.get(key, 0)) < int(minimums[key]):
+			return "Expected main-menu %s font to stay readable on narrow viewports." % key
 	return ""
 
 

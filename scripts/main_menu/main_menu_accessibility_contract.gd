@@ -24,6 +24,14 @@ const PROFILE_TITLE_COLOR := Color(1.0, 0.78, 0.30, 1.0)
 const MIN_TEXT_CONTRAST_RATIO := 4.5
 const MIN_NON_TEXT_CONTRAST_RATIO := 3.0
 const MIN_TOUCH_TARGET_PX := 48.0
+const MENU_FONT_MIN_SIZE := 22
+const ELEMENT_FONT_MIN_SIZE := 18
+const STAT_TITLE_FONT_MIN_SIZE := 16
+const STAT_VALUE_FONT_MIN_SIZE := 20
+const FOOTER_FONT_MIN_SIZE := 18
+const VERSION_FONT_MIN_SIZE := 16
+const STATUS_FONT_MIN_SIZE := 16
+const PROFILE_ACTION_FONT_MIN_SIZE := 22
 
 
 static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
@@ -58,6 +66,23 @@ static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dicti
 		"element_icon_size": element_icon_size,
 		"stat_icon_size": int(round(clampf(88.0 * scale_factor, 48.0, 100.0))),
 		"footer_icon_max_width": int(round(clampf(72.0 * scale_factor, 36.0, 84.0))),
+	}
+
+
+static func font_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
+	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
+	return {
+		"menu": maxi(MENU_FONT_MIN_SIZE, int(round(40.0 * scale_factor))),
+		"element": maxi(ELEMENT_FONT_MIN_SIZE, int(round(24.0 * scale_factor))),
+		"stat_title": maxi(STAT_TITLE_FONT_MIN_SIZE, int(round(15.0 * scale_factor))),
+		"stat_value": maxi(STAT_VALUE_FONT_MIN_SIZE, int(round(27.0 * scale_factor))),
+		"footer": maxi(FOOTER_FONT_MIN_SIZE, int(round(25.0 * scale_factor))),
+		"profile_title": maxi(32, int(round(52.0 * scale_factor))),
+		"profile_name": maxi(24, int(round(34.0 * scale_factor))),
+		"profile_score": maxi(22, int(round(30.0 * scale_factor))),
+		"profile_action": maxi(PROFILE_ACTION_FONT_MIN_SIZE, int(round(28.0 * scale_factor))),
+		"version": maxi(VERSION_FONT_MIN_SIZE, int(round(18.0 * scale_factor))),
+		"status": maxi(STATUS_FONT_MIN_SIZE, int(round(13.0 * scale_factor))),
 	}
 
 

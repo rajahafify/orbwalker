@@ -67,10 +67,14 @@ func _test_card_geometry_is_non_overlapping() -> String:
 		return "Expected active card badges not to use an external glow or shadow."
 	if bool(probe.get("active_badge_rect_glow_visible", true)):
 		return "Expected active card badges not to use a rectangular glow panel."
-	if int(probe.get("copy_font_size", 0)) < 22:
+	if int(probe.get("copy_font_size", 0)) < 24:
 		return "Expected card copy font to stay readable at shop scale."
-	if int(probe.get("badge_font_size", 0)) < 24:
+	if int(probe.get("badge_font_size", 0)) < 26:
 		return "Expected card badge font to stay readable at shop scale."
+	if int(probe.get("status_font_size", 0)) < 22:
+		return "Expected collection status text to stay readable."
+	if int(probe.get("hud_bonus_font_size", 0)) < 22:
+		return "Expected collection HUD bonus text to stay readable."
 	if int(probe.get("copy_outline_size", 0)) < 3 or int(probe.get("badge_outline_size", 0)) < 3:
 		return "Expected card copy and badge text to keep strong outlines for dark art."
 	return ""

@@ -17,9 +17,13 @@ const COLLECTION_CARD_COPY_RECT := COLLECTION_CARD_RENDERER.CARD_COPY_RECT
 const COLLECTION_CARD_BADGE_RECT := COLLECTION_CARD_RENDERER.CARD_BADGE_RECT
 const COLLECTION_HUD_ICON_SIZE := Vector2(58, 58)
 const COLLECTION_HUD_ICON_INSET := 8.0
+const COLLECTION_HUD_BONUS_FONT_SIZE := 22
+const COLLECTION_HUD_BONUS_RECT := Rect2(Vector2(20, 30), Vector2(34, 24))
 const COLLECTION_CARD_GRID_GAP := 16.0
 const COLLECTION_FAMILY_PANEL_PADDING := 36.0
 const COLLECTION_CARD_COPY_MAX_CHARS := COLLECTION_CARD_RENDERER.CARD_COPY_MAX_CHARS
+const BACK_BUTTON_FONT_SIZE := 26
+const STATUS_FONT_SIZE := 22
 
 const GOLD_COLOR := Color(0.94, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.97, 0.90, 0.76, 1.0)
@@ -78,8 +82,7 @@ func apply_static_chrome() -> void:
 	_score_label.add_theme_constant_override("outline_size", 2)
 
 	_families_scroll.add_theme_stylebox_override(
-		"panel",
-		UI_UTILS.panel_style(Color(0.025, 0.028, 0.030, 0.76), Color(0.55, 0.39, 0.14, 0.78), 2, 8, Vector4(10, 10, 10, 10))
+		"panel", UI_UTILS.panel_style(Color(0.025, 0.028, 0.030, 0.76), Color(0.55, 0.39, 0.14, 0.78), 2, 8, Vector4(10, 10, 10, 10))
 	)
 	_families_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_families_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
@@ -87,17 +90,15 @@ func apply_static_chrome() -> void:
 	_families_vbox.add_theme_constant_override("separation", 18)
 
 	_back_button.custom_minimum_size = Vector2(220, 62)
-	_back_button.add_theme_font_size_override("font_size", 24)
+	_back_button.add_theme_font_size_override("font_size", BACK_BUTTON_FONT_SIZE)
 	_back_button.add_theme_stylebox_override(
-		"normal",
-		UI_UTILS.panel_style(Color(0.14, 0.11, 0.09, 0.95), Color(0.70, 0.52, 0.24, 0.98), 2, 8, Vector4(18, 12, 18, 12))
+		"normal", UI_UTILS.panel_style(Color(0.14, 0.11, 0.09, 0.95), Color(0.70, 0.52, 0.24, 0.98), 2, 8, Vector4(18, 12, 18, 12))
 	)
 	_back_button.add_theme_stylebox_override(
-		"hover",
-		UI_UTILS.panel_style(Color(0.20, 0.15, 0.11, 0.98), Color(0.82, 0.64, 0.32, 1.0), 2, 8, Vector4(18, 12, 18, 12))
+		"hover", UI_UTILS.panel_style(Color(0.20, 0.15, 0.11, 0.98), Color(0.82, 0.64, 0.32, 1.0), 2, 8, Vector4(18, 12, 18, 12))
 	)
 
-	_status_label.add_theme_font_size_override("font_size", 18)
+	_status_label.add_theme_font_size_override("font_size", STATUS_FONT_SIZE)
 	_status_label.add_theme_color_override("font_color", Color(0.80, 0.75, 0.68, 1.0))
 
 
@@ -117,10 +118,7 @@ func render_families(families: Array[Dictionary], claim_pressed: Callable) -> vo
 
 func show_status(message: String, is_error: bool) -> void:
 	_status_label.text = message
-	_status_label.add_theme_color_override(
-		"font_color",
-		NEGATIVE_COLOR if is_error else POSITIVE_COLOR
-	)
+	_status_label.add_theme_color_override("font_color", NEGATIVE_COLOR if is_error else POSITIVE_COLOR)
 
 
 func enqueue_unlock(item_display_name: String) -> void:
@@ -155,6 +153,9 @@ static func collection_card_layout_probe_snapshot() -> Dictionary:
 		"copy_rect": card_snapshot.get("copy_rect", Rect2()),
 		"badge_rect": card_snapshot.get("badge_rect", Rect2()),
 		"hud_icon_size": COLLECTION_HUD_ICON_SIZE,
+		"hud_bonus_font_size": COLLECTION_HUD_BONUS_FONT_SIZE,
+		"back_button_font_size": BACK_BUTTON_FONT_SIZE,
+		"status_font_size": STATUS_FONT_SIZE,
 		"renders_rarity_tag": card_snapshot.get("renders_rarity_tag", false),
 		"common_surface": card_snapshot.get("common_surface", RARITY_SURFACE_COLORS["common"]),
 		"uncommon_surface": card_snapshot.get("uncommon_surface", RARITY_SURFACE_COLORS["uncommon"]),
@@ -184,14 +185,7 @@ func _make_family_section(family: Dictionary, claim_pressed: Callable) -> PanelC
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override(
-		"panel",
-		UI_UTILS.panel_style(
-			Color(0.025, 0.025, 0.022, 0.90),
-			Color(0.66, 0.47, 0.16, 0.92),
-			2,
-			8,
-			Vector4(18, 16, 18, 18)
-		)
+		"panel", UI_UTILS.panel_style(Color(0.025, 0.025, 0.022, 0.90), Color(0.66, 0.47, 0.16, 0.92), 2, 8, Vector4(18, 16, 18, 18))
 	)
 
 	var vbox := VBoxContainer.new()
@@ -236,11 +230,19 @@ func _make_tier_card(tier: Dictionary, claim_pressed: Callable) -> Button:
 	var button := Button.new()
 	button.name = "CollectionTierCard_%s" % String(tier.get("item_id", "unknown"))
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	COLLECTION_CARD_RENDERER.render_card(button, _visuals, tier, {
-		"disabled": not bool(tier.get("card_claim_enabled", false)),
-		"tooltip_text": _card_tooltip_text(tier),
-		"mouse_cursor": Control.CURSOR_POINTING_HAND if bool(tier.get("card_claim_enabled", false)) else Control.CURSOR_ARROW,
-	})
+	(
+		COLLECTION_CARD_RENDERER
+		. render_card(
+			button,
+			_visuals,
+			tier,
+			{
+				"disabled": not bool(tier.get("card_claim_enabled", false)),
+				"tooltip_text": _card_tooltip_text(tier),
+				"mouse_cursor": Control.CURSOR_POINTING_HAND if bool(tier.get("card_claim_enabled", false)) else Control.CURSOR_ARROW,
+			}
+		)
+	)
 	if bool(tier.get("card_claim_enabled", false)):
 		button.pressed.connect(_on_claim_button_pressed.bind(claim_pressed, tier.duplicate(true)))
 	return button
@@ -278,10 +280,10 @@ func _make_hud_icon_preview(tier: Dictionary) -> Control:
 	var bonus := Label.new()
 	bonus.name = "HudIconTierBonus"
 	bonus.text = "+%d" % (int(tier.get("tier_index", 0)) + 1)
-	bonus.position = Vector2(29, 36)
-	bonus.size = Vector2(25, 18)
+	bonus.position = COLLECTION_HUD_BONUS_RECT.position
+	bonus.size = COLLECTION_HUD_BONUS_RECT.size
 	bonus.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
-	bonus.add_theme_font_size_override("font_size", 17)
+	bonus.add_theme_font_size_override("font_size", COLLECTION_HUD_BONUS_FONT_SIZE)
 	bonus.add_theme_color_override("font_color", _rarity_title_color(rarity))
 	bonus.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.96))
 	bonus.add_theme_constant_override("outline_size", 2)

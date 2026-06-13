@@ -12,6 +12,10 @@ const BOSS_REWARD_NEXT_BUTTON_SIZE := Vector2(420, 72)
 const OUTCOME_MODAL_Z_INDEX := 180
 const OUTCOME_SCRIM_Z_INDEX := 170
 const OUTCOME_BOSS_SCRIM_COLOR := Color(0.0, 0.0, 0.0, 0.62)
+const OUTCOME_BUTTON_FONT_SIZE := 24
+const BOSS_REWARD_NAME_FONT_SIZE := 30
+const BOSS_REWARD_RARITY_FONT_SIZE := 20
+const BOSS_REWARD_DESCRIPTION_FONT_SIZE := 22
 
 var _layout_root: Control
 var _outcome_summary_panel: Panel
@@ -44,6 +48,15 @@ static func default_config() -> Dictionary:
 		"outcome_modal_z_index": OUTCOME_MODAL_Z_INDEX,
 		"outcome_scrim_z_index": OUTCOME_SCRIM_Z_INDEX,
 		"outcome_boss_scrim_color": OUTCOME_BOSS_SCRIM_COLOR,
+	}
+
+
+static func readability_font_probe() -> Dictionary:
+	return {
+		"outcome_button": OUTCOME_BUTTON_FONT_SIZE,
+		"boss_reward_name": BOSS_REWARD_NAME_FONT_SIZE,
+		"boss_reward_rarity": BOSS_REWARD_RARITY_FONT_SIZE,
+		"boss_reward_description": BOSS_REWARD_DESCRIPTION_FONT_SIZE,
 	}
 
 
@@ -206,9 +219,7 @@ func sync_visibility() -> void:
 	if _outcome_scrim != null and _outcome_summary_panel != null:
 		var show_scrim := _outcome_summary_panel.visible and _boss_reward_overlay_active
 		_outcome_scrim.visible = show_scrim
-		_outcome_scrim.mouse_filter = (
-			Control.MOUSE_FILTER_STOP if show_scrim else Control.MOUSE_FILTER_IGNORE
-		) as Control.MouseFilter
+		_outcome_scrim.mouse_filter = (Control.MOUSE_FILTER_STOP if show_scrim else Control.MOUSE_FILTER_IGNORE) as Control.MouseFilter
 
 
 func sync_layout(board_panel_rect: Rect2) -> void:
@@ -229,7 +240,14 @@ func sync_layout(board_panel_rect: Rect2) -> void:
 
 
 func layout_standard() -> void:
-	if _outcome_summary_root == null or _outcome_text_column == null or _outcome_title_label == null or _outcome_body_label == null or _next_button == null or _outcome_summary_panel == null:
+	if (
+		_outcome_summary_root == null
+		or _outcome_text_column == null
+		or _outcome_title_label == null
+		or _outcome_body_label == null
+		or _next_button == null
+		or _outcome_summary_panel == null
+	):
 		return
 	_outcome_summary_root.position = Vector2(48.0, 40.0)
 	_outcome_summary_root.size = _outcome_summary_panel.size - Vector2(96.0, 80.0)
@@ -246,7 +264,14 @@ func layout_standard() -> void:
 
 
 func layout_boss_reward() -> void:
-	if _outcome_summary_root == null or _outcome_text_column == null or _outcome_title_label == null or _outcome_body_label == null or _next_button == null or _outcome_summary_panel == null:
+	if (
+		_outcome_summary_root == null
+		or _outcome_text_column == null
+		or _outcome_title_label == null
+		or _outcome_body_label == null
+		or _next_button == null
+		or _outcome_summary_panel == null
+	):
 		return
 	var boss_reward_card_gap := float(_config.get("boss_reward_card_gap", BOSS_REWARD_CARD_GAP))
 	var boss_reward_row_top := float(_config.get("boss_reward_row_top", BOSS_REWARD_ROW_TOP))
@@ -274,10 +299,7 @@ func layout_boss_reward() -> void:
 	if _boss_reward_skip_button != null:
 		_boss_reward_skip_button.visible = false
 	_next_button.size = boss_reward_next_button_size
-	_next_button.position = Vector2(
-		(_outcome_summary_root.size.x - _next_button.size.x) * 0.5,
-		_outcome_summary_root.size.y - _next_button.size.y - 6.0
-	)
+	_next_button.position = Vector2((_outcome_summary_root.size.x - _next_button.size.x) * 0.5, _outcome_summary_root.size.y - _next_button.size.y - 6.0)
 
 
 func layout_boss_reward_card_children(button: Button) -> void:
@@ -286,12 +308,12 @@ func layout_boss_reward_card_children(button: Button) -> void:
 	var content_width := maxf(0.0, button.size.x - content_left - 18.0)
 	var name_label := button.get_node_or_null("RelicName") as Label
 	if name_label != null:
-		name_label.position = Vector2(content_left, 18.0)
-		name_label.size = Vector2(content_width, 34.0)
+		name_label.position = Vector2(content_left, 16.0)
+		name_label.size = Vector2(content_width, 38.0)
 	var rarity_label := button.get_node_or_null("RelicRarity") as Label
 	if rarity_label != null:
-		rarity_label.position = Vector2(content_left, 54.0)
-		rarity_label.size = Vector2(content_width, 22.0)
+		rarity_label.position = Vector2(content_left, 55.0)
+		rarity_label.size = Vector2(content_width, 26.0)
 	var icon := button.get_node_or_null("RelicIcon") as TextureRect
 	if icon != null:
 		icon.position = Vector2(18.0, (button.size.y - boss_reward_icon_size.y) * 0.5)
@@ -299,7 +321,7 @@ func layout_boss_reward_card_children(button: Button) -> void:
 	var description_label := button.get_node_or_null("RelicDescription") as Label
 	if description_label != null:
 		description_label.position = Vector2(content_left, 84.0)
-		description_label.size = Vector2(content_width, button.size.y - 94.0)
+		description_label.size = Vector2(content_width, button.size.y - 92.0)
 	var accent := button.get_node_or_null("SelectedAccent") as ColorRect
 	if accent != null:
 		accent.position = Vector2(8.0, 8.0)
@@ -357,7 +379,7 @@ func _apply_design_rect(control: Control, rect: Rect2) -> void:
 
 func _apply_outcome_button_theme(button: Button) -> void:
 	button.add_theme_color_override("font_color", Color(0.92, 0.88, 0.72, 1.0))
-	button.add_theme_font_size_override("font_size", 15)
+	button.add_theme_font_size_override("font_size", OUTCOME_BUTTON_FONT_SIZE)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.05, 0.07, 0.10, 0.96)
 	style.border_color = Color(0.72, 0.54, 0.24, 0.95)
@@ -435,7 +457,7 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	name_label.add_theme_font_size_override("font_size", 28)
+	name_label.add_theme_font_size_override("font_size", BOSS_REWARD_NAME_FONT_SIZE)
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 1.0))
 	button.add_child(name_label)
 
@@ -444,7 +466,7 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 	rarity_label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	rarity_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	rarity_label.add_theme_font_size_override("font_size", 15)
+	rarity_label.add_theme_font_size_override("font_size", BOSS_REWARD_RARITY_FONT_SIZE)
 	rarity_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.36, 1.0))
 	button.add_child(rarity_label)
 
@@ -454,6 +476,6 @@ func _ensure_boss_reward_card_children(button: Button) -> void:
 	description_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	description_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
 	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	description_label.add_theme_font_size_override("font_size", 20)
+	description_label.add_theme_font_size_override("font_size", BOSS_REWARD_DESCRIPTION_FONT_SIZE)
 	description_label.add_theme_color_override("font_color", Color(0.90, 0.84, 0.73, 1.0))
 	button.add_child(description_label)

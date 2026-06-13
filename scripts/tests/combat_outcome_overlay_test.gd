@@ -22,9 +22,10 @@ func run_all() -> Dictionary:
 	_run_case("default_config_exposes_outcome_design_values", _test_default_config_exposes_outcome_design_values, failures)
 	_run_case("bind_without_config_uses_standard_summary_rect", _test_bind_without_config_uses_standard_summary_rect, failures)
 	_run_case("boss_reward_layout_uses_overlay_defaults", _test_boss_reward_layout_uses_overlay_defaults, failures)
+	_run_case("boss_reward_card_text_stays_readable", _test_boss_reward_card_text_stays_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -105,6 +106,41 @@ func _test_boss_reward_layout_uses_overlay_defaults() -> String:
 	return ""
 
 
+func _test_boss_reward_card_text_stays_readable() -> String:
+	var fixture := _fixture()
+	var overlay: Variant = fixture["overlay"]
+	var layout_root: Control = fixture["layout_root"]
+	var sink := CallbackSink.new()
+	overlay.ensure_boss_reward_controls(Callable(sink, "claim"), Callable(sink, "skip"))
+	overlay.show_boss_reward("Boss defeated.")
+	overlay.sync_layout(Rect2(Vector2.ZERO, Vector2(500.0, 500.0)))
+	var buttons: Array[Button] = overlay.boss_reward_buttons()
+	if buttons.is_empty():
+		layout_root.free()
+		return "Expected boss reward buttons to exist."
+	var button := buttons[0]
+	var font_probe: Dictionary = OVERLAY_SCRIPT.readability_font_probe()
+	var labels := {
+		"boss_reward_name": button.get_node_or_null("RelicName") as Label,
+		"boss_reward_rarity": button.get_node_or_null("RelicRarity") as Label,
+		"boss_reward_description": button.get_node_or_null("RelicDescription") as Label,
+	}
+	for key in labels.keys():
+		var label := labels[key] as Label
+		if label == null:
+			layout_root.free()
+			return "Expected boss reward %s label to exist." % key
+		if label.get_theme_font_size("font_size") < int(font_probe.get(key, 0)):
+			layout_root.free()
+			return "Expected boss reward %s font to match readability floor." % key
+	var skip_button: Button = overlay.boss_reward_skip_button()
+	if skip_button == null or skip_button.get_theme_font_size("font_size") < int(font_probe.get("outcome_button", 0)):
+		layout_root.free()
+		return "Expected outcome buttons to keep the readable font floor."
+	layout_root.free()
+	return ""
+
+
 func _fixture() -> Dictionary:
 	var layout_root := Control.new()
 	layout_root.name = "LayoutRoot"
@@ -135,15 +171,20 @@ func _fixture() -> Dictionary:
 	summary_root.add_child(next_button)
 
 	var overlay: Variant = OVERLAY_SCRIPT.new()
-	overlay.bind({
-		"layout_root": layout_root,
-		"summary_panel": summary_panel,
-		"summary_root": summary_root,
-		"text_column": text_column,
-		"title_label": title_label,
-		"body_label": body_label,
-		"next_button": next_button,
-	})
+	(
+		overlay
+		. bind(
+			{
+				"layout_root": layout_root,
+				"summary_panel": summary_panel,
+				"summary_root": summary_root,
+				"text_column": text_column,
+				"title_label": title_label,
+				"body_label": body_label,
+				"next_button": next_button,
+			}
+		)
+	)
 	return {
 		"overlay": overlay,
 		"layout_root": layout_root,

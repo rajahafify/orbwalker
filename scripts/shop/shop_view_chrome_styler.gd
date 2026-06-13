@@ -15,13 +15,16 @@ const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const NEGATIVE_COLOR := Color(1.0, 0.45, 0.38, 1.0)
 const RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE := Color(0.34, 0.28, 0.21, 0.52)
 const RELIC_UNAVAILABLE_PRICE_TEXT_COLOR := Color(0.52, 0.42, 0.30, 0.70)
+const PRICE_BADGE_STATUS_FONT_SIZE := 22
 
 
 static func apply_card_chrome(button: Button, bg_color: Color, border_color: Color, hover_color: Color) -> void:
 	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 3, 4, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.18), 3, 4, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 3, 4, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 3, 4, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override(
+		"disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 3, 4, Vector4(8, 6, 8, 6))
+	)
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 
@@ -72,7 +75,9 @@ static func apply_button_chrome(button: Button, bg_color: Color, border_color: C
 	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 8, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 8, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 8, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override(
+		"disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 8, Vector4(8, 6, 8, 6))
+	)
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 
@@ -80,7 +85,9 @@ static func apply_round_button_chrome(button: Button, bg_color: Color, border_co
 	button.add_theme_stylebox_override("normal", UI_UTILS.panel_style(bg_color, border_color, 2, 32, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("hover", UI_UTILS.panel_style(hover_color, border_color.lightened(0.16), 2, 32, Vector4(8, 6, 8, 6)))
 	button.add_theme_stylebox_override("pressed", UI_UTILS.panel_style(hover_color.darkened(0.10), border_color, 2, 32, Vector4(8, 6, 8, 6)))
-	button.add_theme_stylebox_override("disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 32, Vector4(8, 6, 8, 6)))
+	button.add_theme_stylebox_override(
+		"disabled", UI_UTILS.panel_style(Color(0.04, 0.05, 0.06, 0.90), Color(0.38, 0.40, 0.46, 0.96), 2, 32, Vector4(8, 6, 8, 6))
+	)
 	button.add_theme_color_override("font_disabled_color", Color(0.70, 0.72, 0.78, 1.0))
 
 
@@ -105,5 +112,5 @@ static func make_price_badge(parent: Node, visuals: Variant, rect: Rect2, text: 
 	badge_frame.custom_minimum_size = badge_rect.size
 	badge_frame.size = badge_rect.size
 	badge_frame.modulate = Color(1.08, 1.04, 0.94, 1.0) if not disabled else RELIC_UNAVAILABLE_PRICE_FRAME_MODULATE
-	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else 20
+	var font_size := RELIC_PRICE_FONT_SIZE if text.begins_with("$") else PRICE_BADGE_STATUS_FONT_SIZE
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(parent, text, badge_rect, label_color, font_size, HORIZONTAL_ALIGNMENT_CENTER)

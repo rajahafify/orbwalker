@@ -14,8 +14,8 @@ const CARD_BADGE_RECT := Rect2(Vector2(70, 404), Vector2(200, 58))
 const CARD_COPY_MAX_CHARS := 18
 const CARD_TITLE_PREFIX_FONT_SIZE := 25
 const CARD_TITLE_NAME_FONT_SIZE := 30
-const CARD_COPY_FONT_SIZE := 22
-const CARD_BADGE_FONT_SIZE := 24
+const CARD_COPY_FONT_SIZE := 24
+const CARD_BADGE_FONT_SIZE := 26
 const CARD_TEXT_OUTLINE_SIZE := 3
 const CARD_COPY_OUTLINE_SIZE := 4
 const CARD_BADGE_OUTLINE_SIZE := 4
@@ -256,14 +256,10 @@ static func _make_card_label(
 	label.size = rect.size
 	label.horizontal_alignment = alignment
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.autowrap_mode = (
-		TextServer.AUTOWRAP_WORD_SMART if should_wrap else TextServer.AUTOWRAP_OFF
-	) as TextServer.AutowrapMode
+	label.autowrap_mode = (TextServer.AUTOWRAP_WORD_SMART if should_wrap else TextServer.AUTOWRAP_OFF) as TextServer.AutowrapMode
 	label.clip_contents = not should_wrap
 	label.clip_text = not should_wrap
-	label.text_overrun_behavior = (
-		TextServer.OVERRUN_NO_TRIMMING if should_wrap else TextServer.OVERRUN_TRIM_ELLIPSIS
-	) as TextServer.OverrunBehavior
+	label.text_overrun_behavior = (TextServer.OVERRUN_NO_TRIMMING if should_wrap else TextServer.OVERRUN_TRIM_ELLIPSIS) as TextServer.OverrunBehavior
 	label.custom_minimum_size = rect.size
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)

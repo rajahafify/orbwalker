@@ -397,6 +397,10 @@ static func layout_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dicti
 	return ACCESSIBILITY_CONTRACT.layout_probe_snapshot(viewport_size)
 
 
+static func font_probe_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
+	return ACCESSIBILITY_CONTRACT.font_probe_snapshot(viewport_size)
+
+
 static func accessibility_audit_snapshot(viewport_size: Vector2 = DESIGN_SIZE) -> Dictionary:
 	return ACCESSIBILITY_CONTRACT.accessibility_audit_snapshot(viewport_size)
 
@@ -457,14 +461,14 @@ func show_status(message: String) -> void:
 
 
 func _apply_font_sizes(viewport_size: Vector2) -> void:
-	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-	var menu_size := maxi(18, int(round(40.0 * scale_factor)))
-	var element_size := maxi(14, int(round(24.0 * scale_factor)))
-	var stat_title_size := maxi(11, int(round(15.0 * scale_factor)))
-	var stat_value_size := maxi(17, int(round(27.0 * scale_factor)))
-	var footer_size := maxi(13, int(round(25.0 * scale_factor)))
-	var version_size := maxi(12, int(round(18.0 * scale_factor)))
-	var status_size := maxi(10, int(round(13.0 * scale_factor)))
+	var font_sizes := font_probe_snapshot(viewport_size)
+	var menu_size := int(font_sizes.get("menu", 22))
+	var element_size := int(font_sizes.get("element", 18))
+	var stat_title_size := int(font_sizes.get("stat_title", 16))
+	var stat_value_size := int(font_sizes.get("stat_value", 20))
+	var footer_size := int(font_sizes.get("footer", 18))
+	var version_size := int(font_sizes.get("version", 16))
+	var status_size := int(font_sizes.get("status", 16))
 
 	for button in _main_menu_buttons():
 		button.add_theme_font_size_override("font_size", menu_size)
@@ -482,11 +486,11 @@ func _apply_font_sizes(viewport_size: Vector2) -> void:
 			stat_value.add_theme_font_size_override("font_size", stat_value_size)
 	for button in [_achievements_button, _footer_settings_button]:
 		button.add_theme_font_size_override("font_size", footer_size)
-	_profile_title_label.add_theme_font_size_override("font_size", maxi(32, int(round(52.0 * scale_factor))))
-	_profile_name_label.add_theme_font_size_override("font_size", maxi(24, int(round(34.0 * scale_factor))))
-	_profile_score_label.add_theme_font_size_override("font_size", maxi(22, int(round(30.0 * scale_factor))))
-	_reset_profile_button.add_theme_font_size_override("font_size", maxi(18, int(round(28.0 * scale_factor))))
-	_close_profile_button.add_theme_font_size_override("font_size", maxi(18, int(round(28.0 * scale_factor))))
+	_profile_title_label.add_theme_font_size_override("font_size", int(font_sizes.get("profile_title", 32)))
+	_profile_name_label.add_theme_font_size_override("font_size", int(font_sizes.get("profile_name", 24)))
+	_profile_score_label.add_theme_font_size_override("font_size", int(font_sizes.get("profile_score", 22)))
+	_reset_profile_button.add_theme_font_size_override("font_size", int(font_sizes.get("profile_action", 22)))
+	_close_profile_button.add_theme_font_size_override("font_size", int(font_sizes.get("profile_action", 22)))
 	_version_label.add_theme_font_size_override("font_size", version_size)
 	_status_label.add_theme_font_size_override("font_size", status_size)
 
