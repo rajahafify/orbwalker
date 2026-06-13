@@ -561,10 +561,18 @@ func _collect_visible_text_failures(node: Node, scene_path: String, failures: Ar
 	if control != null and _has_audited_visible_text(control):
 		var text := _audited_text(control).strip_edges()
 		var font_size := _audited_font_size(control)
+		var effective_font_size := _effective_font_size(control, font_size)
 		if font_size < MIN_VISIBLE_TEXT_FONT_SIZE:
 			failures.append("%s %s text='%s' font_size=%d" % [scene_path, String(control.get_path()), text.left(32), font_size])
+		if effective_font_size < float(MIN_VISIBLE_TEXT_FONT_SIZE):
+			failures.append(
+				(
+					"%s %s text='%s' effective_font_size=%.2f base_font_size=%d"
+					% [scene_path, String(control.get_path()), text.left(32), effective_font_size, font_size]
+				)
+			)
 		var text_rect_size := control.get_global_rect().size
-		var min_text_size := _minimum_visible_text_control_size(control, text, font_size)
+		var min_text_size := _minimum_visible_text_control_size(control, text, effective_font_size)
 		if text_rect_size.x < min_text_size.x or text_rect_size.y < min_text_size.y:
 			failures.append(
 				"%s %s text='%s' rect_size=%s min_size=%s" % [scene_path, String(control.get_path()), text.left(32), str(text_rect_size), str(min_text_size)]
@@ -615,6 +623,14 @@ func _audited_font_size(control: Control) -> int:
 	return control.get_theme_font_size("font_size")
 
 
+func _effective_font_size(control: Control, font_size: int) -> float:
+	var transform := control.get_global_transform_with_canvas()
+	var scale_x := transform.x.length()
+	var scale_y := transform.y.length()
+	var effective_scale := minf(scale_x, scale_y)
+	return float(font_size) * effective_scale
+
+
 func _summarize_failures(failures: Array[String]) -> String:
 	var summary := failures.duplicate()
 	if summary.size() > 5:
@@ -627,11 +643,11 @@ func _scene_label(scene_path: String, viewport_size: Vector2) -> String:
 	return "%s@%dx%d" % [scene_path, int(viewport_size.x), int(viewport_size.y)]
 
 
-func _minimum_visible_text_control_size(control: Control, text: String, font_size: int) -> Vector2:
-	var min_height := maxf(18.0, float(font_size) * 0.75)
-	var min_width := maxf(24.0, float(font_size) * 1.6)
+func _minimum_visible_text_control_size(control: Control, text: String, font_size: float) -> Vector2:
+	var min_height := maxf(18.0, font_size * 0.75)
+	var min_width := maxf(24.0, font_size * 1.6)
 	if text.length() > 1:
-		min_width = minf(180.0, maxf(48.0, float(font_size) * minf(8.0, float(text.length()) * 0.42)))
+		min_width = minf(180.0, maxf(48.0, font_size * minf(8.0, float(text.length()) * 0.42)))
 	if control is Label and (control as Label).autowrap_mode != TextServer.AUTOWRAP_OFF:
-		min_width = maxf(min_width, float(font_size) * 5.0)
+		min_width = maxf(min_width, font_size * 5.0)
 	return Vector2(min_width, min_height)
