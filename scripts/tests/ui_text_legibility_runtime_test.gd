@@ -3,6 +3,7 @@ class_name UiTextLegibilityRuntimeTest
 
 const PLAYER_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_PLAYER_HUD_PRESENTER := preload("res://scripts/shop/shop_player_hud_presenter.gd")
+const SHOP_TREASURE_CHEST_OVERLAY_PRESENTER := preload("res://scripts/shop/shop_treasure_chest_overlay_presenter.gd")
 
 const MIN_VISIBLE_TEXT_FONT_SIZE := 20
 const TEST_VIEWPORTS := [
@@ -23,6 +24,13 @@ const SAFE_APP_SCENES := [
 ]
 
 
+class FakeTreasureChestVisuals:
+	extends RefCounted
+
+	func icon_for_key(_key: String) -> Texture2D:
+		return ImageTexture.new()
+
+
 func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("standalone_scenes_keep_visible_text_readable", _test_standalone_scenes_keep_visible_text_readable, failures)
@@ -35,11 +43,12 @@ func run_all() -> Dictionary:
 		_test_initialized_player_hud_slot_detail_popover_keeps_visible_text_readable,
 		failures
 	)
+	_run_case("shop_treasure_chest_overlay_keeps_visible_text_readable", _test_shop_treasure_chest_overlay_keeps_visible_text_readable, failures)
 	_run_case("app_scenes_keep_visible_text_readable", _test_app_scenes_keep_visible_text_readable, failures)
 	_run_case("stateful_gameplay_scenes_keep_visible_text_readable", _test_stateful_gameplay_scenes_keep_visible_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 6,
+		"total": 7,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -95,6 +104,17 @@ func _test_initialized_player_hud_slot_detail_popover_keeps_visible_text_readabl
 		return "Expected SceneTree for initialized Player HUD slot detail popover audit."
 	for viewport_size in TEST_VIEWPORTS:
 		var result := _audit_initialized_player_hud_slot_detail_popover_for_viewport(tree, viewport_size)
+		if result != "":
+			return result
+	return ""
+
+
+func _test_shop_treasure_chest_overlay_keeps_visible_text_readable() -> String:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return "Expected SceneTree for shop treasure chest overlay audit."
+	for viewport_size in TEST_VIEWPORTS:
+		var result := _audit_shop_treasure_chest_overlay_for_viewport(tree, viewport_size)
 		if result != "":
 			return result
 	return ""
@@ -275,6 +295,41 @@ func _audit_initialized_player_hud_slot_detail_popover_for_viewport(tree: SceneT
 	if not failures.is_empty():
 		return _summarize_failures(failures)
 	return ""
+
+
+func _audit_shop_treasure_chest_overlay_for_viewport(tree: SceneTree, viewport_size: Vector2) -> String:
+	var previous_size := tree.root.size
+	tree.root.size = Vector2i(int(viewport_size.x), int(viewport_size.y))
+	var root := Control.new()
+	root.name = "ShopTreasureChestOverlayAuditRoot"
+	_prepare_root_control(root, viewport_size)
+	tree.root.add_child(root)
+
+	var presenter: Variant = SHOP_TREASURE_CHEST_OVERLAY_PRESENTER.new()
+	presenter.bind(root, FakeTreasureChestVisuals.new(), Callable(self, "_lookup_treasure_chest_content_definition"))
+	(
+		presenter
+		. render(
+			[
+				{"type": "equipment", "display_name": "Iron Shortsword", "content_id": "iron_shortsword"},
+				{"type": "relic", "display_name": "Lucky Coin", "content_id": "lucky_coin"},
+				{"type": "consumable", "display_name": "Potion", "content_id": "potion"},
+			]
+		)
+	)
+	presenter.apply_chrome()
+	presenter.layout(viewport_size)
+
+	var failures := _visible_text_failures(root, _scene_label("res://runtime/shop_treasure_chest_overlay", viewport_size))
+	root.free()
+	tree.root.size = previous_size
+	if not failures.is_empty():
+		return _summarize_failures(failures)
+	return ""
+
+
+func _lookup_treasure_chest_content_definition(content_id: String) -> Dictionary:
+	return {"icon_key": "icon/%s" % content_id}
 
 
 func _instantiate_scene(scene_path: String) -> Node:

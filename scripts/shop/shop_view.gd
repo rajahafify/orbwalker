@@ -86,6 +86,7 @@ var _current_shop_layout: Dictionary = {}
 var _current_player_hud_layout_override: Dictionary = {}
 var _current_tutorial_shop_phase := ""
 
+
 func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 	_background = root_nodes.get("background") as TextureRect
 	_backdrop_tint = root_nodes.get("backdrop_tint") as ColorRect
@@ -102,6 +103,7 @@ func bind(root_nodes: Dictionary, visuals, player_loadout_hud) -> void:
 	_apply_visual_chrome()
 	_connect_signals()
 	apply_layout()
+
 
 func _create_ui() -> void:
 	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
@@ -140,10 +142,20 @@ func _create_ui() -> void:
 	_merchant_header_label = SHOP_VIEW_NODE_FACTORY.make_label("MerchantHeaderLabel", _merchant_stage, "", 32, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
 	_merchant_header_label.visible = false
 	_speech_card = SHOP_VIEW_NODE_FACTORY.make_panel("SpeechCard", _merchant_stage)
-	_speech_label = SHOP_VIEW_NODE_FACTORY.make_label("SpeechLabel", _speech_card, "Well met, adventurer. New stock, fresh from the depths.", 25, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
-	_boss_preview_label = SHOP_VIEW_NODE_FACTORY.make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 16, MUTED_COLOR)
+	_speech_label = SHOP_VIEW_NODE_FACTORY.make_label(
+		"SpeechLabel", _speech_card, "Well met, adventurer. New stock, fresh from the depths.", 25, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true
+	)
+	_boss_preview_label = SHOP_VIEW_NODE_FACTORY.make_label("BossPreviewLabel", _speech_card, "Boss preview: -", 20, MUTED_COLOR)
 	_summary_label = SHOP_VIEW_NODE_FACTORY.make_label("SummaryLabel", _merchant_stage, "-", 21, POSITIVE_COLOR)
-	_detail_label = SHOP_VIEW_NODE_FACTORY.make_label("DetailLabel", _merchant_stage, "Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover.", 19, INK_COLOR, HORIZONTAL_ALIGNMENT_LEFT, true)
+	_detail_label = SHOP_VIEW_NODE_FACTORY.make_label(
+		"DetailLabel",
+		_merchant_stage,
+		"Tap stock or relic cards to buy. Sell: tap a filled loadout slot, then press Sell in the slot popover.",
+		20,
+		INK_COLOR,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		true
+	)
 	_merchant_info_backdrop.visible = false
 	_boss_preview_label.visible = false
 	_summary_label.visible = false
@@ -174,11 +186,17 @@ func _create_ui() -> void:
 	_shop_help_modal_presenter.bind(_layout_root)
 	_shop_help_modal_presenter.ensure_modal()
 	_tutorial_overlay_presenter = SHOP_TUTORIAL_OVERLAY_PRESENTER.new()
-	_tutorial_overlay_presenter.bind(_hud_overlay, {
-		"offer_cards": _offer_cards,
-		"reroll_button": _action_row_presenter.reroll_button(),
-		"continue_button": _action_row_presenter.continue_button(),
-	})
+	(
+		_tutorial_overlay_presenter
+		. bind(
+			_hud_overlay,
+			{
+				"offer_cards": _offer_cards,
+				"reroll_button": _action_row_presenter.reroll_button(),
+				"continue_button": _action_row_presenter.continue_button(),
+			}
+		)
+	)
 	_tutorial_overlay_presenter.ensure_overlay()
 
 
@@ -240,12 +258,25 @@ func _render_offer_card(card: Button, offer: Dictionary, treasure_chest_pending:
 	card_data["description"] = SHOP_COPY_FORMATTER.shop_card_description(offer)
 	card_data["badge_text"] = SHOP_COPY_FORMATTER.price_text(price, sold_out, affordable, treasure_chest_pending)
 	card_data["badge_enabled"] = bool(offer.get("badge_enabled", not disabled))
-	COLLECTION_CARD_RENDERER.render_card(card, _visuals, card_data, {
-		"disabled": disabled,
-		"tooltip_text": "",
-		"mouse_cursor": Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND,
-		"modulate": Color(0.45, 0.45, 0.48, 0.52) if disabled and _current_tutorial_shop_phase != "" else Color(0.58, 0.58, 0.60, 0.72) if disabled else Color.WHITE,
-	})
+	(
+		COLLECTION_CARD_RENDERER
+		. render_card(
+			card,
+			_visuals,
+			card_data,
+			{
+				"disabled": disabled,
+				"tooltip_text": "",
+				"mouse_cursor": Control.CURSOR_ARROW if disabled else Control.CURSOR_POINTING_HAND,
+				"modulate":
+				(
+					Color(0.45, 0.45, 0.48, 0.52)
+					if disabled and _current_tutorial_shop_phase != ""
+					else Color(0.58, 0.58, 0.60, 0.72) if disabled else Color.WHITE
+				),
+			}
+		)
+	)
 
 
 func _render_empty_offer_card(card: Button) -> void:
@@ -257,7 +288,9 @@ func _render_empty_offer_card(card: Button) -> void:
 	SHOP_VIEW_CHROME_STYLER.apply_card_chrome(card, Color(0.05, 0.06, 0.08, 0.90), Color(0.24, 0.27, 0.34, 0.95), Color(0.05, 0.06, 0.08, 0.98))
 	var root := SHOP_VIEW_NODE_FACTORY.make_child_root(card)
 	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "EMPTY", Rect2(Vector2(20, 190), Vector2(280, 50)), MUTED_COLOR, 24, HORIZONTAL_ALIGNMENT_CENTER)
-	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 46)), MUTED_COLOR, 18, HORIZONTAL_ALIGNMENT_CENTER, true)
+	SHOP_VIEW_NODE_FACTORY.make_dynamic_label(
+		root, "No offer in this slot.", Rect2(Vector2(28, 250), Vector2(264, 50)), MUTED_COLOR, 20, HORIZONTAL_ALIGNMENT_CENTER, true
+	)
 
 
 func _render_action_row(shop_snapshot: Dictionary, treasure_chest_pending: bool) -> void:
@@ -304,11 +337,17 @@ func play_purchase_feedback(kind: String, index: int = -1) -> void:
 	target.scale = Vector2.ONE
 	var tween := target.create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(target, "scale", Vector2(0.94, 0.94), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_IN as Tween.EaseType)
+	tween.tween_property(target, "scale", Vector2(0.94, 0.94), 0.07).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(
+		Tween.EASE_IN as Tween.EaseType
+	)
 	tween.tween_property(target, "modulate", Color(1.0, 0.92, 0.58, 1.0), 0.07)
-	tween.chain().tween_property(target, "scale", Vector2(1.05, 1.05), 0.12).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.chain().tween_property(target, "scale", Vector2(1.05, 1.05), 0.12).set_trans(Tween.TRANS_BACK as Tween.TransitionType).set_ease(
+		Tween.EASE_OUT as Tween.EaseType
+	)
 	tween.parallel().tween_property(target, "modulate", Color.WHITE, 0.12)
-	tween.chain().tween_property(target, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.chain().tween_property(target, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(
+		Tween.EASE_OUT as Tween.EaseType
+	)
 	_flash_purchase_stat_targets()
 	_spawn_purchase_confirmation_label(target.get_global_rect())
 
@@ -407,11 +446,14 @@ func _spawn_purchase_confirmation_label(target_global_rect: Rect2) -> void:
 	label.position = local_center + Vector2(-label.size.x * 0.5, -target_global_rect.size.y * 0.58)
 	var tween := label.create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position:y", label.position.y - 34.0, 0.52).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(Tween.EASE_OUT as Tween.EaseType)
+	tween.tween_property(label, "position:y", label.position.y - 34.0, 0.52).set_trans(Tween.TRANS_CUBIC as Tween.TransitionType).set_ease(
+		Tween.EASE_OUT as Tween.EaseType
+	)
 	tween.tween_property(label, "modulate:a", 0.0, 0.36).set_delay(0.18)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(label):
-			label.queue_free()
+	tween.finished.connect(
+		func() -> void:
+			if is_instance_valid(label):
+				label.queue_free()
 	)
 
 
@@ -516,9 +558,15 @@ func _shop_player_hud_nodes() -> Dictionary:
 
 func _apply_visual_chrome() -> void:
 	for panel in [_stock_panel]:
-		(panel as Panel).add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8, Vector4(8, 6, 8, 6)))
-	_merchant_stage.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.03, 0.04, 0.05, 0.55), Color(0.70, 0.50, 0.22, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
-	_speech_card.add_theme_stylebox_override("panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6)))
+		(panel as Panel).add_theme_stylebox_override(
+			"panel", UI_UTILS.panel_style(Color(0.04, 0.06, 0.08, 0.92), Color(0.58, 0.43, 0.20, 0.96), 2, 8, Vector4(8, 6, 8, 6))
+		)
+	_merchant_stage.add_theme_stylebox_override(
+		"panel", UI_UTILS.panel_style(Color(0.03, 0.04, 0.05, 0.55), Color(0.70, 0.50, 0.22, 0.98), 2, 8, Vector4(8, 6, 8, 6))
+	)
+	_speech_card.add_theme_stylebox_override(
+		"panel", UI_UTILS.panel_style(Color(0.04, 0.04, 0.04, 0.84), Color(0.74, 0.55, 0.28, 0.98), 2, 8, Vector4(8, 6, 8, 6))
+	)
 	_treasure_chest_overlay_presenter.apply_chrome()
 	_shop_help_modal_presenter.apply_chrome()
 	_action_row_presenter.apply_chrome()

@@ -80,13 +80,16 @@ func _test_active_relic_card_renders_banner_icon_copy_and_price() -> String:
 		result = "Expected active relic icon without disabled modulation."
 	elif _find_label(button, "Ancient Coin") == null:
 		result = "Expected active relic name label."
-	elif _find_label(button, "RARE RELIC - DUNGEON 2") == null:
+	var tier_label := _find_label(button, "RARE RELIC - DUNGEON 2")
+	if result == "" and tier_label == null:
 		result = "Expected active relic tier label."
-	elif _find_label(button, "$24") == null:
+	elif result == "" and tier_label.get_theme_font_size("font_size") < PRESENTER.RELIC_TIER_FONT_SIZE:
+		result = "Expected active relic tier label to keep the readable font floor."
+	elif result == "" and _find_label(button, "$24") == null:
 		result = "Expected active relic compact price label."
-	elif visuals.requested_banner_rarities != ["rare"]:
+	elif result == "" and visuals.requested_banner_rarities != ["rare"]:
 		result = "Expected relic banner frame to use the offer rarity."
-	elif visuals.requested_icon_keys != ["coin"]:
+	elif result == "" and visuals.requested_icon_keys != ["coin"]:
 		result = "Expected relic icon lookup to use the offer icon key."
 	button.free()
 	return result

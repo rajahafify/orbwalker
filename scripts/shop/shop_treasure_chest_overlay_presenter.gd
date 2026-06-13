@@ -12,6 +12,10 @@ const GOLD_COLOR := Color(0.92, 0.68, 0.27, 1.0)
 const INK_COLOR := Color(0.96, 0.90, 0.78, 1.0)
 const MUTED_COLOR := Color(0.72, 0.62, 0.45, 1.0)
 const OVERLAY_COLOR := Color(0.0, 0.0, 0.0, 0.44)
+const HINT_FONT_SIZE := 20
+const OPTION_TYPE_FONT_SIZE := 20
+const OPTION_NAME_FONT_SIZE := 22
+const OPTION_PICK_FONT_SIZE := 22
 const MODAL_RECT := Rect2(Vector2(152, 382), Vector2(776, 420))
 const TITLE_RECT := Rect2(Vector2(0, 30), Vector2(776, 42))
 const HINT_RECT := Rect2(Vector2(80, 82), Vector2(616, 42))
@@ -45,8 +49,18 @@ func ensure_overlay() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	_modal = SHOP_VIEW_NODE_FACTORY.make_panel("TreasureChestModal", _overlay)
 	_modal.mouse_filter = Control.MOUSE_FILTER_PASS as Control.MouseFilter
-	_title_label = SHOP_VIEW_NODE_FACTORY.make_label("TreasureChestTitleLabel", _modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER)
-	_hint_label = SHOP_VIEW_NODE_FACTORY.make_label("TreasureChestHintLabel", _modal, "Pick one option now, or press Skip to continue shopping.", 18, MUTED_COLOR, HORIZONTAL_ALIGNMENT_CENTER, true)
+	_title_label = SHOP_VIEW_NODE_FACTORY.make_label(
+		"TreasureChestTitleLabel", _modal, "Choose One Treasure Chest Reward", 30, GOLD_COLOR, HORIZONTAL_ALIGNMENT_CENTER
+	)
+	_hint_label = SHOP_VIEW_NODE_FACTORY.make_label(
+		"TreasureChestHintLabel",
+		_modal,
+		"Pick one option now, or press Skip to continue shopping.",
+		HINT_FONT_SIZE,
+		MUTED_COLOR,
+		HORIZONTAL_ALIGNMENT_CENTER,
+		true
+	)
 	_option_buttons.clear()
 	for index in 3:
 		var button := SHOP_VIEW_NODE_FACTORY.make_button("TreasureChestOptionButton%d" % (index + 1), _modal, "")
@@ -84,14 +98,31 @@ func render(pending_options: Array) -> void:
 		var option := Dictionary(pending_options[index])
 		SHOP_VIEW_CHROME_STYLER.apply_button_chrome(button, Color(0.10, 0.08, 0.13, 0.98), GOLD_COLOR, Color(0.18, 0.13, 0.08, 1.0))
 		var root := SHOP_VIEW_NODE_FACTORY.make_child_root(button)
-		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("type", "option")).replace("_", " ").to_upper(), Rect2(Vector2(14, 8), Vector2(180, 22)), MUTED_COLOR, 14, HORIZONTAL_ALIGNMENT_CENTER)
-		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, String(option.get("display_name", "Option")), Rect2(Vector2(14, 36), Vector2(180, 54)), INK_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER, true)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(
+			root,
+			String(option.get("type", "option")).replace("_", " ").to_upper(),
+			Rect2(Vector2(14, 8), Vector2(180, 28)),
+			MUTED_COLOR,
+			OPTION_TYPE_FONT_SIZE,
+			HORIZONTAL_ALIGNMENT_CENTER
+		)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(
+			root,
+			String(option.get("display_name", "Option")),
+			Rect2(Vector2(14, 38), Vector2(180, 54)),
+			INK_COLOR,
+			OPTION_NAME_FONT_SIZE,
+			HORIZONTAL_ALIGNMENT_CENTER,
+			true
+		)
 		var content := _lookup_content_definition(String(option.get("content_id", "")))
 		var icon := SHOP_VIEW_NODE_FACTORY.make_texture("TreasureChestOptionIcon", root)
 		icon.texture = _visuals.icon_for_key(String(content.get("icon_key", "")))
 		icon.position = Vector2(42, 92)
 		icon.size = Vector2(124, 104)
-		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, 22, HORIZONTAL_ALIGNMENT_CENTER)
+		SHOP_VIEW_NODE_FACTORY.make_dynamic_label(
+			root, "PICK", Rect2(Vector2(22, 196), Vector2(164, 42)), GOLD_COLOR, OPTION_PICK_FONT_SIZE, HORIZONTAL_ALIGNMENT_CENTER
+		)
 	_skip_button.visible = true
 	_skip_button.disabled = false
 

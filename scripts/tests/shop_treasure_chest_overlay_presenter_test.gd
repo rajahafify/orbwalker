@@ -39,9 +39,10 @@ func run_all() -> Dictionary:
 	_run_case("empty_options_hide_overlay_and_skip", _test_empty_options_hide_overlay_and_skip, failures)
 	_run_case("pending_options_render_buttons_and_forward_signals", _test_pending_options_render_buttons_and_forward_signals, failures)
 	_run_case("layout_and_chrome_match_shop_contract", _test_layout_and_chrome_match_shop_contract, failures)
+	_run_case("visible_treasure_chest_text_keeps_readable_floor", _test_visible_treasure_chest_text_keeps_readable_floor, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 3,
+		"total": 4,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -78,10 +79,15 @@ func _test_pending_options_render_buttons_and_forward_signals() -> String:
 	var presenter: Variant = fixture["presenter"]
 	var recorder: SignalRecorder = fixture["recorder"]
 	var lookup: ContentLookup = fixture["lookup"]
-	presenter.render([
-		{"type": "equipment", "display_name": "Iron Shortsword", "content_id": "iron_shortsword"},
-		{"type": "relic", "display_name": "Lucky Coin", "content_id": "lucky_coin"},
-	])
+	(
+		presenter
+		. render(
+			[
+				{"type": "equipment", "display_name": "Iron Shortsword", "content_id": "iron_shortsword"},
+				{"type": "relic", "display_name": "Lucky Coin", "content_id": "lucky_coin"},
+			]
+		)
+	)
 	var buttons: Array[Button] = presenter.option_buttons()
 	var result := ""
 	if not presenter.overlay().visible or not presenter.modal().visible:
@@ -127,6 +133,26 @@ func _test_layout_and_chrome_match_shop_contract() -> String:
 	return result
 
 
+func _test_visible_treasure_chest_text_keeps_readable_floor() -> String:
+	var fixture := _fixture()
+	var root: Control = fixture["root"]
+	var presenter: Variant = fixture["presenter"]
+	(
+		presenter
+		. render(
+			[
+				{"type": "equipment", "display_name": "Iron Shortsword", "content_id": "iron_shortsword"},
+				{"type": "relic", "display_name": "Lucky Coin", "content_id": "lucky_coin"},
+			]
+		)
+	)
+	presenter.apply_chrome()
+	presenter.layout(Vector2(1080.0, 1920.0))
+	var result := _visible_text_floor_failure(root)
+	root.free()
+	return result
+
+
 func _fixture() -> Dictionary:
 	var root := Control.new()
 	root.name = "ShopRoot"
@@ -147,3 +173,34 @@ func _fixture() -> Dictionary:
 
 func _vector_equal(left: Vector2, right: Vector2) -> bool:
 	return is_equal_approx(left.x, right.x) and is_equal_approx(left.y, right.y)
+
+
+func _visible_text_floor_failure(node: Node) -> String:
+	if node is Control and _is_visible_in_local_tree(node as Control):
+		var text := _control_text(node as Control).strip_edges()
+		if text != "":
+			var font_size := (node as Control).get_theme_font_size("font_size")
+			if font_size < 20:
+				return "Expected visible treasure chest text '%s' to be at least 20 px, got %d." % [text.left(32), font_size]
+	for child in node.get_children():
+		var result := _visible_text_floor_failure(child)
+		if result != "":
+			return result
+	return ""
+
+
+func _is_visible_in_local_tree(control: Control) -> bool:
+	var current: Node = control
+	while current != null:
+		if current is CanvasItem and not (current as CanvasItem).visible:
+			return false
+		current = current.get_parent()
+	return true
+
+
+func _control_text(control: Control) -> String:
+	if control is Button:
+		return (control as Button).text
+	if control is Label:
+		return (control as Label).text
+	return ""
