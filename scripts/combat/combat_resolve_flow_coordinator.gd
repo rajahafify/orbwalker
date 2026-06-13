@@ -26,7 +26,7 @@ var _combat_modifiers: Dictionary = {}
 var _callbacks: Dictionary = {}
 var _player_input_phase_value := 0
 var _resolving_input_phase_value := 1
-var _timer_state_locked := 2
+var _timer_state_locked := "locked"
 var _status_color_warning := Color(1.0, 0.86, 0.54, 1.0)
 
 
@@ -42,7 +42,7 @@ func bind(dependencies: Dictionary, callbacks: Dictionary, config: Dictionary = 
 	_callbacks = callbacks.duplicate()
 	_player_input_phase_value = int(config.get("player_input_phase_value", _player_input_phase_value))
 	_resolving_input_phase_value = int(config.get("resolving_input_phase_value", _resolving_input_phase_value))
-	_timer_state_locked = int(config.get("timer_state_locked", _timer_state_locked))
+	_timer_state_locked = String(config.get("timer_state_locked", _timer_state_locked))
 	_status_color_warning = config.get("status_color_warning", _status_color_warning)
 
 
