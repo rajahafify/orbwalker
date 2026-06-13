@@ -572,7 +572,7 @@ func _collect_visible_text_failures(node: Node, scene_path: String, failures: Ar
 				)
 			)
 		var text_rect_size := control.get_global_rect().size
-		var min_text_size := _minimum_visible_text_control_size(control, text, effective_font_size)
+		var min_text_size := _minimum_visible_text_control_size(control, text, effective_font_size, _audited_font(control))
 		if text_rect_size.x < min_text_size.x or text_rect_size.y < min_text_size.y:
 			failures.append(
 				"%s %s text='%s' rect_size=%s min_size=%s" % [scene_path, String(control.get_path()), text.left(32), str(text_rect_size), str(min_text_size)]
@@ -623,6 +623,15 @@ func _audited_font_size(control: Control) -> int:
 	return control.get_theme_font_size("font_size")
 
 
+func _audited_font(control: Control) -> Font:
+	if control is RichTextLabel:
+		var rich_text := control as RichTextLabel
+		var normal_font := rich_text.get_theme_font("normal_font")
+		if normal_font != null:
+			return normal_font
+	return control.get_theme_font("font")
+
+
 func _effective_font_size(control: Control, font_size: int) -> float:
 	var transform := control.get_global_transform_with_canvas()
 	var scale_x := transform.x.length()
@@ -643,11 +652,63 @@ func _scene_label(scene_path: String, viewport_size: Vector2) -> String:
 	return "%s@%dx%d" % [scene_path, int(viewport_size.x), int(viewport_size.y)]
 
 
-func _minimum_visible_text_control_size(control: Control, text: String, font_size: float) -> Vector2:
+func _minimum_visible_text_control_size(control: Control, text: String, font_size: float, font: Font) -> Vector2:
 	var min_height := maxf(18.0, font_size * 0.75)
 	var min_width := maxf(24.0, font_size * 1.6)
 	if text.length() > 1:
 		min_width = minf(180.0, maxf(48.0, font_size * minf(8.0, float(text.length()) * 0.42)))
 	if control is Label and (control as Label).autowrap_mode != TextServer.AUTOWRAP_OFF:
 		min_width = maxf(min_width, font_size * 5.0)
+	var metric_size := _minimum_metric_text_size(control, text, font_size, font)
+	min_width = maxf(min_width, metric_size.x)
+	min_height = maxf(min_height, metric_size.y)
 	return Vector2(min_width, min_height)
+
+
+func _minimum_metric_text_size(control: Control, text: String, font_size: float, font: Font) -> Vector2:
+	if font == null:
+		return Vector2.ZERO
+	var metric_font_size := maxi(1, int(ceil(font_size)))
+	var line_height := font.get_height(metric_font_size)
+	var min_height := maxf(18.0, line_height * 0.82)
+	var min_width := 0.0
+	if _control_wraps_text(control):
+		min_width = _longest_measured_word_width(text, font, metric_font_size)
+	else:
+		min_width = _longest_measured_line_width(text, font, metric_font_size)
+	if control is Button or control is OptionButton:
+		min_width += font_size * 1.5
+	if control is LineEdit or control is SpinBox:
+		min_width += font_size * 0.8
+	return Vector2(minf(320.0, maxf(0.0, min_width)), min_height)
+
+
+func _control_wraps_text(control: Control) -> bool:
+	if control is Label:
+		return (control as Label).autowrap_mode != TextServer.AUTOWRAP_OFF
+	if control is RichTextLabel:
+		return (control as RichTextLabel).autowrap_mode != TextServer.AUTOWRAP_OFF
+	if control is Button:
+		return (control as Button).autowrap_mode != TextServer.AUTOWRAP_OFF
+	return false
+
+
+func _longest_measured_line_width(text: String, font: Font, font_size: int) -> float:
+	var longest := 0.0
+	for line in text.split("\n", false):
+		var candidate := String(line).strip_edges()
+		if candidate == "":
+			continue
+		longest = maxf(longest, font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x)
+	return longest
+
+
+func _longest_measured_word_width(text: String, font: Font, font_size: int) -> float:
+	var longest := 0.0
+	var normalized := text.replace("\n", " ").replace("\t", " ")
+	for word in normalized.split(" ", false):
+		var candidate := String(word).strip_edges()
+		if candidate == "":
+			continue
+		longest = maxf(longest, font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x)
+	return longest
