@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-14, start-run combat scene warm-up):</p>
+<ul>
+<li><code>SceneRouter</code> now keeps a <code>PackedScene</code> cache and can warm scenes through Godot's threaded resource loader. <code>MainMenuController</code> requests a deferred warm-up for <code>res://scenes/combat.tscn</code> after the menu is ready, so Start Run no longer has to pay the full cold <code>ResourceLoader.load()</code> cost on button press when the warm-up has completed.</li>
+<li><code>FlowTrace</code> now records <code>cache_hit</code> in the <code>after_resource_load</code> details. A warmed transition should report <code>cache_hit=true</code> and a near-zero <code>load_ms</code>; if the user clicks before the threaded load completes, the click path only waits for the remaining load.</li>
+<li>Added <code>scene_router_test.gd</code> to cover warm-up acceptance, prepared-scene caching, and blank-path rejection.</li>
+</ul>
 <p>Verification notes (2026-06-13, combat resolve timer-state type fix):</p>
 <ul>
 <li>Fixed the follow-up live combat drag-release error where <code>CombatResolveFlowCoordinator</code> and <code>CombatControllerLifecycle</code> treated the locked timer state as an <code>int</code>. The resolve flow now keeps timer state as the string values expected by <code>CombatView.sync_timer_display()</code>.</li>

@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-14-start-run-combat-scene-warm-up">2026-06-14 - Start Run combat scene warm-up</h2>
+<ul>
+<li>Added a <code>PackedScene</code> cache and threaded warm-up request to <code>SceneRouter</code>. <code>MainMenuController</code> now requests a deferred warm-up for <code>res://scenes/combat.tscn</code> after menu setup, moving the expensive cold combat scene load off the Start Run button path. (source: <code>scripts/core/scene_router.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>)</li>
+<li>FlowTrace now includes <code>cache_hit</code> in <code>after_resource_load</code> details, and <code>scene_router_test.gd</code> verifies warmed scenes prepare from cache with a retained packed-scene path. (source: <code>scripts/tests/scene_router_test.gd</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
 <h2 id="2026-06-13-combat-resolve-timer-state-type-fix">2026-06-13 - Combat resolve timer-state type fix</h2>
 <ul>
 <li>Fixed the drag-release resolve flow so locked timer state remains a string through <code>CombatResolveFlowCoordinator</code> and <code>CombatControllerLifecycle</code>, matching <code>CombatView.sync_timer_display(seconds_left, state: String)</code>. This addresses the follow-up live-play error from Godot <code>4.6.3</code>. (source: <code>scripts/combat/combat_resolve_flow_coordinator.gd</code>, <code>scripts/combat/combat_controller_lifecycle.gd</code>)</li>
