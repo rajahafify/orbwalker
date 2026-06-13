@@ -1,6 +1,8 @@
 extends RefCounted
 class_name CombatChromeThemeHelpers
 
+const ZONE_GUIDE_LABEL_FONT_SIZE := 18
+
 
 static func apply_board_focus_theme(
 	board_shadow: Variant, outcome_summary_panel: Variant, outcome_title_label: Variant, outcome_body_label: Variant, next_button: Variant
@@ -355,7 +357,7 @@ static func apply_zone_guide(zone: Variant, label_text: String, enabled: bool) -
 			zone.add_child(guide)
 		(guide as Label).text = label_text
 		(guide as Label).add_theme_color_override("font_color", Color(0.95, 0.80, 0.30, 1.0))
-		(guide as Label).add_theme_font_size_override("font_size", 12)
+		(guide as Label).add_theme_font_size_override("font_size", ZONE_GUIDE_LABEL_FONT_SIZE)
 	else:
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color(0.025, 0.045, 0.07, 0.94)

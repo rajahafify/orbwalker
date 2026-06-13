@@ -2,6 +2,13 @@ extends Control
 
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PANEL_WIDTH := 1048.0
+const PAGE_SUBTITLE_FONT_SIZE := 22
+const VARIANT_SECTION_TITLE_FONT_SIZE := 25
+const VARIANT_SECTION_NOTE_FONT_SIZE := 20
+const VARIANT_CARD_NAME_MIN_FONT_SIZE := 24
+const VARIANT_CARD_LEVEL_MIN_FONT_SIZE := 22
+const VARIANT_FEEDBACK_MIN_FONT_SIZE := 22
+const VARIANT_FEEDBACK_MIN_HEIGHT := 30.0
 const PREVIEW_PANEL_FRAME_PATH := "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_panel_frame.png"
 const PREVIEW_CARD_PATH_BY_ORB_ID := {
 	OrbType.Id.FIRE: "res://resources/art/first_pass/derived/ui_chrome/mastery_preview_card_fire.png",
@@ -63,7 +70,7 @@ func _make_page_header() -> Control:
 	var subtitle := Label.new()
 	subtitle.text = "Reference study: 5 composed card styles using contained mastery icons"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 18)
+	subtitle.add_theme_font_size_override("font_size", PAGE_SUBTITLE_FONT_SIZE)
 	subtitle.add_theme_color_override("font_color", Color(0.82, 0.84, 0.90, 0.95))
 	header.add_child(subtitle)
 	return header
@@ -79,7 +86,7 @@ func _make_variant_section(spec: Dictionary) -> Control:
 	var title := Label.new()
 	title.text = String(spec.get("title", "Variant"))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	title.add_theme_font_size_override("font_size", 25)
+	title.add_theme_font_size_override("font_size", VARIANT_SECTION_TITLE_FONT_SIZE)
 	title.add_theme_color_override("font_color", Color(0.95, 0.89, 0.66, 1.0))
 	title.add_theme_constant_override("outline_size", 1)
 	title.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.02, 0.95))
@@ -88,7 +95,7 @@ func _make_variant_section(spec: Dictionary) -> Control:
 	var note := Label.new()
 	note.text = String(spec.get("note", ""))
 	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	note.add_theme_font_size_override("font_size", 16)
+	note.add_theme_font_size_override("font_size", VARIANT_SECTION_NOTE_FONT_SIZE)
 	note.add_theme_color_override("font_color", Color(0.78, 0.82, 0.88, 0.92))
 	section.add_child(note)
 
@@ -197,7 +204,7 @@ func _make_mastery_card(orb_id: int, spec: Dictionary, card_size: Vector2) -> Co
 		OrbType.display_name(orb_id),
 		Vector2(8.0, float(spec.get("name_y", 132.0))),
 		Vector2(card_size.x - 16.0, float(spec.get("name_height", 38.0))),
-		int(spec.get("card_name_font_size", 28)),
+		maxi(int(spec.get("card_name_font_size", 28)), VARIANT_CARD_NAME_MIN_FONT_SIZE),
 		Color(0.96, 0.89, 0.72, 1.0)
 	)
 	name_label.name = "MasteryName"
@@ -207,7 +214,7 @@ func _make_mastery_card(orb_id: int, spec: Dictionary, card_size: Vector2) -> Co
 		"Lv 0",
 		Vector2(8.0, float(spec.get("level_y", 170.0))),
 		Vector2(card_size.x - 16.0, float(spec.get("level_height", 30.0))),
-		int(spec.get("card_level_font_size", 23)),
+		maxi(int(spec.get("card_level_font_size", 23)), VARIANT_CARD_LEVEL_MIN_FONT_SIZE),
 		Color(0.99, 0.76, 0.31, 1.0)
 	)
 	level_label.name = "MasteryLevel"
@@ -217,8 +224,8 @@ func _make_mastery_card(orb_id: int, spec: Dictionary, card_size: Vector2) -> Co
 		var feedback := _make_card_label(
 			_feedback_preview_text(orb_id),
 			Vector2(8.0, float(spec.get("feedback_y", 202.0))),
-			Vector2(card_size.x - 16.0, float(spec.get("feedback_height", 24.0))),
-			int(spec.get("feedback_font_size", 15)),
+			Vector2(card_size.x - 16.0, maxf(float(spec.get("feedback_height", VARIANT_FEEDBACK_MIN_HEIGHT)), VARIANT_FEEDBACK_MIN_HEIGHT)),
+			maxi(int(spec.get("feedback_font_size", 15)), VARIANT_FEEDBACK_MIN_FONT_SIZE),
 			Color(1.0, 0.90, 0.50, 0.86)
 		)
 		feedback.name = "MasteryFeedback"
@@ -283,7 +290,26 @@ func _feedback_preview_text(orb_id: int) -> String:
 			return "+0"
 
 
-func _variant_specs() -> Array[Dictionary]:
+static func readability_font_probe() -> Dictionary:
+	var min_card_name := 999
+	var min_card_level := 999
+	var min_feedback := 999
+	for spec in _variant_specs():
+		min_card_name = mini(min_card_name, maxi(int(spec.get("card_name_font_size", 28)), VARIANT_CARD_NAME_MIN_FONT_SIZE))
+		min_card_level = mini(min_card_level, maxi(int(spec.get("card_level_font_size", 23)), VARIANT_CARD_LEVEL_MIN_FONT_SIZE))
+		if bool(spec.get("feedback_ready", false)):
+			min_feedback = mini(min_feedback, maxi(int(spec.get("feedback_font_size", 15)), VARIANT_FEEDBACK_MIN_FONT_SIZE))
+	return {
+		"page_subtitle": PAGE_SUBTITLE_FONT_SIZE,
+		"section_title": VARIANT_SECTION_TITLE_FONT_SIZE,
+		"section_note": VARIANT_SECTION_NOTE_FONT_SIZE,
+		"card_name_min": min_card_name,
+		"card_level_min": min_card_level,
+		"feedback_min": min_feedback,
+	}
+
+
+static func _variant_specs() -> Array[Dictionary]:
 	return [
 		{
 			"title": "1) Reference Faithful",

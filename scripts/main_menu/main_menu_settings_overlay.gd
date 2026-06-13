@@ -39,6 +39,10 @@ const MENU_PRESSED_FONT_COLOR := Color(0.84, 0.90, 0.98, 1.0)
 const MENU_FONT_OUTLINE_COLOR := Color(0.03, 0.04, 0.07, 0.96)
 const SETTINGS_PANEL_FILL_COLOR := Color(0.045, 0.065, 0.085, 0.98)
 const SETTINGS_PANEL_BORDER_COLOR := Color(0.78, 0.58, 0.20, 1.0)
+const SETTINGS_BUTTON_FONT_MIN_SIZE := 22
+const SETTINGS_FLAG_FONT_MIN_SIZE := 20
+const SETTINGS_TOGGLE_TITLE_FONT_SIZE := 24
+const SETTINGS_TOGGLE_DESCRIPTION_FONT_SIZE := 20
 
 var _overlay: Control = null
 var _panel: Panel = null
@@ -224,8 +228,8 @@ func layout(viewport_size: Vector2) -> void:
 	var scale_factor := minf(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
 	var button_height := clampf(viewport_size.y * 0.060, 58.0, 82.0)
 	var action_button_height := clampf(viewport_size.y * 0.066, 64.0, 88.0)
-	var button_font := maxi(18, int(round(34.0 * scale_factor)))
-	var flag_font := maxi(16, int(round(30.0 * scale_factor)))
+	var button_font := maxi(SETTINGS_BUTTON_FONT_MIN_SIZE, int(round(34.0 * scale_factor)))
+	var flag_font := maxi(SETTINGS_FLAG_FONT_MIN_SIZE, int(round(30.0 * scale_factor)))
 	if _title_label != null:
 		_title_label.add_theme_font_size_override("font_size", maxi(30, int(round(54.0 * scale_factor))))
 	if _actions != null:
@@ -253,21 +257,21 @@ func apply_style() -> void:
 		_panel.add_theme_stylebox_override("panel", UI_UTILS.panel_style(SETTINGS_PANEL_FILL_COLOR, SETTINGS_PANEL_BORDER_COLOR, 2, 8, Vector4(32, 28, 32, 28)))
 	for button in _speed_buttons:
 		_apply_button_style(button)
-		button.add_theme_font_size_override("font_size", 22)
+		button.add_theme_font_size_override("font_size", SETTINGS_BUTTON_FONT_MIN_SIZE)
 	for button in [_reduced_motion_button, _game_juice_button]:
 		if button != null:
 			_apply_button_style(button)
-			button.add_theme_font_size_override("font_size", 22)
+			button.add_theme_font_size_override("font_size", SETTINGS_BUTTON_FONT_MIN_SIZE)
 	for button in _game_juice_flag_buttons.values():
 		var flag_button := button as Button
 		if flag_button == null:
 			continue
 		_apply_button_style(flag_button)
-		flag_button.add_theme_font_size_override("font_size", 20)
+		flag_button.add_theme_font_size_override("font_size", SETTINGS_FLAG_FONT_MIN_SIZE)
 	for button in [_reset_button, _close_button]:
 		if button != null:
 			_apply_button_style(button)
-			button.add_theme_font_size_override("font_size", 22)
+			button.add_theme_font_size_override("font_size", SETTINGS_BUTTON_FONT_MIN_SIZE)
 
 
 static func localization_keys() -> Array[String]:
@@ -310,16 +314,17 @@ func _toggle_row(button: Button, title: String, description: String) -> HBoxCont
 	title_label.name = "%sTitleLabel" % button.name.trim_suffix("Button")
 	title_label.text = title
 	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	title_label.add_theme_font_size_override("font_size", 24)
+	title_label.add_theme_font_size_override("font_size", SETTINGS_TOGGLE_TITLE_FONT_SIZE)
 	title_label.add_theme_color_override("font_color", MENU_FONT_COLOR)
 	title_label.add_theme_color_override("font_outline_color", MENU_FONT_OUTLINE_COLOR)
 	title_label.add_theme_constant_override("outline_size", 1)
 	text_column.add_child(title_label)
 	if description.strip_edges() != "":
 		var description_label := Label.new()
+		description_label.name = "%sDescriptionLabel" % button.name.trim_suffix("Button")
 		description_label.text = description
 		description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-		description_label.add_theme_font_size_override("font_size", 19)
+		description_label.add_theme_font_size_override("font_size", SETTINGS_TOGGLE_DESCRIPTION_FONT_SIZE)
 		description_label.add_theme_color_override("font_color", Color(0.76, 0.82, 0.88, 0.94))
 		description_label.add_theme_color_override("font_outline_color", Color(0.02, 0.025, 0.03, 0.92))
 		description_label.add_theme_constant_override("outline_size", 1)

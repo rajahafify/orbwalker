@@ -11,10 +11,11 @@ func run_all() -> Dictionary:
 	_run_case("nodes_from_root_nodes_overlays_runtime_extras", _test_nodes_from_root_nodes_overlays_runtime_extras, failures)
 	_run_case("theme_helpers_apply_progressbar_flat_style", _test_theme_helpers_apply_progressbar_flat_style, failures)
 	_run_case("theme_helpers_apply_board_focus_theme", _test_theme_helpers_apply_board_focus_theme, failures)
+	_run_case("theme_helpers_zone_guides_keep_readable_label", _test_theme_helpers_zone_guides_keep_readable_label, failures)
 	_run_case("visual_chrome_keeps_combat_text_readable", _test_visual_chrome_keeps_combat_text_readable, failures)
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -131,6 +132,20 @@ func _test_theme_helpers_apply_board_focus_theme() -> String:
 		return "Expected outcome title font size to be preserved."
 	panel.free()
 	title.free()
+	return ""
+
+
+func _test_theme_helpers_zone_guides_keep_readable_label() -> String:
+	var zone := Panel.new()
+	THEME_HELPERS.apply_zone_guide(zone, "Board", true)
+	var guide := zone.get_node_or_null("ZoneGuideLabel") as Label
+	if guide == null:
+		zone.free()
+		return "Expected zone guide label to be created."
+	if guide.get_theme_font_size("font_size") < THEME_HELPERS.ZONE_GUIDE_LABEL_FONT_SIZE:
+		zone.free()
+		return "Expected zone guide label to keep its readable font floor."
+	zone.free()
 	return ""
 
 

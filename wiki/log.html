@@ -303,6 +303,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 <li>Changed timeout handling in <code>BoardController.update()</code> so an expired active drag emits a handled <code>"end"</code> result, letting the existing combat resolve coordinator process matches and enemy actions instead of dropping the timeout as an unhandled no-op. (source: <code>scripts/board/board_controller.gd</code>)</li>
 <li>Added direct board-controller timeout coverage and updated the combat input router test so timer-service end results are forwarded through the normal tutorial drag-end path. (source: <code>scripts/tests/board_controller_test.gd</code>, <code>scripts/tests/combat_controller_input_router_test.gd</code>, <code>docs/test_plan.html</code>)</li>
 </ul>
+<h2 id="2026-06-14-ui-legibility-floor-pass-3">2026-06-14 - UI legibility floor pass 3</h2>
+<ul>
+<li>Raised the remaining explicit low-font visible text in the main-menu settings overlay, elemental mastery preview variants, and combat zone-guide labels. (source: <code>scripts/main_menu/main_menu_settings_overlay.gd</code>, <code>scripts/ui/elemental_mastery_hud_variants.gd</code>, <code>scripts/combat/combat_chrome_theme_helpers.gd</code>)</li>
+<li>Added tests so those surfaces keep their readable floors. (source: <code>scripts/tests/main_menu_localization_test.gd</code>, <code>scripts/tests/combat_chrome_styler_test.gd</code>, <code>scripts/tests/elemental_mastery_hud_variants_test.gd</code>)</li>
+</ul>
 <h2 id="2026-06-14-ui-legibility-floor-pass-2">2026-06-14 - UI legibility floor pass 2</h2>
 <ul>
 <li>Raised the remaining low visible text floors in collection, shop, run-summary, boss-reward, and main-menu scaled UI surfaces. (source: <code>scripts/collection/collection_view.gd</code>, <code>scripts/ui/collection_card_renderer.gd</code>, <code>scripts/shop/shop_view_chrome_styler.gd</code>, <code>scripts/run_summary/run_summary_view.gd</code>, <code>scripts/combat/combat_outcome_overlay.gd</code>, <code>scripts/main_menu/main_menu_accessibility_contract.gd</code>)</li>

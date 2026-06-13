@@ -2,6 +2,7 @@ extends RefCounted
 class_name MainMenuLocalizationTest
 
 const MAIN_MENU_VIEW := preload("res://scripts/main_menu/main_menu_view.gd")
+const MAIN_MENU_SETTINGS_OVERLAY := preload("res://scripts/main_menu/main_menu_settings_overlay.gd")
 const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 const LOCALIZATION_BOOTSTRAP := preload("res://scripts/ui/localization_bootstrap.gd")
 const TRANSLATION_PATHS := [
@@ -147,6 +148,9 @@ func _test_main_menu_settings_uses_full_mobile_surface() -> String:
 	var panel := host.find_child("SettingsPanel", true, false) as Panel
 	var scroll := host.find_child("SettingsScroll", true, false) as ScrollContainer
 	var close_button := host.find_child("SettingsCloseButton", true, false) as Button
+	var game_juice_description := host.find_child("SettingsGameJuiceDescriptionLabel", true, false) as Label
+	var screen_nudge_button := host.find_child("JuiceFlagScreenNudgeButton", true, false) as Button
+	var game_juice_title := host.find_child("SettingsGameJuiceTitleLabel", true, false) as Label
 	if overlay == null or panel == null or scroll == null or close_button == null:
 		host.free()
 		return "Expected settings overlay, panel, scroll, and close nodes to exist."
@@ -162,6 +166,21 @@ func _test_main_menu_settings_uses_full_mobile_surface() -> String:
 	if close_button.custom_minimum_size.y < 64.0:
 		host.free()
 		return "Expected main-menu settings close button to remain touch-sized on mobile."
+	if close_button.get_theme_font_size("font_size") < MAIN_MENU_SETTINGS_OVERLAY.SETTINGS_BUTTON_FONT_MIN_SIZE:
+		host.free()
+		return "Expected main-menu settings action buttons to keep readable text."
+	if screen_nudge_button == null or screen_nudge_button.get_theme_font_size("font_size") < MAIN_MENU_SETTINGS_OVERLAY.SETTINGS_FLAG_FONT_MIN_SIZE:
+		host.free()
+		return "Expected main-menu settings flag buttons to keep readable text."
+	if game_juice_title == null or game_juice_title.get_theme_font_size("font_size") < MAIN_MENU_SETTINGS_OVERLAY.SETTINGS_TOGGLE_TITLE_FONT_SIZE:
+		host.free()
+		return "Expected main-menu settings toggle titles to keep readable text."
+	if (
+		game_juice_description == null
+		or game_juice_description.get_theme_font_size("font_size") < MAIN_MENU_SETTINGS_OVERLAY.SETTINGS_TOGGLE_DESCRIPTION_FONT_SIZE
+	):
+		host.free()
+		return "Expected main-menu settings descriptions to keep readable text."
 	host.free()
 	return ""
 
