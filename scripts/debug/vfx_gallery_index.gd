@@ -3,6 +3,8 @@ class_name VfxGalleryIndex
 
 const CATALOG_SCRIPT := preload("res://scripts/debug/vfx_debug_catalog.gd")
 const SHOW_SCENE_PATH := "res://scenes/debug/vfx_gallery_show.tscn"
+const STATUS_LABEL_FONT_SIZE := 22
+const ENTRY_BUTTON_FONT_SIZE := 22
 
 var _content_root: VBoxContainer
 var _status_label: Label
@@ -76,13 +78,14 @@ func _build_ui() -> void:
 	play_all.name = "PlayAllButton"
 	play_all.text = "Open Show Page"
 	play_all.custom_minimum_size = Vector2(190, 58)
+	play_all.add_theme_font_size_override("font_size", ENTRY_BUTTON_FONT_SIZE)
 	play_all.pressed.connect(_open_default_entry)
 	top_row.add_child(play_all)
 
 	_status_label = Label.new()
 	_status_label.name = "StatusLabel"
 	_status_label.text = ""
-	_status_label.add_theme_font_size_override("font_size", 18)
+	_status_label.add_theme_font_size_override("font_size", STATUS_LABEL_FONT_SIZE)
 	_status_label.add_theme_color_override("font_color", Color(0.68, 0.78, 0.92, 1.0))
 	_content_root.add_child(_status_label)
 
@@ -138,17 +141,28 @@ func _populate_entries() -> void:
 func _make_entry_button(entry: Dictionary) -> Button:
 	var button := Button.new()
 	button.name = "%sButton" % String(entry.get("id", "entry")).to_pascal_case()
-	button.text = "%s\n%s | %s" % [
-		String(entry.get("name", "VFX")),
-		String(entry.get("entry_point", "")),
-		CATALOG_SCRIPT.target_name(String(entry.get("target", ""))),
-	]
+	button.text = (
+		"%s\n%s | %s"
+		% [
+			String(entry.get("name", "VFX")),
+			String(entry.get("entry_point", "")),
+			CATALOG_SCRIPT.target_name(String(entry.get("target", ""))),
+		]
+	)
 	button.custom_minimum_size = Vector2(420, 96)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	button.add_theme_font_size_override("font_size", ENTRY_BUTTON_FONT_SIZE)
 	button.pressed.connect(_open_entry.bind(String(entry.get("id", ""))))
 	return button
+
+
+static func readability_font_probe() -> Dictionary:
+	return {
+		"status_label": STATUS_LABEL_FONT_SIZE,
+		"entry_button": ENTRY_BUTTON_FONT_SIZE,
+	}
 
 
 func _open_default_entry() -> void:

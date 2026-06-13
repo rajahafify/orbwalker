@@ -1,6 +1,12 @@
 extends RefCounted
 class_name VfxGalleryShowControls
 
+const SMALL_LABEL_FONT_SIZE := 20
+const ANCHOR_CAPTION_FONT_SIZE := 22
+const STATUS_LABEL_FONT_SIZE := 22
+const DESCRIPTION_LABEL_FONT_SIZE := 20
+const CONTROL_BUTTON_FONT_SIZE := 22
+
 
 static func build(owner: Control, callbacks: Dictionary) -> Dictionary:
 	owner.anchor_right = 1.0
@@ -43,7 +49,7 @@ static func make_small_label(text: String) -> Label:
 	label.text = text
 	label.custom_minimum_size = Vector2(0, 42)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.add_theme_font_size_override("font_size", 17)
+	label.add_theme_font_size_override("font_size", SMALL_LABEL_FONT_SIZE)
 	label.add_theme_color_override("font_color", Color(0.72, 0.78, 0.86, 1.0))
 	return label
 
@@ -54,11 +60,21 @@ static func make_anchor_caption(text: String) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_font_size_override("font_size", ANCHOR_CAPTION_FONT_SIZE)
 	label.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96, 0.92))
 	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.88))
 	label.add_theme_constant_override("outline_size", 4)
 	return label
+
+
+static func readability_font_probe() -> Dictionary:
+	return {
+		"small_label": SMALL_LABEL_FONT_SIZE,
+		"anchor_caption": ANCHOR_CAPTION_FONT_SIZE,
+		"status_label": STATUS_LABEL_FONT_SIZE,
+		"description_label": DESCRIPTION_LABEL_FONT_SIZE,
+		"control_button": CONTROL_BUTTON_FONT_SIZE,
+	}
 
 
 static func panel_style(bg: Color, border: Color, border_width: int = 2, radius: int = 8) -> StyleBoxFlat:
@@ -85,6 +101,7 @@ static func _make_header(callbacks: Dictionary, nodes: Dictionary) -> Control:
 	back.name = "BackButton"
 	back.text = "< Index"
 	back.custom_minimum_size = Vector2(132, 52)
+	back.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(back.pressed, callbacks.get("back_pressed"))
 	row.add_child(back)
 	nodes["back_button"] = back
@@ -105,7 +122,7 @@ static func _make_header(callbacks: Dictionary, nodes: Dictionary) -> Control:
 	status_label.custom_minimum_size = Vector2(270, 52)
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT as HorizontalAlignment
 	status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	status_label.add_theme_font_size_override("font_size", 18)
+	status_label.add_theme_font_size_override("font_size", STATUS_LABEL_FONT_SIZE)
 	status_label.add_theme_color_override("font_color", Color(0.68, 0.78, 0.92, 1.0))
 	row.add_child(status_label)
 	nodes["status_label"] = status_label
@@ -131,6 +148,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	entry_select.name = "EntrySelect"
 	entry_select.custom_minimum_size = Vector2(330, 48)
 	entry_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	entry_select.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(entry_select.item_selected, callbacks.get("entry_selected"))
 	first_row.add_child(entry_select)
 	nodes["entry_select"] = entry_select
@@ -138,6 +156,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	var phase_select := OptionButton.new()
 	phase_select.name = "PhaseSelect"
 	phase_select.custom_minimum_size = Vector2(210, 48)
+	phase_select.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(phase_select.item_selected, callbacks.get("phase_selected"))
 	first_row.add_child(phase_select)
 	nodes["phase_select"] = phase_select
@@ -145,6 +164,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	var quality_select := OptionButton.new()
 	quality_select.name = "QualitySelect"
 	quality_select.custom_minimum_size = Vector2(150, 48)
+	quality_select.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	quality_select.add_item("Low")
 	quality_select.set_item_metadata(0, "low")
 	quality_select.add_item("High")
@@ -158,6 +178,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	play_button.name = "PlayButton"
 	play_button.text = "Play"
 	play_button.custom_minimum_size = Vector2(112, 48)
+	play_button.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(play_button.pressed, callbacks.get("restart_playback"))
 	first_row.add_child(play_button)
 	nodes["play_button"] = play_button
@@ -186,6 +207,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	amount_spin.step = 1.0
 	amount_spin.value = 12.0
 	amount_spin.custom_minimum_size = Vector2(104, 48)
+	amount_spin.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(amount_spin.value_changed, callbacks.get("amount_spin_changed"))
 	second_row.add_child(amount_spin)
 	nodes["amount_spin"] = amount_spin
@@ -217,6 +239,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	var loop_toggle := CheckBox.new()
 	loop_toggle.name = "LoopToggle"
 	loop_toggle.text = "Loop"
+	loop_toggle.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(loop_toggle.toggled, callbacks.get("loop_toggled"))
 	third_row.add_child(loop_toggle)
 	nodes["loop_toggle"] = loop_toggle
@@ -225,6 +248,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	anchors_toggle.name = "AnchorsToggle"
 	anchors_toggle.text = "Anchors"
 	anchors_toggle.button_pressed = true
+	anchors_toggle.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(anchors_toggle.toggled, callbacks.get("anchor_toggle_changed"))
 	third_row.add_child(anchors_toggle)
 	nodes["anchors_toggle"] = anchors_toggle
@@ -232,6 +256,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	var clean_toggle := CheckBox.new()
 	clean_toggle.name = "CleanToggle"
 	clean_toggle.text = "Clean"
+	clean_toggle.add_theme_font_size_override("font_size", CONTROL_BUTTON_FONT_SIZE)
 	_connect_callback(clean_toggle.toggled, callbacks.get("clean_toggle_changed"))
 	third_row.add_child(clean_toggle)
 	nodes["clean_toggle"] = clean_toggle
@@ -240,7 +265,7 @@ static func _make_control_panel(callbacks: Dictionary, nodes: Dictionary) -> Con
 	description_label.name = "DescriptionLabel"
 	description_label.text = ""
 	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
-	description_label.add_theme_font_size_override("font_size", 17)
+	description_label.add_theme_font_size_override("font_size", DESCRIPTION_LABEL_FONT_SIZE)
 	description_label.add_theme_color_override("font_color", Color(0.68, 0.74, 0.82, 1.0))
 	box.add_child(description_label)
 	nodes["description_label"] = description_label

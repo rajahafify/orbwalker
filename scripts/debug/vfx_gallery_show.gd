@@ -6,6 +6,7 @@ const COMBAT_VFX_PRESENTER_SCRIPT := preload("res://scripts/combat/combat_vfx_pr
 const CONTROLS_SCRIPT := preload("res://scripts/debug/vfx_gallery_show_controls.gd")
 const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const INDEX_SCENE_PATH := "res://scenes/debug/vfx_gallery_index.tscn"
+const HP_LABEL_FONT_SIZE := 22
 
 const ORB_ORDER: Array[int] = [
 	OrbType.Id.FIRE,
@@ -148,7 +149,7 @@ func _build_preview_contents() -> void:
 	hp_label.text = "HP BAR TARGET"
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER as HorizontalAlignment
 	hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER as VerticalAlignment
-	hp_label.add_theme_font_size_override("font_size", 18)
+	hp_label.add_theme_font_size_override("font_size", HP_LABEL_FONT_SIZE)
 	hp_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.92, 1.0))
 	hp_panel.add_child(hp_label)
 
@@ -172,6 +173,10 @@ func _build_preview_contents() -> void:
 	_vfx_layer.anchor_bottom = 1.0
 	_vfx_layer.z_index = 100
 	_preview_root.add_child(_vfx_layer)
+
+
+static func readability_font_probe() -> Dictionary:
+	return {"hp_label": HP_LABEL_FONT_SIZE}
 
 
 func _build_board_cells() -> void:
@@ -358,6 +363,7 @@ func _populate_amount_presets(entry: Dictionary) -> void:
 		button.name = "Preset%d" % amount
 		button.text = str(amount)
 		button.custom_minimum_size = Vector2(62, 42)
+		button.add_theme_font_size_override("font_size", CONTROLS_SCRIPT.CONTROL_BUTTON_FONT_SIZE)
 		button.pressed.connect(_on_amount_preset_pressed.bind(amount))
 		_preset_row.add_child(button)
 
