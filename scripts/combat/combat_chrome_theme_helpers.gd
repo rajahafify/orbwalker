@@ -1,7 +1,7 @@
 extends RefCounted
 class_name CombatChromeThemeHelpers
 
-const ZONE_GUIDE_LABEL_FONT_SIZE := 18
+const ZONE_GUIDE_LABEL_FONT_SIZE := 20
 
 
 static func apply_board_focus_theme(

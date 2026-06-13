@@ -63,13 +63,13 @@ func _test_main_menu_scaled_text_keeps_readable_floors() -> String:
 	var probe: Dictionary = MAIN_MENU_VIEW.font_probe_snapshot(Vector2(540.0, 960.0))
 	var minimums := {
 		"menu": 22,
-		"element": 18,
-		"stat_title": 16,
+		"element": 20,
+		"stat_title": 20,
 		"stat_value": 20,
-		"footer": 18,
+		"footer": 20,
 		"profile_action": 22,
-		"version": 16,
-		"status": 16,
+		"version": 20,
+		"status": 20,
 	}
 	for key in minimums.keys():
 		if int(probe.get(key, 0)) < int(minimums[key]):

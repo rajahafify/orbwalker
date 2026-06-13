@@ -304,7 +304,7 @@ func _collect_visible_text_failures(node: Node, scene_path: String, failures: Ar
 	var control := node as Control
 	if control != null and _has_audited_visible_text(control):
 		var text := _audited_text(control).strip_edges()
-		var font_size := control.get_theme_font_size("font_size")
+		var font_size := _audited_font_size(control)
 		if font_size < MIN_VISIBLE_TEXT_FONT_SIZE:
 			failures.append("%s %s text='%s' font_size=%d" % [scene_path, String(control.get_path()), text.left(32), font_size])
 		var text_rect_size := control.get_global_rect().size
@@ -334,11 +334,29 @@ func _audited_text(control: Control) -> String:
 		if selected < 0:
 			selected = 0
 		return option_button.get_item_text(selected)
+	if control is SpinBox:
+		return str((control as SpinBox).value)
+	if control is LineEdit:
+		var line_edit := control as LineEdit
+		if line_edit.text.strip_edges() != "":
+			return line_edit.text
+		return line_edit.placeholder_text
 	if control is Button:
 		return (control as Button).text
+	if control is RichTextLabel:
+		return (control as RichTextLabel).text
 	if control is Label:
 		return (control as Label).text
 	return ""
+
+
+func _audited_font_size(control: Control) -> int:
+	if control is RichTextLabel:
+		var rich_text := control as RichTextLabel
+		var normal_font_size := rich_text.get_theme_font_size("normal_font_size")
+		if normal_font_size > 0:
+			return normal_font_size
+	return control.get_theme_font_size("font_size")
 
 
 func _summarize_failures(failures: Array[String]) -> String:

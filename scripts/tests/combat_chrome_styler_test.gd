@@ -142,7 +142,7 @@ func _test_theme_helpers_zone_guides_keep_readable_label() -> String:
 	if guide == null:
 		zone.free()
 		return "Expected zone guide label to be created."
-	if guide.get_theme_font_size("font_size") < THEME_HELPERS.ZONE_GUIDE_LABEL_FONT_SIZE:
+	if guide.get_theme_font_size("font_size") < 20:
 		zone.free()
 		return "Expected zone guide label to keep its readable font floor."
 	zone.free()
