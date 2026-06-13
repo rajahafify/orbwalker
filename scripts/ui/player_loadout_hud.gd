@@ -568,7 +568,7 @@ func _mastery_panel_hooks() -> Dictionary:
 		"mastery_highlighter_provider": Callable(self, "_mastery_highlighter"),
 		"hud_nodes_provider": func() -> Dictionary: return _hud_nodes,
 		"to_parent_rect": Callable(self, "_to_parent_rect"),
-		"apply_rect": Callable(self, "_apply_rect"),
+		"apply_rect": func(control: Control, rect: Rect2) -> void: HUD_LAYOUT_SCRIPT._apply_rect(control, rect),
 	}
 
 

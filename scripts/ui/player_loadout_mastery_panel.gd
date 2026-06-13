@@ -23,7 +23,10 @@ const COMBAT_MASTERY_HOVER_ALPHA := 0.20
 const COMBAT_MASTERY_HOVER_BORDER_ALPHA := 0.90
 const COMBAT_MASTERY_ORDER: Array[int] = [3, 4, 5, 0, 1, 2]
 const COMBAT_MASTERY_ROOT_RECT := Rect2(Vector2.ZERO, Vector2(1048, 108))
-const MASTERY_DETAIL_BUBBLE_SIZE := Vector2(960.0, 468.0)
+const MASTERY_DETAIL_BUBBLE_MAX_SIZE := Vector2(560.0, 232.0)
+const MASTERY_DETAIL_BUBBLE_MIN_WIDTH := 320.0
+const MASTERY_DETAIL_BUBBLE_MARGIN := 12.0
+const MASTERY_DETAIL_BUBBLE_PADDING := 16.0
 
 var _clear_children_callback: Callable
 var _slot_stylebox_callback: Callable
@@ -482,19 +485,22 @@ func _ensure_mastery_detail_bubble() -> void:
 
 	_mastery_detail_title = Label.new()
 	_mastery_detail_title.name = "MasteryDetailTitle"
+	_configure_mastery_detail_label(_mastery_detail_title)
 	_mastery_detail_bubble.add_child(_mastery_detail_title)
 
 	_mastery_detail_effect = Label.new()
 	_mastery_detail_effect.name = "MasteryDetailEffect"
+	_configure_mastery_detail_label(_mastery_detail_effect, true)
 	_mastery_detail_bubble.add_child(_mastery_detail_effect)
 
 	_mastery_detail_value = Label.new()
 	_mastery_detail_value.name = "MasteryDetailValue"
+	_configure_mastery_detail_label(_mastery_detail_value)
 	_mastery_detail_bubble.add_child(_mastery_detail_value)
 
 	_mastery_detail_modifiers = Label.new()
 	_mastery_detail_modifiers.name = "MasteryDetailModifiers"
-	_mastery_detail_modifiers.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART as TextServer.AutowrapMode
+	_configure_mastery_detail_label(_mastery_detail_modifiers, true)
 	_mastery_detail_bubble.add_child(_mastery_detail_modifiers)
 
 	_apply_mastery_detail_popover_chrome()
@@ -510,13 +516,13 @@ func _apply_mastery_detail_popover_chrome() -> void:
 	bubble_style.set_corner_radius_all(8)
 	_mastery_detail_bubble.add_theme_stylebox_override("panel", bubble_style)
 
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 36)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_title, Color(0.96, 0.93, 0.86, 1.0), 22)
 	_mastery_detail_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 28)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_effect, Color(0.79, 0.86, 0.93, 1.0), 16)
 	_mastery_detail_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 28)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_value, Color(0.90, 0.95, 0.72, 1.0), 16)
 	_mastery_detail_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
-	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 26)
+	HUD_CHROME_STYLER_SCRIPT._apply_hud_label_style(_mastery_detail_modifiers, Color(0.74, 0.78, 0.84, 1.0), 15)
 	_mastery_detail_modifiers.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT as HorizontalAlignment
 	_mastery_detail_modifiers.vertical_alignment = VERTICAL_ALIGNMENT_TOP as VerticalAlignment
 
@@ -533,7 +539,6 @@ func _show_mastery_detail(orb_id: int, anchor_card: Control = null) -> void:
 	_mastery_detail_effect.text = String(detail.get("effect", ""))
 	_mastery_detail_value.text = String(detail.get("value", ""))
 	_mastery_detail_modifiers.text = String(detail.get("modifiers", ""))
-	_mastery_detail_bubble.size = MASTERY_DETAIL_BUBBLE_SIZE
 	_mastery_detail_bubble.visible = true
 	_set_mastery_source_highlights_for_orb(orb_id)
 	_layout_mastery_detail_bubble(anchor_card)
@@ -562,18 +567,44 @@ func _layout_mastery_detail_bubble(anchor_card: Control = null) -> void:
 	if anchor_rect.size == Vector2.ZERO:
 		return
 
-	var bubble_size: Vector2 = _mastery_detail_bubble.size
+	var bubble_size := _mastery_detail_bubble_size(parent.size)
+	_mastery_detail_bubble.size = bubble_size
 	var local_x: float = anchor_rect.position.x + (anchor_rect.size.x - bubble_size.x) * 0.5
-	local_x = clampf(local_x, 0.0, maxf(0.0, parent.size.x - bubble_size.x))
-	var local_y: float = anchor_rect.position.y - bubble_size.y - 10.0
-	if local_y < 0.0:
-		local_y = anchor_rect.end.y + 10.0
+	local_x = clampf(local_x, MASTERY_DETAIL_BUBBLE_MARGIN, maxf(MASTERY_DETAIL_BUBBLE_MARGIN, parent.size.x - bubble_size.x - MASTERY_DETAIL_BUBBLE_MARGIN))
+	var local_y: float = anchor_rect.position.y - bubble_size.y - 8.0
+	if local_y < MASTERY_DETAIL_BUBBLE_MARGIN:
+		local_y = anchor_rect.end.y + 8.0
+	local_y = clampf(local_y, MASTERY_DETAIL_BUBBLE_MARGIN, maxf(MASTERY_DETAIL_BUBBLE_MARGIN, parent.size.y - bubble_size.y - MASTERY_DETAIL_BUBBLE_MARGIN))
 	_mastery_detail_bubble.position = Vector2(local_x, local_y)
 
-	_apply_rect(_mastery_detail_title, Rect2(Vector2(24.0, 20.0), Vector2(bubble_size.x - 48.0, 52.0)))
-	_apply_rect(_mastery_detail_effect, Rect2(Vector2(24.0, 88.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_apply_rect(_mastery_detail_value, Rect2(Vector2(24.0, 146.0), Vector2(bubble_size.x - 48.0, 46.0)))
-	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(24.0, 208.0), Vector2(bubble_size.x - 48.0, bubble_size.y - 232.0)))
+	var content_width := maxf(1.0, bubble_size.x - MASTERY_DETAIL_BUBBLE_PADDING * 2.0)
+	_apply_rect(_mastery_detail_title, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 14.0), Vector2(content_width, 28.0)))
+	_apply_rect(_mastery_detail_effect, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 48.0), Vector2(content_width, 44.0)))
+	_apply_rect(_mastery_detail_value, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 96.0), Vector2(content_width, 24.0)))
+	_apply_rect(_mastery_detail_modifiers, Rect2(Vector2(MASTERY_DETAIL_BUBBLE_PADDING, 130.0), Vector2(content_width, maxf(1.0, bubble_size.y - 146.0))))
+
+
+func _configure_mastery_detail_label(label: Label, wrap: bool = false) -> void:
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE as Control.MouseFilter
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS as TextServer.OverrunBehavior
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if wrap else TextServer.AUTOWRAP_OFF
+
+
+func _mastery_detail_bubble_size(parent_size: Vector2) -> Vector2:
+	var fallback_parent_size := MASTERY_DETAIL_BUBBLE_MAX_SIZE + Vector2(MASTERY_DETAIL_BUBBLE_MARGIN * 2.0, MASTERY_DETAIL_BUBBLE_MARGIN * 2.0)
+	var available_parent := parent_size
+	if available_parent.x <= 0.0:
+		available_parent.x = fallback_parent_size.x
+	if available_parent.y <= 0.0:
+		available_parent.y = fallback_parent_size.y
+	var available_width := maxf(1.0, available_parent.x - MASTERY_DETAIL_BUBBLE_MARGIN * 2.0)
+	var width := minf(MASTERY_DETAIL_BUBBLE_MAX_SIZE.x, available_width)
+	if available_width >= MASTERY_DETAIL_BUBBLE_MIN_WIDTH:
+		width = maxf(MASTERY_DETAIL_BUBBLE_MIN_WIDTH, width)
+	var available_height := maxf(1.0, available_parent.y - MASTERY_DETAIL_BUBBLE_MARGIN * 2.0)
+	var height := minf(MASTERY_DETAIL_BUBBLE_MAX_SIZE.y, available_height)
+	return Vector2(width, height)
 
 
 func _combat_mastery_detail_data(orb_id: int) -> Dictionary:
@@ -671,3 +702,9 @@ func _to_parent_rect(global_rect: Rect2, parent: Control) -> Rect2:
 func _apply_rect(control: Control, rect: Rect2) -> void:
 	if _apply_rect_callback.is_valid():
 		_apply_rect_callback.call(control, rect)
+		return
+	if control == null:
+		return
+	control.position = rect.position
+	control.size = rect.size
+	control.custom_minimum_size = rect.size

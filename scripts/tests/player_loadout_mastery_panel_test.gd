@@ -56,7 +56,8 @@ func run_all() -> Dictionary:
 	var failures: Array[String] = []
 	_run_case("populate_row_uses_injected_hooks", _test_populate_row_uses_injected_hooks, failures)
 	_run_case("hover_detail_state_lives_in_panel", _test_hover_detail_state_lives_in_panel, failures)
-	return {"passed": failures.is_empty(), "total": 2, "failed": failures.size(), "failures": failures}
+	_run_case("hover_detail_popover_fits_narrow_parent", _test_hover_detail_popover_fits_narrow_parent, failures)
+	return {"passed": failures.is_empty(), "total": 3, "failed": failures.size(), "failures": failures}
 
 
 func _run_case(case_name: String, callable: Callable, failures: Array[String]) -> void:
@@ -123,7 +124,42 @@ func _test_hover_detail_state_lives_in_panel() -> String:
 	return ""
 
 
-func _make_fixture() -> Dictionary:
+func _test_hover_detail_popover_fits_narrow_parent() -> String:
+	var fixture := _make_fixture(false)
+	var popover_parent := Control.new()
+	popover_parent.size = Vector2(520.0, 620.0)
+	var row := Control.new()
+	row.position = Vector2(10.0, 320.0)
+	row.size = Vector2(500.0, 76.0)
+	popover_parent.add_child(row)
+	fixture["hud_nodes"]["popover_parent"] = popover_parent
+	fixture["hud_nodes"]["mastery_cards"] = row
+
+	fixture["panel"].set_combat_mastery_hover_payload({"mastery_levels": {3: 2}, "orb_values_by_id": {3: 9}})
+	fixture["panel"].populate_combat_mastery_panel(row, {}, {3: 4})
+	var card: Control = fixture["panel"].get_combat_mastery_card(row, 3)
+	if card == null:
+		return "Expected combat mastery card in narrow parent fixture."
+
+	fixture["panel"]._on_combat_mastery_card_mouse_entered(row, 3, card)
+	var bubble := popover_parent.get_node_or_null("MasteryDetailBubble") as Panel
+	if bubble == null or not bubble.visible:
+		return "Expected detail bubble to be visible in narrow parent fixture."
+	if bubble.size.x > popover_parent.size.x - 24.0:
+		return "Expected detail bubble width to fit inside the narrow parent margins."
+	if bubble.position.x < 12.0 or bubble.position.x + bubble.size.x > popover_parent.size.x - 12.0:
+		return "Expected detail bubble position to stay inside the narrow parent."
+	var effect := bubble.get_node_or_null("MasteryDetailEffect") as Label
+	if effect == null or effect.size.x < 200.0:
+		return "Expected effect label to receive a usable content rect."
+	if effect.autowrap_mode == TextServer.AUTOWRAP_OFF:
+		return "Expected effect label to wrap instead of collapsing into stacked letters."
+
+	popover_parent.free()
+	return ""
+
+
+func _make_fixture(include_apply_rect_hook: bool = true) -> Dictionary:
 	var panel: Variant = MASTERY_PANEL_SCRIPT.new()
 	var visual_registry := FakeVisualRegistry.new()
 	var highlighter := FakeHighlighter.new()
@@ -136,26 +172,25 @@ func _make_fixture() -> Dictionary:
 		"clear_count": 0,
 		"slot_stylebox_count": 0,
 	}
-	panel.bind(
-		{
-			"clear_children":
-			func(node: Node) -> void:
-				fixture["clear_count"] = int(fixture["clear_count"]) + 1
-				for child in node.get_children():
-					node.remove_child(child)
-					child.free(),
-			"slot_stylebox":
-			func() -> StyleBox:
-				fixture["slot_stylebox_count"] = int(fixture["slot_stylebox_count"]) + 1
-				return StyleBoxFlat.new(),
-			"visual_registry_provider": func() -> Variant: return visual_registry,
-			"mastery_highlighter_provider": func() -> Variant: return highlighter,
-			"hud_nodes_provider": func() -> Dictionary: return hud_nodes,
-			"to_parent_rect": func(rect: Rect2, _parent: Control) -> Rect2: return rect,
-			"apply_rect":
-			func(control: Control, rect: Rect2) -> void:
-				control.position = rect.position
-				control.size = rect.size,
-		}
-	)
+	var hooks := {
+		"clear_children":
+		func(node: Node) -> void:
+			fixture["clear_count"] = int(fixture["clear_count"]) + 1
+			for child in node.get_children():
+				node.remove_child(child)
+				child.free(),
+		"slot_stylebox":
+		func() -> StyleBox:
+			fixture["slot_stylebox_count"] = int(fixture["slot_stylebox_count"]) + 1
+			return StyleBoxFlat.new(),
+		"visual_registry_provider": func() -> Variant: return visual_registry,
+		"mastery_highlighter_provider": func() -> Variant: return highlighter,
+		"hud_nodes_provider": func() -> Dictionary: return hud_nodes,
+		"to_parent_rect": func(rect: Rect2, _parent: Control) -> Rect2: return rect,
+	}
+	if include_apply_rect_hook:
+		hooks["apply_rect"] = func(control: Control, rect: Rect2) -> void:
+			control.position = rect.position
+			control.size = rect.size
+	panel.bind(hooks)
 	return fixture
