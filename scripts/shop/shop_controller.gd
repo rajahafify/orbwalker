@@ -5,10 +5,14 @@ const VISUAL_REGISTRY_SCRIPT := preload("res://scripts/ui/visual_registry.gd")
 const PLAYER_LOADOUT_HUD_SCRIPT := preload("res://scripts/ui/player_loadout_hud.gd")
 const SHOP_TRANSITION_HANDLER_SCRIPT := preload("res://scripts/shop/shop_transition_handler.gd")
 const SHOP_AUDIO_ROUTER_SCRIPT := preload("res://scripts/shop/shop_audio_router.gd")
+const COMBAT_SETTINGS_OVERLAY_COORDINATOR_SCRIPT := preload("res://scripts/combat/combat_settings_overlay_coordinator.gd")
+const GAME_JUICE_FLAGS_SCRIPT := preload("res://scripts/core/game_juice_flags.gd")
 
 var _host: Control
 var _model
 var _view
+var _settings_overlay_parent: Control = null
+var _settings_overlay_coordinator: Variant = null
 var _flow_trace_route_id := ""
 var _signals_connected := false
 var _visuals = VISUAL_REGISTRY_SCRIPT.new()
@@ -21,6 +25,7 @@ func bind(host: Control, root_nodes: Dictionary, model, view) -> void:
 	_host = host
 	_model = model
 	_view = view
+	_settings_overlay_parent = root_nodes.get("layout_root") as Control
 	_audio_router.bind(host)
 	_view.bind(root_nodes, _visuals, _player_loadout_hud)
 	if not _signals_connected:
@@ -79,6 +84,8 @@ func ready() -> void:
 func handle_input(event: InputEvent) -> void:
 	if _view == null:
 		return
+	if _settings_overlay_visible():
+		return
 	if _view.handle_global_input(event):
 		_model.clear_inventory_focus()
 		_refresh_ui()
@@ -106,6 +113,7 @@ func _connect_view_signals() -> void:
 	_view.sell_pressed.connect(_on_sell_pressed)
 	_view.continue_pressed.connect(_on_continue_pressed)
 	_view.main_menu_pressed.connect(_on_main_menu_pressed)
+	_view.settings_pressed.connect(_on_settings_pressed)
 	_view.treasure_chest_option_pressed.connect(_choose_treasure_chest_option)
 	_view.skip_treasure_chest_pressed.connect(_skip_pending_treasure_chest)
 	_view.equipment_slot_selected.connect(_select_equipment_slot)
@@ -287,6 +295,70 @@ func _on_main_menu_pressed() -> void:
 	_transition_handler.main_menu_pressed()
 
 
+func _on_settings_pressed() -> void:
+	RunState.load_user_settings()
+	if not _show_settings_overlay(RunState.combat_feedback_settings()):
+		return
+	_set_status("Settings opened.", true)
+
+
+func _on_settings_continue_pressed() -> void:
+	_hide_settings_overlay()
+	_set_status("Settings closed.", true)
+
+
+func _on_settings_new_run_pressed() -> void:
+	_hide_settings_overlay()
+	_bind_transition_handler()
+	_transition_handler.new_run_pressed()
+
+
+func _on_settings_main_menu_pressed() -> void:
+	_hide_settings_overlay()
+	_bind_transition_handler()
+	_transition_handler.main_menu_pressed()
+
+
+func _on_settings_speed_selected(speed: String) -> void:
+	RunState.set_vfx_speed(speed)
+	_refresh_settings_overlay()
+	_set_status("VFX speed: %s." % RunState.vfx_speed().capitalize(), true)
+
+
+func _on_settings_quality_selected(quality: String) -> void:
+	RunState.set_combat_vfx_quality(quality)
+	_refresh_settings_overlay()
+	_set_status("VFX quality: %s." % RunState.combat_vfx_quality().capitalize(), true)
+
+
+func _on_settings_reduced_motion_toggled() -> void:
+	RunState.set_reduced_motion_enabled(not RunState.reduced_motion_enabled())
+	_refresh_settings_overlay()
+	_set_status("Reduced motion: %s." % ("On" if RunState.reduced_motion_enabled() else "Off"), true)
+
+
+func _on_settings_game_juice_toggled() -> void:
+	RunState.set_game_juice_enabled(not RunState.game_juice_enabled())
+	_refresh_settings_overlay()
+	_set_status("Game juice: %s." % ("On" if RunState.game_juice_enabled() else "Off"), true)
+
+
+func _on_settings_game_juice_flag_toggled(flag_key: String) -> void:
+	if not GAME_JUICE_FLAGS_SCRIPT.is_valid_key(flag_key):
+		return
+	var flags := RunState.game_juice_flags()
+	var next_enabled := not bool(flags.get(flag_key, true))
+	RunState.set_game_juice_flag_enabled(flag_key, next_enabled)
+	_refresh_settings_overlay()
+	_set_status("%s: %s." % [tr(GAME_JUICE_FLAGS_SCRIPT.label_key(flag_key)), "On" if next_enabled else "Off"], true)
+
+
+func _on_settings_defaults_reset() -> void:
+	RunState.reset_combat_feedback_settings()
+	_refresh_settings_overlay()
+	_set_status("Combat feedback settings reset.", true)
+
+
 func _set_status(message: String, positive: bool) -> void:
 	_model.set_status(message, positive)
 	_view.set_status(message, positive)
@@ -352,6 +424,53 @@ func _bind_transition_handler() -> void:
 			{"route_id": _flow_trace_route_id}
 		)
 	)
+
+
+func _bind_settings_overlay_coordinator() -> void:
+	if _settings_overlay_parent == null:
+		return
+	if _settings_overlay_coordinator == null:
+		_settings_overlay_coordinator = COMBAT_SETTINGS_OVERLAY_COORDINATOR_SCRIPT.new()
+	(
+		_settings_overlay_coordinator
+		. bind(
+			_settings_overlay_parent,
+			{
+				"continue": Callable(self, "_on_settings_continue_pressed"),
+				"new_run": Callable(self, "_on_settings_new_run_pressed"),
+				"main_menu": Callable(self, "_on_settings_main_menu_pressed"),
+				"speed_selected": Callable(self, "_on_settings_speed_selected"),
+				"quality_selected": Callable(self, "_on_settings_quality_selected"),
+				"reduced_motion_toggled": Callable(self, "_on_settings_reduced_motion_toggled"),
+				"game_juice_toggled": Callable(self, "_on_settings_game_juice_toggled"),
+				"game_juice_flag_toggled": Callable(self, "_on_settings_game_juice_flag_toggled"),
+				"reset_defaults": Callable(self, "_on_settings_defaults_reset"),
+			}
+		)
+	)
+
+
+func _show_settings_overlay(settings: Variant) -> bool:
+	_bind_settings_overlay_coordinator()
+	if _settings_overlay_coordinator == null:
+		_set_status("Settings unavailable.", false)
+		return false
+	_settings_overlay_coordinator.show(settings)
+	return true
+
+
+func _hide_settings_overlay() -> void:
+	if _settings_overlay_coordinator != null:
+		_settings_overlay_coordinator.hide()
+
+
+func _refresh_settings_overlay() -> void:
+	if _settings_overlay_coordinator != null:
+		_settings_overlay_coordinator.show(RunState.combat_feedback_settings())
+
+
+func _settings_overlay_visible() -> bool:
+	return _settings_overlay_coordinator != null and bool(_settings_overlay_coordinator.is_visible())
 
 
 func _result_message(action: String, result: Dictionary) -> String:

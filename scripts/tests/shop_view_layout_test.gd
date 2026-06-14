@@ -79,7 +79,7 @@ func _test_shop_header_controls_remain_readable() -> String:
 	if bool(controls.get("menu_visible", true)):
 		return "Expected menu button to be hidden from the shop header."
 	if not bool(controls.get("settings_visible", false)):
-		return "Expected visual-only settings button to stay visible in the shop header."
+		return "Expected settings button to stay visible in the shop header."
 	if controls.get("help_label", "") != "?":
 		return "Expected help button label '?'."
 	if not controls.get("help_opens_modal", false):

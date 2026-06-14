@@ -14,6 +14,7 @@ class FakeRunState:
 	var transition_result := {"ok": true, "next_scene": "res://scenes/combat.tscn", "step": "enemy_2"}
 	var snapshot := {"step": "shop"}
 	var restored_snapshots: Array[Dictionary] = []
+	var start_new_run_count := 0
 
 	func flow_trace_mark(step: String, payload: Dictionary, route_id: String, target_scene: String = "") -> void:
 		marks.append({
@@ -60,6 +61,9 @@ class FakeRunState:
 
 	func advance_after_shop(_skip: bool) -> Dictionary:
 		return transition_result.duplicate()
+
+	func start_new_run() -> void:
+		start_new_run_count += 1
 
 
 class FakeModel:
@@ -121,11 +125,12 @@ func run_all() -> Dictionary:
 	_run_case("continue_routes_to_combat_with_new_route", _test_continue_routes_to_combat_with_new_route, failures)
 	_run_case("continue_failure_restores_snapshot_and_unlocks", _test_continue_failure_restores_snapshot_and_unlocks, failures)
 	_run_case("main_menu_routes_with_current_route", _test_main_menu_routes_with_current_route, failures)
+	_run_case("new_run_routes_to_combat_with_transition_snapshot", _test_new_run_routes_to_combat_with_transition_snapshot, failures)
 	_run_case("post_ready_rollback_reports_failure_and_unlocks", _test_post_ready_rollback_reports_failure_and_unlocks, failures)
 
 	return {
 		"passed": failures.is_empty(),
-		"total": 5,
+		"total": 6,
 		"failed": failures.size(),
 		"failures": failures,
 	}
@@ -232,6 +237,37 @@ func _test_main_menu_routes_with_current_route() -> String:
 		return "Expected main-menu command to preserve the current route id."
 	if String(change.get("source", "")) != "shop_main_menu_button":
 		return "Expected main-menu command to preserve its trace source."
+	return ""
+
+
+func _test_new_run_routes_to_combat_with_transition_snapshot() -> String:
+	var fixture := _fixture()
+	var handler: Variant = fixture["handler"]
+	var run_state: FakeRunState = fixture["run_state"]
+	var model: FakeModel = fixture["model"]
+	var view: FakeView = fixture["view"]
+	var recorder: CallbackRecorder = fixture["recorder"]
+
+	handler.new_run_pressed()
+	if model.begin_count != 1 or not model.transition_locked:
+		return "Expected new-run command to lock transitions."
+	if view.locks != [true]:
+		return "Expected new-run command to lock the view."
+	if recorder.clear_count != 1:
+		return "Expected new-run command to clear inventory focus."
+	if run_state.start_new_run_count != 1:
+		return "Expected new-run command to start a fresh run."
+	if run_state.begins.size() != 1 or String(run_state.begins[0].get("kind", "")) != "shop_settings_new_run":
+		return "Expected new-run command to begin a settings route."
+	if run_state.changes.size() != 1:
+		return "Expected new-run command to dispatch one scene change."
+	var change := run_state.changes[0]
+	if String(change.get("target_scene", "")) != HANDLER_SCRIPT.SCENE_COMBAT:
+		return "Expected new-run command to target combat."
+	if String(change.get("source", "")) != "shop.settings_new_run":
+		return "Expected new-run command to preserve its trace source."
+	if Dictionary(change.get("rollback_payload", {})).get("step", "") != "shop":
+		return "Expected new-run command to pass the pre-transition snapshot as rollback payload."
 	return ""
 
 

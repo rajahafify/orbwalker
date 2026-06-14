@@ -7,6 +7,7 @@ signal reroll_pressed
 signal sell_pressed
 signal continue_pressed
 signal main_menu_pressed
+signal settings_pressed
 signal treasure_chest_option_pressed(index: int)
 signal skip_treasure_chest_pressed
 signal equipment_slot_selected(index: int)
@@ -125,7 +126,7 @@ func _create_ui() -> void:
 	_help_button = _top_bar.get_node("%HelpButton") as Button
 	_settings_button = _top_bar.get_node("%SettingsButton") as Button
 	_help_button.tooltip_text = "Shop help"
-	_settings_button.tooltip_text = "Settings (visual-only in this prototype build)."
+	_settings_button.tooltip_text = "Settings"
 	_crest_panel.visible = false
 	_crest_label.visible = false
 	_run_progress_label.visible = false
@@ -391,7 +392,7 @@ func _on_help_pressed() -> void:
 
 
 func _on_settings_pressed() -> void:
-	set_status("Settings is visual-only in this prototype build.", true)
+	emit_signal("settings_pressed")
 
 
 func _emit_skip_treasure_chest_pressed() -> void:

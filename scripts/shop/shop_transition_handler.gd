@@ -9,6 +9,7 @@ const CALLBACK_TUTORIAL_SHOP_PHASE := "tutorial_shop_phase"
 const CALLBACK_TUTORIAL_SHOP_STATUS := "tutorial_shop_status"
 const CALLBACK_REFRESH_UI := "refresh_ui"
 
+const SCENE_COMBAT := "res://scenes/combat.tscn"
 const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
 
 var _run_state: Variant = null
@@ -121,6 +122,42 @@ func main_menu_pressed() -> void:
 	)
 	if scene_change_result != OK:
 		_set_status("Main menu failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
+		_end_transition_lock()
+
+
+func new_run_pressed() -> void:
+	if _transition_locked():
+		return
+	if _run_state == null:
+		_set_status("New run failed: missing_run_state.", false)
+		return
+	_begin_transition_lock()
+	_clear_inventory_focus()
+	var route_id := String(_run_state.flow_trace_begin("shop_settings_new_run", SCENE_COMBAT, {"source": "shop.settings_new_run"}))
+	_flow_trace_mark(
+		"shop_settings_new_run_pressed",
+		{"button_text": "New Run"},
+		route_id,
+		SCENE_COMBAT
+	)
+	var pre_transition_state := _snapshot_run_transition_state()
+	_run_state.start_new_run()
+	_flow_trace_mark(
+		"shop_settings_before_change_scene_to_file",
+		{"source": "shop.settings_new_run"},
+		route_id,
+		SCENE_COMBAT
+	)
+	var scene_change_result: Variant = _flow_trace_change_scene(
+		SCENE_COMBAT,
+		route_id,
+		"shop.settings_new_run",
+		Callable(self, "on_scene_change_post_ready_rollback"),
+		pre_transition_state
+	)
+	if scene_change_result != OK:
+		_set_status("New run failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
+		_restore_transition_snapshot(pre_transition_state)
 		_end_transition_lock()
 
 
