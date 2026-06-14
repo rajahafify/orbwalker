@@ -262,6 +262,12 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
 	  <h1 id="orbwalker-manual-qa-checklist">Orbwalker Manual QA Checklist</h1>
 <p>Source GDD: <code>docs/game_design_document.html</code> Purpose: Repeatable manual checks for the first playable prototype.</p>
 <p>This checklist is intentionally written before implementation. Items become executable as their milestones are completed.</p>
+<p>Verification notes (2026-06-14, combat timer expiry resolve fix):</p>
+<ul>
+<li>Fixed timer expiry during an active board drag so <code>BoardController.update()</code> emits a handled <code>"end"</code> drag result. The combat resolve flow now treats timeout the same as a released drag, allowing match resolution and the enemy turn to continue instead of silently doing nothing.</li>
+<li>Added <code>board_controller_test.gd</code> to pin the timeout result shape, including <code>handled=true</code>, <code>action="end"</code>, <code>timed_out=true</code>, and preserved drag path. Updated <code>combat_controller_input_router_test.gd</code> to prove timer-service end results route through the tutorial drag/end pipeline.</li>
+<li>Validation passed with Godot <code>4.6.3</code>: <code>gdformat --check</code> and <code>gdlint</code> for touched GDScript; <code>git diff --check</code> reported only the existing CRLF normalization warning; <code>res://tools/quality/script_load_validation.gd</code> reported <code>385</code> loaded and <code>0</code> failed; <code>res://tools/quality/script_size_budget.gd</code> reported <code>scanned=259</code>, <code>over_budget=0</code>, <code>ratchet_failures=0</code>; <code>res://tools/quality/owner_reach_in_budget.gd</code> matched all documented baselines; full <code>res://scripts/tests/run_all_tests.gd</code> reported <code>125</code> suites, <code>517</code> cases, and <code>0</code> failures. The full runner still emits pre-existing replay-route fake errors and the local GDAI port-in-use warning after the pass report.</li>
+</ul>
 <p>Verification notes (2026-06-14, start-run combat scene warm-up):</p>
 <ul>
 <li><code>SceneRouter</code> now keeps a <code>PackedScene</code> cache and can warm scenes through Godot's threaded resource loader. <code>MainMenuController</code> requests a deferred warm-up for <code>res://scenes/combat.tscn</code> after the menu is ready, so Start Run no longer has to pay the full cold <code>ResourceLoader.load()</code> cost on button press when the warm-up has completed.</li>

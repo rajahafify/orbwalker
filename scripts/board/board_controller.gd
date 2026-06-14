@@ -249,10 +249,7 @@ func handle_pointer_input(event: InputEvent, input_enabled: bool) -> Dictionary:
 
 
 func _is_pointer_event(event: InputEvent) -> bool:
-	return event is InputEventMouseButton \
-			or event is InputEventMouseMotion \
-			or event is InputEventScreenTouch \
-			or event is InputEventScreenDrag
+	return event is InputEventMouseButton or event is InputEventMouseMotion or event is InputEventScreenTouch or event is InputEventScreenDrag
 
 
 func update(delta: float, _input_active: bool) -> Dictionary:
@@ -261,7 +258,7 @@ func update(delta: float, _input_active: bool) -> Dictionary:
 	_refresh_drag_match_glow()
 	_move_time_left = maxf(0.0, _move_time_left - delta)
 	if _move_time_left <= 0.0:
-		return _end_drag(true, false)
+		return _end_drag(true, true)
 	return {"action": ACTION_NONE}
 
 

@@ -298,6 +298,11 @@ Use browser view for review. Convert to Markdown only if plain-text editing or g
       <h1>Wiki Log</h1>
       <p class="summary">Renamed player-facing scene entry points to the new convention: <code>scenes/main_menu.tscn</code>, <code>scenes/combat.tscn</code>, <code>scenes/shop.tscn</code>, <code>scenes/run_summary.tscn</code>, and <code>scenes/collection.tscn</code>. Updated <code>project.godot</code> main scene, <code>RunState</code> route constants/fallbacks, and scene/script references so runtime routing stays behav</p>
       <h1 id="wiki-log">Wiki Log</h1>
+<h2 id="2026-06-14-combat-timer-expiry-resolve-fix">2026-06-14 - Combat timer expiry resolve fix</h2>
+<ul>
+<li>Changed timeout handling in <code>BoardController.update()</code> so an expired active drag emits a handled <code>"end"</code> result, letting the existing combat resolve coordinator process matches and enemy actions instead of dropping the timeout as an unhandled no-op. (source: <code>scripts/board/board_controller.gd</code>)</li>
+<li>Added direct board-controller timeout coverage and updated the combat input router test so timer-service end results are forwarded through the normal tutorial drag-end path. (source: <code>scripts/tests/board_controller_test.gd</code>, <code>scripts/tests/combat_controller_input_router_test.gd</code>, <code>docs/test_plan.html</code>)</li>
+</ul>
 <h2 id="2026-06-14-start-run-combat-scene-warm-up">2026-06-14 - Start Run combat scene warm-up</h2>
 <ul>
 <li>Added a <code>PackedScene</code> cache and threaded warm-up request to <code>SceneRouter</code>. <code>MainMenuController</code> now requests a deferred warm-up for <code>res://scenes/combat.tscn</code> after menu setup, moving the expensive cold combat scene load off the Start Run button path. (source: <code>scripts/core/scene_router.gd</code>, <code>scripts/main_menu/main_menu_controller.gd</code>)</li>
