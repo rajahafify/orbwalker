@@ -288,28 +288,43 @@ func _test_stock_cards_fit() -> String:
 		return "Expected affordable price text to use compact dollar notation."
 	if shop_view._price_text(11, false, false, false) != "$11":
 		return "Expected unaffordable price text to keep compact dollar notation."
-	var compact_attack: String = shop_view._shop_card_description({
-		"type": "equipment",
-		"content_id": "shortsword",
-		"display_name": "Iron Shortsword",
-		"description": "Deal +2 flat elemental damage each turn.",
-	})
+	var compact_attack: String = (
+		shop_view
+		. _shop_card_description(
+			{
+				"type": "equipment",
+				"content_id": "shortsword",
+				"display_name": "Iron Shortsword",
+				"description": "Deal +2 flat elemental damage each turn.",
+			}
+		)
+	)
 	if compact_attack != "+2 Attack":
 		return "Expected shop equipment copy to compact to '+2 Attack'."
-	var compact_mastery: String = shop_view._shop_card_description({
-		"type": "mastery_card",
-		"content_id": "fire_mastery",
-		"display_name": "Fire Mastery",
-		"description": "Increase Fire mastery by 1 (max 5).",
-	})
+	var compact_mastery: String = (
+		shop_view
+		. _shop_card_description(
+			{
+				"type": "mastery_card",
+				"content_id": "fire_mastery",
+				"display_name": "Fire Mastery",
+				"description": "Increase Fire mastery by 1 (max 5).",
+			}
+		)
+	)
 	if compact_mastery != "+1 Fire\nMastery":
 		return "Expected shop mastery copy to compact to a short two-line mastery label."
-	var compact_chest: String = shop_view._shop_card_description({
-		"type": "treasure_chest",
-		"content_id": "fire_chest",
-		"display_name": "Fire Chest",
-		"description": "Choose 1 of 3 Fire-aligned treasures.",
-	})
+	var compact_chest: String = (
+		shop_view
+		. _shop_card_description(
+			{
+				"type": "treasure_chest",
+				"content_id": "fire_chest",
+				"display_name": "Fire Chest",
+				"description": "Choose 1 of 3 Fire-aligned treasures.",
+			}
+		)
+	)
 	if compact_chest != "Choose 1 of 3\nFire rewards":
 		return "Expected shop treasure chest copy to compact to short choose/fire rewards copy."
 	var relic_readability: Dictionary = probe.get("relic_card_readability", {})
@@ -375,10 +390,15 @@ func _test_stock_cards_fit() -> String:
 		return "Expected relic text regions to stay inside the banner."
 	if relic_name.intersects(relic_art) or relic_description.intersects(relic_price) or relic_price_divider.intersects(relic_description):
 		return "Expected relic art, copy, divider, and price regions not to overlap."
-	var compact_relic: String = shop_view._shop_relic_description({
-		"content_id": "crown_of_chains",
-		"description": "Combo count +3 and +5 flat elemental damage each turn.",
-	})
+	var compact_relic: String = (
+		shop_view
+		. _shop_relic_description(
+			{
+				"content_id": "crown_of_chains",
+				"description": "Combo count +3 and +5 flat elemental damage each turn.",
+			}
+		)
+	)
 	if compact_relic != "Combo count +3\n+5 Attack each turn":
 		return "Expected relic copy to be compact and readable."
 	return ""

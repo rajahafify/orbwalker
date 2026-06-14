@@ -17,21 +17,31 @@ class FakeRunState:
 	var start_new_run_count := 0
 
 	func flow_trace_mark(step: String, payload: Dictionary, route_id: String, target_scene: String = "") -> void:
-		marks.append({
-			"step": step,
-			"payload": payload,
-			"route_id": route_id,
-			"target_scene": target_scene,
-		})
+		(
+			marks
+			. append(
+				{
+					"step": step,
+					"payload": payload,
+					"route_id": route_id,
+					"target_scene": target_scene,
+				}
+			)
+		)
 
 	func flow_trace_begin(kind: String, target_scene: String, payload: Dictionary) -> String:
 		var route_id := "%s-route-%d" % [kind, begins.size() + 1]
-		begins.append({
-			"kind": kind,
-			"target_scene": target_scene,
-			"payload": payload,
-			"route_id": route_id,
-		})
+		(
+			begins
+			. append(
+				{
+					"kind": kind,
+					"target_scene": target_scene,
+					"payload": payload,
+					"route_id": route_id,
+				}
+			)
+		)
 		return route_id
 
 	func flow_trace_change_scene(
@@ -43,14 +53,19 @@ class FakeRunState:
 		rollback_callback: Callable = Callable(),
 		rollback_payload: Dictionary = {}
 	) -> Variant:
-		changes.append({
-			"tree": tree,
-			"target_scene": target_scene,
-			"route_id": route_id,
-			"source": source,
-			"rollback_callback_valid": rollback_callback.is_valid(),
-			"rollback_payload": rollback_payload,
-		})
+		(
+			changes
+			. append(
+				{
+					"tree": tree,
+					"target_scene": target_scene,
+					"route_id": route_id,
+					"source": source,
+					"rollback_callback_valid": rollback_callback.is_valid(),
+					"rollback_payload": rollback_payload,
+				}
+			)
+		)
 		return next_scene_change_result
 
 	func snapshot_run_transition_state() -> Dictionary:
@@ -101,10 +116,15 @@ class CallbackRecorder:
 	var tutorial_status := "Tutorial: continue to the next fight."
 
 	func set_status(message: String, positive: bool) -> void:
-		statuses.append({
-			"message": message,
-			"positive": positive,
-		})
+		(
+			statuses
+			. append(
+				{
+					"message": message,
+					"positive": positive,
+				}
+			)
+		)
 
 	func clear_inventory_focus() -> void:
 		clear_count += 1
@@ -281,12 +301,17 @@ func _test_post_ready_rollback_reports_failure_and_unlocks() -> String:
 	model.begin_transition_lock()
 	view.lock_transitions(true)
 
-	handler.on_scene_change_post_ready_rollback({
-		"reason": "post_ready_failed",
-		"source": "test_source",
-		"route_id": "rollback-route",
-		"target_scene": "res://scenes/combat.tscn",
-	})
+	(
+		handler
+		. on_scene_change_post_ready_rollback(
+			{
+				"reason": "post_ready_failed",
+				"source": "test_source",
+				"route_id": "rollback-route",
+				"target_scene": "res://scenes/combat.tscn",
+			}
+		)
+	)
 	if recorder.statuses.size() != 1 or String(recorder.statuses[0].get("message", "")) != "Transition failed: post_ready_failed":
 		return "Expected rollback to report the failure reason."
 	if model.end_count != 1 or model.transition_locked:
@@ -304,21 +329,24 @@ func _fixture() -> Dictionary:
 	var view := FakeView.new()
 	var recorder := CallbackRecorder.new()
 	var handler: Variant = HANDLER_SCRIPT.new()
-	handler.bind(
-		{
-			"run_state": run_state,
-			"host": null,
-			"model": model,
-			"view": view,
-		},
-		{
-			HANDLER_SCRIPT.CALLBACK_SET_STATUS: Callable(recorder, "set_status"),
-			HANDLER_SCRIPT.CALLBACK_CLEAR_INVENTORY_FOCUS: Callable(recorder, "clear_inventory_focus"),
-			HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_PHASE: Callable(recorder, "tutorial_shop_phase"),
-			HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_STATUS: Callable(recorder, "tutorial_shop_status"),
-			HANDLER_SCRIPT.CALLBACK_REFRESH_UI: Callable(recorder, "refresh_ui"),
-		},
-		{"route_id": "shop-route"}
+	(
+		handler
+		. bind(
+			{
+				"run_state": run_state,
+				"host": null,
+				"model": model,
+				"view": view,
+			},
+			{
+				HANDLER_SCRIPT.CALLBACK_SET_STATUS: Callable(recorder, "set_status"),
+				HANDLER_SCRIPT.CALLBACK_CLEAR_INVENTORY_FOCUS: Callable(recorder, "clear_inventory_focus"),
+				HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_PHASE: Callable(recorder, "tutorial_shop_phase"),
+				HANDLER_SCRIPT.CALLBACK_TUTORIAL_SHOP_STATUS: Callable(recorder, "tutorial_shop_status"),
+				HANDLER_SCRIPT.CALLBACK_REFRESH_UI: Callable(recorder, "refresh_ui"),
+			},
+			{"route_id": "shop-route"}
+		)
 	)
 	return {
 		"handler": handler,

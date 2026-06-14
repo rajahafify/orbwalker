@@ -30,12 +30,7 @@ func bind(dependencies: Dictionary, callbacks: Dictionary = {}, config: Dictiona
 
 
 func queue_ready_redirect(target_scene: String, source: String) -> void:
-	_flow_trace_mark(
-		"shop_ready_redirect_before_change_scene",
-		{"source": source},
-		_route_id,
-		target_scene
-	)
+	_flow_trace_mark("shop_ready_redirect_before_change_scene", {"source": source}, _route_id, target_scene)
 	Callable(self, "_deferred_ready_redirect").bind(target_scene, source).call_deferred()
 
 
@@ -48,11 +43,7 @@ func continue_pressed() -> void:
 		return
 	_begin_transition_lock()
 	_clear_inventory_focus()
-	_flow_trace_mark(
-		"shop_continue_button_pressed",
-		{"button_text": "Continue"},
-		_route_id
-	)
+	_flow_trace_mark("shop_continue_button_pressed", {"button_text": "Continue"}, _route_id)
 	var pre_transition_state := _snapshot_run_transition_state()
 	_flow_trace_mark("shop_before_advance_after_shop", {}, _route_id)
 	var transition: Dictionary = _run_state.advance_after_shop(false) if _run_state != null else {"ok": false, "reason": "missing_run_state"}
@@ -73,23 +64,10 @@ func continue_pressed() -> void:
 		return
 	var route_id := _route_id
 	if next_scene.find("combat.tscn") >= 0 and _run_state != null:
-		route_id = String(_run_state.flow_trace_begin(
-			"shop_to_combat",
-			next_scene,
-			{"source": "shop_continue_button"}
-		))
-	_flow_trace_mark(
-		"shop_before_change_scene_to_file",
-		{"source": "shop_continue_button"},
-		route_id,
-		next_scene
-	)
+		route_id = String(_run_state.flow_trace_begin("shop_to_combat", next_scene, {"source": "shop_continue_button"}))
+	_flow_trace_mark("shop_before_change_scene_to_file", {"source": "shop_continue_button"}, route_id, next_scene)
 	var scene_change_result: Variant = _flow_trace_change_scene(
-		next_scene,
-		route_id,
-		"shop_continue_button",
-		Callable(self, "on_scene_change_post_ready_rollback"),
-		pre_transition_state
+		next_scene, route_id, "shop_continue_button", Callable(self, "on_scene_change_post_ready_rollback"), pre_transition_state
 	)
 	if scene_change_result != OK:
 		_set_status("Continue failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
@@ -102,23 +80,10 @@ func main_menu_pressed() -> void:
 		return
 	_begin_transition_lock()
 	_clear_inventory_focus()
-	_flow_trace_mark(
-		"shop_main_menu_button_pressed",
-		{"button_text": "Menu"},
-		_route_id,
-		SCENE_MAIN_MENU
-	)
-	_flow_trace_mark(
-		"shop_before_change_scene_to_file_main_menu",
-		{"source": "shop_main_menu_button"},
-		_route_id,
-		SCENE_MAIN_MENU
-	)
+	_flow_trace_mark("shop_main_menu_button_pressed", {"button_text": "Menu"}, _route_id, SCENE_MAIN_MENU)
+	_flow_trace_mark("shop_before_change_scene_to_file_main_menu", {"source": "shop_main_menu_button"}, _route_id, SCENE_MAIN_MENU)
 	var scene_change_result: Variant = _flow_trace_change_scene(
-		SCENE_MAIN_MENU,
-		_route_id,
-		"shop_main_menu_button",
-		Callable(self, "on_scene_change_post_ready_rollback")
+		SCENE_MAIN_MENU, _route_id, "shop_main_menu_button", Callable(self, "on_scene_change_post_ready_rollback")
 	)
 	if scene_change_result != OK:
 		_set_status("Main menu failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
@@ -134,26 +99,12 @@ func new_run_pressed() -> void:
 	_begin_transition_lock()
 	_clear_inventory_focus()
 	var route_id := String(_run_state.flow_trace_begin("shop_settings_new_run", SCENE_COMBAT, {"source": "shop.settings_new_run"}))
-	_flow_trace_mark(
-		"shop_settings_new_run_pressed",
-		{"button_text": "New Run"},
-		route_id,
-		SCENE_COMBAT
-	)
+	_flow_trace_mark("shop_settings_new_run_pressed", {"button_text": "New Run"}, route_id, SCENE_COMBAT)
 	var pre_transition_state := _snapshot_run_transition_state()
 	_run_state.start_new_run()
-	_flow_trace_mark(
-		"shop_settings_before_change_scene_to_file",
-		{"source": "shop.settings_new_run"},
-		route_id,
-		SCENE_COMBAT
-	)
+	_flow_trace_mark("shop_settings_before_change_scene_to_file", {"source": "shop.settings_new_run"}, route_id, SCENE_COMBAT)
 	var scene_change_result: Variant = _flow_trace_change_scene(
-		SCENE_COMBAT,
-		route_id,
-		"shop.settings_new_run",
-		Callable(self, "on_scene_change_post_ready_rollback"),
-		pre_transition_state
+		SCENE_COMBAT, route_id, "shop.settings_new_run", Callable(self, "on_scene_change_post_ready_rollback"), pre_transition_state
 	)
 	if scene_change_result != OK:
 		_set_status("New run failed: %s" % FLOW_RESULT_UTILS.scene_change_failure_reason(scene_change_result), false)
@@ -182,10 +133,7 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 	_begin_transition_lock()
 	var transition_source := "shop_ready_redirect_%s" % source
 	var scene_change_result: Variant = _flow_trace_change_scene(
-		target_scene,
-		_route_id,
-		transition_source,
-		Callable(self, "on_scene_change_post_ready_rollback")
+		target_scene, _route_id, transition_source, Callable(self, "on_scene_change_post_ready_rollback")
 	)
 	if scene_change_result == OK:
 		return
@@ -204,11 +152,7 @@ func _deferred_ready_redirect(target_scene: String, source: String) -> void:
 
 
 func _flow_trace_change_scene(
-	target_scene: String,
-	route_id: String,
-	source: String,
-	rollback_callback: Callable,
-	rollback_payload: Dictionary = {}
+	target_scene: String, route_id: String, source: String, rollback_callback: Callable, rollback_payload: Dictionary = {}
 ) -> Variant:
 	if _run_state == null:
 		return ERR_UNCONFIGURED

@@ -35,10 +35,15 @@ class FakeShopView:
 		pass
 
 	func set_status(message: String, positive: bool) -> void:
-		statuses.append({
-			"message": message,
-			"positive": positive,
-		})
+		(
+			statuses
+			. append(
+				{
+					"message": message,
+					"positive": positive,
+				}
+			)
+		)
 
 	func handle_global_input(_event: InputEvent) -> bool:
 		global_input_count += 1
